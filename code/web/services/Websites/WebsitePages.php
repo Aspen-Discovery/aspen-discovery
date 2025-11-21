@@ -17,7 +17,7 @@ class Websites_WebsitePages extends ObjectEditor {
 		return UserAccount::userHasPermission('Administer Website Indexing Settings');
 	}
 
-	function canEdit(DataObject $dataObject) {
+	function canEdit() : bool {
 		return false;
 	}
 
@@ -49,7 +49,7 @@ class Websites_WebsitePages extends ObjectEditor {
 	/**
 	 * @inheritDoc
 	 */
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new WebsitePage();
 		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);

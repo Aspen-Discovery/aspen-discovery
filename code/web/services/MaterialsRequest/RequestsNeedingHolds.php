@@ -8,7 +8,7 @@ require_once(ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestHoldCandidate.ph
 
 class MaterialsRequest_RequestsNeedingHolds extends ObjectEditor {
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$list = [];
 
 		$object = new MaterialsRequest();
@@ -101,7 +101,7 @@ class MaterialsRequest_RequestsNeedingHolds extends ObjectEditor {
 		return 'title';
 	}
 
-	function canEdit(DataObject $object) : bool {
+	function canEdit() : bool {
 		return false;
 	}
 
@@ -228,11 +228,10 @@ class MaterialsRequest_RequestsNeedingHolds extends ObjectEditor {
 		$numRequestsWithNewSuggestions = generateMaterialsRequestsHoldCandidates();
 		if ($numRequestsWithNewSuggestions > 0) {
 			$interface->assign('updateMessage', "$numRequestsWithNewSuggestions requests were updated with new hold suggestions.");
-			$interface->assign('updateMessageIsError', false);
 		}else{
 			$interface->assign('updateMessage', 'No new hold candidates were found');
-			$interface->assign('updateMessageIsError', false);
 		}
+		$interface->assign('updateMessageIsError', false);
 
 		$objectStructure = $this->getObjectStructure();
 		$this->viewExistingObjects($objectStructure);

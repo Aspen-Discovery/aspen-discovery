@@ -19,7 +19,7 @@ class WebBuilder_CustomWebResourcePages extends ObjectEditor {
 		return 'Custom Web Resource Pages';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new CustomWebResourcePage();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
@@ -54,7 +54,7 @@ class WebBuilder_CustomWebResourcePages extends ObjectEditor {
 		return 'id';
 	}
 
-	function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions(?DataObject $existingObject): array {
 		$objectActions = [];
 		if (!empty($existingObject) && $existingObject instanceof CustomWebResourcePage && !empty($existingObject->id)) {
 			$objectActions[] = [
@@ -98,7 +98,7 @@ class WebBuilder_CustomWebResourcePages extends ObjectEditor {
 		return 'web_builder';
 	}
 
-	public function canCopy() {
+	public function canCopy() : bool {
 		return $this->canAddNew();
 	}
 }

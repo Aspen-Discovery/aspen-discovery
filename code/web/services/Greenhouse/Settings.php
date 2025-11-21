@@ -20,7 +20,7 @@ class Greenhouse_Settings extends ObjectEditor {
 		return 'Greenhouse Settings';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new GreenhouseSettings();
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$this->applyFilters($object);
@@ -49,15 +49,15 @@ class Greenhouse_Settings extends ObjectEditor {
 		return 'id';
 	}
 
-	function canAddNew() {
+	function canAddNew() : bool {
 		return $this->getNumObjects() == 0;
 	}
 
-	function canDelete() {
+	function canDelete() : bool {
 		return false;
 	}
 
-	function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions(?DataObject $existingObject): array {
 		return [];
 	}
 
@@ -85,7 +85,7 @@ class Greenhouse_Settings extends ObjectEditor {
 		return false;
 	}
 
-	public function display($mainContentTemplate, $pageTitle, $sidebarTemplate = 'Greenhouse/greenhouse-sidebar.tpl', $translateTitle = true) {
+	public function display($mainContentTemplate, $pageTitle, $sidebarTemplate = 'Greenhouse/greenhouse-sidebar.tpl', $translateTitle = true): void {
 		parent::display($mainContentTemplate, $pageTitle, $sidebarTemplate, $translateTitle);
 	}
 }

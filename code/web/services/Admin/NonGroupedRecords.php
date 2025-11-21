@@ -17,7 +17,7 @@ class Admin_NonGroupedRecords extends ObjectEditor {
 		return 'Records to Not Group';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new NonGroupedRecord();
 		$object->orderBy($this->getSort() . ', recordId');
 		$this->applyFilters($object);

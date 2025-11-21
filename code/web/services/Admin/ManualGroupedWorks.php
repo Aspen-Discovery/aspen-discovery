@@ -17,7 +17,7 @@ class Admin_ManualGroupedWorks extends ObjectEditor {
 		return 'Manual Grouped Works';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new ManualGroupedWork();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
@@ -74,7 +74,7 @@ class Admin_ManualGroupedWorks extends ObjectEditor {
 		return UserAccount::userHasPermission('Manually Group and Ungroup Works');
 	}
 
-	function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions(?DataObject $existingObject): array {
 		$actions = parent::getAdditionalObjectActions($existingObject);
 		/** @var ManualGroupedWork $existingObject */
 		$permanentId = ManualGroupedWork::returnGroupedWorkPermanentId($existingObject->getGroupedWorkPermanentId());

@@ -19,7 +19,7 @@ class WebBuilder_WebResources extends ObjectEditor {
 		return 'Web Resources';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new WebResource();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
@@ -54,7 +54,7 @@ class WebBuilder_WebResources extends ObjectEditor {
 		return 'id';
 	}
 
-	function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions(?DataObject $existingObject): array {
 		return [];
 	}
 
@@ -85,7 +85,7 @@ class WebBuilder_WebResources extends ObjectEditor {
 		return 'web_builder';
 	}
 
-	function canCopy() {
+	function canCopy() : bool {
 		return $this->canAddNew();
 	}
 }

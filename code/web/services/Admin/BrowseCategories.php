@@ -18,7 +18,7 @@ class Admin_BrowseCategories extends ObjectEditor {
 		return 'Browse Categories';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new BrowseCategory();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
@@ -81,17 +81,17 @@ class Admin_BrowseCategories extends ObjectEditor {
 		]);
 	}
 
-	function canBatchEdit() {
+	function canBatchEdit() : bool {
 		return UserAccount::userHasPermission([
 			'Administer All Browse Categories',
 		]);
 	}
 
-	protected function getDefaultRecordsPerPage() {
+	protected function getDefaultRecordsPerPage() : int {
 		return 100;
 	}
 
-	protected function showQuickFilterOnPropertiesList() {
+	protected function showQuickFilterOnPropertiesList() : bool {
 		return true;
 	}
 

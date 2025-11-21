@@ -18,7 +18,7 @@ class Admin_ACISpeedpaySettings extends ObjectEditor {
 		return 'ACI Speedpay Settings';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$list = [];
 
 		$object = new ACISpeedpaySetting();

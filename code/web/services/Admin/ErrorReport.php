@@ -17,7 +17,7 @@ class Admin_ErrorReport extends ObjectEditor {
 		return 'Errors';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new AspenError();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
@@ -42,11 +42,11 @@ class Admin_ErrorReport extends ObjectEditor {
 		return 'id';
 	}
 
-	function canAddNew() {
+	function canAddNew() : bool {
 		return false;
 	}
 
-	function canDelete() {
+	function canDelete() : bool {
 		return true;
 	}
 

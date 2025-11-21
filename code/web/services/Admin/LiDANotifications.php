@@ -18,7 +18,7 @@ class Admin_LiDANotifications extends ObjectEditor {
 		return 'LiDA Notifications';
 	}
 
-	function canDelete() {
+	function canDelete() : bool {
 		return UserAccount::userHasPermission([
 			'Send Notifications to All Libraries',
 			'Send Notifications to All Locations',
@@ -28,7 +28,7 @@ class Admin_LiDANotifications extends ObjectEditor {
 		]);
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new LiDANotification();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
@@ -106,14 +106,4 @@ class Admin_LiDANotifications extends ObjectEditor {
 	function getInitializationJs(): string {
 		return 'AspenDiscovery.Admin.getUrlOptions(); AspenDiscovery.Admin.getDeepLinkFullPath()';
 	}
-
-	/*	public function getFilterFields($structure){
-			$filterFields = parent::getFilterFields($structure);
-
-			$locationList = Location::getLocationList(!UserAccount::userHasPermission('Send Notifications'));
-			$filterFields['locations'] = array('property' => 'locations', 'type' => 'enum', 'label' => 'Location', 'values' => $locationList, 'description' => 'Whether or not closed tickets are shown', 'readOnly'=>true);
-
-			ksort($filterFields);
-			return $filterFields;
-		}*/
 }

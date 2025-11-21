@@ -16,7 +16,7 @@ class AspenLiDA_NotificationsReport extends ObjectEditor {
 		return 'Notifications Report';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new UserNotification();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
@@ -41,11 +41,11 @@ class AspenLiDA_NotificationsReport extends ObjectEditor {
 		return 'id';
 	}
 
-	function canAddNew() {
+	function canAddNew() : bool {
 		return false;
 	}
 
-	function canDelete() {
+	function canDelete() : bool {
 		return false;
 	}
 
@@ -69,21 +69,21 @@ class AspenLiDA_NotificationsReport extends ObjectEditor {
 		return UserAccount::userHasPermission('View Notifications Reports');
 	}
 
-	function canBatchEdit() {
+	function canBatchEdit() : bool {
 		return false;
 	}
 
-	function canCompare() {
+	function canCompare() : bool {
 		return false;
 	}
 
-	public function canEdit(DataObject $object) {
+	public function canEdit() : bool {
 		return false;
 	}
 
-	function applyFilter(DataObject $object, string $fieldName, array $filter) {
+	function applyFilter(DataObject $object, string $fieldName, array $filter) : void {
 		if ($fieldName == 'user') {
-			$this->applySpecialFilter($object, $fieldName, $filter, [
+			$this->applySpecialFilter($object, $filter, [
 				'sourceTable' => 'user_notifications',
 				'sourceField' => 'userId',
 				'targetClass' => 'User',
@@ -92,7 +92,7 @@ class AspenLiDA_NotificationsReport extends ObjectEditor {
 				'compareFormat' => 'nameWithBarcode',
 			]);
 		} elseif ($fieldName == 'library') {
-			$this->applySpecialFilter($object, $fieldName, $filter, [
+			$this->applySpecialFilter($object, $filter, [
 				'sourceTable' => 'user_notifications',
 				'sourceField' => 'userId',
 				'targetClass' => 'User',
@@ -100,7 +100,7 @@ class AspenLiDA_NotificationsReport extends ObjectEditor {
 				'getCompareValueMethod' => 'getHomeLibrarySystemName',
 			]);
 		} elseif ($fieldName == 'device') {
-			$this->applySpecialFilter($object, $fieldName, $filter, [
+			$this->applySpecialFilter($object, $filter, [
 				'sourceTable' => 'user_notifications',
 				'sourceField' => 'pushToken',
 				'targetClass' => 'UserNotificationToken',

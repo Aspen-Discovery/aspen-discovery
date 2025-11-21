@@ -18,14 +18,14 @@ class Admin_SystemMessages extends ObjectEditor {
 		return 'System Messages';
 	}
 
-	function canDelete() {
+	function canDelete() : bool {
 		return UserAccount::userHasPermission([
 			'Administer All System Messages',
 			'Administer Library System Messages',
 		]);
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new SystemMessage();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
@@ -103,7 +103,7 @@ class Admin_SystemMessages extends ObjectEditor {
 		]);
 	}
 
-	function canCopy() {
+	function canCopy() : bool {
 		return $this->canAddNew();
 	}
 }

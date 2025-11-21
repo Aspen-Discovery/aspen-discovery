@@ -21,7 +21,7 @@ class CommunityEngagement_Rewards extends ObjectEditor {
 		return 'Rewards';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new Reward();
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$this->applyFilters($object);
@@ -51,7 +51,7 @@ class CommunityEngagement_Rewards extends ObjectEditor {
 		return 'id';
 	}
 
-	function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions(?DataObject $existingObject): array {
 		return [];
 	}
 

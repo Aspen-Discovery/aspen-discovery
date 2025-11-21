@@ -21,7 +21,7 @@ class ILS_CurbsidePickupSettings extends ObjectEditor {
 		return 'Curbside Pickup Settings';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$list = [];
 
 		$object = new CurbsidePickupSetting();

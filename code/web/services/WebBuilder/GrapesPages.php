@@ -19,7 +19,7 @@ class WebBuilder_GrapesPages extends ObjectEditor {
 		return 'Grapes Web Builder Pages';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new GrapesPage();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
@@ -54,7 +54,7 @@ class WebBuilder_GrapesPages extends ObjectEditor {
 		return 'id';
 	}
 
-	function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions(?DataObject $existingObject): array {
 		$objectActions = [];
 		if (!empty($existingObject) && $existingObject instanceof GrapesPage) {
 			$objectActions[] = [
@@ -97,19 +97,19 @@ class WebBuilder_GrapesPages extends ObjectEditor {
 		return 'web_builder';
 	}
 
-	public function canAddNew(){
+	public function canAddNew() : bool {
     	return true;
 	}
 
-	public function canCopy() {
+	public function canCopy() : bool {
 		return true;
 	}
 
-	public function canDelete() {
+	public function canDelete() : bool {
     	return true;
 	}
 
-	public function canExportToCSV() {
+	public function canExportToCSV() : bool {
     	return false;
 	}
 }

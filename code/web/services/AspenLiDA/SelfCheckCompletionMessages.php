@@ -20,7 +20,7 @@ class AspenLiDA_SelfCheckCompletionMessages extends ObjectEditor {
 		return 'Self Check Completion Messages';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$list = [];
 
 		$object = new SelfCheckCompletionMessage();

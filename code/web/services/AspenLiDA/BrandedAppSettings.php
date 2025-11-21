@@ -20,7 +20,7 @@ class AspenLiDA_BrandedAppSettings extends ObjectEditor {
 		return 'Branded App Settings';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$list = [];
 
 		$object = new BrandedAppSetting();

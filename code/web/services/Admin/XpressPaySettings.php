@@ -18,7 +18,7 @@ class Admin_XpressPaySettings extends ObjectEditor {
 		return 'Xpress-pay Settings';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$list = [];
 
 		$object = new XpressPaySetting();

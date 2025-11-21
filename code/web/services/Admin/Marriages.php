@@ -17,7 +17,7 @@ class Admin_Marriages extends ObjectEditor {
 		return 'Marriages';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new Marriage();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
@@ -39,18 +39,14 @@ class Admin_Marriages extends ObjectEditor {
 	}
 
 	function getPrimaryKeyColumn(): string {
-		return [
-			'personId',
-			'spouseName',
-			'date',
-		];
+		return 'marriageId';
 	}
 
 	function getIdKeyColumn(): string {
 		return 'marriageId';
 	}
 
-	function getRedirectLocation($objectAction, $curObject) {
+	function getRedirectLocation(string $objectAction, DataObject $curObject): ?string {
 		if ($curObject instanceof Marriage) {
 			return '/Person/' . $curObject->personId;
 		} else {
@@ -58,7 +54,7 @@ class Admin_Marriages extends ObjectEditor {
 		}
 	}
 
-	function showReturnToList() {
+	function showReturnToList(): bool {
 		return false;
 	}
 
@@ -76,7 +72,7 @@ class Admin_Marriages extends ObjectEditor {
 		return $breadcrumbs;
 	}
 
-	function display($mainContentTemplate, $pageTitle, $sidebarTemplate = 'Admin/admin-sidebar.tpl', $translateTitle = true) {
+	function display($mainContentTemplate, $pageTitle, $sidebarTemplate = 'Admin/admin-sidebar.tpl', $translateTitle = true) : void {
 		parent::display($mainContentTemplate, $pageTitle, '', false);
 	}
 

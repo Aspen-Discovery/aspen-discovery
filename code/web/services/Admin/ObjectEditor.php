@@ -1,13 +1,15 @@
 <?php
 
+use JetBrains\PhpStorm\NoReturn;
+
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/sys/User/PageDefaults.php';
 abstract class ObjectEditor extends Admin_Admin {
-	protected $activeObject;
-	protected $objectAction;
+	protected ?DataObject $activeObject;
+	protected ?string $objectAction;
 
-	function launch() {
+	function launch() : void {
 		global $interface;
 		global $activeLanguage;
 
@@ -22,7 +24,7 @@ abstract class ObjectEditor extends Admin_Admin {
 			$user->update();
 		}
 
-		$objectAction = isset($_REQUEST['objectAction']) ? $_REQUEST['objectAction'] : null;
+		$objectAction = $_REQUEST['objectAction'] ?? null;
 		$this->objectAction = $objectAction;
 		$interface->assign('context', $this->getContext());
 		$structure = $this->getObjectStructure($this->getContext());
@@ -82,7 +84,7 @@ abstract class ObjectEditor extends Admin_Admin {
 		} elseif ($objectAction == 'copy') {
 			$this->copyObject($structure);
 		} elseif ($objectAction == 'getCopyOptions') {
-			$this->getCopyOptions($structure);
+			$this->getCopyOptions();
 		} elseif ($objectAction == 'shareForm') {
 			$this->showShareForm();
 		} elseif ($objectAction == 'shareToCommunity') {
@@ -101,7 +103,7 @@ abstract class ObjectEditor extends Admin_Admin {
 			}
 		}
 		$template = $interface->getTemplate();
-		$this->display($interface->getTemplate(), $this->getPageTitle());
+		$this->display($template, $this->getPageTitle());
 	}
 
 	/**
@@ -125,9 +127,9 @@ abstract class ObjectEditor extends Admin_Admin {
 	 * @param int $recordsPerPage - Number of records to show per page
 	 * @return DataObject[]
 	 */
-	abstract function getAllObjects($page, $recordsPerPage): array;
+	abstract function getAllObjects(int $page, int $recordsPerPage): array;
 
-	protected $_numObjects = null;
+	protected ?int $_numObjects = null;
 
 	/**
 	 * Get a count of the number of objects so we can paginate as needed
@@ -224,7 +226,7 @@ abstract class ObjectEditor extends Admin_Admin {
 		return $newObject;
 	}
 
-	function setDefaultValues($object, $structure) {
+	function setDefaultValues($object, $structure) : void {
 		foreach ($structure as $property) {
 			$propertyName = $property['property'];
 			if (isset($_REQUEST[$propertyName])) {
@@ -237,18 +239,18 @@ abstract class ObjectEditor extends Admin_Admin {
 		}
 	}
 
-	function updateFromUI($object, $structure, $fieldLocks) {
+	function updateFromUI($object, $structure, $fieldLocks) : array {
 		require_once ROOT_DIR . '/sys/DataObjectUtil.php';
 		DataObjectUtil::updateFromUI($object, $structure, $fieldLocks);
 		return DataObjectUtil::validateObject($structure, $object);
 	}
 
-	function updateImagesAndFilesAfterInsert($object, $structure) {
+	function updateImagesAndFilesAfterInsert($object, $structure) : void {
 		require_once ROOT_DIR . '/sys/DataObjectUtil.php';
 		DataObjectUtil::updateImagesAndFilesAfterInsert($object, $structure);
 	}
 
-	function viewExistingObjects($structure) {
+	function viewExistingObjects($structure) : void {
 		global $interface;
 		$user = UserAccount::getActiveUserObj();
 		// Assign all context parameters for edit links.
@@ -347,7 +349,7 @@ abstract class ObjectEditor extends Admin_Admin {
 		}
 	}
 
-	function copyObject($structure) {
+	function copyObject($structure) : void {
 		global $interface;
 		if ($this->canCopy()) {
 			//Viewing an individual record, get the id to show
@@ -394,15 +396,22 @@ abstract class ObjectEditor extends Admin_Admin {
 		}
 	}
 
-	function getCopyOptions() {
+	function getCopyOptions() : void {
 		global $interface;
 		if ($this->canCopy()) {
 			header('Content-type: application/json');
 			header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 			header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
-			$id = isset($_REQUEST['id']) ? $_REQUEST['id'] : '';
+			$id = $_REQUEST['id'] ?? '';
 			if (empty($id) || $id < 0) {
-
+				//There is nothing to copy from, currently returns nothing
+				$results = [
+					'success' => false,
+					'message' => translate([
+						'text' => "You must provide an object id to copy from.",
+						'isAdminFacing' => true,
+					]),
+				];
 			}else{
 				$curObject = $this->getExistingObjectById($id);
 				$copyOptions = $this->getCopyOptionsFormStructure($curObject);
@@ -427,16 +436,17 @@ abstract class ObjectEditor extends Admin_Admin {
 							'isPublicFacing' => true,
 						]) . '</a>',
 				];
-				echo json_encode($results);
-				die();
+
 			}
+			echo json_encode($results);
+			die();
 
 		}else{
 			$interface->setTemplate('../Admin/noPermission.tpl');
 		}
 	}
 
-	function showShareForm($structure) {
+	function showShareForm() : void {
 		global $interface;
 		if (isset($_REQUEST['sourceId'])) {
 			$id = $_REQUEST['sourceId'];
@@ -459,7 +469,7 @@ abstract class ObjectEditor extends Admin_Admin {
 		}
 	}
 
-	function shareToCommunity($structure) {
+	function shareToCommunity() : void {
 		global $interface;
 		if (UserAccount::userHasPermission('Share Content with Community')) {
 			if (isset($_REQUEST['sourceId'])) {
@@ -487,12 +497,11 @@ abstract class ObjectEditor extends Admin_Admin {
 								'sharedByUserName' => UserAccount::getActiveUserObj()->displayName,
 								'data' => $jsonRepresentation,
 							];
-							$response = $curl->curlPostPage($systemVariables->communityContentUrl . '/API/CommunityAPI?method=addSharedContent', $body);
+							$curl->curlPostPage($systemVariables->communityContentUrl . '/API/CommunityAPI?method=addSharedContent', $body);
 							header("Location: /{$this->getModule()}/{$this->getToolName()}?objectAction=edit&id=$id");
 							exit;
 						} else {
-							$error = new AspenError('A community sharing URL has not been configured. You can configure it in System Variables.');
-							$interface->setTemplate('../error.tpl');
+							AspenError::raiseError('A community sharing URL has not been configured. You can configure it in System Variables.');
 						}
 
 					} else {
@@ -509,7 +518,7 @@ abstract class ObjectEditor extends Admin_Admin {
 		}
 	}
 
-	function importFromCommunity($structure) {
+	function importFromCommunity($structure) : void {
 		global $interface;
 		if (UserAccount::userHasPermission('Import Content from Community')) {
 			if (isset($_REQUEST['sourceId'])) {
@@ -558,7 +567,7 @@ abstract class ObjectEditor extends Admin_Admin {
 		}
 	}
 
-	function viewIndividualObject($structure) {
+	function viewIndividualObject($structure) : void {
 		global $interface;
 		//Viewing an individual record, get the id to show
 		if (isset($_SERVER['HTTP_REFERER'])) {
@@ -651,22 +660,8 @@ abstract class ObjectEditor extends Admin_Admin {
 		$interface->setTemplate('../Admin/objectEditor.tpl');
 	}
 
-	function getFormContentType($structure, $contentType = null) {
-		if ($contentType != null) {
-			return $contentType;
-		}
-		//Check to see if the request should be multipart/form-data
-		foreach ($structure as $property) {
-			if ($property['type'] == 'section') {
-				$contentType = DataObjectUtil::getFormContentType($property['properties'], $contentType);
-			} elseif ($property['type'] == 'image' || $property['type'] == 'file') {
-				$contentType = 'multipart/form-data';
-			}
-		}
-		return $contentType;
-	}
-
-	function editObject($objectAction, $structure) {
+	#[NoReturn]
+	function editObject($objectAction, $structure) : void {
 		$errorOccurred = false;
 		$user = UserAccount::getLoggedInUser();
 		$samePatron = true;
@@ -798,7 +793,7 @@ abstract class ObjectEditor extends Admin_Admin {
 					header("Location: /{$this->getModule()}/{$this->getToolName()}");
 				}
 			} else {
-				header("Location: {$redirectLocation}");
+				header("Location: $redirectLocation");
 			}
 		}
 		die();
@@ -809,38 +804,38 @@ abstract class ObjectEditor extends Admin_Admin {
 	 * @param DataObject $curObject
 	 * @return string|null
 	 */
-	function getRedirectLocation(/** @noinspection PhpUnusedParameterInspection */ $objectAction, $curObject) {
+	function getRedirectLocation(string $objectAction, DataObject $curObject) : ?string {
 		return null;
 	}
 
-	function showReturnToList() {
+	function showReturnToList() : bool {
 		return true;
 	}
 
 	function getModule(): string {
 		return 'Admin';
 	}
-	public function canAddNew() {
+	public function canAddNew() : bool {
 		return true;
 	}
 
-	public function canCopy() {
+	public function canCopy() : bool {
 		return false;
 	}
 
-	public function hasCopyOptions() {
+	public function hasCopyOptions() : bool {
 		return false;
 	}
 
-	public function canEdit(DataObject $object) {
+	public function canEdit() : bool {
 		return true;
 	}
 
-	public function canCompare() {
+	public function canCompare() : bool {
 		return true;
 	}
 
-	public function canDelete() {
+	public function canDelete() : bool {
 		return true;
 	}
 
@@ -858,11 +853,11 @@ abstract class ObjectEditor extends Admin_Admin {
 		return $this->canBatchDelete();
 	}
 
-	public function canBatchEdit() {
+	public function canBatchEdit() : bool {
 		return $this->getNumObjects() > 1;
 	}
 
-	public function canExportToCSV() {
+	public function canExportToCSV() : bool {
 		return true;
 	}
 
@@ -888,12 +883,12 @@ abstract class ObjectEditor extends Admin_Admin {
 
 	abstract function getDefaultSort(): string;
 
-	public function canFilter($objectStructure) {
+	public function canFilter($objectStructure) : bool {
 		$filterFields = $this->getFilterFields($objectStructure);
 		return ($this->getNumObjects() > 3) || (count($this->getAppliedFilters($filterFields)) > 0);
 	}
 
-	public function customListActions() {
+	public function customListActions() : array {
 		return [];
 	}
 
@@ -907,10 +902,10 @@ abstract class ObjectEditor extends Admin_Admin {
 	}
 
 	/**
-	 * @param DataObject $existingObject
+	 * @param ?DataObject $existingObject
 	 * @return array
 	 */
-	function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions(?DataObject $existingObject): array {
 		return [];
 	}
 
@@ -918,7 +913,7 @@ abstract class ObjectEditor extends Admin_Admin {
 		return '';
 	}
 
-	function getListInstructions() {
+	function getListInstructions() : string {
 		return $this->getInstructions();
 	}
 
@@ -926,15 +921,15 @@ abstract class ObjectEditor extends Admin_Admin {
 		return '';
 	}
 
-	function getInitializationAdditionalJs() {
+	function getInitializationAdditionalJs() : string {
 		return '';
 	}
 
-	function getOnSubmissionJS() {
+	function getOnSubmissionJS() : string {
 		return '';
 	}
 
-	function compareObjects($structure) {
+	function compareObjects($structure) : void {
 		global $interface;
 		$object1 = null;
 		$object2 = null;
@@ -976,7 +971,7 @@ abstract class ObjectEditor extends Admin_Admin {
 		$interface->setTemplate('../Admin/compareObjects.tpl');
 	}
 
-	function getLinkedObjectNotifications() {
+	function getLinkedObjectNotifications() : ?string {
 		$result = null;
 		if (!empty($_REQUEST['id'])){
 			if ($_REQUEST['action'] == 'WebResources') {
@@ -996,8 +991,7 @@ abstract class ObjectEditor extends Admin_Admin {
 						]);
 					}
 				}
-			}
-			else if ($_REQUEST['action'] == 'Placards') {
+			} else if ($_REQUEST['action'] == 'Placards') {
 				require_once ROOT_DIR . '/sys/LocalEnrichment/Placard.php';
 				$placard = new Placard();
 				$placard->id = $_REQUEST['id'];
@@ -1026,7 +1020,7 @@ abstract class ObjectEditor extends Admin_Admin {
 		return $result;
 	}
 
-	function getEditFormInstructions() {
+	function getEditFormInstructions() : ?string {
 		global $activeLanguage;
 		$result = null;
 		if (!empty($_REQUEST['id'])) {
@@ -1037,9 +1031,9 @@ abstract class ObjectEditor extends Admin_Admin {
 				if ($event->find(true)) {
 					require_once ROOT_DIR . '/sys/Events/EventType.php';
 					$eventType = new EventType();
-					$eventType->id = $event->eventType;
+					$eventType->id = $event->eventTypeId;
 					if ($eventType->find(true)) {
-						$result = $eventType->getTextBlockTranslation('editFormInstructions', $activeLanguage->code, true);
+						$result = $eventType->getTextBlockTranslation('editFormInstructions', $activeLanguage->code);
 					}
 				}
 			}
@@ -1182,7 +1176,7 @@ abstract class ObjectEditor extends Admin_Admin {
 		}
 	}
 
-	public function getBatchUpdateFields($structure) {
+	public function getBatchUpdateFields($structure) : array {
 		$batchFormatFields = [];
 		$structure = $this->applyPermissionsToObjectStructure($structure);
 		foreach ($structure as $field) {
@@ -1192,19 +1186,19 @@ abstract class ObjectEditor extends Admin_Admin {
 		return $batchFormatFields;
 	}
 
-	public function getSortableFields($structure) {
+	public function getSortableFields($structure) : array {
 		$sortFields = [];
 		$structure = $this->applyPermissionsToObjectStructure($structure);
-		foreach ($structure as $fieldName => $field) {
+		foreach ($structure as $field) {
 			$this->addFieldToSortableFieldsArray($sortFields, $field);
 		}
 		ksort($sortFields);
 		return $sortFields;
 	}
 
-	private function addFieldToSortableFieldsArray(&$sortableFields, $field) {
+	private function addFieldToSortableFieldsArray(&$sortableFields, $field) : void {
 		if ($field['type'] == 'section') {
-			foreach ($field['properties'] as $subFieldName => $subField) {
+			foreach ($field['properties'] as $subField) {
 				$this->addFieldToSortableFieldsArray($batchFormatFields, $subField);
 			}
 		} else {
@@ -1226,19 +1220,19 @@ abstract class ObjectEditor extends Admin_Admin {
 		}
 	}
 
-	public function getFilterFields($structure) {
+	public function getFilterFields($structure) : array {
 		$filterFields = [];
 		$structure = $this->applyPermissionsToObjectStructure($structure);
-		foreach ($structure as $fieldName => $field) {
+		foreach ($structure as $field) {
 			$this->addFieldToFilterFieldsArray($filterFields, $field);
 		}
 		ksort($filterFields);
 		return $filterFields;
 	}
 
-	private function addFieldToFilterFieldsArray(&$filterFields, $field) {
+	private function addFieldToFilterFieldsArray(&$filterFields, $field) : void {
 		if ($field['type'] == 'section') {
-			foreach ($field['properties'] as $subFieldName => $subField) {
+			foreach ($field['properties'] as $subField) {
 				$this->addFieldToFilterFieldsArray($filterFields, $subField);
 			}
 		} else {
@@ -1269,15 +1263,15 @@ abstract class ObjectEditor extends Admin_Admin {
 		}
 	}
 
-	public function getAppliedFilters($filterFields) {
+	public function getAppliedFilters($filterFields) : array {
 		$appliedFilters = [];
 		if (isset($_REQUEST['filterType'])) {
 			foreach ($_REQUEST['filterType'] as $fieldName => $value) {
 				$appliedFilters[$fieldName] = [
 					'fieldName' => $fieldName,
 					'filterType' => $value,
-					'filterValue' => isset($_REQUEST['filterValue'][$fieldName]) ? $_REQUEST['filterValue'][$fieldName] : '',
-					'filterValue2' => isset($_REQUEST['filterValue2'][$fieldName]) ? $_REQUEST['filterValue2'][$fieldName] : '',
+					'filterValue' => $_REQUEST['filterValue'][$fieldName] ?? '',
+					'filterValue2' => $_REQUEST['filterValue2'][$fieldName] ?? '',
 					'field' => $filterFields[$fieldName],
 				];
 			}
@@ -1292,7 +1286,8 @@ abstract class ObjectEditor extends Admin_Admin {
 		return [];
 	}
 
-	function applyFilters(DataObject $object) {
+	function applyFilters(DataObject $object) : void {
+		/** @noinspection PhpPossiblePolymorphicInvocationInspection */
 		$filterFields = $this->getFilterFields($object::getObjectStructure($this->getContext()));
 		$appliedFilters = $this->getAppliedFilters($filterFields);
 		foreach ($appliedFilters as $fieldName => $filter) {
@@ -1300,7 +1295,7 @@ abstract class ObjectEditor extends Admin_Admin {
 		}
 	}
 
-	function applyFilter(DataObject $object, string $fieldName, array $filter) {
+	function applyFilter(DataObject $object, string $fieldName, array $filter) : void {
 		if ($filter['filterType'] == 'matches') {
 			if ($filter['field']['type'] == 'enum' && $filter['filterValue'] == 'all_values') {
 				//Skip this value
@@ -1337,7 +1332,7 @@ abstract class ObjectEditor extends Admin_Admin {
 		}
 	}
 
-	protected function applySpecialFilter($object, $fieldName, $filter, $filterOptions = []) {
+	protected function applySpecialFilter($object, $filter, $filterOptions = []) : void {
 		$defaults = [
 			'sourceTable' => '',
 			'sourceField' => '',
@@ -1348,7 +1343,7 @@ abstract class ObjectEditor extends Admin_Admin {
 		];
 		$options = array_merge($defaults, $filterOptions);
 
-		$matchings = [];
+		$matchingValues = [];
 
 		if (($filter['filterType'] == 'matches' && $filter['filterValue'] == '')) {
 			$object->whereAdd("{$options['sourceField']} IS NULL");
@@ -1376,48 +1371,48 @@ abstract class ObjectEditor extends Admin_Admin {
 
 			if ($filter['filterType'] == 'matches') {
 				if (strcasecmp($compareValue, $filter['filterValue']) == 0) {
-					$matchings[] = $targetObject->{$options['targetField']};
+					$matchingValues[] = $targetObject->{$options['targetField']};
 				}
 			} elseif ($filter['filterType'] == 'contains') {
 				if (stripos($compareValue, $filter['filterValue']) !== false) {
-					$matchings[] = $targetObject->{$options['targetField']};
+					$matchingValues[] = $targetObject->{$options['targetField']};
 				}
 			} elseif ($filter['filterType'] == 'startsWith') {
 				if (stripos($compareValue, $filter['filterValue']) === 0) {
-					$matchings[] = $targetObject->{$options['targetField']};
+					$matchingValues[] = $targetObject->{$options['targetField']};
 				}
 			} elseif ($filter['filterType'] == 'beforeTime') {
 				$filterTime = strtotime($filter['filterValue2']);
 				if ($filterTime !== false && $compareValue < $filterTime) {
-					$matchings[] = $targetObject->{$options['targetField']};
+					$matchingValues[] = $targetObject->{$options['targetField']};
 				}
 			} elseif ($filter['filterType'] == 'afterTime') {
 				$filterTime = strtotime($filter['filterValue']);
 				if ($filterTime !== false && $compareValue > $filterTime) {
-					$matchings[] = $targetObject->{$options['targetField']};
+					$matchingValues[] = $targetObject->{$options['targetField']};
 				}
 			} elseif ($filter['filterType'] == 'betweenTimes') {
 				$startTime = strtotime($filter['filterValue']);
 				$endTime = strtotime($filter['filterValue2']);
 				if ($startTime !== false && $endTime !== false && $compareValue >= $startTime && $compareValue <= $endTime) {
-					$matchings[] = $targetObject->{$options['targetField']};
+					$matchingValues[] = $targetObject->{$options['targetField']};
 				}
 			}
 		}
 
-		if (empty($matchings)) {
-				$object->whereAdd("{$options['sourceField']} = ''");
+		if (empty($matchingValues)) {
+			$object->whereAdd("{$options['sourceField']} = ''");
 		} else {
 			$escapedValues = array_map(function($value) {
 				return "'" . addslashes($value) . "'";
-			}, $matchings);
+			}, $matchingValues);
 			$object->whereAdd("{$options['sourceField']} IN (" . implode(',', $escapedValues) . ")");
 		}
 	}
 
-	private function addFieldToBatchUpdateFieldsArray(&$batchFormatFields, $field) {
+	private function addFieldToBatchUpdateFieldsArray(&$batchFormatFields, $field) : void {
 		if ($field['type'] == 'section') {
-			foreach ($field['properties'] as $subFieldName => $subField) {
+			foreach ($field['properties'] as $subField) {
 				$this->addFieldToBatchUpdateFieldsArray($batchFormatFields, $subField);
 			}
 		} else {
@@ -1438,19 +1433,19 @@ abstract class ObjectEditor extends Admin_Admin {
 		}
 	}
 
-	protected function getDefaultRecordsPerPage() {
+	protected function getDefaultRecordsPerPage() : int {
 		return 25;
 	}
 
-	protected function showQuickFilterOnPropertiesList() {
+	protected function showQuickFilterOnPropertiesList() : bool {
 		return false;
 	}
 
-	protected function supportsPagination() {
+	protected function supportsPagination() : bool {
 		return true;
 	}
 
-	protected function limitToObjectsForLibrary(&$object, $linkObjectType, $linkProperty) {
+	protected function limitToObjectsForLibrary($object, $linkObjectType, $linkProperty) : bool {
 		$userHasExistingObjects = true;
 		$libraries = Library::getLibraryList(true);
 		$objectsForLibrary = [];
@@ -1470,7 +1465,7 @@ abstract class ObjectEditor extends Admin_Admin {
 		return $userHasExistingObjects;
 	}
 
-	protected function applyPermissionsToObjectStructure(array $structure) {
+	protected function applyPermissionsToObjectStructure(array $structure) : array {
 		foreach ($structure as $key => &$property) {
 			if ($property['type'] == 'section') {
 				$property['properties'] = $this->applyPermissionsToObjectStructure($property['properties']);
@@ -1500,7 +1495,7 @@ abstract class ObjectEditor extends Admin_Admin {
 		return $structure;
 	}
 
-	protected function showHistoryLinks() {
+	protected function showHistoryLinks() : bool {
 		return true;
 	}
 
@@ -1517,15 +1512,15 @@ abstract class ObjectEditor extends Admin_Admin {
 		return $this->objectAction ?? '';
 	}
 
-	public function canShareToCommunity() {
+	public function canShareToCommunity() : bool {
 		return false;
 	}
 
-	public function canFetchFromCommunity() {
+	public function canFetchFromCommunity() : bool {
 		return false;
 	}
 
-	public function hasCommunityConnection() {
+	public function hasCommunityConnection() : bool {
 		//Send the translation to the greenhouse
 		require_once ROOT_DIR . '/sys/SystemVariables.php';
 		$systemVariables = SystemVariables::getSystemVariables();
@@ -1536,7 +1531,7 @@ abstract class ObjectEditor extends Admin_Admin {
 		}
 	}
 
-	public function allowSearchingProperties($structure) {
+	public function allowSearchingProperties($structure) : bool {
 		$hasSections = false;
 		foreach ($structure as $property) {
 			if ($property['type'] == 'section') {
@@ -1554,7 +1549,7 @@ abstract class ObjectEditor extends Admin_Admin {
 			$fieldLock->module = $this->getModule();
 			$fieldLock->toolName = $this->getToolName();
 			$fieldLocks = $fieldLock->fetchAll('id', 'field');
-		}catch (Exception $e) {
+		}catch (Exception) {
 			//Nothing since it's not setup yet
 		}
 		return $fieldLocks;
@@ -1565,13 +1560,13 @@ abstract class ObjectEditor extends Admin_Admin {
 	}
 
 	public function applyFieldLocksToObjectStructure($structure, $fieldLocks, $userCanChangeFieldLocks){
-		foreach ($structure as $key => &$property) {
+		foreach ($structure as &$property) {
 			if ($property['type'] == 'section') {
 				$property['properties'] = $this->applyFieldLocksToObjectStructure($property['properties'], $fieldLocks, $userCanChangeFieldLocks);
 			} else {
-				//Any field can be locked by default, but
-				if (array_key_exists('canLock', $property) && $property['canLock'] == false) {
-					$canLockField = true;
+				//Any field can be locked by default, but can override by setting canLock to false
+				if (array_key_exists('canLock', $property) && !$property['canLock']) {
+					$canLockField = false;
 				}else{
 					$canLockField = true;
 				}
@@ -1590,15 +1585,15 @@ abstract class ObjectEditor extends Admin_Admin {
 		return $structure;
 	}
 
-	public function getCopyNotes() {
+	public function getCopyNotes() : string {
 		return ''
 ;	}
 
-	public function getCopyOptionsFormStructure($activeObject) {
+	public function getCopyOptionsFormStructure($activeObject) : array {
 		return [];
 	}
 
-	function getHiddenFields() {
+	function getHiddenFields() : array {
 		return [];
 	}
 

@@ -20,9 +20,8 @@ class WebBuilder_CustomFormSubmissions extends ObjectEditor {
 		return 'Form Submissions';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		global $interface;
-		$formSubmissionStructure = $this->getObjectStructure();
 		$object = new CustomFormSubmission();
 		if (isset($_REQUEST['formId'])) {
 			$formId = $_REQUEST['formId'];
@@ -81,11 +80,11 @@ class WebBuilder_CustomFormSubmissions extends ObjectEditor {
 		return 'id';
 	}
 
-	function canEdit(DataObject $object) {
+	function canEdit() : bool {
 		return false;
 	}
 
-	function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions(?DataObject $existingObject): array {
 		$objectActions = [];
 		if (!empty($existingObject) && $existingObject instanceof CustomFormSubmission && !empty($existingObject->id)) {
 			$objectActions[] = [
@@ -126,11 +125,11 @@ class WebBuilder_CustomFormSubmissions extends ObjectEditor {
 		return 'web_builder';
 	}
 
-	public function canAddNew() {
+	public function canAddNew() : bool {
 		return false;
 	}
 
-	function getHiddenFields() {
+	function getHiddenFields() : array {
 		if (!empty($_REQUEST['formId'])) {
 			return ['formId' => $_REQUEST['formId']];
 		}else{

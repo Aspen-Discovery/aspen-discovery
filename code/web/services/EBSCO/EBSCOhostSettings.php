@@ -21,7 +21,7 @@ class EBSCO_EBSCOhostSettings extends ObjectEditor {
 		return 'EBSCOhost Settings';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new EBSCOhostSetting();
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$this->applyFilters($object);
@@ -50,7 +50,7 @@ class EBSCO_EBSCOhostSettings extends ObjectEditor {
 		return 'id';
 	}
 
-	function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions(?DataObject $existingObject): array {
 		return [];
 	}
 
@@ -74,9 +74,9 @@ class EBSCO_EBSCOhostSettings extends ObjectEditor {
 		return UserAccount::userHasPermission('Administer EBSCOhost Settings');
 	}
 
-	function viewIndividualObject($structure) {
+	function viewIndividualObject($structure): void {
 		//Update the list of databases when the user edits
-		$id = isset($_REQUEST['id']) ? $_REQUEST['id'] : '';
+		$id = $_REQUEST['id'] ?? '';
 		if (!empty($id) && $id > 0) {
 			/** @var EBSCOhostSetting $curObject */
 			$curObject = $this->getExistingObjectById($id);

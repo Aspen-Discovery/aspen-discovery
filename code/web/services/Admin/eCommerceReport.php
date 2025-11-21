@@ -16,14 +16,13 @@ class Admin_eCommerceReport extends ObjectEditor {
 		return 'eCommerce Report';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new UserPayment();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$objectList = [];
 		if (UserAccount::userHasPermission('View eCommerce Reports for Home Library')) {
-			$homeLibrary = Library::getPatronHomeLibrary()->libraryId;
 			$adminHomeLibraryList = Library::getLibraryList(true);
 			$adminHomeLibraryListIds = array_keys($adminHomeLibraryList);
 			$adminHomeLibraryLocationList = Location::getLocationList(true);
@@ -52,15 +51,15 @@ class Admin_eCommerceReport extends ObjectEditor {
 		return 'id';
 	}
 
-	function canAddNew() {
+	function canAddNew() : bool {
 		return false;
 	}
 
-	function canDelete() {
+	function canDelete() : bool {
 		return false;
 	}
 
-    function canExportToCSV() {
+    function canExportToCSV() : bool {
         return true;
     }
 
@@ -87,9 +86,9 @@ class Admin_eCommerceReport extends ObjectEditor {
         ]);
 	}
 
-	function applyFilter(DataObject $object, string $fieldName, array $filter) {
+	function applyFilter(DataObject $object, string $fieldName, array $filter) : void {
 		if ($fieldName == 'user') {
-			$this->applySpecialFilter($object, $fieldName, $filter, [
+			$this->applySpecialFilter($object, $filter, [
 				'sourceTable' => 'user_payments',
 				'sourceField' => 'userId',
 				'targetClass' => 'User',
@@ -98,7 +97,7 @@ class Admin_eCommerceReport extends ObjectEditor {
 				'compareFormat' => 'nameWithBarcode',
 			]);
 		} elseif ($fieldName == 'library') {
-			$this->applySpecialFilter($object, $fieldName, $filter, [
+			$this->applySpecialFilter($object, $filter, [
 				'sourceTable' => 'user_payments',
 				'sourceField' => 'userId',
 				'targetClass' => 'User',

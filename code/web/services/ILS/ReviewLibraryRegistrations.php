@@ -20,14 +20,14 @@ class ILS_ReviewLibraryRegistrations extends ObjectEditor {
 		return 'Review Library Registrations';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new SierraRegistration();
 		$user = UserAccount::getLoggedInUser();
 		if (!UserAccount::userHasPermission('Review Self Registrations for All Libraries')) {
 			$includedLocations = Library::getLibraryList(true);
 			$additionalAdministrationLocations = $user->getAdditionalAdministrationLocations();
 			$includedLocations = $includedLocations + $additionalAdministrationLocations;
-			$object->whereAddIn("libraryId", array_keys($includedLocations), false, 'AND');
+			$object->whereAddIn("libraryId", array_keys($includedLocations), false);
 		}
 
 		$list = [];
@@ -86,7 +86,7 @@ class ILS_ReviewLibraryRegistrations extends ObjectEditor {
 		return false;
 	}
 
-	function viewIndividualObject($structure) {
+	function viewIndividualObject($structure): void {
 		global $interface;
 		$interface->assign('saveButtonText', translate(['text' => 'Approve Registration', 'isAdminFacing' => true]));
 		parent::viewIndividualObject($structure);
@@ -164,7 +164,7 @@ class ILS_ReviewLibraryRegistrations extends ObjectEditor {
 		];
 	}
 
-	function getPatronData($list) {
+	function getPatronData($list): array {
 		global $library;
 		$accountProfile = $library->getAccountProfile();
 		$catalogDriverName = trim($accountProfile->driver);

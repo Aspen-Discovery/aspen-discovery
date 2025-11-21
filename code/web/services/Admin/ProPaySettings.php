@@ -18,7 +18,7 @@ class Admin_ProPaySettings extends ObjectEditor {
 		return 'ProPay Settings';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$list = [];
 
 		$object = new ProPaySetting();

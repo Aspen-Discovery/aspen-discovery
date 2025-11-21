@@ -95,7 +95,7 @@ class ILS_IndexingProfiles extends ObjectEditor {
 		return 'ILS Indexing Information';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$list = [];
 
 		$object = new IndexingProfile();
@@ -138,7 +138,7 @@ class ILS_IndexingProfiles extends ObjectEditor {
 		return 'https://help.aspendiscovery.org/ilsintegration';
 	}
 
-	function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions(?DataObject $existingObject): array {
 		$actions = [];
 		if ($existingObject instanceof IndexingProfile && $existingObject->id != '') {
 			$actions[] = [

@@ -18,7 +18,7 @@ class Admin_InvoiceCloudSettings extends ObjectEditor {
 		return 'InvoiceCloud Settings';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$list = [];
 
 		$object = new InvoiceCloudSetting();

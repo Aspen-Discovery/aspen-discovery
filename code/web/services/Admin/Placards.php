@@ -18,14 +18,14 @@ class Admin_Placards extends ObjectEditor {
 		return 'Placards';
 	}
 
-	function canDelete() {
+	function canDelete() : bool {
 		return UserAccount::userHasPermission([
 			'Administer All Placards',
 			'Administer Library Placards',
 		]);
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new Placard();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
@@ -109,14 +109,14 @@ class Admin_Placards extends ObjectEditor {
 		]);
 	}
 
-	function canAddNew() {
+	function canAddNew() : bool {
 		return UserAccount::userHasPermission([
 			'Administer All Placards',
 			'Administer Library Placards',
 		]);
 	}
 
-	public function canCopy() {
+	public function canCopy() : bool {
 		return $this->canAddNew();
 	}
 }

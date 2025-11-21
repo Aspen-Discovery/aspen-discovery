@@ -16,7 +16,7 @@ class Admin_HideSubjectFacets extends ObjectEditor {
 		return 'Hidden Subjects';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new HideSubjectFacet();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);

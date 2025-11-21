@@ -18,7 +18,7 @@ class Admin_WorldPaySettings extends ObjectEditor {
 		return 'FIS WorldPay Settings';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$list = [];
 
 		$object = new WorldPaySetting();

@@ -19,18 +19,15 @@ class WebBuilder_WebResourceSettings extends ObjectEditor {
 		return 'Web Resource Settings';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new WebResourcesSetting();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
-		$userHasExistingObjects = true;
 		$objectList = [];
-		if ($userHasExistingObjects) {
-			$object->find();
-			while ($object->fetch()) {
-				$objectList[$object->id] = clone $object;
-			}
+		$object->find();
+		while ($object->fetch()) {
+			$objectList[$object->id] = clone $object;
 		}
 		return $objectList;
 	}
@@ -51,7 +48,7 @@ class WebBuilder_WebResourceSettings extends ObjectEditor {
 		return 'id';
 	}
 
-	function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions(?DataObject $existingObject): array {
 		return [];
 	}
 
@@ -77,7 +74,7 @@ class WebBuilder_WebResourceSettings extends ObjectEditor {
 		return 'web_builder';
 	}
 
-	function canCopy() {
+	function canCopy() : bool {
 		return $this->canAddNew();
 	}
 }

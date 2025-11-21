@@ -19,7 +19,7 @@ class WebBuilder_StaffMembers extends ObjectEditor {
 		return 'Staff Members';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new StaffMember();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
@@ -52,7 +52,7 @@ class WebBuilder_StaffMembers extends ObjectEditor {
 		return 'id';
 	}
 
-	function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions(?DataObject $existingObject): array {
 		return [];
 	}
 

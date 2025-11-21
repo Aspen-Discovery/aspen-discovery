@@ -19,8 +19,7 @@ class WebBuilder_Images extends ObjectEditor {
 		return 'Uploaded Images';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
-		$user = UserAccount::getLoggedInUser();
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new ImageUpload();
 		$object->type = 'web_builder_image';
 		$this->applyFilters($object);
@@ -47,7 +46,7 @@ class WebBuilder_Images extends ObjectEditor {
 		return 'title asc';
 	}
 
-	function updateFromUI($object, $structure, $fieldLocks) {
+	function updateFromUI($object, $structure, $fieldLocks): array {
 		$object->type = 'web_builder_image';
 		return parent::updateFromUI($object, $structure, $fieldLocks);
 	}
@@ -66,13 +65,9 @@ class WebBuilder_Images extends ObjectEditor {
 		return 'id';
 	}
 
-	/**
-	 * @param FileUpload $existingObject
-	 * @return array
-	 */
-	function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions(?DataObject $existingObject): array {
 		$objectActions = [];
-		if (!empty($existingObject) && !empty($existingObject->id)) {
+		if ($existingObject instanceof FileUpload && !empty($existingObject->id)) {
 			$objectActions[] = [
 				'text' => 'View Image',
 				'url' => '/WebBuilder/ViewImage?id=' . $existingObject->id,

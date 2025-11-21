@@ -3,7 +3,7 @@ require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/WebBuilder/PortalRow.php';
 
 class WebBuilder_PortalCells extends ObjectEditor {
-	function launch() {
+	function launch() : void {
 		global $interface;
 		$interface->assign('inPageEditor', true);
 		parent::launch();
@@ -25,7 +25,7 @@ class WebBuilder_PortalCells extends ObjectEditor {
 		return 'WebBuilder Portal Cells';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new PortalCell();
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$this->applyFilters($object);
@@ -57,7 +57,7 @@ class WebBuilder_PortalCells extends ObjectEditor {
 		return 'id';
 	}
 
-	function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions(?DataObject $existingObject): array {
 		return [];
 	}
 
@@ -70,7 +70,7 @@ class WebBuilder_PortalCells extends ObjectEditor {
 	 * @param DataObject $curObject
 	 * @return string|null
 	 */
-	function getRedirectLocation($objectAction, $curObject) {
+	function getRedirectLocation(string $objectAction, DataObject $curObject): ?string {
 		if ($curObject instanceof PortalCell) {
 			$portalRow = $curObject->getPortalRow();
 			return '/WebBuilder/PortalPages?objectAction=edit&id=' . $portalRow->portalPageId;
@@ -83,7 +83,7 @@ class WebBuilder_PortalCells extends ObjectEditor {
 		return 'AspenDiscovery.WebBuilder.getPortalCellValuesForSource()';
 	}
 
-	function getInitializationAdditionalJs() {
+	function getInitializationAdditionalJs() : string {
 		return 'return AspenDiscovery.Admin.updateMakeCellAccordion();';
 	}
 

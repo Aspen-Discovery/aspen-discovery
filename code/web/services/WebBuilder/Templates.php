@@ -35,45 +35,21 @@ class WebBuilder_Templates  extends ObjectEditor{
 		return 'id';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
     	$object = new GrapesTemplate();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
-		$userHasExistingObjects = true;
 		$objectList = [];
-		if ($userHasExistingObjects) {
-			$object->find();
-			while ($object->fetch()) {
-				$objectList[$object->id] = clone $object;
-			}
+		$object->find();
+		while ($object->fetch()) {
+			$objectList[$object->id] = clone $object;
 		}
 		return $objectList;
 	}
 
-	function getTemplateById($id) {
-    	$template = new GrapesTemplate();
-    	$template->find();
-    	while ($template->fetch()){
-			if ($template->id == $id) {
-				return clone $template;
-    		}
-    	}
-		return null;
-	}
-
-	function getTemplateByName($templateName) {
-    	$template = new GrapesTemplate();
-    	$template->find();
-    	while ($template->fetch()){
-        	if ($template->templateName == $templateName) {
-            	return clone $template;
-			}
-		}
-		return null;
-	}
-
-	function saveAsTemplate(){
+	/** @noinspection PhpUnused */
+	function saveAsTemplate(): void {
     	$newGrapesTemplate = json_decode(file_get_contents("php://input"), true);
     	$html = $newGrapesTemplate['html'];
 		$css = $newGrapesTemplate['css'];
@@ -89,19 +65,19 @@ class WebBuilder_Templates  extends ObjectEditor{
     	return true;
 	}
 
-	public function canAddNew(){
+	public function canAddNew() : bool {
     	return true;
 	}
 
-	public function canCopy() {
+	public function canCopy() : bool {
 		return true;
 	}
 
-	public function canDelete() {
+	public function canDelete() : bool {
     	return true;
 	}
 
-	public function canExportToCSV() {
+	public function canExportToCSV() : bool {
     	return false;
 	}
 
@@ -109,7 +85,7 @@ class WebBuilder_Templates  extends ObjectEditor{
 		return 'web_builder';
 	}
 
-	function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions(?DataObject $existingObject): array {
 		$objectActions = [];
 		if (!empty($existingObject) && $existingObject instanceof GrapesTemplate && !empty($existingObject->id)){
 			$objectActions[] = [

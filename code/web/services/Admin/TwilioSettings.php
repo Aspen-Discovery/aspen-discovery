@@ -21,7 +21,7 @@ class Admin_TwilioSettings extends ObjectEditor {
 		return 'Twilio Settings';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new TwilioSetting();
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$this->applyFilters($object);

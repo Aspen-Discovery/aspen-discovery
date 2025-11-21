@@ -22,7 +22,7 @@ class Admin_ReplacementCosts extends ObjectEditor {
 		return 'Replacement Costs';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new ReplacementCost();
 
 		$this->applyFilters($object);

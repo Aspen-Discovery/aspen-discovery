@@ -1709,7 +1709,7 @@ class User extends DataObject {
 	 * @param $list UserList object of the user list to check permission for
 	 * @return bool true if this user can edit passed list
 	 */
-	function canEditList($list) {
+	function canEditList($list) : bool {
 		if (($this->id == $list->user_id) || $this->hasPermission('Edit All Lists')) {
 			return true;
 		}

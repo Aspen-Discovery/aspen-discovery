@@ -67,7 +67,7 @@ class SideLoads_SideLoads extends ObjectEditor {
 		return 'Side Loaded Collections';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$list = [];
 
 		$object = new SideLoad();
@@ -107,7 +107,7 @@ class SideLoads_SideLoads extends ObjectEditor {
 		return 'https://help.aspendiscovery.org/help/integration/sideload';
 	}
 
-	function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions(?DataObject $existingObject): array {
 		$actions = [];
 		if ($existingObject instanceof SideLoad) {
 			if ($existingObject->id != '') {

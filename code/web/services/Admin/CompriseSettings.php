@@ -18,7 +18,7 @@ class Admin_CompriseSettings extends ObjectEditor {
 		return 'Comprise SMARTPAY Settings';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$list = [];
 
 		$object = new CompriseSetting();

@@ -20,7 +20,7 @@ class WebBuilder_QuickPollSubmissions extends ObjectEditor {
 		return 'Quick Poll Submissions';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		global $interface;
 		$object = new QuickPollSubmission();
 		if (!empty($_REQUEST['pollId'])) {
@@ -60,11 +60,11 @@ class WebBuilder_QuickPollSubmissions extends ObjectEditor {
 		return 'id';
 	}
 
-	function canEdit(DataObject $object) {
+	function canEdit() : bool {
 		return false;
 	}
 
-	function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions(?DataObject $existingObject): array {
 		$objectActions = [];
 		if (!empty($existingObject) && $existingObject instanceof QuickPollSubmission && !empty($existingObject->id)) {
 			$objectActions[] = [

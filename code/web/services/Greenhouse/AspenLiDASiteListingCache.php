@@ -59,7 +59,7 @@ class Greenhouse_AspenLiDASiteListingCache extends Admin_Admin {
 	}
 
 	/** @noinspection PhpUnusedParameterInspection */
-	function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions(?DataObject $existingObject): array {
 		return [];
 	}
 

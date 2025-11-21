@@ -18,7 +18,7 @@ class Admin_StripeSettings extends ObjectEditor {
 		return 'Stripe Settings';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$list = [];
 
 		$object = new StripeSetting();

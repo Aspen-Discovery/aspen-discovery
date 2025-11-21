@@ -21,7 +21,7 @@ class PalaceProject_Scopes extends ObjectEditor {
 		return 'Palace Project Scopes';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new PalaceProjectScope();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
@@ -50,7 +50,7 @@ class PalaceProject_Scopes extends ObjectEditor {
 		return 'id';
 	}
 
-	function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions(?DataObject $existingObject): array {
 		return [];
 	}
 

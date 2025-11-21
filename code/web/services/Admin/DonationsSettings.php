@@ -22,7 +22,7 @@ class Admin_DonationsSettings extends ObjectEditor {
 		return 'Donations Settings';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$list = [];
 
 		$object = new DonationsSetting();

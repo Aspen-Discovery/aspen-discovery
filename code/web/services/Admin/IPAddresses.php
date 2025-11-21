@@ -17,7 +17,7 @@ class Admin_IPAddresses extends ObjectEditor {
 		return 'Location IP Addresses';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new IPAddress();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
@@ -66,7 +66,7 @@ class Admin_IPAddresses extends ObjectEditor {
 		return UserAccount::userHasPermission('Administer IP Addresses');
 	}
 
-	protected function getDefaultRecordsPerPage() {
+	protected function getDefaultRecordsPerPage() : int {
 		return 100;
 	}
 }

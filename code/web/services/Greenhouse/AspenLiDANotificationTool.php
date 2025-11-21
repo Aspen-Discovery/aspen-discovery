@@ -6,7 +6,7 @@ require_once ROOT_DIR . '/sys/Greenhouse/AspenSiteCache.php';
 require_once ROOT_DIR . '/sys/CurlWrapper.php';
 
 class Greenhouse_AspenLiDANotificationTool extends Admin_Admin {
-	function launch() {
+	function launch() : void {
 		global $interface;
 		$interface->assign('instructions', $this->getInstructions());
 
@@ -35,8 +35,8 @@ class Greenhouse_AspenLiDANotificationTool extends Admin_Admin {
 		$this->display('aspenLiDANotificationTool.tpl', 'Aspen LiDA Notification Tool');
 	}
 
-	function easy_printr($section, &$var) {
-		$contents = "<pre id='{$section}'>";
+	function easy_printr($section, $var): string {
+		$contents = "<pre id='$section'>";
 		$formattedContents = print_r($var, true);
 		if ($formattedContents !== false) {
 			$contents .= $formattedContents;
@@ -45,12 +45,8 @@ class Greenhouse_AspenLiDANotificationTool extends Admin_Admin {
 		return $contents;
 	}
 
-	public function display($mainContentTemplate, $pageTitle, $sidebarTemplate = 'Greenhouse/greenhouse-sidebar.tpl', $translateTitle = true) {
+	public function display($mainContentTemplate, $pageTitle, $sidebarTemplate = 'Greenhouse/greenhouse-sidebar.tpl', $translateTitle = true): void {
 		parent::display($mainContentTemplate, $pageTitle, $sidebarTemplate, $translateTitle);
-	}
-
-	function getAdditionalObjectActions($existingObject): array {
-		return [];
 	}
 
 	function getInstructions(): string {

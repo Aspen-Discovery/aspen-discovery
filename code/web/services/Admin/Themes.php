@@ -5,7 +5,7 @@ require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/Theming/Theme.php';
 
 class Admin_Themes extends ObjectEditor {
-	function viewIndividualObject($structure) {
+	function viewIndividualObject($structure): void {
 		global $interface;
 		if (isset($_REQUEST['id'])) {
 			$id = $_REQUEST['id'];
@@ -16,7 +16,7 @@ class Admin_Themes extends ObjectEditor {
 				//Get the default theme
 				$parentTheme = $existingObject->getDefaultTheme();
 			}
-			$interface->assign('parentTheme', $existingObject->getParentTheme());
+			$interface->assign('parentTheme', $parentTheme);
 		}
 		parent::viewIndividualObject($structure);
 	}
@@ -37,11 +37,11 @@ class Admin_Themes extends ObjectEditor {
 	}
 
 	public function canDeleteAll(): bool {
-		// Never allow Delete All for themes because the default theme should never be deleted.
+		// Never allow "Delete All" for themes because the default theme should never be deleted.
 		return false;
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new Theme();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
@@ -87,7 +87,7 @@ class Admin_Themes extends ObjectEditor {
 
 	function getExistingObjectById($id): ?DataObject {
 		$existingObject = parent::getExistingObjectById($id);
-		if ($existingObject != null && $existingObject instanceof Theme) {
+		if ($existingObject instanceof Theme) {
 			$existingObject->applyDefaults();
 		}
 		return $existingObject;
@@ -130,28 +130,28 @@ class Admin_Themes extends ObjectEditor {
 		]);
 	}
 
-	protected function getDefaultRecordsPerPage() {
+	protected function getDefaultRecordsPerPage() : int {
 		return 100;
 	}
 
-	protected function showQuickFilterOnPropertiesList() {
+	protected function showQuickFilterOnPropertiesList() : bool {
 		return true;
 	}
 
-	public function canCopy() {
+	public function canCopy() : bool {
 		return $this->canAddNew();
 	}
 
-	public function canShareToCommunity() {
+	public function canShareToCommunity() : bool {
 		return $this->hasCommunityConnection() && UserAccount::userHasPermission('Share Content with Community');
 	}
 
-	public function canFetchFromCommunity() {
+	public function canFetchFromCommunity() : bool {
 		return $this->hasCommunityConnection() && UserAccount::userHasPermission('Import Content from Community');
 	}
 
 	/** @noinspection PhpUnused */
-	function addToAllLibraries() {
+	function addToAllLibraries(): void {
 		$themeId = $_REQUEST['id'];
 		$theme = new Theme();
 		$theme->id = $themeId;
@@ -180,7 +180,7 @@ class Admin_Themes extends ObjectEditor {
 	}
 
 	/** @noinspection PhpUnused */
-	function clearLibraries() {
+	function clearLibraries(): void {
 		$themeId = $_REQUEST['id'];
 		$theme = new Theme();
 		$theme->id = $themeId;
@@ -192,7 +192,7 @@ class Admin_Themes extends ObjectEditor {
 	}
 
 	/** @noinspection PhpUnused */
-	function addToAllLocations() {
+	function addToAllLocations(): void {
 		$themeId = $_REQUEST['id'];
 		$theme = new Theme();
 		$theme->id = $themeId;
@@ -221,7 +221,7 @@ class Admin_Themes extends ObjectEditor {
 	}
 
 	/** @noinspection PhpUnused */
-	function clearLocations() {
+	function clearLocations(): void {
 		$themeId = $_REQUEST['id'];
 		$theme = new Theme();
 		$theme->id = $themeId;

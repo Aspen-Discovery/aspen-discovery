@@ -6,9 +6,9 @@ require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/Indexing/TranslationMap.php';
 
 class ILS_TranslationMaps extends ObjectEditor {
-	function launch() {
+	function launch(): void {
 		global $interface;
-		$objectAction = isset($_REQUEST['objectAction']) ? $_REQUEST['objectAction'] : null;
+		$objectAction = $_REQUEST['objectAction'] ?? null;
 		if ($objectAction == 'loadFromFile') {
 			$id = $_REQUEST['id'];
 			$translationMap = new TranslationMap();
@@ -95,12 +95,12 @@ class ILS_TranslationMaps extends ObjectEditor {
 
 				$translationMapAsCsv = '';
 				/** @var TranslationMapValue $mapValue */
-				foreach ($translationMap->translationMapValues as $mapValue) {
+				foreach ($translationMap->getTranslationMapValues() as $mapValue) {
 					$translationMapAsCsv .= $mapValue->value . ' = ' . $mapValue->translation . "\r\n";
 				}
 				header('Content-Description: File Transfer');
 				header('Content-Type: application/octet-stream');
-				header("Content-Disposition: attachment; filename={$translationMap->name}.ini");
+				header("Content-Disposition: attachment; filename=$translationMap->name.ini");
 				header('Content-Transfer-Encoding: utf-8');
 				header('Expires: 0');
 				header('Cache-Control: must-revalidate');
@@ -134,7 +134,7 @@ class ILS_TranslationMaps extends ObjectEditor {
 		return 'Translation Maps';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$list = [];
 
 		$object = new TranslationMap();
@@ -165,21 +165,17 @@ class ILS_TranslationMaps extends ObjectEditor {
 		return 'id';
 	}
 
-	function canAddNew() {
+	function canAddNew() : bool {
 		return true;
 	}
 
-	function canDelete() {
+	function canDelete() : bool {
 		return true;
 	}
 
-	/**
-	 * @param TranslationMap $existingObject
-	 * @return array
-	 */
-	function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions(?DataObject $existingObject): array {
 		$actions = [];
-		if ($existingObject && $existingObject->id != '') {
+		if ($existingObject instanceof TranslationMap && $existingObject->id != '') {
 			$actions[] = [
 				'text' => 'Load From CSV/INI',
 				'url' => '/ILS/TranslationMaps?objectAction=loadFromFile&id=' . $existingObject->id,

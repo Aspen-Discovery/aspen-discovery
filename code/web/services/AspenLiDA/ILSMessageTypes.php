@@ -21,7 +21,7 @@ class AspenLiDA_ILSMessageTypes extends ObjectEditor {
 		return 'ILS Message Types';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new ILSMessageType();
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$this->applyFilters($object);
@@ -50,7 +50,7 @@ class AspenLiDA_ILSMessageTypes extends ObjectEditor {
 		return 'id';
 	}
 
-	function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions(?DataObject $existingObject): array {
 		return [];
 	}
 
@@ -77,7 +77,7 @@ class AspenLiDA_ILSMessageTypes extends ObjectEditor {
 		return UserAccount::userHasPermission('Administer Aspen LiDA Settings');
 	}
 
-	function canDelete() {
+	function canDelete() : bool {
 		return false;
 	}
 }

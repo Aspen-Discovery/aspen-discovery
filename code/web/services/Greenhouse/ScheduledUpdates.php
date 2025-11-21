@@ -20,7 +20,7 @@ class Greenhouse_ScheduledUpdates extends ObjectEditor {
 		return 'Scheduled Updates';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new ScheduledUpdate();
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$this->applyFilters($object);
@@ -49,7 +49,7 @@ class Greenhouse_ScheduledUpdates extends ObjectEditor {
 		return 'id';
 	}
 
-	function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions(?DataObject $existingObject): array {
 		return [];
 	}
 
@@ -77,7 +77,7 @@ class Greenhouse_ScheduledUpdates extends ObjectEditor {
 		return false;
 	}
 
-	function canAddNew() {
+	function canAddNew() : bool {
 		if (UserAccount::isLoggedIn()) {
 			if (UserAccount::getActiveUserObj()->isAspenAdminUser()) {
 				return true;
@@ -86,7 +86,7 @@ class Greenhouse_ScheduledUpdates extends ObjectEditor {
 		return false;
 	}
 
-	function canBatchEdit() {
+	function canBatchEdit() : bool {
 		return false;
 	}
 
@@ -94,7 +94,7 @@ class Greenhouse_ScheduledUpdates extends ObjectEditor {
 		return true;
 	}
 
-	public function display($mainContentTemplate, $pageTitle, $sidebarTemplate = 'Greenhouse/greenhouse-sidebar.tpl', $translateTitle = true) {
+	public function display($mainContentTemplate, $pageTitle, $sidebarTemplate = 'Greenhouse/greenhouse-sidebar.tpl', $translateTitle = true): void {
 		parent::display($mainContentTemplate, $pageTitle, $sidebarTemplate, $translateTitle);
 	}
 }

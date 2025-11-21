@@ -18,7 +18,7 @@ class Admin_PTypes extends ObjectEditor {
 		return 'Patron Types';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$libraryList = [];
 
 		$object = new PType();

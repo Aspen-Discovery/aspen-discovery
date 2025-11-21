@@ -17,7 +17,7 @@ class Admin_LibraryFacetSettings extends ObjectEditor {
 		return 'Library Facets';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$facetsList = [];
 		$object = new LibraryFacetSetting();
 		if (isset($_REQUEST['libraryId'])) {
@@ -51,9 +51,9 @@ class Admin_LibraryFacetSettings extends ObjectEditor {
 		return 'id';
 	}
 
-	function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions(?DataObject $existingObject): array {
 		$objectActions = [];
-		if (isset($existingObject) && $existingObject != null) {
+		if (isset($existingObject) && $existingObject instanceof LibraryFacetSetting) {
 			$objectActions[] = [
 				'text' => 'Return to Library',
 				'url' => '/Admin/Libraries?objectAction=edit&id=' . $existingObject->libraryId,

@@ -21,7 +21,7 @@ class OverDrive_Scopes extends ObjectEditor {
 		return 'OverDrive Scopes';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new OverDriveScope();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
@@ -50,7 +50,7 @@ class OverDrive_Scopes extends ObjectEditor {
 		return 'id';
 	}
 
-	function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions(?DataObject $existingObject): array {
 		return [];
 	}
 
@@ -74,7 +74,7 @@ class OverDrive_Scopes extends ObjectEditor {
 		return UserAccount::userHasPermission('Administer Libby/Sora');
 	}
 
-	function canAddNew() {
+	function canAddNew() : bool {
 		return false;
 	}
 }

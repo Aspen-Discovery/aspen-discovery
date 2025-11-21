@@ -20,7 +20,7 @@ class OpenArchives_OpenArchivesFacets extends ObjectEditor {
 		return 'Open Archives Facets';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new OpenArchivesFacetGroup();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);

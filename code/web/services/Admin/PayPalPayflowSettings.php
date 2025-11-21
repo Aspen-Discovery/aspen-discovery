@@ -18,7 +18,7 @@ class Admin_PayPalPayflowSettings extends ObjectEditor {
 		return 'PayPal Payflow Settings';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$list = [];
 
 		$object = new PayPalPayflowSetting();

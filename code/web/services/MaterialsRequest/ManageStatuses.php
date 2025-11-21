@@ -22,7 +22,7 @@ class MaterialsRequest_ManageStatuses extends ObjectEditor {
 		return 'Materials Request Statuses';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new MaterialsRequestStatus();
 
 		$this->applyFilters($object);

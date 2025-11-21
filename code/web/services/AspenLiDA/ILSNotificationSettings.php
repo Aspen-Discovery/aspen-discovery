@@ -20,7 +20,7 @@ class AspenLiDA_ILSNotificationSettings extends ObjectEditor {
 		return 'ILS Notification Settings';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$list = [];
 
 		$object = new ILSNotificationSetting();

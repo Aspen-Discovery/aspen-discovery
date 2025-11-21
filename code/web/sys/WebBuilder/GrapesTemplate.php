@@ -65,7 +65,7 @@ class GrapesTemplate extends DataObject {
 		return $this->find(true);
 	}
 
-	function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions(?DataObject $existingObject): array {
 		$objectActions = [];
 
 		if ($existingObject instanceof GrapesTemplate) {
@@ -109,15 +109,6 @@ class GrapesTemplate extends DataObject {
 			$templateList[$currentTemplate->id] = $currentTemplate->templateName;
 		}
 		return $templateList;
-	}
-
-	function getTemplateById($id) : bool {
-		$template = new GrapesTemplate();
-		$template->id = $id;
-		if ($template->find()) {
-			return true;
-		}
-		return false;
 	}
 
 	function saveAsTemplate() : void {

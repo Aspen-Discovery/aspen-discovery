@@ -17,7 +17,7 @@ class Admin_Hosting extends ObjectEditor {
 		return 'Host Information';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new HostInformation();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);

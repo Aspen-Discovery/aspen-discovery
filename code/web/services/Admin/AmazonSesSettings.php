@@ -21,7 +21,7 @@ class Admin_AmazonSesSettings extends ObjectEditor {
 		return 'Amazon SES Settings';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new AmazonSesSetting();
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$this->applyFilters($object);

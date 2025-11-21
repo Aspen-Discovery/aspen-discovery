@@ -16,7 +16,7 @@ class Admin_RecordGroupingOverrides extends ObjectEditor {
 		return 'Record Grouping Overrides';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new RecordGroupingOverride();
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$this->applyFilters($object);
@@ -73,7 +73,7 @@ class Admin_RecordGroupingOverrides extends ObjectEditor {
 		return 'id';
 	}
 
-	function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions(?DataObject $existingObject): array {
 		$actions = [];
 		if ($existingObject && !empty($existingObject->grouped_work_permanent_id)) {
 			$actions[] = [

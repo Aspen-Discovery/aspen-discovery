@@ -21,7 +21,7 @@ class Websites_Settings extends ObjectEditor {
 		return 'Website Indexing Settings';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new WebsiteIndexSetting();
 		$object->deleted = 0;
 		$this->applyFilters($object);
@@ -51,7 +51,7 @@ class Websites_Settings extends ObjectEditor {
 		return 'id';
 	}
 
-	function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions(?DataObject $existingObject): array {
 		return [];
 	}
 

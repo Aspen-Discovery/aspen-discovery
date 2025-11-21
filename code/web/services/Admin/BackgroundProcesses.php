@@ -34,7 +34,7 @@ class Admin_BackgroundProcesses extends ObjectEditor {
 		return 'Background Processes';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$list = [];
 
 		$object = new BackgroundProcess();
@@ -106,9 +106,9 @@ class Admin_BackgroundProcesses extends ObjectEditor {
 		parent::viewIndividualObject($structure);
 	}
 
-	function applyFilter(DataObject $object, string $fieldName, array $filter) {
+	function applyFilter(DataObject $object, string $fieldName, array $filter) : void {
 		if ($fieldName == 'owningUser') {
-			$this->applySpecialFilter($object, $fieldName, $filter, [
+			$this->applySpecialFilter($object, $filter, [
 				'sourceTable' => 'background_processes',
 				'sourceField' => 'owningUserId',
 				'targetClass' => 'User',

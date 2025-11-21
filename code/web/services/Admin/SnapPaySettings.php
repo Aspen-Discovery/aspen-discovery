@@ -18,7 +18,7 @@ class Admin_SnapPaySettings extends ObjectEditor {
 		return 'SnapPay Settings';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$list = [];
 
 		$object = new SnapPaySetting();

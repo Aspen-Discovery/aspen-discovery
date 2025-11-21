@@ -19,8 +19,7 @@ class WebBuilder_PDFs extends ObjectEditor {
 		return 'Uploaded PDFs';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
-		$user = UserAccount::getLoggedInUser();
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new FileUpload();
 		$object->type = 'web_builder_pdf';
 		$object->orderBy($this->getSort());
@@ -47,7 +46,7 @@ class WebBuilder_PDFs extends ObjectEditor {
 		return 'title asc';
 	}
 
-	function updateFromUI($object, $structure, $fieldLocks) {
+	function updateFromUI($object, $structure, $fieldLocks): array {
 		$object->type = 'web_builder_pdf';
 		return parent::updateFromUI($object, $structure, $fieldLocks);
 	}
@@ -72,13 +71,9 @@ class WebBuilder_PDFs extends ObjectEditor {
 		return 'id';
 	}
 
-	/**
-	 * @param FileUpload $existingObject
-	 * @return array
-	 */
-	function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions(?DataObject $existingObject): array {
 		$objectActions = [];
-		if (!empty($existingObject) && !empty($existingObject->id)) {
+		if ($existingObject instanceof FileUpload && !empty($existingObject->id)) {
 			$objectActions[] = [
 				'text' => 'View PDF',
 				'url' => '/Files/' . $existingObject->id . '/ViewPDF',

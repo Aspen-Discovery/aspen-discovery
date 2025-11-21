@@ -21,7 +21,7 @@ class Admin_GroupedWorkDisplay extends ObjectEditor {
 		return UserAccount::userHasPermission('Administer All Grouped Work Display Settings');
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new GroupedWorkDisplaySetting();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
@@ -63,7 +63,7 @@ class Admin_GroupedWorkDisplay extends ObjectEditor {
 	}
 
 	/** @noinspection PhpUnused */
-	function resetMoreDetailsToDefault() {
+	function resetMoreDetailsToDefault() : void {
 		$groupedWorkSetting = new GroupedWorkDisplaySetting();
 		$groupedWorkSettingId = $_REQUEST['id'];
 		$groupedWorkSetting->id = $groupedWorkSettingId;

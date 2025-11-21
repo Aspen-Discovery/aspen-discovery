@@ -20,7 +20,7 @@ class Websites_WebsiteFacets extends ObjectEditor {
 		return 'Website Facets';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new WebsiteFacetGroup();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);

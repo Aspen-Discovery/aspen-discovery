@@ -17,7 +17,7 @@ class Admin_DonationsReport extends ObjectEditor {
 		return 'Donations Report';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new Donation();
         $object->orderBy($this->getSort());
         $this->applyFilters($object);
@@ -67,15 +67,15 @@ class Admin_DonationsReport extends ObjectEditor {
 		return 'id';
 	}
 
-	function canAddNew() {
+	function canAddNew() : bool {
 		return false;
 	}
 
-	function canDelete() {
+	function canDelete() : bool {
 		return false;
 	}
 
-    function canExportToCSV() {
+    function canExportToCSV() : bool {
         return true;
     }
 
@@ -102,9 +102,9 @@ class Admin_DonationsReport extends ObjectEditor {
         ]);
 	}
 
-	function applyFilter(DataObject $object, string $fieldName, array $filter) {
+	function applyFilter(DataObject $object, string $fieldName, array $filter) : void {
 		if ($fieldName == 'donationValue') {
-			$this->applySpecialFilter($object, $fieldName, $filter, [
+			$this->applySpecialFilter($object, $filter, [
 				'sourceTable' => 'donations',
 				'sourceField' => 'paymentId',
 				'targetClass' => 'UserPayment',
@@ -113,7 +113,7 @@ class Admin_DonationsReport extends ObjectEditor {
 				'compareFormat' => 'property',
 			]);
 		} elseif ($fieldName == 'donationComplete') {
-			$this->applySpecialFilter($object, $fieldName, $filter, [
+			$this->applySpecialFilter($object, $filter, [
 				'sourceTable' => 'donations',
 				'sourceField' => 'paymentId',
 				'targetClass' => 'UserPayment',
@@ -122,7 +122,7 @@ class Admin_DonationsReport extends ObjectEditor {
 				'compareFormat' => 'boolean',
 			]);
 		} elseif ($fieldName == 'dateCompleted') {
-			$this->applySpecialFilter($object, $fieldName, $filter, [
+			$this->applySpecialFilter($object, $filter, [
 				'sourceTable' => 'donations',
 				'sourceField' => 'paymentId',
 				'targetClass' => 'UserPayment',

@@ -21,7 +21,7 @@ class Enrichment_RecaptchaSettings extends ObjectEditor {
 		return 'reCAPTCHA Settings';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new RecaptchaSetting();
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$this->applyFilters($object);
@@ -50,7 +50,7 @@ class Enrichment_RecaptchaSettings extends ObjectEditor {
 		return 'id';
 	}
 
-	function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions(?DataObject $existingObject): array {
 		return [];
 	}
 
@@ -74,7 +74,7 @@ class Enrichment_RecaptchaSettings extends ObjectEditor {
 		return UserAccount::userHasPermission('Administer Third Party Enrichment API Keys');
 	}
 
-	function canAddNew() {
+	function canAddNew() : bool {
 		return $this->getNumObjects() == 0;
 	}
 }

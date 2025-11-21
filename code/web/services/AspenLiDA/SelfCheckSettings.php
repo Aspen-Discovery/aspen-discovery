@@ -20,7 +20,7 @@ class AspenLiDA_SelfCheckSettings extends ObjectEditor {
 		return 'Self-Check Settings';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$list = [];
 
 		$object = new AspenLiDASelfCheckSetting();

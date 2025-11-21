@@ -16,7 +16,7 @@ class Admin_GroupedWorkFormatSorting extends ObjectEditor {
 		return 'Grouped Work Format Sorting';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new GroupedWorkFormatSortingGroup();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
@@ -85,9 +85,9 @@ class Admin_GroupedWorkFormatSorting extends ObjectEditor {
 		return 'AspenDiscovery.Admin.initializeFormatSort();';
 	}
 
-	function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions(?DataObject $existingObject): array {
 		$objectActions = [];
-		if (isset($existingObject) && $existingObject != null) {
+		if (isset($existingObject) && $existingObject instanceof GroupedWorkFormatSortingGroup) {
 			$objectActions[] = [
 				'text' => 'Update Active Formats',
 				'url' => '/Admin/GroupedWorkFormatSorting?objectAction=loadActiveFormats&id=' . $existingObject->id,
@@ -96,6 +96,7 @@ class Admin_GroupedWorkFormatSorting extends ObjectEditor {
 		return $objectActions;
 	}
 
+	/** @noinspection PhpUnused */
 	function loadActiveFormats() : void {
 		$id = $_REQUEST['id'];
 		if (!empty($id) && is_numeric($id)) {

@@ -26,7 +26,7 @@ class Admin_BrowseCategoryGroups extends ObjectEditor {
 		return UserAccount::userHasPermission('Administer All Browse Categories');
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new BrowseCategoryGroup();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
@@ -117,11 +117,11 @@ class Admin_BrowseCategoryGroups extends ObjectEditor {
 		]);
 	}
 
-	protected function getDefaultRecordsPerPage() {
+	protected function getDefaultRecordsPerPage() : int {
 		return 100;
 	}
 
-	protected function showQuickFilterOnPropertiesList() {
+	protected function showQuickFilterOnPropertiesList() : bool {
 		return true;
 	}
 
@@ -179,7 +179,7 @@ class Admin_BrowseCategoryGroups extends ObjectEditor {
 		return $this->_numObjects;
 	}
 
-	public function canCopy() {
+	public function canCopy() : bool {
 		return $this->canAddNew();
 	}
 }

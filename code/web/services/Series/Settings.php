@@ -21,7 +21,7 @@ class Series_Settings extends ObjectEditor {
 		return 'Series Settings';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new SeriesIndexingSettings();
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$this->applyFilters($object);
@@ -50,7 +50,7 @@ class Series_Settings extends ObjectEditor {
 		return 'id';
 	}
 
-	function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions(?DataObject $existingObject): array {
 		return [];
 	}
 
@@ -74,7 +74,7 @@ class Series_Settings extends ObjectEditor {
 		return UserAccount::userHasPermission('Administer Series');
 	}
 
-	function canAddNew() {
+	function canAddNew() : bool {
 		return $this->getNumObjects() == 0;
 	}
 }

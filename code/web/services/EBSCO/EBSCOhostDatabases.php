@@ -21,7 +21,7 @@ class EBSCO_EBSCOhostDatabases extends ObjectEditor {
 		return 'EBSCOhost Databases';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new EBSCOhostDatabase();
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$this->applyFilters($object);
@@ -50,7 +50,7 @@ class EBSCO_EBSCOhostDatabases extends ObjectEditor {
 		return 'id';
 	}
 
-	function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions(?DataObject $existingObject): array {
 		return [];
 	}
 
@@ -77,7 +77,7 @@ class EBSCO_EBSCOhostDatabases extends ObjectEditor {
 		return UserAccount::userHasPermission('Administer EBSCOhost Settings');
 	}
 
-	function canDelete() {
+	function canDelete() : bool {
 		return false;
 	}
 }

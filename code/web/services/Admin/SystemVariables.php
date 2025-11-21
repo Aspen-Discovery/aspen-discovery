@@ -1,5 +1,7 @@
 <?php
 
+use JetBrains\PhpStorm\NoReturn;
+
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 
@@ -17,7 +19,7 @@ class Admin_SystemVariables extends ObjectEditor {
 		return 'System Variables';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$variableList = [];
 
 		$variable = new SystemVariables();
@@ -49,11 +51,11 @@ class Admin_SystemVariables extends ObjectEditor {
 		return 'id';
 	}
 
-	function canAddNew() {
+	function canAddNew() : bool {
 		return $this->getNumObjects() == 0;
 	}
 
-	function canDelete() {
+	function canDelete() : bool {
 		return false;
 	}
 
@@ -73,7 +75,7 @@ class Admin_SystemVariables extends ObjectEditor {
 		return UserAccount::userHasPermission('Administer System Variables');
 	}
 
-	function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions(?DataObject $existingObject): array {
 		$objectActions = [];
 		if ($existingObject instanceof SystemVariables) {
 			$objectActions[] = [
@@ -85,6 +87,7 @@ class Admin_SystemVariables extends ObjectEditor {
 	}
 
 	/** @noinspection PhpUnused */
+	#[NoReturn]
 	function clearCachedValues(): void {
 		require_once ROOT_DIR . '/sys/MemoryCache/CachedValue.php';
 		$user = UserAccount::getActiveUserObj();

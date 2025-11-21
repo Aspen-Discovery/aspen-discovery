@@ -22,7 +22,7 @@ class PalaceProject_Collections extends ObjectEditor {
 		return 'Palace Project Collections';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new PalaceProjectCollection();
 		if (isset($_REQUEST['settingId'])) {
 			$settingId = $_REQUEST['settingId'];
@@ -55,27 +55,27 @@ class PalaceProject_Collections extends ObjectEditor {
 		return 'id';
 	}
 
-	function canAddNew() {
+	function canAddNew() : bool {
 		return true;
 	}
 
-	function canBatchEdit() {
+	function canBatchEdit() : bool {
 		return false;
 	}
 
-	function canEdit(DataObject $object) {
+	function canEdit() : bool {
 		return false;
 	}
 
-	function canEditList() {
+	function canEditList() : bool {
 		return false;
 	}
 
-	function canDelete() {
+	function canDelete() : bool {
 		return true;
 	}
 
-	function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions(?DataObject $existingObject): array {
 		return [];
 	}
 
@@ -88,7 +88,9 @@ class PalaceProject_Collections extends ObjectEditor {
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#palace_project', 'Palace Project');
 		if (isset($_REQUEST['settingId'])) {
+			/** @noinspection PhpPossiblePolymorphicInvocationInspection */
 			$breadcrumbs[] = new Breadcrumb('/PalaceProject/Settings?objectAction=edit&id=' . $this->activeObject->settingId, 'Settings');
+			/** @noinspection PhpPossiblePolymorphicInvocationInspection */
 			$breadcrumbs[] = new Breadcrumb('/PalaceProject/Collections?settingId=' . $this->activeObject->settingId, 'All Collections');
 		}else{
 			$breadcrumbs[] = new Breadcrumb('/PalaceProject/Settings', 'All Settings');

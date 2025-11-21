@@ -19,7 +19,7 @@ class WebBuilder_Audiences extends ObjectEditor {
 		return 'Audiences';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new WebBuilderAudience();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
@@ -48,7 +48,7 @@ class WebBuilder_Audiences extends ObjectEditor {
 		return 'id';
 	}
 
-	function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions(?DataObject $existingObject): array {
 		$objectActions = [];
 		if (!empty($existingObject) && $existingObject instanceof WebBuilderAudience && !empty($existingObject->id)) {
 			$objectActions[] = [

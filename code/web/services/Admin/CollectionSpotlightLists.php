@@ -19,11 +19,11 @@ class Admin_CollectionSpotlightLists extends ObjectEditor {
 		return 'Collection Spotlight Lists';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new CollectionSpotlightList();
 		if (!UserAccount::userHasPermission('Administer All Collection Spotlights')) {
 			$homeLibrary = Library::getPatronHomeLibrary();
-			$object->whereAdd("collectionSpotlightId IN (SELECT id FROM collection_spotlights WHERE libraryId = {$homeLibrary->libraryId} OR libraryId = -1)");
+			$object->whereAdd("collectionSpotlightId IN (SELECT id FROM collection_spotlights WHERE libraryId = $homeLibrary->libraryId OR libraryId = -1)");
 		}
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
@@ -92,7 +92,7 @@ class Admin_CollectionSpotlightLists extends ObjectEditor {
 		]);
 	}
 
-	function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions(?DataObject $existingObject): array {
 		$actions = parent::getAdditionalObjectActions($existingObject);
 		/** @var CollectionSpotlightList $existingObject */
 		$parentSpotlightId = $existingObject->collectionSpotlightId;

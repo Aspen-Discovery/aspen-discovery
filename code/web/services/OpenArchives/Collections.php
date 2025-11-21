@@ -22,7 +22,7 @@ class OpenArchives_Collections extends ObjectEditor {
 		return 'Open Archives Collections';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$list = [];
 
 		$object = new OpenArchivesCollection();

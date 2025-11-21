@@ -16,7 +16,7 @@ class Admin_AuthorAuthorities extends ObjectEditor {
 		return 'Author Authorities';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new AuthorAuthority();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);

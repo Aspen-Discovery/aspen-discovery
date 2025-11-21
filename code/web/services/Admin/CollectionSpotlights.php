@@ -20,7 +20,7 @@ class Admin_CollectionSpotlights extends ObjectEditor {
 		return 'Collection Spotlights';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$list = [];
 
 		$object = new CollectionSpotlight();

@@ -17,7 +17,7 @@ class Admin_Variables extends ObjectEditor {
 		return 'System Variables';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$variableList = [];
 
 		$object = new Variable();
@@ -47,19 +47,15 @@ class Admin_Variables extends ObjectEditor {
 		return 'id';
 	}
 
-	function canAddNew() {
+	function canAddNew() : bool {
 		return UserAccount::getActiveUserObj()->isAspenAdminUser();
 	}
 
-	function canDelete() {
+	function canDelete() : bool {
 		return true;
 	}
 
-	/**
-	 * @param DataObject $existingObject
-	 * @return array
-	 */
-	function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions(?DataObject $existingObject): array {
 		$actions = [];
 		if ($existingObject && $existingObject->getPrimaryKeyValue() != '') {
 			$actions[] = [
@@ -83,13 +79,12 @@ class Admin_Variables extends ObjectEditor {
 	}
 
 	/** @noinspection PhpUnused */
-	function setToNow() {
+	function setToNow() : void {
 		$id = $_REQUEST['id'];
 		$useMilliseconds = isset($_REQUEST['ms']) && ($_REQUEST['ms'] == 1 || $_REQUEST['ms'] == 'true');
 		if (!empty($id) && ctype_digit($id)) {
 			$variable = new Variable();
-			$variable->get($id);
-			if ($variable) {
+			if ($variable->get($id)) {
 				$variable->value = $useMilliseconds ? time() * 1000 : time();
 				$variable->update();
 			}
@@ -98,12 +93,11 @@ class Admin_Variables extends ObjectEditor {
 	}
 
 	/** @noinspection PhpUnused */
-	function IncrementVariable() {
+	function IncrementVariable(): void {
 		$id = $_REQUEST['id'];
 		if (!empty($id) && ctype_digit($id)) {
 			$variable = new Variable();
-			$variable->get($id);
-			if ($variable) {
+			if ($variable->get($id)) {
 				$amount = 0;
 				if ($_REQUEST['direction'] == 'up') {
 					$amount = 10000;
@@ -135,11 +129,11 @@ class Admin_Variables extends ObjectEditor {
 		return UserAccount::userHasPermission('Administer System Variables');
 	}
 
-	function canBatchEdit() {
+	function canBatchEdit() : bool {
 		return false;
 	}
 
-	function canCompare() {
+	function canCompare() : bool {
 		return false;
 	}
 }

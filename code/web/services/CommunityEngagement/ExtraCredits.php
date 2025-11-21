@@ -22,7 +22,7 @@ class CommunityEngagement_ExtraCredits extends ObjectEditor {
 		return 'Extra Credit Activities';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new ExtraCredit();
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$this->applyFilters($object);
@@ -52,7 +52,7 @@ class CommunityEngagement_ExtraCredits extends ObjectEditor {
 		return 'id';
 	}
 
-	function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions(?DataObject $existingObject): array {
 		return [];
 	}
 

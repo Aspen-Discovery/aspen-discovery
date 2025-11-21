@@ -3,7 +3,7 @@ require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/WebBuilder/PortalRow.php';
 
 class WebBuilder_PortalRows extends ObjectEditor {
-	function launch() {
+	function launch(): void {
 		global $interface;
 		$interface->assign('inPageEditor', true);
 		parent::launch();
@@ -29,7 +29,7 @@ class WebBuilder_PortalRows extends ObjectEditor {
 		return 'WebBuilder Portal Rows';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new PortalRow();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
@@ -58,7 +58,7 @@ class WebBuilder_PortalRows extends ObjectEditor {
 		return 'id';
 	}
 
-	function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions(?DataObject $existingObject): array {
 		return [];
 	}
 
@@ -81,12 +81,6 @@ class WebBuilder_PortalRows extends ObjectEditor {
 		return UserAccount::userHasPermission([
 			'Administer All Custom Pages',
 			'Administer Library Custom Pages',
-		]);
-	}
-
-	function canBulkEdit(): bool {
-		return UserAccount::userHasPermission([
-			'Administer All Custom Pages',
 		]);
 	}
 

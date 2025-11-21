@@ -20,7 +20,7 @@ class Greenhouse_ExternalRequestLog extends ObjectEditor {
 		return 'External Request Log';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new ExternalRequestLogEntry();
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$this->applyFilters($object);
@@ -49,15 +49,15 @@ class Greenhouse_ExternalRequestLog extends ObjectEditor {
 		return 'id';
 	}
 
-	function canAddNew() {
+	function canAddNew() : bool {
 		return false;
 	}
 
-	function canDelete() {
+	function canDelete() : bool {
 		return false;
 	}
 
-	function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions(?DataObject $existingObject): array {
 		return [];
 	}
 
@@ -85,11 +85,11 @@ class Greenhouse_ExternalRequestLog extends ObjectEditor {
 		return false;
 	}
 
-	protected function getDefaultRecordsPerPage() {
+	protected function getDefaultRecordsPerPage() : int {
 		return 100;
 	}
 
-	public function display($mainContentTemplate, $pageTitle, $sidebarTemplate = 'Greenhouse/greenhouse-sidebar.tpl', $translateTitle = true) {
+	public function display($mainContentTemplate, $pageTitle, $sidebarTemplate = 'Greenhouse/greenhouse-sidebar.tpl', $translateTitle = true): void {
 		parent::display($mainContentTemplate, $pageTitle, $sidebarTemplate, $translateTitle);
 	}
 }

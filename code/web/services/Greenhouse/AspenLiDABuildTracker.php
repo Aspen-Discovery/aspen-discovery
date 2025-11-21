@@ -4,7 +4,7 @@ require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/sys/Greenhouse/AspenLiDABuild.php';
 
 class Greenhouse_AspenLiDABuildTracker extends Admin_Admin {
-	function launch() {
+	function launch() : void {
 		global $interface;
 
 		$builds = new AspenLiDABuild();
@@ -94,8 +94,6 @@ class Greenhouse_AspenLiDABuildTracker extends Admin_Admin {
 		$builds->orderBy(['name ASC', 'version DESC', 'buildVersion DESC', 'patch DESC']);
 		$builds->find();
 
-		$latestRelease = false;
-
 		$appToShowOptions = [
 			1 => 'All'
 		];
@@ -108,25 +106,22 @@ class Greenhouse_AspenLiDABuildTracker extends Admin_Admin {
 		$interface->assign('allBuilds', $allBuilds);
 		$interface->assign('appToShowOptions', $appToShowOptions);
 
-		function getDownloadExtension($params) {
+		function getDownloadExtension($params) : array|string {
 			return pathinfo($params['url'], PATHINFO_EXTENSION);
 		}
 
+		/** @noinspection PhpUnhandledExceptionInspection */
 		$interface->registerPlugin('function', 'file_ext', 'getDownloadExtension');
 
 		$this->display('aspenLiDABuildTracker.tpl', 'Aspen LiDA Build Tracker', false);
 	}
 
-	function canAddNew() {
+	function canAddNew() : bool {
 		return false;
 	}
 
-	function canDelete() {
+	function canDelete() : bool {
 		return false;
-	}
-
-	function getAdditionalObjectActions($existingObject): array {
-		return [];
 	}
 
 	function getInstructions(): string {

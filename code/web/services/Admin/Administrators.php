@@ -17,7 +17,7 @@ class Admin_Administrators extends ObjectEditor {
 	}
 
 	//TODO: This currently does not respect loading by page or filtering
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		require_once ROOT_DIR . '/sys/Administration/UserRoles.php';
 		$userRole = new UserRoles();
 		$userRole->find();

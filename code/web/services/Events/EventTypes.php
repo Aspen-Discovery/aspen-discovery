@@ -21,7 +21,7 @@ class Events_EventTypes extends ObjectEditor {
 		return 'Event Types';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new EventType();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);

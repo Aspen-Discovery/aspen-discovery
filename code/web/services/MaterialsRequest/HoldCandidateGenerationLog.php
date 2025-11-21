@@ -33,7 +33,7 @@ class MaterialsRequest_HoldCandidateGenerationLog extends ObjectEditor {
 		return 'Hold Candidate Generation Log';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$list = [];
 
 		$object = new MaterialsRequestHoldCandidateGenerationLogEntry();

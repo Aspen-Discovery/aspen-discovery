@@ -19,7 +19,7 @@ class WebBuilder_Categories extends ObjectEditor {
 		return 'Categories';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new WebBuilderCategory();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
@@ -48,7 +48,7 @@ class WebBuilder_Categories extends ObjectEditor {
 		return 'id';
 	}
 
-	function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions(?DataObject $existingObject): array {
 		$objectActions = [];
 		if (!empty($existingObject) && $existingObject instanceof WebBuilderCategory && !empty($existingObject->id)) {
 			$objectActions[] = [

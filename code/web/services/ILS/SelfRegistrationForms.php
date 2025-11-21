@@ -38,7 +38,7 @@ class ILS_SelfRegistrationForms extends ObjectEditor {
 		return 'Self Registration Forms';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$ils = '';
 		$accountProfiles = new AccountProfile();
 		$accountProfiles->find();
@@ -58,6 +58,7 @@ class ILS_SelfRegistrationForms extends ObjectEditor {
 
 		$list = [];
 
+		/** @noinspection PhpUndefinedVariableInspection */
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);

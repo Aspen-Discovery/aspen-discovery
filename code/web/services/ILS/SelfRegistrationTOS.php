@@ -20,7 +20,7 @@ class ILS_SelfRegistrationTOS extends ObjectEditor {
 		return 'Self Registration Terms of Service';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$list = [];
 
 		$object = new SelfRegistrationTerms();

@@ -18,7 +18,7 @@ class Admin_LibraryLinks extends ObjectEditor {
 		return 'Library Links';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		//Look lookup information for display in the user interface
 		$user = UserAccount::getLoggedInUser();
 

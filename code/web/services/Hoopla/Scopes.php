@@ -21,7 +21,7 @@ class Hoopla_Scopes extends ObjectEditor {
 		return 'Hoopla Scopes';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new HooplaScope();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
@@ -50,7 +50,7 @@ class Hoopla_Scopes extends ObjectEditor {
 		return 'id';
 	}
 
-	function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions(?DataObject $existingObject): array {
 		return [];
 	}
 

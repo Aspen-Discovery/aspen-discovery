@@ -21,7 +21,7 @@ class CloudLibrary_Settings extends ObjectEditor {
 		return 'cloudLibrary Settings';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new CloudLibrarySetting();
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->orderBy($this->getSort());
@@ -49,7 +49,7 @@ class CloudLibrary_Settings extends ObjectEditor {
 		return 'id';
 	}
 
-	function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions(?DataObject $existingObject): array {
 		return [];
 	}
 

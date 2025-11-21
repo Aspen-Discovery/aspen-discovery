@@ -17,7 +17,7 @@ class Admin_GroupedWorkSearchTests extends ObjectEditor {
 		return 'Grouped Work Search Tests';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new GroupedWorkTestSearch();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
@@ -66,7 +66,7 @@ class Admin_GroupedWorkSearchTests extends ObjectEditor {
 		return UserAccount::userHasPermission('Administer Grouped Work Tests');
 	}
 
-	function customListActions() {
+	function customListActions() : array {
 		return [
 			[
 				'label' => 'Run Tests',
@@ -75,6 +75,7 @@ class Admin_GroupedWorkSearchTests extends ObjectEditor {
 		];
 	}
 
+	/** @noinspection PhpMissingReturnTypeInspection */
 	function runAllTests() {
 		set_time_limit(0);
 		$object = new GroupedWorkTestSearch();
@@ -89,9 +90,9 @@ class Admin_GroupedWorkSearchTests extends ObjectEditor {
 		$this->viewExistingObjects($structure);
 	}
 
-	function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions(?DataObject $existingObject): array {
 		$objectActions = [];
-		if (isset($existingObject) && $existingObject != null) {
+		if (isset($existingObject) && $existingObject instanceof GroupedWorkTestSearch) {
 			$objectActions[] = [
 				'text' => 'Run Test',
 				'url' => '/Admin/GroupedWorkSearchTests?objectAction=runTest&id=' . $existingObject->id,

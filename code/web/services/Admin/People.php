@@ -17,7 +17,7 @@ class Admin_People extends ObjectEditor {
 		return 'People';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new Person();
 		$object->orderBy($this->getSort() . ', lastName asc, firstName asc');
 		$this->applyFilters($object);
@@ -40,19 +40,14 @@ class Admin_People extends ObjectEditor {
 	}
 
 	function getPrimaryKeyColumn(): string {
-		return [
-			'lastName',
-			'firstName',
-			'middleName',
-			'birthDate',
-		];
+		return 'personId';
 	}
 
 	function getIdKeyColumn(): string {
 		return 'personId';
 	}
 
-	function getRedirectLocation($objectAction, $curObject) {
+	function getRedirectLocation(string $objectAction, DataObject $curObject): ?string {
 		if ($objectAction == 'delete') {
 			return '/Union/Search?searchSource=genealogy&lookfor=&searchIndex=GenealogyName&submit=Find';
 		} else {
@@ -64,7 +59,7 @@ class Admin_People extends ObjectEditor {
 		}
 	}
 
-	function showReturnToList() {
+	function showReturnToList(): bool {
 		return false;
 	}
 

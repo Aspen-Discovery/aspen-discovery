@@ -21,7 +21,7 @@ class Series_SeriesMembers extends ObjectEditor {
 		return 'Series Member';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		if (empty($_REQUEST['id'])) {
 			header('Location: /Series/AdministerSeries');
 		}
@@ -53,7 +53,7 @@ class Series_SeriesMembers extends ObjectEditor {
 		return 'id';
 	}
 
-	function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions(?DataObject $existingObject): array {
 		return [];
 	}
 
@@ -77,7 +77,7 @@ class Series_SeriesMembers extends ObjectEditor {
 		return UserAccount::userHasPermission('Administer Series');
 	}
 
-	function canAddNew() {
+	function canAddNew() : bool {
 		return $this->getNumObjects() == 0;
 	}
 }

@@ -16,7 +16,7 @@ class Admin_AlternateTitles extends ObjectEditor {
 		return 'Manually Grouped Title/Author Variants';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new GroupedWorkAlternateTitle();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
@@ -65,13 +65,13 @@ class Admin_AlternateTitles extends ObjectEditor {
 		return UserAccount::userHasPermission('Manually Group and Ungroup Works');
 	}
 
-	function canAddNew() {
+	function canAddNew() : bool {
 		return false;
 	}
 
-	function applyFilter($object, $fieldName, $filter) {
+	function applyFilter(DataObject $object, string $fieldName, array $filter) : void {
 		if ($fieldName == 'addedByName') {
-			$this->applySpecialFilter($object, $fieldName, $filter, [
+			$this->applySpecialFilter($object, $filter, [
 				'sourceTable' => 'grouped_work_alternate_titles',
 				'sourceField' => 'addedBy',
 				'targetClass' => 'User',

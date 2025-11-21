@@ -16,7 +16,7 @@ class Admin_HideSeriess extends ObjectEditor {
 		return 'Hidden Series';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new HideSeries();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);

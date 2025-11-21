@@ -19,7 +19,7 @@ class WebBuilder_Videos extends ObjectEditor {
 		return 'Uploaded Videos';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new FileUpload();
 		$object->type = 'web_builder_video';
 		$this->applyFilters($object);
@@ -37,7 +37,7 @@ class WebBuilder_Videos extends ObjectEditor {
 		return 'title asc';
 	}
 
-	function updateFromUI($object, $structure, $fieldLocks) {
+	function updateFromUI($object, $structure, $fieldLocks): array {
 		$object->type = 'web_builder_video';
 		return parent::updateFromUI($object, $structure, $fieldLocks);
 	}
@@ -62,13 +62,9 @@ class WebBuilder_Videos extends ObjectEditor {
 		return 'id';
 	}
 
-	/**
-	 * @param FileUpload $existingObject
-	 * @return array
-	 */
-	function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions(?DataObject $existingObject): array {
 		$objectActions = [];
-		if (!empty($existingObject) && !empty($existingObject->id)) {
+		if ($existingObject instanceof FileUpload && !empty($existingObject->id)) {
 			$objectActions[] = [
 				'text' => 'Watch Video',
 				'url' => '/Files/' . $existingObject->id . '/WatchVideo',

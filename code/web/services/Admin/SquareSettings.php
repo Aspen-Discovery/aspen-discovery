@@ -18,7 +18,7 @@ class Admin_SquareSettings extends ObjectEditor {
 		return 'Square Settings';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$list = [];
 
 		$object = new SquareSetting();

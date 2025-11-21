@@ -31,7 +31,7 @@ class Admin_TwoFactorAuth extends ObjectEditor {
 		return 'Two-Factor Authentication Settings';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$list = [];
 
 		$object = new TwoFactorAuthSetting();
@@ -62,7 +62,7 @@ class Admin_TwoFactorAuth extends ObjectEditor {
 		return 'id';
 	}
 
-	function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions(?DataObject $existingObject): array {
 		$actions = [];
 		if ($existingObject instanceof TwoFactorAuthSetting  && $existingObject->id != '') {
 			$actions[] = [

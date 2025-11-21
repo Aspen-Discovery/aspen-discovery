@@ -16,7 +16,7 @@ class Admin_GroupedWorkEContentSorting extends ObjectEditor {
 		return 'Grouped Work eContent Sorting';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new GroupedWorkEContentSortingGroup();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);

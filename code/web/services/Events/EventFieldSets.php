@@ -22,7 +22,7 @@ class Events_EventFieldSets extends ObjectEditor {
 		return 'Event Field Sets';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new EventFieldSet();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);

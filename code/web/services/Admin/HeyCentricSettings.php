@@ -18,7 +18,7 @@ class Admin_HeyCentricSettings extends ObjectEditor {
 		return 'HeyCentric Settings';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$list = [];
 
 		$object = new HeyCentricSetting();

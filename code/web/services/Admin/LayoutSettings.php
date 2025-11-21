@@ -18,11 +18,11 @@ class Admin_LayoutSettings extends ObjectEditor {
 		return 'Layout Settings';
 	}
 
-	function canDelete() {
+	function canDelete() : bool {
 		return UserAccount::userHasPermission('Administer All Layout Settings');
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new LayoutSetting();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);

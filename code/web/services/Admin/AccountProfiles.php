@@ -18,7 +18,7 @@ class Admin_AccountProfiles extends ObjectEditor {
 		return 'Account Profiles';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$list = [];
 
 		$object = new AccountProfile();

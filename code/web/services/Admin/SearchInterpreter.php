@@ -21,7 +21,7 @@ class Admin_SearchInterpreter extends ObjectEditor {
 		return false;
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new SearchInterpreterSetting();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);

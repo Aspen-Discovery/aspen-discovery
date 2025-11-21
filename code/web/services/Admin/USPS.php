@@ -21,7 +21,7 @@ class Admin_USPS extends ObjectEditor {
 		return 'USPS Settings';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$variableList = [];
 
 		$variable = new USPS();
@@ -53,11 +53,11 @@ class Admin_USPS extends ObjectEditor {
 		return 'id';
 	}
 
-	function canAddNew() {
+	function canAddNew() : bool {
 		return $this->getNumObjects() == 0;
 	}
 
-	function canDelete() {
+	function canDelete() : bool {
 		return true;
 	}
 

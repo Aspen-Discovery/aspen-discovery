@@ -18,7 +18,7 @@ class Admin_Modules extends ObjectEditor {
 		return 'Aspen Discovery Modules';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$list = [];
 
 		$object = new Module();

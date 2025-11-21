@@ -39,7 +39,7 @@ class SideLoads_Scopes extends ObjectEditor {
 		return 'Side Loaded Content Scopes';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		//Get the sideloads the user has access to
 		$sideLoad = new SideLoad();
 		if ((UserAccount::userHasPermission('Administer Side Loads for Home Library') || UserAccount::userHasPermission('Administer Side Load Scopes for Home Library')) && !UserAccount::userHasPermission('Administer All Side Loads')) {
@@ -82,7 +82,7 @@ class SideLoads_Scopes extends ObjectEditor {
 		return 'id';
 	}
 
-	function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions(?DataObject $existingObject): array {
 		return [];
 	}
 
@@ -91,7 +91,7 @@ class SideLoads_Scopes extends ObjectEditor {
 	}
 
 	/** @noinspection PhpUnused */
-	function addToAllLibraries() {
+	function addToAllLibraries(): void {
 		$scopeId = $_REQUEST['id'];
 		$sideLoadScope = new SideLoadScope();
 		$sideLoadScope->id = $scopeId;
@@ -124,18 +124,18 @@ class SideLoads_Scopes extends ObjectEditor {
 	}
 
 	/** @noinspection PhpUnused */
-	function clearLibraries() {
+	function clearLibraries(): void {
 		$scopeId = $_REQUEST['id'];
 		$sideLoadScope = new SideLoadScope();
 		$sideLoadScope->id = $scopeId;
 		if ($sideLoadScope->find(true)) {
-			$sideLoadScope->clearLibraries();
+			$sideLoadScope->clearLibraries(false);
 		}
 		header("Location: /SideLoads/Scopes?objectAction=edit&id=" . $scopeId);
 	}
 
 	/** @noinspection PhpUnused */
-	function addToAllLocations() {
+	function addToAllLocations(): void {
 		$scopeId = $_REQUEST['id'];
 		$sideLoadScope = new SideLoadScope();
 		$sideLoadScope->id = $scopeId;
@@ -169,12 +169,12 @@ class SideLoads_Scopes extends ObjectEditor {
 	}
 
 	/** @noinspection PhpUnused */
-	function clearLocations() {
+	function clearLocations(): void {
 		$scopeId = $_REQUEST['id'];
 		$sideLoadScope = new SideLoadScope();
 		$sideLoadScope->id = $scopeId;
 		if ($sideLoadScope->find(true)) {
-			$sideLoadScope->clearLocations();
+			$sideLoadScope->clearLocations(false);
 		}
 		header("Location: /SideLoads/Scopes?objectAction=edit&id=" . $scopeId);
 	}

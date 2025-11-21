@@ -22,7 +22,7 @@ class MaterialsRequest_FormatMapping extends ObjectEditor {
 		return 'Materials Request Format Mapping';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new MaterialsRequestFormatMapping();
 
 		$homeLibrary = Library::getPatronHomeLibrary();

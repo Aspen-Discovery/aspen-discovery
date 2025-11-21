@@ -19,7 +19,7 @@ class WebBuilder_QuickPolls extends ObjectEditor {
 		return 'Quick Polls';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new QuickPoll();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
@@ -54,7 +54,7 @@ class WebBuilder_QuickPolls extends ObjectEditor {
 		return 'id';
 	}
 
-	function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions(?DataObject $existingObject): array {
 		$objectActions = [];
 		if (!empty($existingObject) && $existingObject instanceof QuickPoll && !empty($existingObject->id)) {
 			$objectActions[] = [

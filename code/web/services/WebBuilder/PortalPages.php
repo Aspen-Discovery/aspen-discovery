@@ -3,7 +3,7 @@ require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/WebBuilder/PortalPage.php';
 
 class WebBuilder_PortalPages extends ObjectEditor {
-	function launch() {
+	function launch(): void {
 		global $interface;
 		$interface->assign('inPageEditor', true);
 		parent::launch();
@@ -25,7 +25,7 @@ class WebBuilder_PortalPages extends ObjectEditor {
 		return 'Custom Web Builder Pages';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new PortalPage();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
@@ -60,7 +60,7 @@ class WebBuilder_PortalPages extends ObjectEditor {
 		return 'id';
 	}
 
-	function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions(?DataObject $existingObject): array {
 		$objectActions = [];
 		if (!empty($existingObject) && $existingObject instanceof PortalPage && !empty($existingObject->id)) {
 			$objectActions[] = [
@@ -104,17 +104,17 @@ class WebBuilder_PortalPages extends ObjectEditor {
 		return 'web_builder';
 	}
 
-	function viewIndividualObject($structure) {
+	function viewIndividualObject($structure) : void {
 		global $interface;
 		$interface->assign('previewMode', true);
 		parent::viewIndividualObject($structure);
 	}
 
-	public function canCopy() {
+	public function canCopy() : bool {
 		return $this->canAddNew();
 	}
 
-	public function getCopyNotes() {
+	public function getCopyNotes() : string {
 		return '/admin_instructions/portal_page_copy.MD';
 	}
 }

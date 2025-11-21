@@ -19,7 +19,7 @@ class admin_LocalAdministrators extends ObjectEditor {
 		return 'Local Administrators';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		//We will only use the admin account profile
 		$object = new User();
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
@@ -60,7 +60,7 @@ class admin_LocalAdministrators extends ObjectEditor {
 		return true;
 	}
 
-	function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions(?DataObject $existingObject): array {
 		return [];
 	}
 

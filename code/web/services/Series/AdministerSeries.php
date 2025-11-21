@@ -21,7 +21,7 @@ class Series_AdministerSeries extends ObjectEditor {
 		return 'Administer Series';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new Series();
 		$object->deleted = 0;
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
@@ -51,7 +51,7 @@ class Series_AdministerSeries extends ObjectEditor {
 		return 'id';
 	}
 
-	function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions(?DataObject $existingObject): array {
 		$objectActions = [];
 		if (!empty($existingObject) && $existingObject instanceof Series && !empty($existingObject->id)) {
 			$objectActions[] = [

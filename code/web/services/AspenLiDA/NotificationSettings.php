@@ -20,7 +20,7 @@ class AspenLiDA_NotificationSettings extends ObjectEditor {
 		return 'Notification Settings';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$list = [];
 
 		$object = new NotificationSetting();

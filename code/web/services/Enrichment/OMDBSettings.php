@@ -21,7 +21,7 @@ class Enrichment_OMDBSettings extends ObjectEditor {
 		return 'OMDB Settings';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new OMDBSetting();
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->orderBy($this->getSort());
@@ -49,7 +49,7 @@ class Enrichment_OMDBSettings extends ObjectEditor {
 		return 'id';
 	}
 
-	function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions(?DataObject $existingObject): array {
 		return [];
 	}
 
@@ -73,7 +73,7 @@ class Enrichment_OMDBSettings extends ObjectEditor {
 		return UserAccount::userHasPermission('Administer Third Party Enrichment API Keys');
 	}
 
-	function canAddNew() {
+	function canAddNew() : bool {
 		return $this->getNumObjects() == 0;
 	}
 }

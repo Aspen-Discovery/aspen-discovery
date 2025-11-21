@@ -18,14 +18,14 @@ class Admin_JavaScriptSnippets extends ObjectEditor {
 		return 'JavaScript Snippets';
 	}
 
-	function canDelete() {
+	function canDelete() : bool {
 		return UserAccount::userHasPermission([
 			'Administer All JavaScript Snippets',
 			'Administer Library JavaScript Snippets',
 		]);
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new JavaScriptSnippet();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
@@ -112,7 +112,7 @@ class Admin_JavaScriptSnippets extends ObjectEditor {
 		]);
 	}
 
-	public function canCopy() {
+	public function canCopy() : bool {
 		return $this->canAddNew();
 	}
 }

@@ -18,11 +18,11 @@ class Admin_BadWords extends ObjectEditor {
 		return 'Bad Words List';
 	}
 
-	function canDelete() {
+	function canDelete() : bool {
 		return UserAccount::userHasPermission(['Administer Bad Words']);
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new BadWord();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);

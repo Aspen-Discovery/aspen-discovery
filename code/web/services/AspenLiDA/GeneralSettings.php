@@ -20,7 +20,7 @@ class AspenLiDA_GeneralSettings extends ObjectEditor {
 		return 'General Settings';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$list = [];
 
 		$object = new GeneralSetting();

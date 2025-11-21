@@ -16,7 +16,7 @@ class Admin_Libraries extends ObjectEditor {
 		return 'Library Systems';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$libraryList = [];
 
 		$user = UserAccount::getLoggedInUser();
@@ -72,7 +72,7 @@ class Admin_Libraries extends ObjectEditor {
 		}
 		global $library;
 		$accountProfile = $library->getAccountProfile();
-		if (!$accountProfile || empty($accountProfile) || !isset($accountProfile->driver)) {
+		if (empty($accountProfile) || !isset($accountProfile->driver)) {
 			return $objectStructure;
 		}
 
@@ -80,7 +80,7 @@ class Admin_Libraries extends ObjectEditor {
 		$catalogDriver = CatalogFactory::getCatalogConnectionInstance(trim($accountProfile->driver), $accountProfile);
 		$consentPluginNames = $catalogDriver->getPluginNamesByMethodName('patron_consent_type');
 		$anyConsentPluginsEnabled = false;
-		if ($consentPluginNames != false) {
+		if ($consentPluginNames) {
 			foreach ($consentPluginNames as $pluginName) {
 				$pluginStatus = $catalogDriver->getPluginStatus($pluginName);
 				if ($pluginStatus['enabled']) {
@@ -113,7 +113,7 @@ class Admin_Libraries extends ObjectEditor {
 		return UserAccount::userHasPermission('Administer All Libraries');
 	}
 
-	function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions(?DataObject $existingObject): array {
 		return [];
 	}
 

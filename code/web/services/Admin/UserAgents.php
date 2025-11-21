@@ -17,7 +17,7 @@ class Admin_UserAgents extends ObjectEditor {
 		return 'User Agents';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new UserAgent();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
@@ -66,7 +66,7 @@ class Admin_UserAgents extends ObjectEditor {
 		return UserAccount::userHasPermission('Administer User Agents');
 	}
 
-	function canDelete() {
+	function canDelete() : bool {
 		return false;
 	}
 }

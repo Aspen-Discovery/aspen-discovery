@@ -6,7 +6,7 @@ require_once ROOT_DIR . '/sys/Greenhouse/AspenSiteCache.php';
 require_once ROOT_DIR . '/sys/CurlWrapper.php';
 
 class AspenLiDA_NotificationTestingTool extends Admin_Admin {
-	function launch() {
+	function launch() : void {
 		global $interface;
 		$interface->assign('instructions', $this->getInstructions());
 
@@ -35,18 +35,14 @@ class AspenLiDA_NotificationTestingTool extends Admin_Admin {
 		$this->display('aspenLiDANotificationTestingTool.tpl', 'Aspen LiDA Notification Testing Tool');
 	}
 
-	function easy_printr($section, &$var) {
-		$contents = "<pre id='{$section}'>";
+	function easy_printr($section, &$var) : string {
+		$contents = "<pre id='$section'>";
 		$formattedContents = print_r($var, true);
 		if ($formattedContents !== false) {
 			$contents .= $formattedContents;
 		}
 		$contents .= '</pre>';
 		return $contents;
-	}
-
-	function getAdditionalObjectActions($existingObject): array {
-		return [];
 	}
 
 	function getInstructions(): string {

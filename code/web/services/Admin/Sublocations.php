@@ -18,7 +18,7 @@ class Admin_Sublocations extends ObjectEditor {
 		return 'Sublocations';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		//Look lookup information for display in the user interface
 		$user = UserAccount::getLoggedInUser();
 

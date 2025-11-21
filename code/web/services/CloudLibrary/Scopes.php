@@ -21,7 +21,7 @@ class CloudLibrary_Scopes extends ObjectEditor {
 		return 'cloudLibrary Scopes';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new CloudLibraryScope();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
@@ -50,15 +50,15 @@ class CloudLibrary_Scopes extends ObjectEditor {
 		return 'id';
 	}
 
-	function canAddNew() {
+	function canAddNew() : bool {
 		return true;
 	}
 
-	function canDelete() {
+	function canDelete() : bool {
 		return true;
 	}
 
-	function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions(?DataObject $existingObject): array {
 		return [];
 	}
 
@@ -67,7 +67,7 @@ class CloudLibrary_Scopes extends ObjectEditor {
 	}
 
 	/** @noinspection PhpUnused */
-	function addToAllLibraries() {
+	function addToAllLibraries(): void {
 		$scopeId = $_REQUEST['id'];
 		$cloudLibraryScope = new CloudLibraryScope();
 		$cloudLibraryScope->id = $scopeId;
@@ -96,7 +96,7 @@ class CloudLibrary_Scopes extends ObjectEditor {
 	}
 
 	/** @noinspection PhpUnused */
-	function clearLibraries() {
+	function clearLibraries(): void {
 		$scopeId = $_REQUEST['id'];
 		$cloudLibraryScope = new CloudLibraryScope();
 		$cloudLibraryScope->id = $scopeId;
@@ -107,7 +107,7 @@ class CloudLibrary_Scopes extends ObjectEditor {
 	}
 
 	/** @noinspection PhpUnused */
-	function addToAllLocations() {
+	function addToAllLocations(): void {
 		$scopeId = $_REQUEST['id'];
 		$cloudLibraryScope = new CloudLibraryScope();
 		$cloudLibraryScope->id = $scopeId;
@@ -136,7 +136,7 @@ class CloudLibrary_Scopes extends ObjectEditor {
 	}
 
 	/** @noinspection PhpUnused */
-	function clearLocations() {
+	function clearLocations(): void {
 		$scopeId = $_REQUEST['id'];
 		$cloudLibraryScope = new CloudLibraryScope();
 		$cloudLibraryScope->id = $scopeId;

@@ -20,7 +20,7 @@ class Development_AspenReleases extends ObjectEditor {
 		return 'Aspen Releases';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new AspenRelease();
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$this->applyFilters($object);
@@ -49,15 +49,15 @@ class Development_AspenReleases extends ObjectEditor {
 		return 'id';
 	}
 
-	function canAddNew() {
+	function canAddNew() : bool {
 		return true;
 	}
 
-	function canDelete() {
+	function canDelete() : bool {
 		return false;
 	}
 
-	function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions(?DataObject $existingObject): array {
 		return [];
 	}
 

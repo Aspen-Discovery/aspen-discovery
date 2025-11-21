@@ -1,5 +1,7 @@
 <?php
 
+use JetBrains\PhpStorm\NoReturn;
+
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/Authentication/SSOSetting.php';
@@ -17,7 +19,7 @@ class SSOSettings extends ObjectEditor {
 		return 'Single Sign-on Settings';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$list = [];
 
 		$object = new SSOSetting();
@@ -49,7 +51,8 @@ class SSOSettings extends ObjectEditor {
 	}
 
 	/** @noinspection PhpUnused */
-	function resetDataMappingToDefault() {
+	#[NoReturn]
+	function resetDataMappingToDefault(): void {
 		$ssoSettingsId = $_REQUEST['id'];
 		$settings = new SSOSetting();
 		$settings->id = $ssoSettingsId;

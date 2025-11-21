@@ -17,7 +17,7 @@ class Admin_Locations extends ObjectEditor {
 		return 'Locations (Branches)';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		//Look lookup information for display in the user interface
 		$user = UserAccount::getLoggedInUser();
 

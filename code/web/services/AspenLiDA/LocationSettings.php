@@ -20,7 +20,7 @@ class AspenLiDA_LocationSettings extends ObjectEditor {
 		return 'Location Settings';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$list = [];
 
 		$object = new LocationSetting();

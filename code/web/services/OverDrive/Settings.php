@@ -21,7 +21,7 @@ class OverDrive_Settings extends ObjectEditor {
 		return 'OverDrive Settings';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new OverDriveSetting();
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->orderBy($this->getSort());
@@ -50,7 +50,7 @@ class OverDrive_Settings extends ObjectEditor {
 		return 'id';
 	}
 
-	function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions(?DataObject $existingObject): array {
 		return [];
 	}
 

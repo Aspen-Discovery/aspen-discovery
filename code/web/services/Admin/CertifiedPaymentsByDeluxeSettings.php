@@ -18,7 +18,7 @@ class Admin_CertifiedPaymentsByDeluxeSettings extends ObjectEditor {
 		return 'Certified Payments by Deluxe Settings';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$list = [];
 
 		$object = new CertifiedPaymentsByDeluxeSetting();

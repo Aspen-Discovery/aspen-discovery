@@ -34,7 +34,7 @@ class Events_AssabetSettings extends ObjectEditor {
 	/**
 	 * Load all objects into an array keyed by the primary key
 	 */
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new AssabetSetting();
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$this->applyFilters($object);

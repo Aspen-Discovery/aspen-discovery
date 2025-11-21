@@ -17,7 +17,7 @@ class Admin_AuthorEnrichment extends ObjectEditor {
 		return 'Author Enrichment';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new AuthorEnrichment();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);

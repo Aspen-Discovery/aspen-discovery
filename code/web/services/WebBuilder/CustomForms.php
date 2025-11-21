@@ -19,7 +19,7 @@ class WebBuilder_CustomForms extends ObjectEditor {
 		return 'Custom WebBuilder Forms';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new CustomForm();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
@@ -54,7 +54,7 @@ class WebBuilder_CustomForms extends ObjectEditor {
 		return 'id';
 	}
 
-	function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions(?DataObject $existingObject): array {
 		$objectActions = [];
 		if (!empty($existingObject) && $existingObject instanceof CustomForm && !empty($existingObject->id)) {
 			$objectActions[] = [

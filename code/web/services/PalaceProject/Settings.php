@@ -21,7 +21,7 @@ class PalaceProject_Settings extends ObjectEditor {
 		return 'Palace Project Settings';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new PalaceProjectSetting();
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$this->applyFilters($object);
@@ -50,15 +50,15 @@ class PalaceProject_Settings extends ObjectEditor {
 		return 'id';
 	}
 
-	function canAddNew() {
+	function canAddNew() : bool {
 		return true;
 	}
 
-	function canDelete() {
+	function canDelete() : bool {
 		return true;
 	}
 
-	function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions(?DataObject $existingObject): array {
 		return [];
 	}
 

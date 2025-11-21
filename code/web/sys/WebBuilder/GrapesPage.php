@@ -279,7 +279,7 @@ class GrapesPage extends DB_LibraryLinkedObject {
 		return false;
 	}
 
-	function getAdditionalObjectActions($existingObject): array {
+	function getAdditionalObjectActions(?DataObject $existingObject): array {
 		$objectActions = [];
 
 		if ($existingObject instanceof GrapesPage) {

@@ -57,19 +57,19 @@ class DataObjectUtil {
 		foreach ($structure as $property) {
 			if ($property['type'] == 'section') {
 				$sectionResults = DataObjectUtil::validateObject($property['properties'], $object);
-				if ($sectionResults['validatedOk'] == false) {
+				if (!$sectionResults['validatedOk']) {
 					$validationResults['errors'] = array_merge($validationResults['errors'], $sectionResults['errors']);
 				}
 				continue;
 			}
-			$value = isset($_REQUEST[$property['property']]) ? $_REQUEST[$property['property']] : null;
-			if (isset($property['required']) && $property['required'] == true) {
+			$value = $_REQUEST[$property['property']] ?? null;
+			if (isset($property['required']) && $property['required']) {
 				if ($value == null && strlen($value) > 0) {
 					$validationResults['errors'][] = $property['property'] . ' is required.';
 				}
 			}
 			if ($property['type'] == 'password' || $property['type'] == 'storedPassword') {
-				$valueRepeat = isset($_REQUEST[$property['property'] . 'Repeat']) ? $_REQUEST[$property['property'] . 'Repeat'] : null;
+				$valueRepeat = $_REQUEST[$property['property'] . 'Repeat'] ?? null;
 				if ($value != $valueRepeat) {
 					$validationResults['errors'][] = $property['property'] . ' does not match ' . $property['property'] . 'Repeat';
 				}
@@ -79,7 +79,7 @@ class DataObjectUtil {
 			if (isset($property['serverValidation'])) {
 				$validationRoutine = $property['serverValidation'];
 				$propValidation = $object->$validationRoutine();
-				if ($propValidation['validatedOk'] == false) {
+				if (!$propValidation['validatedOk']) {
 					$validationResults['errors'] = array_merge($validationResults['errors'], $propValidation['errors']);
 				}
 			}
@@ -174,7 +174,7 @@ class DataObjectUtil {
 					} else {
 						$newValue = strip_tags(trim($_REQUEST[$propertyName]));
 						if ($newValue != null) {
-							$newValue = preg_replace('/\x{2029}/usm', '', $newValue);
+							$newValue = preg_replace('/\x{2029}/um', '', $newValue);
 						}
 						$object->setProperty($propertyName, $newValue, $property);
 					}
@@ -335,7 +335,7 @@ class DataObjectUtil {
 
 		} elseif ($property['type'] == 'image') {
 			//Make sure that the type is correct (jpg, png, or gif)
-			if (isset($_REQUEST["remove{$propertyName}"])) {
+			if (isset($_REQUEST["remove$propertyName"])) {
 				$object->setProperty($propertyName, '', $property);
 
 			} elseif (isset($_FILES[$propertyName])) {
@@ -406,7 +406,7 @@ class DataObjectUtil {
 					}
 					global $serverName;
 					if (isset($property['storagePath'])) {
-						$destFileName = ($object->id != null) ? $objectType."_".$serverName."_".$object->id.$fileType : "Temp_".$_FILES[$propertyName]["name"];
+						$destFileName = ($object->getPrimaryKeyValue() != null) ? $objectType."_".$serverName."_".$object->getPrimaryKeyValue().$fileType : "Temp_".$_FILES[$propertyName]["name"];
 						$destFolder = $property['storagePath'];
 						$destFullPath = $destFolder . '/' . $destFileName;
 						$copyResult = copy($_FILES[$propertyName]["tmp_name"], $destFullPath);
@@ -416,14 +416,14 @@ class DataObjectUtil {
 						global $serverName;
 						if (isset($property['path'])) {
 							$destFolder = $property['path'];
-							$destFileName = ($object->id != null) ? $objectType."_".$serverName."_".$object->id.$fileType : "Temp_".$_FILES[$propertyName]["name"];
+							$destFileName = ($object->getPrimaryKeyValue() != null) ? $objectType."_".$serverName."_".$object->getPrimaryKeyValue().$fileType : "Temp_".$_FILES[$propertyName]["name"];
 							if (!file_exists($destFolder)) {
 								mkdir($destFolder, 0755, true);
 							}
 							$pathToThumbs = $destFolder . '/thumbnail';
 							$pathToMedium = $destFolder . '/medium';
 						} else {
-							$destFileName = ($object->id != null) ? $serverName."_".$objectType."_".$object->id.$fileType : "Temp_".$_FILES[$propertyName]["name"];
+							$destFileName = ($object->getPrimaryKeyValue() != null) ? $serverName."_".$objectType."_".$object->getPrimaryKeyValue().$fileType : "Temp_".$_FILES[$propertyName]["name"];
 							$destFolder = $configArray['Site']['local'] . '/files/original';
 							$pathToThumbs = $configArray['Site']['local'] . '/files/thumbnail';
 							$pathToMedium = $configArray['Site']['local'] . '/files/medium';
@@ -466,7 +466,7 @@ class DataObjectUtil {
 
 		} elseif ($property['type'] == 'file') {
 			//Make sure that the type is correct (jpg, png, or gif)
-			if (isset($_REQUEST["remove{$propertyName}"])) {
+			if (isset($_REQUEST["remove$propertyName"])) {
 				$object->setProperty($propertyName, '', $property);
 			} elseif (isset($_REQUEST["{$propertyName}_existing"]) && $_FILES[$propertyName]['error'] == 4) {
 				$object->setProperty($propertyName, $_REQUEST["{$propertyName}_existing"], $property);
@@ -485,12 +485,12 @@ class DataObjectUtil {
 						$objectType = $object->type;
 					} else {
 						$objectType = $property['type'];
-					};
+					}
 					$fileType = ".pdf";
 					//Copy the full image to the correct location
 					global $serverName;
 					//Filename is the $serverName + name of the object + the original filename
-					$destFileName = ($object->id != null) ? $objectType."_".$serverName."_".$object->id.$fileType : "Temp_".$_FILES[$propertyName]["name"];
+					$destFileName = ($object->getPrimaryKeyValue() != null) ? $objectType."_".$serverName."_".$object->getPrimaryKeyValue().$fileType : "Temp_".$_FILES[$propertyName]["name"];
 					$destFolder = $property['path'];
 					if (!file_exists($destFolder)) {
 						mkdir($destFolder, 0775, true);
@@ -530,7 +530,7 @@ class DataObjectUtil {
 			}
 		} elseif ($property['type'] == 'uploaded_font') {
 			//Make sure that the type is correct (jpg, png, or gif)
-			if (isset($_REQUEST["remove{$propertyName}"])) {
+			if (isset($_REQUEST["remove$propertyName"])) {
 				$object->setProperty($propertyName, '', $property);
 			} elseif (isset($_REQUEST["{$propertyName}_existing"]) && $_FILES[$propertyName]['error'] == 4) {
 				$object->setProperty($propertyName, $_REQUEST["{$propertyName}_existing"], $property);
@@ -565,7 +565,7 @@ class DataObjectUtil {
 			if (strlen($_REQUEST[$propertyName]) > 0 && ($_REQUEST[$propertyName] == $_REQUEST[$propertyName . 'Repeat'])) {
 				$newValue = strip_tags(trim($_REQUEST[$propertyName]));
 				if ($newValue != null) {
-					$newValue = preg_replace('/\x{2029}/usm', '', $newValue);
+					$newValue = preg_replace('/\x{2029}/um', '', $newValue);
 				}
 				$object->setProperty($propertyName, md5($newValue), $property);
 			}
@@ -573,7 +573,7 @@ class DataObjectUtil {
 			if (strlen($_REQUEST[$propertyName]) > 0 && ($_REQUEST[$propertyName] == $_REQUEST[$propertyName . 'Repeat'])) {
 				$newValue = strip_tags(trim($_REQUEST[$propertyName]));
 				if ($newValue != null) {
-					$newValue = preg_replace('/\x{2029}/usm', '', $newValue);
+					$newValue = preg_replace('/\x{2029}/um', '', $newValue);
 				}
 				$object->setProperty($propertyName, $newValue, $property);
 			}

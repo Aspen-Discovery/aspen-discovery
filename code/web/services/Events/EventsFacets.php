@@ -21,7 +21,7 @@ class Events_EventsFacets extends ObjectEditor {
 		return 'Events Facets';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array {
+	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new EventsFacetGroup();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
