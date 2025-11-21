@@ -24,8 +24,15 @@ class IPAddress extends DataObject {
 	function getNumericColumnNames(): array {
 		return [
 			'isOpac',
+			'defaultLogMeOutAfterPlacingHoldOn',
 			'blockAccess',
+			'blockedForSpam',
 			'allowAPIAccess',
+			'showDebuggingInformation',
+			'logTimingInformation',
+			'logAllQueries',
+			'authenticatedForEBSCOhost',
+			'masqueradeMode',
 			'ssoLogin'
 		];
 	}
@@ -318,8 +325,8 @@ class IPAddress extends DataObject {
 			}
 		}
 		//echo("\r\n<br/>$ipAddress: " . sprintf('%u', $startIp) . " - " .  sprintf('%u', $endIp));
-		$this->setProperty('startIpVal', $startIp, $objectStructure);
-		$this->setProperty('endIpVal', $endIp, $objectStructure);
+		$this->setProperty('startIpVal', $startIp, null);
+		$this->setProperty('endIpVal', $endIp, null);
 		if (!$startIp || !$endIp) {
 			return false;
 		} else {

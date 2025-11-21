@@ -226,15 +226,25 @@ abstract class ObjectEditor extends Admin_Admin {
 		return $newObject;
 	}
 
+	/**
+	 * This is called:
+	 * - when adding a new object
+	 * - after adding a new object fails due to validation errors
+	 */
 	function setDefaultValues($object, $structure) : void {
+		$fieldLocks = $this->getFieldLocks();
 		foreach ($structure as $property) {
 			$propertyName = $property['property'];
-			if (isset($_REQUEST[$propertyName])) {
-				$object->$propertyName = $_REQUEST[$propertyName];
-			} elseif (isset($property['default'])) {
-				$object->$propertyName = $property['default'];
-			} elseif ($property['type'] == 'section') {
+			if ($property['type'] == 'section') {
 				$this->setDefaultValues($object, $property['properties']);
+			}else {
+				if (isset($_REQUEST[$propertyName])) {
+					//Use Process Property to make sure values are interpreted properly (i.e. checkboxes)
+					DataObjectUtil::processProperty($object, $property, $fieldLocks);
+				} elseif (isset($property['default']) && $this->objectAction == 'addNew') {
+					//We're adding a new object, use the defaults
+					$object->$propertyName = $property['default'];
+				}
 			}
 		}
 	}
@@ -633,6 +643,11 @@ abstract class ObjectEditor extends Admin_Admin {
 			$isNewObject = true;
 		} else {
 			$structure = $existingObject->updateStructureForEditingObject($structure);
+			if ($this->objectAction == 'save') {
+				//We are redisplaying an object that failed to save. Set values provided using setDefaultValues
+				$this->setDefaultValues($existingObject, $structure);
+			}
+
 			$interface->assign('structure', $structure);
 			$isNewObject = false;
 		}
@@ -760,11 +775,39 @@ abstract class ObjectEditor extends Admin_Admin {
 		}
 		if (empty($id) && $errorOccurred) {
 			if ($this->canAddNew()) {
-				header("Location: /{$this->getModule()}/{$this->getToolName()}?objectAction=addNew");
+				//Don't do a redirect here, display the data with the user's inputs
+
+				//Display the error message
+				global $interface;
+				$user = UserAccount::getActiveUserObj();
+				$interface->assign('updateMessage', $user->updateMessage);
+				$interface->assign('updateMessageIsError', $user->updateMessageIsError);
+				$user->updateMessage = '';
+				$user->updateMessageIsError = 0;
+				$user->update();
+
+				//Redisplay the form
+				$this->viewIndividualObject($structure);
+				return;
+				//header("Location: /{$this->getModule()}/{$this->getToolName()}?objectAction=addNew");
 			} else {
 				header("Location: /{$this->getModule()}/{$this->getToolName()}");
 			}
-		} elseif (isset($_REQUEST['submitStay']) || $errorOccurred) {
+		} elseif ($errorOccurred) {
+			//An error occurred updating an existing object, redisplay the form so the user doesn't lose their changes
+			//Display the error message
+			global $interface;
+			$user = UserAccount::getActiveUserObj();
+			$interface->assign('updateMessage', $user->updateMessage);
+			$interface->assign('updateMessageIsError', $user->updateMessageIsError);
+			$user->updateMessage = '';
+			$user->updateMessageIsError = 0;
+			$user->update();
+
+			//Redisplay the form
+			$this->viewIndividualObject($structure);
+			return;
+		} elseif (isset($_REQUEST['submitStay'])) {
 			$editUrl = "/{$this->getModule()}/{$this->getToolName()}?objectAction=edit&id=$id";
 			// Preserve all context parameters for submitStay to maintain list context.
 			$preservedParams = ['page', 'pageSize', 'sort', 'filterType', 'filterValue', 'filterValue2'];
@@ -1541,18 +1584,22 @@ abstract class ObjectEditor extends Admin_Admin {
 		return $hasSections || count($structure) > 6;
 	}
 
+	private ?array $_fieldLocks = null;
 	public function getFieldLocks() : array {
-		$fieldLocks = [];
-		try {
-			require_once ROOT_DIR . '/sys/Administration/FieldLock.php';
-			$fieldLock = new FieldLock();
-			$fieldLock->module = $this->getModule();
-			$fieldLock->toolName = $this->getToolName();
-			$fieldLocks = $fieldLock->fetchAll('id', 'field');
-		}catch (Exception) {
-			//Nothing since it's not setup yet
+		if ($this->_fieldLocks == null) {
+			$this->_fieldLocks = [];
+			try {
+				require_once ROOT_DIR . '/sys/Administration/FieldLock.php';
+				$fieldLock = new FieldLock();
+				$fieldLock->module = $this->getModule();
+				$fieldLock->toolName = $this->getToolName();
+				$this->_fieldLocks = $fieldLock->fetchAll('id', 'field');
+			}catch (Exception) {
+				//Nothing since it's not setup yet
+			}
 		}
-		return $fieldLocks;
+
+		return $this->_fieldLocks;
 	}
 
 	public function userCanChangeFieldLocks() : bool {
