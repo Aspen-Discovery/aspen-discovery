@@ -99,6 +99,7 @@ class Library extends DataObject {
 	public $allowHomeLibraryUpdates;
 	public $allowUsernameUpdates;
 	public $showMessagingSettings;
+	public $allowChangingPickupLocationForUnavailableHolds;
 	public $allowChangingPickupLocationForAvailableHolds;
 	public $allowCancellingAvailableHolds;
 	public $allowCancellingInTransitHolds;
@@ -267,6 +268,7 @@ class Library extends DataObject {
 	public $symphonyBillingNoticeCategoryNumber;
 	public $symphonyBillingNoticeCategoryOptions;
 	public $allowPickupLocationUpdates;
+	public $hidePickupLocationPrompt;
 	public $showAlternateLibraryOptionsInProfile;
 	public $additionalCss;
 	public $maxRequestsPerYear;
@@ -2074,6 +2076,14 @@ class Library extends DataObject {
 								'hideInLists' => true,
 								'default' => 0,
 							],
+							'hidePickupLocationPrompt' => [
+								'property' => 'hidePickupLocationPrompt',
+								'type' => 'checkbox',
+								'label' => 'Hide Pickup Location Prompt',
+								'description' => 'Hide the pickup location prompt if a single pickup location is available.',
+								'hideInLists' => true,
+								'default' => 0,
+							],
 							'allowPickupLocationUpdates' => [
 								'property' => 'allowPickupLocationUpdates',
 								'type' => 'checkbox',
@@ -2152,6 +2162,15 @@ class Library extends DataObject {
 								'label' => 'Show volumes with local copies first when placing holds',
 								'description' => 'When enabled, volumes that have at least one copy owned locally are shown before volumes with no local copies.',
 								'default' => 0,
+							],
+							'allowChangingPickupLocationForUnavailableHolds' => [
+								'property' => 'allowChangingPickupLocationForUnavailableHolds',
+								'type' => 'checkbox',
+								'label' => 'Allow Changing Pickup Location For Unavailable Holds',
+								'description' => 'Whether or not the user can change pickup locations for unavailable holds.',
+								'hideInLists' => true,
+								'default' => 1,
+								'permissions' => ['Library ILS Connection'],
 							],
 							'allowChangingPickupLocationForAvailableHolds' => [
 								'property' => 'allowChangingPickupLocationForAvailableHolds',

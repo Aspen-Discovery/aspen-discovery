@@ -875,7 +875,22 @@ class CatalogConnection {
 	 * @access public
 	 */
 	public function getHolds(User $user): array {
-		return $this->driver->getHolds($user);
+		$holds = $this->driver->getHolds($user);
+		$userLibrary = $user->getHomeLibrary();
+		foreach ($holds as $sectionName => $holdSection) {
+			//Check all unavailable holds to see if we can't update pickup location
+			//We will not do available here because the individual drivers check more specifically
+			//allowChangingPickupLocationForUnavailableHolds defaults to on
+			if ($sectionName == 'unavailable') {
+				if (!$userLibrary->allowChangingPickupLocationForUnavailableHolds) {
+					/** @var Hold $hold */
+					foreach ($holdSection as $hold) {
+						$hold->locationUpdateable = false;
+					}
+				}
+			}
+		}
+		return $holds;
 	}
 
 	/**

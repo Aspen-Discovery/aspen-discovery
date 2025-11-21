@@ -513,6 +513,27 @@ class Record_AJAX extends Action {
 
 			$interface->assign('items', $items);
 			$interface->assign('holdType', $holdType);
+			if ($library->hidePickupLocationPrompt) {
+				$numLocationsToSelectFrom = 0;
+				$firstLocationCode = '';
+				foreach ($locations as $location) {
+					if (is_object($location)) {
+						$numLocationsToSelectFrom++;
+						if (empty($firstLocationCode)) {
+							$firstLocationCode = $location->code;
+						}
+					}
+				}
+				if ($numLocationsToSelectFrom == 1) {
+					$interface->assign('defaultPickupLocation', $firstLocationCode);
+					$interface->assign('hidePickupLocationPrompt', true);
+				}else{
+					$interface->assign('hidePickupLocationPrompt', false);
+				}
+
+			}else{
+				$interface->assign('hidePickupLocationPrompt', false);
+			}
 
 			// If the pickup location is valid, bypass the prompt to select a pickup location.
 			$bypassHolds = false;
@@ -821,6 +842,26 @@ class Record_AJAX extends Action {
 			$interface->assign('localSystemName', $library->displayName);
 			$interface->assign('hasItemsWithoutVolumes', $numItemsWithoutVolumes > 0);
 			$interface->assign('majorityOfItemsHaveVolumes', $numItemsWithVolumes > $numItemsWithoutVolumes);
+			if ($library->hidePickupLocationPrompt) {
+				$numLocationsToSelectFrom = 0;
+				$firstLocationCode = '';
+				foreach ($locations as $location) {
+					if (is_object($location)) {
+						$numLocationsToSelectFrom++;
+						if (empty($firstLocationCode)) {
+							$firstLocationCode = $location->code;
+						}
+					}
+				}
+				if ($numLocationsToSelectFrom == 1) {
+					$interface->assign('defaultPickupLocation', $firstLocationCode);
+					$interface->assign('hidePickupLocationPrompt', true);
+				}else{
+					$interface->assign('hidePickupLocationPrompt', false);
+				}
+			}else{
+				$interface->assign('hidePickupLocationPrompt', false);
+			}
 
 			//Check to see if we need to place a volume hold
 			$alwaysPlaceVolumeHoldWhenVolumesArePresent = $marcRecord->getCatalogDriver()->alwaysPlaceVolumeHoldWhenVolumesArePresent();
