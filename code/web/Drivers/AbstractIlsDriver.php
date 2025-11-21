@@ -339,11 +339,11 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 		return false;
 	}
 
-	public function hasEditableUsername() {
+	public function hasEditableUsername() : bool {
 		return false;
 	}
 
-	public function getEditableUsername(User $user) {
+	public function getEditableUsername(User $user) : ?string {
 		return null;
 	}
 

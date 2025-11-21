@@ -1219,11 +1219,11 @@ class Evergreen extends AbstractIlsDriver {
 		return $userMessages;
 	}
 
-	public function getEditableUsername(User $user) {
+	public function getEditableUsername(User $user) : ?string {
 		return $user->ils_username;
 	}
 
-	public function hasEditableUsername() {
+	public function hasEditableUsername() : bool {
 		return true;
 	}
 

@@ -7559,11 +7559,11 @@ class Koha extends AbstractIlsDriver {
 		return true;
 	}
 
-	public function hasEditableUsername() {
+	public function hasEditableUsername() : bool {
 		return true;
 	}
 
-	public function getEditableUsername(User $user) {
+	public function getEditableUsername(User $user) : ?string {
 		$this->initDatabaseConnection();
 		/** @noinspection SqlResolve */
 		$sql = "SELECT userId from borrowers where borrowernumber = '" . mysqli_escape_string($this->dbConnection, $user->unique_ils_id) . "'";

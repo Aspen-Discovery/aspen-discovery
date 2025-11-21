@@ -4197,7 +4197,7 @@ class User extends DataObject {
 		return $locationValid;
 	}
 
-	public function hasEditableUsername() {
+	public function hasEditableUsername() : bool {
 		if ($this->hasIlsConnection()) {
 			$homeLibrary = $this->getHomeLibrary();
 			if ($homeLibrary != null && $homeLibrary->allowUsernameUpdates) {
@@ -4207,7 +4207,7 @@ class User extends DataObject {
 		return false;
 	}
 
-	public function getEditableUsername() {
+	public function getEditableUsername() : ?string {
 		if ($this->hasIlsConnection()) {
 			return $this->getCatalogDriver()->getEditableUsername($this);
 		} else {

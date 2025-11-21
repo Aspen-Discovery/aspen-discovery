@@ -94,6 +94,57 @@ class SirsiDynixROA extends HorizonAPI {
 		return true;
 	}
 
+	public function hasEditableUsername() : bool {
+		return true;
+	}
+
+	public function getEditableUsername(User $user) : ?string {
+		return $user->ils_username;
+	}
+
+	public function updateEditableUsername(User $patron, string $username): array {
+		$result = [
+			'success' => false,
+			'message' => 'Unknown error updating username',
+		];
+
+		$sessionToken = $this->getStaffSessionToken();
+		if ($sessionToken) {
+			$webServiceURL = $this->getWebServiceURL();
+			$userID = $patron->unique_ils_id;
+			//To update the patron, we need to load the patron from Symphony so we only overwrite changed values.
+			$updatePatronInfoParametersClass = $this->getWebServiceResponse('getPatronInfo', $this->getWebServiceURL() . '/user/patron/key/' . $userID . '?includeFields=*,preferredAddress,address1,address2,address3', null, $sessionToken);
+			if ($updatePatronInfoParametersClass) {
+				//Convert from stdClass to associative array
+				$updatePatronInfoParameters = json_decode(json_encode($updatePatronInfoParametersClass), true);
+				if (isset($updatePatronInfoParameters['resource']) && $updatePatronInfoParameters['resource'] == '/user/patron') {
+					$updatePatronInfoParameters['fields']['alternateID'] = $username;
+
+					$updateAccountInfoResponse = $this->getWebServiceResponse('updatePatronInfo', $webServiceURL . '/user/patron/key/' . $userID . '?includeFields=*,preferredAddress,preferredName,address1,address2,address3', $updatePatronInfoParameters, $sessionToken, 'PUT');
+
+					if (isset($updateAccountInfoResponse->messageList)) {
+						foreach ($updateAccountInfoResponse->messageList as $message) {
+							$result['messages'][] = $message->message;
+						}
+						global $logger;
+						$logger->log('Symphony Driver - Patron Info Update Error - Error from ILS : ' . implode(';', $result['messages']), Logger::LOG_ERROR);
+					} else {
+						$patron->ils_username = $username;
+						$result['success'] = true;
+						$result['messages'][] = 'Your username was updated successfully.';
+						$patron->update();
+					}
+				} else {
+					$result['messages'][] = 'Could not load existing contact information to update username.';
+				}
+			} else {
+				$result['messages'][] = 'Could not find the account to update.';
+			}
+		}
+
+		return $result;
+	}
+
 	function findNewUser($patronBarcode, $patronUsername): User|bool {
 		// Creates a new user like patronLogin and looks up user by barcode or username.
 		// Note: The user pin is not supplied in the Account Info Lookup call.

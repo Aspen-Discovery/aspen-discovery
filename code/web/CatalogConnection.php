@@ -1676,11 +1676,11 @@ class CatalogConnection {
 		return $this->driver->supportsLoginWithUsername();
 	}
 
-	public function hasEditableUsername() {
+	public function hasEditableUsername() : bool {
 		return $this->driver->hasEditableUsername();
 	}
 
-	public function getEditableUsername(User $user) {
+	public function getEditableUsername(User $user) : ?string {
 		return $this->driver->getEditableUsername($user);
 	}
 
