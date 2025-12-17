@@ -70,13 +70,6 @@ if ! php initDatabase.php ; then
 	exit 1
 fi
 
-# Initialize Koha Connection
-log "Initializing Koha link";
-if ! php initKohaLink.php ; then
-	log "ERROR: Koha link error"
-	exit 1
-fi
-
 # Create missing dirs and fix ownership and permissions if needed
 log_info "Setting up data and log directories"
 if ! php createDirs.php ; then

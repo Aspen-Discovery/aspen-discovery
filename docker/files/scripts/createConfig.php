@@ -52,23 +52,6 @@ $variables = [
 	'enableKoha' => strtolower(getenv('ENABLE_KOHA')),
 ];
 
-// Add Koha-specific variables if enabled
-if ($variables['enableKoha'] === "yes") {
-	$variables['ilsDriver'] = 'Koha';
-	$variables['ilsUrl'] = getenv('KOHA_OPAC_URL');
-	$variables['ilsStaffUrl'] = getenv('KOHA_STAFF_URL');
-	$variables['ilsDatabaseName'] = getenv('KOHA_DATABASE_NAME');
-	$variables['ilsDatabaseHost'] = getenv('KOHA_DATABASE_HOST');
-	$variables['ilsDatabasePort'] = getenv('KOHA_DATABASE_PORT');
-	$variables['ilsDatabaseUser'] = getenv('KOHA_DATABASE_USER');
-	$variables['ilsDatabasePassword'] = getenv('KOHA_DATABASE_PASSWORD');
-	$variables['ilsDatabaseTimeZone'] = getenv('KOHA_DATABASE_TIMEZONE') ?? 'US/Central';
-	$variables['ilsClientId'] = getenv('KOHA_CLIENT_ID');
-	$variables['ilsClientSecret'] = getenv('KOHA_CLIENT_SECRET');
-} else {
-	$variables['ilsDriver'] = ucfirst(getenv('ILS_DRIVER'));
-}
-
 // =============================================================================
 // Variable Validation
 // =============================================================================
@@ -78,14 +61,6 @@ $mandatory = [
 	'configDir', 'timezone', 'aspenAdminPassword', 'databaseHost', 'databasePort', 
 	'databaseName', 'databaseUser', 'databasePassword'
 ];
-
-if ($variables['enableKoha'] === "yes") {
-	$kohaKeys = [
-		'ilsDriver', 'ilsUrl', 'ilsStaffUrl', 'ilsDatabaseName', 'ilsDatabaseHost', 
-		'ilsDatabasePort', 'ilsDatabaseUser', 'ilsDatabasePassword', 'ilsDatabaseTimeZone'
-	];
-	$mandatory = array_merge($mandatory, $kohaKeys);
-}
 
 $missingVars = [];
 foreach ($variables as $key => $value) {

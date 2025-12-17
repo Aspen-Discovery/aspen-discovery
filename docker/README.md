@@ -51,21 +51,6 @@ Access Aspen at http://localhost:85 (default credentials: `aspen_admin` / `secre
 | `PHP_FPM_HOST` | `backend` | PHP-FPM hostname |
 | `PHP_FPM_PORT` | `9000` | PHP-FPM port |
 
-### Koha Integration (Optional)
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `ENABLE_KOHA` | `no` | Enable Koha integration (`yes`/`no`) |
-| `KOHA_OPAC_URL` | - | Koha OPAC URL |
-| `KOHA_STAFF_URL` | - | Koha staff client URL |
-| `KOHA_DATABASE_HOST` | - | Koha database host |
-| `KOHA_DATABASE_NAME` | - | Koha database name |
-| `KOHA_DATABASE_USER` | - | Koha database user |
-| `KOHA_DATABASE_PASSWORD` | - | Koha database password |
-| `KOHA_DATABASE_PORT` | - | Koha database port |
-| `KOHA_CLIENT_ID` | - | Koha API client ID |
-| `KOHA_CLIENT_SECRET` | - | Koha API client secret |
-
 ### Docker Images
 
 | Variable | Default | Description |
