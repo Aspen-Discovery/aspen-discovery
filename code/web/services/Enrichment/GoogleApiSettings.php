@@ -18,7 +18,7 @@ class Enrichment_GoogleApiSettings extends ObjectEditor {
 	}
 
 	function getPageTitle(): string {
-		return 'Google Api Settings';
+		return 'Google API Settings';
 	}
 
 	function getAllObjects(int $page, int $recordsPerPage): array {

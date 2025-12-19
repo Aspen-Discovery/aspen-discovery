@@ -18,7 +18,7 @@ class Enrichment_NewYorkTimesSettings extends ObjectEditor {
 	}
 
 	function getPageTitle(): string {
-		return 'New York Times Api Settings';
+		return 'New York Times API Settings';
 	}
 
 	function getAllObjects(int $page, int $recordsPerPage): array {
