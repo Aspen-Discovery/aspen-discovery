@@ -1,4 +1,122 @@
 AspenDiscovery.Admin = (function () {
+	const DEFAULT_COLORS = {
+        pageBackgroundColor: "#ffffff",
+        bodyBackgroundColor: "#ffffff",
+        bodyTextColor: "#6B6B6B",
+        linkColor: "#3174AF",
+        linkHoverColor: "#265a87",
+        resultLabelColor: "#44484a",
+        resultValueColor: "#6B6B6B",
+        headerBackgroundColor: "#f1f1f1",
+        headerForegroundColor: "#303030",
+        breadcrumbsBackgroundColor: "#f5f5f5",
+        breadcrumbsForegroundColor: "#6B6B6B",
+        searchToolsBackgroundColor: "#f5f5f5",
+        searchToolsBorderColor: "#e3e3e3",
+        searchToolsForegroundColor: "#6B6B6B",
+        footerBackgroundColor: "#f1f1f1",
+        footerForegroundColor: "#303030",
+
+        primaryBackgroundColor: "#0a7589",
+        primaryForegroundColor: "#ffffff",
+        secondaryBackgroundColor: "#de9d03",
+        secondaryForegroundColor: "#303030",
+        tertiaryBackgroundColor: "#de1f0b",
+        tertiaryForegroundColor: "#000000",
+
+        menubarBackgroundColor: "#f1f1f1",
+        menubarForegroundColor: "#303030",
+        menubarHighlightBackgroundColor: "#f1f1f1",
+        menubarHighlightForegroundColor: "#265a87",
+        menuDropdownBackgroundColor: "#ededed",
+        menuDropdownForegroundColor: "#404040",
+
+        modalDialogBackgroundColor: "#ffffff",
+        modalDialogForegroundColor: "#333333",
+        modalDialogHeaderFooterBackgroundColor: "#ffffff",
+        modalDialogHeaderFooterForegroundColor: "#333333",
+        modalDialogHeaderFooterBorderColor: "#e5e5e5",
+
+        browseCategoryPanelColor: "#d7dce3",
+        selectedBrowseCategoryBackgroundColor: "#0087AB",
+        selectedBrowseCategoryForegroundColor: "#ffffff",
+        selectedBrowseCategoryBorderColor: "#0087AB",
+        deselectedBrowseCategoryBackgroundColor: "#0087AB",
+        deselectedBrowseCategoryForegroundColor: "#ffffff",
+        deselectedBrowseCategoryBorderColor: "#0087AB",
+
+        badgeBackgroundColor: "#666666",
+        badgeForegroundColor: "#ffffff",
+
+        closedPanelBackgroundColor: "#e7e7e7",
+        closedPanelForegroundColor: "#333333",
+        openPanelBackgroundColor: "#333333",
+        openPanelForegroundColor: "#ffffff",
+        panelBodyBackgroundColor: "#ffffff",
+        panelBodyForegroundColor: "#404040",
+
+        defaultButtonBackgroundColor: "#ffffff",
+        defaultButtonForegroundColor: "#333333",
+        defaultButtonBorderColor: "#cccccc",
+        defaultButtonHoverBackgroundColor: "#eeeeee",
+        defaultButtonHoverForegroundColor: "#333333",
+        defaultButtonHoverBorderColor: "#cccccc",
+
+        primaryButtonBackgroundColor: "#1b6ec2",
+        primaryButtonForegroundColor: "#ffffff",
+        primaryButtonBorderColor: "#1b6ec2",
+        primaryButtonHoverBackgroundColor: "#ffffff",
+        primaryButtonHoverForegroundColor: "#1b6ec2",
+        primaryButtonHoverBorderColor: "#1b6ec2",
+
+        actionButtonBackgroundColor: "#1b6ec2",
+        actionButtonForegroundColor: "#ffffff",
+        actionButtonBorderColor: "#1b6ec2",
+        actionButtonHoverBackgroundColor: "#ffffff",
+        actionButtonHoverForegroundColor: "#1b6ec2",
+        actionButtonHoverBorderColor: "#1b6ec2",
+
+        editionsButtonBackgroundColor: "#f8f9fa",
+        editionsButtonForegroundColor: "#212529",
+        editionsButtonBorderColor: "#999999",
+        editionsButtonHoverBackgroundColor: "#ffffff",
+        editionsButtonHoverForegroundColor: "#1b6ec2",
+        editionsButtonHoverBorderColor: "#1b6ec2",
+
+        toolsButtonBackgroundColor: "#747474",
+        toolsButtonForegroundColor: "#ffffff",
+        toolsButtonBorderColor: "#636363",
+        toolsButtonHoverBackgroundColor: "#636363",
+        toolsButtonHoverForegroundColor: "#ffffff",
+        toolsButtonHoverBorderColor: "#636363",
+
+        infoButtonBackgroundColor: "#8cd2e7",
+        infoButtonForegroundColor: "#000000",
+        infoButtonBorderColor: "#999999",
+        infoButtonHoverBackgroundColor: "#ffffff",
+        infoButtonHoverForegroundColor: "#217e9b",
+        infoButtonHoverBorderColor: "#217e9b",
+
+        warningButtonBackgroundColor: "#f4d03f",
+        warningButtonForegroundColor: "#000000",
+        warningButtonBorderColor: "#999999",
+        warningButtonHoverBackgroundColor: "#ffffff",
+        warningButtonHoverForegroundColor: "#8d6708",
+        warningButtonHoverBorderColor: "#8d6708",
+
+        dangerButtonBackgroundColor: "#D50000",
+        dangerButtonForegroundColor: "#ffffff",
+        dangerButtonBorderColor: "#999999",
+        dangerButtonHoverBackgroundColor: "#ffffff",
+        dangerButtonHoverForegroundColor: "#D50000",
+        dangerButtonHoverBorderColor: "#D50000"
+	};
+
+	function applyColor(property, color) {
+        document.getElementById(property + "Hex").value = color;
+        document.getElementById(property).value = color;
+    }
+
 	return {
 		showReindexNotes: function (id) {
 			AspenDiscovery.Account.ajaxLightbox("/Admin/AJAX?method=getReindexNotes&id=" + id, true);
@@ -29,871 +147,7 @@ AspenDiscovery.Admin = (function () {
 			$('#' + fontSelector + '-sample-text').css('font-family', fontName);
 		},
 		getDefaultColor: function (property, extendedThemeDefault) {
-			if (property === 'pageBackgroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#ffffff";
-					document.getElementById(property).value = "#ffffff";
-				}
-			} else if (property === 'bodyBackgroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#ffffff";
-					document.getElementById(property).value = "#ffffff";
-				}
-			} else if (property === 'bodyTextColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#6B6B6B";
-					document.getElementById(property).value = "#6B6B6B";
-				}
-			} else if (property === 'linkColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#3174AF";
-					document.getElementById(property).value = "#3174AF";
-				}
-			} else if (property === 'linkHoverColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#265a87";
-					document.getElementById(property).value = "#265a87";
-				}
-			} else if (property === 'resultLabelColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#44484a";
-					document.getElementById(property).value = "#44484a";
-				}
-			} else if (property === 'resultValueColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#6B6B6B";
-					document.getElementById(property).value = "#6B6B6B";
-				}
-			} else if (property === 'headerBackgroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#f1f1f1";
-					document.getElementById(property).value = "#f1f1f1";
-				}
-			} else if (property === 'headerForegroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#303030";
-					document.getElementById(property).value = "#303030";
-				}
-			} else if (property === 'breadcrumbsBackgroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#f5f5f5";
-					document.getElementById(property).value = "#f5f5f5";
-				}
-			} else if (property === 'breadcrumbsForegroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#6B6B6B";
-					document.getElementById(property).value = "#6B6B6B";
-				}
-			} else if (property === 'searchToolsBackgroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#f5f5f5";
-					document.getElementById(property).value = "#f5f5f5";
-				}
-			} else if (property === 'searchToolsBorderColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#e3e3e3";
-					document.getElementById(property).value = "#e3e3e3";
-				}
-			} else if (property === 'searchToolsForegroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#6B6B6B";
-					document.getElementById(property).value = "#6B6B6B";
-				}
-			} else if (property === 'footerBackgroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#f1f1f1";
-					document.getElementById(property).value = "#f1f1f1";
-				}
-			} else if (property === 'footerForegroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#303030";
-					document.getElementById(property).value = "#303030";
-				}
-			} else if (property === 'primaryBackgroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#0a7589";
-					document.getElementById(property).value = "#0a7589";
-				}
-			} else if (property === 'primaryForegroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#ffffff";
-					document.getElementById(property).value = "#ffffff";
-				}
-			} else if (property === 'secondaryBackgroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#de9d03";
-					document.getElementById(property).value = "#de9d03";
-				}
-			} else if (property === 'secondaryForegroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#303030";
-					document.getElementById(property).value = "#303030";
-				}
-			} else if (property === 'tertiaryBackgroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#de1f0b";
-					document.getElementById(property).value = "#de1f0b";
-				}
-			} else if (property === 'tertiaryForegroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#000000";
-					document.getElementById(property).value = "#000000";
-				}
-			} else if (property === 'menubarBackgroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#f1f1f1";
-					document.getElementById(property).value = "#f1f1f1";
-				}
-			} else if (property === 'menubarForegroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#303030";
-					document.getElementById(property).value = "#303030";
-				}
-			} else if (property === 'menubarHighlightBackgroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#f1f1f1";
-					document.getElementById(property).value = "#f1f1f1";
-				}
-			} else if (property === 'menubarHighlightForegroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#265a87";
-					document.getElementById(property).value = "#265a87";
-				}
-			} else if (property === 'menuDropdownBackgroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#ededed";
-					document.getElementById(property).value = "#ededed";
-				}
-			} else if (property === 'menuDropdownForegroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#404040";
-					document.getElementById(property).value = "#404040";
-				}
-			} else if (property === 'modalDialogBackgroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#ffffff";
-					document.getElementById(property).value = "#ffffff";
-				}
-			} else if (property === 'modalDialogForegroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#333333";
-					document.getElementById(property).value = "#333333";
-				}
-			} else if (property === 'modalDialogHeaderFooterBackgroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#ffffff";
-					document.getElementById(property).value = "#ffffff";
-				}
-			} else if (property === 'modalDialogHeaderFooterForegroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#333333";
-					document.getElementById(property).value = "#333333";
-				}
-			} else if (property === 'modalDialogHeaderFooterBorderColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#e5e5e5";
-					document.getElementById(property).value = "#e5e5e5";
-				}
-			} else if (property === 'browseCategoryPanelColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#d7dce3";
-					document.getElementById(property).value = "#d7dce3";
-				}
-			} else if (property === 'selectedBrowseCategoryBackgroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#0087AB";
-					document.getElementById(property).value = "#0087AB";
-				}
-			} else if (property === 'selectedBrowseCategoryForegroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#ffffff";
-					document.getElementById(property).value = "#ffffff";
-				}
-			} else if (property === 'selectedBrowseCategoryBorderColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#0087AB";
-					document.getElementById(property).value = "#0087AB";
-				}
-			} else if (property === 'deselectedBrowseCategoryBackgroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#0087AB";
-					document.getElementById(property).value = "#0087AB";
-				}
-			} else if (property === 'deselectedBrowseCategoryForegroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#ffffff";
-					document.getElementById(property).value = "#ffffff";
-				}
-			} else if (property === 'deselectedBrowseCategoryBorderColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#0087AB";
-					document.getElementById(property).value = "#0087AB";
-				}
-			} else if (property === 'badgeBackgroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#666666";
-					document.getElementById(property).value = "#666666";
-				}
-			} else if (property === 'badgeForegroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#ffffff";
-					document.getElementById(property).value = "#ffffff";
-				}
-			} else if (property === 'closedPanelBackgroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#e7e7e7";
-					document.getElementById(property).value = "#e7e7e7";
-				}
-			} else if (property === 'closedPanelForegroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#333333";
-					document.getElementById(property).value = "#333333";
-				}
-			} else if (property === 'openPanelBackgroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#333333";
-					document.getElementById(property).value = "#333333";
-				}
-			} else if (property === 'openPanelForegroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#ffffff";
-					document.getElementById(property).value = "#ffffff";
-				}
-			} else if (property === 'panelBodyBackgroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#ffffff";
-					document.getElementById(property).value = "#ffffff";
-				}
-			} else if (property === 'panelBodyForegroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#404040";
-					document.getElementById(property).value = "#404040";
-				}
-			} else if (property === 'defaultButtonBackgroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#ffffff";
-					document.getElementById(property).value = "#ffffff";
-				}
-			} else if (property === 'defaultButtonForegroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#333333";
-					document.getElementById(property).value = "#333333";
-				}
-			} else if (property === 'defaultButtonBorderColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#cccccc";
-					document.getElementById(property).value = "#cccccc";
-				}
-			} else if (property === 'defaultButtonHoverBackgroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#eeeeee";
-					document.getElementById(property).value = "#eeeeee";
-				}
-			} else if (property === 'defaultButtonHoverForegroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#333333";
-					document.getElementById(property).value = "#333333";
-				}
-			} else if (property === 'defaultButtonHoverBorderColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#cccccc";
-					document.getElementById(property).value = "#cccccc";
-				}
-			} else if (property === 'primaryButtonBackgroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#1b6ec2";
-					document.getElementById(property).value = "#1b6ec2";
-				}
-			} else if (property === 'primaryButtonForegroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#ffffff";
-					document.getElementById(property).value = "#ffffff";
-				}
-			} else if (property === 'primaryButtonBorderColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#1b6ec2";
-					document.getElementById(property).value = "#1b6ec2";
-				}
-			} else if (property === 'primaryButtonHoverBackgroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#ffffff";
-					document.getElementById(property).value = "#ffffff";
-				}
-			} else if (property === 'primaryButtonHoverForegroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#1b6ec2";
-					document.getElementById(property).value = "#1b6ec2";
-				}
-			} else if (property === 'primaryButtonHoverBorderColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#1b6ec2";
-					document.getElementById(property).value = "#1b6ec2";
-				}
-			} else if (property === 'actionButtonBackgroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#1b6ec2";
-					document.getElementById(property).value = "#1b6ec2";
-				}
-			} else if (property === 'actionButtonForegroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#ffffff";
-					document.getElementById(property).value = "#ffffff";
-				}
-			} else if (property === 'actionButtonBorderColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#1b6ec2";
-					document.getElementById(property).value = "#1b6ec2";
-				}
-			} else if (property === 'actionButtonHoverBackgroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#ffffff";
-					document.getElementById(property).value = "#ffffff";
-				}
-			} else if (property === 'actionButtonHoverForegroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#1b6ec2";
-					document.getElementById(property).value = "#1b6ec2";
-				}
-			} else if (property === 'actionButtonHoverBorderColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#1b6ec2";
-					document.getElementById(property).value = "#1b6ec2";
-				}
-			} else if (property === 'editionsButtonBackgroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#f8f9fa";
-					document.getElementById(property).value = "#f8f9fa";
-				}
-			} else if (property === 'editionsButtonForegroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#212529";
-					document.getElementById(property).value = "#212529";
-				}
-			} else if (property === 'editionsButtonBorderColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#999999";
-					document.getElementById(property).value = "#999999";
-				}
-			} else if (property === 'editionsButtonHoverBackgroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#ffffff";
-					document.getElementById(property).value = "#ffffff";
-				}
-			} else if (property === 'editionsButtonHoverForegroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#1b6ec2";
-					document.getElementById(property).value = "#1b6ec2";
-				}
-			} else if (property === 'editionsButtonHoverBorderColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#1b6ec2";
-					document.getElementById(property).value = "#1b6ec2";
-				}
-			} else if (property === 'toolsButtonBackgroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#747474";
-					document.getElementById(property).value = "#747474";
-				}
-			} else if (property === 'toolsButtonForegroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#ffffff";
-					document.getElementById(property).value = "#ffffff";
-				}
-			} else if (property === 'toolsButtonBorderColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#636363";
-					document.getElementById(property).value = "#636363";
-				}
-			} else if (property === 'toolsButtonHoverBackgroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#636363";
-					document.getElementById(property).value = "#636363";
-				}
-			} else if (property === 'toolsButtonHoverForegroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#ffffff";
-					document.getElementById(property).value = "#ffffff";
-				}
-			} else if (property === 'toolsButtonHoverBorderColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#636363";
-					document.getElementById(property).value = "#636363";
-				}
-			} else if (property === 'infoButtonBackgroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#8cd2e7";
-					document.getElementById(property).value = "#8cd2e7";
-				}
-			} else if (property === 'infoButtonForegroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#000000";
-					document.getElementById(property).value = "#000000";
-				}
-			} else if (property === 'infoButtonBorderColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#999999";
-					document.getElementById(property).value = "#999999";
-				}
-			} else if (property === 'infoButtonHoverBackgroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#ffffff";
-					document.getElementById(property).value = "#ffffff";
-				}
-			} else if (property === 'infoButtonHoverForegroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#217e9b";
-					document.getElementById(property).value = "#217e9b";
-				}
-			} else if (property === 'infoButtonHoverBorderColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#217e9b";
-					document.getElementById(property).value = "#217e9b";
-				}
-			} else if (property === 'warningButtonBackgroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#f4d03f";
-					document.getElementById(property).value = "#f4d03f";
-				}
-			} else if (property === 'warningButtonForegroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#000000";
-					document.getElementById(property).value = "#000000";
-				}
-			} else if (property === 'warningButtonBorderColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#999999";
-					document.getElementById(property).value = "#999999";
-				}
-			} else if (property === 'warningButtonHoverBackgroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#ffffff";
-					document.getElementById(property).value = "#ffffff";
-				}
-			} else if (property === 'warningButtonHoverForegroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#8d6708";
-					document.getElementById(property).value = "#8d6708";
-				}
-			} else if (property === 'warningButtonHoverBorderColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#8d6708";
-					document.getElementById(property).value = "#8d6708";
-				}
-			} else if (property === 'dangerButtonBackgroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#D50000";
-					document.getElementById(property).value = "#D50000";
-				}
-			} else if (property === 'dangerButtonForegroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#ffffff";
-					document.getElementById(property).value = "#ffffff";
-				}
-			} else if (property === 'dangerButtonBorderColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#999999";
-					document.getElementById(property).value = "#999999";
-				}
-			} else if (property === 'dangerButtonHoverBackgroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#ffffff";
-					document.getElementById(property).value = "#ffffff";
-				}
-			} else if (property === 'dangerButtonHoverForegroundColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#D50000";
-					document.getElementById(property).value = "#D50000";
-				}
-			} else if (property === 'dangerButtonHoverBorderColor') {
-				if (extendedThemeDefault != null) {
-					// if a value is present, grab the color from that theme instead of Aspen default
-					document.getElementById(property + 'Hex').value = extendedThemeDefault;
-					document.getElementById(property).value = extendedThemeDefault;
-				} else {
-					document.getElementById(property + 'Hex').value = "#D50000";
-					document.getElementById(property).value = "#D50000";
-				}
-			}
+			applyColor(property, extendedThemeDefault ?? DEFAULT_COLORS[property]);
 		},
 		checkContrast: function (property1, property2, oneWay, minRatio) {
 			if (oneWay === undefined) {
