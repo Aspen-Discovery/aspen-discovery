@@ -228,6 +228,7 @@ class Koha extends AbstractIlsDriver {
 				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'state', 'borrower_state', $library->useAllCapsWhenUpdatingProfile, false, $validFieldsToUpdate);
 				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'surname', 'borrower_surname', $library->useAllCapsWhenUpdatingProfile, false, $validFieldsToUpdate);
 				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'title', 'borrower_title', $library->useAllCapsWhenUpdatingProfile, false, $validFieldsToUpdate);
+				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'primary_contact_method', 'borrower_primary_contact_method', $library->useAllCapsWhenUpdatingProfile, false, $validFieldsToUpdate);
 
 				//TODO: Should this be capitalized? This does not seem to save to Koha
 				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'pronouns', 'borrower_pronouns', $library->useAllCapsWhenUpdatingProfile, false, $validFieldsToUpdate);
@@ -365,6 +366,7 @@ class Koha extends AbstractIlsDriver {
 					$postVariables = $this->setPostField($postVariables, 'borrower_altcontactzipcode', $library->useAllCapsWhenUpdatingProfile);
 					$postVariables = $this->setPostField($postVariables, 'borrower_altcontactcountry', $library->useAllCapsWhenUpdatingProfile);
 					$postVariables = $this->setPostField($postVariables, 'borrower_altcontactphone', $library->useAllCapsWhenUpdatingProfile, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
+					$postVariables = $this->setPostField($postVariables, 'borrower_primary_contact_method', $library->useAllCapsWhenUpdatingProfile);
 
 					// Patron extended attributes
 					$extendedAttributes = $this->setExtendedAttributes();
@@ -5058,6 +5060,7 @@ class Koha extends AbstractIlsDriver {
 		
 		$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'pronouns', 'borrower_pronouns', $library->useAllCapsWhenSubmittingSelfRegistration);
 		$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'middle_name', 'borrower_middle_name', $library->useAllCapsWhenSubmittingSelfRegistration);
+		$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'primary_contact_method', 'borrower_primary_contact_method', $library->useAllCapsWhenSubmittingSelfRegistration);
 
 		// Patron extended attributes
 		$extendedAttributes = $this->setExtendedAttributes();
@@ -5145,6 +5148,8 @@ class Koha extends AbstractIlsDriver {
 		$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'title', 'borrower_title', $upper, false, [], $input);
 		$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'userid', 'userid', $upper, false, [], $input);
 		$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'cardnumber', 'cardnumber', $upper, false, [], $input);
+		$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'primary_contact_method', 'borrower_primary_contact_method', $upper, false, [], $input);
+
 		if (array_key_exists('category_id', $input)) {
 			$postVariables['category_id'] = $input['category_id'];
 		}
@@ -6146,6 +6151,9 @@ class Koha extends AbstractIlsDriver {
 				if (array_key_exists('contactInformationSection', $patronUpdateFields)) {
 					if (array_key_exists('borrower_phone', $patronUpdateFields['contactInformationSection']['properties'])) {
 						$patronUpdateFields['contactInformationSection']['properties']['borrower_phone']['readOnly'] = true;
+					}
+					if (array_key_exists('borrower_primary_contact_method', $patronUpdateFields['contactInformationSection']['properties'])) {
+						$patronUpdateFields['contactInformationSection']['properties']['borrower_primary_contact_method']['readOnly'] = true;
 					}
 				}
 				if (array_key_exists('additionalContactInformationSection', $patronUpdateFields)) {
