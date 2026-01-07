@@ -581,6 +581,10 @@ class Sierra extends AbstractIlsDriver {
 	public function optOutOfReadingHistoryILS(User $user): array {
 		$result = ['success' => false];
 
+		//First delete checkout hisotry
+		$sierraUrl = $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/" . $user->unique_ils_id . "/checkouts/history";
+		$this->_sendPage('sierra.deleteReadingHistory', 'DELETE', $sierraUrl, []);
+
 		$sierraUrl = $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/" . $user->unique_ils_id . "/checkouts/history/activationStatus";
 		$requestBody = json_encode(['readingHistoryActivation' => false]);
 		$this->_postPage('sierra.optOutOfReadingHistory', $sierraUrl, $requestBody);
@@ -4190,12 +4194,23 @@ class Sierra extends AbstractIlsDriver {
 		global $logger;
 		$loginResult = false;
 
-		$curlUrl = $this->getVendorOpacUrl() . "/patroninfo/";
+		$headers = [
+			"Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+			"Accept-Language: en-US,en;q=0.5",
+			"Accept-Encoding: gzip, deflate, br, zstd",
+			"Content-Type: application/x-www-form-urlencoded",
+			"Origin:{$this->getVendorOpacUrl()}"
+		];
+		$this->curlWrapper->addCustomHeaders($headers, true);
+		$curlUrl = $this->getVendorOpacUrl() . "/patroninfo/%2Fpatroninfo%2F";
 		$post_data = $this->_getLoginFormValues($patron);
 
-		$logger->log('Loading page ' . $curlUrl, Logger::LOG_NOTICE);
+		$logger->log('Posting Login Credentials to ' . $curlUrl, Logger::LOG_NOTICE);
 
 		$loginResponse = $this->curlWrapper->curlPostPage($curlUrl, $post_data);
+		if (str_contains($loginResponse, 'Access Denied')) {
+			return false;
+		}
 		$curlInfo = curl_getinfo($this->curlWrapper->curl_connection);
 		$redirectUrl = $curlInfo['url'];
 

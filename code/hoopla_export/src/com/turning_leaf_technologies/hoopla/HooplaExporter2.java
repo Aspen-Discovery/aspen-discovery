@@ -1212,7 +1212,7 @@ public class HooplaExporter2 {
 								if (responseEntitlements != null && !responseEntitlements.isEmpty()) {
 									JSONObject entitlement = responseEntitlements.getJSONObject(0);
 
-									// Verify contentId is the same as the given hoopla Id
+									// Verify contentId is the same as the given hoopla ID
 									if (entitlement.has("contentId") && entitlement.getLong("contentId") == numericSingleWorkId) {
 										if (entitlement.has("active") && entitlement.getBoolean("active")) {
 											// Only update the entitlement if it is active
@@ -1235,7 +1235,7 @@ public class HooplaExporter2 {
 											logger.warn("Entitlement is not active for Hoopla Library ID " + librarySetting.getHooplaLibraryId() + " for Flex.");
 										}
 									} else {
-										logger.warn("Content ID for entitlement " + entitlement.getLong("id") + " does not match the given hoopla ID, this record might not be active for Hoopla Library ID " + librarySetting.getHooplaLibraryId() + " for Flex.");
+										logger.warn("Content ID for entitlement " + entitlement.getLong("contentId") + " does not match the given hoopla ID, this record might not be active for Hoopla Library ID " + librarySetting.getHooplaLibraryId() + " for Flex.");
 									}
 								}
 							}

@@ -765,7 +765,7 @@ class Polaris extends AbstractIlsDriver {
 		return $this->placeItemHold($patron, $recordId, null, $pickupBranch, $cancelDate, $pickupSublocation);
 	}
 
-	function placeItemHold(User $patron, string $recordId, string $itemId, string $pickupBranch, ?string $cancelDate = null, ?string $pickupSublocation = null) : array {
+	function placeItemHold(User $patron, string $recordId, ?string $itemId, string $pickupBranch, ?string $cancelDate = null, ?string $pickupSublocation = null) : array {
 		if (str_contains($recordId, ':')) {
 			[
 				,
