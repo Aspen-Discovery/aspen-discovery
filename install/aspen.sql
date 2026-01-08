@@ -3126,6 +3126,7 @@ CREATE TABLE `library` (
   `displayDigitalRewardOnlyWhenAwarded` tinyint(1) DEFAULT 0,
   `digitalRewardPlaceholderImage` varchar(100) DEFAULT '',
   `highlightCommunityEngagementOpenToEnroll` tinyint(1) DEFAULT 0,
+  `offerImmediateHoldFreeze` tinyint(4) NOT NULL DEFAULT 0,
   PRIMARY KEY (`libraryId`),
   UNIQUE KEY `subdomain` (`subdomain`),
   KEY `isDefault` (`isDefault`),

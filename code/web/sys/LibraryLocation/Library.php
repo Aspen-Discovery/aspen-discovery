@@ -107,6 +107,7 @@ class Library extends DataObject {
 	public $allowCancellingInTransitHolds;
 	public $allowFreezeHolds;   //tinyint(4)
 	public $maxDaysToFreeze;
+	public $offerImmediateHoldFreeze;
 	public $showHoldButton;
 	public $showHoldButtonInSearchResults;
 	public $showHoldButtonForUnavailableOnly;
@@ -2332,6 +2333,16 @@ class Library extends DataObject {
 								'hideInLists' => true,
 								'default' => 365,
 								'permissions' => ['Library ILS Connection'],
+							],
+							'offerImmediateHoldFreeze' => [
+								'property' => 'offerImmediateHoldFreeze',
+								'type' => 'checkbox',
+								'label' => 'Offer Immediate Hold Freeze',
+								'description' => 'Whether or not the user can freeze a hold at the same moment they create it.',
+								'hideInLists' => true,
+								'default' => 0,
+								'permissions' => ['Library ILS Connection'],
+
 							],
 							'inSystemPickupsOnly' => [
 								'property' => 'inSystemPickupsOnly',
