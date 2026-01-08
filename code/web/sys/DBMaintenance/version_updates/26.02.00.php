@@ -15,6 +15,15 @@ function getUpdates26_02_00(): array {
 			 ]
 		 ], //name*/
 
+		'async_facet_loading' => [
+			'title' => 'Async Facet Loading Configuration',
+			'description' => 'Add enableAsyncFacetLoading setting to library table for configurable async facet loading',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN IF NOT EXISTS enableAsyncFacetLoading TINYINT(1) DEFAULT 1 COMMENT "Enable async loading of collapsed facets to improve initial search performance" AFTER groupedWorkDisplaySettingId'
+			]
+		], //async_facet_loading
+
 		//mark n
 		'force_reindex_of_all_titles_in_lists' => [
 			'title' => 'Force Reindex of All Titles in Lists',

@@ -324,8 +324,13 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 					$facetName = $facetInfo->getFacetName(2);
 
 					if (!$this->bypassAsyncFacetLogic) {
-						// Skip loading only if collapsed AND has no active filters AND is not a top facet.
-						if ($facetInfo->collapseByDefault && !$facetInfo->showAboveResults) {
+						// Check if async facet loading is enabled for this library
+						$library = Library::getActiveLibrary();
+						$asyncFacetLoadingEnabled = !empty($library->enableAsyncFacetLoading);
+						
+						if ($asyncFacetLoadingEnabled) {
+							// Skip loading only if collapsed AND has no active filters AND is not a top facet.
+							if ($facetInfo->collapseByDefault && !$facetInfo->showAboveResults) {
 							$hasAppliedFilter = false;
 
 							// Check all variations of field name for active filters.
@@ -341,6 +346,7 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 							if (!$hasAppliedFilter) {
 								$shouldLoad = false;
 							}
+						}
 						}
 
 						if (!$shouldLoad) {
