@@ -901,7 +901,7 @@ class AJAX extends Action {
 			return [
 				'success' => false,
 				'message' => translate([
-					'text' => 'No facet data returned',
+					'text' => 'No values available',
 					'isPublicFacing' => true,
 				])
 			];

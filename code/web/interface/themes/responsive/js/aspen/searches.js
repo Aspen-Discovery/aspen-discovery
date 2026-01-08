@@ -392,11 +392,23 @@ AspenDiscovery.Searches = (function(){
 				if (response.success) {
 					$facetDetails.find('.facet-list-container').html(response.html);
 					$facetElement.attr('data-facet-loaded', 'true');
+					
+					// If the facet has no content, show a message
+					if (!response.html || response.html.trim() === '') {
+						$facetDetails.find('.facet-list-container').html(
+							'<p class="text-muted" style="padding: 10px;">' + 
+							'No values available' + 
+							'</p>'
+						);
+					}
 				} else {
-					const errorMsg = response.message || 'Error loading facet values';
+					// Show the server's translatable message in muted style for empty facets
 					$facetDetails.find('.facet-list-container').html(
-						'<p class="alert alert-warning">' + errorMsg + '</p>'
+						'<p class="text-muted" style="padding: 10px;">' + 
+						(response.message || 'Error loading facet values') + 
+						'</p>'
 					);
+					$facetElement.attr('data-facet-loaded', 'true');
 				}
 			}).fail(function() {
 				$facetDetails.find('.facet-loading-spinner').hide();
