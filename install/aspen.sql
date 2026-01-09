@@ -6344,6 +6344,7 @@ CREATE TABLE `user` (
   `forceReadingHistoryLoad` tinyint(1) DEFAULT 0,
   `readingHistoryImportStartedAt` datetime DEFAULT NULL,
   `userPreferredName` varchar(256) NOT NULL DEFAULT '',
+  `promptToFreezeHoldsImmediately` tinyint(1) DEFAULT 0,
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`source`,`username`),
   KEY `user_barcode` (`source`,`ils_barcode`),
