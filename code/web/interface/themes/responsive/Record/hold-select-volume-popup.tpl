@@ -121,6 +121,34 @@
 					{/if}
 				{/if}
 
+				{if $promptToFreezeHoldsImmediately}
+					<div class="controls">
+						<div class="form-group">
+							<label for="freezeHoldImmediately" class="checkbox"><input type="checkbox" name="freezeHoldImmediately" id="freezeHoldImmediately"> {translate text="Freeze this hold immediately." isPublicFacing=true}</label>
+						</div>
+					</div>
+
+					{if $showDateWhenSuspending}
+						<div class="form-group">
+							<label for="reactivationDate">{translate text="Select the date when you want the hold thawed." isPublicFacing=true}</label>
+							{* Calculate max freeze date from hold placement date if available, otherwise use default *}
+							{if $allowMaxDaysToFreeze > -1}
+								{if !empty($holdCreateDate)}
+									{assign var="maxFreezeTimestamp" value=$holdCreateDate+($allowMaxDaysToFreeze*86400)}
+								{else}
+									{assign var="maxFreezeTimestamp" value=$maxDaysToFreeze}
+								{/if}
+							{/if}
+							<input type="date" name="reactivationDate" id="reactivationDate" min="{$smarty.now|date_format:"%Y-%m-%d"}" {if $allowMaxDaysToFreeze > -1}max="{$maxFreezeTimestamp|date_format:"%Y-%m-%d"}"{/if} class="form-control{if empty($reactivateDateNotRequired)} required{/if}">
+						</div>
+						{if !empty($reactivateDateNotRequired)}
+							<p class="alert alert-info">
+								{translate text="If a date is not selected, the hold will be frozen until you thaw it." isPublicFacing=true}
+							</p>
+						{/if}
+					{/if}
+				{/if}
+
 				<label class="control-label">{translate text="Place hold on" isPublicFacing=true}</label>
 				{if !empty($hasItemsWithoutVolumes)}
 					<div id="holdTypeSelection" class="form-group">
