@@ -1146,10 +1146,20 @@ class Record_AJAX extends Action {
 						$interface->assign('success', $return['success']);
 
 						// Freeze the hold immediately if requested.
-						$freezeHoldImmediately = isset($_REQUEST['freezeHoldImmediately']) ? (int)$_REQUEST['freezeHoldImmediately'] : 0;
+						$freezeHoldImmediately = FALSE;
+						if (isset($_REQUEST['freezeHoldImmediately']) && $_REQUEST['freezeHoldImmediately'] == 'true') {
+							$freezeHoldImmediately = TRUE;
+						}
 						$dateToReactivate = isset($_REQUEST['reactivationDate']) ? (string)$_REQUEST['reactivationDate'] : null;
 						if ($freezeHoldImmediately == TRUE) {
-							$patron->freezeHold($patron, $shortId, $shortId, $dateToReactivate);
+							$holds = $patron->getHolds();
+							// Find the holdId for use in the freezing process.
+							foreach ($holds['unavailable'] as $hold) {
+								if ($hold->recordId == $shortId) {
+									$holdId = $hold->sourceId;
+								}
+							}
+							$patron->freezeHold($shortId, $holdId, $dateToReactivate);
 						}
 
 						$confirmationNeeded = false;
