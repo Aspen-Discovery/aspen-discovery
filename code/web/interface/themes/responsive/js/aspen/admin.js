@@ -158,63 +158,30 @@ AspenDiscovery.Admin = (function () {
 			if (color1.length === 7 && color2.length === 7) {
 				var luminance1 = AspenDiscovery.Admin.getLuminanceForColor(color1);
 				var luminance2 = AspenDiscovery.Admin.getLuminanceForColor(color2);
-				var contrastRatio;
-				if (luminance1 > luminance2) {
-					contrastRatio = ((luminance1 + 0.05) / (luminance2 + 0.05));
-				} else {
-					contrastRatio = ((luminance2 + 0.05) / (luminance1 + 0.05));
-				}
+				const contrastCalc = (a, b) => ((a + .05) / (b + .05))
+				var contrastRatio = Math.max(contrastCalc(luminance1, luminance2), contrastCalc(luminance2, luminance1));
+
 				var contrastSpan1 = $("#contrast_" + property1);
 				var contrastSpan2 = $("#contrast_" + property2);
-				contrastSpan1.text(contrastRatio.toFixed(2));
-				contrastSpan2.text(contrastRatio.toFixed(2));
-				if (minRatio == 7.0) {
-					if (contrastRatio < 4.5) {
-						contrastSpan1.addClass("alert-danger");
-						contrastSpan2.addClass("alert-danger");
-						contrastSpan1.removeClass("alert-warning");
-						contrastSpan2.removeClass("alert-warning");
-						contrastSpan1.removeClass("alert-success");
-						contrastSpan2.removeClass("alert-success");
-					} else if (contrastRatio < minRatio) {
-						contrastSpan1.removeClass("alert-danger");
-						contrastSpan2.removeClass("alert-danger");
-						contrastSpan1.addClass("alert-warning");
-						contrastSpan2.addClass("alert-warning");
-						contrastSpan1.removeClass("alert-success");
-						contrastSpan2.removeClass("alert-success");
-					} else {
-						contrastSpan1.removeClass("alert-danger");
-						contrastSpan2.removeClass("alert-danger");
-						contrastSpan1.removeClass("alert-warning");
-						contrastSpan2.removeClass("alert-warning");
-						contrastSpan1.addClass("alert-success");
-						contrastSpan2.addClass("alert-success");
-					}
-				} else {
-					if (contrastRatio < 3.5) {
-						contrastSpan1.addClass("alert-danger");
-						contrastSpan2.addClass("alert-danger");
-						contrastSpan1.removeClass("alert-warning");
-						contrastSpan2.removeClass("alert-warning");
-						contrastSpan1.removeClass("alert-success");
-						contrastSpan2.removeClass("alert-success");
-					} else if (contrastRatio < minRatio) {
-						contrastSpan1.removeClass("alert-danger");
-						contrastSpan2.removeClass("alert-danger");
-						contrastSpan1.addClass("alert-warning");
-						contrastSpan2.addClass("alert-warning");
-						contrastSpan1.removeClass("alert-success");
-						contrastSpan2.removeClass("alert-success");
-					} else {
-						contrastSpan1.removeClass("alert-danger");
-						contrastSpan2.removeClass("alert-danger");
-						contrastSpan1.removeClass("alert-warning");
-						contrastSpan2.removeClass("alert-warning");
-						contrastSpan1.addClass("alert-success");
-						contrastSpan2.addClass("alert-success");
-					}
-				}
+				const displayContrast = (ratio) => {
+					contrastSpan1.text(ratio.toFixed(2));
+					contrastSpan2.text(ratio.toFixed(2));
+				};
+
+				const updateClasses = (ratio) => {
+					const isDanger = (minRatio === 7.0 && ratio < 4.5) || (minRatio !== 7.0 && ratio < 3.5);
+					const isWarning = (minRatio === 7.0 && ratio < minRatio) || (minRatio !== 7.0 && ratio < minRatio);
+
+					contrastSpan1.toggleClass("alert-danger", isDanger);
+					contrastSpan2.toggleClass("alert-danger", isDanger);
+					contrastSpan1.toggleClass("alert-warning", isWarning);
+					contrastSpan2.toggleClass("alert-warning", isWarning);
+					contrastSpan1.toggleClass("alert-success", !isDanger && !isWarning);
+					contrastSpan2.toggleClass("alert-success", !isDanger && !isWarning);
+				};
+
+				displayContrast(contrastRatio);
+				updateClasses(contrastRatio);
 			} else {
 				$("#contrastCheck_" + property1).hide();
 				if (!oneWay) {
@@ -225,7 +192,6 @@ AspenDiscovery.Admin = (function () {
 					$("#contrast_" + property2).innerHTML = 'Unknown';
 				}
 			}
-
 		},
 		getLuminanceForColor: function (color) {
 			var r = AspenDiscovery.Admin.getLuminanceComponent(color, 1, 2);
@@ -272,9 +238,10 @@ AspenDiscovery.Admin = (function () {
 			];
 			rowsToHide.forEach(selector => $(selector).hide());
 
+			let rowsToShow = [];
 			switch (materialRequestType) {
 				case "1": // Aspen Request System
-					[
+					rowsToShow = [
 						"#propertyRowdisplayMaterialsRequestToPublic",
 						"#propertyRowmaxRequestsPerYear",
 						"#propertyRowyearlyRequestLimitType",
@@ -289,20 +256,26 @@ AspenDiscovery.Admin = (function () {
 						"#propertyRowmaterialsRequestNewEmail",
 						"#propertyRowmaterialsRequestSendStaffEmailOnAssign",
 						"#propertyRowcheckRequestsForExistingTitles"
-					].forEach(selector => $(selector).show());
+					];
 					break;
 				case "2": // ILS Request System
-					["#propertyRowallowDeletingILSRequests", "#propertyRowallowMaterialRequestsBranchChoice", "#propertyRowdisplayMaterialsRequestToPublic", "#propertyRownewMaterialsRequestSummary"]
-						.forEach(selector => $(selector).show());
+					rowsToShow = [
+						"#propertyRowallowDeletingILSRequests", 
+						"#propertyRowallowMaterialRequestsBranchChoice", 
+						"#propertyRowdisplayMaterialsRequestToPublic", 
+						"#propertyRownewMaterialsRequestSummary"
+					];
 					break;
 				case "3": // External Request Link
-					["#propertyRowexternalMaterialsRequestUrl", "#propertyRowdisplayMaterialsRequestToPublic"]
-						.forEach(selector => $(selector).show());
+					rowsToShow = [
+						"#propertyRowexternalMaterialsRequestUrl", 
+						"#propertyRowdisplayMaterialsRequestToPublic"
+					];
 					break;
 				default: // None (0)
 					break;
 			}
-
+			rowsToShow.forEach(selector => $(selector).show());
 			return false;
 		},
 
@@ -323,32 +296,30 @@ AspenDiscovery.Admin = (function () {
 		},
 
 		updateDonationFields: function () {
-			var donationsEnabled = $("#enableDonations");
 			var donationsEnabledValue = $("#enableDonations:checked").val()
-			if (donationsEnabledValue == 1) {
-				$("#propertyRowallowDonationsToBranch").show();
-				$("#propertyRowallowDonationEarmark").show();
-				$("#propertyRowallowDonationDedication").show();
-				$("#propertyRowdonationValues").show();
-				$("#propertyRowdonationContent").show();
+			const propList = [
+				"#propertyRowallowDonationsToBranch",
+				"#propertyRowallowDonationEarmark",
+				"#propertyRowallowDonationDedication",
+				"#propertyRowdonationValues",
+				"#propertyRowdonationContent"
+			];
+
+			if(donationsEnabledValue == 1){
+				propList.forEach(prop => prop.show());
 			} else {
-				$("#propertyRowallowDonationsToBranch").hide();
-				$("#propertyRowallowDonationEarmark").hide();
-				$("#propertyRowallowDonationDedication").hide();
-				$("#propertyRowdonationValues").hide();
-				$("#propertyRowdonationContent").hide();
+				propList.forEach(prop => prop.hide());
 			}
 
 			return false;
 		},
-		validateCompare() {
+		validateCompare: function () {
 			const selectedObjects = $('.selectedObject:checked');
 			if (selectedObjects.length === 2) {
 				return true;
-			} else {
-				AspenDiscovery.showMessage("Failed to Compare Objects", "Please select only two objects to compare.");
-				return false;
 			}
+			AspenDiscovery.showMessage("Failed to Compare Objects", "Please select only two objects to compare.");
+			return false;
 		},
 		showBatchUpdateFieldForm: function (module, toolName, batchUpdateScope) {
 			var selectedObjects = $('.selectedObject:checked');
@@ -370,17 +341,16 @@ AspenDiscovery.Admin = (function () {
 					}
 				).fail(AspenDiscovery.ajaxFail);
 				return false;
-			} else {
-				AspenDiscovery.showMessage("Error", "Please select at least one object to update");
-				return false;
 			}
+			AspenDiscovery.showMessage("Error", "Please select at least one object to update");
+			return false;
 		},
 		processBatchUpdateFieldForm: function (module, toolName, batchUpdateScope) {
 			var selectedObjects = $('.selectedObject:checked');
 			if (batchUpdateScope === 'all' || selectedObjects.length >= 1) {
 				var url = Globals.path + "/Admin/AJAX";
 				var selectedField = $('#fieldSelector').val();
-				var selectedFieldControl = $('#' + selectedField);
+				var selectedFieldControl = $(`#${selectedField}`)
 				var newValue;
 				if (selectedFieldControl.prop("type") === undefined) {
 					selectedFieldControl = $('#' + selectedField + "Select");
@@ -627,7 +597,7 @@ AspenDiscovery.Admin = (function () {
 			window.location.href = url + "?release=" + selectedRelease;
 			return false;
 		},
-
+		
 		updateBrowseSearchForSource() {
 			const selectedSource = $('#sourceSelect').val();
 
@@ -796,41 +766,35 @@ AspenDiscovery.Admin = (function () {
 			this.updateGroupedWorkSortFields('other');
 		},
 		updateGroupedWorkSortFields: function (groupingCategory) {
-			if (groupingCategory == 'book') {
-				var selectedOption = $("#bookSortMethodSelect").find(":selected").val();
-				if (selectedOption == 1) {
-					$("#propertyRowsortedBookFormats").hide();
-				} else {
-					$("#propertyRowsortedBookFormats").show();
+			const formatSelectors = {
+				book: {
+					select: "#bookSortMethodSelect",
+					propertyRow: "#propertyRowsortedBookFormats"
+				},
+				comic: {
+					select: "#comicSortMethodSelect",
+					propertyRow: "#propertyRowsortedComicFormats"
+				},
+				movie: {
+					select: "#movieSortMethodSelect",
+					propertyRow: "#propertyRowsortedMovieFormats"
+				},
+				music: {
+					select: "#musicSortMethodSelect",
+					propertyRow: "#propertyRowsortedMusicFormats"
+				},
+				other: {
+					select: "#otherSortMethodSelect",
+					propertyRow: "#propertyRowsortedOtherFormats"
 				}
-			} else if (groupingCategory == 'comic') {
-				var selectedOption = $("#comicSortMethodSelect").find(":selected").val();
-				if (selectedOption == 1) {
-					$("#propertyRowsortedComicFormats").hide();
-				} else {
-					$("#propertyRowsortedComicFormats").show();
-				}
-			} else if (groupingCategory == 'movie') {
-				var selectedOption = $("#movieSortMethodSelect").find(":selected").val();
-				if (selectedOption == 1) {
-					$("#propertyRowsortedMovieFormats").hide();
-				} else {
-					$("#propertyRowsortedMovieFormats").show();
-				}
-			} else if (groupingCategory == 'music') {
-				var selectedOption = $("#musicSortMethodSelect").find(":selected").val();
-				if (selectedOption == 1) {
-					$("#propertyRowsortedMusicFormats").hide();
-				} else {
-					$("#propertyRowsortedMusicFormats").show();
-				}
-			} else if (groupingCategory == 'other') {
-				var selectedOption = $("#otherSortMethodSelect").find(":selected").val();
-				if (selectedOption == 1) {
-					$("#propertyRowsortedOtherFormats").hide();
-				} else {
-					$("#propertyRowsortedOtherFormats").show();
-				}
+			};
+
+			const selectedOption = formatSelectors[groupingCategory];
+			if (selectedOption) {
+				const selectedValue = $(selectedOption.select).find(":selected").val();
+				const isHidden = selectedValue == 1;
+
+				$(selectedOption.propertyRow).toggle(!isHidden);
 			}
 		},
 		updateGroupedWorkEContentSortFields: function () {
@@ -848,52 +812,49 @@ AspenDiscovery.Admin = (function () {
 			} else {
 				$("#propertyRowaudienceSubfield").hide();
 			}
+
+			let propsToHide = [
+				"#propertyRowspecifiedFormat",
+				"#propertyRowspecifiedFormatCategory",
+				"#propertyRowspecifiedFormatBoost",
+				"#propertyRowcheckRecordForLargePrint",
+				"#propertyRowformatMap"
+			]
+			
+			propsToHide.forEach(prop => prop.hide());
+
 			var formatSource = $('#formatSourceSelect').val();
-			if (formatSource === 'specified') {
-				$("#propertyRowspecifiedFormat").show();
-				$("#propertyRowspecifiedFormatCategory").show();
-				$("#propertyRowspecifiedFormatBoost").show();
-				$("#propertyRowcheckRecordForLargePrint").hide();
-				$("#propertyRowformatMap").hide();
-			} else if (formatSource === 'item') {
-				$("#propertyRowspecifiedFormat").hide();
-				$("#propertyRowspecifiedFormatCategory").hide();
-				$("#propertyRowspecifiedFormatBoost").hide();
-				$("#propertyRowformatMap").show();
-				$("#propertyRowcheckRecordForLargePrint").show();
-			} else {
-				$("#propertyRowspecifiedFormat").hide();
-				$("#propertyRowspecifiedFormatCategory").hide();
-				$("#propertyRowspecifiedFormatBoost").hide();
-				$("#propertyRowformatMap").show();
-				$("#propertyRowcheckRecordForLargePrint").hide();
+			switch(formatSource) {
+				case "specified":
+					$("#propertyRowspecifiedFormat").show();
+					$("#propertyRowspecifiedFormatCategory").show();
+					$("#propertyRowspecifiedFormatBoost").show();
+					break;
+				case "item":
+					$("#propertyRowcheckRecordForLargePrint").show();
+					$("#propertyRowformatMap").show();
+					break;
+				default:
+					$("#propertyRowformatMap").show();
+					break;
 			}
 		},
 		setIndexingProfileDefaultsByIndexingClass: function () {
 			var selectedIndexingClass = $("#indexingClassSelect").val();
-			if (selectedIndexingClass === '') {
-				$("#catalogDriver").val('AbstractIlsDriver');
-			}else {
-				if (selectedIndexingClass === 'ArlingtonKoha') {
-					$("#catalogDriver").val('Koha');
-				}else if (selectedIndexingClass === 'CarlX') {
-					$("#catalogDriver").val('CarlX');
-				}else if (selectedIndexingClass === 'Evergreen') {
-					$("#catalogDriver").val('Evergreen');
-				}else if (selectedIndexingClass === 'Evolve') {
-					$("#catalogDriver").val('Evolve');
-				}else if (selectedIndexingClass === 'III') {
-					$("#catalogDriver").val('Sierra');
-				}else if (selectedIndexingClass === 'Koha') {
-					$("#catalogDriver").val('Koha');
-				}else if (selectedIndexingClass === 'NashvilleCarlX') {
-					$("#catalogDriver").val('Nashville');
-				}else if (selectedIndexingClass === 'Polaris') {
-					$("#catalogDriver").val('Polaris');
-				}else if (selectedIndexingClass === 'Symphony') {
-					$("#catalogDriver").val('SirsiDynixROA');
-				}
-			}
+			var catalogDriverMap = {
+				'': 'AbstractIlsDriver',
+				'ArlingtonKoha': 'Koha',
+				'CarlX': 'CarlX',
+				'Evergreen': 'Evergreen',
+				'Evolve': 'Evolve',
+				'III': 'Sierra',
+				'Koha': 'Koha',
+				'NashvilleCarlX': 'Nashville',
+				'Polaris': 'Polaris',
+				'Symphony': 'SirsiDynixROA'
+			};
+
+			$("#catalogDriver").val(catalogDriverMap[selectedIndexingClass] || catalogDriverMap['']);
 		},
 		updateLayoutSettingsFields: function () {
 			var useHomeLink = $('#useHomeLinkSelect').val();
@@ -1067,87 +1028,77 @@ AspenDiscovery.Admin = (function () {
 			}
 		},
 		getUrlOptions: function () {
-			$('#propertyRowctaUrl').hide();
-			$('#propertyRowdeepLinkId').hide();
-			$('#propertyRowdeepLinkPath').hide();
-			$('#propertyRowdeepLinkFullPath').hide();
-
-			var linkType = $("#linkTypeSelect").val();
-			if (linkType === "0" || linkType === 0) {
+			function adjustProperties(type){
 				$('#propertyRowctaUrl').hide();
-				$('#propertyRowdeepLinkId').hide();
-				$('#propertyRowdeepLinkPath').show();
-			} else {
-				$('#propertyRowctaUrl').show();
 				$('#propertyRowdeepLinkId').hide();
 				$('#propertyRowdeepLinkPath').hide();
 				$('#propertyRowdeepLinkFullPath').hide();
+
+				switch(type){
+					case 0:
+					case "0":
+						$('#propertyRowdeepLinkPath').show();
+						break;
+					default:
+						$('#propertyRowctaUrl').show();
+						break;
+				}
 			}
+
+			var linkType = $("#linkTypeSelect").val();
+			adjustProperties(linkType);
 		},
 		getDeepLinkFullPath: function () {
 			var selectedPath = $("#deepLinkPathSelect").val();
-			if (selectedPath === "search") {
-				$('#propertyRowdeepLinkId').show();
-				$('label[for="deepLinkId"]').text("Search Term");
-			} else if (selectedPath === "search/grouped_work") {
-				$('#propertyRowdeepLinkId').show();
-				$('label[for="deepLinkId"]').text("Grouped Work Id");
-			} else if (selectedPath === "search/browse_category") {
-				$('#propertyRowdeepLinkId').show();
-				$('label[for="deepLinkId"]').text("Browse Category Text Id");
-			} else if (selectedPath === "search/author") {
-				$('#propertyRowdeepLinkId').show();
-				$('label[for="deepLinkId"]').text("Author");
-			} else if (selectedPath === "search/list") {
-				$('#propertyRowdeepLinkId').show();
-				$('label[for="deepLinkId"]').text("List Id");
-			} else {
+			stringMap = {
+				"search": "Search Term",
+				"search/grouped_work": "Grouped Work Id",
+				"search/browse_category": "Browse Category Text Id",
+				"search/author": "Author",
+				"search/list": "List Id" 
+			}	
+			
+			if (!selectedPath){
 				$('#propertyRowdeepLinkId').hide();
+				return;
 			}
+
+			$('#propertyRowdeepLinkId').show();
+			$('label[for="deepLinkId"]').text(stringMap[selectedPath]);
 		},
 		getSSOFields: function () {
-			AspenDiscovery.Admin.toggleoAuthFields('hide');
-			AspenDiscovery.Admin.toggleSamlFields('hide');
-			AspenDiscovery.Admin.toggleLDAPFields('hide');
-			AspenDiscovery.Admin.toggleOAuthGatewayFields();
-			AspenDiscovery.Admin.toggleOAuthPrivateKeysField();
-			AspenDiscovery.Admin.toggleSamlMetadataFields();
+
+			function setFieldVisibility(type) {
+				AspenDiscovery.Admin.toggleoAuthFields('hide');
+				AspenDiscovery.Admin.toggleSamlFields('hide');
+				AspenDiscovery.Admin.toggleLDAPFields('hide');
+				AspenDiscovery.Admin.toggleOAuthGatewayFields();
+				AspenDiscovery.Admin.toggleOAuthPrivateKeysField();
+				AspenDiscovery.Admin.toggleSamlMetadataFields();
+
+				switch(type) {
+					case "oauth":
+						AspenDiscovery.Admin.toggleoAuthFields('show');
+						break;
+					case "saml":
+						AspenDiscovery.Admin.toggleSamlFields('show');
+						AspenDiscovery.Admin.toggleSamlUserIdFields();
+						AspenDiscovery.Admin.toggleSamlUsernameFormatFields();
+						break;
+					case "ldap":
+						AspenDiscovery.Admin.toggleLDAPFields('show');
+						AspenDiscovery.Admin.toggleSamlUserIdFields();
+						AspenDiscovery.Admin.toggleSamlUsernameFormatFields();
+						break;
+					default:
+						break;
+				}
+			}
+			
 			$("#clientSecret").attr('autocomplete', "off");
 			$("#ldapPassword").attr('autocomplete', "off");
 			var ssoService = $("#serviceSelect").val();
-			if (ssoService === "oauth") {
-				AspenDiscovery.Admin.toggleoAuthFields('show');
-				AspenDiscovery.Admin.toggleSamlFields('hide');
-				AspenDiscovery.Admin.toggleLDAPFields('hide');
-				AspenDiscovery.Admin.toggleOAuthGatewayFields();
-				AspenDiscovery.Admin.toggleOAuthPrivateKeysField();
-				AspenDiscovery.Admin.toggleSamlMetadataFields();
-			} else if (ssoService === "saml") {
-				AspenDiscovery.Admin.toggleSamlFields('show');
-				AspenDiscovery.Admin.toggleoAuthFields('hide');
-				AspenDiscovery.Admin.toggleLDAPFields('hide');
-				AspenDiscovery.Admin.toggleOAuthGatewayFields();
-				AspenDiscovery.Admin.toggleOAuthPrivateKeysField();
-				AspenDiscovery.Admin.toggleSamlMetadataFields();
-				AspenDiscovery.Admin.toggleSamlUserIdFields();
-				AspenDiscovery.Admin.toggleSamlUsernameFormatFields();
-			} else if (ssoService === 'ldap') {
-				AspenDiscovery.Admin.toggleSamlFields('hide');
-				AspenDiscovery.Admin.toggleoAuthFields('hide');
-				AspenDiscovery.Admin.toggleLDAPFields('show');
-				AspenDiscovery.Admin.toggleOAuthGatewayFields();
-				AspenDiscovery.Admin.toggleOAuthPrivateKeysField();
-				AspenDiscovery.Admin.toggleSamlMetadataFields();
-				AspenDiscovery.Admin.toggleSamlUserIdFields();
-				AspenDiscovery.Admin.toggleSamlUsernameFormatFields();
-			} else {
-				AspenDiscovery.Admin.toggleSamlFields('hide');
-				AspenDiscovery.Admin.toggleoAuthFields('hide');
-				AspenDiscovery.Admin.toggleLDAPFields('hide');
-				AspenDiscovery.Admin.toggleOAuthGatewayFields();
-				AspenDiscovery.Admin.toggleOAuthPrivateKeysField();
-				AspenDiscovery.Admin.toggleSamlMetadataFields();
-			}
+			setFieldVisibility(ssoService);
 		},
 		toggleoAuthFields: function (displayMode) {
 			if (displayMode === "show") {
@@ -1363,27 +1314,20 @@ AspenDiscovery.Admin = (function () {
 
 		setAccountProfileDefaultsByIls: function () {
 			var selectedIls = $("#ilsSelect").val();
-			if (selectedIls === 'na') {
-				$("#driver").val('');
-				$("#authenticationMethodSelect").val('db') ;
-			}else {
-				$("#authenticationMethodSelect").val('ils') ;
-				if (selectedIls === 'carlx') {
-					$("#driver").val('CarlX');
-				}else if (selectedIls === 'evergreen') {
-					$("#driver").val('Evergreen');
-				}else if (selectedIls === 'evolve') {
-					$("#driver").val('Evolve');
-				}else if (selectedIls === 'koha') {
-					$("#driver").val('Koha');
-				}else if (selectedIls === 'polaris') {
-					$("#driver").val('Polaris');
-				}else if (selectedIls === 'sierra') {
-					$("#driver").val('Sierra');
-				}else if (selectedIls === 'symphony') {
-					$("#driver").val('SirsiDynixROA');
-				}
-			}
+			var driverMap = {
+				'na': { driver: '', authMethod: 'db' },
+				'carlx': { driver: 'CarlX', authMethod: 'ils' },
+				'evergreen': { driver: 'Evergreen', authMethod: 'ils' },
+				'evolve': { driver: 'Evolve', authMethod: 'ils' },
+				'koha': { driver: 'Koha', authMethod: 'ils' },
+				'polaris': { driver: 'Polaris', authMethod: 'ils' },
+				'sierra': { driver: 'Sierra', authMethod: 'ils' },
+				'symphony': { driver: 'SirsiDynixROA', authMethod: 'ils' }
+			};
+
+			var driverInfo = driverMap[selectedIls] || driverMap['na'];
+			$("#driver").val(driverInfo.driver);
+			$("#authenticationMethodSelect").val(driverInfo.authMethod);
 		},
 
 		searchSettings: function () {
@@ -1784,21 +1728,23 @@ AspenDiscovery.Admin = (function () {
 			var sourceControlObj = $(sourceControl);
 			var index = sourceControlObj.data("id");
 			if (index !== undefined) {
-				var format = $('input[name="formatMap_format[' + index + ']"]').val();
-				var formatCategory = $('select[name="formatMap_formatCategory[' + index + ']"] option:selected').val();
-				var groupingCategory = 'book';
-				if (format.match(/graphicnovel|graphic novel|comic|ecomic|manga/gi)) {
-					groupingCategory = 'comic';
-				} else {
-					if (formatCategory === "Movies") {
+				var format = $(`input[name="formatMap_format[${index}]"]`).val();
+				var formatCategory = $(`select[name="formatMap_formatCategory[${index}]"] option:selected`).val();
+				var groupingCategory = format.match(/graphicnovel|graphic novel|comic|ecomic|manga/gi) ? 'comic' : 'book';
+				switch(formatCategory) {
+					case "Movies":
 						groupingCategory = 'movie';
-					} else if (formatCategory === "Music") {
+						break;
+					case "Music":
 						groupingCategory = 'music';
-					} else if (formatCategory === "Other") {
+						break;
+					case "Other":
 						groupingCategory = 'other';
-					}
+						break;
+					default:
+						break;
 				}
-				$("#formatMap_groupingCategory_" + index).text(groupingCategory);
+				$(`#formatMap_groupingCategory_${index}`).text(groupingCategory);
 			}
 			return true;
 		},
