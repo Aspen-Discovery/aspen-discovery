@@ -14558,7 +14558,9 @@ AspenDiscovery.Record = (function () {
 				recordSource: $('#recordSource').val(),
 				account: $('#account').val(),
 				rememberHoldPickupLocation: $('#rememberHoldPickupLocation').prop('checked'),
-				promptForEdition: $('#holdPromptForEditions').val()
+				promptForEdition: $('#holdPromptForEditions').val(),
+				freezeHoldImmediately: $('#freezeHoldImmediately').prop('checked'),
+				reactivationDate: $('#reactivationDate').val()
 			};
 			if (autoLogOut) {
 				params['autologout'] = true;
@@ -14754,7 +14756,9 @@ AspenDiscovery.Record = (function () {
 				recordSource: $('#recordSource').val(),
 				account: $('#account').val(),
 				rememberHoldPickupLocation: $('#rememberHoldPickupLocation').prop('checked'),
-				promptForEdition: $('#holdPromptForEditions').val()
+				promptForEdition: $('#holdPromptForEditions').val(),
+				freezeHoldImmediately: $('#freezeHoldImmediately').prop('checked'),
+				reactivationDate: $('#reactivationDate').val()
 			};
 			if (autoLogOut) {
 				params['autologout'] = true;
