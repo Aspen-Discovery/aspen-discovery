@@ -10,7 +10,7 @@
 		<div class="col-tn-2 col-sm-1 calendar-nav-cell"><a class="btn btn-default" href="" onclick='return AspenDiscovery.Events.getPrintListOptions({if !empty($weekNumber)}{$weekNumber}{else}""{/if}, {if !empty($monthNumber)}{$monthNumber}{else}""{/if}, {$yearNumber})'>{translate text="Print Options" isPublicFacing=true} </a></div>
 	</div>
 	<div class="calendar {if $useWeek}week-view{/if}">
-		<div class="row calendar-nav">
+		<div class="row calendar-nav" id="fullScreenCalendar">
 			<div class="calendar-nav-cell col-tn-2 col-sm-1 align"><a class="btn btn-default" href="{$prevLink}" style="position:absolute;left: 0;"><i class="fas fa-caret-left" role="presentation"></i> {translate text="Previous" isPublicFacing=true}</a></div>
 			<div class="calendar-nav-cell col-tn-8 col-sm-10 text-center calendar-current-month">{$calendarMonth}</div>
 			{if $useWeek}
@@ -19,6 +19,20 @@
 				<div class="calendar-nav-cell col-tn-2 col-sm-1"><a class="btn btn-default" href="{$weekLink}" style="position:absolute;right: 0">{translate text="Show Week" isPublicFacing=true} </a></div>
 			{/if}
 			<div class="calendar-nav-cell col-tn-2 col-sm-1"><a class="btn btn-default" href="{$nextLink}" style="position:absolute;right: 0">{translate text="Next" isPublicFacing=true} <i class="fas fa-caret-right"></i></a></div>
+		</div>
+		<div id="smallScreenCalendar">
+			<div class="row calendar-nav">
+				<div class="calendar-nav-cell col-tn-12 text-center calendar-current-month">{$calendarMonth}</div>
+			</div>
+			<div class="row calendar-nav">
+				<div class="calendar-nav-cell col-tn-4"><a class="btn btn-default" href="{$prevLink}"><i class="fas fa-caret-left" role="presentation"></i> {translate text="Previous" isPublicFacing=true}</a></div>
+				{if $useWeek}
+					<div class="calendar-nav-cell col-tn-4"><a class="btn btn-default" href="{$monthLink}">{translate text="Show Month" isPublicFacing=true} </a></div>
+				{else}
+					<div class="calendar-nav-cell col-tn-4"><a class="btn btn-default" href="{$weekLink}">{translate text="Show Week" isPublicFacing=true} </a></div>
+				{/if}
+				<div class="calendar-nav-cell col-tn-4"><a class="btn btn-default" href="{$nextLink}">{translate text="Next" isPublicFacing=true} <i class="fas fa-caret-right"></i></a></div>
+			</div>
 		</div>
 
 		<div class="calendar-header">
