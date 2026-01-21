@@ -1180,7 +1180,6 @@ class CommunityEngagement_AJAX extends JSON_Action {
 		}
 
 		$user->orderBy('displayname ASC');
-		$user->limit(0, 500);
 
 		$users = array();
 
