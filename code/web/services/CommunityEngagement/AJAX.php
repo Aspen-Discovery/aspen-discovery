@@ -1179,19 +1179,21 @@ class CommunityEngagement_AJAX extends JSON_Action {
 			$user->whereAdd('homeLocationId = ' . $libraryId);
 		}
 
-		$user->orderBy('displayname ASC');
-		$user->limit(0, 500);
-
 		$users = array();
 
 		if($user->find()) {
 			while ($user->fetch()) {
 				$users[] = array(
 					'id' => $user->id,
-					'displayName' => $user->displayName,
+					'displayName' => $user->getDisplayName(),
 				);
 			} 
 		}
+
+		usort($users, function ($a, $b) {
+			return strcasecmp($a['displayName'], $b['displayName']);
+		});
+
 		return $users;
 	}
 
