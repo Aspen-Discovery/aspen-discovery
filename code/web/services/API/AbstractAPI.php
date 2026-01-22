@@ -224,4 +224,24 @@ abstract class AbstractAPI extends Action{
 		
 		echo $output;
 	}
+
+	protected function executeAPIMethod(string $method): void {
+		require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
+		APIUsage::incrementStat($this->apiName, $method);
+		
+		$output = json_encode(['result' => $this->$method()]);
+		
+		ExternalRequestLogEntry::logRequest(
+			$this->apiName . '.' . $method,
+			$_SERVER['REQUEST_METHOD'],
+			$_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'],
+			getallheaders(),
+			'',
+			$_SERVER['REDIRECT_STATUS'] ?? 200,
+			$output,
+			[]
+		);
+		
+		echo $output;
+	}
 }
