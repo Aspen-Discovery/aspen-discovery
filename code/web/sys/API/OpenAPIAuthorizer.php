@@ -3,6 +3,57 @@
 class OpenAPIAuthorizer {
 	private static array $specCache = [];
 	
+	public static function authorize(string $apiClass, string $method, $user, bool $ipAllowed = false): array {
+		$config = self::getMethodConfig($apiClass, $method);
+		
+		if ($config === null) {
+			return [
+				'allowed' => false,
+				'error' => 'invalid_method',
+				'code' => 404,
+				'message' => "Method '$method' is not defined in the API specification"
+			];
+		}
+		
+		$auth = $config['x-aspen-authorization'] ?? [];
+		
+		if (!empty($auth['public']) && $auth['public'] === true) {
+			return ['allowed' => true, 'scope' => 'public'];
+		}
+		
+		if ($ipAllowed) {
+			$scope = $auth['scope'] ?? 'ip';
+			if (!isset($auth['ipAllowed']) || $auth['ipAllowed'] === true) {
+				return ['allowed' => true, 'scope' => 'ip'];
+			}
+		}
+		
+		if ($user === false || $user === null) {
+			return [
+				'allowed' => false,
+				'error' => 'unauthorized',
+				'code' => 401,
+				'message' => 'Authentication required'
+			];
+		}
+		
+		$scope = $auth['scope'] ?? 'patron';
+		$requiredPermissions = $auth['permissions'] ?? [];
+		
+		if ($scope === 'staff' && !empty($requiredPermissions)) {
+			if (!$user->hasPermission($requiredPermissions)) {
+				return [
+					'allowed' => false,
+					'error' => 'insufficient_permissions',
+					'code' => 403,
+					'message' => 'Required permissions: ' . implode(', ', $requiredPermissions)
+				];
+			}
+		}
+		
+		return ['allowed' => true, 'scope' => $scope];
+	}
+	
 	public static function getMethodConfig(string $apiClass, string $method): ?array {
 		$spec = self::loadSpec($apiClass);
 		$paths = $spec['paths'] ?? [];
