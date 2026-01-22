@@ -3,7 +3,31 @@
 class OpenAPIAuthorizer {
 	private static array $specCache = [];
 	
-	public static function authorize(string $apiClass, string $method, $user, bool $ipAllowed = false): array {
+	/**
+	 * Authorize an API request based on OpenAPI spec
+	 * 
+	 * Scopes (can be string or array for OR logic):
+	 * - public: No authentication required
+	 * - greenhouse: Greenhouse/LiDA app-level auth
+	 * - user: Authenticated user (checks permissions array if present)
+	 * 
+	 * Bypasses (not scopes - these override scope checks):
+	 * - Whitelisted IP: Grants access unless endpoint sets ipAllowed: false
+	 * - Superuser: User with 'Use All API Endpoints' permission
+	 * 
+	 * Examples:
+	 *   "scope": "user"                        - Authenticated user
+	 *   "scope": "user", "permissions": [...]  - User with specific permissions
+	 *   "scope": ["user", "greenhouse"]        - Authenticated user OR app keys
+	 * 
+	 * @param string $apiClass The API class name
+	 * @param string $method The method name
+	 * @param mixed $user The authenticated user or false
+	 * @param bool $ipAllowed Whether request is from whitelisted IP
+	 * @param bool $greenhouseAuth Whether Greenhouse/LiDA auth succeeded
+	 * @return array Authorization result
+	 */
+	public static function authorize(string $apiClass, string $method, $user, bool $ipAllowed = false, bool $greenhouseAuth = false): array {
 		$config = self::getMethodConfig($apiClass, $method);
 		
 		if ($config === null) {
@@ -15,43 +39,78 @@ class OpenAPIAuthorizer {
 			];
 		}
 		
+		// Superuser bypass - 'Use All API Endpoints' grants full access
+		if ($user !== false && $user !== null && $user->hasPermission('Use All API Endpoints')) {
+			return ['allowed' => true, 'scope' => 'superuser'];
+		}
+		
 		$auth = $config['x-aspen-authorization'] ?? [];
 		
+		// Public endpoints - no auth required
 		if (!empty($auth['public']) && $auth['public'] === true) {
 			return ['allowed' => true, 'scope' => 'public'];
 		}
 		
+		// IP-based access (always checked first if allowed)
 		if ($ipAllowed) {
-			$scope = $auth['scope'] ?? 'ip';
 			if (!isset($auth['ipAllowed']) || $auth['ipAllowed'] === true) {
 				return ['allowed' => true, 'scope' => 'ip'];
 			}
 		}
 		
-		if ($user === false || $user === null) {
-			return [
-				'allowed' => false,
-				'error' => 'unauthorized',
-				'code' => 401,
-				'message' => 'Authentication required'
-			];
-		}
-		
-		$scope = $auth['scope'] ?? 'patron';
+		// Get scopes - can be string or array
+		$scopeConfig = $auth['scope'] ?? 'user';
+		$scopes = is_array($scopeConfig) ? $scopeConfig : [$scopeConfig];
 		$requiredPermissions = $auth['permissions'] ?? [];
 		
-		if ($scope === 'staff' && !empty($requiredPermissions)) {
-			if (!$user->hasPermission($requiredPermissions)) {
-				return [
-					'allowed' => false,
-					'error' => 'insufficient_permissions',
-					'code' => 403,
-					'message' => 'Required permissions: ' . implode(', ', $requiredPermissions)
-				];
+		// Try each scope (OR logic)
+		foreach ($scopes as $scope) {
+			$result = self::checkScope($scope, $user, $greenhouseAuth, $requiredPermissions);
+			if ($result['allowed']) {
+				return $result;
 			}
 		}
 		
-		return ['allowed' => true, 'scope' => $scope];
+		// None of the scopes matched - return appropriate error
+		if (in_array('user', $scopes) && $user !== false && !empty($requiredPermissions)) {
+			return [
+				'allowed' => false,
+				'error' => 'insufficient_permissions',
+				'code' => 403,
+				'message' => 'Required permissions: ' . implode(', ', $requiredPermissions)
+			];
+		}
+		
+		return [
+			'allowed' => false,
+			'error' => 'unauthorized',
+			'code' => 401,
+			'message' => 'Authentication required'
+		];
+	}
+	
+	/**
+	 * Check if a specific scope is satisfied
+	 */
+	private static function checkScope(string $scope, $user, bool $greenhouseAuth, array $requiredPermissions): array {
+		switch ($scope) {
+			case 'greenhouse':
+				if ($greenhouseAuth) {
+					return ['allowed' => true, 'scope' => 'greenhouse'];
+				}
+				break;
+				
+			case 'user':
+				if ($user !== false && $user !== null) {
+					if (!empty($requiredPermissions) && !$user->hasPermission($requiredPermissions)) {
+						return ['allowed' => false];
+					}
+					return ['allowed' => true, 'scope' => 'user'];
+				}
+				break;
+		}
+		
+		return ['allowed' => false];
 	}
 	
 	public static function getMethodConfig(string $apiClass, string $method): ?array {

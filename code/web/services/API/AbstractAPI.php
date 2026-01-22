@@ -121,9 +121,7 @@ abstract class AbstractAPI extends Action{
 
 		global $oAuthUser;
 		if (isset($oAuthUser) && $oAuthUser !== false) {
-			if ($oAuthUser->source == 'admin') {
-				return false;
-			}
+			// Note: 'Use All API Endpoints' permission is checked in grantTokenAccess()
 
 			if (empty($_REQUEST['language'])) {
 				global $activeLanguage;
@@ -177,26 +175,42 @@ abstract class AbstractAPI extends Action{
 		}
 	}
 
-	protected function getAuthenticatedUserForOpenAPI() {
+	/**
+	 * Get authentication info for OpenAPI authorization
+	 * @return array ['user' => User|false, 'greenhouseAuth' => bool]
+	 */
+	protected function getAuthInfoForOpenAPI(): array {
 		global $oAuthUser;
+		
+		// Check if already authenticated via OAuth
 		if (isset($oAuthUser) && $oAuthUser !== false) {
-			if ($oAuthUser->source == 'admin') {
-				return false;
-			}
-			return $oAuthUser;
+			return ['user' => $oAuthUser, 'greenhouseAuth' => false];
 		}
 		
+		// Try to authenticate via Basic auth
+		// Use validateTokenCredentials() - OpenAPI authorizer handles permissions
 		if (isset($_SERVER['PHP_AUTH_USER'])) {
-			if ($this->grantTokenAccess()) {
+			if ($this->validateTokenCredentials()) {
 				global $oAuthUser;
-				if ($oAuthUser->source == 'admin') {
-					return false;
+				if (isset($oAuthUser) && $oAuthUser !== false) {
+					// OAuth authentication succeeded - we have a user
+					return ['user' => $oAuthUser, 'greenhouseAuth' => false];
+				} else {
+					// Greenhouse/LiDA keys - authorized but no user
+					return ['user' => false, 'greenhouseAuth' => true];
 				}
-				return $oAuthUser;
 			}
 		}
 		
-		return false;
+		return ['user' => false, 'greenhouseAuth' => false];
+	}
+	
+	/**
+	 * @deprecated Use getAuthInfoForOpenAPI() instead
+	 */
+	protected function getAuthenticatedUserForOpenAPI() {
+		$authInfo = $this->getAuthInfoForOpenAPI();
+		return $authInfo['user'];
 	}
 
 	protected function sendErrorResponse(string $error, int $code, ?string $message = null): void {
@@ -255,11 +269,13 @@ abstract class AbstractAPI extends Action{
 		$this->extractOAuthCredentials();
 		$this->extractBasicAuthCredentials();
 		
-		$user = $this->getAuthenticatedUserForOpenAPI();
+		$authInfo = $this->getAuthInfoForOpenAPI();
+		$user = $authInfo['user'];
+		$greenhouseAuth = $authInfo['greenhouseAuth'];
 		$ipAllowed = IPAddress::allowAPIAccessForClientIP();
 		
 		require_once ROOT_DIR . '/sys/API/OpenAPIAuthorizer.php';
-		$authResult = OpenAPIAuthorizer::authorize($this->apiName, $method, $user, $ipAllowed);
+		$authResult = OpenAPIAuthorizer::authorize($this->apiName, $method, $user, $ipAllowed, $greenhouseAuth);
 		
 		if (!$authResult['allowed']) {
 			$this->sendErrorResponse($authResult['error'], $authResult['code'], $authResult['message'] ?? null);
@@ -267,7 +283,7 @@ abstract class AbstractAPI extends Action{
 		}
 		
 		$this->authorizedUser = $user;
-		$this->authorizedScope = $authResult['scope'] ?? 'patron';
+		$this->authorizedScope = $authResult['scope'] ?? 'user';
 		
 		if (!method_exists($this, $method)) {
 			$this->sendErrorResponse('method_not_implemented', 501, "Method '$method' is defined but not implemented");
@@ -285,7 +301,7 @@ abstract class AbstractAPI extends Action{
 		return $this->authorizedScope;
 	}
 
-	protected function isStaffScope(): bool {
-		return $this->authorizedScope === 'staff';
+	protected function isSuperuserScope(): bool {
+		return $this->authorizedScope === 'superuser';
 	}
 }
