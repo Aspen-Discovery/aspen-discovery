@@ -176,4 +176,26 @@ abstract class AbstractAPI extends Action{
 			}
 		}
 	}
+
+	protected function getAuthenticatedUserForOpenAPI() {
+		global $oAuthUser;
+		if (isset($oAuthUser) && $oAuthUser !== false) {
+			if ($oAuthUser->source == 'admin') {
+				return false;
+			}
+			return $oAuthUser;
+		}
+		
+		if (isset($_SERVER['PHP_AUTH_USER'])) {
+			if ($this->grantTokenAccess()) {
+				global $oAuthUser;
+				if ($oAuthUser->source == 'admin') {
+					return false;
+				}
+				return $oAuthUser;
+			}
+		}
+		
+		return false;
+	}
 }
