@@ -239,11 +239,46 @@ abstract class AbstractAPI extends Action{
 		echo $output;
 	}
 
-	protected function executeAPIMethod(string $method): void {
+	protected function executeAPIMethod(string $method, array $responseConfig = []): void {
 		require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
 		APIUsage::incrementStat($this->apiName, $method);
 		
-		$output = json_encode(['result' => $this->$method()]);
+		// Set content type header (can be overridden by response config)
+		$contentType = $responseConfig['contentType'] ?? 'application/json';
+		header('Content-type: ' . $contentType);
+		
+		// Set cache control - default to 3 hours, override with cacheMaxAge or noCache
+		if (!empty($responseConfig['noCache'])) {
+			header('Cache-Control: no-cache, must-revalidate');
+		} else {
+			$cacheMaxAge = $responseConfig['cacheMaxAge'] ?? 10800; // Default 3 hours
+			header('Cache-Control: max-age=' . (int)$cacheMaxAge);
+		}
+		
+		// Check if this is a raw response (no JSON wrapping)
+		$isRaw = !empty($responseConfig['raw']);
+		
+		if ($isRaw) {
+			// For raw responses, let the method handle output directly
+			// (e.g., getLogoFile outputs binary data and calls die())
+			$result = $this->$method();
+			
+			// If method returned something and didn't die(), output it
+			if ($result !== null && $result !== '') {
+				// Add XML declaration if needed
+				if (!empty($responseConfig['xmlDeclaration'])) {
+					echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+				}
+				$output = $result;
+				echo $output;
+			} else {
+				$output = '';
+			}
+		} else {
+			// Standard JSON response
+			$output = json_encode(['result' => $this->$method()]);
+			echo $output;
+		}
 		
 		ExternalRequestLogEntry::logRequest(
 			$this->apiName . '.' . $method,
@@ -255,14 +290,12 @@ abstract class AbstractAPI extends Action{
 			$output,
 			[]
 		);
-		
-		echo $output;
 	}
 
 	protected function launchWithOpenAPI(): void {
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 		
-		header('Content-type: application/json');
+		// Don't set Content-type here - let executeAPIMethod handle it based on response config
 		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
 		
 		$this->setActiveLanguage();
@@ -278,6 +311,7 @@ abstract class AbstractAPI extends Action{
 		$authResult = OpenAPIAuthorizer::authorize($this->apiName, $method, $user, $ipAllowed, $greenhouseAuth);
 		
 		if (!$authResult['allowed']) {
+			header('Content-type: application/json');
 			$this->sendErrorResponse($authResult['error'], $authResult['code'], $authResult['message'] ?? null);
 			return;
 		}
@@ -286,11 +320,15 @@ abstract class AbstractAPI extends Action{
 		$this->authorizedScope = $authResult['scope'] ?? 'user';
 		
 		if (!method_exists($this, $method)) {
+			header('Content-type: application/json');
 			$this->sendErrorResponse('method_not_implemented', 501, "Method '$method' is defined but not implemented");
 			return;
 		}
 		
-		$this->executeAPIMethod($method);
+		// Get response configuration from OpenAPI spec
+		$responseConfig = OpenAPIAuthorizer::getResponseConfig($this->apiName, $method);
+		
+		$this->executeAPIMethod($method, $responseConfig);
 	}
 
 	protected function getAuthorizedUser() {

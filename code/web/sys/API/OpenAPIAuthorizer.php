@@ -139,6 +139,27 @@ class OpenAPIAuthorizer {
 		return self::getMethodConfig($apiClass, $method) !== null;
 	}
 	
+	/**
+	 * Get response configuration for a method
+	 * 
+	 * x-aspen-response options:
+	 * - raw: bool - Don't wrap response in ['result' => ...], output directly
+	 * - contentType: string - Override Content-Type header (default: application/json)
+	 * - cacheMaxAge: int - Set Cache-Control max-age in seconds
+	 * - xmlDeclaration: bool - Prepend XML declaration for XML responses
+	 * 
+	 * @param string $apiClass The API class name
+	 * @param string $method The method name
+	 * @return array Response configuration
+	 */
+	public static function getResponseConfig(string $apiClass, string $method): array {
+		$config = self::getMethodConfig($apiClass, $method);
+		if ($config === null) {
+			return [];
+		}
+		return $config['x-aspen-response'] ?? [];
+	}
+	
 	public static function clearCache(): void {
 		self::$specCache = [];
 	}
