@@ -244,4 +244,36 @@ abstract class AbstractAPI extends Action{
 		
 		echo $output;
 	}
+
+	protected function launchWithOpenAPI(): void {
+		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
+		
+		header('Content-type: application/json');
+		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
+		
+		$this->setActiveLanguage();
+		$this->extractOAuthCredentials();
+		$this->extractBasicAuthCredentials();
+		
+		$user = $this->getAuthenticatedUserForOpenAPI();
+		$ipAllowed = IPAddress::allowAPIAccessForClientIP();
+		
+		require_once ROOT_DIR . '/sys/API/OpenAPIAuthorizer.php';
+		$authResult = OpenAPIAuthorizer::authorize($this->apiName, $method, $user, $ipAllowed);
+		
+		if (!$authResult['allowed']) {
+			$this->sendErrorResponse($authResult['error'], $authResult['code'], $authResult['message'] ?? null);
+			return;
+		}
+		
+		$this->authorizedUser = $user;
+		$this->authorizedScope = $authResult['scope'] ?? 'patron';
+		
+		if (!method_exists($this, $method)) {
+			$this->sendErrorResponse('method_not_implemented', 501, "Method '$method' is defined but not implemented");
+			return;
+		}
+		
+		$this->executeAPIMethod($method);
+	}
 }
