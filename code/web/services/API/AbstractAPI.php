@@ -2,6 +2,10 @@
 
 abstract class AbstractAPI extends Action{
 	protected $context;
+	protected string $apiName = '';
+	protected $authorizedUser = false;
+	protected string $authorizedScope = '';
+	
 	function __construct($context = 'external') {
 		parent::__construct(false);
 		$this->context = $context;
