@@ -12,6 +12,9 @@ abstract class AbstractAPI extends Action{
 		if ($this->checkIfLiDA()) {
 			$this->context = 'lida';
 		}
+		if (empty($this->apiName)) {
+			$this->apiName = (new ReflectionClass($this))->getShortName();
+		}
 	}
 
 	function checkIfLiDA(): bool {
