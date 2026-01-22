@@ -198,4 +198,30 @@ abstract class AbstractAPI extends Action{
 		
 		return false;
 	}
+
+	protected function sendErrorResponse(string $error, int $code, ?string $message = null): void {
+		http_response_code($code);
+		header('Cache-Control: no-cache, must-revalidate');
+		
+		$response = ['error' => $error];
+		if ($message !== null) {
+			$response['message'] = $message;
+		}
+		
+		$output = json_encode($response);
+		
+		$method = $_GET['method'] ?? 'unknown';
+		ExternalRequestLogEntry::logRequest(
+			$this->apiName . '.' . $method,
+			$_SERVER['REQUEST_METHOD'],
+			$_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'],
+			getallheaders(),
+			'',
+			$code,
+			$output,
+			[]
+		);
+		
+		echo $output;
+	}
 }
