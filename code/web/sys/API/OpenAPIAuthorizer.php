@@ -71,6 +71,19 @@ class OpenAPIAuthorizer {
 		return null;
 	}
 	
+	public static function getAllMethods(string $apiClass): array {
+		$spec = self::loadSpec($apiClass);
+		return array_keys($spec['paths'] ?? []);
+	}
+	
+	public static function methodExists(string $apiClass, string $method): bool {
+		return self::getMethodConfig($apiClass, $method) !== null;
+	}
+	
+	public static function clearCache(): void {
+		self::$specCache = [];
+	}
+	
 	private static function loadSpec(string $apiClass): array {
 		if (!isset(self::$specCache[$apiClass])) {
 			$specFile = ROOT_DIR . "/openapi/{$apiClass}_openapi.json";
