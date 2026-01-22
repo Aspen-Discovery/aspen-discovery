@@ -276,4 +276,16 @@ abstract class AbstractAPI extends Action{
 		
 		$this->executeAPIMethod($method);
 	}
+
+	protected function getAuthorizedUser() {
+		return $this->authorizedUser;
+	}
+
+	protected function getAuthorizedScope(): string {
+		return $this->authorizedScope;
+	}
+
+	protected function isStaffScope(): bool {
+		return $this->authorizedScope === 'staff';
+	}
 }
