@@ -165,4 +165,15 @@ abstract class AbstractAPI extends Action{
 
 		return $user;
 	}
+
+	protected function setActiveLanguage(): void {
+		global $activeLanguage;
+		if (isset($_GET['language'])) {
+			$language = new Language();
+			$language->code = $_GET['language'];
+			if ($language->find(true)) {
+				$activeLanguage = $language;
+			}
+		}
+	}
 }
