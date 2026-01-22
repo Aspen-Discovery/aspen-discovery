@@ -5021,6 +5021,20 @@ class UserAPI extends AbstractAPI {
 	 * @return bool|User
 	 */
 	function getUserForApiCall(?String $patronBarcode = null, ?String $patronPassword = null) : bool|User {
+		// Check for OAuth-authenticated user first
+		global $oAuthUser;
+		if (isset($oAuthUser) && $oAuthUser !== false) {
+			if ($oAuthUser->source == 'admin') {
+				return false;
+			}
+			return $oAuthUser;
+		}
+		
+		// Also check if we have an authorized user from OpenAPI flow
+		if ($this->authorizedUser !== false) {
+			return $this->authorizedUser;
+		}
+		
 		if ($this->context == 'internal') {
 			if ($patronBarcode == null && $patronPassword == null) {
 				return UserAccount::getActiveUserObj();
