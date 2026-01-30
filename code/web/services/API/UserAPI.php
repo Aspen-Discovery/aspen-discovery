@@ -30,6 +30,8 @@ class UserAPI extends AbstractAPI {
 			}
 		}
 
+		$this->extractBasicAuthCredentials();
+
 		if (isset($_SERVER['PHP_AUTH_USER'])) {
 			if ($this->grantTokenAccess()) {
 				if (in_array($method, [

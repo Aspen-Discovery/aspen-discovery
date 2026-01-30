@@ -22,6 +22,8 @@ class SearchAPI extends AbstractAPI {
 			}
 		}
 
+		$this->extractOAuthCredentials();
+
 		//Check if user can access API with keys sent from LiDA
 		if (isset($_SERVER['PHP_AUTH_USER'])) {
 			if ($this->grantTokenAccess()) {
