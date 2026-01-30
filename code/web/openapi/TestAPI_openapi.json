@@ -1,0 +1,60 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Test API",
+    "description": "Test API for validating OpenAPI-driven authorization",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "ping": {
+      "get": {
+        "summary": "Public endpoint - no auth required",
+        "x-aspen-authorization": {
+          "public": true
+        }
+      }
+    },
+    "whoami": {
+      "get": {
+        "summary": "Returns authenticated user info",
+        "x-aspen-authorization": {
+          "scope": "user"
+        }
+      }
+    },
+    "appInfo": {
+      "get": {
+        "summary": "Greenhouse/LiDA apps only",
+        "x-aspen-authorization": {
+          "scope": "greenhouse"
+        }
+      }
+    },
+    "adminCheck": {
+      "get": {
+        "summary": "Requires specific permission",
+        "x-aspen-authorization": {
+          "scope": "user",
+          "permissions": ["Administer All Collection Spotlights"]
+        }
+      }
+    },
+    "flexibleAuth": {
+      "get": {
+        "summary": "Accepts user OR greenhouse auth",
+        "x-aspen-authorization": {
+          "scope": ["user", "greenhouse"]
+        }
+      }
+    },
+    "noIpAccess": {
+      "get": {
+        "summary": "Blocked from IP whitelist access",
+        "x-aspen-authorization": {
+          "scope": "user",
+          "ipAllowed": false
+        }
+      }
+    }
+  }
+}
