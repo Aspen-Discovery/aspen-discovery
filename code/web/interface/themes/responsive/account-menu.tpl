@@ -136,6 +136,9 @@
 			{if !empty($userIsStaff)}
 				<div class="header-menu-option" ><a href="/MyAccount/StaffSettings">{translate text='Staff Settings' isPublicFacing=true}</a></div>
 			{/if}
+			{if !empty($canUseApiKeys)}
+				<div class="header-menu-option" ><a href="/MyAccount/OAuthKeys">{translate text='API Keys' isPublicFacing=true}</a></div>
+			{/if}
 
 			{if !empty($allowMasqueradeMode) && !$masqueradeMode}
 				{if !empty($canMasquerade)}

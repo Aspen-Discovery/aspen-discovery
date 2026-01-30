@@ -133,6 +133,15 @@
 			{/if}
 		{/foreach}
 	{/if}
+	{if !empty($canUseApiKeys)}
+		<a href="/MyAccount/OAuthKeys">
+			<div class="header-menu-option">
+				<i class="fas fa-key fa-fw" role="presentation"></i>
+				<span>{translate text='API Keys' isPublicFacing=true}</span>
+			</div>
+		</a>
+	{/if}
+
 	{if !empty($masqueradeMode)}
 		<a class="btn btn-default btn-sm btn-block" onclick="AspenDiscovery.Account.endMasquerade()">{translate text="End Masquerade" isAdminFacing=true}</a>
 	{/if}

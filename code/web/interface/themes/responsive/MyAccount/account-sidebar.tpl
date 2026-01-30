@@ -292,6 +292,9 @@
 								{if !empty($userIsStaff)}
 									<div class="myAccountLink"><a href="/MyAccount/StaffSettings">{translate text='Staff Settings' isPublicFacing=true}</a></div>
 								{/if}
+							{if !empty($canUseApiKeys)}
+								<div class="myAccountLink"><a href="/MyAccount/OAuthKeys">{translate text='API Keys' isPublicFacing=true}</a></div>
+							{/if}
 							{/if}
 						</div>
 					</div>
