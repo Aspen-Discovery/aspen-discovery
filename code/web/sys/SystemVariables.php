@@ -55,6 +55,8 @@ class SystemVariables extends DataObject {
 	public $disable_user_agent_logging;
 	public $logFrequentCrons;
 	public $hooplaVersion;
+	public $enableUserOAuth;
+
 
 	static $_objectStructure = [];
 	static function getObjectStructure(string $context = ''): array {
@@ -445,6 +447,13 @@ class SystemVariables extends DataObject {
 				'label' => 'Log Frequent Cron Jobs',
 				'description' => 'Whether or not to log frequently running cron jobs (e.g., runs every few minutes).',
 				'note' => 'Frequent jobs include: ' . implode(', ', $frequentJobs) . '.',
+				'default' => false,
+			],
+			'enableUserOAuth' => [
+				'property' => 'enableUserOAuth',
+				'type' => 'checkbox',
+				'label' => 'Enable User OAuth Keys',
+				'description' => 'Allow users to generate OAuth API keys for their account that respect user permissions',
 				'default' => false,
 			],
 		];
