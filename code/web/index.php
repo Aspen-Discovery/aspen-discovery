@@ -428,6 +428,11 @@ if ($isLoggedIn) {
 	$userIsStaff = $activeUserObject->isStaff();
 	$interface->assign('userIsStaff', $userIsStaff);
 	$interface->assign('showResetUsernameLink', $activeUserObject->showResetUsernameLink());
+
+	require_once ROOT_DIR . '/sys/Account/UserOAuthKey.php';
+	$enableUserOAuth = UserOAuthKey::isOAuthEnabled();
+	$interface->assign('enableUserOAuth', $enableUserOAuth);
+	$interface->assign('canUseApiKeys', $enableUserOAuth && $activeUserObject->hasPermission('Use API Keys'));
 } elseif ((isset($_POST['username']) && isset($_POST['password']) && ($action != 'Account' && $module != 'AJAX') && ($module != 'API')) || isset($_REQUEST['casLogin'])) {
 	//The user is trying to log in
 	try {
