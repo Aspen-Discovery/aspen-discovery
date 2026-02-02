@@ -295,12 +295,26 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher {
 		$facetConfig = $this->getFacetConfig();
 		foreach ($this->filterList as $field => $filter) {
 			/** @var FacetSetting $facetInfo */
-			$facetInfo = $facetConfig[$field];
-			$fieldPrefix = "";
-			if ($facetInfo->multiSelect) {
+			$facetInfo = $facetConfig[$field] ?? null;
+			
+			// Default to multiSelect behavior if facetInfo is missing and multiple values exist
+			$isMultiSelect = false;
+			$facetKey = $field;
+			
+			if ($facetInfo !== null) {
+				$isMultiSelect = $facetInfo->multiSelect;
 				$facetKey = empty($facetInfo->id) ? $facetInfo->facetName : $facetInfo->id;
+			} elseif (count($filter) > 1) {
+				// If we have multiple values for the same field but no facet config,
+				// default to multiSelect (OR logic) to avoid impossible AND conditions
+				$isMultiSelect = true;
+			}
+			
+			$fieldPrefix = "";
+			if ($isMultiSelect) {
 				$fieldPrefix = "{!tag={$facetKey}}";
 			}
+			
 			$fieldValue = "";
 			$okToAdd = false;
 			foreach ($filter as $value) {
@@ -316,7 +330,7 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher {
 					}
 				}
 				if ($okToAdd) {
-					if ($facetInfo->multiSelect) {
+					if ($isMultiSelect) {
 						if (!empty($fieldValue)) {
 							$fieldValue .= ' OR ';
 						}
@@ -326,7 +340,7 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher {
 					}
 				}
 			}
-			if ($facetInfo->multiSelect) {
+			if ($isMultiSelect) {
 				$filterQuery[] = "$fieldPrefix$field:($fieldValue)";
 			}
 		}

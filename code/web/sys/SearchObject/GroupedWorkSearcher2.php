@@ -171,18 +171,29 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 		$facetConfig = $this->getFacetConfig();
 		$availabilityToggleId = null;
 		foreach ($this->filterList as $field => $filter) {
+			// Extract actual field name from first filter if available
+			// filterList may be keyed by display name (e.g., "Literary Form") instead of field name (e.g., "literary_form")
+			$actualFieldName = $field;
+			if (is_array($filter) && !empty($filter)) {
+				$firstFilter = reset($filter);
+				if (is_array($firstFilter) && isset($firstFilter['field'])) {
+					$actualFieldName = $firstFilter['field'];
+				}
+			}
+			
 			$multiSelect = false;
 			$fieldPrefix = '';
-			if (isset($facetConfig[$field])) {
+			if (isset($facetConfig[$actualFieldName])) {
 				/** @var FacetSetting $facetInfo */
-				$facetInfo = $facetConfig[$field];
+				$facetInfo = $facetConfig[$actualFieldName];
 				$facetName = $facetInfo->getFacetName(2);
 				$facetKey = empty($facetInfo->id) ? $facetName : $facetInfo->id;
 				$multiSelect = $facetInfo->multiSelect || $facetName == 'availability_toggle';
 				$fieldPrefix = "{!tag=$facetKey}";
+				$field = $actualFieldName; // Use actual field name for query
 			} else {
 				//This is either a field we need to convert from the old schema to new schema or valid field from advanced search we aren't seeing here
-				$tmpFieldName = substr($field, 0, strrpos($field, '_'));
+				$tmpFieldName = substr($actualFieldName, 0, strrpos($actualFieldName, '_'));
 				if (isset($facetConfig[$tmpFieldName])) {
 					$facetInfo = $facetConfig[$tmpFieldName];
 					$facetName = $facetInfo->getFacetName(2);
@@ -191,8 +202,23 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 					$multiSelect = $facetInfo->multiSelect || $facetName == 'availability_toggle';
 					$fieldPrefix = "{!tag=$facetKey}";
 				} else {
-					if (in_array($field, $validFields)) {
-						$facetName = $field;
+					if (in_array($actualFieldName, $validFields)) {
+						$facetName = $actualFieldName;
+						$field = $actualFieldName;
+						// If multiple values, use multiSelect (OR logic)
+						if (count($filter) > 1) {
+							$multiSelect = true;
+							$facetKey = $actualFieldName;
+							$fieldPrefix = "{!tag=$facetKey}";
+						}
+					} elseif (count($filter) > 1) {
+						// If we have multiple values for the same field but no facet config,
+						// default to multiSelect (OR logic) to avoid impossible AND conditions
+						$facetName = $actualFieldName;
+						$field = $actualFieldName;
+						$multiSelect = true;
+						$facetKey = $actualFieldName;
+						$fieldPrefix = "{!tag=$facetKey}";
 					} else {
 						//Unknown field
 						continue;
