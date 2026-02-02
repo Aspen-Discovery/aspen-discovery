@@ -3965,6 +3965,63 @@ class Koha extends AbstractIlsDriver {
 		return 'kohaEmailResetPinLink.tpl';
 	}
 
+	function getMandatorySelfRegistrationFormStructure(): array {
+		$mandatoryFields = $this->getKohaSystemPreference('PatronSelfRegistrationBorrowerMandatoryField');
+		if (empty($mandatoryFields)) {
+			return [];
+		}
+
+		$mandatoryFieldNames = array_flip(array_map( fn($val) => "borrower_$val", array_filter(explode('|', $mandatoryFields))));
+		
+		$unwantedFields = $this->getKohaSystemPreference('PatronSelfRegistrationBorrowerUnwantedField');
+		$unwantedFieldNames = [];
+
+		if (!empty($unwantedFields)) {
+			$unwantedFieldNames = array_flip(array_map( fn($val) => "borrower_$val", array_filter(explode('|', $unwantedFields))));
+		}
+		
+		$registrationFields = $this->getSelfRegistrationFields();
+		$structure = [
+			'minimalSelfRegistrationForm' => [
+				'property' => 'minimalSelfRegistrationForm',
+				'type' => 'section',
+				'label' => 'Library Quick Registration Form',
+				'expandByDefault' => false,
+				'properties' => []
+			]
+		];
+
+		foreach ($registrationFields as $sectionKey => $section) {
+			if ($section['type'] != 'section' || !is_array($section['properties'])) {
+				continue;
+			}
+
+			foreach ($section['properties'] as $fieldKey => $field) {
+				if (empty($field)) {
+					continue;
+				}
+
+				if (!isset($mandatoryFieldNames[$fieldKey])) {
+					continue;
+				}
+
+				$structure['minimalSelfRegistrationForm']['properties'][$fieldKey] = $field;
+				$structure['minimalSelfRegistrationForm']['properties'][$fieldKey]['required'] = true;
+
+				if (isset($unwantedFieldNames[$fieldKey])) {
+					$structure['minimalSelfRegistrationForm']['properties'][$fieldKey]['type'] = 'hidden';
+				}
+			}
+		}
+
+		// GDPR (or other international equivalent) compliance - independent of the PatronSelfRegistrationBorrowerMandatoryField Koha System Preference
+		if(Library::getActiveLibrary()->ilsConsentEnabled && $this->areAnyConsentPluginsEnabled()) {
+			$structure['privacySection'] = $this->getSelfRegistrationFormPrivacySection();
+		}
+
+		return $structure;
+	}
+
 	function getSelfRegistrationFields($type = 'selfReg') {
 		$fields = $this->buildSelfRegistrationFieldStructure($type);
 
@@ -9718,5 +9775,9 @@ class Koha extends AbstractIlsDriver {
 			$logger->log("Error checking Koha displayAddHoldGroups setting: " . $e->getMessage(), Logger::LOG_ERROR);
 			return false;
 		}
+	}
+
+	public function hasMandatorySelfRegistrationFields(): bool {
+		return true;
 	}
 }
