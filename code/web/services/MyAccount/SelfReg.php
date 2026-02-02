@@ -258,6 +258,57 @@ class SelfReg extends Action {
 		}
 	}
 
+	/**
+	 * Build a minimal ILS self-registration form - for use with ILS drivers supporting this feature.
+	 * @param array $result Base result array (pre-populated with login prompt)
+	 * @param Library $library Active library
+	 * @param CatalogConnection $catalog
+	 * @param string $body Modal body content so far
+	 * @return array Modified result array
+	 */
+	public static function buildMinimalSelfRegForm(array $result, Library $library, CatalogConnection $catalog, string $body): array {
+
+		if ($library->enableSelfRegistration == 1) {
+			global $interface;
+			$result['success'] = true;
+			$selfRegFields = $catalog->getMandatorySelfRegistrationFormStructure();
+			
+			if (empty($selfRegFields)) {
+				return $result;
+			}
+
+			$result['title'] = translate([
+				'text' => 'Join our library to register for events',
+				'isPublicFacing' => true,
+			]);
+
+			$interface->assign('submitUrl', '/MyAccount/SelfReg');
+			$interface->assign('saveButtonText', 'Register');
+			$interface->assign('isSelfRegistration', true);
+			$interface->assign('formLabel', 'Self Registration');
+			$interface->assign('structure', $selfRegFields);
+			$fieldsForm = $interface->fetch('DataObjectUtil/objectEditForm.tpl');
+			$interface->assign('minimalSelfRegForm', $fieldsForm);
+			$body .= $interface->fetch('AspenEvents/registrationModalContents.tpl');
+			$result['body'] = $body;
+			return $result;
+		}
+
+		if ($library->enableSelfRegistration == 2 && !empty($library->selfRegistrationUrl)) {
+			$result['title'] = translate([
+				'text' => 'Join our library to register for events',
+				'isPublicFacing' => true,
+			]);
+			$result['success'] = true;
+			$result['body'] = translate([
+				'text' => 'You will be redirected to complete registration.',
+				'isPublicFacing' => true,
+			]);
+			$result['redirectUrl'] = $library->selfRegistrationUrl;
+		}
+		return $result;
+	}
+
 	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('', 'Register for a Library Card');

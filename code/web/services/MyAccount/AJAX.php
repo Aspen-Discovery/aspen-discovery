@@ -8168,7 +8168,13 @@ class MyAccount_AJAX extends JSON_Action {
 					'text' => 'You must log in to register to events.',
 					'isPublicFacing' => true,
 				]);
-				return $result;
+				$catalog = CatalogFactory::getCatalogConnectionInstance();
+				if (!$catalog->hasIlsRegistrationModeSupport(AbstractIlsDriver::ILS_REG_MODE_MINIMAL_SELF) || $library->enableSelfRegistration == 0) {
+					return $result;
+				}
+
+				require_once ROOT_DIR . '/services/MyAccount/SelfReg.php';
+				return SelfReg::buildMinimalSelfRegForm($result, $library, $catalog, $body);
 			}
 
 			$interface->assign('eventSourceId', $sourceId);
