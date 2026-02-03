@@ -489,19 +489,47 @@ AspenDiscovery.CommunityEngagement = function() {
 			const resultsDiv = document.getElementById('user_search_results');
 			const hiddenInput = document.getElementById('selected_user_id');
 
-			if (query.length < 2) {
-				resultsDiv.style.display = 'none';
-				hiddenInput.value = '';
-				return;
+			if (!this.searchUsers._cache) {
+				this.searchUsers._cache = {
+					users: null,
+					timer: null
+				};
 			}
 
-			hiddenInput.value = '';
-			AspenDiscovery.CommunityEngagement.getLibraryUsers(function(users) {
-				const filteredUsers = users.filter(user =>
-					user.displayName.toLowerCase().includes(query.toLowerCase())
-				);
-				AspenDiscovery.CommunityEngagement.displaySearchResults(filteredUsers);
-			});
+			clearTimeout(this.searchUsers._cache.timer);
+
+			this.searchUsers._cache.timer = setTimeout(() => {
+				if (query.length < 2) {
+					resultsDiv.style.display = 'none';
+					hiddenInput.value = '';
+					return;
+				}
+
+				hiddenInput.value = '';
+
+				// Use cached users if already loaded
+				if (this.searchUsers._cache.users) {
+					const filteredUsers = this.searchUsers._cache.users.filter(user =>
+						user.displayName.toLowerCase().includes(query.toLowerCase()) ||
+						(user.ils_barcode && user.ils_barcode.toLowerCase().includes(query.toLowerCase()))
+					);
+
+					this.displaySearchResults(filteredUsers);
+					return;
+				}
+
+				// Load users ONCE
+				this.getLibraryUsers((users) => {
+					this.searchUsers._cache.users = users;
+
+					const filteredUsers = users.filter(user =>
+						user.displayName.toLowerCase().includes(query.toLowerCase()) ||
+						(user.ils_barcode && user.ils_barcode.toLowerCase().includes(query.toLowerCase()))
+					);
+
+					this.displaySearchResults(filteredUsers);
+				});
+			}, 300);
 		},
 		loadCheckoutsForUser: function(userId, callback) {
 			let url = Globals.path + "/MyAccount/AJAX";
