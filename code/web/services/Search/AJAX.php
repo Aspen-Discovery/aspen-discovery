@@ -924,14 +924,11 @@ class AJAX extends Action {
 		$cluster = $facetList[$facetName];
 
 		// Do special processing for certain facet types.
-		if (preg_match('/time_since_added/i', $facetName)) {
+		if (preg_match('/time_since_added/i', $facetName) || $facetName == 'rating_facet') {
 			require_once ROOT_DIR . '/sys/Recommend/SideFacets.php';
 			$sideFacets = new SideFacets($restoredSearch, '');
-			$cluster = $sideFacets->updateTimeSinceAddedFacet($cluster);
-		} elseif ($facetName == 'rating_facet') {
-			require_once ROOT_DIR . '/sys/Recommend/SideFacets.php';
-			$sideFacets = new SideFacets($restoredSearch, '');
-			$cluster = $sideFacets->updateUserRatingsFacet($cluster);
+			$updateFunction = $facetName == 'rating_facet' ? 'updateUserRatingsFacet' : 'updateTimeSinceAddedFacet';
+			$cluster = call_user_func([$sideFacets, $updateFunction], $cluster);
 		}
 
 		// Apply facet settings to cluster.
@@ -1014,13 +1011,16 @@ class AJAX extends Action {
 		$template = 'Search/Recommend/standardFacet.tpl';
 		$isFormBasedFacet = false;
 
+		$yearFacetList = ['publishDate', 'birthYear', 'deathYear', 'publishDateSort'];
+		$sliderFacetList = ['lexile_score', 'accelerated_reader_reading_level', 'accelerated_reader_point_value'];
+
 		// Check for special facet types by name first
-		if ($facetName == 'publishDate' || $facetName == 'birthYear' || $facetName == 'deathYear' || $facetName == 'publishDateSort') {
+		if (in_array($facetName, $yearFacetList)) {
 			$template = 'Search/Recommend/yearFacetFilter.tpl';
 			$isFormBasedFacet = true;
 		} elseif ($facetName == 'rating_facet') {
 			$template = 'Search/Recommend/ratingFacet.tpl';
-		} elseif ($facetName == 'lexile_score' || $facetName == 'accelerated_reader_reading_level' || $facetName == 'accelerated_reader_point_value') {
+		} elseif (in_array($facetName, $sliderFacetList)) {
 			$template = 'Search/Recommend/sliderFacet.tpl';
 			$isFormBasedFacet = true;
 		} elseif ($facetName == 'start_date') {

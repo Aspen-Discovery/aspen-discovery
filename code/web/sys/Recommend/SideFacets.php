@@ -46,6 +46,38 @@ class SideFacets implements RecommendationInterface {
 	 */
 	public function init(): void {}
 
+	/** getEventSettings
+	 * 
+	 * Helper used for getting appropriate event settings given facet type
+	 * 
+	 * @access private
+	 */
+
+	private function getEventSettings(?LibraryEventsFacetSetting $facetSettings) : ?DataObject {
+		switch ($facetSettings->settingSource) {
+			case 'communico':
+				require_once ROOT_DIR . '/sys/Events/CommunicoSetting.php';
+				$eventSettings = new CommunicoSetting;
+				break;
+			case 'springshare':
+				require_once ROOT_DIR . '/sys/Events/SpringshareLibCalSetting.php';
+				$eventSettings = new SpringshareLibCalSetting;
+				break;
+			case 'assabet':
+				require_once ROOT_DIR . '/sys/Events/AssabetSetting.php';
+				$eventSettings = new AssabetSetting;
+				break;
+			default:
+				require_once ROOT_DIR . '/sys/Events/LMLibraryCalendarSetting.php';
+				$eventSettings = new LMLibraryCalendarSetting;
+				break;
+		}
+		
+		$eventSettings->id = $facetSettings->settingId;
+		
+		return $eventSettings->find(true) ? $eventSettings : null;
+	}
+
 	/* process
 	 *
 	 * Called after the SearchObject has performed its main search.  This may be
@@ -117,34 +149,10 @@ class SideFacets implements RecommendationInterface {
 				$interface->assign('facetCountsToShow', $facetSettings->getFacetGroup()->eventFacetCountsToShow);
 
 				//if there are multiple integrations being used for one library, the first setting found will be used
-				if ($facetSettings->settingSource == 'communico') {
-					require_once ROOT_DIR . '/sys/Events/CommunicoSetting.php';
-					$eventSettings = new CommunicoSetting;
-					$eventSettings->id = $facetSettings->settingId;
-					if ($eventSettings->find(true)) {
-						$interface->assign('maxEventDate', strtotime("+" . $eventSettings->numberOfDaysToIndex . " days"));
-					}
-				} else if ($facetSettings->settingSource == 'springshare') {
-					require_once ROOT_DIR . '/sys/Events/SpringshareLibCalSetting.php';
-					$eventSettings = new SpringshareLibCalSetting;
-					$eventSettings->id = $facetSettings->settingId;
-					if ($eventSettings->find(true)) {
-						$interface->assign('maxEventDate', strtotime("+" . $eventSettings->numberOfDaysToIndex . " days"));
-					}
-				} else if ($facetSettings->settingSource == 'assabet') {
-					require_once ROOT_DIR . '/sys/Events/AssabetSetting.php';
-					$eventSettings = new AssabetSetting;
-					$eventSettings->id = $facetSettings->settingId;
-					if ($eventSettings->find(true)) {
-						$interface->assign('maxEventDate', strtotime("+" . $eventSettings->numberOfDaysToIndex . " days"));
-					}
-				} else {
-					require_once ROOT_DIR . '/sys/Events/LMLibraryCalendarSetting.php';
-					$eventSettings = new LMLibraryCalendarSetting;
-					$eventSettings->id = $facetSettings->settingId;
-					if ($eventSettings->find(true)) {
-						$interface->assign('maxEventDate', strtotime("+" . $eventSettings->numberOfDaysToIndex . " days"));
-					}
+				$eventSettings = $this->getEventSettings($facetSettings);
+
+				if ($eventSettings->find(true)) {
+					$interface->assign('maxEventDate', strtotime("+" . $eventSettings->numberOfDaysToIndex . " days"));
 				}
 			}
 		} else {
