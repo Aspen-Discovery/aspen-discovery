@@ -20,7 +20,7 @@ class Author_Home extends ResultsAction {
 		}
 
 		//Check to see if the year has been set and if so, convert to a filter and resend.
-		$dateFilters = ['publishDate'];
+		$dateFilters = ['publishDate', 'publishDateSort'];
 		foreach ($dateFilters as $dateFilter) {
 			if ((isset($_REQUEST[$dateFilter . 'yearfrom']) && !empty($_REQUEST[$dateFilter . 'yearfrom'])) || (isset($_REQUEST[$dateFilter . 'yearto']) && !empty($_REQUEST[$dateFilter . 'yearto']))) {
 				$queryParams = $_GET;
