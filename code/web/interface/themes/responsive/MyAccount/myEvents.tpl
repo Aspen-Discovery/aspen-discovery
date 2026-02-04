@@ -1,5 +1,8 @@
 {strip}
 	{if !empty($loggedIn)}
+		{if !empty($accountMessages)}
+			{include file='systemMessages.tpl' messages=$accountMessages}
+		{/if}
 	<div class="resultHead">
 		<h1>{translate text='Your Events' isPublicFacing=true}</h1>
 

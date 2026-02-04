@@ -1,4 +1,7 @@
 {strip}
+	{if !empty($accountMessages)}
+		{include file='systemMessages.tpl' messages=$accountMessages}
+	{/if}
 	<h1>{translate text="Your Lists" isPublicFacing=true}</h1>
 	{if !empty($listGroups)}
 		<div class="row">

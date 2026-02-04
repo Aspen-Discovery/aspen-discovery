@@ -5,7 +5,9 @@
 				<div id="web_note" class="alert alert-info text-center col-xs-12">{$user->_web_note}</div>
 			</div>
 		{/if}
-
+		{if !empty($accountMessages)}
+			{include file='systemMessages.tpl' messages=$accountMessages}
+		{/if}
 		<h1>{translate text="Your Searches" isPublicFacing=true}</h1>
 		{if empty($noHistory)}
 			{if !empty($saved)}

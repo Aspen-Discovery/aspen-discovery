@@ -9,6 +9,31 @@ class History extends Action {
 		'genealogy' => 'Genealogy',
 	];
 
+    function __construct($isStandalonePage = false) {
+        parent::__construct($isStandalonePage);
+
+        //Load system messages
+        if (UserAccount::isLoggedIn()) {
+            $accountMessages = [];
+            try {
+                $customAccountMessages = new SystemMessage();
+                $now = time();
+                $customAccountMessages->whereAdd("startDate = 0 OR startDate <= $now");
+                $customAccountMessages->whereAdd("endDate = 0 OR endDate > $now");
+                $customAccountMessages->find();
+                while ($customAccountMessages->fetch()) {
+                    if ($customAccountMessages->isValidForDisplay()) {
+                        $accountMessages[] = clone $customAccountMessages;
+                    }
+                }
+            } catch (Exception $e) {
+                //This happens before the table is created, ignore it.
+            }
+            global $interface;
+            $interface->assign('accountMessages', $accountMessages);
+        }
+    }
+
 	function launch() {
 		global $interface;
 
