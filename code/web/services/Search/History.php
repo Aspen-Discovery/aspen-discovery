@@ -18,6 +18,19 @@ class History extends Action {
             try {
                 $customAccountMessages = new SystemMessage();
                 $now = time();
+                global $action;
+                if ($action == 'CheckedOut') {
+                    $customAccountMessages->whereAdd("showOn = 1 OR showOn = 2");
+                } elseif ($action == 'Holds') {
+                    $customAccountMessages->whereAdd("showOn = 1 OR showOn = 3");
+                } elseif ($action == 'Fines') {
+                    $customAccountMessages->whereAdd("showOn = 1 OR showOn = 4");
+                } elseif ($action == 'ContactInformation') {
+                    $customAccountMessages->whereAdd("showOn = 1 OR showOn = 5");
+                } else {
+                    $customAccountMessages->showOn = 1;
+                }
+
                 $customAccountMessages->whereAdd("startDate = 0 OR startDate <= $now");
                 $customAccountMessages->whereAdd("endDate = 0 OR endDate > $now");
                 $customAccountMessages->find();
