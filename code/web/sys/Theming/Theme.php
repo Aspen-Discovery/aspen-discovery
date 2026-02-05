@@ -302,6 +302,32 @@ class Theme extends DataObject {
 	public /** @noinspection PhpUnused */
 		$actionButtonHoverBorderColorDefault;
 
+    public static $defaultSuccessButtonBackgroundColor = '#5cb85c';
+    public static $defaultSuccessButtonForegroundColor = '#ffffff';
+    public static $defaultSuccessButtonBorderColor = '#4cae4c';
+    public static $defaultSuccessButtonHoverBackgroundColor = '#449d44';
+    public static $defaultSuccessButtonHoverForegroundColor = '#ffffff';
+    public static $defaultSuccessButtonHoverBorderColor = '#398439';
+
+    public $successButtonBackgroundColor;
+    public /** @noinspection PhpUnused */
+        $successButtonBackgroundColorDefault;
+    public $successButtonForegroundColor;
+    public /** @noinspection PhpUnused */
+        $successButtonForegroundColorDefault;
+    public $successButtonBorderColor;
+    public /** @noinspection PhpUnused */
+        $successButtonBorderColorDefault;
+    public $successButtonHoverBackgroundColor;
+    public /** @noinspection PhpUnused */
+        $successButtonHoverBackgroundColorDefault;
+    public $successButtonHoverForegroundColor;
+    public /** @noinspection PhpUnused */
+        $successButtonHoverForegroundColorDefault;
+    public $successButtonHoverBorderColor;
+    public /** @noinspection PhpUnused */
+        $successButtonHoverBorderColorDefault;
+
 	public static $defaultInfoButtonBackgroundColor = '#8cd2e7';
 	public static $defaultInfoButtonForegroundColor = '#000000';
 	public static $defaultInfoButtonBorderColor = '#999999';
@@ -2129,7 +2155,74 @@ class Theme extends DataObject {
 						],
 					],
 
-					'infoButtonSection' => [
+                    'successButtonSection' => [
+                        'property' => 'successButtonSection',
+                        'type' => 'section',
+                        'label' => 'Success Button',
+                        'hideInLists' => true,
+                        'properties' => [
+                            'successButtonBackgroundColor' => [
+                                'property' => 'successButtonBackgroundColor',
+                                'type' => 'color',
+                                'label' => 'Background Color',
+                                'description' => 'Background Color',
+                                'required' => false,
+                                'hideInLists' => true,
+                                'default' => Theme::$defaultSuccessButtonBackgroundColor,
+                                'checkContrastWith' => 'successButtonForegroundColor',
+                            ],
+                            'successButtonForegroundColor' => [
+                                'property' => 'successButtonForegroundColor',
+                                'type' => 'color',
+                                'label' => 'Text Color',
+                                'description' => 'Text Color',
+                                'required' => false,
+                                'hideInLists' => true,
+                                'default' => Theme::$defaultSuccessButtonForegroundColor,
+                                'checkContrastWith' => 'successButtonBackgroundColor',
+                            ],
+                            'successButtonBorderColor' => [
+                                'property' => 'successButtonBorderColor',
+                                'type' => 'color',
+                                'label' => 'Border Color',
+                                'description' => 'Border Color',
+                                'required' => false,
+                                'hideInLists' => true,
+                                'default' => Theme::$defaultSuccessButtonBorderColor,
+                            ],
+                            'successButtonHoverBackgroundColor' => [
+                                'property' => 'successButtonHoverBackgroundColor',
+                                'type' => 'color',
+                                'label' => 'Hover Background Color',
+                                'description' => 'Hover Background Color',
+                                'required' => false,
+                                'hideInLists' => true,
+                                'default' => Theme::$defaultSuccessButtonHoverBackgroundColor,
+                                'checkContrastWith' => 'successButtonHoverForegroundColor',
+                            ],
+                            'successButtonHoverForegroundColor' => [
+                                'property' => 'successButtonHoverForegroundColor',
+                                'type' => 'color',
+                                'label' => 'Hover Text Color',
+                                'description' => 'Hover Text Color',
+                                'required' => false,
+                                'hideInLists' => true,
+                                'default' => Theme::$defaultSuccessButtonHoverForegroundColor,
+                                'checkContrastWith' => 'successButtonHoverBackgroundColor',
+                            ],
+                            'successButtonHoverBorderColor' => [
+                                'property' => 'successButtonHoverBorderColor',
+                                'type' => 'color',
+                                'label' => 'Hover Border Color',
+                                'description' => 'Hover Border Color',
+                                'required' => false,
+                                'hideInLists' => true,
+                                'default' => Theme::$defaultSuccessButtonHoverBorderColor,
+                            ],
+                        ],
+                    ],
+
+                    'infoButtonSection' => [
 						'property' => 'infoButtonSection',
 						'type' => 'section',
 						'label' => 'Info Button',
@@ -2730,6 +2823,14 @@ class Theme extends DataObject {
 		if ($toolsButtonHoverContrast < $minContrastRatio) {
 			$validationResults['errors'][] = 'Tools Button Hover contrast does not meet accessibility guidelines, contrast is: ' . ($toolsButtonHoverContrast);
 		}
+        $successButtonContrast = ColorUtils::calculateColorContrast($this->successButtonBackgroundColor, $this->successButtonForegroundColor);
+        if ($successButtonContrast < $minContrastRatio) {
+            $validationResults['errors'][] = 'Success Button contrast does not meet accessibility guidelines, contrast is: ' . ($successButtonContrast);
+        }
+        $successButtonHoverContrast = ColorUtils::calculateColorContrast($this->successButtonHoverBackgroundColor, $this->successButtonHoverForegroundColor);
+        if ($successButtonHoverContrast < $minContrastRatio) {
+            $validationResults['errors'][] = 'Success Button Hover contrast does not meet accessibility guidelines, contrast is: ' . ($successButtonHoverContrast);
+        }
 		$infoButtonContrast = ColorUtils::calculateColorContrast($this->infoButtonBackgroundColor, $this->infoButtonForegroundColor);
 		if ($infoButtonContrast < $minContrastRatio) {
 			$validationResults['errors'][] = 'Info Button contrast does not meet accessibility guidelines, contrast is: ' . ($infoButtonContrast);
@@ -2947,6 +3048,12 @@ class Theme extends DataObject {
 		$this->getValueForPropertyUsingDefaults('toolsButtonHoverBackgroundColor', Theme::$defaultToolsButtonHoverBackgroundColor, $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('toolsButtonHoverForegroundColor', Theme::$defaultToolsButtonHoverForegroundColor, $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('toolsButtonHoverBorderColor', Theme::$defaultToolsButtonHoverBorderColor, $appliedThemes);
+        $this->getValueForPropertyUsingDefaults('successButtonBackgroundColor', Theme::$defaultInfoButtonBackgroundColor, $appliedThemes);
+        $this->getValueForPropertyUsingDefaults('successButtonForegroundColor', Theme::$defaultInfoButtonForegroundColor, $appliedThemes);
+        $this->getValueForPropertyUsingDefaults('successButtonBorderColor', Theme::$defaultInfoButtonBorderColor, $appliedThemes);
+        $this->getValueForPropertyUsingDefaults('successButtonHoverBackgroundColor', Theme::$defaultInfoButtonHoverBackgroundColor, $appliedThemes);
+        $this->getValueForPropertyUsingDefaults('successButtonHoverForegroundColor', Theme::$defaultInfoButtonHoverForegroundColor, $appliedThemes);
+        $this->getValueForPropertyUsingDefaults('successButtonHoverBorderColor', Theme::$defaultInfoButtonHoverBorderColor, $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('infoButtonBackgroundColor', Theme::$defaultInfoButtonBackgroundColor, $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('infoButtonForegroundColor', Theme::$defaultInfoButtonForegroundColor, $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('infoButtonBorderColor', Theme::$defaultInfoButtonBorderColor, $appliedThemes);
@@ -3097,6 +3204,12 @@ class Theme extends DataObject {
 		$interface->assign('toolsButtonHoverBackgroundColor', $this->toolsButtonHoverBackgroundColor);
 		$interface->assign('toolsButtonHoverForegroundColor', $this->toolsButtonHoverForegroundColor);
 		$interface->assign('toolsButtonHoverBorderColor', $this->toolsButtonHoverBorderColor);
+        $interface->assign('successButtonBackgroundColor', $this->successButtonBackgroundColor);
+        $interface->assign('successButtonForegroundColor', $this->successButtonForegroundColor);
+        $interface->assign('successButtonBorderColor', $this->successButtonBorderColor);
+        $interface->assign('successButtonHoverBackgroundColor', $this->successButtonHoverBackgroundColor);
+        $interface->assign('successButtonHoverForegroundColor', $this->successButtonHoverForegroundColor);
+        $interface->assign('successButtonHoverBorderColor', $this->successButtonHoverBorderColor);
 		$interface->assign('infoButtonBackgroundColor', $this->infoButtonBackgroundColor);
 		$interface->assign('infoButtonForegroundColor', $this->infoButtonForegroundColor);
 		$interface->assign('infoButtonBorderColor', $this->infoButtonBorderColor);
