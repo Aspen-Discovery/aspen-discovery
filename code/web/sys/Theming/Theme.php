@@ -3048,12 +3048,12 @@ class Theme extends DataObject {
 		$this->getValueForPropertyUsingDefaults('toolsButtonHoverBackgroundColor', Theme::$defaultToolsButtonHoverBackgroundColor, $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('toolsButtonHoverForegroundColor', Theme::$defaultToolsButtonHoverForegroundColor, $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('toolsButtonHoverBorderColor', Theme::$defaultToolsButtonHoverBorderColor, $appliedThemes);
-        $this->getValueForPropertyUsingDefaults('successButtonBackgroundColor', Theme::$defaultInfoButtonBackgroundColor, $appliedThemes);
-        $this->getValueForPropertyUsingDefaults('successButtonForegroundColor', Theme::$defaultInfoButtonForegroundColor, $appliedThemes);
-        $this->getValueForPropertyUsingDefaults('successButtonBorderColor', Theme::$defaultInfoButtonBorderColor, $appliedThemes);
-        $this->getValueForPropertyUsingDefaults('successButtonHoverBackgroundColor', Theme::$defaultInfoButtonHoverBackgroundColor, $appliedThemes);
-        $this->getValueForPropertyUsingDefaults('successButtonHoverForegroundColor', Theme::$defaultInfoButtonHoverForegroundColor, $appliedThemes);
-        $this->getValueForPropertyUsingDefaults('successButtonHoverBorderColor', Theme::$defaultInfoButtonHoverBorderColor, $appliedThemes);
+        $this->getValueForPropertyUsingDefaults('successButtonBackgroundColor', Theme::$defaultSuccessButtonBackgroundColor, $appliedThemes);
+        $this->getValueForPropertyUsingDefaults('successButtonForegroundColor', Theme::$defaultSuccessButtonForegroundColor, $appliedThemes);
+        $this->getValueForPropertyUsingDefaults('successButtonBorderColor', Theme::$defaultSuccessButtonBorderColor, $appliedThemes);
+        $this->getValueForPropertyUsingDefaults('successButtonHoverBackgroundColor', Theme::$defaultSuccessButtonHoverBackgroundColor, $appliedThemes);
+        $this->getValueForPropertyUsingDefaults('successButtonHoverForegroundColor', Theme::$defaultSuccessButtonHoverForegroundColor, $appliedThemes);
+        $this->getValueForPropertyUsingDefaults('successButtonHoverBorderColor', Theme::$defaultSuccessButtonHoverBorderColor, $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('infoButtonBackgroundColor', Theme::$defaultInfoButtonBackgroundColor, $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('infoButtonForegroundColor', Theme::$defaultInfoButtonForegroundColor, $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('infoButtonBorderColor', Theme::$defaultInfoButtonBorderColor, $appliedThemes);
