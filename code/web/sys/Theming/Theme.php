@@ -303,10 +303,10 @@ class Theme extends DataObject {
 		$actionButtonHoverBorderColorDefault;
 
     public static $defaultSuccessButtonBackgroundColor = '#5cb85c';
-    public static $defaultSuccessButtonForegroundColor = '#ffffff';
+    public static $defaultSuccessButtonForegroundColor = '#000000';
     public static $defaultSuccessButtonBorderColor = '#4cae4c';
     public static $defaultSuccessButtonHoverBackgroundColor = '#449d44';
-    public static $defaultSuccessButtonHoverForegroundColor = '#ffffff';
+    public static $defaultSuccessButtonHoverForegroundColor = '#000000';
     public static $defaultSuccessButtonHoverBorderColor = '#398439';
 
     public $successButtonBackgroundColor;

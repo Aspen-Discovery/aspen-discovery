@@ -5852,6 +5852,18 @@ CREATE TABLE `themes` (
   `actionButtonHoverForegroundColorDefault` tinyint(1) DEFAULT 1,
   `actionButtonHoverBorderColor` char(7) DEFAULT '#285e8e',
   `actionButtonHoverBorderColorDefault` tinyint(1) DEFAULT 1,
+  `successButtonBackgroundColor` char(7) DEFAULT '#5cb85c',
+  `successButtonBackgroundColorDefault` tinyint(1) DEFAULT 1,
+  `successButtonForegroundColor` char(7) DEFAULT '#ffffff',
+  `successButtonForegroundColorDefault` tinyint(1) DEFAULT 1,
+  `successButtonBorderColor` char(7) DEFAULT '#4cae4c',
+  `successButtonBorderColorDefault` tinyint(1) DEFAULT 1,
+  `successButtonHoverBackgroundColor` char(7) DEFAULT '#449d44',
+  `successButtonHoverBackgroundColorDefault` tinyint(1) DEFAULT 1,
+  `successButtonHoverForegroundColor` char(7) DEFAULT '#ffffff',
+  `successButtonHoverForegroundColorDefault` tinyint(1) DEFAULT 1,
+  `successButtonHoverBorderColor` char(7) DEFAULT '#398439',
+  `successButtonHoverBorderColorDefault` tinyint(1) DEFAULT 1,
   `infoButtonBackgroundColor` char(7) DEFAULT '#5bc0de',
   `infoButtonBackgroundColorDefault` tinyint(1) DEFAULT 1,
   `infoButtonForegroundColor` char(7) DEFAULT '#ffffff',
@@ -7486,7 +7498,7 @@ INSERT INTO `materials_request_status` (`id`, `description`, `isDefault`, `sendE
 	(18, 'Unavailable', 0, 1, 'This e-mail is to let you know the status of your recent request for an item that you did not find in our catalog. The item you requested cannot be purchased at this time from any of our regular suppliers and is not available from any of our lending libraries.', 0, 0, -1, 0, 0, 0, 0),
 	(19, 'Cancelled by Patron', 0, 0, '', 0, 1, -1, 0, 0, 0, 0),
 	(20, 'Cancelled - Duplicate Request', 0, 0, '', 0, 0, -1, 0, 0, 0, 0),
-	(21, 'Hold Placed', 0, 1, '{title} has been received by the library and you have been added to the hold queue. 
+	(21, 'Hold Placed', 0, 1, '{title} has been received by the library and you have been added to the hold queue.
 
 Thank you for your purchase suggestion!', 0, 0, -1, 0, 1, 0, 0),
 	(22, 'Hold Failed', 0, 1, '{title} has been received by the library, however we were not able to add you to the hold queue. Please ensure that your account is in good standing and then visit our catalog to place your hold.
@@ -7494,8 +7506,8 @@ Thank you for your purchase suggestion!', 0, 0, -1, 0, 1, 0, 0),
 	Thanks', 0, 0, -1, 0, 0, 1, 0),
 	(23, 'Hold Not Needed', 0, 0, '', 0, 0, -1, 0, 0, 0, 1);
 UPDATE modules set enabled=0;UPDATE modules set enabled=1 where name in ('Side Loads', 'User Lists');
-INSERT INTO system_variables (currencyCode, storeRecordDetailsInSolr, storeRecordDetailsInDatabase, indexVersion, searchVersion, appScheme, trackIpAddresses) VALUES ('USD', 0, 1, 2, 2, 'aspen-lida', 0); 
-INSERT INTO themes 
+INSERT INTO system_variables (currencyCode, storeRecordDetailsInSolr, storeRecordDetailsInDatabase, indexVersion, searchVersion, appScheme, trackIpAddresses) VALUES ('USD', 0, 1, 2, 2, 'aspen-lida', 0);
+INSERT INTO themes
   (id,themeName,logoName,headerBackgroundColor,headerBackgroundColorDefault,headerForegroundColor,headerForegroundColorDefault,
   generatedCss,
   pageBackgroundColor,pageBackgroundColorDefault,primaryBackgroundColor,primaryBackgroundColorDefault,primaryForegroundColor,primaryForegroundColorDefault,
