@@ -3953,6 +3953,9 @@ class Sierra extends AbstractIlsDriver {
 		$datetime24HoursAgo = new DateTime();
 		date_sub($datetime24HoursAgo, new DateInterval('PT24H'));
 		$formattedTime24HoursAgo = $datetime24HoursAgo->format('Y-m-d H:i:s P');
+		$datetime48HoursAgo = new DateTime();
+		date_sub($datetime48HoursAgo, new DateInterval('PT48H'));
+		$formattedTime48HoursAgo = $datetime48HoursAgo->format('Y-m-d H:i:s P');
 		$dateTime24HoursFromNow = new DateTime();
 		$dateTime24HoursFromNow->add(new DateInterval('P1D'));
 		$formattedTime24HoursFromNow = $dateTime24HoursFromNow->format('Y-m-d H:i:s P');
@@ -3970,10 +3973,10 @@ class Sierra extends AbstractIlsDriver {
 		$cronLogEntry->notes .= "&nbsp;&nbsp;- Checking Holds Expire Soon? $loadHoldExpiresSoon<br/>";
 		$numMessagesAdded = 0;
 		if ($loadHoldReadyForPickup || $loadHoldExpiresSoon) {
-			//Look for holds for the patron that have been put on the hold shelf in the last 24 hours
+			//Look for holds for the patron that have been put on the hold shelf in the last 48 hours
 			// or that will expire in the next 24 hours (but are not currently expired)
 			$getHoldsNeedingNoticesStmt = "select sierra_view.hold.*, record_num as patron_record_num from sierra_view.hold inner join sierra_view.record_metadata on patron_record_id = sierra_view.record_metadata.id where (hold.on_holdshelf_gmt >= $1 OR (expire_holdshelf_gmt >= $2 AND expire_holdshelf_gmt <= $3)) and record_num = $4";
-			$getHoldsNeedingNoticesRS = pg_query_params($sierraDnaConnection, $getHoldsNeedingNoticesStmt, [$formattedTime24HoursAgo, $formattedTimeNow, $formattedTime24HoursFromNow, $user->unique_ils_id]);
+			$getHoldsNeedingNoticesRS = pg_query_params($sierraDnaConnection, $getHoldsNeedingNoticesStmt, [$formattedTime48HoursAgo, $formattedTimeNow, $formattedTime24HoursFromNow, $user->unique_ils_id]);
 			if ($getHoldsNeedingNoticesRS === false) {
 				return [
 					'success' => false,
@@ -3988,13 +3991,13 @@ class Sierra extends AbstractIlsDriver {
 					$onHoldshelfTime = strtotime($curRow['on_holdshelf_gmt']);
 					$expireHoldshelfTime = strtotime($curRow['expire_holdshelf_gmt']);
 					$cronLogEntry->notes .= "&nbsp;&nbsp;&nbsp;&nbsp;- Processing hold with onHoldshelfTime of $onHoldshelfTime and expireHoldshelfTime of $expireHoldshelfTime.<br/>";
-					if ($onHoldshelfTime > $datetime24HoursAgo->getTimestamp()) {
+					if ($onHoldshelfTime > $datetime48HoursAgo->getTimestamp()) {
 						//We will show that a hold is on the holdshelf if it was moved to the hold shelf in the last 24 hours.
 						if ($loadHoldReadyForPickup) {
 							$numMessagesAdded += $this->createIlsMessage($user, 'hold_ready', $ilsNotificationSetting, $existingMessage, $cronLogEntry);
 						}
 					}
-					if ($expireHoldshelfTime >= $datetimeNow->getTimestamp() && $expireHoldshelfTime <= $dateTime24HoursFromNow) {
+					if ($expireHoldshelfTime >= $datetimeNow->getTimestamp() && $expireHoldshelfTime <= $dateTime24HoursFromNow->getTimestamp()) {
 						//We will show that a hold expires soon if it will expire in the next 24 hours.
 						if ($loadHoldExpiresSoon) {
 							$numMessagesAdded += $this->createIlsMessage($user, 'hold_expire', $ilsNotificationSetting, $existingMessage, $cronLogEntry);

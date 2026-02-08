@@ -20,7 +20,7 @@ function getUpdates26_02_00(): array {
 			'title' => 'Force Reindex of All Titles in Lists',
 			'description' => 'Force Reindex of All Titles in Lists',
 			'sql' => [
-				"INSERT INTO grouped_work_scheduled_index (permanent_id, indexAfter) SELECT sourceId, UNIX_TIMESTAMP() from user_list_entry where source = 'GroupedWork'"
+				"INSERT INTO grouped_work_scheduled_index (permanent_id, indexAfter) SELECT sourceId, UNIX_TIMESTAMP() from user_list_entry where source = 'GroupedWork' and length(sourceId) = 40"
 			]
 		], //force_reindex_of_all_titles_in_lists
 		'admin_property_search_index' => [
