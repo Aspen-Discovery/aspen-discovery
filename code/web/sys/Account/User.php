@@ -4931,6 +4931,11 @@ class User extends DataObject {
 		$sections['support']->addAction(new AdminAction('API Documentation', 'View available OpenAPI specifications for Aspen Discovery APIs.', '/API/Documentation'), true);
 		$sections['support']->addAction(new AdminAction('Release Notes', 'View release notes for Aspen Discovery which contain information about new functionality and fixes for each release.', '/Admin/ReleaseNotes'), true);
 
+		global $plugins;
+		foreach ($plugins as $plugin) {
+			$sections = array_merge($sections, $plugin->getAdminActions());
+		}
+
 		$sorter = function (AdminSection $a, AdminSection $b) {
 			return strcasecmp($a->getTranslatedLabel(), $b->getTranslatedLabel());
 		};
