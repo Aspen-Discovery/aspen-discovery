@@ -264,6 +264,8 @@ class Library extends DataObject {
 	public $replaceAllFirstNameWithPreferredName;
 	public $allowDateOfBirthUpdates;
 	public $allowPatronAddressUpdates;
+	public $sierraAddressLineForCityState;
+	public $sierraZipOnSameLineAsCityState;
 	/** @noinspection PhpUnused */
 	public $cityStateField;
 	public $allowPatronPhoneNumberUpdates;
@@ -570,7 +572,8 @@ class Library extends DataObject {
 			'squareSettingId',
 			'stripeSettingId',
 			'heyCentricSettingId',
-			'pay360SettingId'
+			'pay360SettingId',
+			'sierraZipOnSameLineAsCityState'
 		];
 	}
 
@@ -1895,6 +1898,26 @@ class Library extends DataObject {
 								'default' => 1,
 								'readOnly' => false,
 								'permissions' => ['Library ILS Connection'],
+							],
+							'sierraAddressLineForCityState' => [
+								'property' => 'sierraAddressLineForCityState',
+								'label' => 'Sierra Address Line with City/State',
+								'description' => 'The line within the address block which holds the city and state in Sierra',
+								'type' => 'integer',
+								'min' => 2,
+								'max' => 4,
+								'default' => 2,
+								'permissions' => ['Library ILS Connection'],
+								'relatedIls' => ['sierra'],
+							],
+							'sierraZipOnSameLineAsCityState' => [
+								'property' => 'sierraZipOnSameLineAsCityState',
+								'label' => 'Sierra Zip on the same line as City/State',
+								'description' => 'Check if the Zip code is on the same line as the City/State. If not, it will be the next line down.',
+								'type' => 'checkbox',
+								'default' => 1,
+								'permissions' => ['Library ILS Connection'],
+								'relatedIls' => ['sierra'],
 							],
 							'allowPatronPhoneNumberUpdates' => [
 								'property' => 'allowPatronPhoneNumberUpdates',

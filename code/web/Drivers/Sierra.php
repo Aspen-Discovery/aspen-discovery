@@ -591,9 +591,9 @@ class Sierra extends AbstractIlsDriver {
 
 		if ($this->lastResponseCode == 200 || $this->lastResponseCode == 204) {
 			$result['success'] = true;
-			$result['message'] = translate(['text' => 'Reading history has been disabled in the ILS.', 'isPublicFacing'=>true]);
+			$result['message'] = 'Reading history has been disabled in the ILS.';
 		} else {
-			$result['message'] = translate(['text' => 'Failed to disable reading history in the ILS.', 'isPublicFacing'=>true]);
+			$result['message'] = 'Failed to disable reading history in the ILS.';
 		}
 
 		return $result;
@@ -1820,7 +1820,6 @@ class Sierra extends AbstractIlsDriver {
 		];
 
 		if ($canUpdateContactInfo) {
-			global $library;
 			$params = [];
 
 			$userHomeLibrary = $patron->getHomeLibrary();
@@ -1828,7 +1827,7 @@ class Sierra extends AbstractIlsDriver {
 				$patron->email = $_REQUEST['email'];
 				$params['emails'] = [$_REQUEST['email']];
 			}
-			if ($library->allowPatronPhoneNumberUpdates) {
+			if ($userHomeLibrary->allowPatronPhoneNumberUpdates) {
 				$params['phones'] = [];
 				if (isset($_REQUEST['phone'])) {
 					$patron->phone = $_REQUEST['phone'];
@@ -1838,7 +1837,7 @@ class Sierra extends AbstractIlsDriver {
 					$params['phones'][] = $tmpPhone;
 				}
 			}
-			if ($library->allowPatronWorkPhoneNumberUpdates) {
+			if ($userHomeLibrary->allowPatronWorkPhoneNumberUpdates) {
 				if (!array_key_exists('phones', $params)) {
 					$params['phones'] = [];
 				}
@@ -1850,14 +1849,24 @@ class Sierra extends AbstractIlsDriver {
 					$params['phones'][] = $tmpPhone;
 				}
 			}
-			if ($library->allowPatronAddressUpdates) {
+			if ($userHomeLibrary->allowPatronAddressUpdates) {
 				$params['addresses'] = [];
 				$address = new stdClass();
 				$address->lines = [];
 				$address->type = 'a';
 				$address->lines[] = $_REQUEST['address1'];
-				$cityStateZip = $_REQUEST['city'] . ', ' . $_REQUEST['state'] . ' ' . $_REQUEST['zip'];
-				$address->lines[] = $cityStateZip;
+				//Add blank lines as needed
+				for ($i = 2; $i < $userHomeLibrary->sierraAddressLineForCityState; $i++) {
+					$address->lines[] = '';
+				}
+				if ($userHomeLibrary->sierraZipOnSameLineAsCityState) {
+					$cityStateZip = $_REQUEST['city'] . ', ' . $_REQUEST['state'] . ' ' . $_REQUEST['zip'];
+					$address->lines[] = $cityStateZip;
+				}else{
+					$cityState = $_REQUEST['city'] . ', ' . $_REQUEST['state'];
+					$address->lines[] = $cityState;
+					$address->lines[] = $_REQUEST['zip'];
+				}
 
 				$params['addresses'][] = $address;
 			}
@@ -2045,22 +2054,6 @@ class Sierra extends AbstractIlsDriver {
 							'isPublicFacing' => true,
 						]),
 					];
-				} elseif ($customField->ilsName == 'city' && $selfRegistrationForm->cityDropdown) {
-					$cityOptions = [];
-					$validCities = new SierraSelfRegistrationMunicipalityValues();
-					$validCities->municipalityType = 'city';
-					$validCities->find();
-					while ($validCities->fetch()) {
-						$cityOptions[$validCities->municipality] = $validCities->municipality;
-					}
-					$fields[$customField->section]['properties'][] = [
-						'property' => $customField->ilsName,
-						'type' => 'enum',
-						'values' => $cityOptions,
-						'label' => $customField->displayName,
-						'required' => $customField->required,
-						'note' => $customField->note,
-					];
 				} elseif ($customField->ilsName == 'state') {
 					if (!empty($library->validSelfRegistrationStates)){
 						$validStates = explode('|', $library->validSelfRegistrationStates);
@@ -2202,12 +2195,18 @@ class Sierra extends AbstractIlsDriver {
 					$address->lines = [];
 					$address->type = 'a';
 					$address->lines[] = $_REQUEST['street'];
-					if ($selfRegistrationForm->noCommaInAddress){
-						$cityStateZip = $_REQUEST['city'] . ' ' . $_REQUEST['state'] . ' ' . $_REQUEST['zip'];
-					} else {
-						$cityStateZip = $_REQUEST['city'] . ', ' . $_REQUEST['state'] . ' ' . $_REQUEST['zip'];
+					//Add blank lines as needed
+					for ($i = 2; $i < $library->sierraAddressLineForCityState; $i++) {
+						$address->lines[] = '';
 					}
-					$address->lines[] = $cityStateZip;
+					if ($library->sierraZipOnSameLineAsCityState) {
+						$cityStateZip = $_REQUEST['city'] . ', ' . $_REQUEST['state'] . ' ' . $_REQUEST['zip'];
+						$address->lines[] = $cityStateZip;
+					}else{
+						$cityState = $_REQUEST['city'] . ', ' . $_REQUEST['state'];
+						$address->lines[] = $cityState;
+						$address->lines[] = $_REQUEST['zip'];
+					}
 
 					$params['addresses'][] = $address;
 				}
@@ -2988,40 +2987,59 @@ class Sierra extends AbstractIlsDriver {
 	}
 
 	private function loadContactInformationFromApiResult(User $user, stdClass $patronInfo) : void {
+		$userHomeLibrary = $user->getHomeLibrary();
 		$user->_fullname = reset($patronInfo->names);
 		if (!empty($patronInfo->addresses)) {
 			$primaryAddress = reset($patronInfo->addresses);
 			$user->_address1 = $primaryAddress->lines[0];
-			if (array_key_exists(1, $primaryAddress->lines)) {
-				$line2 = $primaryAddress->lines[1];
-				if (strpos($line2, ',')) {
-					$user->_city = substr($line2, 0, strrpos($line2, ','));
-					$stateZip = trim(substr($line2, strrpos($line2, ',') + 1));
-					if (strpos($stateZip, ' ')) {
-						$user->_state = substr($stateZip, 0, strrpos($stateZip, ' '));
-						$user->_zip = substr($stateZip, strrpos($stateZip, ' '));
-					} else {
-						$user->_state = trim($stateZip);
-					}
-				} else {
-					$parts = preg_split('/\s+/', $line2);
-					if (count($parts) >= 3) {
-						$lastpart = array_pop($parts);
-						if (is_numeric($lastpart)) {
-							$user->_zip = $lastpart;
-							$user->_state = array_pop($parts);
+			if (array_key_exists($userHomeLibrary->sierraAddressLineForCityState - 1, $primaryAddress->lines)) {
+				//Get the correct address line for the city/state/zip
+				$line2 = $primaryAddress->lines[$userHomeLibrary->sierraAddressLineForCityState - 1];
+				if ($userHomeLibrary->sierraZipOnSameLineAsCityState) {
+					if (strpos($line2, ',')) {
+						$user->_city = substr($line2, 0, strrpos($line2, ','));
+						$stateZip = trim(substr($line2, strrpos($line2, ',') + 1));
+						if (strpos($stateZip, ' ')) {
+							$user->_state = substr($stateZip, 0, strrpos($stateZip, ' '));
+							$user->_zip = substr($stateZip, strrpos($stateZip, ' '));
 						} else {
-							$user->_state = $lastpart;
+							$user->_state = trim($stateZip);
 						}
-						$user->_city = implode(' ', $parts);
 					} else {
-						$user->_city = $line2;
+						$parts = preg_split('/\s+/', $line2);
+						if (count($parts) >= 3) {
+							$lastpart = array_pop($parts);
+							if (is_numeric($lastpart)) {
+								$user->_zip = $lastpart;
+								$user->_state = array_pop($parts);
+							} else {
+								$user->_state = $lastpart;
+							}
+							$user->_city = implode(' ', $parts);
+						} else {
+							$user->_city = $line2;
+						}
+					}
+				}else{
+					if (strpos($line2, ',')) {
+						$user->_city = substr($line2, 0, strrpos($line2, ','));
+						$user->_state = trim(substr($line2, strrpos($line2, ',') + 1));
+					}else {
+						$parts = preg_split('/\s+/', $line2);
+						if (count($parts) >= 2) {
+							$user->_state = array_pop($parts);
+							$user->_city = implode(' ', $parts);
+						} else {
+							$user->_city = $line2;
+						}
+					}
+					if (array_key_exists($userHomeLibrary->sierraAddressLineForCityState, $primaryAddress->lines)) {
+						$user->_zip = $primaryAddress->lines[$userHomeLibrary->sierraAddressLineForCityState];
 					}
 				}
 			}
 		}
 		if (!empty($patronInfo->phones)) {
-			$userHomeLibrary = $user->getHomeLibrary();
 			foreach ($patronInfo->phones as $phoneInfo) {
 				if ($phoneInfo->type == $userHomeLibrary->phoneField) {
 					$user->phone = $phoneInfo->number;
@@ -3866,7 +3884,6 @@ class Sierra extends AbstractIlsDriver {
 								$location->useLibraryThemes = 1;
 								$location->languageAndDisplayInHeader = 1;
 								$location->displayExploreMoreBarInSummon = 1;
-								$location->displayExploreMoreBarInGale = 1;
 								$location->displayExploreMoreBarInEbscoEds = 1;
 								$location->displayExploreMoreBarInEbscoHost = 1;
 								$location->displayExploreMoreBarInCatalogSearch = 1;
@@ -3878,10 +3895,7 @@ class Sierra extends AbstractIlsDriver {
 								$location->automaticTimeoutLength = 90;
 								$location->automaticTimeoutLengthLoggedOut = 450;
 								$location->showEmailThis = 1;
-								$location->showShareOnX = 1;
-								$location->showShareOnFacebook = 1;
-								$location->showShareOnPinterest = 1;
-								$location->showShareOnLink = 1;
+								$location->showShareOnExternalSites = 1;
 								$location->showFavorites = 1;
 								$location->includeLibraryRecordsToInclude = 1;
 
@@ -3953,9 +3967,6 @@ class Sierra extends AbstractIlsDriver {
 		$datetime24HoursAgo = new DateTime();
 		date_sub($datetime24HoursAgo, new DateInterval('PT24H'));
 		$formattedTime24HoursAgo = $datetime24HoursAgo->format('Y-m-d H:i:s P');
-		$datetime48HoursAgo = new DateTime();
-		date_sub($datetime48HoursAgo, new DateInterval('PT48H'));
-		$formattedTime48HoursAgo = $datetime48HoursAgo->format('Y-m-d H:i:s P');
 		$dateTime24HoursFromNow = new DateTime();
 		$dateTime24HoursFromNow->add(new DateInterval('P1D'));
 		$formattedTime24HoursFromNow = $dateTime24HoursFromNow->format('Y-m-d H:i:s P');
@@ -3973,10 +3984,10 @@ class Sierra extends AbstractIlsDriver {
 		$cronLogEntry->notes .= "&nbsp;&nbsp;- Checking Holds Expire Soon? $loadHoldExpiresSoon<br/>";
 		$numMessagesAdded = 0;
 		if ($loadHoldReadyForPickup || $loadHoldExpiresSoon) {
-			//Look for holds for the patron that have been put on the hold shelf in the last 48 hours
+			//Look for holds for the patron that have been put on the hold shelf in the last 24 hours
 			// or that will expire in the next 24 hours (but are not currently expired)
 			$getHoldsNeedingNoticesStmt = "select sierra_view.hold.*, record_num as patron_record_num from sierra_view.hold inner join sierra_view.record_metadata on patron_record_id = sierra_view.record_metadata.id where (hold.on_holdshelf_gmt >= $1 OR (expire_holdshelf_gmt >= $2 AND expire_holdshelf_gmt <= $3)) and record_num = $4";
-			$getHoldsNeedingNoticesRS = pg_query_params($sierraDnaConnection, $getHoldsNeedingNoticesStmt, [$formattedTime48HoursAgo, $formattedTimeNow, $formattedTime24HoursFromNow, $user->unique_ils_id]);
+			$getHoldsNeedingNoticesRS = pg_query_params($sierraDnaConnection, $getHoldsNeedingNoticesStmt, [$formattedTime24HoursAgo, $formattedTimeNow, $formattedTime24HoursFromNow, $user->unique_ils_id]);
 			if ($getHoldsNeedingNoticesRS === false) {
 				return [
 					'success' => false,
@@ -3991,13 +4002,13 @@ class Sierra extends AbstractIlsDriver {
 					$onHoldshelfTime = strtotime($curRow['on_holdshelf_gmt']);
 					$expireHoldshelfTime = strtotime($curRow['expire_holdshelf_gmt']);
 					$cronLogEntry->notes .= "&nbsp;&nbsp;&nbsp;&nbsp;- Processing hold with onHoldshelfTime of $onHoldshelfTime and expireHoldshelfTime of $expireHoldshelfTime.<br/>";
-					if ($onHoldshelfTime > $datetime48HoursAgo->getTimestamp()) {
+					if ($onHoldshelfTime > $datetime24HoursAgo->getTimestamp()) {
 						//We will show that a hold is on the holdshelf if it was moved to the hold shelf in the last 24 hours.
 						if ($loadHoldReadyForPickup) {
 							$numMessagesAdded += $this->createIlsMessage($user, 'hold_ready', $ilsNotificationSetting, $existingMessage, $cronLogEntry);
 						}
 					}
-					if ($expireHoldshelfTime >= $datetimeNow->getTimestamp() && $expireHoldshelfTime <= $dateTime24HoursFromNow->getTimestamp()) {
+					if ($expireHoldshelfTime >= $datetimeNow->getTimestamp() && $expireHoldshelfTime <= $dateTime24HoursFromNow) {
 						//We will show that a hold expires soon if it will expire in the next 24 hours.
 						if ($loadHoldExpiresSoon) {
 							$numMessagesAdded += $this->createIlsMessage($user, 'hold_expire', $ilsNotificationSetting, $existingMessage, $cronLogEntry);
