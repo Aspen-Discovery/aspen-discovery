@@ -727,7 +727,7 @@ class Sierra extends AbstractIlsDriver {
 	/**
 	 * Look up a check-in date from Sierra DNA using circ_trans joined via record numbers.
 	 * Joins circ_trans to record_metadata to match patron and item by record_num (not internal ids),
-	 * filters to check-in transactions (op_code = 'i'), and optionally narrows to a +/-1 day window
+	 * filters to check in transactions (op_code = 'i'), and optionally narrows to a +/- 1-day window
 	 * around the checkout timestamp before returning the most recent match.
 	 *
 	 * @param int $patronId Patron record number (not internal id).
@@ -3023,7 +3023,7 @@ class Sierra extends AbstractIlsDriver {
 		if (!empty($patronInfo->phones)) {
 			$userHomeLibrary = $user->getHomeLibrary();
 			foreach ($patronInfo->phones as $phoneInfo) {
-				if ($phoneInfo->type == $userHomeLibrary->phoneNumber) {
+				if ($phoneInfo->type == $userHomeLibrary->phoneField) {
 					$user->phone = $phoneInfo->number;
 				}elseif ($phoneInfo->type == $userHomeLibrary->workPhoneField) {
 					$user->_workPhone = $phoneInfo->number;

@@ -8,6 +8,7 @@ class CheckInGrid extends Action {
 	function launch() {
 		global $interface;
 
+		/** @var Sierra $driver */
 		require_once(ROOT_DIR . '/Drivers/Sierra.php');
 		$driver = CatalogFactory::getCatalogConnectionInstance();
 		$checkInGrid = $driver->getCheckInGrid(strip_tags($_REQUEST['id']), strip_tags($_REQUEST['lookfor']));
