@@ -195,23 +195,66 @@ abstract class AspenPlugin {
 	}
 	
 	/**
+	 * Get plugin metadata - override this in your plugin
+	 * @return array
+	 */
+	public function getMetadata(): array {
+		return [
+			'name' => 'Unknown Plugin',
+			'version' => '1.0.0',
+			'description' => 'No description provided',
+			'author' => 'Unknown Author',
+			'dateCreated' => null,
+			'lastModified' => null,
+			'minAspenVersion' => null,
+			'maxAspenVersion' => null,
+		];
+	}
+
+	/**
+	 * Get plugin slug - override this in your plugin
+	 * @return string
+	 */
+	public function getSlug(): string {
+		// Default implementation derives slug from class name
+		$className = get_class($this);
+		// Remove 'Plugin' suffix if present
+		if (substr($className, -6) === 'Plugin') {
+			$className = substr($className, 0, -6);
+		}
+		// Convert CamelCase to snake_case
+		return strtolower(preg_replace('/([a-z])([A-Z])/', '$1_$2', $className));
+	}
+
+	/**
+	 * Get JavaScript files to inject - override this in your plugin
+	 * @return array Array of relative file paths
+	 */
+	public function getJavaScriptFiles(): array {
+		return [];
+	}
+
+	/**
+	 * Get CSS files to inject - override this in your plugin
+	 * @return array Array of relative file paths
+	 */
+	public function getCssFiles(): array {
+		return [];
+	}
+
+	/**
 	 * Get plugin version
 	 */
 	public function getVersion(): string {
-		return $this->pluginData->version;
+		$metadata = $this->getMetadata();
+		return $metadata['version'] ?? '1.0.0';
 	}
-	
+
 	/**
 	 * Get plugin name
 	 */
 	public function getName(): string {
-		return $this->pluginData->name;
-	}
-	
-	/**
-	 * Get plugin slug
-	 */
-	public function getSlug(): string {
-		return $this->pluginData->slug;
+		$metadata = $this->getMetadata();
+		return $metadata['name'] ?? 'Unknown Plugin';
 	}
 } 

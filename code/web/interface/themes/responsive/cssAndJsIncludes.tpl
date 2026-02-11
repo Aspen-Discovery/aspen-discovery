@@ -6,9 +6,23 @@
 	{else}
 		{css filename="main.min.css"}
 	{/if}
+	{* Plugin CSS files *}
+	{if !empty($pluginCssFiles)}
+		{foreach from=$pluginCssFiles item=cssFile}
+			<link rel="stylesheet" type="text/css" href="{$cssFile}?v={$gitBranch|urlencode}.{$cssJsCacheCounter}">
+		{/foreach}
+	{/if}
+
 	{if !empty($additionalCss)}
 		<style>
 			{$additionalCss}
+		</style>
+	{/if}
+
+	{* Plugin injected CSS *}
+	{if !empty($pluginInjectedCss)}
+		<style>
+			{$pluginInjectedCss}
 		</style>
 	{/if}
 
@@ -21,6 +35,20 @@
 	{* This is all merged using the merge_javascript.php file called automatically with a File Watcher*}
 	{* Code is minified using uglify.js *}
 	<script src="/interface/themes/responsive/js/aspen.js?v={$aspenVersion|urlencode}.{$cssJsCacheCounter}"></script>
+
+	{* Plugin JavaScript files *}
+	{if !empty($pluginJsFiles)}
+		{foreach from=$pluginJsFiles item=jsFile}
+			<script src="{$jsFile}?v={$gitBranch|urlencode}.{$cssJsCacheCounter}"></script>
+		{/foreach}
+	{/if}
+
+	{* Plugin injected JavaScript *}
+	{if !empty($pluginInjectedJs)}
+		<script type="text/javascript">
+			{$pluginInjectedJs}
+		</script>
+	{/if}
 
 	{/strip}
 	<script type="text/javascript">

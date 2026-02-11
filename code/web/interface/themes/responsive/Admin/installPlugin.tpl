@@ -26,7 +26,7 @@
 							<input type="text" class="form-control" id="pluginPath" name="pluginPath" 
 								   placeholder="/path/to/plugin/directory" required>
 							<p class="help-block">
-								Enter the full path to the plugin directory containing the manifest.json file.
+								Enter the full path to the plugin directory containing the PHP plugin file.
 							</p>
 						</div>
 					</div>
@@ -45,25 +45,44 @@
 			<div class="col-xs-12">
 				<h3>Plugin Requirements</h3>
 				<ul>
-					<li>The plugin directory must contain a <code>manifest.json</code> file</li>
-					<li>The manifest must include: name, slug, version, description, and author</li>
-					<li>The plugin main class file should be named <code>[slug].php</code></li>
-					<li>The plugin class should extend <code>AspenPlugin</code></li>
+					<li>The plugin directory must contain a PHP file with a class extending <code>AspenPlugin</code></li>
+					<li>The plugin class must implement <code>getMetadata()</code> method with: name, version, description, and author</li>
+					<li>The plugin class must implement <code>getSlug()</code> method returning a unique identifier</li>
+					<li>All metadata is now defined in PHP methods - no manifest.json needed!</li>
 				</ul>
 				
-				<h4>Example manifest.json:</h4>
-				<pre><code>{literal}{
-  "name": "My Custom Plugin",
-  "slug": "my_custom_plugin",
-  "version": "1.0.0",
-  "description": "A sample plugin for Aspen Discovery",
-  "author": "Your Name",
-  "hookPoints": ["injectJavaScript", "afterPageLoad"],
-  "jsFiles": ["js/custom.js"],
-  "cssFiles": ["css/custom.css"],
-  "config": {
-    "setting1": "default_value"
-  }
+				<h4>Example Plugin Class:</h4>
+				<pre><code>{literal}<?php
+class MyCustomPlugin extends AspenPlugin {
+    public function getMetadata(): array {
+        return [
+            'name' => 'My Custom Plugin',
+            'version' => '1.0.0',
+            'description' => 'Description of the plugin',
+            'author' => 'Your Name',
+            'dateCreated' => '2025-01-26',
+            'lastModified' => '2025-01-26',
+            'minAspenVersion' => '24.01.00',
+            'maxAspenVersion' => '25.12.99', // or null for no limit
+        ];
+    }
+
+    public function getSlug(): string {
+        return 'my_custom_plugin';
+    }
+
+    public function getJavaScriptFiles(): array {
+        return ['js/custom.js'];
+    }
+
+    public function getCssFiles(): array {
+        return ['css/custom.css'];
+    }
+
+    // Hook methods are auto-detected
+    public function injectJavaScript(array $data): ?string {
+        return "console.log('My plugin loaded');";
+    }
 }{/literal}</code></pre>
 			</div>
 		</div>

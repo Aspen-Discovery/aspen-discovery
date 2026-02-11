@@ -227,7 +227,5 @@ class Admin_Plugins extends ObjectEditor {
 		return UserAccount::userHasPermission('Administer Plugins');
 	}
 
-	function getInitializationJs(): string {
-		return 'AspenDiscovery.Admin.initializePluginManagement();';
-	}
+
 } 

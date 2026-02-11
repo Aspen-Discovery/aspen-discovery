@@ -37,7 +37,7 @@
 			<h4>{translate text="Plugin Requirements" isAdminFacing=true}</h4>
 			<ul>
 				<li>{translate text="Plugin must be packaged as a .plugzip file" isAdminFacing=true}</li>
-				<li>{translate text="Plugin must contain a valid manifest.json file" isAdminFacing=true}</li>
+				<li>{translate text="Plugin must contain a PHP class extending AspenPlugin" isAdminFacing=true}</li>
 				<li>{translate text="Plugin slug must be unique (not already installed)" isAdminFacing=true}</li>
 				<li>{translate text="Only upload plugins from trusted sources" isAdminFacing=true}</li>
 			</ul>
@@ -47,7 +47,7 @@
 			<h4>{translate text="Creating Plugin Packages" isAdminFacing=true}</h4>
 			<p>{translate text="To create a .plugzip file from a plugin directory:" isAdminFacing=true}</p>
 			<ol>
-				<li>{translate text="Ensure your plugin directory contains all necessary files including manifest.json" isAdminFacing=true}</li>
+				<li>{translate text="Ensure your plugin directory contains a PHP file with AspenPlugin class" isAdminFacing=true}</li>
 				<li>{translate text="Create a ZIP archive of the entire plugin directory" isAdminFacing=true}</li>
 				<li>{translate text="Rename the .zip extension to .plugzip" isAdminFacing=true}</li>
 			</ol>

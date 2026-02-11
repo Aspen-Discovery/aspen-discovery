@@ -37,22 +37,16 @@ class PluginManager {
 					$pluginClassName .= ucfirst($part);
 				}
 				// Don't add 'Plugin' suffix if it's already there
-				if (!str_ends_with($pluginClassName, 'Plugin')) {
+				if (substr($pluginClassName, -6) !== 'Plugin') {
 					$pluginClassName .= 'Plugin';
 				}
 					
-					if (class_exists($pluginClassName)) {
+					if (class_exists($pluginClassName, false)) {
 						$pluginInstance = new $pluginClassName($plugin);
 						$this->loadedPlugins[$plugin->slug] = $pluginInstance;
 						
-						// Register hooks for this plugin
-						$hookPoints = $plugin->getHookPointsArray();
-						foreach ($hookPoints as $hookPoint) {
-							if (!isset($this->hooks[$hookPoint])) {
-								$this->hooks[$hookPoint] = [];
-							}
-							$this->hooks[$hookPoint][] = $pluginInstance;
-						}
+						// Auto-detect hooks from plugin methods
+						$this->registerPluginHooks($pluginInstance);
 					} else {
 						// Log that class doesn't exist
 						global $logger;
@@ -107,30 +101,27 @@ class PluginManager {
 			return ['success' => false, 'message' => 'Plugin directory not found'];
 		}
 
-		$manifestFile = $pluginPath . '/manifest.json';
-		if (!file_exists($manifestFile)) {
+		// Find PHP plugin file - look for files ending with .php that contain a class extending AspenPlugin
+		$pluginFile = $this->findPluginFile($pluginPath);
+		if (!$pluginFile) {
 			if ($tempExtractDir) {
 				$this->removeDirectory($tempExtractDir);
 			}
-			return ['success' => false, 'message' => 'Plugin manifest.json not found'];
+			return ['success' => false, 'message' => 'No valid plugin PHP file found'];
 		}
 
-		$manifest = json_decode(file_get_contents($manifestFile), true);
-		if (!$manifest) {
-			return ['success' => false, 'message' => 'Invalid manifest.json'];
-		}
-
-		// Validate required manifest fields
-		$requiredFields = ['name', 'slug', 'version', 'description', 'author'];
-		foreach ($requiredFields as $field) {
-			if (empty($manifest[$field])) {
-				return ['success' => false, 'message' => "Missing required field: $field"];
+		// Load and validate the plugin class
+		$pluginMetadata = $this->extractPluginMetadata($pluginFile);
+		if (!$pluginMetadata) {
+			if ($tempExtractDir) {
+				$this->removeDirectory($tempExtractDir);
 			}
+			return ['success' => false, 'message' => 'Could not extract plugin metadata from PHP file'];
 		}
 
 		// Check if plugin already exists
 		$existingPlugin = new Plugin();
-		$existingPlugin->slug = $manifest['slug'];
+		$existingPlugin->slug = $pluginMetadata['slug'];
 		if ($existingPlugin->find(true)) {
 			if ($tempExtractDir) {
 				$this->removeDirectory($tempExtractDir);
@@ -141,7 +132,7 @@ class PluginManager {
 		// Create plugin directory in the correct location
 		global $configArray;
 		$local = $configArray['Site']['local'];
-		$targetPath = "$local/plugins/{$manifest['slug']}";
+		$targetPath = "$local/plugins/{$pluginMetadata['slug']}";
 		
 		if (!is_dir("$local/plugins")) {
 			mkdir("$local/plugins", 0755, true);
@@ -157,43 +148,31 @@ class PluginManager {
 
 		// Create database entry
 		$plugin = new Plugin();
-		$plugin->name = $manifest['name'];
-		$plugin->slug = $manifest['slug'];
-		$plugin->version = $manifest['version'];
-		$plugin->description = $manifest['description'];
-		$plugin->author = $manifest['author'];
+		$plugin->name = $pluginMetadata['name'];
+		$plugin->slug = $pluginMetadata['slug'];
+		$plugin->version = $pluginMetadata['version'];
+		$plugin->description = $pluginMetadata['description'];
+		$plugin->author = $pluginMetadata['author'];
 		$plugin->status = 0; // disabled by default
-		$plugin->hasJsInjection = isset($manifest['jsFiles']) && !empty($manifest['jsFiles']) ? 1 : 0;
+		$plugin->modifiedDate = $pluginMetadata['modifiedDate'] ?? null;
+		$plugin->minAspenVersion = $pluginMetadata['minAspenVersion'] ?? null;
+		$plugin->maxAspenVersion = $pluginMetadata['maxAspenVersion'] ?? null;
 		
-		if (isset($manifest['jsFiles'])) {
-			$plugin->setJsFilesArray($manifest['jsFiles']);
-		}
-		if (isset($manifest['cssFiles'])) {
-			$plugin->setCssFilesArray($manifest['cssFiles']);
-		}
-		if (isset($manifest['hookPoints'])) {
-			$plugin->setHookPointsArray($manifest['hookPoints']);
-		}
-		if (isset($manifest['config'])) {
-			$plugin->setConfigArray($manifest['config']);
+		// Hook points, JS files, and CSS files are now auto-detected from PHP methods
+		if (!empty($pluginMetadata['config'])) {
+			$plugin->setConfigArray($pluginMetadata['config']);
 		}
 
 		if ($plugin->insert()) {
 			// Run plugin installation hook if it exists
-			$pluginClassFile = $targetPath . "/{$manifest['slug']}.php";
+			$pluginClassFile = $targetPath . "/{$pluginMetadata['slug']}.php";
 			if (file_exists($pluginClassFile)) {
-				require_once $pluginClassFile;
-				// Convert slug to proper class name (example_plugin -> ExamplePlugin)
-				$slugParts = explode('_', $manifest['slug']);
-				$pluginClassName = '';
-				foreach ($slugParts as $part) {
-					$pluginClassName .= ucfirst($part);
+				$pluginClassName = $pluginMetadata['className'];
+				// Only require the file if the class doesn't already exist
+				if (!class_exists($pluginClassName)) {
+					require_once $pluginClassFile;
 				}
-				// Don't add 'Plugin' suffix if it's already there
-				if (!str_ends_with($pluginClassName, 'Plugin')) {
-					$pluginClassName .= 'Plugin';
-				}
-				if (class_exists($pluginClassName) && method_exists($pluginClassName, 'onInstall')) {
+				if (class_exists($pluginClassName, false) && method_exists($pluginClassName, 'onInstall')) {
 					$pluginInstance = new $pluginClassName($plugin);
 					$pluginInstance->onInstall();
 				}
@@ -228,7 +207,6 @@ class PluginManager {
 		// Run plugin uninstall hook if it exists
 		if ($plugin->pluginDirectoryExists() && $plugin->pluginClassFileExists()) {
 			try {
-				require_once $plugin->getPluginClassFile();
 				// Convert slug to proper class name (example_plugin -> ExamplePlugin)
 				$slugParts = explode('_', $slug);
 				$pluginClassName = '';
@@ -236,10 +214,16 @@ class PluginManager {
 					$pluginClassName .= ucfirst($part);
 				}
 				// Don't add 'Plugin' suffix if it's already there
-				if (!str_ends_with($pluginClassName, 'Plugin')) {
+				if (substr($pluginClassName, -6) !== 'Plugin') {
 					$pluginClassName .= 'Plugin';
 				}
-				if (class_exists($pluginClassName) && method_exists($pluginClassName, 'onUninstall')) {
+				
+				// Only require the file if the class doesn't already exist
+				if (!class_exists($pluginClassName)) {
+					require_once $plugin->getPluginClassFile();
+				}
+				
+				if (class_exists($pluginClassName, false) && method_exists($pluginClassName, 'onUninstall')) {
 					$pluginInstance = new $pluginClassName($plugin);
 					$pluginInstance->onUninstall();
 				}
@@ -291,19 +275,58 @@ class PluginManager {
 	}
 
 	/**
+	 * Auto-register hooks by inspecting plugin methods
+	 */
+	private function registerPluginHooks($pluginInstance): void {
+		// Get all defined hook methods from the AspenPlugin base class
+		$baseClassMethods = $this->getAvailableHookMethods();
+		
+		// Use reflection to find which hook methods are overridden by the plugin
+		$reflection = new ReflectionClass($pluginInstance);
+		$pluginMethods = $reflection->getMethods(ReflectionMethod::IS_PUBLIC);
+		
+		foreach ($pluginMethods as $method) {
+			$methodName = $method->getName();
+			
+			// Check if this method is a hook method and is overridden by the plugin
+			if (in_array($methodName, $baseClassMethods) && 
+				$method->getDeclaringClass()->getName() !== 'AspenPlugin') {
+				
+				// Register this hook
+				if (!isset($this->hooks[$methodName])) {
+					$this->hooks[$methodName] = [];
+				}
+				$this->hooks[$methodName][] = $pluginInstance;
+			}
+		}
+	}
+
+	/**
+	 * Get list of available hook methods from AspenPlugin base class
+	 */
+	private function getAvailableHookMethods(): array {
+		return [
+			'beforePageLoad',
+			'afterPageLoad', 
+			'beforeTemplateDisplay',
+			'injectJavaScript',
+			'injectCSS',
+			'modifySearchResults',
+			'onUserLogin',
+			'onUserLogout'
+		];
+	}
+
+	/**
 	 * Get JS files to inject from all enabled plugins
 	 */
 	public function getJsFilesToInject(): array {
 		$jsFiles = [];
 		
 		foreach ($this->loadedPlugins as $slug => $pluginInstance) {
-			$plugin = new Plugin();
-			$plugin->slug = $slug;
-			if ($plugin->find(true) && $plugin->hasJsInjection) {
-				$pluginJsFiles = $plugin->getJsFilesArray();
-				foreach ($pluginJsFiles as $jsFile) {
-					$jsFiles[] = "/plugins/$slug/$jsFile";
-				}
+			$pluginJsFiles = $pluginInstance->getJavaScriptFiles();
+			foreach ($pluginJsFiles as $jsFile) {
+				$jsFiles[] = "/plugins/$slug/$jsFile";
 			}
 		}
 		
@@ -317,13 +340,9 @@ class PluginManager {
 		$cssFiles = [];
 		
 		foreach ($this->loadedPlugins as $slug => $pluginInstance) {
-			$plugin = new Plugin();
-			$plugin->slug = $slug;
-			if ($plugin->find(true)) {
-				$pluginCssFiles = $plugin->getCssFilesArray();
-				foreach ($pluginCssFiles as $cssFile) {
-					$cssFiles[] = "/plugins/$slug/$cssFile";
-				}
+			$pluginCssFiles = $pluginInstance->getCssFiles();
+			foreach ($pluginCssFiles as $cssFile) {
+				$cssFiles[] = "/plugins/$slug/$cssFile";
 			}
 		}
 		
@@ -481,5 +500,77 @@ class PluginManager {
 		}
 
 		return $zip->close();
+	}
+
+	/**
+	 * Find the main plugin PHP file in a directory
+	 */
+	private function findPluginFile(string $pluginPath): ?string {
+		$phpFiles = glob($pluginPath . '/*.php');
+		
+		foreach ($phpFiles as $file) {
+			$content = file_get_contents($file);
+			// Look for a class that extends AspenPlugin
+			if (preg_match('/class\s+(\w+)\s+extends\s+AspenPlugin/', $content)) {
+				return $file;
+			}
+		}
+		
+		return null;
+	}
+
+	/**
+	 * Extract metadata from a plugin PHP file
+	 */
+	private function extractPluginMetadata(string $pluginFile): ?array {
+		try {
+			// Parse the file to find the class name first
+			$content = file_get_contents($pluginFile);
+			if (!preg_match('/class\s+(\w+)\s+extends\s+AspenPlugin/', $content, $matches)) {
+				return null;
+			}
+			
+			$className = $matches[1];
+			
+			// Only include the file if the class doesn't already exist
+			if (!class_exists($className)) {
+				require_once $pluginFile;
+			}
+			
+			if (!class_exists($className, false)) {
+				return null;
+			}
+			
+			// Create a temporary instance to get metadata
+			// We need a temporary Plugin object for the constructor
+			$tempPlugin = new Plugin();
+			$pluginInstance = new $className($tempPlugin);
+			
+			$metadata = $pluginInstance->getMetadata();
+			$slug = $pluginInstance->getSlug();
+			$jsFiles = $pluginInstance->getJavaScriptFiles();
+			$cssFiles = $pluginInstance->getCssFiles();
+			
+			return [
+				'name' => $metadata['name'] ?? 'Unknown Plugin',
+				'slug' => $slug,
+				'version' => $metadata['version'] ?? '1.0.0',
+				'description' => $metadata['description'] ?? 'No description provided',
+				'author' => $metadata['author'] ?? 'Unknown Author',
+				'modifiedDate' => $metadata['lastModified'] ?? null,
+				'minAspenVersion' => $metadata['minAspenVersion'] ?? null,
+				'maxAspenVersion' => $metadata['maxAspenVersion'] ?? null,
+				'className' => $className,
+				'jsFiles' => $jsFiles,
+				'cssFiles' => $cssFiles,
+				'config' => [] // Plugins can override getConfig() for default config
+			];
+		} catch (Exception $e) {
+			global $logger;
+			if (isset($logger)) {
+				$logger->log("Error extracting plugin metadata: " . $e->getMessage(), Logger::LOG_ERROR);
+			}
+			return null;
+		}
 	}
 } 
