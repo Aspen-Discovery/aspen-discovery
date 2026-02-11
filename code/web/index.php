@@ -1070,7 +1070,18 @@ function loadModuleActionId() {
 		$allRecordModules .= '|' . $profile->recordUrlComponent;
 	}
 	$checkWebBuilderAliases = false;
-	if (preg_match("~(MyAccount)/([^/?]+)/([^/?]+)(\?.+)?~", $requestURI, $matches)) {
+	// Plugin routing: /plugins/{slug}/{path} → Plugins/Runner
+	// Handles both method calls and static file serving
+	if (preg_match('~^/plugins/([^/]+)(?:/(.*))?~i', $requestURI, $matches)) {
+		$_GET['module'] = 'Plugins';
+		$_GET['action'] = 'Runner';
+		$_GET['slug'] = $matches[1];
+		$_GET['path'] = $matches[2] ?? '';
+		$_REQUEST['module'] = 'Plugins';
+		$_REQUEST['action'] = 'Runner';
+		$_REQUEST['slug'] = $matches[1];
+		$_REQUEST['path'] = $matches[2] ?? '';
+	} elseif (preg_match("~(MyAccount)/([^/?]+)/([^/?]+)(\?.+)?~", $requestURI, $matches)) {
 		$_GET['module'] = $matches[1];
 		$_GET['id'] = $matches[3];
 		$_GET['action'] = $matches[2];
