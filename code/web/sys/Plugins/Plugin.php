@@ -81,14 +81,12 @@ class Plugin extends DataObject {
 				'type' => 'timestamp',
 				'label' => 'Install Date',
 				'description' => 'When the plugin was installed',
-				'serverValidation' => 'validateInstallDate',
 			],
 			'updateDate' => [
 				'property' => 'updateDate',
 				'type' => 'timestamp',
 				'label' => 'Update Date',
 				'description' => 'When the plugin was last updated',
-				'serverValidation' => 'validateUpdateDate',
 			],
 			'configData' => [
 				'property' => 'configData',
