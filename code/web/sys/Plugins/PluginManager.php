@@ -5,7 +5,6 @@ require_once ROOT_DIR . '/sys/Plugins/Plugin.php';
 class PluginManager {
 	private static $instance = null;
 	private $loadedPlugins = [];
-	private $hooks = [];
 
 	private function __construct() {
 		$this->loadEnabledPlugins();
@@ -19,6 +18,56 @@ class PluginManager {
 	}
 
 	/**
+	 * Convert plugin slug to class name (example_plugin -> ExamplePlugin)
+	 */
+	public function getPluginClassName(string $slug): string {
+		$slugParts = explode('_', $slug);
+		$pluginClassName = '';
+		foreach ($slugParts as $part) {
+			$pluginClassName .= ucfirst($part);
+		}
+		// Don't add 'Plugin' suffix if it's already there
+		if (substr($pluginClassName, -6) !== 'Plugin') {
+			$pluginClassName .= 'Plugin';
+		}
+		return $pluginClassName;
+	}
+	
+	/**
+	 * Call a hook method on a plugin
+	 * Centralizes all the complex hook-calling logic
+	 */
+	public function callHook(Plugin $plugin, string $hookMethod): bool {
+		if (!$plugin->pluginDirectoryExists() || !$plugin->pluginClassFileExists()) {
+			return false;
+		}
+		
+		try {
+			$pluginClassName = $this->getPluginClassName($plugin->slug);
+			
+			// Only require the file if the class doesn't already exist
+			if (!class_exists($pluginClassName)) {
+				require_once $plugin->getPluginClassFile();
+			}
+			
+			// Check if class exists and has the hook method
+			if (class_exists($pluginClassName, false) && method_exists($pluginClassName, $hookMethod)) {
+				$pluginInstance = new $pluginClassName($plugin);
+				$pluginInstance->$hookMethod();
+				return true;
+			}
+		} catch (Exception $e) {
+			// Log error but don't fail
+			global $logger;
+			if (isset($logger)) {
+				$logger->log("Error calling $hookMethod hook for plugin {$plugin->slug}: " . $e->getMessage(), Logger::LOG_ERROR);
+			}
+		}
+		
+		return false;
+	}
+
+	/**
 	 * Load all enabled plugins
 	 */
 	private function loadEnabledPlugins(): void {
@@ -26,27 +75,15 @@ class PluginManager {
 		$plugin->status = 1; // enabled
 		$plugin->find();
 
-				while ($plugin->fetch()) {
+		while ($plugin->fetch()) {
 			if ($plugin->pluginDirectoryExists() && $plugin->pluginClassFileExists()) {
 				try {
 					require_once $plugin->getPluginClassFile();
-									// Convert slug to proper class name (example_plugin -> ExamplePlugin)
-				$slugParts = explode('_', $plugin->slug);
-				$pluginClassName = '';
-				foreach ($slugParts as $part) {
-					$pluginClassName .= ucfirst($part);
-				}
-				// Don't add 'Plugin' suffix if it's already there
-				if (substr($pluginClassName, -6) !== 'Plugin') {
-					$pluginClassName .= 'Plugin';
-				}
+					$pluginClassName = $this->getPluginClassName($plugin->slug);
 					
 					if (class_exists($pluginClassName, false)) {
 						$pluginInstance = new $pluginClassName($plugin);
 						$this->loadedPlugins[$plugin->slug] = $pluginInstance;
-						
-						// Auto-detect hooks from plugin methods
-						$this->registerPluginHooks($pluginInstance);
 					} else {
 						// Log that class doesn't exist
 						global $logger;
@@ -68,12 +105,11 @@ class PluginManager {
 					}
 				}
 			} else {
-				// Plugin directory or file doesn't exist, disable it
+				// Plugin directory or file doesn't exist, just log and skip (don't disable to avoid infinite loop)
 				global $logger;
 				if (isset($logger)) {
-					$logger->log("Plugin {$plugin->slug} files missing, disabling plugin", Logger::LOG_WARNING);
+					$logger->log("Plugin {$plugin->slug} files missing, skipping load (plugin remains enabled in database)", Logger::LOG_WARNING);
 				}
-				$plugin->disable();
 			}
 		}
 	}
@@ -82,12 +118,10 @@ class PluginManager {
 	 * Install a plugin from directory or .plugzip file
 	 */
 	public function installPlugin(string $pluginPath): array {
-		$isZipFile = false;
 		$tempExtractDir = null;
 		
 		// Check if it's a .plugzip file
 		if (is_file($pluginPath) && strtolower(pathinfo($pluginPath, PATHINFO_EXTENSION)) === 'plugzip') {
-			$isZipFile = true;
 			$tempExtractDir = sys_get_temp_dir() . '/aspen_plugin_' . time() . '_' . rand(1000, 9999);
 			
 			if (!$this->extractPluginZip($pluginPath, $tempExtractDir)) {
@@ -130,12 +164,11 @@ class PluginManager {
 		}
 
 		// Create plugin directory in the correct location
-		global $configArray;
-		$local = $configArray['Site']['local'];
-		$targetPath = "$local/plugins/{$pluginMetadata['slug']}";
+		$pluginBaseDir = Plugin::getPluginDataPath();
+		$targetPath = "$pluginBaseDir/{$pluginMetadata['slug']}";
 		
-		if (!is_dir("$local/plugins")) {
-			mkdir("$local/plugins", 0755, true);
+		if (!is_dir($pluginBaseDir)) {
+			mkdir($pluginBaseDir, 0755, true);
 		}
 
 		// Copy plugin files
@@ -165,17 +198,11 @@ class PluginManager {
 
 		if ($plugin->insert()) {
 			// Run plugin installation hook if it exists
-			$pluginClassFile = $targetPath . "/{$pluginMetadata['slug']}.php";
-			if (file_exists($pluginClassFile)) {
-				$pluginClassName = $pluginMetadata['className'];
-				// Only require the file if the class doesn't already exist
-				if (!class_exists($pluginClassName)) {
-					require_once $pluginClassFile;
-				}
-				if (class_exists($pluginClassName, false) && method_exists($pluginClassName, 'onInstall')) {
-					$pluginInstance = new $pluginClassName($plugin);
-					$pluginInstance->onInstall();
-				}
+			$this->callHook($plugin, 'onInstall');
+
+			// Clean up temporary extraction directory if we used one
+			if ($tempExtractDir) {
+				$this->removeDirectory($tempExtractDir);
 			}
 
 			return ['success' => true, 'message' => 'Plugin installed successfully'];
@@ -186,11 +213,6 @@ class PluginManager {
 				$this->removeDirectory($tempExtractDir);
 			}
 			return ['success' => false, 'message' => 'Failed to create plugin database entry'];
-		}
-		
-		// Clean up temporary extraction directory if we used one
-		if ($tempExtractDir) {
-			$this->removeDirectory($tempExtractDir);
 		}
 	}
 
@@ -205,36 +227,7 @@ class PluginManager {
 		}
 
 		// Run plugin uninstall hook if it exists
-		if ($plugin->pluginDirectoryExists() && $plugin->pluginClassFileExists()) {
-			try {
-				// Convert slug to proper class name (example_plugin -> ExamplePlugin)
-				$slugParts = explode('_', $slug);
-				$pluginClassName = '';
-				foreach ($slugParts as $part) {
-					$pluginClassName .= ucfirst($part);
-				}
-				// Don't add 'Plugin' suffix if it's already there
-				if (substr($pluginClassName, -6) !== 'Plugin') {
-					$pluginClassName .= 'Plugin';
-				}
-				
-				// Only require the file if the class doesn't already exist
-				if (!class_exists($pluginClassName)) {
-					require_once $plugin->getPluginClassFile();
-				}
-				
-				if (class_exists($pluginClassName, false) && method_exists($pluginClassName, 'onUninstall')) {
-					$pluginInstance = new $pluginClassName($plugin);
-					$pluginInstance->onUninstall();
-				}
-			} catch (Exception $e) {
-				// Log error but continue with uninstall
-				global $logger;
-				if (isset($logger)) {
-					$logger->log("Error running uninstall hook for plugin $slug: " . $e->getMessage(), Logger::LOG_ERROR);
-				}
-			}
-		}
+		$this->callHook($plugin, 'onUninstall');
 
 		// Remove plugin directory
 		if ($plugin->pluginDirectoryExists()) {
@@ -250,71 +243,28 @@ class PluginManager {
 	}
 
 	/**
-	 * Execute hooks for a given hook point
+	 * Execute hooks for all enabled plugins
 	 */
 	public function executeHook(string $hookPoint, array $data = []): array {
 		$results = [];
 		
-		if (isset($this->hooks[$hookPoint])) {
-			foreach ($this->hooks[$hookPoint] as $pluginInstance) {
-				try {
-					if (method_exists($pluginInstance, $hookPoint)) {
-						$result = $pluginInstance->$hookPoint($data);
+		foreach ($this->loadedPlugins as $slug => $pluginInstance) {
+			try {
+				if (method_exists($pluginInstance, $hookPoint)) {
+					$result = $pluginInstance->$hookPoint($data);
+					if ($result !== null) {
 						$results[] = $result;
 					}
-				} catch (Exception $e) {
-					global $logger;
-					if (isset($logger)) {
-						$logger->log("Error executing hook $hookPoint: " . $e->getMessage(), Logger::LOG_ERROR);
-					}
+				}
+			} catch (Exception $e) {
+				global $logger;
+				if (isset($logger)) {
+					$logger->log("Error executing hook $hookPoint on plugin $slug: " . $e->getMessage(), Logger::LOG_ERROR);
 				}
 			}
 		}
 		
 		return $results;
-	}
-
-	/**
-	 * Auto-register hooks by inspecting plugin methods
-	 */
-	private function registerPluginHooks($pluginInstance): void {
-		// Get all defined hook methods from the AspenPlugin base class
-		$baseClassMethods = $this->getAvailableHookMethods();
-		
-		// Use reflection to find which hook methods are overridden by the plugin
-		$reflection = new ReflectionClass($pluginInstance);
-		$pluginMethods = $reflection->getMethods(ReflectionMethod::IS_PUBLIC);
-		
-		foreach ($pluginMethods as $method) {
-			$methodName = $method->getName();
-			
-			// Check if this method is a hook method and is overridden by the plugin
-			if (in_array($methodName, $baseClassMethods) && 
-				$method->getDeclaringClass()->getName() !== 'AspenPlugin') {
-				
-				// Register this hook
-				if (!isset($this->hooks[$methodName])) {
-					$this->hooks[$methodName] = [];
-				}
-				$this->hooks[$methodName][] = $pluginInstance;
-			}
-		}
-	}
-
-	/**
-	 * Get list of available hook methods from AspenPlugin base class
-	 */
-	private function getAvailableHookMethods(): array {
-		return [
-			'beforePageLoad',
-			'afterPageLoad', 
-			'beforeTemplateDisplay',
-			'injectJavaScript',
-			'injectCSS',
-			'modifySearchResults',
-			'onUserLogin',
-			'onUserLogout'
-		];
 	}
 
 	/**
@@ -468,41 +418,6 @@ class PluginManager {
 	}
 
 	/**
-	 * Create a .plugzip file from a plugin directory
-	 */
-	public function createPluginZip(string $pluginDirectory, string $outputPath): bool {
-		if (!class_exists('ZipArchive')) {
-			return false;
-		}
-
-		if (!is_dir($pluginDirectory)) {
-			return false;
-		}
-
-		$zip = new ZipArchive();
-		$result = $zip->open($outputPath, ZipArchive::CREATE | ZipArchive::OVERWRITE);
-		
-		if ($result !== TRUE) {
-			return false;
-		}
-
-		$iterator = new RecursiveIteratorIterator(
-			new RecursiveDirectoryIterator($pluginDirectory, RecursiveDirectoryIterator::SKIP_DOTS),
-			RecursiveIteratorIterator::SELF_FIRST
-		);
-
-		foreach ($iterator as $file) {
-			if ($file->isDir()) {
-				$zip->addEmptyDir($iterator->getSubPathName());
-			} else {
-				$zip->addFile($file, $iterator->getSubPathName());
-			}
-		}
-
-		return $zip->close();
-	}
-
-	/**
 	 * Find the main plugin PHP file in a directory
 	 */
 	private function findPluginFile(string $pluginPath): ?string {
@@ -547,13 +462,10 @@ class PluginManager {
 			$pluginInstance = new $className($tempPlugin);
 			
 			$metadata = $pluginInstance->getMetadata();
-			$slug = $pluginInstance->getSlug();
-			$jsFiles = $pluginInstance->getJavaScriptFiles();
-			$cssFiles = $pluginInstance->getCssFiles();
 			
 			return [
 				'name' => $metadata['name'] ?? 'Unknown Plugin',
-				'slug' => $slug,
+				'slug' => $pluginInstance->getSlug(),
 				'version' => $metadata['version'] ?? '1.0.0',
 				'description' => $metadata['description'] ?? 'No description provided',
 				'author' => $metadata['author'] ?? 'Unknown Author',
@@ -561,8 +473,8 @@ class PluginManager {
 				'minAspenVersion' => $metadata['minAspenVersion'] ?? null,
 				'maxAspenVersion' => $metadata['maxAspenVersion'] ?? null,
 				'className' => $className,
-				'jsFiles' => $jsFiles,
-				'cssFiles' => $cssFiles,
+				'jsFiles' => $pluginInstance->getJavaScriptFiles(),
+				'cssFiles' => $pluginInstance->getCssFiles(),
 				'config' => [] // Plugins can override getConfig() for default config
 			];
 		} catch (Exception $e) {
