@@ -506,7 +506,10 @@
 
 		{elseif $property.type == 'label'}
 			<div id='{$propName}'>
-				{if empty($propValue)}
+				{if !empty($property.labelFunction)}
+					{assign var=labelFunc value=$property.labelFunction}
+					{$object->$labelFunc() nofilter}
+				{elseif empty($propValue)}
 					{if empty($property.suppressNotSetForEmpty)}{translate text="Not Set" isAdminFacing=true}{/if}
 				{elseif is_array($propValue)}
 					{implode subject=$propValue glue=", " escape=true}

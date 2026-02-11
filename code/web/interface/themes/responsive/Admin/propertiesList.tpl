@@ -120,7 +120,10 @@
 										{if $dataItem->canActiveUserEdit()}
 											{if $propName == $dataItem->getPrimaryKey()}<a class="btn btn-default btn-sm" href='/{$module}/{$toolName}?objectAction=edit&amp;id={$id}{if !empty($contextParams)}{$contextParams}{/if}'>
 											<i class="fas fa-pencil-alt fa-xs" style="padding-right: .5em"></i>{/if}
-											{if empty($propValue)}
+											{if !empty($property.labelFunction)}
+												{assign var=labelFunc value=$property.labelFunction}
+												{$dataItem->$labelFunc() nofilter}
+											{elseif empty($propValue)}
 												{translate text="Not Set" isAdminFacing=true}
 											{elseif is_array($propValue)}
 												{implode subject=$propValue glue=", "}
@@ -129,7 +132,12 @@
 											{/if}
 											{if $propName == $dataItem->getPrimaryKey()}</a>{/if}
 										{else}
-											{$propValue|escape}
+											{if !empty($property.labelFunction)}
+												{assign var=labelFunc value=$property.labelFunction}
+												{$dataItem->$labelFunc() nofilter}
+											{else}
+												{$propValue|escape}
+											{/if}
 										{/if}
 									{/if}
 								{elseif $property.type == 'regularExpression' || $property.type =='multilineRegularExpression'}
