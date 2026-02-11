@@ -11,6 +11,9 @@ abstract class AspenPlugin {
 	/** @var Plugin */
 	protected $pluginData;
 
+	/** @var array|null Cached manifest data from plugin.yaml */
+	private $manifest = null;
+
 	// Default permission requirements for standard method types
 	protected const DEFAULT_METHOD_PERMISSIONS = [
 		'configure' => 'Administer Plugins',
@@ -18,6 +21,36 @@ abstract class AspenPlugin {
 	
 	public function __construct(Plugin $pluginData) {
 		$this->pluginData = $pluginData;
+	}
+
+	/**
+	 * Load and cache the plugin.yaml manifest
+	 * @return array Parsed manifest data, or empty array if not found
+	 */
+	protected function loadManifest(): array {
+		if ($this->manifest !== null) {
+			return $this->manifest;
+		}
+
+		$manifestPath = $this->getPluginDirectory() . '/plugin.yaml';
+		if (!file_exists($manifestPath)) {
+			$this->manifest = [];
+			return $this->manifest;
+		}
+
+		try {
+			require_once ROOT_DIR . '/sys/Yaml.php';
+			$yaml = new Yaml();
+			$this->manifest = $yaml->load($manifestPath);
+			if (!is_array($this->manifest)) {
+				$this->manifest = [];
+			}
+		} catch (Exception $e) {
+			$this->log("Error loading plugin.yaml: " . $e->getMessage(), Logger::LOG_ERROR);
+			$this->manifest = [];
+		}
+
+		return $this->manifest;
 	}
 	
 	/**
@@ -156,34 +189,36 @@ abstract class AspenPlugin {
 	}
 	
 	/**
-	 * Get plugin metadata - override this in your plugin
+	 * Get plugin metadata from plugin.yaml manifest
 	 * @return array
 	 */
 	public function getMetadata(): array {
+		$manifest = $this->loadManifest();
 		return [
-			'name' => 'Unknown Plugin',
-			'version' => '1.0.0',
-			'description' => 'No description provided',
-			'author' => 'Unknown Author',
-			'dateCreated' => null,
-			'lastModified' => null,
-			'minAspenVersion' => null,
-			'maxAspenVersion' => null,
+			'name' => $manifest['name'] ?? 'Unknown Plugin',
+			'version' => $manifest['version'] ?? '1.0.0',
+			'description' => $manifest['description'] ?? 'No description provided',
+			'author' => $manifest['author'] ?? 'Unknown Author',
+			'lastModified' => $manifest['lastModified'] ?? null,
+			'minAspenVersion' => $manifest['minAspenVersion'] ?? null,
+			'maxAspenVersion' => $manifest['maxAspenVersion'] ?? null,
 		];
 	}
 
 	/**
-	 * Get plugin slug - override this in your plugin
+	 * Get plugin slug from plugin.yaml manifest
 	 * @return string
 	 */
 	public function getSlug(): string {
-		// Default implementation derives slug from class name
+		$manifest = $this->loadManifest();
+		if (!empty($manifest['slug'])) {
+			return $manifest['slug'];
+		}
+		// Fallback: derive slug from class name
 		$className = get_class($this);
-		// Remove 'Plugin' suffix if present
 		if (substr($className, -6) === 'Plugin') {
 			$className = substr($className, 0, -6);
 		}
-		// Convert CamelCase to snake_case
 		return strtolower(preg_replace('/([a-z])([A-Z])/', '$1_$2', $className));
 	}
 
@@ -191,16 +226,16 @@ abstract class AspenPlugin {
 	 * Get plugin version
 	 */
 	public function getVersion(): string {
-		$metadata = $this->getMetadata();
-		return $metadata['version'] ?? '1.0.0';
+		$manifest = $this->loadManifest();
+		return $manifest['version'] ?? '1.0.0';
 	}
 
 	/**
 	 * Get plugin name
 	 */
 	public function getName(): string {
-		$metadata = $this->getMetadata();
-		return $metadata['name'] ?? 'Unknown Plugin';
+		$manifest = $this->loadManifest();
+		return $manifest['name'] ?? 'Unknown Plugin';
 	}
 
 	// ============================================================
