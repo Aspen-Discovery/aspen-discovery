@@ -307,4 +307,153 @@ abstract class AspenPlugin {
 
 		return $row && $row['cnt'] > 0;
 	}
+
+	// ============================================================
+	// Template System Methods
+	// ============================================================
+
+	/**
+	 * Get Smarty interface configured for plugin use
+	 * @return UInterface Configured Smarty interface
+	 */
+	protected function getInterface(): UInterface {
+		global $interface;
+
+		// Add plugin template directory to Smarty search path
+		$pluginTemplateDir = $this->getPluginDirectory() . '/templates';
+		if (is_dir($pluginTemplateDir)) {
+			// Get current template dir(s) and prepend plugin dir
+			$currentDirs = $interface->getTemplateDir();
+			if (is_string($currentDirs)) {
+				$currentDirs = [$currentDirs];
+			}
+			array_unshift($currentDirs, $pluginTemplateDir);
+			$interface->setTemplateDir($currentDirs);
+		}
+
+		// Assign plugin-specific variables
+		$interface->assign('PLUGIN_CLASS', get_class($this));
+		$interface->assign('PLUGIN_SLUG', $this->pluginData->slug);
+		$interface->assign('PLUGIN_NAME', $this->getName());
+		$interface->assign('PLUGIN_PATH', $this->getPluginUrl());
+		$interface->assign('PLUGIN_DIR', $this->getPluginDirectory());
+
+		return $interface;
+	}
+
+	/**
+	 * Render a template within Aspen's admin layout (with sidebar)
+	 * @param string $template Template filename relative to plugin templates directory
+	 * @param string|null $pageTitle Optional page title
+	 */
+	protected function displayTemplate(string $template, string $pageTitle = null): void {
+		global $library;
+		$interface = $this->getInterface();
+
+		$title = $pageTitle ?? $this->getName();
+		if ($library) {
+			$title .= ' | ' . $library->displayName;
+		}
+
+		$interface->assign('pageTitle', $title);
+		$interface->setPageTitle($title);
+		$interface->assign('sidebar', 'Admin/admin-sidebar.tpl');
+
+		// Set up admin context for the sidebar to render properly
+		$user = UserAccount::getActiveUserObj();
+		if ($user) {
+			$adminActions = $user->getAdminActions();
+			$interface->assign('adminActions', $adminActions);
+		}
+		$interface->assign('activeAdminSection', 'system_administration');
+		$interface->assign('activeMenuOption', 'admin');
+		$interface->assign('showContentAsFullWidth', true);
+
+		// Set up breadcrumbs
+		require_once ROOT_DIR . '/sys/Breadcrumb.php';
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#system_administration', 'System Administration');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Plugins', 'Plugin Management');
+		$breadcrumbs[] = new Breadcrumb('', $this->getName());
+		$interface->assign('breadcrumbs', $breadcrumbs);
+		$interface->assign('showBreadcrumbs', true);
+
+		// Clear module so Smarty looks directly in template search path (including plugin templates dir)
+		$interface->assign('module', '');
+		$interface->setTemplate($template);
+		$interface->display('layout.tpl');
+		exit;
+	}
+
+	/**
+	 * Render a standalone template without Aspen's layout (no header, sidebar, or footer)
+	 * Use this for full-page plugin experiences or custom layouts
+	 * @param string $template Template filename relative to plugin templates directory
+	 * @param string|null $pageTitle Optional page title (available as $pageTitle in template)
+	 */
+	protected function displayStandaloneTemplate(string $template, string $pageTitle = null): void {
+		$interface = $this->getInterface();
+
+		if ($pageTitle) {
+			$interface->assign('pageTitle', $pageTitle);
+		}
+
+		// Fetch and output the template directly, bypassing layout.tpl
+		$html = $interface->fetch($template);
+		$this->outputHtml($html);
+	}
+
+	/**
+	 * Get URL for a plugin method
+	 * @param string $method Method name
+	 * @param array $params Optional query parameters
+	 * @return string Full URL
+	 */
+	protected function getMethodUrl(string $method, array $params = []): string {
+		$url = "/plugins/{$this->pluginData->slug}/$method";
+
+		if (!empty($params)) {
+			$url .= '?' . http_build_query($params);
+		}
+
+		return $url;
+	}
+
+	// ============================================================
+	// HTTP Response Methods
+	// ============================================================
+
+	/**
+	 * Output JSON response
+	 * @param array $data Data to encode as JSON
+	 * @param int $statusCode HTTP status code (default 200)
+	 */
+	protected function outputJson(array $data, int $statusCode = 200): void {
+		http_response_code($statusCode);
+		header('Content-Type: application/json; charset=UTF-8');
+		echo json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+		exit;
+	}
+
+	/**
+	 * Output HTML directly
+	 * @param string $html HTML content
+	 * @param int $statusCode HTTP status code (default 200)
+	 */
+	protected function outputHtml(string $html, int $statusCode = 200): void {
+		http_response_code($statusCode);
+		header('Content-Type: text/html; charset=UTF-8');
+		echo $html;
+		exit;
+	}
+
+	/**
+	 * Redirect to URL
+	 * @param string $url Target URL
+	 */
+	protected function redirect(string $url): void {
+		header("Location: $url");
+		exit;
+	}
 } 
