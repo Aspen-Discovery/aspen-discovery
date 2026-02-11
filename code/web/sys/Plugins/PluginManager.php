@@ -29,8 +29,9 @@ class PluginManager {
 		while ($plugin->fetch()) {
 			if ($plugin->pluginDirectoryExists() && $plugin->pluginClassFileExists()) {
 				try {
-					require_once $plugin->getPluginClassFile();
-					$pluginClassName = ucfirst($plugin->slug) . 'Plugin';
+									require_once $plugin->getPluginClassFile();
+				// Convert slug to proper class name (example_plugin -> ExamplePlugin)
+				$pluginClassName = str_replace('_', '', ucwords($plugin->slug, '_')) . 'Plugin';
 					
 					if (class_exists($pluginClassName)) {
 						$pluginInstance = new $pluginClassName($plugin);
@@ -155,7 +156,8 @@ class PluginManager {
 			$pluginClassFile = $targetPath . "/{$manifest['slug']}.php";
 			if (file_exists($pluginClassFile)) {
 				require_once $pluginClassFile;
-				$pluginClassName = ucfirst($manifest['slug']) . 'Plugin';
+				// Convert slug to proper class name (example_plugin -> ExamplePlugin)
+				$pluginClassName = str_replace('_', '', ucwords($manifest['slug'], '_')) . 'Plugin';
 				if (class_exists($pluginClassName) && method_exists($pluginClassName, 'onInstall')) {
 					$pluginInstance = new $pluginClassName($plugin);
 					$pluginInstance->onInstall();
@@ -192,7 +194,8 @@ class PluginManager {
 		if ($plugin->pluginDirectoryExists() && $plugin->pluginClassFileExists()) {
 			try {
 				require_once $plugin->getPluginClassFile();
-				$pluginClassName = ucfirst($slug) . 'Plugin';
+				// Convert slug to proper class name (example_plugin -> ExamplePlugin)
+				$pluginClassName = str_replace('_', '', ucwords($slug, '_')) . 'Plugin';
 				if (class_exists($pluginClassName) && method_exists($pluginClassName, 'onUninstall')) {
 					$pluginInstance = new $pluginClassName($plugin);
 					$pluginInstance->onUninstall();
