@@ -82,12 +82,12 @@ class Plugin extends DataObject {
 		return ['slug'];
 	}
 
-	public function insert($context = '') {
+	public function insert(string $context = ''): int|bool {
 		$this->updateDate = time();
 		return parent::insert($context);
 	}
 
-	public function update($context = '') {
+	public function update(string $context = ''): int|bool {
 		$this->updateDate = time();
 		return parent::update($context);
 	}
