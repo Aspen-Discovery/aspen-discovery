@@ -3,6 +3,18 @@
 		<div class="row">
 			<div class="col-xs-12">
 				<h1>{$pageTitle}</h1>
+
+				<div class="alert alert-danger">
+					<h4><i class="fas fa-exclamation-triangle"></i> {translate text="Security Warning" isAdminFacing=true}</h4>
+					<p><strong>{translate text="Plugins execute code with full server privileges and can access all system resources." isAdminFacing=true}</strong></p>
+					<ul>
+						<li>{translate text="Only install plugins from sources you completely trust" isAdminFacing=true}</li>
+						<li>{translate text="Plugin code is not reviewed, verified, or sandboxed by Aspen Discovery" isAdminFacing=true}</li>
+						<li>{translate text="Malicious or poorly written plugins can compromise your entire server, database, and user data" isAdminFacing=true}</li>
+						<li>{translate text="Review plugin source code before installation if possible" isAdminFacing=true}</li>
+					</ul>
+				</div>
+
 				{if !empty($instructions)}
 					<div class="alert alert-info">
 						{$instructions}
