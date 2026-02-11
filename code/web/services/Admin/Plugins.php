@@ -237,13 +237,13 @@ class Admin_Plugins extends ObjectEditor {
 	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
-		$breadcrumbs[] = new Breadcrumb('/Admin/Home#system_administration', 'System Administration');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#plugins', 'Plugins');
 		$breadcrumbs[] = new Breadcrumb('', 'Plugin Management');
 		return $breadcrumbs;
 	}
 
 	function getActiveAdminSection(): string {
-		return 'system_administration';
+		return 'plugins';
 	}
 
 	function canView(): bool {
