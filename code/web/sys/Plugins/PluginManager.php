@@ -153,14 +153,27 @@ class PluginManager {
 			return ['success' => false, 'message' => 'Could not extract plugin metadata from PHP file'];
 		}
 
-		// Check if plugin already exists
+		// Check if plugin already exists by slug
 		$existingPlugin = new Plugin();
 		$existingPlugin->slug = $pluginMetadata['slug'];
 		if ($existingPlugin->find(true)) {
+			// Plugin exists - check if it's enabled
+			if ($existingPlugin->isEnabled()) {
+				if ($tempExtractDir) {
+					$this->removeDirectory($tempExtractDir);
+				}
+				return ['success' => false, 'message' => 'Cannot update plugin while it is enabled. Please disable the plugin first.'];
+			}
+
+			// Plugin is disabled, proceed with update
+			$result = $this->updatePlugin($existingPlugin, $pluginMetadata, $pluginPath);
+
+			// Clean up temporary extraction directory if we used one
 			if ($tempExtractDir) {
 				$this->removeDirectory($tempExtractDir);
 			}
-			return ['success' => false, 'message' => 'Plugin with this slug already exists'];
+
+			return $result;
 		}
 
 		// Create plugin directory in the correct location
@@ -226,6 +239,91 @@ class PluginManager {
 			}
 			return ['success' => false, 'message' => 'Failed to create plugin database entry'];
 		}
+	}
+
+	/**
+	 * Update an existing plugin to a newer version
+	 * @param Plugin $existingPlugin The existing plugin database record
+	 * @param array $newMetadata Metadata extracted from the new plugin version
+	 * @param string $pluginPath Path to the new plugin files
+	 * @return array Result array with success status and message
+	 */
+	private function updatePlugin(Plugin $existingPlugin, array $newMetadata, string $pluginPath): array {
+		// Compare versions
+		$existingVersion = $existingPlugin->version;
+		$newVersion = $newMetadata['version'];
+
+		$versionComparison = version_compare($newVersion, $existingVersion);
+
+		// Reject if version is not newer
+		if ($versionComparison <= 0) {
+			$message = $versionComparison === 0
+				? "Cannot update: installed version ({$existingVersion}) is the same as uploaded version ({$newVersion})"
+				: "Cannot update: installed version ({$existingVersion}) is newer than uploaded version ({$newVersion})";
+			return ['success' => false, 'message' => $message];
+		}
+
+		// Create backup directory path in case we need to rollback
+		$pluginBaseDir = Plugin::getPluginDataPath();
+		$targetPath = "$pluginBaseDir/{$existingPlugin->slug}";
+		$backupPath = "$pluginBaseDir/.backup_{$existingPlugin->slug}_" . time();
+
+		// Backup existing plugin directory
+		if (is_dir($targetPath)) {
+			if (!rename($targetPath, $backupPath)) {
+				return ['success' => false, 'message' => 'Failed to backup existing plugin files'];
+			}
+		}
+
+		// Copy new plugin files
+		if (!$this->copyDirectory($pluginPath, $targetPath)) {
+			// Restore backup on failure
+			if (is_dir($backupPath)) {
+				rename($backupPath, $targetPath);
+			}
+			return ['success' => false, 'message' => 'Failed to copy new plugin files'];
+		}
+
+		// Update database record with new metadata (preserve id, status, and configData)
+		$existingPlugin->name = $newMetadata['name'];
+		$existingPlugin->version = $newMetadata['version'];
+		$existingPlugin->description = $newMetadata['description'];
+		$existingPlugin->author = $newMetadata['author'];
+		$existingPlugin->modifiedDate = $newMetadata['modifiedDate'] ?? null;
+		$existingPlugin->minAspenVersion = $newMetadata['minAspenVersion'] ?? null;
+		$existingPlugin->maxAspenVersion = $newMetadata['maxAspenVersion'] ?? null;
+		// Note: configData and status are preserved from existing plugin
+
+		if (!$existingPlugin->update()) {
+			// Rollback file changes on database update failure
+			$this->removeDirectory($targetPath);
+			if (is_dir($backupPath)) {
+				rename($backupPath, $targetPath);
+			}
+			return ['success' => false, 'message' => 'Failed to update plugin database record'];
+		}
+
+		// Re-register plugin methods (clears old methods and registers new ones)
+		$this->registerPluginMethods($existingPlugin);
+
+		// Clean up backup directory on success
+		if (is_dir($backupPath)) {
+			$this->removeDirectory($backupPath);
+		}
+
+		// Audit log: Plugin updated
+		global $logger;
+		if (isset($logger)) {
+			$user = UserAccount::getActiveUserObj();
+			$username = $user ? $user->username : 'unknown';
+			$userId = $user ? $user->id : 'unknown';
+			$logger->log("Plugin updated: {$existingPlugin->name} (slug: {$existingPlugin->slug}) from version {$existingVersion} to version {$newVersion} by user {$username} (ID: {$userId})", Logger::LOG_NOTICE, true);
+		}
+
+		return [
+			'success' => true,
+			'message' => "Plugin updated successfully from version {$existingVersion} to version {$newVersion}"
+		];
 	}
 
 	/**
