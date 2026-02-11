@@ -285,15 +285,15 @@ class PluginManager {
 			return ['success' => false, 'message' => 'Failed to copy new plugin files'];
 		}
 
-		// Update database record with new metadata (preserve id, status, and configData)
-		$existingPlugin->name = $newMetadata['name'];
-		$existingPlugin->version = $newMetadata['version'];
-		$existingPlugin->description = $newMetadata['description'];
-		$existingPlugin->author = $newMetadata['author'];
-		$existingPlugin->modifiedDate = $newMetadata['modifiedDate'] ?? null;
-		$existingPlugin->minAspenVersion = $newMetadata['minAspenVersion'] ?? null;
-		$existingPlugin->maxAspenVersion = $newMetadata['maxAspenVersion'] ?? null;
-		// Note: configData and status are preserved from existing plugin
+		// Update database record with new metadata
+		// Exclude properties that should be preserved from existing plugin
+		$excludedProperties = ['id', 'status', 'config', 'configData'];
+
+		foreach ($newMetadata as $key => $value) {
+			if (property_exists($existingPlugin, $key) && !in_array($key, $excludedProperties)) {
+				$existingPlugin->$key = $value;
+			}
+		}
 
 		if (!$existingPlugin->update()) {
 			// Rollback file changes on database update failure
