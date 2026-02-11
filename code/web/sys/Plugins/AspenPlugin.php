@@ -456,4 +456,20 @@ abstract class AspenPlugin {
 		header("Location: $url");
 		exit;
 	}
+
+	/**
+	 * Get required permission for a method
+	 * Override in plugin to customize
+	 * @param string $method Method name
+	 * @return string|null Permission name or null for no check
+	 */
+	public function getRequiredPermission(string $method): ?string {
+		$defaults = [
+			'configure' => 'Administer Plugins',
+			'tool' => 'Use Plugins',
+			'report' => 'Use Plugins',
+		];
+
+		return $defaults[$method] ?? 'Use Plugins';
+	}
 } 

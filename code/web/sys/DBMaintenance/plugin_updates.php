@@ -106,6 +106,15 @@ function getPluginUpdates() {
 				COMMENT='Registry of methods implemented by each plugin'"
 			]
 		], //create_plugin_methods_table
+
+		'create_plugin_usage_permission' => [
+			'title' => 'Create Plugin Usage Permission',
+			'description' => 'Add permission for using plugin tools and reports',
+			'continueOnError' => true,
+			'sql' => [
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('System Administration', 'Use Plugins', '', 81, 'Controls if the user can use plugin tools and reports.')"
+			]
+		], //create_plugin_usage_permission
 	];
 }
 
