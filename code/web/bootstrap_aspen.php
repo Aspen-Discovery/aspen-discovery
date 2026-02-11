@@ -161,6 +161,10 @@ function aspen_autoloader($class) {
 	if (substr($class, 0, 10) == 'SimpleSAML' || substr($class, 0, 6) == 'sspmod') {
 		return;
 	}
+	// Don't auto-load plugin classes - they are handled by PluginManager
+	if (substr($class, -6) === 'Plugin') {
+		return;
+	}
 	if (strpos($class, '.php') > 0) {
 		$class = substr($class, 0, strpos($class, '.php'));
 	}
