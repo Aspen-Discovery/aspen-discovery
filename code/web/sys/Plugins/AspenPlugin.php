@@ -212,10 +212,11 @@ abstract class AspenPlugin {
 		$timestamp = time();
 
 		foreach ($data as $key => $value) {
-			// Use REPLACE to insert or update
+			// Insert new records or update existing ones, preserving the original 'created' timestamp
 			$stmt = $aspen_db->prepare(
-				"REPLACE INTO plugin_data (plugin_class, plugin_key, plugin_value, created, updated)
-				 VALUES (?, ?, ?, ?, ?)"
+				"INSERT INTO plugin_data (plugin_class, plugin_key, plugin_value, created, updated)
+				 VALUES (?, ?, ?, ?, ?)
+				 ON DUPLICATE KEY UPDATE plugin_value = VALUES(plugin_value), updated = VALUES(updated)"
 			);
 			$stmt->execute([$pluginClass, $key, $value, $timestamp, $timestamp]);
 		}
