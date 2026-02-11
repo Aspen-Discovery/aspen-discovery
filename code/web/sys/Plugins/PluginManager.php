@@ -57,15 +57,33 @@ class PluginManager {
 	}
 
 	/**
-	 * Install a plugin from directory
+	 * Install a plugin from directory or .plugzip file
 	 */
 	public function installPlugin(string $pluginPath): array {
+		$isZipFile = false;
+		$tempExtractDir = null;
+		
+		// Check if it's a .plugzip file
+		if (is_file($pluginPath) && strtolower(pathinfo($pluginPath, PATHINFO_EXTENSION)) === 'plugzip') {
+			$isZipFile = true;
+			$tempExtractDir = sys_get_temp_dir() . '/aspen_plugin_' . time() . '_' . rand(1000, 9999);
+			
+			if (!$this->extractPluginZip($pluginPath, $tempExtractDir)) {
+				return ['success' => false, 'message' => 'Failed to extract plugin zip file'];
+			}
+			
+			$pluginPath = $tempExtractDir;
+		}
+
 		if (!is_dir($pluginPath)) {
 			return ['success' => false, 'message' => 'Plugin directory not found'];
 		}
 
 		$manifestFile = $pluginPath . '/manifest.json';
 		if (!file_exists($manifestFile)) {
+			if ($tempExtractDir) {
+				$this->removeDirectory($tempExtractDir);
+			}
 			return ['success' => false, 'message' => 'Plugin manifest.json not found'];
 		}
 
@@ -86,6 +104,9 @@ class PluginManager {
 		$existingPlugin = new Plugin();
 		$existingPlugin->slug = $manifest['slug'];
 		if ($existingPlugin->find(true)) {
+			if ($tempExtractDir) {
+				$this->removeDirectory($tempExtractDir);
+			}
 			return ['success' => false, 'message' => 'Plugin with this slug already exists'];
 		}
 
@@ -100,6 +121,9 @@ class PluginManager {
 
 		// Copy plugin files
 		if (!$this->copyDirectory($pluginPath, $targetPath)) {
+			if ($tempExtractDir) {
+				$this->removeDirectory($tempExtractDir);
+			}
 			return ['success' => false, 'message' => 'Failed to copy plugin files'];
 		}
 
@@ -142,7 +166,15 @@ class PluginManager {
 		} else {
 			// Clean up files if database insert failed
 			$this->removeDirectory($targetPath);
+			if ($tempExtractDir) {
+				$this->removeDirectory($tempExtractDir);
+			}
 			return ['success' => false, 'message' => 'Failed to create plugin database entry'];
+		}
+		
+		// Clean up temporary extraction directory if we used one
+		if ($tempExtractDir) {
+			$this->removeDirectory($tempExtractDir);
 		}
 	}
 
@@ -305,5 +337,103 @@ class PluginManager {
 		}
 
 		return rmdir($directory);
+	}
+
+	/**
+	 * Extract a .plugzip file to a temporary directory
+	 */
+	private function extractPluginZip(string $zipFile, string $extractPath): bool {
+		if (!class_exists('ZipArchive')) {
+			return false;
+		}
+
+		$zip = new ZipArchive();
+		$result = $zip->open($zipFile);
+		
+		if ($result !== TRUE) {
+			return false;
+		}
+
+		// Create extraction directory
+		if (!mkdir($extractPath, 0755, true)) {
+			$zip->close();
+			return false;
+		}
+
+		// Extract all files
+		$extracted = $zip->extractTo($extractPath);
+		$zip->close();
+
+		return $extracted;
+	}
+
+	/**
+	 * Install a plugin from uploaded file
+	 */
+	public function installPluginFromUpload(array $uploadedFile): array {
+		// Validate file upload
+		if (!isset($uploadedFile['tmp_name']) || !is_uploaded_file($uploadedFile['tmp_name'])) {
+			return ['success' => false, 'message' => 'Invalid file upload'];
+		}
+
+		// Validate file extension
+		$filename = $uploadedFile['name'];
+		$extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+		
+		if ($extension !== 'plugzip') {
+			return ['success' => false, 'message' => 'Invalid file type. Only .plugzip files are allowed.'];
+		}
+
+		// Move uploaded file to temporary location
+		$tempUploadPath = sys_get_temp_dir() . '/aspen_upload_' . time() . '_' . rand(1000, 9999) . '.plugzip';
+		
+		if (!move_uploaded_file($uploadedFile['tmp_name'], $tempUploadPath)) {
+			return ['success' => false, 'message' => 'Failed to process uploaded file'];
+		}
+
+		// Install plugin from the temporary file
+		$result = $this->installPlugin($tempUploadPath);
+
+		// Clean up temporary upload file
+		if (file_exists($tempUploadPath)) {
+			unlink($tempUploadPath);
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Create a .plugzip file from a plugin directory
+	 */
+	public function createPluginZip(string $pluginDirectory, string $outputPath): bool {
+		if (!class_exists('ZipArchive')) {
+			return false;
+		}
+
+		if (!is_dir($pluginDirectory)) {
+			return false;
+		}
+
+		$zip = new ZipArchive();
+		$result = $zip->open($outputPath, ZipArchive::CREATE | ZipArchive::OVERWRITE);
+		
+		if ($result !== TRUE) {
+			return false;
+		}
+
+		$iterator = new RecursiveIteratorIterator(
+			new RecursiveDirectoryIterator($pluginDirectory, RecursiveDirectoryIterator::SKIP_DOTS),
+			RecursiveIteratorIterator::SELF_FIRST
+		);
+
+		foreach ($iterator as $file) {
+			if ($file->isDir()) {
+				$zip->addEmptyDir($iterator->getSubPathName());
+			} else {
+				$zip->addFile($file, $iterator->getSubPathName());
+			}
+		}
+
+		return $zip->close();
 	}
 } 

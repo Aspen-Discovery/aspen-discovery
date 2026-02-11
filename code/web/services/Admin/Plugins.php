@@ -64,8 +64,12 @@ class Admin_Plugins extends ObjectEditor {
 		$actions = [];
 		if (UserAccount::userHasPermission('Administer Plugins')) {
 			$actions[] = [
-				'label' => 'Install Plugin',
+				'label' => 'Install Plugin from Directory',
 				'action' => 'installPlugin',
+			];
+			$actions[] = [
+				'label' => 'Upload Plugin (.plugzip)',
+				'action' => 'uploadPlugin',
 			];
 		}
 		return $actions;
@@ -120,6 +124,31 @@ class Admin_Plugins extends ObjectEditor {
 		
 		$interface->assign('instructions', 'Enter the path to the plugin directory to install it.');
 		$this->display('installPlugin.tpl', 'Install Plugin');
+	}
+
+	function uploadPlugin(): void {
+		global $interface;
+		
+		if (isset($_FILES['pluginFile'])) {
+			$uploadedFile = $_FILES['pluginFile'];
+			$pluginManager = PluginManager::getInstance();
+			$result = $pluginManager->installPluginFromUpload($uploadedFile);
+			
+			if ($result['success']) {
+				$interface->assign('updateMessage', $result['message']);
+				$interface->assign('updateMessageIsError', false);
+			} else {
+				$interface->assign('updateMessage', $result['message']);
+				$interface->assign('updateMessageIsError', true);
+			}
+			
+			// Redirect back to list
+			header('Location: /Admin/Plugins');
+			exit();
+		}
+		
+		$interface->assign('instructions', 'Upload a .plugzip file to install a plugin.');
+		$this->display('uploadPlugin.tpl', 'Upload Plugin');
 	}
 
 	function enablePlugin(): void {
