@@ -139,37 +139,19 @@ class PluginManager {
 			return ['success' => false, 'message' => 'Plugin directory not found'];
 		}
 
-		// Find PHP plugin file - look for files ending with .php that contain a class extending AspenPlugin
-		$pluginFile = $this->findPluginFile($pluginPath);
-		if (!$pluginFile) {
-			if ($tempExtractDir) {
-				$this->removeDirectory($tempExtractDir);
-			}
-			return ['success' => false, 'message' => 'No valid plugin PHP file found'];
-		}
-
-		// Load and validate the plugin class
-		$pluginMetadata = $this->extractPluginMetadata($pluginFile);
+		// Extract metadata from plugin.yaml manifest
+		$pluginMetadata = $this->extractPluginMetadata($pluginPath);
 		if (!$pluginMetadata) {
 			if ($tempExtractDir) {
 				$this->removeDirectory($tempExtractDir);
 			}
-			return ['success' => false, 'message' => 'Could not extract plugin metadata from PHP file'];
+			return ['success' => false, 'message' => 'No valid plugin.yaml manifest found, or manifest is missing required fields (name, slug, version)'];
 		}
 
 		// Check if plugin already exists by slug
 		$existingPlugin = new Plugin();
 		$existingPlugin->slug = $pluginMetadata['slug'];
 		if ($existingPlugin->find(true)) {
-			// Plugin exists - check if it's enabled
-			if ($existingPlugin->isEnabled()) {
-				if ($tempExtractDir) {
-					$this->removeDirectory($tempExtractDir);
-				}
-				return ['success' => false, 'message' => 'Cannot update plugin while it is enabled. Please disable the plugin first.'];
-			}
-
-			// Plugin is disabled, proceed with update
 			$result = $this->updatePlugin($existingPlugin, $pluginMetadata, $pluginPath);
 
 			// Clean up temporary extraction directory if we used one
@@ -566,47 +548,63 @@ class PluginManager {
 	}
 
 	/**
-	 * Extract metadata from a plugin PHP file
+	 * Find the plugin.yaml manifest file in a directory
 	 */
-	private function extractPluginMetadata(string $pluginFile): ?array {
+	private function findPluginManifest(string $pluginPath): ?string {
+		$manifestPath = $pluginPath . '/plugin.yaml';
+		if (file_exists($manifestPath)) {
+			return $manifestPath;
+		}
+		return null;
+	}
+
+	/**
+	 * Extract metadata from a plugin.yaml manifest file
+	 */
+	private function extractPluginMetadata(string $pluginPath): ?array {
 		try {
-			// Parse the file to find the class name first
-			$content = file_get_contents($pluginFile);
-			if (!preg_match('/class\s+(\w+)\s+extends\s+AspenPlugin/', $content, $matches)) {
+			$manifestFile = $this->findPluginManifest($pluginPath);
+			if (!$manifestFile) {
 				return null;
 			}
-			
-			$className = $matches[1];
-			
-			// Only include the file if the class doesn't already exist
-			if (!class_exists($className)) {
-				require_once $pluginFile;
-			}
-			
-			if (!class_exists($className, false)) {
+
+			require_once ROOT_DIR . '/sys/Yaml.php';
+			$yaml = new Yaml();
+			$manifest = $yaml->load($manifestFile);
+
+			if (empty($manifest) || !is_array($manifest)) {
 				return null;
 			}
-			
-			// Create a temporary instance to get metadata
-			// We need a temporary Plugin object for the constructor
-			$tempPlugin = new Plugin();
-			$pluginInstance = new $className($tempPlugin);
-			
-			$metadata = $pluginInstance->getMetadata();
-			
+
+			// Validate required fields
+			if (empty($manifest['name']) || empty($manifest['slug']) || empty($manifest['version'])) {
+				global $logger;
+				if (isset($logger)) {
+					$logger->log("Plugin manifest missing required fields (name, slug, version): $manifestFile", Logger::LOG_ERROR);
+				}
+				return null;
+			}
+
+			// Verify a PHP class file exists for this plugin
+			$pluginFile = $this->findPluginFile($pluginPath);
+			if (!$pluginFile) {
+				global $logger;
+				if (isset($logger)) {
+					$logger->log("Plugin manifest found but no PHP class file extending AspenPlugin in: $pluginPath", Logger::LOG_ERROR);
+				}
+				return null;
+			}
+
 			return [
-				'name' => $metadata['name'] ?? 'Unknown Plugin',
-				'slug' => $pluginInstance->getSlug(),
-				'version' => $metadata['version'] ?? '1.0.0',
-				'description' => $metadata['description'] ?? 'No description provided',
-				'author' => $metadata['author'] ?? 'Unknown Author',
-				'modifiedDate' => $metadata['lastModified'] ?? null,
-				'minAspenVersion' => $metadata['minAspenVersion'] ?? null,
-				'maxAspenVersion' => $metadata['maxAspenVersion'] ?? null,
-				'className' => $className,
-				'jsFiles' => $pluginInstance->getJavaScriptFiles(),
-				'cssFiles' => $pluginInstance->getCssFiles(),
-				'config' => [] // Plugins can override getConfig() for default config
+				'name' => $manifest['name'],
+				'slug' => $manifest['slug'],
+				'version' => $manifest['version'],
+				'description' => $manifest['description'] ?? 'No description provided',
+				'author' => $manifest['author'] ?? 'Unknown Author',
+				'modifiedDate' => $manifest['lastModified'] ?? null,
+				'minAspenVersion' => $manifest['minAspenVersion'] ?? null,
+				'maxAspenVersion' => $manifest['maxAspenVersion'] ?? null,
+				'config' => $manifest['config'] ?? [],
 			];
 		} catch (Exception $e) {
 			global $logger;
