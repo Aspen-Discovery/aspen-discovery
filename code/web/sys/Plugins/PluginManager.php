@@ -194,17 +194,18 @@ class PluginManager {
 
 		// Create database entry
 		$plugin = new Plugin();
-		$plugin->name = $pluginMetadata['name'];
-		$plugin->slug = $pluginMetadata['slug'];
-		$plugin->version = $pluginMetadata['version'];
-		$plugin->description = $pluginMetadata['description'];
-		$plugin->author = $pluginMetadata['author'];
 		$plugin->status = 0; // disabled by default
-		$plugin->modifiedDate = $pluginMetadata['modifiedDate'] ?? null;
-		$plugin->minAspenVersion = $pluginMetadata['minAspenVersion'] ?? null;
-		$plugin->maxAspenVersion = $pluginMetadata['maxAspenVersion'] ?? null;
-		
-		// Hook points, JS files, and CSS files are now auto-detected from PHP methods
+
+		// Properties to exclude from automatic metadata mapping
+		$excludedProperties = ['config', 'status'];
+
+		// Copy all matching properties from metadata
+		foreach ($pluginMetadata as $key => $value) {
+			if (property_exists($plugin, $key) && !in_array($key, $excludedProperties)) {
+				$plugin->$key = $value;
+			}
+		}
+
 		if (!empty($pluginMetadata['config'])) {
 			$plugin->setConfigArray($pluginMetadata['config']);
 		}
