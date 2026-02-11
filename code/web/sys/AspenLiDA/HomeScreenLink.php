@@ -108,6 +108,7 @@ class HomeScreenLink extends DataObject {
 				'type' => 'text',
 				'label' => 'Google Material Icon Name <small><a href="https://fonts.google.com/icons?icon.set=Material+Icons&icon.style=Filled&icon.size=24&icon.color=%23cdd6f4" target="_blank"><i class="fa fa-info-circle"></i></a></small>',
 				'description' => 'A Google Material Icon to represent the link',
+				'note' => 'Use the "icon name", all lowercase. No spaces allowed, use underscores for multi-word icons (ex: "account_circle")',
 				'hideInLists' => true,
 			],
 			'uploadIcon' => [
