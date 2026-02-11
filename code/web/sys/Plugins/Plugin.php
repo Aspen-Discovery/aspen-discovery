@@ -129,7 +129,7 @@ class Plugin extends DataObject {
 	}
 
 	public function getSerializedFieldNames(): array {
-		return ['configData', 'jsFiles', 'cssFiles', 'hookPoints'];
+		return []; // We use JSON encoding/decoding for our data fields
 	}
 
 	public function getUniquenessFields(): array {
