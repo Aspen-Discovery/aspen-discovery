@@ -126,9 +126,15 @@ class Plugin extends DataObject {
 	 * Get the plugin directory path
 	 */
 	public function getPluginDirectory(): string {
-		global $configArray;
-		$local = $configArray['Site']['local'];
-		return "$local/plugins/{$this->slug}";
+		return $this->getPluginDataPath() . "/{$this->slug}";
+	}
+	
+	/**
+	 * Get the base plugins data directory path for this instance
+	 */
+	public static function getPluginDataPath(): string {
+		global $serverName;
+		return "/data/aspen-discovery/$serverName/plugins";
 	}
 
 	/**
