@@ -94,36 +94,6 @@ abstract class AspenPlugin {
 	}
 	
 	/**
-	 * Hook: before page load
-	 * Called before any page is loaded
-	 * 
-	 * @param array $data Contains 'module', 'action', 'method' keys
-	 */
-	public function beforePageLoad(array $data): void {
-		// Default implementation does nothing
-	}
-	
-	/**
-	 * Hook: after page load
-	 * Called after page is loaded but before display
-	 * 
-	 * @param array $data Contains 'module', 'action', 'method', 'interface' keys
-	 */
-	public function afterPageLoad(array $data): void {
-		// Default implementation does nothing
-	}
-	
-	/**
-	 * Hook: before template display
-	 * Called before the template is displayed
-	 * 
-	 * @param array $data Contains 'template', 'interface' keys
-	 */
-	public function beforeTemplateDisplay(array $data): void {
-		// Default implementation does nothing
-	}
-	
-	/**
 	 * Hook: add JavaScript
 	 * Called to inject custom JavaScript
 	 * 
@@ -148,33 +118,19 @@ abstract class AspenPlugin {
 	}
 	
 	/**
-	 * Hook: search results modification
-	 * Called to modify search results
-	 * 
-	 * @param array $data Contains 'results', 'searchTerm', 'interface' keys
+	 * Get JavaScript files to inject - override this in your plugin
+	 * @return array Array of relative file paths (e.g., ['js/example.js'])
 	 */
-	public function modifySearchResults(array $data): void {
-		// Default implementation does nothing
+	public function getJavaScriptFiles(): array {
+		return [];
 	}
-	
+
 	/**
-	 * Hook: user login
-	 * Called when a user logs in
-	 * 
-	 * @param array $data Contains 'user', 'interface' keys
+	 * Get CSS files to inject - override this in your plugin
+	 * @return array Array of relative file paths (e.g., ['css/example.css'])
 	 */
-	public function onUserLogin(array $data): void {
-		// Default implementation does nothing
-	}
-	
-	/**
-	 * Hook: user logout
-	 * Called when a user logs out
-	 * 
-	 * @param array $data Contains 'user', 'interface' keys
-	 */
-	public function onUserLogout(array $data): void {
-		// Default implementation does nothing
+	public function getCssFiles(): array {
+		return [];
 	}
 	
 	/**
@@ -224,22 +180,6 @@ abstract class AspenPlugin {
 		}
 		// Convert CamelCase to snake_case
 		return strtolower(preg_replace('/([a-z])([A-Z])/', '$1_$2', $className));
-	}
-
-	/**
-	 * Get JavaScript files to inject - override this in your plugin
-	 * @return array Array of relative file paths
-	 */
-	public function getJavaScriptFiles(): array {
-		return [];
-	}
-
-	/**
-	 * Get CSS files to inject - override this in your plugin
-	 * @return array Array of relative file paths
-	 */
-	public function getCssFiles(): array {
-		return [];
 	}
 
 	/**
