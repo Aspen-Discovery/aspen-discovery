@@ -738,6 +738,9 @@ class UInterface extends Smarty {
 		}
 		$this->assign('additionalCss', $additionalCSS);
 
+		// Load plugin CSS and JS files
+		$this->loadPluginAssets();
+
 		if (!empty($library->headerText)) {
 			$this->assign('headerText', $library->headerText);
 		}
@@ -1161,6 +1164,70 @@ class UInterface extends Smarty {
 			$this->assign('linkColor', $primaryTheme->linkColor);
 			$this->assign('bodyFont', $primaryTheme->bodyFont);
 			$this->assign('isDarkColorScheme', $primaryTheme->isDarkColorScheme);
+		}
+	}
+
+	/**
+	 * Load plugin CSS and JS assets
+	 */
+	private function loadPluginAssets(): void {
+		try {
+			require_once ROOT_DIR . '/sys/Plugins/PluginManager.php';
+			$pluginManager = PluginManager::getInstance();
+			
+			// Get CSS files from plugins
+			$pluginCssFiles = $pluginManager->getCssFilesToInject();
+			if (!empty($pluginCssFiles)) {
+				$this->assign('pluginCssFiles', $pluginCssFiles);
+			}
+			
+			// Get JS files from plugins
+			$pluginJsFiles = $pluginManager->getJsFilesToInject();
+			if (!empty($pluginJsFiles)) {
+				$this->assign('pluginJsFiles', $pluginJsFiles);
+			}
+			
+			// Execute JS injection hooks
+			$jsHookData = [
+				'page' => $_REQUEST['module'] ?? '',
+				'interface' => $this
+			];
+			$injectedJs = $pluginManager->executeHook('injectJavaScript', $jsHookData);
+			if (!empty($injectedJs)) {
+				$combinedJs = '';
+				foreach ($injectedJs as $js) {
+					if (!empty($js)) {
+						$combinedJs .= $js . "\n";
+					}
+				}
+				if (!empty($combinedJs)) {
+					$this->assign('pluginInjectedJs', $combinedJs);
+				}
+			}
+			
+			// Execute CSS injection hooks
+			$cssHookData = [
+				'page' => $_REQUEST['module'] ?? '',
+				'interface' => $this
+			];
+			$injectedCss = $pluginManager->executeHook('injectCSS', $cssHookData);
+			if (!empty($injectedCss)) {
+				$combinedCss = '';
+				foreach ($injectedCss as $css) {
+					if (!empty($css)) {
+						$combinedCss .= $css . "\n";
+					}
+				}
+				if (!empty($combinedCss)) {
+					$this->assign('pluginInjectedCss', $combinedCss);
+				}
+			}
+		} catch (Exception $e) {
+			// If plugins aren't installed yet or there's an error, don't break the site
+			global $logger;
+			if (isset($logger)) {
+				$logger->log("Error loading plugin assets: " . $e->getMessage(), Logger::LOG_DEBUG);
+			}
 		}
 	}
 }
