@@ -189,4 +189,12 @@ class Plugin extends DataObject {
 	public function getMaxAspenVersionLabel(): string {
 		return $this->maxAspenVersion ?: 'Not specified';
 	}
+
+	/**
+	 * Plugins should not be deleted through the standard delete action.
+	 * They must be uninstalled via the Uninstall action instead.
+	 */
+	public function canActiveUserDelete(): bool {
+		return false;
+	}
 } 
