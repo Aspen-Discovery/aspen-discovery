@@ -623,7 +623,8 @@ class PluginManager {
 	}
 
 	/**
-	 * Clean up all data for a plugin (called during uninstall)
+	 * Clean up all data for a plugin from the plugin_data table.
+	 * Called automatically during uninstall after the onUninstall hook has run.
 	 */
 	public function cleanupPluginData(string $slug): void {
 		$className = $this->getPluginClassName($slug);

@@ -75,8 +75,10 @@ abstract class AspenPlugin {
 	}
 	
 	/**
-	 * Called when the plugin is uninstalled
-	 * Override this method to perform cleanup tasks
+	 * Called when the plugin is uninstalled.
+	 * Override this method to perform custom cleanup (e.g. removing external resources).
+	 * Note: Plugin data (plugin_data table) is cleaned up automatically by PluginManager
+	 * after this hook runs — no need to call deleteAllData() here.
 	 */
 	public function onUninstall(): void {
 		// Default implementation does nothing
