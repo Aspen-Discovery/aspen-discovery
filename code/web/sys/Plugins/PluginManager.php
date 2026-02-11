@@ -26,17 +26,20 @@ class PluginManager {
 		$plugin->status = 1; // enabled
 		$plugin->find();
 
-		while ($plugin->fetch()) {
+				while ($plugin->fetch()) {
 			if ($plugin->pluginDirectoryExists() && $plugin->pluginClassFileExists()) {
 				try {
-									require_once $plugin->getPluginClassFile();
-				// Convert slug to proper class name (example_plugin -> ExamplePlugin)
+					require_once $plugin->getPluginClassFile();
+									// Convert slug to proper class name (example_plugin -> ExamplePlugin)
 				$slugParts = explode('_', $plugin->slug);
 				$pluginClassName = '';
 				foreach ($slugParts as $part) {
 					$pluginClassName .= ucfirst($part);
 				}
-				$pluginClassName .= 'Plugin';
+				// Don't add 'Plugin' suffix if it's already there
+				if (!str_ends_with($pluginClassName, 'Plugin')) {
+					$pluginClassName .= 'Plugin';
+				}
 					
 					if (class_exists($pluginClassName)) {
 						$pluginInstance = new $pluginClassName($plugin);
@@ -50,6 +53,12 @@ class PluginManager {
 							}
 							$this->hooks[$hookPoint][] = $pluginInstance;
 						}
+					} else {
+						// Log that class doesn't exist
+						global $logger;
+						if (isset($logger)) {
+							$logger->log("Plugin class {$pluginClassName} not found for plugin {$plugin->slug}", Logger::LOG_ERROR);
+						}
 					}
 				} catch (Exception $e) {
 					// Log error but continue
@@ -57,7 +66,20 @@ class PluginManager {
 					if (isset($logger)) {
 						$logger->log("Error loading plugin {$plugin->slug}: " . $e->getMessage(), Logger::LOG_ERROR);
 					}
+				} catch (Error $e) {
+					// Log fatal errors but continue
+					global $logger;
+					if (isset($logger)) {
+						$logger->log("Fatal error loading plugin {$plugin->slug}: " . $e->getMessage(), Logger::LOG_ERROR);
+					}
 				}
+			} else {
+				// Plugin directory or file doesn't exist, disable it
+				global $logger;
+				if (isset($logger)) {
+					$logger->log("Plugin {$plugin->slug} files missing, disabling plugin", Logger::LOG_WARNING);
+				}
+				$plugin->disable();
 			}
 		}
 	}
@@ -167,7 +189,10 @@ class PluginManager {
 				foreach ($slugParts as $part) {
 					$pluginClassName .= ucfirst($part);
 				}
-				$pluginClassName .= 'Plugin';
+				// Don't add 'Plugin' suffix if it's already there
+				if (!str_ends_with($pluginClassName, 'Plugin')) {
+					$pluginClassName .= 'Plugin';
+				}
 				if (class_exists($pluginClassName) && method_exists($pluginClassName, 'onInstall')) {
 					$pluginInstance = new $pluginClassName($plugin);
 					$pluginInstance->onInstall();
@@ -210,7 +235,10 @@ class PluginManager {
 				foreach ($slugParts as $part) {
 					$pluginClassName .= ucfirst($part);
 				}
-				$pluginClassName .= 'Plugin';
+				// Don't add 'Plugin' suffix if it's already there
+				if (!str_ends_with($pluginClassName, 'Plugin')) {
+					$pluginClassName .= 'Plugin';
+				}
 				if (class_exists($pluginClassName) && method_exists($pluginClassName, 'onUninstall')) {
 					$pluginInstance = new $pluginClassName($plugin);
 					$pluginInstance->onUninstall();
