@@ -114,50 +114,50 @@ class Admin_Plugins extends ObjectEditor {
 
 	function installPlugin(): void {
 		global $interface;
-		
+
 		if (isset($_POST['pluginPath'])) {
 			$pluginPath = $_POST['pluginPath'];
 			$pluginManager = PluginManager::getInstance();
 			$result = $pluginManager->installPlugin($pluginPath);
-			
-			if ($result['success']) {
-				$interface->assign('updateMessage', $result['message']);
-				$interface->assign('updateMessageIsError', false);
-			} else {
-				$interface->assign('updateMessage', $result['message']);
-				$interface->assign('updateMessageIsError', true);
+
+			// Store message on user object so it survives the redirect
+			$user = UserAccount::getActiveUserObj();
+			if ($user) {
+				$user->updateMessage = $result['message'];
+				$user->updateMessageIsError = !$result['success'];
+				$user->update();
 			}
-			
+
 			// Redirect back to list
 			header('Location: /Admin/Plugins');
 			exit();
 		}
-		
+
 		$interface->assign('instructions', 'Enter the path to the plugin directory to install it.');
 		$this->display('installPlugin.tpl', 'Install Plugin');
 	}
 
 	function uploadPlugin(): void {
 		global $interface;
-		
+
 		if (isset($_FILES['pluginFile'])) {
 			$uploadedFile = $_FILES['pluginFile'];
 			$pluginManager = PluginManager::getInstance();
 			$result = $pluginManager->installPluginFromUpload($uploadedFile);
-			
-			if ($result['success']) {
-				$interface->assign('updateMessage', $result['message']);
-				$interface->assign('updateMessageIsError', false);
-			} else {
-				$interface->assign('updateMessage', $result['message']);
-				$interface->assign('updateMessageIsError', true);
+
+			// Store message on user object so it survives the redirect
+			$user = UserAccount::getActiveUserObj();
+			if ($user) {
+				$user->updateMessage = $result['message'];
+				$user->updateMessageIsError = !$result['success'];
+				$user->update();
 			}
-			
+
 			// Redirect back to list
 			header('Location: /Admin/Plugins');
 			exit();
 		}
-		
+
 		$interface->assign('instructions', 'Upload a .plugzip file to install a plugin.');
 		$this->display('uploadPlugin.tpl', 'Upload Plugin');
 	}
@@ -168,6 +168,7 @@ class Admin_Plugins extends ObjectEditor {
 			$plugin = new Plugin();
 			$plugin->id = $id;
 			if ($plugin->find(true)) {
+				$user = UserAccount::getActiveUserObj();
 				if ($plugin->enable()) {
 					// Call plugin onEnable hook - safe now that infinite loop is fixed
 					$pluginManager = PluginManager::getInstance();
@@ -176,17 +177,22 @@ class Admin_Plugins extends ObjectEditor {
 					// Audit log: Plugin enabled
 					global $logger;
 					if (isset($logger)) {
-						$user = UserAccount::getActiveUserObj();
 						$username = $user ? $user->username : 'unknown';
 						$userId = $user ? $user->id : 'unknown';
 						$logger->log("Plugin enabled: {$plugin->name} (slug: {$plugin->slug}) by user {$username} (ID: {$userId})", Logger::LOG_NOTICE, true);
 					}
 
-					$_SESSION['updateMessage'] = 'Plugin enabled successfully';
-					$_SESSION['updateMessageIsError'] = false;
+					if ($user) {
+						$user->updateMessage = 'Plugin enabled successfully';
+						$user->updateMessageIsError = false;
+						$user->update();
+					}
 				} else {
-					$_SESSION['updateMessage'] = 'Failed to enable plugin';
-					$_SESSION['updateMessageIsError'] = true;
+					if ($user) {
+						$user->updateMessage = 'Failed to enable plugin';
+						$user->updateMessageIsError = true;
+						$user->update();
+					}
 				}
 			}
 		}
@@ -207,21 +213,27 @@ class Admin_Plugins extends ObjectEditor {
 					$pluginManager->callHook($plugin, 'onDisable');
 				}
 
+				$user = UserAccount::getActiveUserObj();
 				if ($plugin->disable()) {
 					// Audit log: Plugin disabled
 					global $logger;
 					if (isset($logger)) {
-						$user = UserAccount::getActiveUserObj();
 						$username = $user ? $user->username : 'unknown';
 						$userId = $user ? $user->id : 'unknown';
 						$logger->log("Plugin disabled: {$plugin->name} (slug: {$plugin->slug}) by user {$username} (ID: {$userId})", Logger::LOG_NOTICE, true);
 					}
 
-					$_SESSION['updateMessage'] = 'Plugin disabled successfully';
-					$_SESSION['updateMessageIsError'] = false;
+					if ($user) {
+						$user->updateMessage = 'Plugin disabled successfully';
+						$user->updateMessageIsError = false;
+						$user->update();
+					}
 				} else {
-					$_SESSION['updateMessage'] = 'Failed to disable plugin';
-					$_SESSION['updateMessageIsError'] = true;
+					if ($user) {
+						$user->updateMessage = 'Failed to disable plugin';
+						$user->updateMessageIsError = true;
+						$user->update();
+					}
 				}
 			}
 		}
@@ -238,12 +250,11 @@ class Admin_Plugins extends ObjectEditor {
 				$pluginManager = PluginManager::getInstance();
 				$result = $pluginManager->uninstallPlugin($plugin->slug);
 
-				if ($result['success']) {
-					$_SESSION['updateMessage'] = $result['message'];
-					$_SESSION['updateMessageIsError'] = false;
-				} else {
-					$_SESSION['updateMessage'] = $result['message'];
-					$_SESSION['updateMessageIsError'] = true;
+				$user = UserAccount::getActiveUserObj();
+				if ($user) {
+					$user->updateMessage = $result['message'];
+					$user->updateMessageIsError = !$result['success'];
+					$user->update();
 				}
 			}
 		}
