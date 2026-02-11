@@ -56,7 +56,7 @@ class Admin_Plugins extends ObjectEditor {
 		return UserAccount::userHasPermission('Administer Plugins');
 	}
 
-	function canEdit($object): bool {
+	function canEdit(): bool {
 		return UserAccount::userHasPermission('Administer Plugins');
 	}
 
@@ -77,8 +77,19 @@ class Admin_Plugins extends ObjectEditor {
 
 	function getAdditionalObjectActions($existingObject): array {
 		$actions = [];
-		
+
 		if (UserAccount::userHasPermission('Administer Plugins') && $existingObject instanceof Plugin) {
+			$pluginManager = PluginManager::getInstance();
+
+			// Configure action (if plugin has configure method)
+			if ($pluginManager->hasMethod($existingObject, 'configure')) {
+				$actions[] = [
+					'text' => 'Configure',
+					'url' => "/plugins/{$existingObject->slug}/configure",
+				];
+			}
+
+			// Enable/Disable toggle
 			if ($existingObject->isEnabled()) {
 				$actions[] = [
 					'text' => 'Disable',
@@ -90,14 +101,14 @@ class Admin_Plugins extends ObjectEditor {
 					'url' => '/Admin/Plugins?objectAction=enablePlugin&id=' . $existingObject->id,
 				];
 			}
-			
+
 			$actions[] = [
 				'text' => 'Uninstall',
 				'url' => '/Admin/Plugins?objectAction=uninstallPlugin&id=' . $existingObject->id,
 				'onclick' => 'return confirm("Are you sure you want to uninstall this plugin? This action cannot be undone.")',
 			];
 		}
-		
+
 		return $actions;
 	}
 
@@ -206,7 +217,7 @@ class Admin_Plugins extends ObjectEditor {
 			if ($plugin->find(true)) {
 				$pluginManager = PluginManager::getInstance();
 				$result = $pluginManager->uninstallPlugin($plugin->slug);
-				
+
 				if ($result['success']) {
 					$_SESSION['updateMessage'] = $result['message'];
 					$_SESSION['updateMessageIsError'] = false;
@@ -216,7 +227,7 @@ class Admin_Plugins extends ObjectEditor {
 				}
 			}
 		}
-		
+
 		header('Location: /Admin/Plugins');
 		exit();
 	}
