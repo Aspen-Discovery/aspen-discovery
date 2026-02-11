@@ -1,7 +1,6 @@
 <?php
-
-function getUpdatesPlugins24_12_00(): array {
-	$curTime = time();
+/**@noinspection SqlResolve*/
+function getPluginUpdates() {
 	return [
 		'create_plugin_table' => [
 			'title' => 'Create Plugin Table',
