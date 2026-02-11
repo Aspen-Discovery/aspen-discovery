@@ -123,7 +123,7 @@ class Plugins_Runner extends Action {
 
 		// Check if it's a registered plugin method
 		$pluginManager = PluginManager::getInstance();
-		if ($pluginManager->hasMethod($this->plugin, $this->path)) {
+		if ($pluginManager->pluginHasMethod($this->plugin, $this->path)) {
 			return false;
 		}
 
@@ -216,7 +216,7 @@ class Plugins_Runner extends Action {
 		$pluginManager = PluginManager::getInstance();
 
 		// Check method exists in registry
-		if (!$pluginManager->hasMethod($this->plugin, $method)) {
+		if (!$pluginManager->pluginHasMethod($this->plugin, $method)) {
 			$this->display404('Method not found for this plugin');
 			return;
 		}

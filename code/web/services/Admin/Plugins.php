@@ -82,7 +82,7 @@ class Admin_Plugins extends ObjectEditor {
 			$pluginManager = PluginManager::getInstance();
 
 			// Configure action (if plugin has configure method)
-			if ($pluginManager->hasMethod($existingObject, 'configure')) {
+			if ($pluginManager->pluginHasMethod($existingObject, 'configure')) {
 				$actions[] = [
 					'text' => 'Configure',
 					'url' => "/plugins/{$existingObject->slug}/configure",
