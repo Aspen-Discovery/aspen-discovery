@@ -6,10 +6,6 @@ class PluginManager {
 	private static $instance = null;
 	private $loadedPlugins = [];
 
-	// Method type classifications
-	private const LIFECYCLE_METHODS = ['onInstall', 'onUninstall', 'onEnable', 'onDisable'];
-	private const PAGE_METHODS = ['configure', 'settings'];
-
 	private function __construct() {
 		$this->loadEnabledPlugins();
 	}
@@ -197,9 +193,6 @@ class PluginManager {
 		}
 
 		if ($plugin->insert()) {
-			// Register plugin methods in the method registry
-			$this->registerPluginMethods($plugin);
-
 			// Run plugin installation hook if it exists
 			$this->callHook($plugin, 'onInstall');
 
@@ -289,9 +282,6 @@ class PluginManager {
 			}
 			return ['success' => false, 'message' => 'Failed to update plugin database record'];
 		}
-
-		// Re-register plugin methods (clears old methods and registers new ones)
-		$this->registerPluginMethods($existingPlugin);
 
 		// Clean up backup directory on success
 		if (is_dir($backupPath)) {
@@ -615,135 +605,32 @@ class PluginManager {
 		}
 	}
 
-	// ============================================================
-	// Method Registry Methods
-	// ============================================================
-
 	/**
-	 * Register all methods for a plugin in plugin_methods table
-	 * Uses reflection to discover public methods
-	 * @param Plugin $plugin Plugin to register methods for
+	 * Check if a plugin class has a specific method
 	 */
-	public function registerPluginMethods(Plugin $plugin): void {
+	public function pluginHasMethod(Plugin $plugin, string $method): bool {
 		$className = $this->getPluginClassName($plugin->slug);
 
 		if (!$plugin->pluginClassFileExists()) {
-			return;
+			return false;
 		}
 
-		// Only require the file if the class doesn't already exist
 		if (!class_exists($className)) {
 			require_once $plugin->getPluginClassFile();
 		}
 
-		if (!class_exists($className, false)) {
-			return;
-		}
-
-		global $aspen_db;
-
-		// Clear existing methods for this plugin
-		$stmt = $aspen_db->prepare("DELETE FROM plugin_methods WHERE plugin_class = ?");
-		$stmt->execute([$className]);
-
-		$reflection = new ReflectionClass($className);
-		$methods = $reflection->getMethods(ReflectionMethod::IS_PUBLIC);
-		$timestamp = time();
-
-		foreach ($methods as $method) {
-			// Skip inherited methods from base class
-			if ($method->class !== $className) {
-				continue;
-			}
-
-			// Skip magic methods
-			if (strpos($method->name, '__') === 0) {
-				continue;
-			}
-
-			// Determine method type
-			$methodType = $this->determineMethodType($method->name);
-
-			// Register method
-			$stmt = $aspen_db->prepare(
-				"INSERT INTO plugin_methods (plugin_class, plugin_method, method_type, created)
-				 VALUES (?, ?, ?, ?)"
-			);
-			$stmt->execute([$className, $method->name, $methodType, $timestamp]);
-		}
-	}
-
-	/**
-	 * Check if a plugin has a specific method
-	 * @param Plugin $plugin Plugin to check
-	 * @param string $method Method name to check
-	 * @return bool True if method exists and is registered
-	 */
-	public function hasMethod(Plugin $plugin, string $method): bool {
-		$className = $this->getPluginClassName($plugin->slug);
-
-		global $aspen_db;
-
-		$stmt = $aspen_db->prepare(
-			"SELECT COUNT(*) as cnt FROM plugin_methods WHERE plugin_class = ? AND plugin_method = ?"
-		);
-		$stmt->execute([$className, $method]);
-		$row = $stmt->fetch(PDO::FETCH_ASSOC);
-
-		return $row && $row['cnt'] > 0;
-	}
-
-	/**
-	 * Determine method type based on method name
-	 * @param string $methodName Method name
-	 * @return string Method type ('lifecycle', 'page', 'hook', 'api')
-	 */
-	private function determineMethodType(string $methodName): string {
-		if (in_array($methodName, self::LIFECYCLE_METHODS)) {
-			return 'lifecycle';
-		}
-
-		if (in_array($methodName, self::PAGE_METHODS)) {
-			return 'page';
-		}
-
-		if (strpos($methodName, 'api') === 0) {
-			return 'api';
-		}
-
-		return 'hook';
-	}
-
-	/**
-	 * Convert class name to slug
-	 * @param string $className Class name
-	 * @return string Plugin slug
-	 */
-	private function slugFromClassName(string $className): string {
-		// Remove 'Plugin' suffix if present
-		if (substr($className, -6) === 'Plugin') {
-			$className = substr($className, 0, -6);
-		}
-
-		// Convert CamelCase to snake_case
-		return strtolower(preg_replace('/([a-z])([A-Z])/', '$1_$2', $className));
+		return class_exists($className, false) && method_exists($className, $method);
 	}
 
 	/**
 	 * Clean up all data for a plugin (called during uninstall)
-	 * @param string $slug Plugin slug
 	 */
 	public function cleanupPluginData(string $slug): void {
 		$className = $this->getPluginClassName($slug);
 
 		global $aspen_db;
 
-		// Clean up plugin_data table
 		$stmt = $aspen_db->prepare("DELETE FROM plugin_data WHERE plugin_class = ?");
-		$stmt->execute([$className]);
-
-		// Clean up plugin_methods table
-		$stmt = $aspen_db->prepare("DELETE FROM plugin_methods WHERE plugin_class = ?");
 		$stmt->execute([$className]);
 	}
 } 
