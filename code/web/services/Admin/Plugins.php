@@ -157,6 +157,10 @@ class Admin_Plugins extends ObjectEditor {
 			$plugin->id = $_REQUEST['id'];
 			if ($plugin->find(true)) {
 				if ($plugin->enable()) {
+					// Call plugin onEnable hook - safe now that infinite loop is fixed
+					$pluginManager = PluginManager::getInstance();
+					$pluginManager->callHook($plugin, 'onEnable');
+					
 					$_SESSION['updateMessage'] = 'Plugin enabled successfully';
 					$_SESSION['updateMessageIsError'] = false;
 				} else {
@@ -175,6 +179,12 @@ class Admin_Plugins extends ObjectEditor {
 			$plugin = new Plugin();
 			$plugin->id = $_REQUEST['id'];
 			if ($plugin->find(true)) {
+				// Call plugin onDisable hook before disabling - safe now that infinite loop is fixed
+				if ($plugin->isEnabled()) {
+					$pluginManager = PluginManager::getInstance();
+					$pluginManager->callHook($plugin, 'onDisable');
+				}
+				
 				if ($plugin->disable()) {
 					$_SESSION['updateMessage'] = 'Plugin disabled successfully';
 					$_SESSION['updateMessageIsError'] = false;
