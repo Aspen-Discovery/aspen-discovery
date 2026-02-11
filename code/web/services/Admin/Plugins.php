@@ -279,5 +279,8 @@ class Admin_Plugins extends ObjectEditor {
 		return UserAccount::userHasPermission('Administer Plugins');
 	}
 
+	public function getViewPermissions() : array {
+		return ['Administer Plugins'];
+	}
 
 } 
