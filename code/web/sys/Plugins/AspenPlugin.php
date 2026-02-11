@@ -197,4 +197,114 @@ abstract class AspenPlugin {
 		$metadata = $this->getMetadata();
 		return $metadata['name'] ?? 'Unknown Plugin';
 	}
+
+	// ============================================================
+	// Data Storage Methods (plugin_data table)
+	// ============================================================
+
+	/**
+	 * Store multiple key-value pairs to plugin_data table
+	 * @param array $data Key-value pairs to store
+	 */
+	public function storeData(array $data): void {
+		global $aspen_db;
+		$pluginClass = get_class($this);
+		$timestamp = time();
+
+		foreach ($data as $key => $value) {
+			// Use REPLACE to insert or update
+			$stmt = $aspen_db->prepare(
+				"REPLACE INTO plugin_data (plugin_class, plugin_key, plugin_value, created, updated)
+				 VALUES (?, ?, ?, ?, ?)"
+			);
+			$stmt->execute([$pluginClass, $key, $value, $timestamp, $timestamp]);
+		}
+	}
+
+	/**
+	 * Retrieve a single value by key from plugin_data table
+	 * @param string $key The key to retrieve
+	 * @return string|null The value or null if not found
+	 */
+	public function retrieveData(string $key): ?string {
+		global $aspen_db;
+		$pluginClass = get_class($this);
+
+		$stmt = $aspen_db->prepare(
+			"SELECT plugin_value FROM plugin_data WHERE plugin_class = ? AND plugin_key = ?"
+		);
+		$stmt->execute([$pluginClass, $key]);
+		$row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+		return $row ? $row['plugin_value'] : null;
+	}
+
+	/**
+	 * Retrieve all data for this plugin from plugin_data table
+	 * @return array Associative array of key => value pairs
+	 */
+	public function retrieveAllData(): array {
+		global $aspen_db;
+		$pluginClass = get_class($this);
+
+		$stmt = $aspen_db->prepare(
+			"SELECT plugin_key, plugin_value FROM plugin_data WHERE plugin_class = ?"
+		);
+		$stmt->execute([$pluginClass]);
+
+		$data = [];
+		while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+			$data[$row['plugin_key']] = $row['plugin_value'];
+		}
+		return $data;
+	}
+
+	/**
+	 * Delete a specific key from plugin_data table
+	 * @param string $key The key to delete
+	 * @return bool True if deleted, false if not found
+	 */
+	public function deleteData(string $key): bool {
+		global $aspen_db;
+		$pluginClass = get_class($this);
+
+		$stmt = $aspen_db->prepare(
+			"DELETE FROM plugin_data WHERE plugin_class = ? AND plugin_key = ?"
+		);
+		$stmt->execute([$pluginClass, $key]);
+
+		return $stmt->rowCount() > 0;
+	}
+
+	/**
+	 * Delete all data for this plugin from plugin_data table
+	 * @return bool True if successful
+	 */
+	public function deleteAllData(): bool {
+		global $aspen_db;
+		$pluginClass = get_class($this);
+
+		$stmt = $aspen_db->prepare(
+			"DELETE FROM plugin_data WHERE plugin_class = ?"
+		);
+		return $stmt->execute([$pluginClass]);
+	}
+
+	/**
+	 * Check if a key exists in plugin_data table
+	 * @param string $key The key to check
+	 * @return bool True if exists
+	 */
+	public function hasData(string $key): bool {
+		global $aspen_db;
+		$pluginClass = get_class($this);
+
+		$stmt = $aspen_db->prepare(
+			"SELECT COUNT(*) as cnt FROM plugin_data WHERE plugin_class = ? AND plugin_key = ?"
+		);
+		$stmt->execute([$pluginClass, $key]);
+		$row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+		return $row && $row['cnt'] > 0;
+	}
 } 

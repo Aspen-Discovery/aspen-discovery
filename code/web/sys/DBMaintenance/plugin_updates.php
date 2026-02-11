@@ -70,6 +70,24 @@ function getPluginUpdates() {
 				"ALTER TABLE plugin MODIFY COLUMN status TINYINT(1) NOT NULL DEFAULT 0 COMMENT '0 = disabled, 1 = enabled'"
 			]
 		], //update_plugin_status_defaults
+
+		'create_plugin_data_table' => [
+			'title' => 'Create Plugin Data Table',
+			'description' => 'Create the plugin_data table for flexible key-value storage of plugin operational data',
+			'continueOnError' => false,
+			'sql' => [
+				"CREATE TABLE IF NOT EXISTS plugin_data (
+					plugin_class VARCHAR(255) NOT NULL COMMENT 'Fully qualified plugin class name',
+					plugin_key VARCHAR(255) NOT NULL COMMENT 'Key for the data value',
+					plugin_value MEDIUMTEXT DEFAULT NULL COMMENT 'Data value - supports up to 16MB per value',
+					created BIGINT UNSIGNED DEFAULT NULL COMMENT 'Unix timestamp when record was created',
+					updated BIGINT UNSIGNED DEFAULT NULL COMMENT 'Unix timestamp when record was last updated',
+					PRIMARY KEY (plugin_class(191), plugin_key(191)),
+					INDEX idx_plugin_class (plugin_class(191))
+				) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+				COMMENT='Flexible key-value storage for plugin data'"
+			]
+		], //create_plugin_data_table
 	];
 }
 
