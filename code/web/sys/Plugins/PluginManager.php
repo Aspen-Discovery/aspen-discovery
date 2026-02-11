@@ -320,7 +320,7 @@ class PluginManager {
 		// Run plugin uninstall hook if it exists
 		$this->callHook($plugin, 'onUninstall');
 
-		// Clean up plugin data and method registry
+		// Clean up plugin data
 		$this->cleanupPluginData($slug);
 
 		// Remove plugin directory
