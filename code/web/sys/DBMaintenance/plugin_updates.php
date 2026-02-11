@@ -115,6 +115,16 @@ function getPluginUpdates() {
 				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('System Administration', 'Use Plugins', '', 81, 'Controls if the user can use plugin tools and reports.')"
 			]
 		], //create_plugin_usage_permission
+
+		'create_plugins_module' => [
+			'title' => 'Create Plugins Module',
+			'description' => 'Add Plugins as a module that can be enabled/disabled',
+			'continueOnError' => true,
+			'sql' => [
+				"INSERT INTO modules (name, indexName, backgroundProcess) VALUES ('Plugins', '', '')",
+				"UPDATE permissions SET sectionName = 'Plugins', requiredModule = 'Plugins' WHERE name IN ('Administer Plugins', 'Use Plugins')"
+			]
+		], //create_plugins_module
 	];
 }
 

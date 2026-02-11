@@ -4246,8 +4246,10 @@ class User extends DataObject {
 		$sections['system_reports']->addAction(new AdminAction('Error Log', 'View Aspen Error Log.', '/Admin/ErrorReport'), 'View System Reports');
 		$sections['system_reports']->addAction(new AdminAction('PHP Information', 'Display configuration information for PHP on the server.', '/Admin/PHPInfo'), 'View System Reports');
 
-		$sections['plugins'] = new AdminSection('Plugins');
-		$sections['plugins']->addAction(new AdminAction('Plugin Management', 'Install, configure, enable, and uninstall plugins.', '/Admin/Plugins'), 'Administer Plugins');
+		if (array_key_exists('Plugins', $enabledModules)) {
+			$sections['plugins'] = new AdminSection('Plugins');
+			$sections['plugins']->addAction(new AdminAction('Plugin Management', 'Install, configure, enable, and uninstall plugins.', '/Admin/Plugins'), 'Administer Plugins');
+		}
 
 		$sections['theme_and_layout'] = new AdminSection('Theme & Layout');
 		$sections['theme_and_layout']->addAction(new AdminAction('Themes', 'Define colors, fonts, images etc used within Aspen Discovery.', '/Admin/Themes'), [
