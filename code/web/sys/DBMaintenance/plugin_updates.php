@@ -88,6 +88,24 @@ function getPluginUpdates() {
 				COMMENT='Flexible key-value storage for plugin data'"
 			]
 		], //create_plugin_data_table
+
+		'create_plugin_methods_table' => [
+			'title' => 'Create Plugin Methods Table',
+			'description' => 'Create the plugin_methods table for registry of methods implemented by each plugin',
+			'continueOnError' => false,
+			'sql' => [
+				"CREATE TABLE IF NOT EXISTS plugin_methods (
+					plugin_class VARCHAR(255) NOT NULL COMMENT 'Fully qualified plugin class name',
+					plugin_method VARCHAR(255) NOT NULL COMMENT 'Method name in the plugin class',
+					method_type ENUM('lifecycle', 'page', 'hook', 'api') DEFAULT 'hook' COMMENT 'Type of method for categorization',
+					created BIGINT UNSIGNED DEFAULT NULL COMMENT 'Unix timestamp when method was registered',
+					PRIMARY KEY (plugin_class(191), plugin_method(191)),
+					INDEX idx_method (plugin_method(191)),
+					INDEX idx_type (method_type)
+				) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+				COMMENT='Registry of methods implemented by each plugin'"
+			]
+		], //create_plugin_methods_table
 	];
 }
 
