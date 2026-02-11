@@ -173,6 +173,15 @@ class Admin_Plugins extends ObjectEditor {
 					$pluginManager = PluginManager::getInstance();
 					$pluginManager->callHook($plugin, 'onEnable');
 
+					// Audit log: Plugin enabled
+					global $logger;
+					if (isset($logger)) {
+						$user = UserAccount::getActiveUserObj();
+						$username = $user ? $user->username : 'unknown';
+						$userId = $user ? $user->id : 'unknown';
+						$logger->log("Plugin enabled: {$plugin->name} (slug: {$plugin->slug}) by user {$username} (ID: {$userId})", Logger::LOG_NOTICE, true);
+					}
+
 					$_SESSION['updateMessage'] = 'Plugin enabled successfully';
 					$_SESSION['updateMessageIsError'] = false;
 				} else {
@@ -199,6 +208,15 @@ class Admin_Plugins extends ObjectEditor {
 				}
 
 				if ($plugin->disable()) {
+					// Audit log: Plugin disabled
+					global $logger;
+					if (isset($logger)) {
+						$user = UserAccount::getActiveUserObj();
+						$username = $user ? $user->username : 'unknown';
+						$userId = $user ? $user->id : 'unknown';
+						$logger->log("Plugin disabled: {$plugin->name} (slug: {$plugin->slug}) by user {$username} (ID: {$userId})", Logger::LOG_NOTICE, true);
+					}
+
 					$_SESSION['updateMessage'] = 'Plugin disabled successfully';
 					$_SESSION['updateMessageIsError'] = false;
 				} else {

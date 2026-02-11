@@ -203,6 +203,15 @@ class PluginManager {
 			// Run plugin installation hook if it exists
 			$this->callHook($plugin, 'onInstall');
 
+			// Audit log: Plugin installed
+			global $logger;
+			if (isset($logger)) {
+				$user = UserAccount::getActiveUserObj();
+				$username = $user ? $user->username : 'unknown';
+				$userId = $user ? $user->id : 'unknown';
+				$logger->log("Plugin installed: {$plugin->name} (slug: {$plugin->slug}, version: {$plugin->version}) by user {$username} (ID: {$userId})", Logger::LOG_NOTICE, true);
+			}
+
 			// Clean up temporary extraction directory if we used one
 			if ($tempExtractDir) {
 				$this->removeDirectory($tempExtractDir);
@@ -229,6 +238,10 @@ class PluginManager {
 			return ['success' => false, 'message' => 'Plugin not found'];
 		}
 
+		// Store plugin info for audit log before deletion
+		$pluginName = $plugin->name;
+		$pluginSlug = $plugin->slug;
+
 		// Run plugin uninstall hook if it exists
 		$this->callHook($plugin, 'onUninstall');
 
@@ -242,6 +255,15 @@ class PluginManager {
 
 		// Remove database entry
 		if ($plugin->delete()) {
+			// Audit log: Plugin uninstalled
+			global $logger;
+			if (isset($logger)) {
+				$user = UserAccount::getActiveUserObj();
+				$username = $user ? $user->username : 'unknown';
+				$userId = $user ? $user->id : 'unknown';
+				$logger->log("Plugin uninstalled: {$pluginName} (slug: {$pluginSlug}) by user {$username} (ID: {$userId})", Logger::LOG_NOTICE, true);
+			}
+
 			return ['success' => true, 'message' => 'Plugin uninstalled successfully'];
 		} else {
 			return ['success' => false, 'message' => 'Failed to remove plugin database entry'];
