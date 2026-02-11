@@ -6,6 +6,10 @@ class PluginManager {
 	private static $instance = null;
 	private $loadedPlugins = [];
 
+	// Method type classifications
+	private const LIFECYCLE_METHODS = ['onInstall', 'onUninstall', 'onEnable', 'onDisable'];
+	private const PAGE_METHODS = ['configure', 'settings'];
+
 	private function __construct() {
 		$this->loadEnabledPlugins();
 	}
@@ -697,19 +701,11 @@ class PluginManager {
 	 * @return string Method type ('lifecycle', 'page', 'hook', 'api')
 	 */
 	private function determineMethodType(string $methodName): string {
-		$lifecycleMethods = [
-			'onInstall', 'onUninstall', 'onEnable', 'onDisable'
-		];
-
-		$pageMethods = [
-			'configure', 'tool', 'report', 'settings'
-		];
-
-		if (in_array($methodName, $lifecycleMethods)) {
+		if (in_array($methodName, self::LIFECYCLE_METHODS)) {
 			return 'lifecycle';
 		}
 
-		if (in_array($methodName, $pageMethods)) {
+		if (in_array($methodName, self::PAGE_METHODS)) {
 			return 'page';
 		}
 
