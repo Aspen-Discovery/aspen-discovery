@@ -523,12 +523,18 @@ abstract class DataObject implements JsonSerializable {
 					$updates .= $name . ' = ' . $aspen_db->quote($value);
 				}
 			} elseif (is_array($value) && in_array($name, $serializedFields)) {
+				if (strlen($updates) != 0) {
+					$updates .= ', ';
+				}
 				if (!empty($value)) {
 					$updates .= $name . ' = ' . $aspen_db->quote(serialize($value));
 				} else {
 					$updates .= $name . ' = ' . $aspen_db->quote('');
 				}
 			} elseif (is_array($value) && in_array($name, $compressedFields)) {
+				if (strlen($updates) != 0) {
+					$updates .= ', ';
+				}
 				if (!empty($value)) {
 					$updates .= $name . ' = COMPRESS(' . $aspen_db->quote($value) . ')';
 				} else {
