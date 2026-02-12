@@ -2199,11 +2199,15 @@ class Sierra extends AbstractIlsDriver {
 					for ($i = 2; $i < $library->sierraAddressLineForCityState; $i++) {
 						$address->lines[] = '';
 					}
+					if ($selfRegistrationForm->noCommaInAddress){
+						$cityState = $_REQUEST['city'] . ' ' . $_REQUEST['state'];
+					} else {
+						$cityState = $_REQUEST['city'] . ', ' . $_REQUEST['state'];
+					}
 					if ($library->sierraZipOnSameLineAsCityState) {
-						$cityStateZip = $_REQUEST['city'] . ', ' . $_REQUEST['state'] . ' ' . $_REQUEST['zip'];
+						$cityStateZip = $cityState . ' ' . $_REQUEST['zip'];
 						$address->lines[] = $cityStateZip;
 					}else{
-						$cityState = $_REQUEST['city'] . ', ' . $_REQUEST['state'];
 						$address->lines[] = $cityState;
 						$address->lines[] = $_REQUEST['zip'];
 					}
