@@ -809,15 +809,16 @@ class Record_AJAX extends Action {
 									foreach ($variation->getRelatedRecords() as $edition) {
 										$editionId = $edition->id;
 										$plainEdition = (object)get_object_vars($edition);
-										$volumeData[$item->volumeId]->setEdition($editionId, $plainEdition);
 										$status = $interface->fetch('GroupedWork/statusIndicator.tpl', [
 											'statusInformation' => $record->getStatusInformation(),
 											'viewingIndividualRecord' => 1
 										]);
 										$coverUrl = $record->getBookcoverUrl('small');
-
-										$volumeData[$item->volumeId]->setEditionStatus($editionId, $status);
-										$volumeData[$item->volumeId]->setEditionCover($editionId, $coverUrl);
+										if (array_key_exists($item->volumeId, $volumeData)) {
+											$volumeData[$item->volumeId]->setEdition($editionId, $plainEdition);
+											$volumeData[$item->volumeId]->setEditionStatus($editionId, $status);
+											$volumeData[$item->volumeId]->setEditionCover($editionId, $coverUrl);
+										}
 									}
 									$numItemsWithVolumes++;
 								}
