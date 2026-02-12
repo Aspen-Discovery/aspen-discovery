@@ -5292,7 +5292,7 @@ class Library extends DataObject {
 	 * @see DB/DB_DataObject::update()
 	 */
 	public function update(string $context = '') : int|bool {
-		//Make sure we have no other default libraries since
+		//Make sure we have no other default libraries since having multiples causes issues.
 		if ($this->isDefault == 1 && $this->_changedFields != null) {
 			if (in_array('isDefault', $this->_changedFields)) {
 				$library = new Library();
@@ -5302,6 +5302,17 @@ class Library extends DataObject {
 					$library->isDefault = 0;
 					$library->update();
 				}
+			}
+		}
+		//Checks to see if cost savings has been enabled/disabled and update all users appropriately.
+		if (!empty($this->_changedFields) && in_array('enableCostSavings', $this->_changedFields)){
+			$libraryLocations = new Location();
+			$libraryLocations->libraryId = $this->libraryId;
+			$libraryLocations->find();
+			while ($libraryLocations->fetch()) {
+				$user = new User();
+				/** @noinspection SqlResolve */
+				$user->query("update user set enableCostSavings = $this->enableCostSavings where homeLocationId = $libraryLocations->locationId");
 			}
 		}
 		//Updates to properly update settings based on the ILS
@@ -5318,6 +5329,7 @@ class Library extends DataObject {
 			$this->showNoticeTypeInProfile = 0;
 			$this->addSMSIndicatorToPhone = 0;
 		}
+		//Note: Anything checking changedFields must be done above this update
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveHolidays();
@@ -5352,16 +5364,6 @@ class Library extends DataObject {
 				$user = new User();
 				/** @noinspection SqlResolve */
 				$user->query("update user set displayName = '' where homeLocationId = $libraryLocations->locationId");
-			}
-		}
-		if (!empty($this->_changedFields) && in_array('enableCostSavings', $this->_changedFields)){
-			$libraryLocations = new Location();
-			$libraryLocations->libraryId = $this->libraryId;
-			$libraryLocations->find();
-			while ($libraryLocations->fetch()) {
-				$user = new User();
-				/** @noinspection SqlResolve */
-				$user->query("update user set enableCostSavings = $this->enableCostSavings where homeLocationId = $libraryLocations->locationId");
 			}
 		}
 		// Do this last so that everything else can update even if we get an error here
