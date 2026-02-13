@@ -9,6 +9,7 @@ class IPAddress extends DataObject {
 	public $ip;                       //	varchar(255) - IPv4 or IPv6 address or range
 	public $isOpac;                   //	tinyint(1)
 	public $defaultLogMeOutAfterPlacingHoldOn;
+	public $bypassFailedLoginChecks;
 	public $blockAccess;
 	public $blockedForSpam;
 	public $allowAPIAccess;
@@ -25,6 +26,7 @@ class IPAddress extends DataObject {
 		return [
 			'isOpac',
 			'defaultLogMeOutAfterPlacingHoldOn',
+			'bypassFailedLoginChecks',
 			'blockAccess',
 			'blockedForSpam',
 			'allowAPIAccess',
@@ -100,6 +102,13 @@ class IPAddress extends DataObject {
 				'label' => 'Default "Log me out" checkbox on when placing a hold',
 				'description' => 'Whether or not the log me out checkbox is defaulted on or off. Turning this off is useful for minimizing patron disruption, but you should be sure to have a way to automatically logout patron sessions on shared computers.',
 				'default' => true,
+			],
+			'bypassFailedLoginChecks' => [
+				'property' => 'bypassFailedLoginChecks',
+				'type' => 'checkbox',
+				'label' => 'Bypass Failed Login Checks',
+				'description' => 'Prevents failed logins from blocking access to Aspen on shared computers.',
+				'default' => false,
 			],
 			'blockAccess' => [
 				'property' => 'blockAccess',

@@ -924,9 +924,9 @@ if ($isInvalidUrl || !is_dir(ROOT_DIR . "/services/$module")) {
 		try {
 			$service->launch();
 		} catch (Error $e) {
-			AspenError::raiseError(new AspenError($e->getMessage(), $e->getTrace()));
+			AspenError::raiseError(new AspenError($e->getMessage(), $e->getTrace(), $e->getLine(), $e->getFile()));
 		} catch (Exception $e) {
-			AspenError::raiseError(new AspenError($e->getMessage(), $e->getTrace()));
+			AspenError::raiseError(new AspenError($e->getMessage(), $e->getTrace(), $e->getLine(), $e->getFile()));
 		}
 		$timer->logTime('Finish launch of action');
 	} else {
@@ -1538,7 +1538,14 @@ function checkForMaliciouslyFormattedParameters(): void {
 	}
 }
 
-function checkForTooManyFailedLogins(){
+function checkForTooManyFailedLogins() : void {
+	$activeIP = IPAddress::getActiveIp();
+	$subnet = IPAddress::getIPAddressForIP($activeIP);
+
+	if ($subnet !== false && $subnet->bypassFailedLoginChecks) {
+		return;
+	}
+
 	//Check to see if the request should be slowed or blocked due to failed logins
 	try {
 		$currentTime = time();

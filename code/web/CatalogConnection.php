@@ -1496,7 +1496,8 @@ class CatalogConnection {
 		return $this->driver->placeVolumeHold($patron, $recordId, $volumeId, $pickupBranch, $pickupSublocation);
 	}
 
-	public function importListsFromIls($patron) {
+	public function importListsFromIls($patron) : array {
+		set_time_limit(0);
 		return $this->driver->importListsFromIls($patron);
 	}
 

@@ -264,6 +264,8 @@ class Library extends DataObject {
 	public $replaceAllFirstNameWithPreferredName;
 	public $allowDateOfBirthUpdates;
 	public $allowPatronAddressUpdates;
+	public $sierraAddressLineForCityState;
+	public $sierraZipOnSameLineAsCityState;
 	/** @noinspection PhpUnused */
 	public $cityStateField;
 	public $allowPatronPhoneNumberUpdates;
@@ -570,7 +572,8 @@ class Library extends DataObject {
 			'squareSettingId',
 			'stripeSettingId',
 			'heyCentricSettingId',
-			'pay360SettingId'
+			'pay360SettingId',
+			'sierraZipOnSameLineAsCityState'
 		];
 	}
 
@@ -1895,6 +1898,26 @@ class Library extends DataObject {
 								'default' => 1,
 								'readOnly' => false,
 								'permissions' => ['Library ILS Connection'],
+							],
+							'sierraAddressLineForCityState' => [
+								'property' => 'sierraAddressLineForCityState',
+								'label' => 'Sierra Address Line with City/State',
+								'description' => 'The line within the address block which holds the city and state in Sierra',
+								'type' => 'integer',
+								'min' => 2,
+								'max' => 4,
+								'default' => 2,
+								'permissions' => ['Library ILS Connection'],
+								'relatedIls' => ['sierra'],
+							],
+							'sierraZipOnSameLineAsCityState' => [
+								'property' => 'sierraZipOnSameLineAsCityState',
+								'label' => 'Sierra Zip on the same line as City/State',
+								'description' => 'Check if the Zip code is on the same line as the City/State. If not, it will be the next line down.',
+								'type' => 'checkbox',
+								'default' => 1,
+								'permissions' => ['Library ILS Connection'],
+								'relatedIls' => ['sierra'],
 							],
 							'allowPatronPhoneNumberUpdates' => [
 								'property' => 'allowPatronPhoneNumberUpdates',
@@ -5269,7 +5292,7 @@ class Library extends DataObject {
 	 * @see DB/DB_DataObject::update()
 	 */
 	public function update(string $context = '') : int|bool {
-		//Make sure we have no other default libraries since
+		//Make sure we have no other default libraries since having multiples causes issues.
 		if ($this->isDefault == 1 && $this->_changedFields != null) {
 			if (in_array('isDefault', $this->_changedFields)) {
 				$library = new Library();
@@ -5279,6 +5302,17 @@ class Library extends DataObject {
 					$library->isDefault = 0;
 					$library->update();
 				}
+			}
+		}
+		//Checks to see if cost savings has been enabled/disabled and update all users appropriately.
+		if (!empty($this->_changedFields) && in_array('enableCostSavings', $this->_changedFields)){
+			$libraryLocations = new Location();
+			$libraryLocations->libraryId = $this->libraryId;
+			$libraryLocations->find();
+			while ($libraryLocations->fetch()) {
+				$user = new User();
+				/** @noinspection SqlResolve */
+				$user->query("update user set enableCostSavings = $this->enableCostSavings where homeLocationId = $libraryLocations->locationId");
 			}
 		}
 		//Updates to properly update settings based on the ILS
@@ -5295,6 +5329,7 @@ class Library extends DataObject {
 			$this->showNoticeTypeInProfile = 0;
 			$this->addSMSIndicatorToPhone = 0;
 		}
+		//Note: Anything checking changedFields must be done above this update
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveHolidays();
@@ -5329,16 +5364,6 @@ class Library extends DataObject {
 				$user = new User();
 				/** @noinspection SqlResolve */
 				$user->query("update user set displayName = '' where homeLocationId = $libraryLocations->locationId");
-			}
-		}
-		if (!empty($this->_changedFields) && in_array('enableCostSavings', $this->_changedFields)){
-			$libraryLocations = new Location();
-			$libraryLocations->libraryId = $this->libraryId;
-			$libraryLocations->find();
-			while ($libraryLocations->fetch()) {
-				$user = new User();
-				/** @noinspection SqlResolve */
-				$user->query("update user set enableCostSavings = $this->enableCostSavings where homeLocationId = $libraryLocations->locationId");
 			}
 		}
 		// Do this last so that everything else can update even if we get an error here

@@ -30,8 +30,20 @@ class HeyCentricUrlParameterSetting extends DataObject {
 		$structure = [];
 		
 		foreach ($urlParam as $param) {
-			$additionalFieldsWithDefault = ['none' => 'none'] + $additionalLibraryBranchFields; // Also applies to URL parameter that are not multiline and are tied to the general payment itself rather than to a specific line on that payment
-			$additionalFieldsWithDefault += $param->multiline ? $additionalFineFields + $additionalDebitTypeFields : []; // Only multiline URL parameters are tied to a specific fine (Koha accountline) and have the required unique identifier.
+			if (empty($additionalLibraryBranchFields)) {
+				$additionalFieldsWithDefault = ['none' => 'none']; // Also applies to URL parameter that are not multiline and are tied to the general payment itself rather than to a specific line on that payment
+			}else{
+				$additionalFieldsWithDefault = ['none' => 'none'] + $additionalLibraryBranchFields; // Also applies to URL parameter that are not multiline and are tied to the general payment itself rather than to a specific line on that payment
+			}
+
+			if ($param->multiline) {
+				if (!empty($additionalFineFields)) {
+					$additionalFieldsWithDefault += $additionalFineFields;
+				}
+				if (!empty($additionalDebitTypeFields)) {
+					$additionalFieldsWithDefault += $additionalDebitTypeFields;
+				}
+			}
 			$propertyStructure = [
 				'id' => $param->id,
 				'property' => $param->name,

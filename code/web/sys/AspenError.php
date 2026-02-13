@@ -18,8 +18,9 @@ class AspenError extends DataObject {
 	 *
 	 * @param ?string $message
 	 * @param ?array $backtrace
+	 *
 	 */
-	public function __construct(?string $message = null, ?array $backtrace = null) {
+	public function __construct(?string $message = null, ?array $backtrace = null, ?int $activeLine = null, ?string $activeFile = null) {
 		if ($message != null) {
 			if (isset($_SERVER['REQUEST_URI'])) {
 				$this->url = $_SERVER['REQUEST_URI'];
@@ -41,6 +42,15 @@ class AspenError extends DataObject {
 				$this->_rawBacktrace = debug_backtrace();
 			} else {
 				$this->_rawBacktrace = $backtrace;
+			}
+			if (!empty($activeLine)) {
+				$this->backtrace .= ' [' . $activeLine . ']';
+			}
+			if (!empty($activeFile)) {
+				$this->backtrace .= ' - ' . $activeFile;
+			}
+			if (!empty($this->backtrace)) {
+				$this->backtrace .= '<br/>';
 			}
 			foreach ($this->_rawBacktrace as $backtraceLine) {
 				if (isset($backtraceLine['class'])) {
@@ -213,9 +223,7 @@ class AspenError extends DataObject {
 				'message' => $this->getMessage(),
 			];
 			if ($debug) {
-				foreach ($this->getRawBacktrace() as $trace) {
-					$result['message'] .= "<br/>[{$trace['line']}] {$trace['file']}";
-				}
+				$result['message'] .= "<br/>" . $this->backtrace;
 			}
 			echo json_encode($result);
 		} else {

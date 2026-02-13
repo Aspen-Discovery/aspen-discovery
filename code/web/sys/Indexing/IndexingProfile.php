@@ -1479,6 +1479,7 @@ class IndexingProfile extends DataObject {
 						'type' => 'checkbox',
 						'label' => 'Check Sierra Material Type during format determination',
 						'description' => 'If selected, the bib Material Type from Sierra will be checked before checking bib level formats.',
+						'forcesReindex' => true,
 						'default' => false,
 					],
 					'orderRecordsStatusesToInclude' => [

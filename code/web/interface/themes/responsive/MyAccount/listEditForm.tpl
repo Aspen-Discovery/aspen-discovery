@@ -1,7 +1,5 @@
 {strip}
 	{if !empty($allowEdit)}
-		<input type="hidden" name="myListActionHead" id="myListActionHead" class="form">
-
 		<div id="listEditControls" style="display:none" class="collapse">
 			<div class="form-group">
 				<label for="listTitleEdit" class="control-label">{translate text="Title" isPublicFacing=true}</label>
