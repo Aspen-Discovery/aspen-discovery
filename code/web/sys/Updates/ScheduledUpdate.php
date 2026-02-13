@@ -24,9 +24,13 @@ class ScheduledUpdate extends DataObject {
 		}
 
 		global $interface;
-		$currentRelease = $interface->getVariable('aspenVersion');
-		if (str_contains($currentRelease, ' ')) {
-			$currentRelease = substr($currentRelease, 0, strpos($currentRelease, ' '));
+		if (!empty($interface)) {
+			$currentRelease = $interface->getVariable('aspenVersion');
+			if (str_contains($currentRelease, ' ')) {
+				$currentRelease = substr($currentRelease, 0, strpos($currentRelease, ' '));
+			}
+		}else{
+			$currentRelease = 0;
 		}
 		$updateTypes = [
 			'patch' => 'Patch',
