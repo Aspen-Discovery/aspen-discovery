@@ -200,8 +200,11 @@ if ($action == 'OptionalUpdates'){
 $interface->assign('module', $module);
 $interface->assign('action', $action);
 
-//Check for maliciously formatted parameters
-checkForMaliciouslyFormattedParameters();
+//Check for maliciously formatted parameters unless this is a plugin which should do it's own validation
+global $isPluginAction;
+if (!$isPluginAction) {
+	checkForMaliciouslyFormattedParameters();
+}
 
 checkForTooManyFailedLogins();
 
@@ -892,6 +895,7 @@ if (preg_match('/.*(DBMS_PIPE\.RECEIVE_MESSAGE|PG_SLEEP|WAITFOR|UNION%20ALL|SLEE
 	$isInvalidUrl = true;
 }
 global $plugins;
+global $isPluginAction;
 $isPluginAction = false;
 if (!empty($module) && !empty($action)) {
 	foreach ($plugins as $plugin) {
@@ -1154,9 +1158,12 @@ function loadModuleActionId() {
 	}
 
 	global $plugins;
+	global $isPluginAction;
+	$isPluginAction = false;
 	if (!empty($_REQUEST['module']) && !empty($_REQUEST['action'])) {
 		foreach ($plugins as $plugin) {
 			if ($plugin->handlesModuleAction($_REQUEST['module'], $_REQUEST['action'])) {
+				$isPluginAction = true;
 				return;
 			}
 		}
