@@ -92,3 +92,34 @@ jobs:
           else
             echo "No changes to Aspen or Koha keys have been detected";
           fi
+
+  verify_commit_prefixes:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Verify commit message prefixes
+        if: github.event_name == 'pull_request'
+        run: |
+          set -euo pipefail
+
+          PR_NUMBER=${{ github.event.pull_request.number }}
+
+          COMMITS=$(curl -s \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/${{ github.repository }}/pulls/${PR_NUMBER}/commits \
+            | jq -r '.[].commit.message')
+
+          EXIT_CODE=0
+
+          while IFS= read -r MESSAGE; do
+            SUBJECT=$(echo "$MESSAGE" | head -n1)
+            echo "Checking commit message: $SUBJECT"
+
+            if ! echo "$SUBJECT" | grep -qE '^DIS-[0-9]+'; then
+              echo "::error::Commit message '$SUBJECT' does not start with 'DIS-<number>'"
+              EXIT_CODE=1
+            fi
+          done <<< "$COMMITS"
+
+          exit $EXIT_CODE
