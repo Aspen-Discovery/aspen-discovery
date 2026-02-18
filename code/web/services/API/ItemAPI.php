@@ -16,6 +16,32 @@ class ItemAPI extends AbstractAPI {
 	 */
 	protected $recordDriver;
 
+	/**
+	 * Centralize MARC fields to one place should specification
+	 * change in the future.
+	 */
+	private array $marcFields = [
+		'isbn',
+		'upc',
+		'issn',
+		'title_display',
+		'author_display',
+		'publisherStr',
+		'placeOfPublication',
+		'edition',
+		'callnumber',
+		'genre',
+		'series',
+		'physical',
+		'lccn',
+		'contents',
+		'format',
+		'format_category',
+		'language',
+		'recordtype',
+		'id'
+	];
+
 	public $record;
 
 	public $isbn;
@@ -98,6 +124,10 @@ class ItemAPI extends AbstractAPI {
 			$this->forbidAPIAccess();
 		}
 	}
+
+	public function getMarcFields() : string {
+		return implode(',', $this->marcFields);
+	} 
 
 	/** @noinspection PhpUnused */
 	function getDescriptionByTitleAndAuthor() {
@@ -230,9 +260,7 @@ class ItemAPI extends AbstractAPI {
 
 		// Retrieve Full Marc Record
 		disableErrorHandler();
-		$fieldsToReturn = 'isbn,upc,issn,title_display,author_display,publisherStr,placeOfPublication,edition,callnumber,genre,series,physical,lccn,contents,format,format_category,language,recordtype,id';
-
-		if (!($record = $this->db->getRecord($this->id, $fieldsToReturn))) {
+		if (!($record = $this->db->getRecord($this->id, $this->getMarcFields()))) {
 			return [
 				'error',
 				'Record does not exist',
@@ -363,8 +391,7 @@ class ItemAPI extends AbstractAPI {
 			}
 
 			// Retrieve Full Marc Record
-			$fieldsToReturn = 'isbn,upc,issn,title_display,author_display,publisherStr,placeOfPublication,format,format_category,language,ils_description,display_description';
-			if (!($record = $this->db->getRecord($this->id, $fieldsToReturn))) {
+			if (!($record = $this->db->getRecord($this->id, $this->getMarcFields()))) {
 				AspenError::raiseError(new AspenError('Record Does Not Exist'));
 			}
 			$this->record = $record;
