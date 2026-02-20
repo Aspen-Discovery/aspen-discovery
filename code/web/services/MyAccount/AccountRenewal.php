@@ -33,8 +33,22 @@ class MyAccount_AccountRenewal extends MyAccount {
 		$validationError = '';
 		$currentWarningMessage = '';
 
+		$userAgreementResponse = $_POST['userAgrees'] ?? '';
+
+		// handle user responses to the verification check step
+		if ($currentStepName === 'verification_check') {
+			$userAgreementCheckOutcome = $this->checkUserAgreement($userAgreementResponse);
+			if (isset($userAgreementCheckOutcome['message'])) {
+				if ($userAgreementResponse === 'no') {
+					$currentWarningMessage = $userAgreementCheckOutcome['message'];
+				} else {
+					$validationError = $userAgreementCheckOutcome['message'];
+				}
+			}
+		}
+
 		// override currentStep with the next as we prepare to relaunch
-		$direction = $this->getDirection($currentStepName, $requestedDirection, $result['userAgrees'] ?? false);
+		$direction = $this->getDirection($currentStepName, $requestedDirection, $userAgreementCheckOutcome['userAgrees'] ?? false);
 		$nextStepName = $this->getNextStep($direction, $currentStepName, $hasVerificationCheck);
 		$nextStep = $this->getCurrentStepData($nextStepName, $userAgreementVerificationMessage);
 
@@ -44,9 +58,29 @@ class MyAccount_AccountRenewal extends MyAccount {
 		$interface->assign('ilsUnsupported', false);
 		$interface->assign('validationError', $validationError);
 		$interface->assign('currentWarningMessage', $currentWarningMessage);
-		$interface->assign('userAgrees', $result['userAgrees'] ?? '');
+		$interface->assign('userAgrees', $userAgreementCheckOutcome['userAgrees'] ?? '');
 
 		$this->display('accountRenewal.tpl', 'Renew Your Account');
+	}
+
+	private function checkUserAgreement(string $userAgrees): array {
+		$result = [
+			'userAgrees' => false,
+			'message' => 'Please select Yes or No to proceed.',
+		];
+
+		if ($userAgrees === 'yes') {
+			$result['userAgrees'] = true;
+			$result['message'] = '';
+			return $result;
+		}
+
+		if ($userAgrees === 'no') {
+			$result['message'] = 'You chose not to proceed with this verification. Please review the information.';
+			return $result;
+		} 
+		
+		return $result;
 	}
 
 	private function getCurrentStepData(string $currentStepName, string $userAgreementVerificationMessage): array {
