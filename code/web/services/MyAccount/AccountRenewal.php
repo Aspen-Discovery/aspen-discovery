@@ -282,7 +282,6 @@ class MyAccount_AccountRenewal extends MyAccount {
 		return $ilsDriver->postAccountRenewalRequestForPatron($userIlsId, $params);
 	}
 
-
 	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'Your Account');
