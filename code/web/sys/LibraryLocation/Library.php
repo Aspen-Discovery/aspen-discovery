@@ -1111,9 +1111,14 @@ class Library extends DataObject {
 
 		$validCardRenewalOptions = [
 			0 => 'No Card Renewal',
-			//1 => 'ILS Based Card Renewal',
+			1 => 'ILS Based Card Renewal',
 			2 => 'Redirect to Card Renewal URL',
 		];
+
+		if ($catalog == null || !$catalog->hasCardRenewalSupport()) {
+			unset($validCardRenewalOptions[2]);
+		}
+
 		require_once ROOT_DIR . '/sys/Enrichment/QuipuECardSetting.php';
 		$quipuECardSettings = new QuipuECardSetting();
 		if (!$quipuECardSettings->find(true)) {
