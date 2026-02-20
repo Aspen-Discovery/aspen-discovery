@@ -7455,6 +7455,42 @@ class Koha extends AbstractIlsDriver {
 		return $result;
 	}
 
+	public function postAccountRenewalRequestForPatron(string $userId, array $params): array {
+		$result = ['success' => false];
+
+		$endpoint = '/api/v1/public/patrons/' . $userId . '/self_renewal';
+		$extraHeaders = [
+			'Accept-Encoding: gzip, deflate',
+			'Content-Type: application/json'
+		];
+
+		$response = $this->kohaApiUserAgent->post($endpoint, $params, 'koha.postAccountRenewalRequestForPatron', [], $extraHeaders);
+
+		if ($response && $response['code'] == 201) {
+			return [
+				'success' => true,
+				'data' => $response['content'],
+			];
+		}
+
+		global $logger;
+		$logger->log("Failed to post account renewal request information. Response code: " . ($response['code'] ?? 'unknown'), Logger::LOG_ERROR);
+
+		if (!empty($response['content']['error'])) {
+			$result['message'] = translate([
+				'text' => $response['content']['error'],
+				'isPublicFacing' => true,
+			]);
+			return $result;
+		}
+
+		$result['message'] = translate([
+			'text' => 'Unspecified error posting account renewal request to Koha.',
+			'isPublicFacing' => true,
+		]);
+		return $result;
+	}
+
 	function setExtendedAttributes() {
 		$this->initDatabaseConnection();
 		/** @noinspection SqlResolve */

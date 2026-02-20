@@ -69,6 +69,20 @@ class MyAccount_AccountRenewal extends MyAccount {
 			$interface->assign('edit', true);
 		}
 
+		// handle renewal submission step
+		if ($nextStepName === 'done' && $requestedDirection === 'next') {
+			$renewalResult = $this->sendRenewalRequest($selfRenewalSettings, $user->unique_ils_id, $_POST);
+			$user->clearCachedAccountSummaryForSource('ils');
+			if ($renewalResult['success']) {
+				$interface->assign('renewalSuccess', true);
+				$interface->assign('renewalData', $renewalResult['data']);
+			} else {
+				$interface->assign('renewalSuccess', false);
+				$interface->assign('renewalError', $renewalResult['message']);
+				$nextStepName = 'start';
+			}
+		}
+
 		$interface->assign('currentStep', $nextStep);
 		$interface->assign('selfRenewalSettings', $selfRenewalSettings);
 		$interface->assign('hasVerificationCheck', $hasVerificationCheck);
@@ -252,6 +266,22 @@ class MyAccount_AccountRenewal extends MyAccount {
 
 		return $renewalInfo;
 	}
+
+	private function sendRenewalRequest($selfRenewalSettings, $userIlsId, $requestedChanges = []) {
+		$patronData = [];
+			foreach ($requestedChanges as $key => $value) {
+			if (str_starts_with($key, 'borrower_')) {
+				$patronData[str_replace('borrower_', '', $key)] = $value;
+			}
+		}
+		$ilsDriver = CatalogFactory::getCatalogConnectionInstance();
+		$params = [
+		'self_renewal_settings' => $selfRenewalSettings,
+		'patron' => $patronData,
+		];
+		return $ilsDriver->postAccountRenewalRequestForPatron($userIlsId, $params);
+	}
+
 
 	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
