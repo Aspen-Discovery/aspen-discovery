@@ -7208,4 +7208,32 @@ class Library extends DataObject {
 		}
 		return $this->_palaceProjectSettings;
 	}
+
+	public function getCardRenewalConfig() : array {
+		$config = [
+			'useILSFlow' => false,
+			'externalLink' => null,
+		];
+
+		if ($this->enableCardRenewal == 1) {
+			$config['useILSFlow'] = true;
+			return $config;
+		}
+		
+		if ($this->enableCardRenewal == 2) {
+			if (!empty($this->cardRenewalUrl)) {
+				$config['externalLink'] = $this->cardRenewalUrl;
+			}
+			return $config;
+		}
+		
+		if ($this->enableCardRenewal == 3) {
+			require_once ROOT_DIR . '/sys/Enrichment/QuipuECardSetting.php';
+			$quipuECardSettings = new QuipuECardSetting();
+			if ($quipuECardSettings->find(true) && $quipuECardSettings->hasERenew) {
+				$config['externalLink'] = '/MyAccount/eRENEW';
+			}
+		}
+		return $config;
+	}
 }

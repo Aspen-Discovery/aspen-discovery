@@ -6344,7 +6344,15 @@ class User extends DataObject {
 
 	public function showRenewalLink(AccountSummary $ilsAccountSummary): bool {
 		$showRenewalLink = false;
-		if ($ilsAccountSummary->isExpirationClose()) {
+
+		$catalogDriver = $this->getCatalogDriver();
+
+		// if the ILS supports account/card renewal, check whether it enables them for the active ILS user.
+		if ($catalogDriver->hasCardRenewalSupport()) {
+			return $catalogDriver->canUserRenewAccount($this->unique_ils_id);
+		}
+
+		if ($ilsAccountSummary->isExpirationClose()) { // this has a hardcoded limit and is incompatible with the Koha self renewal feature
 			$pType = $this->getPTypeObj();
 			if ($pType->canRenewOnline) {
 				$userLibrary = $this->getHomeLibrary();

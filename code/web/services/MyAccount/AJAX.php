@@ -2527,107 +2527,93 @@ class MyAccount_AJAX extends JSON_Action {
 		global $timer;
 		global $interface;
 
-		$result = $this->failureResult(null, 'Unknown Error');
-
 		$user = UserAccount::getActiveUserObj();
-		if ($user->hasIlsConnection()) {
-			$ilsSummary = $user->getAccountSummary();
-			$ilsSummary->setMaterialsRequests($user->getNumMaterialsRequests());
-			if ($user->getLinkedUsers() != null) {
-				$selectedLinkedUser = $this->setFilterLinkedUser();
-				$selectedLinkedUserCheckouts = $this->setFilterLinkedUserCheckouts();
-				if ($selectedLinkedUser) {
-					$filterLinkedUser = new User();
-					$filterLinkedUser->id = $selectedLinkedUser;
-					if ($filterLinkedUser->find(true)) {
-						$filterLinkedUserSummary = $filterLinkedUser->getAccountSummary();
-						$ilsSummary->numAvailableHolds = $filterLinkedUserSummary->numAvailableHolds;
-						$ilsSummary->numUnavailableHolds = $filterLinkedUserSummary->numUnavailableHolds;
-					}
-				} else {
-					/** @var User $user */
-					foreach ($user->getLinkedUsers() as $linkedUser) {
-						$linkedUserSummary = $linkedUser->getAccountSummary();
-						$ilsSummary->numAvailableHolds += $linkedUserSummary->numAvailableHolds;
-						$ilsSummary->numUnavailableHolds += $linkedUserSummary->numUnavailableHolds;
+		if (!$user->hasIlsConnection()) {
+			return $this->failureResult(null, 'Unable to load ILS account information.');
+		}
 
-					}
+		$ilsSummary = $user->getAccountSummary();
+		$ilsSummary->setMaterialsRequests($user->getNumMaterialsRequests());
+		if ($user->getLinkedUsers() != null) {
+			$selectedLinkedUser = $this->setFilterLinkedUser();
+			$selectedLinkedUserCheckouts = $this->setFilterLinkedUserCheckouts();
+			if ($selectedLinkedUser) {
+				$filterLinkedUser = new User();
+				$filterLinkedUser->id = $selectedLinkedUser;
+				if ($filterLinkedUser->find(true)) {
+					$filterLinkedUserSummary = $filterLinkedUser->getAccountSummary();
+					$ilsSummary->numAvailableHolds = $filterLinkedUserSummary->numAvailableHolds;
+					$ilsSummary->numUnavailableHolds = $filterLinkedUserSummary->numUnavailableHolds;
 				}
-				if ($selectedLinkedUserCheckouts) {
-					$filterLinkedUserCheckouts = new User();
-					$filterLinkedUserCheckouts->id = $selectedLinkedUserCheckouts;
-					if ($filterLinkedUserCheckouts->find(true)) {
-						$filterLinkedUserCheckoutsSummary = $filterLinkedUserCheckouts->getAccountSummary();
-						$ilsSummary->numCheckedOut = $filterLinkedUserCheckoutsSummary->numCheckedOut;
-						$ilsSummary->numOverdue = $filterLinkedUserCheckoutsSummary->numOverdue;
-					}
-				} else {
-					foreach ($user->getLinkedUsers() as $linkedUser) {
-						$linkedUserSummary = $linkedUser->getAccountSummary();
-						$ilsSummary->numCheckedOut += $linkedUserSummary->numCheckedOut;
-						$ilsSummary->numOverdue += $linkedUserSummary->numOverdue;
-					}
-				}
+			} else {
+				/** @var User $user */
 				foreach ($user->getLinkedUsers() as $linkedUser) {
 					$linkedUserSummary = $linkedUser->getAccountSummary();
-					$ilsSummary->totalFines += $linkedUserSummary->totalFines;
-					$ilsSummary->setMaterialsRequests($ilsSummary->getMaterialsRequests() + $linkedUser->getNumMaterialsRequests());
+					$ilsSummary->numAvailableHolds += $linkedUserSummary->numAvailableHolds;
+					$ilsSummary->numUnavailableHolds += $linkedUserSummary->numUnavailableHolds;
 				}
 			}
-			$timer->logTime("Loaded ILS Summary for User and linked users");
-
-			$ilsSummary->setReadingHistory($user->getReadingHistorySize());
-
-			$searchEntry = new SearchEntry();
-			$searchEntry->user_id = $user->id;
-			$searchEntry->saved = 1;
-			$searchEntry->hasNewResults = 1;
-			$searchEntry->find();
-			$ilsSummary->hasUpdatedSavedSearches = ($searchEntry->getNumResults() > 0);
-			$ilsSummary->setNumUpdatedSearches($searchEntry->getNumResults());
-
-			//Expiration and fines
-			$interface->assign('ilsSummary', $ilsSummary);
-			$interface->setFinesRelatedTemplateVariables();
-
-			if ($interface->getVariable('expiredMessage')) {
-				$interface->assign('expiredMessage', str_replace('%date%', date('M j, Y', $ilsSummary->expirationDate), $interface->getVariable('expiredMessage')));
-			}
-			if ($interface->getVariable('expirationNearMessage')) {
-				$interface->assign('expirationNearMessage', str_replace('%date%', date('M j, Y', $ilsSummary->expirationDate), $interface->getVariable('expirationNearMessage')));
-			}
-
-			$showRenewalLink = $user->showRenewalLink($ilsSummary);
-			$interface->assign('showRenewalLink', $showRenewalLink);
-			if ($showRenewalLink) {
-				$userLibrary = $user->getHomeLibrary();
-				if ($userLibrary->enableCardRenewal == 2) {
-					if (!empty($userLibrary->cardRenewalUrl)) {
-						$interface->assign('cardRenewalLink', $userLibrary->cardRenewalUrl);
-					}
-				} elseif ($userLibrary->enableCardRenewal == 3) {
-					require_once ROOT_DIR . '/sys/Enrichment/QuipuECardSetting.php';
-					$quipuECardSettings = new QuipuECardSetting();
-					if ($quipuECardSettings->find(true) && $quipuECardSettings->hasERenew) {
-						$interface->assign('cardRenewalLink', "/MyAccount/eRENEW");
-					}
+			if ($selectedLinkedUserCheckouts) {
+				$filterLinkedUserCheckouts = new User();
+				$filterLinkedUserCheckouts->id = $selectedLinkedUserCheckouts;
+				if ($filterLinkedUserCheckouts->find(true)) {
+					$filterLinkedUserCheckoutsSummary = $filterLinkedUserCheckouts->getAccountSummary();
+					$ilsSummary->numCheckedOut = $filterLinkedUserCheckoutsSummary->numCheckedOut;
+					$ilsSummary->numOverdue = $filterLinkedUserCheckoutsSummary->numOverdue;
+				}
+			} else {
+				foreach ($user->getLinkedUsers() as $linkedUser) {
+					$linkedUserSummary = $linkedUser->getAccountSummary();
+					$ilsSummary->numCheckedOut += $linkedUserSummary->numCheckedOut;
+					$ilsSummary->numOverdue += $linkedUserSummary->numOverdue;
 				}
 			}
-
-			$ilsSummary->setExpirationNotice($interface->fetch('MyAccount/expirationNotice.tpl'));
-			$ilsSummary->setFinesBadge($interface->fetch('MyAccount/finesBadge.tpl'));
-
-			$result = [
-				'success' => true,
-				'summary' => $ilsSummary->toArray(),
-			];
-		} else {
-			$result['message'] = translate([
-				'text' => 'Unknown Error',
-				'isPublicFacing' => true,
-			]);
+			foreach ($user->getLinkedUsers() as $linkedUser) {
+				$linkedUserSummary = $linkedUser->getAccountSummary();
+				$ilsSummary->totalFines += $linkedUserSummary->totalFines;
+				$ilsSummary->setMaterialsRequests($ilsSummary->getMaterialsRequests() + $linkedUser->getNumMaterialsRequests());
+			}
 		}
-		return $result;
+		$timer->logTime("Loaded ILS Summary for User and linked users");
+
+		$ilsSummary->setReadingHistory($user->getReadingHistorySize());
+
+		$searchEntry = new SearchEntry();
+		$searchEntry->user_id = $user->id;
+		$searchEntry->saved = 1;
+		$searchEntry->hasNewResults = 1;
+		$searchEntry->find();
+		$ilsSummary->hasUpdatedSavedSearches = ($searchEntry->getNumResults() > 0);
+		$ilsSummary->setNumUpdatedSearches($searchEntry->getNumResults());
+
+		//Expiration and fines
+		$interface->assign('ilsSummary', $ilsSummary);
+		$interface->setFinesRelatedTemplateVariables();
+
+		if ($interface->getVariable('expiredMessage')) {
+			$interface->assign('expiredMessage', str_replace('%date%', date('M j, Y', $ilsSummary->expirationDate), $interface->getVariable('expiredMessage')));
+		}
+		if ($interface->getVariable('expirationNearMessage')) {
+			$interface->assign('expirationNearMessage', str_replace('%date%', date('M j, Y', $ilsSummary->expirationDate), $interface->getVariable('expirationNearMessage')));
+		}
+
+		$showRenewalLink = $user->showRenewalLink($ilsSummary);
+		$interface->assign('showRenewalLink', $showRenewalLink);
+		if ($showRenewalLink) {
+			$renewalConfig = $user->getHomeLibrary()->getCardRenewalConfig();
+			$interface->assign('useILSCardRenewalFlow', $renewalConfig['useILSFlow']);
+			if ($renewalConfig['externalLink'] !== null) {
+				$interface->assign('cardRenewalLink', $renewalConfig['externalLink']);
+			}
+		}
+
+		$ilsSummary->setExpirationNotice($interface->fetch('MyAccount/expirationNotice.tpl'));
+		$ilsSummary->setFinesBadge($interface->fetch('MyAccount/finesBadge.tpl'));
+
+		return  [
+			'success' => true,
+			'summary' => $ilsSummary->toArray(),
+		];
 	}
 
 	/** @noinspection PhpUnused */
