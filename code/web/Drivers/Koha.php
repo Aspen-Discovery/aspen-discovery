@@ -7411,6 +7411,42 @@ class Koha extends AbstractIlsDriver {
 		}
 	}
 
+	public function getAccountRenewalInformationForPatron(string $userId): array {
+		$result = ['success' => false];
+
+		$endpoint = '/api/v1/public/patrons/' . $userId . '/self_renewal';
+		$extraHeaders = [
+			'Accept-Encoding: gzip, deflate',
+			'Content-Type: application/json'
+		];
+
+		$response = $this->kohaApiUserAgent->get($endpoint, 'koha.getAccountRenewalInformationForPatron', [], $extraHeaders);
+
+		if ($response && $response['code'] == 200) {
+			return [
+				'success' => true,
+				'data' => $response['content'],
+			];
+		}
+
+		global $logger;
+		$logger->log("Failed to fetch account renewal information. Response code: " . ($response['code'] ?? 'unknown'), Logger::LOG_ERROR);
+
+		if (!empty($response['content']['error'])) {
+			$result['message'] = translate([
+				'text' => $response['content']['error'],
+				'isPublicFacing' => true,
+			]);
+			return $result;
+		}
+
+		$result['message'] = translate([
+			'text' => 'Unspecified error fetching account renewal information from Koha.',
+			'isPublicFacing' => true,
+		]);
+		return $result;
+	}
+
 	function setExtendedAttributes() {
 		$this->initDatabaseConnection();
 		/** @noinspection SqlResolve */
