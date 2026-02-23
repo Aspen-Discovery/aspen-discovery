@@ -51,12 +51,8 @@ class MyAccount_AccountRenewal extends MyAccount {
 		// handle user responses to the verification check step
 		if ($currentStepName === 'verification_check') {
 			$userAgreementCheckOutcome = $this->checkUserAgreement($userAgreementResponse);
-			if (isset($userAgreementCheckOutcome['message'])) {
-				if ($userAgreementResponse === 'no') {
-					$currentWarningMessage = $userAgreementCheckOutcome['message'];
-				} else {
-					$validationError = $userAgreementCheckOutcome['message'];
-				}
+			if (!$userAgreementCheckOutcome['userAgrees']) {
+				$currentWarningMessage = $userAgreementCheckOutcome['message'];
 			}
 		}
 
@@ -98,9 +94,7 @@ class MyAccount_AccountRenewal extends MyAccount {
 
 		$interface->assign('currentStep', $nextStep);
 		$interface->assign('selfRenewalSettings', $selfRenewalSettings);
-		$interface->assign('hasVerificationCheck', $hasVerificationCheck);
 		$interface->assign('ilsUnsupported', false);
-		$interface->assign('validationError', $validationError);
 		$interface->assign('currentWarningMessage', $currentWarningMessage);
 		$interface->assign('userAgrees', $userAgreementCheckOutcome['userAgrees'] ?? '');
 

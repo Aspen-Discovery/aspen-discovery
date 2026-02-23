@@ -1,9 +1,6 @@
 {strip}
-	{if $validationError}
-		<div class="alert alert-danger" role="alert">{$validationError}</div>
-	{/if}
 	{if $currentWarningMessage}
-		<div class="alert alert-warning" role="alert">{$currentWarningMessage}</div>
+		<div class="alert alert-danger" role="alert">{translate text="{$currentWarningMessage}" isPublicFacing=true}</div>
 	{/if}
 	<div class="alert alert-warning" role="alert" id="client-warning-message" hidden="true">
 		{if isset($selfRenewalSettings.self_renewal_failure_message)} 

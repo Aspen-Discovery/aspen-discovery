@@ -21,7 +21,7 @@
 				{/if}
 			</div>
 		{else}
-			<div class="alert alert-danger">
+			<div class="alert alert-warning">
 				{translate text="There was an error renewing your account: " isPublicFacing=true} {$renewalError}
 			</div>
 		{/if}
