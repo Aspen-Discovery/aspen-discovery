@@ -28,7 +28,7 @@
 					{$patronUpdateForm}
 				{else}
 					{* Empty action attribute uses the page loaded. this keeps the selected user patronId in the parameters passed back to server *}
-					{include file='MyAccount/contacInformation.tpl'}
+					{include file='MyAccount/contactInformationForm.tpl'}
 				{/if}
 
 				<script type="text/javascript">
