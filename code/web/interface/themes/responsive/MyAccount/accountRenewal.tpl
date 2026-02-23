@@ -1,9 +1,7 @@
 {strip}
 	<div id="main-content">
-		{if empty($loggedIn)}
-			{translate text="You must sign in to view this information." isPublicFacing=true}<a href='/MyAccount/Login' class="btn btn-primary">{translate text="Sign In" isPublicFacing=true}</a>
-		{elseif $ilsUnsupported} 
-			{translate text="Card and account renewals are not supported." isPublicFacing=true}
+		{if $accessWarningMessage}
+			<div class="alert alert-danger" role="alert">{$accessWarningMessage}</div>
 		{else}
 			<h1>{translate text='Account Renewal' isPublicFacing=true}</h1>
 			<h2>{translate text="{$currentStep.title}" isPublicFacing=true}</h2>

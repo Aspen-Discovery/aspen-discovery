@@ -4,29 +4,42 @@ require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 class MyAccount_AccountRenewal extends MyAccount {
 	function launch(): void {
 		global $interface;
-
+		
+		// initial checks on load. Failure will deny access to the stepper
 		$user = UserAccount::getLoggedInUser();
 		if (empty($user) || !$user) {
+			$interface->assign('accessWarningMessage', 'You must sign in to view this information.');
 			$this->display('accountRenewal.tpl', 'Renew Your Account');
-			$interface->assign('loggedIn', false);
 			return;
 		}
 
 		$ilsName = $user->getILSName();
 		// The present version only supports Koha, but is written in such a way that enabling support for ILS can be done as future enhancements
 		if ($ilsName !== 'koha') {
+			$interface->assign('accessWarningMessage', 'Card and account renewals are not supported.');
 			$this->display('accountRenewal.tpl', 'Renew Your Account');
-			$interface->assign('ilsUnsupported', true);
 			return;
 		}
 
 		$sessionKey = 'account_renewal_data_' . $user->id;
 		$renewalInfo = $this->getRenewalInformation($sessionKey, $user->unique_ils_id);
-		
-		$userAgreementVerificationMessage = $renewalInfo['data']['self_renewal_settings']['self_renewal_information_message'] ?? '';
-		$selfRenewalSettings = $renewalInfo['data']['self_renewal_settings'] ?? [];
-		$hasVerificationCheck = !empty($userAgreementVerificationMessage);
+		$selfRenewalSettings = $renewalInfo['data']['self_renewal_settings'];
 
+		// failsafe in case of a unexpected connection issue with the Koha API
+		if (empty($selfRenewalSettings)) {
+			$interface->assign('accessWarningMessage', 'Card and account renewals are not supported.');	
+			$this->display('accountRenewal.tpl', 'Renew Your Account');
+			return;
+		}
+
+		// the patron is not eligible
+		if ((int)$selfRenewalSettings['opac_patron_details'] !== 1) {
+			$interface->assign('accessWarningMessage', $selfRenewalSettings['self_renewal_failure_message']);	
+			$this->display('accountRenewal.tpl', 'Renew Your Account');
+			return;
+		}
+
+		// From here on, we are handling loading and reloading the stepper itself.
 		$currentStepName = $_POST['currentStep'] ?? $_GET['currentStep'] ?? 'start'; 
 		$requestedDirection = $_POST['navigation'] ?? 'reload';
 
