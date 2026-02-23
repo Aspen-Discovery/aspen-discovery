@@ -42,23 +42,24 @@ class MyAccount_AccountRenewal extends MyAccount {
 		// From here on, we are handling loading and reloading the stepper itself.
 		$currentStepName = $_POST['currentStep'] ?? $_GET['currentStep'] ?? 'start'; 
 		$requestedDirection = $_POST['navigation'] ?? 'reload';
-
+		$userAgreementResponse = $_POST['userAgrees'] ?? '';
 		$currentWarningMessage = '';
 
-		$userAgreementResponse = $_POST['userAgrees'] ?? '';
 
-		// handle user responses to the verification check step
-		if ($currentStepName === 'verification_check') {
+		// handle user responses to the information check step
+		if (str_starts_with($currentStepName, 'information_step_')) {
 			$userAgreementCheckOutcome = $this->checkUserAgreement($userAgreementResponse);
 			if (!$userAgreementCheckOutcome['userAgrees']) {
 				$currentWarningMessage = $userAgreementCheckOutcome['message'];
 			}
 		}
+		$userAgreementInformationMessages = $selfRenewalSettings['self_renewal_information_messages'] ?? [];
+		$totalInformationSteps = count($userAgreementInformationMessages);
 
 		// override currentStep with the next as we prepare to relaunch
 		$direction = $this->getDirection($currentStepName, $requestedDirection, $userAgreementCheckOutcome['userAgrees'] ?? false);
-		$nextStepName = $this->getNextStep($direction, $currentStepName, $hasVerificationCheck);
-		$nextStep = $this->getCurrentStepData($nextStepName, $userAgreementVerificationMessage);
+		$nextStepName = $this->getNextStep($direction, $currentStepName, $totalInformationSteps);
+		$nextStep = $this->getCurrentStepData($nextStepName, $userAgreementInformationMessages,  $totalInformationSteps);
 
 		// generate the contact information form for use
 		if ($nextStepName === 'verifyContactInformation') {
@@ -195,19 +196,22 @@ class MyAccount_AccountRenewal extends MyAccount {
 		return $data;
 	}
 
-	private function getCurrentStepData(string $currentStepName, string $userAgreementVerificationMessage): array {
+	private function getCurrentStepData(string $currentStepName, array $userAgreementInformationMessages, int $totalInformationSteps): array {
 		$data = [
 			'name' => $currentStepName,
-			'title' => '',
-			'description' => ''
+			'title' => 'Error',
+			'description' => 'An unexpected error occurred.',
+			'isInformationStep' => false
 		];
 
 		if ($currentStepName === 'start') {
 			$data['title'] = 'Start';
 			$data['description'] = 'Welcome to the account renewal process. Please click Continue to begin.';
-		} elseif ($currentStepName === 'verification_check') {
-			$data['title'] = 'Verification Questions';
-			$data['description'] = $userAgreementVerificationMessage;
+		} elseif (str_starts_with($currentStepName, 'information_step_')) {
+			$currentInformationStepIndex = (int)str_replace('information_step_', '', $currentStepName);
+			$data['title'] = "Information Question $currentInformationStepIndex / $totalInformationSteps";
+			$data['description'] = $userAgreementInformationMessages[$currentInformationStepIndex - 1] ?? '';
+			$data['isInformationStep'] = true;
 		} elseif ($currentStepName === 'verifyContactInformation') {
 			$data['title'] = 'Confirm Contact Information';
 			$data['description'] = 'Please review and update your contact information as needed.';
@@ -215,8 +219,7 @@ class MyAccount_AccountRenewal extends MyAccount {
 			$data['title'] = 'Request Submitted.';
 			$data['description'] = 'Your request has been processed.';
 		} else {
-			$data['title'] = 'Error';
-			$data['description'] = 'An unexpected error occurred.';
+			$data['name'] = $currentStepName ?? 'error_message';
 		}
 
 		return $data;
@@ -227,7 +230,7 @@ class MyAccount_AccountRenewal extends MyAccount {
 			return 'back';
 		}
 		if ($requestedDirection === 'next' || $requestedDirection === 'continue') {
-			if ($currentStepName === 'verification_check' && !$userAgrees) {
+			if (str_starts_with($currentStepName, 'information_step_') && !$userAgrees) {
 				return 'stay';
 			}
 			return 'next';
@@ -235,24 +238,37 @@ class MyAccount_AccountRenewal extends MyAccount {
 		return 'stay';
 	}
 
-	private function getNextStep(string $direction, string $currentStepName, bool $hasVerificationCheck): string {
+	private function getNextStep(string $direction, string $currentStepName, int $totalInformationSteps): string {
 		if ($direction === 'stay') {
 			return $currentStepName;
 		}
 
 		if ($currentStepName === 'start') {
 			if ($direction === 'next') {
-				return $hasVerificationCheck ? 'verification_check' : 'verifyContactInformation';
+				return $totalInformationSteps > 0 ? 'information_step_1' : 'verifyContactInformation';
 			}
 			return 'start';
 		}
 
-		if ($currentStepName === 'verification_check') {
-			return $direction === 'next' ? 'verifyContactInformation' : 'start';
+		if (str_starts_with($currentStepName, 'information_step_')) {
+			$currentInformationStepIndex = (int)str_replace('information_step_', '', $currentStepName);
+			if ($direction === 'next') {
+				if ($currentInformationStepIndex < $totalInformationSteps) {
+					return 'information_step_' . ($currentInformationStepIndex + 1);
+				}
+				return 'verifyContactInformation';
+			}
+			if ($currentInformationStepIndex > 1) {
+				return 'information_step_' . ($currentInformationStepIndex - 1);
+			}
+			return 'start';
 		}
 
 		if ($currentStepName === 'verifyContactInformation') {
-			return $direction === 'next' ? 'done' : ($hasVerificationCheck ? 'verification_check' : 'start');
+			if ($direction === 'next') {
+				return 'done';
+			}
+			return $totalInformationSteps > 0 ? 'information_step_' . $totalInformationSteps : 'start';
 		}
 
 		return $currentStepName;
