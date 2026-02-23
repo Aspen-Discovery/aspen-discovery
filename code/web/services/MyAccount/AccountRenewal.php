@@ -43,7 +43,6 @@ class MyAccount_AccountRenewal extends MyAccount {
 		$currentStepName = $_POST['currentStep'] ?? $_GET['currentStep'] ?? 'start'; 
 		$requestedDirection = $_POST['navigation'] ?? 'reload';
 
-		$validationError = '';
 		$currentWarningMessage = '';
 
 		$userAgreementResponse = $_POST['userAgrees'] ?? '';
@@ -94,7 +93,9 @@ class MyAccount_AccountRenewal extends MyAccount {
 
 		$interface->assign('currentStep', $nextStep);
 		$interface->assign('selfRenewalSettings', $selfRenewalSettings);
+		$interface->assign('hasVerificationCheck', $hasVerificationCheck);
 		$interface->assign('ilsUnsupported', false);
+		$interface->assign('validationError', $validationError);
 		$interface->assign('currentWarningMessage', $currentWarningMessage);
 		$interface->assign('userAgrees', $userAgreementCheckOutcome['userAgrees'] ?? '');
 
