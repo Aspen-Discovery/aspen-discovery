@@ -11,8 +11,7 @@
 		{else}
 			{include file="MyAccount/contactInformationForm.tpl"}
 		{/if}
-    {/if}
-	{if $currentStep.name == 'done'}
+	{elseif $currentStep.name == 'done'}
 		{if $renewalSuccess}
 			<div class="alert alert-success">
 				{translate text="Your account has been successfully renewed." isPublicFacing=true}
