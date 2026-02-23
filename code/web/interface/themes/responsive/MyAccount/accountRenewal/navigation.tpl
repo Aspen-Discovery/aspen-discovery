@@ -11,11 +11,11 @@
 			</a>
 			{*Allows users to move backwards in the flow once started*}
 			{if $currentStep.name != "start" && $currentStep.name != "done"}
-				<button type="submit" name="navigation" value="back" class="btn btn-default" {if $currentStep.name == "verification_check"}disabled{/if}>{translate text="Back" isPublicFacing=true}</button>
+			<button type="submit" name="navigation" value="back" class="btn btn-default">{translate text="Back" isPublicFacing=true}</button>
 			{/if}
 			{*Allows users to move forwards in the flow*}
 			{if $currentStep.name != "done"}
-				<button type="submit" name="navigation" value="next" id="continueButton" class="btn btn-primary">
+				<button type="submit" name="navigation" value="next" id="continueButton" class="btn btn-primary" {if $currentStep.isInformationStep}disabled{/if}>
 					{if $currentStep.name == "submit"}
 						{translate text="Submit Application" isPublicFacing=true}
 					{elseif $currentStep.name == "verifyContactInformation"}
