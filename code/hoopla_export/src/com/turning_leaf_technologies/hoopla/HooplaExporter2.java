@@ -557,7 +557,15 @@ public class HooplaExporter2 {
 								logEntry.incErrors("Error updating lastRecordProcessed ", e);
 							}
 						} else {
+							// No more records to extact from global content
 							startToken = null;
+							try {
+								updateLastRecordProcessedStmt.setString(1, "0");
+								updateLastRecordProcessedStmt.setLong(2, settingsId);
+								updateLastRecordProcessedStmt.executeUpdate();
+							} catch (SQLException e) {
+								logEntry.incErrors("Error updating lastRecordProcessed ", e);
+							}
 						}
 
 					}
@@ -592,7 +600,6 @@ public class HooplaExporter2 {
 			logEntry.saveResults();
 			logEntry.addNote("Completed " + numRecordsToExtract + " global content updates");
 			logEntry.saveResults();
-
 		} catch (SQLException e) {
 			logEntry.incErrors("Error updating settings", e);
 		}
