@@ -318,97 +318,70 @@ class GroupedWorkDriver extends IndexRecordDriver {
 	 * @param Grouping_Record $b
 	 * @return int
 	 */
-	function compareRelatedRecords(Grouping_Record $a, Grouping_Record $b) : int {
-		//Get literary form to determine if we should compare editions
-		$literaryForm = '';
-		if (isset($this->fields['literary_form'])) {
-			if (is_array($this->fields['literary_form'])) {
-				$literaryForm = reset($this->fields['literary_form']);
-			} else {
-				$literaryForm = $this->fields['literary_form'];
-			}
-		}
-		//First sort by format
-		$format1 = $a->format;
-		$format2 = $b->format;
-		$formatComparison = strcasecmp($format1, $format2);
-		//Make sure that book is the very first format always
-		if ($formatComparison != 0) {
-			if ($format1 == 'Book') {
-				return -1;
-			} elseif ($format2 == 'Book') {
-				return 1;
-			}
-		}
+	function compareRelatedRecords($a, $b) {
+		$literaryForm = $this->getPrimaryLiteraryForm();
 
 		global $library;
-		$groupedWorkDisplaySettings = $library->getGroupedWorkDisplaySettings();
-		if ($formatComparison == 0) {
-			//1) Optionally sort owned editions first
-			if ($groupedWorkDisplaySettings->sortOwnedEditionsFirst) {
-				$ownedRecordComparison = GroupedWorkDriver::compareOwnedEditions($a, $b);
-			} else {
-				$ownedRecordComparison = 0;
-			}
+		$settings = $library->getGroupedWorkDisplaySettings();
 
-			if ($ownedRecordComparison == 0) {
-				//2) Put anything that is holdable first
-				$holdabilityComparison = GroupedWorkDriver::compareHoldability($a, $b);
-				if ($holdabilityComparison == 0) {
-					//2) Compare by language to put english titles before spanish by default
-					$languageComparison = GroupedWorkDriver::compareLanguagesForRecords($a, $b);
-					if ($languageComparison == 0) {
-						//3) Compare editions for non-fiction if available
-						$editionComparisonResult = GroupedWorkDriver::compareEditionsForRecords($literaryForm, $a, $b);
-						if ($editionComparisonResult == 0) {
-							//4) Put anything with locally available items first
-							$localAvailableItemComparisonResult = GroupedWorkDriver::compareLocalAvailableItemsForRecords($a, $b);
-							if ($localAvailableItemComparisonResult == 0) {
-								//5) Anything that is available elsewhere goes higher
-								$availabilityComparisonResults = GroupedWorkDriver::compareAvailabilityForRecords($a, $b);
-								if ($availabilityComparisonResults == 0) {
-									//6) Put anything with a local copy higher
-									$localItemComparisonResult = GroupedWorkDriver::compareLocalItemsForRecords($a, $b);
-									if ($localItemComparisonResult == 0) {
-										//7) All else being equal, sort by hold ratio
-										if ($a->getHoldRatio() == $b->getHoldRatio()) {
-											//8) Hold Ratio is the same, last thing to check is the number of copies
-											if ($a->getCopies() == $b->getCopies()) {
-												return 0;
-											} elseif ($a->getCopies() > $b->getCopies()) {
-												return -1;
-											} else {
-												return 1;
-											}
-										} elseif ($a->getHoldRatio() < $b->getHoldRatio()) {
-											return -1;
-										} else {
-											return 1;
-										}
-									} else {
-										return $localItemComparisonResult;
-									}
-								} else {
-									return $availabilityComparisonResults;
-								}
-							} else {
-								return $localAvailableItemComparisonResult;
-							}
-						} else {
-							return $editionComparisonResult;
-						}
-					} else {
-						return $languageComparison;
-					}
-				} else {
-					return $holdabilityComparison;
-				}
-			} else {
-				return $ownedRecordComparison;
+		/*
+		Sort priority for related records:
+
+		1. First sort by format (Book always first)
+		2. Optionally sort owned editions first
+		3. Put anything that is holdable first
+		4. Compare by language to put English titles before Spanish by default
+		5. Compare editions for non-fiction if available
+		6. Put anything with locally available items first
+		7. Anything that is available elsewhere goes higher
+		8. Put anything with a local copy higher
+		9. All else being equal, sort by hold ratio
+		10. If hold ratio is the same, compare number of copies (more copies first)
+		*/
+		$comparators = [
+			fn() => $this->compareFormats($a->format, $b->format),
+			fn() => $settings->sortOwnedEditionsFirst
+				? GroupedWorkDriver::compareOwnedEditions($a, $b)
+				: 0,
+			fn() => GroupedWorkDriver::compareHoldability($a, $b),
+			fn() => GroupedWorkDriver::compareLanguagesForRecords($a, $b),
+			fn() => GroupedWorkDriver::compareEditionsForRecords($literaryForm, $a, $b),
+			fn() => GroupedWorkDriver::compareLocalAvailableItemsForRecords($a, $b),
+			fn() => GroupedWorkDriver::compareAvailabilityForRecords($a, $b),
+			fn() => GroupedWorkDriver::compareLocalItemsForRecords($a, $b),
+			fn() => $a->getHoldRatio() <=> $b->getHoldRatio(),
+			fn() => $b->getCopies() <=> $a->getCopies(),
+		];
+
+		foreach ($comparators as $compare) {
+			$result = $compare();
+			if ($result !== 0) {
+				return $result;
 			}
-		} else {
-			return $formatComparison;
 		}
+
+		return 0;
+	}
+
+	private function getPrimaryLiteraryForm(): string {
+		if (!isset($this->fields['literary_form'])) {
+			return '';
+		}
+
+		$value = $this->fields['literary_form'];
+
+		return is_array($value) ? reset($value) : $value;
+	}
+
+	private function compareFormats(string $format1, string $format2): int {
+		$comparison = strcasecmp($format1, $format2);
+
+		if ($comparison !== 0) {
+			if ($format1 === 'Book') return -1;
+			if ($format2 === 'Book') return 1;
+		}
+
+		return $comparison;
 	}
 
 	private static ?GroupedWorkFormatSortingGroup $_formatSorting = null;
