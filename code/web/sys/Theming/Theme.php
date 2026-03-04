@@ -549,6 +549,7 @@ class Theme extends DataObject {
 	public $additionalCss;
 
 	public $generatedCss;
+	public $generatedRTLCss;
 
 	//Cookie Consent Themeing Options
 	public static $defaultCookieConsentBackgroundColor = '#1D7FF0';
@@ -2878,6 +2879,7 @@ class Theme extends DataObject {
 		if ($context != 'saveGeneratedCss') {
 			//No need to regenerate CSS because that is called upstream.
 			$this->generatedCss = $this->generateCss();
+			$this->generatedRTLCss = $this->generateRtlCss();
 		}
 		$this->clearDefaultCovers();
 		if ($context != 'saveGeneratedCss') {
@@ -2939,6 +2941,7 @@ class Theme extends DataObject {
 					$child->id = $themeId;
 					if ($child->find(true)) {
 						$child->generateCss(true);
+						$child->generateRtlCss(true);
 					}
 				}
 			}
@@ -3395,6 +3398,81 @@ class Theme extends DataObject {
 		return $this->_allAppliedThemes;
 	}
 
+	function generateRTLCss($saveChanges = false): string {
+		$base = $this->generatedCss;
+		$previousRTLCss = $this->generatedRTLCss;
+		$updatedRTLCss = $this->createRtlFromBaseCss($base);
+
+		if ($updatedRTLCss != $previousRTLCss) {
+			$this->__set('generatedRTLCss', $updatedRTLCss);
+			if ($saveChanges) {
+				$this->update('saveGeneratedCss');
+			}
+		}
+		return $this->generatedRTLCss;
+	}
+
+	private function createRtlFromBaseCss($baseCss): string {
+		// Extract CSS content from the base CSS (remove <style> tags if present)
+		$cssContent = preg_replace('/<style[^>]*>|<\/style>/', '', $baseCss);
+
+		// Process CSS rules to flip RTL properties
+		$rtlCss = preg_replace_callback('/([^{]+){([^}]+)}/', function ($matches) {
+			$selector = trim($matches[1]);
+			$rules = trim($matches[2]);
+
+			// Only process rules that contain RTL-relevant properties
+			if (preg_match('/(border-.*-left|border-.*-right|left|right|margin-left|margin-right|padding-left|padding-right|text-align|float)/', $rules)) {
+				// Flip directional properties
+				$rtlRules = str_replace([
+					'border-left:',
+					'border-right:',
+					'border-top-left-radius:',
+					'border-top-right-radius:',
+					'border-bottom-left-radius:',
+					'border-bottom-right-radius:',
+					'margin-left:',
+					'margin-right:',
+					'padding-left:',
+					'padding-right:',
+					'left:',
+					'right:',
+					'text-align: left',
+					'text-align: right',
+					'float: left',
+					'float: right'
+				], [
+					'border-right:',
+					'border-left:',
+					'border-top-right-radius:',
+					'border-top-left-radius:',
+					'border-bottom-right-radius:',
+					'border-bottom-left-radius:',
+					'margin-right:',
+					'margin-left:',
+					'padding-right:',
+					'padding-left:',
+					'right:',
+					'left:',
+					'text-align: right',
+					'text-align: left',
+					'float: right',
+					'float: left'
+				], $rules);
+
+				return $selector . ' { ' . $rtlRules . ' }';
+			}
+			return ''; // Skip non-RTL rules
+		}, $cssContent);
+
+		// Clean up extra whitespace and return wrapped in style tags
+		$rtlCss = preg_replace('/\s+/', ' ', $rtlCss);
+		$rtlCss = preg_replace('/\s*{\s*/', ' { ', $rtlCss);
+		$rtlCss = preg_replace('/\s*}\s*/', ' } ', $rtlCss);
+
+		return '<style>' . "\n" . '/* RTL-specific overrides */' . "\n" . $rtlCss . "\n" . '</style>';
+	}
+
 	protected $_parentTheme = false;
 
 	public function getParentTheme() : ?Theme {
@@ -3654,6 +3732,7 @@ class Theme extends DataObject {
 		unset($this->additionalCssType);
 		unset($this->additionalCss);
 		unset($this->generatedCss);
+		unset($this->generatedRTLCss);
 		unset($this->__table);
 		unset($this->__primaryKey);
 		unset($this->__displayNameColumn);
@@ -3679,6 +3758,7 @@ class Theme extends DataObject {
 		unset($this->customBodyFont);
 		unset($this->customHeadingFont);
 		unset($this->generatedCss);
+		unset($this->generatedRTLCss);
 	}
 
 	/**
@@ -3935,3 +4015,4 @@ class Theme extends DataObject {
 		return true;
 	}
 }
+

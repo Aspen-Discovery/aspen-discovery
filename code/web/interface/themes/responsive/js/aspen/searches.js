@@ -288,6 +288,7 @@ AspenDiscovery.Searches = (function(){
 					if (data.success === true){
 						$("#facetLock_lockIcon_" + clusterName).hide();
 						$("#facetLock_unlockIcon_" + clusterName).show();
+						AspenDiscovery.Searches.updateAppliedFilterBadges(clusterName, true);
 					}else{
 						AspenDiscovery.showMessage('Error', data.message, true);
 					}
@@ -306,6 +307,54 @@ AspenDiscovery.Searches = (function(){
 					if (data.success === true){
 						$("#facetLock_lockIcon_" + clusterName).show();
 						$("#facetLock_unlockIcon_" + clusterName).hide();
+						AspenDiscovery.Searches.updateAppliedFilterBadges(clusterName, false);
+					}else{
+						AspenDiscovery.showMessage('Error', data.message, true);
+					}
+				}
+			);
+			return false;
+		},
+
+		updateAppliedFilterBadges: function (clusterName, isLocked) {
+			var $badges = $(".applied-filters .facetValueBadge").filter(function() {
+				var $badge = $(this);
+				return $badge.data("filter-field") === clusterName || $badge.data("filter-unscoped") === clusterName;
+			});
+			$badges.each(function() {
+				var $badge = $(this);
+				var removalUrl = $badge.data("removal-url");
+				var display = $badge.data("filter-display");
+				var value = $badge.data("filter-value");
+				$badge.off("click.locked");
+				if (isLocked) {
+					$badge.attr("aria-label", "Unlock and remove Filter");
+					$badge.on("click.locked", function(e){
+						e.preventDefault();
+						AspenDiscovery.Searches.unlockFacetAndRemove(clusterName, removalUrl, value);
+					});
+					$badge.html('<i class="fas fa-lock fa-lg fa-fw" style="display:inline; vertical-align: middle"></i> ' + display);
+				} else {
+					$badge.attr("aria-label", "Remove Filter");
+					$badge.html('<i class="fas fa-xmark text-danger remove-filter-icon" style="display:inline; vertical-align: middle"></i> ' + display);
+				}
+			});
+		},
+
+		unlockFacetAndRemove: function (clusterName, removalUrl, facetValue) {
+			event.stopPropagation();
+			var url = Globals.path + "/Search/AJAX";
+			var params;
+			if (facetValue !== undefined && facetValue !== null && facetValue !== "") {
+				params = "method=unlockFacet&facet=" + encodeURIComponent(clusterName) + "&value=" + encodeURIComponent(facetValue);
+			} else {
+				params = "method=unlockFacet&facet=" + encodeURIComponent(clusterName);
+			}
+			var fullUrl = url + "?" + params;
+			$.getJSON(fullUrl,
+				function(data) {
+					if (data.success === true){
+						window.location = removalUrl;
 					}else{
 						AspenDiscovery.showMessage('Error', data.message, true);
 					}

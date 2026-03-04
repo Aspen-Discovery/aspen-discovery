@@ -84,7 +84,8 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 	protected HashSet<String> placesOfPublication = new HashSet<>();
 	protected float rating = -1f;
 	protected HashMap<String, String> series = new HashMap<>();
-	protected HashMap<String, String> seriesWithVolume = new HashMap<>();
+	protected HashMap<String, String> seriesWithVolume = new HashMap<>(); // 800s and 830s
+	protected HashMap<String, String> seriesWithVolumeUntraced = new HashMap<>(); // 490s
 	protected Map<String, Integer> seriesWithVolumePriority = new HashMap<>();
 	protected String subTitle;
 	protected HashSet<String> targetAudienceFull = new HashSet<>();
@@ -213,6 +214,8 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 		clonedWork.series = (HashMap<String, String>) series.clone();
 		// noinspection unchecked
 		clonedWork.seriesWithVolume = (HashMap<String, String>) seriesWithVolume.clone();
+		// noinspection unchecked
+		clonedWork.seriesWithVolumeUntraced = (HashMap<String, String>) seriesWithVolumeUntraced.clone();
 		// noinspection unchecked
 		clonedWork.targetAudienceFull = (HashSet<String>) targetAudienceFull.clone();
 		// noinspection unchecked
@@ -809,11 +812,12 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 
 	void clearSeries(){
 		this.seriesWithVolume.clear();
+		this.seriesWithVolumeUntraced.clear();
 		this.series.clear();
 		this.seriesWithVolumePriority.clear();
 	}
 
-	void addSeriesWithVolume(String seriesName, String volume, int priority) {
+	void addSeriesWithVolume(String seriesName, String volume, int priority, boolean untraced) {
 		if (seriesName != null && !seriesName.isEmpty()) {
 			String seriesInfo = getNormalizedSeries(seriesName);
 			if (seriesInfo.isEmpty()) {
@@ -834,7 +838,7 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 			} else {
 				seriesWithVolumePriority.put(normalizedSeriesInfoWithVolume, priority);
 			}
-			if (!this.seriesWithVolume.containsKey(normalizedSeriesInfoWithVolume)) {
+			if ((!this.seriesWithVolume.containsKey(normalizedSeriesInfoWithVolume) && !untraced) || (!this.seriesWithVolumeUntraced.containsKey(normalizedSeriesInfoWithVolume) && untraced)) {
 				boolean okToAdd = true;
 				//Check to see if we have a similar series name (where one series name is fully contained in the other series).
 				// This helps to prevent cases where series of "Dark" and "Dark Series" both appear.
@@ -1732,6 +1736,7 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 	public void removeSeries(String series, String seriesNameWithVolume) {
 		this.series.remove(series);
 		this.seriesWithVolume.remove(seriesNameWithVolume);
+		this.seriesWithVolumeUntraced.remove(seriesNameWithVolume);
 		this.seriesWithVolumePriority.remove(seriesNameWithVolume);
 	}
 }

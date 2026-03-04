@@ -70,9 +70,9 @@ class SeriesIndexer {
 		}
 		Http2SolrClient.Builder groupedWorkHttpBuilder;
 		if (searchVersion == 1) {
-			groupedWorkHttpBuilder = new Http2SolrClient.Builder("http://localhost:" + solrPort + "/solr/grouped_works");
+			groupedWorkHttpBuilder = new Http2SolrClient.Builder("http://" + solrHost + ":" + solrPort + "/solr/grouped_works");
 		}else{
-			groupedWorkHttpBuilder = new Http2SolrClient.Builder("http://localhost:" + solrPort + "/solr/grouped_works_v2");
+			groupedWorkHttpBuilder = new Http2SolrClient.Builder("http://" + solrHost + ":" + solrPort + "/solr/grouped_works_v2");
 		}
 		groupedWorkServer = groupedWorkHttpBuilder.build();
 

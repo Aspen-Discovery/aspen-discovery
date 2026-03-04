@@ -147,7 +147,6 @@ class Role extends DataObject {
 				'Administer Languages',
 				'Administer LibraryMarket LibraryCalendar Settings',
 				'Administer List Indexing Settings',
-				'Administer Loan Rules',
 				'Administer Modules',
 				'Administer Open Archives',
 				'Administer OverDrive',
@@ -233,7 +232,6 @@ class Role extends DataObject {
 			],
 			'Super Cataloger' => [
 				'Administer Indexing Profiles',
-				'Administer Loan Rules',
 				'Administer Translation Maps',
 				'Administer Wikipedia Integration',
 				'Download MARC Records',

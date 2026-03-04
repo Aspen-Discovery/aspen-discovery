@@ -2273,12 +2273,15 @@ class Sierra extends AbstractIlsDriver {
 
 			$params['patronType'] = (int)$selfRegistrationForm->selfRegPatronType;
 			$params['patronCodes'] = [
-				'pcode1' => $selfRegistrationForm->selfRegPcode1,
-				'pcode2' => $selfRegistrationForm->selfRegPcode2,
-				'pcode3' => (int)$selfRegistrationForm->selfRegPcode3,
-				'pcode4' => (int)$selfRegistrationForm->selfRegPcode4
+				'pcode1' => $selfRegistrationForm->selfRegPcode1 ?? '',
+				'pcode2' => $selfRegistrationForm->selfRegPcode2 ?? '',
+				'pcode3' => (int)$selfRegistrationForm->selfRegPcode3
 			];
-			$params['pMessage'] = $selfRegistrationForm->selfRegPatronMessage;
+			$pcode4 = $selfRegistrationForm->selfRegPcode4;
+			if (isset($pcode4) && (int)$pcode4 !== 0) {
+				$params['patronCodes']['pcode4'] = (int)$pcode4;
+			}
+			$params['pMessage'] = $selfRegistrationForm->selfRegPatronMessage ?? '';
 			if (!empty($_REQUEST['noticePreference'])) {
 				$params['fixedFields'] = [
 					'268' => [

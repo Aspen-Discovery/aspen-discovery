@@ -116,7 +116,7 @@
 							allowfullscreen=""
 							loading="lazy"
 							referrerpolicy="no-referrer-when-downgrade"
-							src="https://maps.google.com/?ie=UTF8&t=m{if $curLocation.useLocationNameForMaps == 1}&q={$curLocation.address|escape:'url'}{else}&ll={$curLocation.latitude},{$curLocation.longitude}&spn=0.003381,0.017231{/if}&z=16&output=embed">
+							src="https://maps.google.com/?ie=UTF8&t=m{if $curLocation.useLocationNameForMaps == 1}&q={$curLocation.address|escape:'url'}{else}&q={$curLocation.latitude},{$curLocation.longitude}&spn=0.003381,0.017231{/if}&z=16&output=embed">
 					</iframe>
 				</div>
 				{/if}

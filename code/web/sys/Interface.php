@@ -318,6 +318,7 @@ class UInterface extends Smarty {
 		global $library;
 		global $locationSingleton;
 		global $configArray;
+		global $activeLanguage;
 
 		$allAppliedThemes = [];
 		$primaryTheme = null;
@@ -341,6 +342,9 @@ class UInterface extends Smarty {
 		}
 		$this->assign('hasOptionalUpdates', $hasOptionalUpdates);
 		$this->assign('shouldShowAdminAlert', $hasSqlUpdates || $hasOptionalUpdates);
+
+		$isRTL = $activeLanguage->isRTL();
+		$this->assign('isRTL', $isRTL);
 
 		$this->assign('allActiveThemes', []);
 
@@ -485,7 +489,9 @@ class UInterface extends Smarty {
 
 			if ($primaryTheme != null) {
 				$themeCss = $primaryTheme->generatedCss;
+				$themeRTLCss = $primaryTheme->generatedRTLCss;
 				$this->assign('themeCss', $themeCss);
+				$this->assign('themeRTLCss', $themeRTLCss);
 				$this->assign('primaryThemeObject', $primaryTheme);
 				$this->assign('bodyBackgroundColor', $primaryTheme->bodyBackgroundColor);
 				$this->assign('bodyTextColor', $primaryTheme->bodyTextColor);
@@ -1148,7 +1154,9 @@ class UInterface extends Smarty {
 			}
 
 			$themeCss = $primaryTheme->generatedCss;
+			$themeRTLCss = $primaryTheme->generatedRTLCss;
 			$this->assign('themeCss', $themeCss);
+			$this->assign('themeRTLCss', $themeRTLCss);
 			$this->assign('primaryThemeObject', $primaryTheme);
 			$this->assign('bodyBackgroundColor', $primaryTheme->bodyBackgroundColor);
 			$this->assign('bodyTextColor', $primaryTheme->bodyTextColor);

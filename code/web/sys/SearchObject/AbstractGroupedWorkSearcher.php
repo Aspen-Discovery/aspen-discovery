@@ -570,7 +570,7 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 	 */
 	public function runSearchInterpreter(string $type, bool $enableSearchInterpreter, string $searchTerm): string {
 		$splitPattern = "/[|,]\s*/";
-		if ($type == 'Keyword' && $enableSearchInterpreter && !empty($searchTerm)) {
+		if ($type == 'Keyword' && $enableSearchInterpreter && !empty($searchTerm) && empty($this->filterList)) {
 			$changeMade = false;
 			$searchTermLower = strtolower($searchTerm);
 
@@ -773,7 +773,14 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 		} elseif ($this->searchType == 'favorites') {
 			return '/MyAccount/Home?';
 		} elseif ($this->searchType == 'list') {
-			return '/MyAccount/MyList/' . urlencode($_GET['id']) . '?';
+			if (isset($_GET['id'])) {
+				return '/MyAccount/MyList/' . urlencode($_GET['id']) . '?';
+			}elseif (is_array($this->searchTerms)) {
+				$firstSearchTerm = reset($this->searchTerms);
+				if ($firstSearchTerm['index'] == 'list_link') {
+					return '/MyAccount/MyList/' . urlencode($firstSearchTerm['lookfor']) . '?';
+				}
+			}
 		} elseif ($this->searchType == 'series') {
 			return '/Series/' . urlencode($_GET['id']) . '?';
 		}

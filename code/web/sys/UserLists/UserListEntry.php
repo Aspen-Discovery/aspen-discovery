@@ -87,7 +87,8 @@ class UserListEntry extends DataObject {
 		return $result;
 	}
 
-	private function updateParentListDateUpdated() : void {
+	public function updateParentListDateUpdated() : void {
+		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 		if (!empty($this->listId)) {
 			$parentList = new UserList();
 			$parentList->id = $this->listId;

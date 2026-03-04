@@ -779,11 +779,13 @@ class Record_AJAX extends Action {
 			$volumeData = [];
 			foreach ($relatedRecord->recordVariations as $variation) {
 				foreach ($variation->getRecords() as $record) {
-					$unsuppressedVolumeData = $record->getUnsuppressedVolumeData(true);
-					foreach ($unsuppressedVolumeData as $volumeInfo) {
-						if (!isset($volumeData[$volumeInfo->volumeId])) {
-							$volumeData[$volumeInfo->volumeId] = clone($volumeInfo);
-							$volumeData[$volumeInfo->volumeId]->setHasLocalItems(false);
+					if ($record->id == $relatedRecord->id) {
+						$unsuppressedVolumeData = $relatedRecord->getUnsuppressedVolumeData(true);
+						foreach ($unsuppressedVolumeData as $volumeInfo) {
+							if (!isset($volumeData[$volumeInfo->volumeId])) {
+								$volumeData[$volumeInfo->volumeId] = clone($volumeInfo);
+								$volumeData[$volumeInfo->volumeId]->setHasLocalItems(false);
+							}
 						}
 					}
 				}
@@ -795,32 +797,34 @@ class Record_AJAX extends Action {
 			foreach ($relatedRecord->recordVariations as $variation) { // check variations for non-econtent items for records that have both econtent and physical items attached
 				if (!($variation->isEContent())) {
 					foreach ($variation->getRecords() as $record) {
-						foreach ($record->getItems() as $item) {
-							if (!$item->isEContent) {
-								if (empty($item->volume)) {
-									$numItemsWithoutVolumes++;
-								} else {
-									if (array_key_exists($item->volumeId, $volumeData)) {
-										$volumeData[$item->volumeId]->addItem($item);
-										if ($item->libraryOwned || $item->locallyOwned) {
-											$volumeData[$item->volumeId]->setHasLocalItems(true);
-										}
-									}
-									foreach ($variation->getRelatedRecords() as $edition) {
-										$editionId = $edition->id;
-										$plainEdition = (object)get_object_vars($edition);
-										$status = $interface->fetch('GroupedWork/statusIndicator.tpl', [
-											'statusInformation' => $record->getStatusInformation(),
-											'viewingIndividualRecord' => 1
-										]);
-										$coverUrl = $record->getBookcoverUrl('small');
+						if ($record->id == $relatedRecord->id) {
+							foreach ($record->getItems() as $item) {
+								if (!$item->isEContent) {
+									if (empty($item->volume)) {
+										$numItemsWithoutVolumes++;
+									} else {
 										if (array_key_exists($item->volumeId, $volumeData)) {
-											$volumeData[$item->volumeId]->setEdition($editionId, $plainEdition);
-											$volumeData[$item->volumeId]->setEditionStatus($editionId, $status);
-											$volumeData[$item->volumeId]->setEditionCover($editionId, $coverUrl);
+											$volumeData[$item->volumeId]->addItem($item);
+											if ($item->libraryOwned || $item->locallyOwned) {
+												$volumeData[$item->volumeId]->setHasLocalItems(true);
+											}
 										}
+										foreach ($variation->getRelatedRecords() as $edition) {
+											$editionId = $edition->id;
+											$plainEdition = (object)get_object_vars($edition);
+											$status = $interface->fetch('GroupedWork/statusIndicator.tpl', [
+												'statusInformation' => $record->getStatusInformation(),
+												'viewingIndividualRecord' => 1
+											]);
+											$coverUrl = $record->getBookcoverUrl('small');
+											if (array_key_exists($item->volumeId, $volumeData)) {
+												$volumeData[$item->volumeId]->setEdition($editionId, $plainEdition);
+												$volumeData[$item->volumeId]->setEditionStatus($editionId, $status);
+												$volumeData[$item->volumeId]->setEditionCover($editionId, $coverUrl);
+											}
+										}
+										$numItemsWithVolumes++;
 									}
-									$numItemsWithVolumes++;
 								}
 							}
 						}
@@ -1148,7 +1152,7 @@ class Record_AJAX extends Action {
 						if (isset($_REQUEST['freezeHoldImmediately']) && $_REQUEST['freezeHoldImmediately'] == 'true') {
 							$freezeHoldImmediately = TRUE;
 						}
-						$dateToReactivate = isset($_REQUEST['reactivationDate']) ? (string)$_REQUEST['reactivationDate'] : null;
+						$reactivationDate = isset($_REQUEST['reactivationDate']) ? (string)$_REQUEST['reactivationDate'] : null;
 						if ($freezeHoldImmediately) {
 							$holds = $patron->getHolds();
 							// Find the holdId for use in the freezing process.
@@ -1160,7 +1164,7 @@ class Record_AJAX extends Action {
 								}
 							}
 							if ($holdId) {
-								$freezeResult = $patron->freezeHold($shortId, $holdId, $dateToReactivate);
+								$freezeResult = $patron->freezeHold($shortId, $holdId, $reactivationDate);
 								if (!$freezeResult['success']) {
 									$return['message'] .= '<br/>' . $freezeResult['message'];
 								}
@@ -2198,6 +2202,7 @@ class Record_AJAX extends Action {
 		$interface->assign('rememberHoldPickupLocation', $rememberHoldPickupLocation);
 		$interface->assign('rememberHoldPromptForEdition', $user->rememberHoldPromptForEdition);
 		$interface->assign('userHoldPromptForEditionPreference', $user->holdPromptForEdition);
+		$interface->assign('allowFreezeHolds', $library->allowFreezeHolds);
 		$interface->assign('promptToFreezeHoldsImmediately', $user->promptToFreezeHoldsImmediately);
 		$interface->assign('onlyValidPickupLocation', $onlyValidPickupLocation ?? null);
 

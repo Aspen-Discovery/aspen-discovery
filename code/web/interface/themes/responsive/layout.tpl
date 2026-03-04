@@ -53,6 +53,7 @@
 		<link rel="search" type="application/opensearchdescription+xml" title="{$site.title|escape} Catalog Search" href="/Search/OpenSearch?method=describe">
 		{include file="cssAndJsIncludes.tpl"}
 		{if !empty($themeCss)}{$themeCss}{/if}
+		{if $isRTL && !empty($themeRTLCss)}{$themeRTLCss}{/if}
 		{if !empty($loadRecaptcha)}
 			<script src="https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit" async defer></script>
 		{/if}

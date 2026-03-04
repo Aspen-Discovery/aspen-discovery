@@ -635,6 +635,7 @@ class PortalCell extends DataObject {
 					'latitude' => floatval($locationToProcess->latitude),
 					'homeLink' => (!empty($locationToProcess->homeLink) && ($locationToProcess->homeLink != 'default')) ? $locationToProcess->homeLink : (!is_null($locationToProcess->getParentLibrary()) ? $locationToProcess->getParentLibrary()->homeLink : null),
 					'hoursMessage' => Location::getLibraryHoursMessage($locationToProcess->locationId, true),
+					'useLocationNameForMaps' => $locationToProcess->useLocationNameForMaps,
 				];
 
 				if (!empty($mapsKey)) {

@@ -39,8 +39,10 @@ class SeriesRecordDriver extends IndexRecordDriver {
 			$bookCoverUrl = '';
 		}
 		if (!$seriesMember) {
+			$seriesObject = $this->getSeriesObject();
+			$dateUpdated = $seriesObject instanceof Series ? $seriesObject->dateUpdated : '';
 			$id = $this->getId();
-			$bookCoverUrl = $bookCoverUrl . "/bookcover.php?type=series&id={$id}&size={$size}";
+			$bookCoverUrl = $bookCoverUrl . "/bookcover.php?type=series&id={$id}&size={$size}&dateUpdated={$dateUpdated}";
 		} else {
 			$id = $memberId;
 			$bookCoverUrl = $bookCoverUrl . "/bookcover.php?type=seriesMember&id={$id}&size={$size}";

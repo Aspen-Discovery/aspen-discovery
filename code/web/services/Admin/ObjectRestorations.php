@@ -647,7 +647,6 @@ class Admin_ObjectRestorations extends ObjectEditor {
 				'totalItems' => $totalItems,
 				'perPage' => $recordsPerPage,
 				'canChangeRecordsPerPage' => true,
-				'canJumpToPage' => true,
 			];
 			$pager = new Pager($options);
 			$interface->assign('pageLinks', $pager->getLinks());

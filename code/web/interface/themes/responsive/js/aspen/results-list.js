@@ -24,6 +24,30 @@ AspenDiscovery.ResultsList = (function(){
 
 		processMultiSelectMoreFacetForm: function(formId, fieldName){
 			var newUrl = location.origin + location.pathname + "?";
+			var unlockRequests = [];
+			var unlockValues = [];
+			var unlockUrl = Globals.path + "/Search/AJAX";
+
+			function extractFacetValue(filterValue, fieldName) {
+				if (!filterValue) {
+					return null;
+				}
+				var decoded = decodeURIComponent(filterValue.substring(fieldName.length + 1));
+				if (decoded === '("")') {
+					return "";
+				}
+				return (decoded.length >= 2 && decoded[0] === '"' && decoded[decoded.length - 1] === '"')
+					? decoded.substring(1, decoded.length - 1) : decoded;
+			}
+
+			$(".modal-body " + formId + " input[type=checkbox][data-locked='1']").each(function () {
+				if (!$(this).is(":checked")) {
+					var value = extractFacetValue($(this).attr('value'), fieldName);
+					if (value !== null) {
+						unlockValues.push(value);
+					}
+				}
+			});
 			//Remove existing parameters for the facet from the url
 			var existingQuery = location.search.substr(1);
 			var firstTerm = true;
@@ -64,7 +88,17 @@ AspenDiscovery.ResultsList = (function(){
 				newUrl += (name + '=' + value);
 			});
 
-			document.location.href = newUrl;
+			if (unlockValues.length > 0) {
+				for (var i = 0; i < unlockValues.length; i++) {
+					var params = "method=unlockFacet&facet=" + encodeURIComponent(fieldName) + "&value=" + encodeURIComponent(unlockValues[i]);
+					unlockRequests.push($.getJSON(unlockUrl + "?" + params));
+				}
+				$.when.apply($, unlockRequests).always(function () {
+					document.location.href = newUrl;
+				});
+			} else {
+				document.location.href = newUrl;
+			}
 			return false;
 		},
 

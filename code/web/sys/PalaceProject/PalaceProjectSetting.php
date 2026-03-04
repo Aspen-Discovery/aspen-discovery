@@ -81,7 +81,6 @@ class PalaceProjectSetting extends DataObject {
 				'label' => 'Last Update of Changed Records',
 				'description' => 'The timestamp when just changes were loaded',
 				'default' => 0,
-				'readOnly' => true,
 			],
 			'lastUpdateOfAllRecords' => [
 				'property' => 'lastUpdateOfAllRecords',
@@ -89,7 +88,6 @@ class PalaceProjectSetting extends DataObject {
 				'label' => 'Last Update of All Records',
 				'description' => 'The timestamp when all records were loaded',
 				'default' => 0,
-				'readOnly' => true,
 			],
 			'instructionsForUsage' => [
 				'property' => 'instructionsForUsage',

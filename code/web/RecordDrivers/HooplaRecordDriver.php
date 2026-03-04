@@ -113,8 +113,14 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 				$price = 0;
 			}
 			$interface->assign('price', $price);
+			$audience = null;
+			if (isset($rawData->audience)) {
+				$audience = $rawData->audience;
+			}
+			$interface->assign('audience', $audience);
 		}
 		unset($rawData->price);
+		unset($rawData->audience);
 
 		$interface->assign('hooplaExtract', $rawData);
 		$interface->assign('hooplaType', $this->getHooplaType());

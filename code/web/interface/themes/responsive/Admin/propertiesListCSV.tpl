@@ -23,7 +23,7 @@
 					{elseif $property.type == 'regularExpression' || $property.type =='multilineRegularExpression'}
 						{$value = $propValue|escape}
 					{elseif $property.type == 'text' || $property.type == 'hidden' || $property.type == 'file' || $property.type == 'integer' || $property.type == 'email' || $property.type == 'url'}
-						{$value = $propValue}
+						{$value = $propValue|escape}
 					{elseif $property.type == 'date'}
 						{$value = {$propValue|date_format}}
 					{elseif $property.type == 'timestamp'}
@@ -66,16 +66,16 @@
 					{elseif $property.type == 'enum'}
 						{foreach from=$property.values item=propertyName key=propertyValue}
 							{if $propValue == $propertyValue}
-								{$value = {$value|cat:{$propertyName}}}
+								{$value = {$value|cat:{$propertyName}|escape}}
 							{/if}
 						{/foreach}
 					{elseif $property.type == 'multiSelect'}
 						{if is_array($propValue) && count($propValue) > 0}
 							{foreach from=$property.values item=propertyName key=propertyValue}
-								{* for csv output what delimiter should go here? *}
-								{if array_key_exists($propertyValue, $propValue)}
-									{$value = {$value|cat:{$propertyName}}}
-								{/if}
+                                {if array_key_exists($propertyValue, $propValue)}
+                                    {if !empty($value)}{$value = {$value|cat:';'}}{/if}
+                                    {$value = {$value|cat:{$propertyName}|escape}}
+                                {/if}
 							{/foreach}
 						{else}
 							{$value = 'No values selected'}
@@ -96,14 +96,18 @@
 						{/if}
 					{elseif $property.type == 'image'}
 	{*									<img src="{$property.displayUrl}{$dataItem->id}" class="img-responsive" alt="{$propName}">*}
-					{elseif $property.type == 'html'}
-						{$value = $propValue|strip_tags}
+				{elseif $property.type == 'html'}
+					{$value = $propValue|strip_tags|escape}
 					{elseif $property.type == 'textarea'}
-						{$value = {$propValue|truncate:255:'...'}}
+						{$value = {$propValue|escape|truncate:255:'...'}}
 					{else}
 						{$value = {translate text="Unknown type to display %1%" 1=$property.type isAdminFacing=true}}
 					{/if}
-					{$value|replace:'"':'""'|regex_replace:'/^.*,.*$/':'"$0"'}
+					{if strpos($value, ',') !== false || strpos($value, '"') !== false || strpos($value, "\n") !== false}
+						"{$value|replace:'"':'""'}"
+					{else}
+						{$value}
+					{/if}
 					{* CSV field delimiter *}
 					,
 				{/if}

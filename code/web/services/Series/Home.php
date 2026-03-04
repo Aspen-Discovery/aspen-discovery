@@ -146,13 +146,6 @@ class Series_Home extends Action {
 		$interface->assign('recordsPerPage', $pageInfo['perPage']);
 
 		$link = $_SERVER['REQUEST_URI'];
-		if (preg_match('/[&?]page=/', $link)) {
-			$link = preg_replace("/page=\\d+/", "page=%d", $link);
-		} elseif (strpos($link, "?") > 0) {
-			$link .= "&page=%d";
-		} else {
-			$link .= "?page=%d";
-		}
 
 		$sortOptions = [
 			'volumeAsc' => [

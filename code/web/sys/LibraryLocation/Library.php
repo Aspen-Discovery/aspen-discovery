@@ -188,6 +188,8 @@ class Library extends DataObject {
 	public /** @noinspection PhpUnused */
 		$systemsToRepeatIn;
 	public $additionalLocationsToShowAvailabilityFor;
+	public /** @noinspection PhpUnused */
+		$locationsToExcludeAvailabilityFor;
 	public $homeLink;
 	public $showAdvancedSearchbox;
 	public $showWebsiteSearch;
@@ -3493,8 +3495,17 @@ class Library extends DataObject {
 								'property' => 'additionalLocationsToShowAvailabilityFor',
 								'type' => 'text',
 								'label' => 'Additional Locations to Include in Available At Facet',
-								'description' => 'A list of library codes that you would like included in the available at facet separated by pipes |.',
-								'size' => '20',
+								'description' => 'A list of location codes that you would like included in the available at facet separated by pipes |.',
+								'maxLength' => '255',
+								'hideInLists' => true,
+								'forcesReindex' => true,
+							],
+							'locationsToExcludeAvailabilityFor' => [
+								'property' => 'locationsToExcludeAvailabilityFor',
+								'type' => 'regularExpression',
+								'label' => 'Locations to Exclude from Available At Facet',
+								'description' => 'A list of location names (facet values) that you would like excluded.',
+								'maxLength' => '255',
 								'hideInLists' => true,
 								'forcesReindex' => true,
 							],
@@ -5260,6 +5271,8 @@ class Library extends DataObject {
 			return $this->getILLItemTypes();
 		} elseif ($name == 'userDefinedFields') {
 			return $this->getUserDefinedFields();
+		} elseif ($name == 'baseUrl') {
+			return $this->getBaseUrl();
 		} else {
 			return parent::__get($name);
 		}
@@ -5920,6 +5933,14 @@ class Library extends DataObject {
 		$location->libraryId = $this->libraryId;
 		$location->createSearchInterface = 1;
 		return $location->count();
+	}
+
+	public function getBaseUrl() {
+		global $configArray;
+		if (empty($this->baseUrl)) {
+			return $configArray['Site']['url'];
+		}
+		return $this->baseUrl;
 	}
 
 	protected $_browseCategoryGroup = null;
