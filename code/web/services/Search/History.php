@@ -60,85 +60,35 @@ class History extends Action {
 			die();
 		}
 
-		// Retrieve search history
-		$s = new SearchEntry();
-		$searchHistory = $s->getSearches(session_id(), UserAccount::isLoggedIn() ? UserAccount::getActiveUserId() : null);
-
-		if (count($searchHistory) > 0) {
-			// Build an array of history entries
-			$links = [];
-			$saved = [];
-
-			// Loop through the history
-			foreach ($searchHistory as $search) {
-				$size = strlen($search->search_object);
-				$minSO = unserialize($search->search_object);
-				$searchObject = SearchObjectFactory::deminify($minSO);
-
-				// Make sure all facets are active so we get appropriate
-				// descriptions in the filter box.
-				$searchObject->activateAllFacets();
-
-				$searchSourceLabel = $searchObject->getSearchSource();
-				if (array_key_exists($searchSourceLabel, self::$searchSourceLabels)) {
-					$searchSourceLabel = self::$searchSourceLabels[$searchSourceLabel];
-				}
-
-				$newItem = [
-					'id' => $search->id,
-					'time' => date("g:ia, jS M y", $searchObject->getStartTime()),
-					'title' => $search->title,
-					'url' => $searchObject->renderSearchUrl(),
-					'searchId' => $searchObject->getSearchId(),
-					'description' => $searchObject->displayQuery(),
-					'filters' => $searchObject->getFilterList(),
-					'hits' => number_format($searchObject->getResultTotal()),
-					'source' => $searchSourceLabel,
-					'speed' => round($searchObject->getQuerySpeed(), 2) . "s",
-					// Size is purely for debugging. Not currently displayed in the template.
-					// It's the size of the serialized, minified search in the database.
-					'size' => round($size / 1024, 3) . "kb",
-					'hasNewResults' => $search->hasNewResults == 1,
-
-				];
-
-				if ($search->hasNewResults) {
-					$searchObject->addFilter('time_since_added:Week');
-					$newItem['newTitlesUrl'] = $searchObject->renderSearchUrl();
-				}
-
-				// Saved searches
-				if ($search->saved == 1) {
-					$saved[] = $newItem;
-
-					// All the others
-				} else {
-					// If this was a purge request we don't need this
-					if (isset($_REQUEST['purge']) && $_REQUEST['purge'] == 'true') {
-						$search->delete();
-
-						// We don't want to remember the last search after a purge:
-						unset($_SESSION['lastSearchURL']);
-						// Otherwise add to the list
-					} else {
-						$links[] = $newItem;
-					}
-				}
-			}
-
-			// One final check, after a purge make sure we still have a history
-			if (count($links) > 0 || count($saved) > 0) {
-				$interface->assign('links', array_reverse($links));
-				$interface->assign('saved', array_reverse($saved));
-				$interface->assign('noHistory', false);
-				// Nothing left in history
-			} else {
-				$interface->assign('noHistory', true);
-			}
-			// No history
-		} else {
-			$interface->assign('noHistory', true);
+		if (isset($_REQUEST['purge']) && $_REQUEST['purge'] == 'true') {
+			$s = new SearchEntry();
+			$s::purgeUserRecentSearches(session_id(), UserAccount::getActiveUserId());
+			// We don't want to remember the last search after a purge:
+			unset($_SESSION['lastSearchURL']);
 		}
+
+		$interface->assign('numSavedSearches', 0);
+		$interface->assign('numRecentSearches', 0);
+		$tab = $_REQUEST['tab'] ?? 'saved';
+		if ($user = UserAccount::getActiveUserObj()) {
+			$searchEntry = new SearchEntry();
+			$savedSearches = $searchEntry::getUserSavedSearches($user->id);
+			$recentSearches = $searchEntry::getUserRecentSearches(session_id(), $user->id);
+			$interface->assign('numSavedSearches', count($savedSearches));
+			$interface->assign('numRecentSearches', count($recentSearches));
+			if (count($savedSearches) == 0) {
+				$tab = 'recent'; // If there are no saved searches show the recent searches tab by default
+			}
+		}
+		$interface->assign('tab', $tab);
+		// initial on page load values for pagination and sorting
+		$page = $_REQUEST['page'] ?? 1;
+		$interface->assign('page', $page);
+		$limit = $_REQUEST['limit'] ?? 20;
+		$interface->assign('limit', $limit);
+		$sort = $_REQUEST['sort'] ?? 'id';
+		$interface->assign('sort', $sort);
+
 
 		if (UserAccount::isLoggedIn()) {
 			$this->loadAccountSidebarVariables();

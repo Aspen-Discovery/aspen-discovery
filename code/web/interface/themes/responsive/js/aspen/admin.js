@@ -3087,5 +3087,32 @@ AspenDiscovery.Admin = (function () {
 				$('#propertyRowuploadIcon').hide();
 			}
 		},
+
+		getBatchUpdateHolidayForm: function (scope){
+			console.log(scope);
+			var url = Globals.path + "/Admin/AJAX?method=getBatchUpdateHolidayForm&scopeLevel=" + scope;
+			AspenDiscovery.Account.ajaxLightbox(url, true);
+		},
+
+		batchUpdateHolidays: function(holidayInfo, scope) {
+			//var holidayInfo = $('#holidayInformation').val();
+			var url = Globals.path + "/Admin/AJAX?method=batchUpdateHolidays&scope=" + scope;
+			var params = new FormData();
+			params.append('holidayInfo', holidayInfo);
+
+			$.ajax({
+				url: url,
+				type: 'POST',
+				data: params,
+				dataType: 'json',
+				success: function (data) {
+					AspenDiscovery.showMessage(data.title, data.message, true, data.success);
+				},
+				async: false,
+				contentType: false,
+				processData: false
+			});
+			return false;
+		},
 	};
 }(AspenDiscovery.Admin || {}));

@@ -18,6 +18,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.TreeSet;
 
 class SeriesIndexer {
@@ -70,9 +71,9 @@ class SeriesIndexer {
 		}
 		Http2SolrClient.Builder groupedWorkHttpBuilder;
 		if (searchVersion == 1) {
-			groupedWorkHttpBuilder = new Http2SolrClient.Builder("http://localhost:" + solrPort + "/solr/grouped_works");
+			groupedWorkHttpBuilder = new Http2SolrClient.Builder("http://" + solrHost + ":" + solrPort + "/solr/grouped_works");
 		}else{
-			groupedWorkHttpBuilder = new Http2SolrClient.Builder("http://localhost:" + solrPort + "/solr/grouped_works_v2");
+			groupedWorkHttpBuilder = new Http2SolrClient.Builder("http://" + solrHost + ":" + solrPort + "/solr/grouped_works_v2");
 		}
 		groupedWorkServer = groupedWorkHttpBuilder.build();
 
@@ -145,6 +146,20 @@ class SeriesIndexer {
 				logEntry.addNote("Calling final commit");
 				logEntry.saveResults();
 				updateServer.commit(false, false, true);
+			}
+
+			// Delete any series that are empty and were created more than 60 minutes ago.
+			long now = new Date().getTime() / 1000;
+			long createdTime = now - 60 * 60;
+			PreparedStatement getEmptySeriesStmt = dbConn.prepareStatement("SELECT id FROM series WHERE id NOT IN (SELECT seriesId FROM series_member) AND created < ?;");
+			getEmptySeriesStmt.setLong(1, createdTime);
+			ResultSet emptySeriesRS = getEmptySeriesStmt.executeQuery();
+			int seriesId;
+			while (emptySeriesRS.next()){
+				seriesId = emptySeriesRS.getInt("id");
+				dbConn.prepareStatement("DELETE from series WHERE id = " + seriesId).executeUpdate();
+				// Also delete that series id from Solr index.
+				updateServer.deleteByQuery("id:" + seriesId);
 			}
 
 		} catch (IOException e) {

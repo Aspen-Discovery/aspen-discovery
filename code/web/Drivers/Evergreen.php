@@ -51,6 +51,19 @@ class Evergreen extends AbstractIlsDriver {
 					//Process circulations
 					foreach ($apiResponse->payload as $payload) {
 						$mappedCheckout = $this->mapEvergreenFields($payload->circ->__p, $this->fetchIdl('circ'));
+
+						if (in_array($mappedCheckout['stop_fines'], ['LOST', 'CLAIMSRETURNED', 'LONGOVERDUE'])) {
+							// no expectation that the item is coming back and Evergreen's OPAC wouldn't
+							// display it on the patron's loan list, so we won't display it in Aspen either
+							continue;
+						}
+						if (!empty($mappedCheckout['xact_finish'])) {
+							// loan is fully closed out but wasn't returned and isn't lost, claims-returned, or
+							// long overdue; we shouldn't display it (though this would also be an anomalous state
+							// for a loan to be in)
+							continue;
+						}
+
 						$mappedRecord = $this->mapEvergreenFields($payload->record->__p, $this->fetchIdl('mvr'));
 						$mappedCopy = $this->mapEvergreenFields($payload->copy->__p, $this->fetchIdl('acp'));
 						$callNumber = $this->getCallNumberForCopy($mappedCopy, $authToken);

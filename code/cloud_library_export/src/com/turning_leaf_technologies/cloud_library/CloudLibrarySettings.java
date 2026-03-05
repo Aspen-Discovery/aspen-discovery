@@ -2,6 +2,8 @@ package com.turning_leaf_technologies.cloud_library;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 
 public class CloudLibrarySettings {
 	private final long settingsId;
@@ -12,6 +14,9 @@ public class CloudLibrarySettings {
 	private final boolean doFullReload;
 	private final long lastExtractTime;
 	private final long lastExtractTimeAll;
+	private final boolean reindexOnSunday;
+	private final boolean shouldRunSundayReindex;
+
 
 	public CloudLibrarySettings(ResultSet getSettingsRS) throws SQLException {
 		settingsId = getSettingsRS.getLong("id");
@@ -24,6 +29,17 @@ public class CloudLibrarySettings {
 		doFullReload = getSettingsRS.getBoolean("runFullUpdate");
 		lastExtractTime = getSettingsRS.getLong("lastUpdateOfChangedRecords");
 		lastExtractTimeAll = getSettingsRS.getLong("lastUpdateOfAllRecords");
+		reindexOnSunday = getSettingsRS.getBoolean("reindexOnSunday");
+
+		// get the current day of the week and time to determine if we should reindex on Sunday at 8PM
+		Calendar calendar = new GregorianCalendar();
+		int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
+		int hourOfDay = calendar.get(Calendar.HOUR_OF_DAY);
+		boolean isSunday = dayOfWeek == Calendar.SUNDAY && hourOfDay >= 20;
+
+		// we only want to reindex on Sunday if lastExtractTimeAll was more than 24 hours ago
+		shouldRunSundayReindex = reindexOnSunday && isSunday && (System.currentTimeMillis() - lastExtractTimeAll > 24 * 60 * 60 * 1000);
+
 	}
 
 	public long getSettingsId() {
@@ -56,5 +72,13 @@ public class CloudLibrarySettings {
 
 	public long getLastExtractTimeAll() {
 		return lastExtractTimeAll;
+	}
+
+	public boolean isReindexOnSunday() {
+		return reindexOnSunday;
+	}
+
+	public boolean shouldRunSundayReindex() {
+		return shouldRunSundayReindex;
 	}
 }

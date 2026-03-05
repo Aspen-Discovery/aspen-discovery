@@ -39,6 +39,8 @@ public class Scope implements Comparable<Scope>{
 	private int publicListsToInclude;
 	private String additionalLocationsToShowAvailabilityFor;
 	private Pattern additionalLocationsToShowAvailabilityForPattern;
+	private String locationsToExcludeAvailabilityFor;
+	private Pattern locationsToExcludeAvailabilityForPattern;
 	private boolean includeAllLibraryBranchesInFacets; //Only applies to location scopes
 	private Pattern courseReserveLibrariesToIncludePattern;
 
@@ -228,6 +230,13 @@ public class Scope implements Comparable<Scope>{
 		return additionalLocationsToShowAvailabilityFor;
 	}
 
+	void setLocationsToExcludeAvailabilityFor(String locationsToExcludeAvailabilityFor) {
+		this.locationsToExcludeAvailabilityFor = locationsToExcludeAvailabilityFor;
+		if (locationsToExcludeAvailabilityFor != null && !locationsToExcludeAvailabilityFor.isEmpty()) {
+			locationsToExcludeAvailabilityForPattern = Pattern.compile(locationsToExcludeAvailabilityFor);
+		}
+	}
+
 	public boolean isIncludeAllLibraryBranchesInFacets() {
 		return includeAllLibraryBranchesInFacets;
 	}
@@ -238,6 +247,10 @@ public class Scope implements Comparable<Scope>{
 
 	public Pattern getAdditionalLocationsToShowAvailabilityForPattern() {
 		return additionalLocationsToShowAvailabilityForPattern;
+	}
+
+	public Pattern getLocationsToExcludeAvailabilityForPattern() {
+		return locationsToExcludeAvailabilityForPattern;
 	}
 
 	void addOverDriveScope(OverDriveScope overDriveScope) {

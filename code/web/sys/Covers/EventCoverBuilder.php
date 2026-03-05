@@ -39,7 +39,7 @@ class EventCoverBuilder extends AbstractCoverBuilder {
 		imagerectangle($imageCanvas, 10, $this->imageWidth, $this->imageWidth - 10, $this->imageHeight - 10, $textColor);
 
 		//Add the title at the bottom of the cover
-		$this->drawEventText($imageCanvas, $title, $props['eventDate'], $textColor);
+		$this->drawEventText($imageCanvas, $title, $props['eventDate'], $textColor, $props['branch'], $props['displayBranchOnThumbnail']);
 
 		imagepng($imageCanvas, $filename);
 		imagedestroy($imageCanvas);
@@ -51,7 +51,7 @@ class EventCoverBuilder extends AbstractCoverBuilder {
 	 * @param DateTime $eventDate
 	 * @param false|int $textColor
 	 */
-	protected function drawEventText($imageCanvas, $title, $eventDate, $textColor) {
+	protected function drawEventText($imageCanvas, $title, $eventDate, $textColor, $branch = '', $displayBranchOnThumbnail) {
 		$title_font_size = $this->imageWidth * 0.08;
 
 		$x = 17;
@@ -71,9 +71,23 @@ class EventCoverBuilder extends AbstractCoverBuilder {
 			$fontMultiplier = 1.3;
 		}
 		$y = addCenteredWrappedTextToImage($imageCanvas, $this->titleFont, $month, $title_font_size * $fontMultiplier, $title_font_size * .15 * 1.65, $x, $y, $this->imageWidth - 30, $textColor);
-		$y += 20;
+		$y += 10;
 		$dayOfMonth = $eventDate->format('j');
 		$y = addCenteredWrappedTextToImage($imageCanvas, $this->titleFont, $dayOfMonth, $title_font_size * 5, $title_font_size * .15 * 5, $x, $y, $this->imageWidth - 30, $textColor);
+
+		if (!empty($branch) && $displayBranchOnThumbnail) {
+			$y += 15;
+			$branch = StringUtils::trimStringToLengthAtWordBoundary($branch, 150, true);
+			$branch_font_size = $title_font_size * 1.0;
+
+			[
+				$branchTotalHeight,
+				$branchLines,
+				$branch_font_size_final,
+			] = wrapTextForDisplay($this->titleFont, $branch, $branch_font_size, $branch_font_size * .15, $width, 100);
+			$y = addCenteredWrappedTextToImage($imageCanvas, $this->titleFont, $branchLines, $branch_font_size_final, $branch_font_size_final * .15, $x, $y, $this->imageWidth - 30, $textColor);
+			$y += 30; 
+		}
 
 		$title = StringUtils::trimStringToLengthAtWordBoundary($title, 60, true);
 		/** @noinspection PhpUnusedLocalVariableInspection */

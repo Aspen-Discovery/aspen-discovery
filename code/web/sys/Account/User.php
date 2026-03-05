@@ -2685,8 +2685,9 @@ class User extends DataObject {
 				$recordId = $hold->sourceId;
 				$holdId = $hold->cancelId;
 				$holdType = $hold->source;
-
-				if ($frozen == 0 && $canFreeze == 1) {
+				$patronId = $hold->patronId ?? $user->id;
+				$patron = $user->getUserReferredTo($patronId);
+				if ($patron && $frozen == 0 && $canFreeze == 1) {
 					if ($holdType == 'ils') {
 						$tmpResult = $user->freezeHold($recordId, $holdId, $reactivationDate);
 						if ($tmpResult['success']) {
@@ -2804,8 +2805,9 @@ class User extends DataObject {
 				$recordId = $hold->sourceId;
 				$holdId = $hold->cancelId;
 				$holdType = $hold->source;
-
-				if ($frozen == 1 && $canFreeze == 1) {
+				$patronId = $hold->patronId ?? $user->id;
+				$patron = $user->getUserReferredTo($patronId);
+				if ($patron && $frozen == 1 && $canFreeze == 1) {
 					if ($holdType == 'ils') {
 						$tmpResult = $user->thawHold($recordId, $holdId);
 						if ($tmpResult['success']) {
@@ -3741,10 +3743,16 @@ class User extends DataObject {
 			require_once ROOT_DIR . '/sys/Notifications/ExpoNotification.php';
 			require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
 			$appScheme = 'aspen-lida';
-			require_once ROOT_DIR . '/sys/SystemVariables.php';
-			$systemVariables = SystemVariables::getSystemVariables();
-			if ($systemVariables && !empty($systemVariables->appScheme)) {
-				$appScheme = $systemVariables->appScheme;
+			require_once ROOT_DIR . '/sys/AspenLiDA/BrandedAppSetting.php';
+			$brandedSettings = new BrandedAppSetting();
+			if ($brandedSettings->find(true)) {
+				$appScheme = $brandedSettings->slugName;
+			} else {
+				require_once ROOT_DIR . '/sys/SystemVariables.php';
+				$systemVariables = SystemVariables::getSystemVariables();
+				if ($systemVariables && !empty($systemVariables->appScheme)) {
+					$appScheme = $systemVariables->appScheme;
+				}
 			}
 			$notificationToken = new UserNotificationToken();
 			$notificationToken->userId = $this->id;
@@ -3795,10 +3803,16 @@ class User extends DataObject {
 			require_once ROOT_DIR . '/sys/Notifications/ExpoNotification.php';
 			require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
 			$appScheme = 'aspen-lida';
-			require_once ROOT_DIR . '/sys/SystemVariables.php';
-			$systemVariables = SystemVariables::getSystemVariables();
-			if ($systemVariables && !empty($systemVariables->appScheme)) {
-				$appScheme = $systemVariables->appScheme;
+			require_once ROOT_DIR . '/sys/AspenLiDA/BrandedAppSetting.php';
+			$brandedSettings = new BrandedAppSetting();
+			if ($brandedSettings->find(true)) {
+				$appScheme = $brandedSettings->slugName;
+			} else {
+				require_once ROOT_DIR . '/sys/SystemVariables.php';
+				$systemVariables = SystemVariables::getSystemVariables();
+				if ($systemVariables && !empty($systemVariables->appScheme)) {
+					$appScheme = $systemVariables->appScheme;
+				}
 			}
 			$notificationToken = new UserNotificationToken();
 			$notificationToken->userId = $this->id;
@@ -5428,14 +5442,14 @@ class User extends DataObject {
 				foreach ($holds as $holdSection) {
 					/** @var Hold $hold */
 					foreach ($holdSection as $hold) {
-						if (!empty($hold->outOfHoldGroupMessage)) {
+						if ($hold->isLocalILL) {
 							$numLocalIllRequests++;
 						}
 					}
 				}
-				$checkouts = $this->getCatalogDriver()->getCheckouts($this);
+				$checkouts = $this->getCatalogDriver()->getCheckouts($this, true);
 				foreach ($checkouts as $checkout) {
-					if (!empty($checkout->outOfHoldGroupMessage)) {
+					if ($checkout->isLocalILL) {
 						$numLocalIllRequests++;
 					}
 				}
@@ -6628,6 +6642,14 @@ class User extends DataObject {
 		}
 
 		$this->update();
+	}
+
+	public function canSaveSearches(): bool {
+		$userLibrary = $this->getHomeLibrary();
+		if ($userLibrary) {
+			return $userLibrary->enableSavedSearches == 1;
+		}
+		return false;
 	}
 }
 

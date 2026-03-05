@@ -27,7 +27,7 @@ class Pager {
 			'urlVar' => 'page',
 			'totalItems' => 0,
 			'canChangeRecordsPerPage' => false,
-			'canJumpToPage' => false,
+			'canJumpToPage' => true,
 		];
 
 		// Override defaults with user-provided values:
@@ -78,19 +78,6 @@ class Pager {
 		if ($this->_totalPages > 1) {
 			//$links['all'] = 'Pagination goes here.  On page ' . $this->getCurrentPage() . ' of ' . $this->getTotalPages();
 			$linksText = '<nav aria-label="Page navigation">';
-			if ($this->options['canJumpToPage']) {
-				$linksText .= '<div class="form-group">';
-				$linksText .= '<label for="page" class="control-label">' . translate([
-						'text' => 'Go to page',
-						'isPublicFacing' => true,
-					]) . '&nbsp;</label>';
-				$linksText .= '<input type="text" min="1" max="' . $this->_totalPages . '" id="page" name="page" size="2" class="input input-sm">';
-				$linksText .= '<button id="goToPageSubmit" name="goToPageSubmit" class="input-sm" onclick="return AspenDiscovery.changePage();">' . translate([
-						'text' => 'Go',
-						'isPublicFacing' => true,
-					]) . '</button>';
-				$linksText .= '</div>';
-			}
 			$linksText .= '<div class="pagination btn-group btn-group-sm justify-content-end">';
 			if ($this->getCurrentPage() != 1) {
 				$linksText .= $this->renderLink(1) . '[1]</a>';
@@ -128,9 +115,8 @@ class Pager {
 					]) . ' &raquo;</a>';
 				$linksText .= $this->renderLink($this->getTotalPages()) . '[' . $this->getTotalPages() . ']</a>';
 			}
-			$linksText .= '</div>';
 			if ($this->options['canChangeRecordsPerPage']) {
-				$linksText .= '<div class="form-group">';
+				$linksText .= '&nbsp;<div class="form-group">';
 				$linksText .= '<select id="pageSize" name="pageSize" class="pageSize form-control input-sm" onchange="AspenDiscovery.changePageSize()">';
 				$linksText .= '<option value="25" ' . ($this->options['perPage'] == 25 ? 'selected="selected"' : '') . '>25</option>';
 				if ($this->options['totalItems'] > 25) {
@@ -146,12 +132,29 @@ class Pager {
 					}
 				}
 				$linksText .= '</select>';
-				$linksText .= '<label for="pageSize" class="control-label">' . translate([
+				$linksText .= '&nbsp;<label for="pageSize" class="control-label">' . translate([
 						'text' => 'Per Page',
 						'isPublicFacing' => true,
 					]) . '&nbsp;</label></div>';
 			}
+			$linksText .= '</div>';
+
+			if ($this->options['canJumpToPage']) {
+				$linksText .= '<br/><div class="form-group jump-to-page">';
+				$linksText .= '<label for="page" class="control-label">' . translate([
+						'text' => 'Go to page',
+						'isPublicFacing' => true,
+					]) . '&nbsp;</label>';
+				$linksText .= '<input type="text" min="1" max="' . $this->_totalPages . '" id="page" name="page" size="2" class="input input-sm">';
+				$linksText .= '&nbsp;<button id="goToPageSubmit" name="goToPageSubmit" class="btn btn-sm btn-default" onclick="return AspenDiscovery.changePage();">' . translate([
+						'text' => 'Go',
+						'isPublicFacing' => true,
+					]) . '</button>';
+				$linksText .= '</div>';
+			}
+
 			$linksText .= '</nav>';
+
 			$links['all'] = $linksText;
 		} else {
 			$links['all'] = null;

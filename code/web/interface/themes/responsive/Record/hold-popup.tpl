@@ -151,15 +151,15 @@
 						{/if}
 					{/if}
 
-					{if $promptToFreezeHoldsImmediately}
+					{if $promptToFreezeHoldsImmediately && $allowFreezeHolds}
 						<div class="controls">
 							<div class="form-group">
-								<label for="freezeHoldImmediately" class="checkbox"><input type="checkbox" name="freezeHoldImmediately" id="freezeHoldImmediately" onchange="$('#reactivationDate').toggle()"> {translate text="Freeze this hold immediately." isPublicFacing=true}</label>
+								<label for="freezeHoldImmediately" class="checkbox"><input type="checkbox" name="freezeHoldImmediately" id="freezeHoldImmediately" onchange="$('#reactivationDateGroup').toggle()"> {translate text="Freeze this hold immediately." isPublicFacing=true}</label>
 							</div>
 						</div>
 
 						{if $showDateWhenSuspending}
-							<div class="form-group" id="reactivationDate" style="display: none;">
+							<div class="form-group" id="reactivationDateGroup" style="display: none;">
 								<label for="reactivationDate">{translate text="Select the date when you want the hold thawed." isPublicFacing=true}</label>
 								{* Calculate max freeze date from hold placement date if available, otherwise use default *}
 								{if $allowMaxDaysToFreeze > -1}
@@ -245,7 +245,7 @@
 							<div class="row horizontalEditionSelector">
 								<div class="col-xs-12">
 									<div class="slider-container" role="region" id="slider-edition">
-										<div class="slider-button slider-button-prev" id="slider-prev-edition"></div>
+										<button type="button" class="slider-button slider-button-prev btn btn-editions" id="slider-prev-edition"></button>
 										<div class="slider-wrapper" role="listbox" aria-activedescendant="slide-edition-0">
 											{assign var=firstEdition value=""}
 											{foreach from=$editionOptions item=edition name=editions}
@@ -259,7 +259,7 @@
 															<input type="radio" name="editionOption" id="editionOption{$edition->databaseId}" value="{$edition->id}" {if $smarty.foreach.editions.index == 0}checked{/if}> {translate text="Select This Edition" isPublicFacing=true}
 														</div>
 														<div class="edition-cover">
-															<img src="{$edition->getBookcoverUrl('small')}" class="img-thumbnail{if $useOriginalCoverUrls} use-original-covers{/if} {$coverStyle}" alt="{translate text='Book Cover' inAttribute=true isPublicFacing=true}">
+															<img src="{$edition->getBookcoverUrl('small')}" class="img-thumbnail{if $useOriginalCoverUrls} use-original-covers{/if} {$coverStyle}" alt="{translate text='Book Cover' inAttribute=true isPublicFacing=true}" role="presentation">
 														</div>
 														<div class="edition-data">
 															{$edition->publicationDate}. {$edition->publisher}. {$edition->physical}.<br/>
@@ -270,7 +270,7 @@
 												</div>
 											{/foreach}
 										</div>
-										<div class="slider-button slider-button-next" id="slider-next-edition"></div>
+										<button type="button" class="slider-button slider-button-next btn btn-editions" id="slider-next-edition"></button>
 								</div>
 									<script>
 										$(document).ready(function(){ldelim}

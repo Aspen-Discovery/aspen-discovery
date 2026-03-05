@@ -190,40 +190,103 @@ class ListAPI extends AbstractAPI {
 	 * includes id, title, description, and number of titles
 	 */
 	function getSearchableLists() {
-		global $aspen_db;
-		$list = new UserList();
-		$list->public = 1;
-		$list->searchable = 1;
-		$list->deleted = 0;
-		$list->find();
-		$results = [];
-		if ($list->getNumResults() > 0) {
-			while ($list->fetch()) {
-				$query = "SELECT count(id) as numTitles FROM user_list_entry where listId = " . $list->id;
-				$stmt = $aspen_db->prepare($query);
-				$stmt->setFetchMode(PDO::FETCH_ASSOC);
-				$success = $stmt->execute();
-				if ($success) {
-					$row = $stmt->fetch();
-					$numTitles = $row['numTitles'];
-				} else {
-					$numTitles = -1;
-				}
-
-				$results[] = [
-					'id' => $list->id,
-					'title' => $list->title,
-					'description' => $list->description,
-					'displayListAuthor' => $list->displayListAuthor,
-					'numTitles' => $numTitles,
-					'dateUpdated' => $list->dateUpdated,
+		$restrictByLibrary = $_REQUEST['restrictByLibrary'] ?? false;
+		if ($restrictByLibrary) {
+			$titleFilter = $_REQUEST['title'] ?? null;
+			global $timer;
+			/** @var SearchObject_ListsSearcher $searchObject */
+			$searchObject = SearchObjectFactory::initSearchObject('Lists');
+			$searchObject->init();
+			$searchObject->clearFacets();
+			if (!empty($titleFilter)) {
+				$searchObject->setSearchTerms([
+					'index' => 'title',
+					'lookfor' => $titleFilter,
+				]);
+			}
+			$results = $searchObject->processSearch(true, false);
+			if ($results == null) {
+				return [
+					'success' => false,
+					'message' => 'The Solr index is offline, please try your search again in a few minutes.',
+					'lists' => [],
+				];
+			} elseif ($results instanceof AspenError || !empty($result['error'])) {
+				return [
+					'success' => false,
+					'message' => 'An error occurred while searching for lists.',
+					'lists' => [],
 				];
 			}
+
+			$timer->logTime('Process Search');
+			$searchObject->close();
+			if ($searchObject->getResultTotal() == 0) {
+				return [
+					'success' => true,
+					'lists' => [],
+				];
+			}
+
+			$results = [];
+			$recordSet = $searchObject->getResultRecordSet();
+			$timer->logTime('load result records');
+			foreach ($recordSet as $record) {
+				$dateUpdated = null;
+				if (isset($record['days_since_updated']) && is_numeric($record['days_since_updated'])) {
+					$timestamp = time() - ($record['days_since_updated'] * 24 * 60 * 60);
+					$dateUpdated = date('F j, Y g:i A', $timestamp);
+				}
+				$results[] = [
+					'id' => $record['id'],
+					'title' => $record['title'],
+					'description' => $record['description'],
+					'displayListAuthor' => $record['author_display'],
+					'numTitles' => $record['num_titles'],
+					'dateUpdated' => $dateUpdated,
+				];
+			}
+
+			return [
+				'success' => true,
+				'lists' => $results,
+			];
+		} else {
+			global $aspen_db;
+			$list = new UserList();
+			$list->public = 1;
+			$list->searchable = 1;
+			$list->deleted = 0;
+			$list->find();
+			$results = [];
+			if ($list->getNumResults() > 0) {
+				while ($list->fetch()) {
+					$query = "SELECT count(id) as numTitles FROM user_list_entry where listId = " . $list->id;
+					$stmt = $aspen_db->prepare($query);
+					$stmt->setFetchMode(PDO::FETCH_ASSOC);
+					$success = $stmt->execute();
+					if ($success) {
+						$row = $stmt->fetch();
+						$numTitles = $row['numTitles'];
+					} else {
+						$numTitles = -1;
+					}
+
+					$results[] = [
+						'id' => $list->id,
+						'title' => $list->title,
+						'description' => $list->description,
+						'displayListAuthor' => $list->displayListAuthor,
+						'numTitles' => $numTitles,
+						'dateUpdated' => $list->dateUpdated,
+					];
+				}
+			}
+			return [
+				'success' => true,
+				'lists' => $results,
+			];
 		}
-		return [
-			'success' => true,
-			'lists' => $results,
-		];
 	}
 
 	/**

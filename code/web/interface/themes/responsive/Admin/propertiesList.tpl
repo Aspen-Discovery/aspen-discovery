@@ -282,7 +282,11 @@
 		<div class="row" style="padding-top: 1em">
 			<div class="btn-group col-sm-12">
 				{foreach from=$customListActions item=customAction}
-					<button type='submit' value='{$customAction.action}' class='btn{if !empty($customAction.class)} {$customAction.class}{else} btn-default{/if}' onclick="$('#objectAction').val('{$customAction.action}');{if !empty($customAction.onclick)}{$customAction.onclick nofilter}{/if}">{translate text=$customAction.label isAdminFacing=true}</button>
+					{if $customAction.label != 'Batch Update Holidays'}
+						<button type='submit' value='{$customAction.action}' class='btn{if !empty($customAction.class)} {$customAction.class}{else} btn-default{/if}' onclick="$('#objectAction').val('{$customAction.action}');{if !empty($customAction.onclick)}{$customAction.onclick nofilter}{/if}">{translate text=$customAction.label isAdminFacing=true}</button>
+					{else}
+						<button type='button' value='{$customAction.action}' class='btn{if !empty($customAction.class)} {$customAction.class}{else} btn-default{/if}' onclick='{$customAction.action}'>{translate text=$customAction.label isAdminFacing=true}</button>
+					{/if}
 				{/foreach}
 			</div>
 		</div>

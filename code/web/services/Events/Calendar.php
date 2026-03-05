@@ -319,7 +319,7 @@ class Events_Calendar extends Action {
 			/** @noinspection PhpSuspiciousNameCombinationInspection */
 			$maxDay = cal_days_in_month(CAL_GREGORIAN, $month, $year);
 		}
-		for ($i = 0; $i < 5; $i++) {
+		for ($i = 0; $i < 6; $i++) {
 			$week = [
 				'days' => [],
 			];
@@ -328,6 +328,9 @@ class Events_Calendar extends Action {
 			if ($i == 0) {
 				if (!$useWeek) {
 					$startDayIndex = $calendarStartDay->format('N');
+					if ($startDayIndex == 7) {
+						$startDayIndex = 0;
+					}
 				}
 				for ($j = 0; $j < $startDayIndex; $j++) {
 					$week['days'][] = [

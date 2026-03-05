@@ -372,7 +372,7 @@
 			<div class="row">
 				<div class="col-sm-3">
 					<div id="existingTitleForRequestCover">
-						<div class="text-center row"><a href="" target="_blank"><img alt="Book Cover" class="img-thumbnail{if $useOriginalCoverUrls} use-original-covers{/if} floating" src="/bookcover.php?id=cca5af54-2d1b-e8fe-f93e-789dcbfdfe59-eng&amp;size=medium&amp;type=grouped_work&amp;category=eBook"></a></div>
+						<div class="text-center row"><a href="" target="_blank"><img alt="Book Cover" class="img-thumbnail{if $useOriginalCoverUrls} use-original-covers{/if} floating" src="/bookcover.php?id=cca5af54-2d1b-e8fe-f93e-789dcbfdfe59-eng&amp;size=medium&amp;type=grouped_work&amp;category=eBook" role="presentation"></a></div>
 					</div>
 				</div>
 				<div class="col-sm-9">

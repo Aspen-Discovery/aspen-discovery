@@ -15,6 +15,7 @@ class Event extends DataObject {
 	public $description;
 	public $cover;
 	public $private;
+	public $displayEventBranchOnThumbnail;
 	public $_typeFields = [];
 	public $startDate;
 	public $_startDateForList;
@@ -152,6 +153,13 @@ class Event extends DataObject {
 							'View Private Events for Home Location'
 						],
 						'description' => 'Private events are limited to those with permission to view private events',
+					],
+					'displayEventBranchOnThumbnail' => [
+						'property' => 'displayEventBranchOnThumbnail',
+						'type' => 'checkbox',
+						'label' => 'Display Event Branch on Thumbnail',
+						'default' => false,
+						'description' => 'Whether or not to display the event branch on the thubmnail image',
 					],
 				],
 			],
@@ -932,6 +940,10 @@ class Event extends DataObject {
 				if (!$eventType->lengthCustomizable) {
 					$structure['scheduleSection']['properties']['eventLength']['readOnly'] = true;
 					$this->eventLength = $eventType->eventLength;
+				}
+				if (!$eventType->displayEventBranchOnThumbnailCustomizable) {
+					$structure['infoSection']['properties']['displayEventBranchOnThumbnail']['readOnly'] = true;
+					$this->displayEventBranchOnThumbnail = $eventType->displayEventBranchOnThumbnail;
 				}
 				$structure['infoSection']['properties']['fieldSetFieldSection']['properties'] = $eventType->getFieldSetFields();
 				// Update scheduling sections

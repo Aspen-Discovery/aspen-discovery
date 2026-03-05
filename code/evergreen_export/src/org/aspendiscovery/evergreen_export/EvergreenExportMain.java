@@ -33,6 +33,13 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.attribute.GroupPrincipal;
+import java.nio.file.attribute.PosixFileAttributeView;
+import java.nio.file.attribute.UserPrincipalLookupService;
+import java.nio.file.attribute.PosixFilePermission;
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -223,6 +230,8 @@ public class EvergreenExportMain {
 				}catch (SQLException e){
 					logEntry.incErrors("Error updating when the records were last indexed", e);
 				}
+
+				exportBookCovers(dbConn);
 
 				logEntry.setFinished();
 
@@ -1901,6 +1910,86 @@ public class EvergreenExportMain {
 			}
 		}
 		return null;
+	}
+
+	private static void exportBookCovers(Connection dbConn) {
+		String coversPath = configIni.get("Site","coverPath") + "/original/";
+		File incomingCoversDirectory = new File(indexingProfile.getMarcPath() + "/../covers");
+
+		logEntry.addNote("Begin processing book covers");
+		logEntry.saveResults();
+
+		int numCoversExported = 0;
+		try {
+			PreparedStatement getGroupedWorkForRecordStmt = dbConn.prepareStatement("SELECT permanent_id from grouped_work inner join grouped_work_primary_identifiers on grouped_work.id = grouped_work_id where type = ? and identifier = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement clearBookCoverInfoStmt = dbConn.prepareStatement("UPDATE bookcover_info set imageSource = '', thumbnailLoaded=0, mediumLoaded=0, largeLoaded= 0 where recordType = 'grouped_work' and recordId = ?");
+			long now = new Date().getTime() / 1000;
+			PreparedStatement updateILSBookCoverInfoStmt = dbConn.prepareStatement("INSERT INTO bookcover_info set imageSource = 'upload', thumbnailLoaded=0, mediumLoaded=0, largeLoaded= 0, firstLoaded = " + now + ", lastUsed = 0, recordType = '" + indexingProfile.getName() + "', recordId = ? ON DUPLICATE KEY UPDATE imageSource = 'upload', thumbnailLoaded=0, mediumLoaded=0, largeLoaded= 0");
+			if (incomingCoversDirectory.exists()) {
+				File[] incomingCoverFiles = incomingCoversDirectory.listFiles();
+				if (incomingCoverFiles != null) {
+					for (File incomingCoverFile : incomingCoverFiles) {
+						String bibId = incomingCoverFile.getName();
+						if (bibId.matches("^\\d+$")) {
+							// filename is a number; we'll assume that it is an Evergreen bib ID
+							getGroupedWorkForRecordStmt.setString(1, indexingProfile.getName());
+							getGroupedWorkForRecordStmt.setString(2, bibId);
+							ResultSet getGroupedWorkForRecordRS = getGroupedWorkForRecordStmt.executeQuery();
+							if (getGroupedWorkForRecordRS.next()) {
+								String groupedWorkId = getGroupedWorkForRecordRS.getString("permanent_id");
+								File coverFile = new File(coversPath + bibId + ".png");
+								if (!coverFile.exists() || coverFile.length() == 0 || (coverFile.lastModified() < incomingCoverFile.lastModified())) {
+									try {
+										incomingCoverFile.renameTo(coverFile);
+										clearBookCoverInfoStmt.setString(1, groupedWorkId);
+										int numUpdates = clearBookCoverInfoStmt.executeUpdate();
+										if (numUpdates > 0) {
+											logger.debug("Cleared cover cache info for " + groupedWorkId);
+										}
+										updateILSBookCoverInfoStmt.setString(1, bibId);
+										updateILSBookCoverInfoStmt.executeUpdate();
+
+										try {
+											Set<PosixFilePermission> perms = new HashSet<>();
+											perms.add(PosixFilePermission.OWNER_READ);
+											perms.add(PosixFilePermission.OWNER_WRITE);
+											perms.add(PosixFilePermission.GROUP_READ);
+											perms.add(PosixFilePermission.GROUP_WRITE);
+											perms.add(PosixFilePermission.OTHERS_READ);
+
+											Files.setPosixFilePermissions(coverFile.toPath(), perms);
+											String groupName = "aspen_apache";
+											UserPrincipalLookupService lookupService = FileSystems.getDefault().getUserPrincipalLookupService();
+											GroupPrincipal group = lookupService.lookupPrincipalByGroupName(groupName);
+											Files.getFileAttributeView(coverFile.toPath(), PosixFileAttributeView.class, LinkOption.NOFOLLOW_LINKS).setGroup(group);
+										} catch (Exception e){
+											//Errors get generated on Windows, just ignore.
+											logger.error("Error setting file permissions for " + coverFile, e);
+										}
+
+										numCoversExported++;
+									} catch (Exception e) {
+										logEntry.incErrors("Error creating book cover for " + bibId, e);
+									}
+								}
+							}
+						} else {
+							logEntry.addNote("Incoming cover file " + bibId + " is not numeric; ignoring");
+							logEntry.saveResults();
+						}
+					}
+				}
+				logEntry.addNote("Processed a total of " + numCoversExported + " book covers");
+				logEntry.saveResults();
+			} else {
+				logEntry.addNote("Incoming covers directory did not exist");
+				logEntry.saveResults();
+			}
+		} catch (SQLException e) {
+			logEntry.incErrors("Error exporting book covers", e);
+		}
+		logEntry.addNote("Finished export of book covers " + dateTimeFormatter.format(new Date()));
+
 	}
 
 	private static void exportHolds(Connection dbConn, IndexingProfile indexingProfile){

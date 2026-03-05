@@ -9,7 +9,7 @@
 			<div class="narrowGroupHidden" id="narrowGroupHidden_{$title}" style="display:none">
 		{/if}
 		{if !empty($thisFacet.isApplied)}
-			<div class="facetValue"><i class="fas fa-check-circle fa-lg text-success" style="vertical-align: middle"></i> {$thisFacet.display} <a href="{$thisFacet.removalUrl|escape}" class="removeFacetLink">({translate text='remove' isPublicFacing=true})</a></div>
+			<div class="facetValue"><i class="fas fa-check-circle fa-lg text-success" style="vertical-align: middle"></i> {$thisFacet.display} <a href="{$thisFacet.removalUrl|escape}" class="removeFacetLink"{if !empty($thisFacet.isLocked)} onclick="return AspenDiscovery.Searches.unlockFacetAndRemove('{$title}', '{$thisFacet.removalUrl|escape}', '{$thisFacet.value|escape:'javascript'}');"{/if}>({translate text='remove' isPublicFacing=true})</a></div>
 		{else}
 			<div class="facetValue">{if $thisFacet.url !=null}<a href="{$thisFacet.url|escape}">{/if}{$thisFacet.display}{if $thisFacet.url !=null}</a>{/if}{if $facetCountsToShow == 1 || ($facetCountsToShow == 2 && empty($thisFacet.countIsApproximate))}{if $thisFacet.count != ''}&nbsp;({if !empty($thisFacet.countIsApproximate)}{/if}{$thisFacet.count|number_format}){/if}{/if}</div>
 		{/if}
@@ -45,7 +45,7 @@
 			<div class="narrowGroupHidden" id="narrowGroupHidden_{$title}" style="display:none">
 		{/if}
 		{if !empty($thisFacet.isApplied)}
-			<div class="facetValue"><i class="fas fa-check-circle fa-lg text-success" style="vertical-align: middle"></i> {$thisFacet.display} <a href="{$thisFacet.removalUrl|escape}" class="removeFacetLink">({translate text='remove' isPublicFacing=true})</a></div>
+			<div class="facetValue"><i class="fas fa-check-circle fa-lg text-success" style="vertical-align: middle"></i> {$thisFacet.display} <a href="{$thisFacet.removalUrl|escape}" class="removeFacetLink"{if !empty($thisFacet.isLocked)} onclick="return AspenDiscovery.Searches.unlockFacetAndRemove('{$title}', '{$thisFacet.removalUrl|escape}', '{$thisFacet.value|escape:'javascript'}');"{/if}>({translate text='remove' isPublicFacing=true})</a></div>
 		{else}
 			<div class="facetValue">{if $thisFacet.url !=null}<a href="{$thisFacet.url|escape}">{/if}{$thisFacet.display}{if $thisFacet.url !=null}</a>{/if}{if $facetCountsToShow == 1 || ($facetCountsToShow == 2 && empty($thisFacet.countIsApproximate))}{if $thisFacet.count != ''}&nbsp;({if !empty($thisFacet.countIsApproximate)}{/if}{$thisFacet.count|number_format}){/if}{/if}</div>
 		{/if}

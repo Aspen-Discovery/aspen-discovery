@@ -23,27 +23,27 @@
 						<select id="user_id" class="form-control-sm" style="margin-bottom: 3px;" onchange="AspenDiscovery.CommunityEngagement.filterDropdownOptions('user')">
 							<option value="">-</option>
 							{foreach from=$users item=$user}
-									<option value="{$user.id}">{$user.displayName}</option>
+								<option value="{$user.id}">{$user.displayName}{if $user.ils_barcode} - {$user.ils_barcode}{/if}</option>
 							{/foreach}
 						</select>
 						<button class="btn btn-sm btn-primary" onclick="$('#addUserByBarcodeModal').modal('show')">Add User by Barcode</button>
 				</div>
 			{else}
 				<div id="userDropdown" style="display:none;">
-					<input type="text" 
-						id="user_search" 
-						class="form-control-sm" 
-						style="margin-bottom: 3px;" 
-						placeholder="Search users..." 
+					<input type="text"
+						id="user_search"
+						class="form-control-sm"
+						style="margin-bottom: 3px;"
+						placeholder="Search users..."
 						data-toggle="tooltip"
 						data-placement="top"
 						title="Enter at least 2 characters to search"
 						autocomplete="off"
 						oninput="AspenDiscovery.CommunityEngagement.searchUsers(this.value)">
-					
+
 					<div id="user_search_results" class="search-results" style="display:none; position:absolute; background:white; border:1px solid #ccc; max-height:200px; overflow-y:auto; z-index:1000; min-width:250px; font-size:14px; padding:5px; font-size:20px;">
 					</div>
-					
+
 					<input type="hidden" id="selected_user_id" value="">
 					<button class="btn btn-sm btn-primary" onclick="$('#addUserByBarcodeModal').modal('show')">Add User by Barcode</button>
 				</div>
@@ -77,12 +77,12 @@
 						</div>
 					{/foreach}
 				</div>
-			</div>  
+			</div>
 		</div>
 
 		{*Filtered Campaigns*}
 		<div id="filteredCampaign">
-		 
+
 		</div>
 	</div>
 

@@ -164,8 +164,6 @@ class EventFieldSet extends DataObject {
 				];
 				if ($type == 'enum') {
 					$structure[$field->id]['values'] = explode("\n", $field->allowableValues);
-				} else if ($type == 'checkbox') {
-					$structure[$field->id]['returnValueForUnchecked'] = true;
 				}
 			}
 		}

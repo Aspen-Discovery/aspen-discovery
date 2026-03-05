@@ -122,4 +122,31 @@ abstract class AbstractAPI extends Action{
 
 		return $user;
 	}
+
+	/**
+	 * Returns valid sources for Aspen LiDA to return when making API requests for searching, browse categories, lists, etc.
+	 * <ul>
+	 *     <li><b>Adding new items here without proper testing can result in the app crashing and should only be updated when a source is confirmed to be working with LiDA.</b></li>
+	 * </ul>
+	 * @return array
+	 * @noinspection PhpUnused
+	 */
+	public static function getValidSourcesForLiDA($context = 'browseCategory'): array {
+		if ($context == 'search') {
+			return [
+				'event_assabet',
+				'event_communico',
+				'event_libcal',
+				'library_calendar_event',
+				'event_aspenEvent',
+				'grouped_work'
+			];
+		} else {
+			return [
+				'GroupedWork',
+				'List',
+				'Events'
+			];
+		}
+	}
 }

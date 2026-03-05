@@ -17,6 +17,7 @@ class CloudLibrarySetting extends DataObject {
 	public $lastUpdateOfChangedRecords;
 	/** @noinspection PhpUnused */
 	public $lastUpdateOfAllRecords;
+	public $reindexOnSunday;
 
 	private $_scopes;
 
@@ -78,6 +79,13 @@ class CloudLibrarySetting extends DataObject {
 				'label' => 'Run Full Update',
 				'description' => 'Whether or not a full update of all records should be done on the next pass of indexing',
 				'default' => 0,
+			],
+			'reindexOnSunday' => [
+				'property' => 'reindexOnSunday',
+				'type' => 'checkbox',
+				'label' => 'Reindex on Sundays at 8PM',
+				'description' => 'Whether or not to automatically run a full update of all records on Sundays at 8PM',
+				'default' => 1,
 			],
 			'useAlternateLibraryCard' => [
 				'property' => 'useAlternateLibraryCard',

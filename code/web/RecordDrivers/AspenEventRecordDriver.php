@@ -481,4 +481,88 @@ class AspenEventRecordDriver extends IndexRecordDriver {
 			'titleURL' => null,
 		];
 	}
+
+	public function getDisplayBranchOnThumbnail() {
+		$eventInstance = $this->getEventObject();
+		if ($eventInstance) {
+			require_once ROOT_DIR . '/sys/Events/Event.php';
+			$event = new Event();
+			$event->id = $eventInstance->eventId;
+			if ($event->find(true)) {
+				return $event->displayEventBranchOnThumbnail;
+			}
+		}
+		return false;
+	}
+
+	function getBranchFromDB($id) {
+	
+		if (strpos($id, '_') !== false) {
+			$parts = explode('_', $id);
+			$numericId = end($parts);
+		} else {
+			$numericId = $id;
+		}
+	
+		if ($this->eventObject == null || $this->eventObject->id != $numericId) {
+			$this->eventObject = new EventInstance();
+			$this->eventObject->id = $numericId;
+
+			if (!$this->eventObject->find(true)) {
+				$this->eventObject = false;
+				return '';
+			}
+		}
+	
+		if ($this->eventObject === false) {
+			return '';
+		}
+
+		require_once ROOT_DIR . '/sys/Events/Event.php';
+		$event = new Event();
+		$event->id = $this->eventObject->eventId;
+		if ($event->find(true)) {
+			require_once ROOT_DIR . '/sys/LibraryLocation/Location.php';
+			$location = new Location();
+			$location->locationId = $event->locationId;
+			if ($location->find(true)) {
+				return $location->displayName;
+			}
+		}
+		return false;
+	}
+
+	function getDisplayBranchOnThumbnailFromDB($id) {
+		
+		if (strpos($id, '_') !== false) {
+			$parts = explode('_', $id);
+			$numericId = end($parts);
+		} else {
+			$numericId = $id;
+		}
+		
+		if ($this->eventObject == null || $this->eventObject->id != $numericId) {
+			$this->eventObject = new EventInstance();
+			$this->eventObject->id = $numericId;
+
+			if (!$this->eventObject->find(true)) {
+				$this->eventObject = false;
+				return false;
+			}
+		}
+		
+		if ($this->eventObject === false) {
+			return false;
+		}
+		
+		require_once ROOT_DIR . '/sys/Events/Event.php';
+		$event = new Event();
+		$event->id = $this->eventObject->eventId;
+		if ($event->find(true)) {
+			return $event->displayEventBranchOnThumbnail;
+		}
+		
+		return false;
+	}
+
 }

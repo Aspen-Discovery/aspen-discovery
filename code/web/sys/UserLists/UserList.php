@@ -519,6 +519,8 @@ class UserList extends DataObject {
 		]);
 		$searchObject->disableBoosting();
 		$searchObject->setPrimarySearch(false);
+		//Don't log this to search history
+		$searchObject->disableLogging();
 		$searchObject->setFieldsToReturn('id');
 		$searchObject->setPage(($start / $numItems) + 1);
 		$searchObject->setLimit($numItems);
@@ -769,21 +771,23 @@ class UserList extends DataObject {
 		//Load the actual items from each source
 		$listResults = [];
 		foreach ($filteredIdsBySource as $sourceType => $sourceIds) {
-			$searchObject = SearchObjectFactory::initSearchObject($sourceType);
-			if ($searchObject === false) {
-				AspenError::raiseError("Unknown List Entry Source $sourceType");
-			} else {
-				$records = $searchObject->getRecords($sourceIds);
-				if ($format == 'html') {
-					$listResults = $listResults + $this->getResultListHTML($records, $filteredListEntries, $allowEdit, $start);
-				} elseif ($format == 'summary') {
-					$listResults = $listResults + $this->getResultListSummary($records, $filteredListEntries);
-				} elseif ($format == 'recordDrivers') {
-					$listResults = $listResults + $this->getResultListRecordDrivers($records, $filteredListEntries);
-				} elseif ($format == 'citations') {
-					$listResults = $listResults + $this->getResultListCitations($records, $filteredListEntries, $citationFormat);
+			if (!$forLiDA || ($forLiDA && in_array($sourceType, AbstractAPI::getValidSourcesForLiDA()))) {
+				$searchObject = SearchObjectFactory::initSearchObject($sourceType);
+				if ($searchObject === false) {
+					AspenError::raiseError("Unknown List Entry Source $sourceType");
 				} else {
-					AspenError::raiseError("Unknown display format $format in getListRecords");
+					$records = $searchObject->getRecords($sourceIds);
+					if ($format == 'html') {
+						$listResults = $listResults + $this->getResultListHTML($records, $filteredListEntries, $allowEdit, $start);
+					} elseif ($format == 'summary') {
+						$listResults = $listResults + $this->getResultListSummary($records, $filteredListEntries);
+					} elseif ($format == 'recordDrivers') {
+						$listResults = $listResults + $this->getResultListRecordDrivers($records, $filteredListEntries);
+					} elseif ($format == 'citations') {
+						$listResults = $listResults + $this->getResultListCitations($records, $filteredListEntries, $citationFormat);
+					} else {
+						AspenError::raiseError("Unknown display format $format in getListRecords");
+					}
 				}
 			}
 		}
@@ -2008,9 +2012,11 @@ class UserList extends DataObject {
 			'dateAdded' => "list_entry_date_added_$this->id asc",
 			'recentlyAdded' => "list_entry_date_added_$this->id desc",
 			'call_number' => 'callnumber_sort',
-			'copies_available' => "available_copies_$solrScope desc,title asc",
-			'copies_available_asc' => "available_copies_$solrScope asc,title asc",
-			'custom' => "list_entry_weight_$this->id asc"
+			'copies_available', 'availability_desc' => "available_copies_$solrScope desc,title asc",
+			'copies_available_asc', 'availability' => "available_copies_$solrScope asc,title asc",
+			'custom' => "list_entry_weight_$this->id asc",
+			'publication_date' => "year asc,title asc",
+			'publication_date_desc' => "year desc,title asc"
 		};
 	}
 }
