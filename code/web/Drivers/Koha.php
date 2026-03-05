@@ -3972,6 +3972,10 @@ class Koha extends AbstractIlsDriver {
 		}
 
 		$mandatoryFieldNames = array_flip(array_map( fn($val) => "borrower_$val", array_filter(explode('|', $mandatoryFields))));
+
+		if (array_key_exists('borrower_password', $mandatoryFieldNames)) {
+			$mandatoryFieldNames['borrower_password2'] = -1;
+		}	
 		
 		$unwantedFields = $this->getKohaSystemPreference('PatronSelfRegistrationBorrowerUnwantedField');
 		$unwantedFieldNames = [];
