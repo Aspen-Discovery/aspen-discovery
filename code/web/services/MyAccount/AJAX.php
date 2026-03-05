@@ -2599,13 +2599,15 @@ class MyAccount_AJAX extends JSON_Action {
 
 		$showRenewalLink = $user->showRenewalLink($ilsSummary);
 		$interface->assign('showRenewalLink', $showRenewalLink);
+		$useILSCardRenewalFlow = false;
 		if ($showRenewalLink) {
 			$renewalConfig = $user->getHomeLibrary()->getCardRenewalConfig();
-			$interface->assign('useILSCardRenewalFlow', $renewalConfig['useILSFlow']);
+			$useILSCardRenewalFlow = $renewalConfig['useILSFlow'];
 			if ($renewalConfig['externalLink'] !== null) {
 				$interface->assign('cardRenewalLink', $renewalConfig['externalLink']);
 			}
 		}
+		$interface->assign('useILSCardRenewalFlow', $useILSCardRenewalFlow);
 
 		$ilsSummary->setExpirationNotice($interface->fetch('MyAccount/expirationNotice.tpl'));
 		$ilsSummary->setFinesBadge($interface->fetch('MyAccount/finesBadge.tpl'));
