@@ -58,8 +58,8 @@
 		<div class="row horizDisplayShowEditionsRow" id="horizDisplayShowEditionsRow_{$workId}">
 			<div class="col-tn-12">
 				<div class="horiz-line-left"></div>
-				<button class="horizDisplayShowEditionsBtn btn btn-sm" onclick="AspenDiscovery.GroupedWork.showAllEditionsForVariation('{$workId}', '{$format}', '{$variationId}')">{translate text="Show %1% Editions" 1=count($relatedRecords) isPublicFacing=true}</button>
-				<button class="horizDisplayHideEditionsBtn btn btn-sm" style="display:none" onclick="AspenDiscovery.GroupedWork.hideAllEditionsForVariation('{$workId}', '{$format}', '{$variationId}')">{translate text="Hide %1% Editions" 1=count($relatedRecords) isPublicFacing=true}</button>
+				<button class="horizDisplayShowEditionsBtn btn btn-sm btn-editions" onclick="AspenDiscovery.GroupedWork.showAllEditionsForVariation('{$workId}', '{$format}', '{$variationId}')">{translate text="Show %1% Editions" 1=count($relatedRecords) isPublicFacing=true}</button>
+				<button class="horizDisplayHideEditionsBtn btn btn-sm btn-editions" style="display:none" onclick="AspenDiscovery.GroupedWork.hideAllEditionsForVariation('{$workId}', '{$format}', '{$variationId}')">{translate text="Hide %1% Editions" 1=count($relatedRecords) isPublicFacing=true}</button>
 				<div class="horiz-line-right"></div>
 			</div>
 		</div>

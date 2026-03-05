@@ -121,7 +121,7 @@
 		{foreach from=$validLanguages key=languageCode item=language}
 			<div class="header-menu-option languageSelect{if $userLang->code==$languageCode}ed{/if}">
 				{if $userLang->code!=$languageCode}
-					<a tabindex="0" onclick="return AspenDiscovery.setLanguage('{$languageCode}')">
+					<a tabindex="0" href="#" onclick="return AspenDiscovery.setLanguage('{$languageCode}')">
 				{/if}
 					{if $userLang->code==$languageCode}
 						<i class="fas fa-check fa-fw" role="presentation"></i>&nbsp;

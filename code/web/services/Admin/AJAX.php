@@ -1882,4 +1882,275 @@ class Admin_AJAX extends JSON_Action {
 			'results' => $results
 		];
 	}
+
+	/** @noinspection PhpUnused */
+	public function getBatchUpdateHolidayForm() {
+		global $interface;
+		$scopeLevel = $_REQUEST['scopeLevel'];
+		if ($scopeLevel == 'library') {
+			return [
+				'title' => translate([
+					'text' => 'Library Holidays Batch Update',
+					'isPublicFacing' => true,
+				]),
+				'modalBody' => $interface->fetch('Admin/batchUpdateHolidaysForm.tpl'),
+				'modalButtons' => '<button type="button" class="tool btn btn-primary" id="batchUpdateLibraryHolidays" onclick="AspenDiscovery.Admin.batchUpdateHolidays($(\'#holidayInformation\').val(), \'library\'); return false;">' . translate([
+						'text' => "Upload Library Holiday Information",
+						'isPublicFacing' => true,
+					]) . "</button>" .
+					'<button type="button" class="tool btn btn-primary" id="batchUpdateAllHolidays" onclick="AspenDiscovery.Admin.batchUpdateHolidays($(\'#holidayInformation\').val(), \'all\'); return false;">' . translate([
+						'text' => "Upload All Holiday Information",
+						'isPublicFacing' => true,
+					]) . "</button>",
+			];
+		}
+		return [
+			'title' => translate([
+				'text' => 'Location Holidays Batch Update',
+				'isPublicFacing' => true,
+			]),
+			'modalBody' => $interface->fetch('Admin/batchUpdateHolidaysForm.tpl'),
+			'modalButtons' => '<button type="button" class="tool btn btn-primary" id="batchUpdateLocationHolidays" onclick="AspenDiscovery.Admin.batchUpdateHolidays($(\'#holidayInformation\').val(), \'location\'); return false;">' . translate([
+					'text' => "Upload Location Holiday Information",
+					'isPublicFacing' => true,
+				]) . "</button>" .
+				'<button type="button" class="tool btn btn-primary" id="batchUpdateAllHolidays" onclick="AspenDiscovery.Admin.batchUpdateHolidays($(\'#holidayInformation\').val(), \'all\'); return false;">' . translate([
+					'text' => "Upload All Holiday Information",
+					'isPublicFacing' => true,
+				]) . "</button>",
+		];
+	}
+	/** @noinspection PhpUnused */
+	public function batchUpdateHolidays() {
+		$holidayInformation = $_REQUEST['holidayInfo'];
+		$scope = $_REQUEST['scope'];
+		$currentYear = date('Y');
+		$holidaysAdded = 0;
+		$locationClosuresAdded = 0;
+		$dayMap = [
+			'sun' => 0,
+			'mon' => 1,
+			'tue' => 2,
+			'wed' => 3,
+			'thu' => 4,
+			'fri' => 5,
+			'sat' => 6,
+		];
+
+		//get list of libraries/locations the user can edit if they don't have both "Administer All" permissions
+		if (!UserAccount::userHasPermission('Administer All Libraries')){
+			$libraryList = Library::getLibraryList(true);
+		}
+		if (!UserAccount::userHasPermission('Administer All Locations')){
+			$locationList = Location::getLocationList(true);
+		}
+
+		//parse data
+		$rows = $this->parseSierraHolidayData($holidayInformation);
+
+		//go through each row and update according to user permissions and scope
+		foreach ($rows as $row) {
+			$libraryLocationCode = $row[0];
+			$holidayDate = $row[1];
+			$library = new Library();
+			$location = new Location();
+			$holidayDates = [];
+
+			if (strlen($holidayDate) > 3){
+				$holidayDate = $currentYear . '-' . str_replace('/', '-', $holidayDate);
+			} else {
+				$holidayDates = $this->getDatesForDayOfWeek($holidayDate);
+			}
+
+			if ($libraryLocationCode == "?????") { //update all libraries
+				if ($scope == 'library' || $scope == 'all') {
+					$library->find();
+					while ($library->fetch()) {
+						if (empty($libraryList) || array_key_exists($library->libraryId, $libraryList)) {
+							require_once ROOT_DIR . '/sys/LibraryLocation/Holiday.php';
+							$holiday = new Holiday();
+							$holiday->libraryId = $library->libraryId;
+							$holiday->name = '';
+							if (!empty($holidayDates)) {
+								foreach ($holidayDates as $holidayDate) {
+									$holiday->date = $holidayDate;
+									if ($holiday->insert()) {
+										$holidaysAdded++;
+									}
+								}
+							} else {
+								$holiday->date = $holidayDate;
+								if ($holiday->insert()) {
+									$holidaysAdded++;
+								}
+							}
+						}
+					}
+				} if (($scope == 'location' || $scope == 'all') && strlen($holidayDate) == 3) {
+					$location->find();
+					while ($location->fetch()) {
+						if (empty($locationList) || array_key_exists($location->locationId, $locationList)) {
+							require_once ROOT_DIR . '/sys/LibraryLocation/LocationHours.php';
+							$locationClosure = new LocationHours();
+							$locationClosure->locationId = $location->locationId;
+							$locationClosure->day = $dayMap[$holidayDate];
+							$locationClosure->closed = 1;
+							$locationClosure->open = '00:00:00';
+							$locationClosure->close = '00:00:00';
+							if ($locationClosure->insert()) {
+								$locationClosuresAdded++;
+							}
+						}
+					}
+				}
+			} else {
+				if ($scope == 'library' || $scope == 'all') {
+					$library->subdomain = $libraryLocationCode;
+					if ($library->find(true)){
+						if (empty($libraryList) || array_key_exists($library->libraryId, $libraryList)) {
+							require_once ROOT_DIR . '/sys/LibraryLocation/Holiday.php';
+							$holiday = new Holiday();
+							$holiday->libraryId = $library->libraryId;
+							$holiday->name = '';
+							if (!empty($holidayDates)) {
+								foreach ($holidayDates as $holidayDate) {
+									$holiday->date = $holidayDate;
+									if ($holiday->insert()) {
+										$holidaysAdded++;
+									}
+								}
+							} else {
+								$holiday->date = $holidayDate;
+								if ($holiday->insert()) {
+									$holidaysAdded++;
+								}
+							}
+						}
+					}
+				} if ((($scope == 'location' || $scope == 'all')) && strlen($holidayDate) == 3) {
+					$location->code = $libraryLocationCode;
+					if ($location->find(true)) {
+						if (empty($locationList) || array_key_exists($location->locationId, $locationList)) {
+							require_once ROOT_DIR . '/sys/LibraryLocation/LocationHours.php';
+							$locationClosure = new LocationHours();
+							$locationClosure->locationId = $location->locationId;
+							$locationClosure->day = $dayMap[$holidayDate];
+							$locationClosure->closed = 1;
+							$locationClosure->open = '00:00:00';
+							$locationClosure->close = '00:00:00';
+							if ($locationClosure->insert()) {
+								$locationClosuresAdded++;
+							}
+						}
+					}
+				}
+			}
+		}
+		if ($scope == 'all') {
+			return [
+				'success' => true,
+				'title' => translate([
+					'text' => 'Success!',
+					'isAdminFacing' => true,
+				]),
+				'message' => translate([
+					'text' => 'Successfully added %1% library holidays and %2% location closures',
+					1 => $holidaysAdded,
+					2 => $locationClosuresAdded,
+					'isAdminFacing' => true,
+				]),
+			];
+		} elseif ($scope == 'library') {
+			return [
+				'success' => true,
+				'title' => translate([
+					'text' => 'Success!',
+					'isAdminFacing' => true,
+				]),
+				'message' => translate([
+					'text' => 'Successfully added %1% library holidays',
+					1 => $holidaysAdded,
+					'isAdminFacing' => true,
+				]),
+			];
+		}
+		return [
+			'success' => true,
+			'title' => translate([
+				'text' => 'Success!',
+				'isAdminFacing' => true,
+			]),
+			'message' => translate([
+				'text' => 'Successfully added %1% location closures',
+				1 => $locationClosuresAdded,
+				'isAdminFacing' => true,
+			]),
+		];
+	}
+
+	function parseSierraHolidayData($holidayInformation): array {
+		//parse text into an array of rows that are an array of columns
+		$rows = [];
+
+		// Split into lines
+		$lines = preg_split('/\r?\n/', trim($holidayInformation));
+
+		foreach ($lines as $line) {
+			//replace commas with spaces since we split info up based on whitespace between values later
+			$line = trim(str_replace(',', ' ', $line));
+
+			// Skip blank lines
+			if ($line === '') {
+				continue;
+			}
+
+			// Primary split: one or more tabs OR two or more consecutive spaces
+			$cols = preg_split('/\t+|\s{2,}/', $line, -1, PREG_SPLIT_NO_EMPTY);
+
+			// Fallback: if only 1 column found, try splitting on any whitespace
+			if (count($cols) < 2) {
+				$cols = preg_split('/\s+/', $line, 3, PREG_SPLIT_NO_EMPTY);
+			}
+
+			$count = count($cols);
+
+			if ($count >= 3) {
+				// 3+ columns: skip the first (number prefix), keep the next two
+				$rows[] = array_map('trim', array_slice($cols, 1, 2));
+			} elseif ($count === 2) {
+				// 2 columns: no number prefix, use both as-is
+				$rows[] = array_map('trim', $cols);
+			} //else we ignore current line since we need a library/location code & date
+		}
+
+		return $rows;
+	}
+
+	function getDatesForDayOfWeek(string $dayName): array
+	{
+		$map = [
+			'mon' => 'Monday',
+			'tue' => 'Tuesday',
+			'wed' => 'Wednesday',
+			'thu' => 'Thursday',
+			'fri' => 'Friday',
+			'sat' => 'Saturday',
+			'sun' => 'Sunday',
+		];
+
+		$dayName = $map[strtolower(substr($dayName, 0, 3))] ?? $dayName;
+
+		$year      = date('Y');
+		$startDate = new DateTime("first {$dayName} of January {$year}");
+		$endDate   = new DateTime("{$year}-12-31");
+		$interval  = new DateInterval('P7D');
+		$dates     = [];
+
+		while ($startDate <= $endDate) {
+			$dates[] = $startDate->format('Y-m-d');
+			$startDate->add($interval);
+		}
+
+		return $dates;
+	}
 }

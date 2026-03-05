@@ -22,6 +22,7 @@ class CloudLibraryEventHandler extends DefaultHandler {
 	private final Logger logger;
 	private final CloudLibraryExtractLogEntry logEntry;
 	private final long startTimeForLogging;
+	private final boolean shouldRunSundayReindex;
 	private String nodeContents = "";
 
 	private String currentItemId = "";
@@ -30,7 +31,7 @@ class CloudLibraryEventHandler extends DefaultHandler {
 
 	private static final CRC32 checksumCalculator = new CRC32();
 
-	CloudLibraryEventHandler(CloudLibraryExporter exporter, boolean doFullReload, Long startTimeForLogging, Connection aspenConn, RecordGroupingProcessor recordGroupingProcessor, GroupedWorkIndexer groupedWorkIndexer, CloudLibraryExtractLogEntry logEntry, Logger logger) {
+	CloudLibraryEventHandler(CloudLibraryExporter exporter, boolean doFullReload, Long startTimeForLogging, Connection aspenConn, RecordGroupingProcessor recordGroupingProcessor, GroupedWorkIndexer groupedWorkIndexer, CloudLibraryExtractLogEntry logEntry, Logger logger, boolean shouldRunSundayReindex) {
 		this.exporter = exporter;
 		this.recordGroupingProcessor = recordGroupingProcessor;
 		this.indexer = groupedWorkIndexer;
@@ -38,6 +39,7 @@ class CloudLibraryEventHandler extends DefaultHandler {
 		this.logger = logger;
 		this.doFullReload = doFullReload;
 		this.startTimeForLogging = startTimeForLogging;
+		this.shouldRunSundayReindex = shouldRunSundayReindex;
 
 		try {
 			getExistingCloudLibraryAvailabilityStmt = aspenConn.prepareStatement("SELECT id, rawChecksum from cloud_library_availability WHERE cloudLibraryId = ? and settingId = " + exporter.getSettingsId());
@@ -134,7 +136,7 @@ class CloudLibraryEventHandler extends DefaultHandler {
 			logEntry.incErrors("Error loading availability", e);
 		}
 
-		if (availabilityChanged || doFullReload) {
+		if (availabilityChanged || doFullReload || shouldRunSundayReindex) {
 			try {
 				logEntry.incAvailabilityChanges();
 				updateCloudLibraryAvailabilityStmt.setString(1, cloudLibraryId);
@@ -153,7 +155,7 @@ class CloudLibraryEventHandler extends DefaultHandler {
 			}
 		}
 
-		if (availabilityChanged || doFullReload) {
+		if (availabilityChanged || doFullReload || shouldRunSundayReindex) {
 			logEntry.incUpdated();
 			String groupedWorkId = recordGroupingProcessor.getPermanentIdForRecord("cloud_library", cloudLibraryId);
 			indexer.processGroupedWork(groupedWorkId);

@@ -83,6 +83,53 @@ class SearchEntry extends DataObject {
 		return $searches;
 	}
 
+	public static function getUserSavedSearches($userId) {
+		global $aspen_db;
+		$searches = [];
+		$sql = "SELECT * FROM search WHERE user_id = " . $aspen_db->quote($userId) . " AND saved = 1 ORDER BY id";
+		$s = new SearchEntry();
+		$s->query($sql);
+		if ($s->getNumResults()) {
+			while ($s->fetch()) {
+				$searches[] = clone($s);
+			}
+		}
+		return $searches;
+	}
+
+	public static function getUserRecentSearches($session, $userId = null) {
+		global $aspen_db;
+		$searches = [];
+
+		$sql = "SELECT * FROM search WHERE (session_id = " . $aspen_db->quote($session);
+		if ($userId != null) {
+			$sql .= " OR user_id = " . $aspen_db->quote($userId);
+		}
+		$sql .= ") AND saved = 0 ORDER BY id";
+
+		$s = new SearchEntry();
+		$s->query($sql);
+		if ($s->getNumResults()) {
+			while ($s->fetch()) {
+				$searches[] = clone($s);
+			}
+		}
+
+		return $searches;
+	}
+
+	public static function purgeUserRecentSearches($session, $userId = null) {
+		global $aspen_db;
+
+		$sql = "DELETE FROM search WHERE (session_id = " . $aspen_db->quote($session);
+		if ($userId != null) {
+			$sql .= " OR user_id = " . $aspen_db->quote($userId);
+		}
+		$sql .= ") AND saved = 0";
+
+		return $aspen_db->exec($sql);
+	}
+
 	/**
 	 * Get an array of SearchEntry objects for the specified user.
 	 *

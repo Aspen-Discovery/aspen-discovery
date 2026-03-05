@@ -153,8 +153,24 @@ class HooplaProcessor2 {
 
 				if (!series.isEmpty()){
 					groupedWork.addSeries(series);
-					String volume = rawResponse.optString("episodeNumber", rawResponse.optString("episode", ""));
-					groupedWork.addSeriesWithVolume(series, volume, 2);
+					if (rawResponse.has("episodeNumber")) {
+						String volume = rawResponse.optString("episodeNumber", rawResponse.optString("episode", ""));
+						groupedWork.addSeriesWithVolume(series, volume, 2);
+					}
+					if (rawResponse.has("seriesNumber")) {
+						String volume = rawResponse.optString("seriesNumber", rawResponse.optString("volume", ""));
+						groupedWork.addSeriesWithVolume(series, volume, 2);
+					}
+				}
+
+				if (rawResponse.has("atosBookLevel")) {
+					groupedWork.setAcceleratedReaderReadingLevel(rawResponse.getString("atosBookLevel"));
+				}
+				if (rawResponse.has("interestLevel")){
+					groupedWork.setAcceleratedReaderInterestLevel(rawResponse.getString("interestLevel"));
+				}
+				if (rawResponse.has("lexile")) {
+					groupedWork.setLexileScore(rawResponse.getString("lexile"));
 				}
 
 				boolean children = productRS.getBoolean("children");
@@ -169,7 +185,21 @@ class HooplaProcessor2 {
 				}else {
 					//Todo: Also check the genres (Children's, Teen
 					boolean foundAudience = false;
-					if (rawResponse.has("genres")) {
+					if (rawResponse.has("audience")) {
+						JSONArray audiences = rawResponse.getJSONArray("audience");
+						for (int i = 0; i < audiences.length(); i++) {
+							if (audiences.getString(i).equals("Juvenile")) {
+								isKids = true;
+							} else if (audiences.getString(i).equals("Young Adult")) {
+								isTeen = true;
+							}else if (audiences.getString(i).equals("General Adult") || audiences.getString(i).equals("Mature")) {
+								isAdult = true;
+							}
+							groupedWork.addTargetAudience(audiences.getString(i));
+							foundAudience = true;
+						}
+					}
+					else if (rawResponse.has("genres")) {
 						JSONArray genres = rawResponse.getJSONArray("genres");
 						for (int i = 0; i < genres.length(); i++) {
 							if (genres.getString(i).equals("Teen") || genres.getString(i).startsWith("Young Adult")) {

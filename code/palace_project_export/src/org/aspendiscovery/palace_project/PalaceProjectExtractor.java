@@ -132,8 +132,11 @@ public class PalaceProjectExtractor {
 							}else{
 								logEntry.addNote("Collection " + collectionName + " needs to be processed because it has not been updated for 24 hours.");
 							}
-							extractRecordsForPalaceProjectCollection(collectionName, validCollections, headers, collection, titlesForCollection, doFullReload, nowInSeconds);
+							int numTitlesProcessed = extractRecordsForPalaceProjectCollection(collectionName, validCollections, headers, collection, titlesForCollection, doFullReload, nowInSeconds);
 							anyCollectionsProcessed = true;
+							if (numTitlesProcessed > 0) {
+								updatesRun = true;
+							}
 						} else {
 							// Not time to index, leave things as is.
 							logEntry.addNote("Collection " + collectionName + " does not currently need to be processed.");
@@ -169,8 +172,6 @@ public class PalaceProjectExtractor {
 				}
 
 			}
-
-			updatesRun = true;
 
 			logEntry.addNote("Processing records to reload");
 			logEntry.saveResults();
@@ -359,7 +360,8 @@ public class PalaceProjectExtractor {
 	}
 
 	private final SimpleDateFormat dateModifiedFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
-	private void extractRecordsForPalaceProjectCollection(String collectionName, HashMap<String, String> validCollections, HashMap<String, String> headers, PalaceProjectCollection collection, HashMap<Long, PalaceProjectTitleAvailability> titlesForCollection, boolean doFullReload, long indexStartTime) {
+	private int extractRecordsForPalaceProjectCollection(String collectionName, HashMap<String, String> validCollections, HashMap<String, String> headers, PalaceProjectCollection collection, HashMap<Long, PalaceProjectTitleAvailability> titlesForCollection, boolean doFullReload, long indexStartTime) {
+		int numTitlesProcessed = 0;
 		logEntry.addNote("Extracting Records for " + collectionName + " in setting " + collection.settingId);
 		//Index all records in the collection
 		String collectionUrl = validCollections.get(collectionName);
@@ -397,30 +399,32 @@ public class PalaceProjectExtractor {
 
 								for (int i = 0; i < responseTitles.length(); i++) {
 									JSONObject curTitle = responseTitles.getJSONObject(i);
-									if (!collection.hasCirculation) {
-										String lastModified = curTitle.getJSONObject("metadata").getString("modified");
-										try {
-											Date lastModifiedDate = dateModifiedFormatter.parse(lastModified);
-											if (lastModifiedDate.getTime() / 1000 > collection.lastIndexed) {
-												titlesToProcess.add(curTitle);
-											}
-										} catch (ParseException e) {
-											logEntry.incErrors("Could not parse date modified " + lastModified, e);
+									String lastModified = curTitle.getJSONObject("metadata").getString("modified");
+									try {
+										Date lastModifiedDate = dateModifiedFormatter.parse(lastModified);
+										//Give a 10-minute buffer
+										if (doFullReload || (lastModifiedDate.getTime() / 1000 > (collection.lastIndexed - 60 * 10))) {
+											titlesToProcess.add(curTitle);
+										}else{
+											//Titles are sorted by update date so we can jump out
+											break;
 										}
-									} else {
-										titlesToProcess.add(curTitle);
+									} catch (ParseException e) {
+										logEntry.incErrors("Could not parse date modified " + lastModified, e);
 									}
 								}
+								numTitlesProcessed = titlesToProcess.size();
 								updateTitlesInDB(collectionName, collection.id, titlesToProcess, titlesForCollection, doFullReload);
-								if (!doFullReload && !collection.hasCirculation) {
-									//If the collection does not have circulation, we only need to index records
+								if (!doFullReload) {
+									//We only need to index records changed since the last time
+									// the feed from Palace Project is sorted based on the time metadata or circulation changed
 									try {
 										JSONObject lastTitle = responseTitles.getJSONObject(responseTitles.length() - 1);
 										String lastTitleModified = lastTitle.getJSONObject("metadata").getString("modified");
 										try {
 											Date lastTitleModifiedDate = dateModifiedFormatter.parse(lastTitleModified);
-											//Give a 5-minute buffer for processing
-											if (lastTitleModifiedDate.getTime() / 1000 < (collection.lastIndexed - 60 * 5)) {
+											//Give a 10-minute buffer for processing
+											if (lastTitleModifiedDate.getTime() / 1000 < (collection.lastIndexed - 60 * 10)) {
 												stopProcessingDueToLastUpdateTime = true;
 											}
 										} catch (ParseException e) {
@@ -484,6 +488,7 @@ public class PalaceProjectExtractor {
 				}
 			}
 		}
+		return numTitlesProcessed;
 	}
 
 	private HashMap<String, String> getValidCollectionsFromPalaceProject(JSONObject initialCrawlableResponseJSON, HashMap<String, PalaceProjectCollection> palaceProjectCollections, PreparedStatement insertCollectionStmt, long settingsId) throws SQLException {

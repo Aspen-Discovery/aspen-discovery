@@ -262,7 +262,7 @@ public class IndexingUtils {
 
 		PreparedStatement locationInformationStmt = dbConn.prepareStatement("SELECT library.libraryId, locationId, code, subLocation, ilsCode, " +
 						"library.subdomain, location.facetLabel, location.displayName, library.restrictOwningBranchesAndSystems, location.publicListsToInclude, " +
-						"location.additionalLocationsToShowAvailabilityFor, includeAllLibraryBranchesInFacets, library.isConsortialCatalog, " +
+						"location.additionalLocationsToShowAvailabilityFor, location.locationsToExcludeAvailabilityFor, includeAllLibraryBranchesInFacets, library.isConsortialCatalog, " +
 						"location.groupedWorkDisplaySettingId as groupedWorkDisplaySettingIdLocation, library.groupedWorkDisplaySettingId as groupedWorkDisplaySettingIdLibrary, " +
 						"location.includeLibraryRecordsToInclude, library.courseReserveLibrariesToInclude, " +
 						"library.hooplaScopeId as hooplaScopeLibrary, location.hooplaScopeId as hooplaScopeLocation, " +
@@ -307,6 +307,7 @@ public class IndexingUtils {
 			locationScopeInfo.setIlsCode(code);
 			locationScopeInfo.setPublicListsToInclude(locationInformationRS.getInt("publicListsToInclude"));
 			locationScopeInfo.setAdditionalLocationsToShowAvailabilityFor(locationInformationRS.getString("additionalLocationsToShowAvailabilityFor"));
+			locationScopeInfo.setLocationsToExcludeAvailabilityFor(locationInformationRS.getString("locationsToExcludeAvailabilityFor"));
 			locationScopeInfo.setIncludeAllLibraryBranchesInFacets(locationInformationRS.getBoolean("includeAllLibraryBranchesInFacets"));
 			locationScopeInfo.setConsortialCatalog(locationInformationRS.getBoolean("isConsortialCatalog"));
 			long groupedWorkDisplaySettingId = locationInformationRS.getLong("groupedWorkDisplaySettingIdLocation");
@@ -594,7 +595,7 @@ public class IndexingUtils {
 	private static void loadLibraryScopes(TreeSet<Scope> scopes, HashMap<Long, GroupedWorkDisplaySettings> groupedWorkDisplaySettings, HashMap<Long, OverDriveScope> overDriveScopes, HashMap<Long, HooplaScope> hooplaScopes, HashMap<Long, CloudLibraryScope> cloudLibraryScopes, HashMap<Long, Axis360Scope> axis360Scopes, HashMap<Long, PalaceProjectScope> palaceProjectScopes, HashMap<Long, SideLoadScope> sideLoadScopes, Connection dbConn, Logger logger) throws SQLException {
 		PreparedStatement libraryInformationStmt = dbConn.prepareStatement("SELECT libraryId, ilsCode, subdomain, " +
 						"displayName, facetLabel, restrictOwningBranchesAndSystems, publicListsToInclude, isConsortialCatalog, " +
-						"additionalLocationsToShowAvailabilityFor, courseReserveLibrariesToInclude, " +
+						"additionalLocationsToShowAvailabilityFor, locationsToExcludeAvailabilityFor, courseReserveLibrariesToInclude, " +
 						"groupedWorkDisplaySettingId, hooplaScopeId, axis360ScopeId, palaceProjectScopeId " +
 						"FROM library WHERE createSearchInterface = 1 ORDER BY ilsCode ASC",
 				ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
@@ -652,6 +653,7 @@ public class IndexingUtils {
 			newScope.setFacetLabel(facetLabel);
 			newScope.setPublicListsToInclude(libraryInformationRS.getInt("publicListsToInclude"));
 			newScope.setAdditionalLocationsToShowAvailabilityFor(libraryInformationRS.getString("additionalLocationsToShowAvailabilityFor"));
+			newScope.setLocationsToExcludeAvailabilityFor(libraryInformationRS.getString("locationsToExcludeAvailabilityFor"));
 			newScope.setConsortialCatalog(libraryInformationRS.getBoolean("isConsortialCatalog"));
 			long groupedWorkDisplaySettingId = libraryInformationRS.getLong("groupedWorkDisplaySettingId");
 			if (groupedWorkDisplaySettings.containsKey(groupedWorkDisplaySettingId)) {

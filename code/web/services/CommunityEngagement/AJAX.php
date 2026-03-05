@@ -9,7 +9,7 @@ require_once ROOT_DIR . '/sys/UserAccount.php';
 class CommunityEngagement_AJAX extends JSON_Action {
 	function launch($method = null) : void {
 		global $enabledModules;
-		if (!in_array('Community Engagment', $enabledModules)) {
+		if (!in_array('Community Engagement', $enabledModules)) {
 			$this->outputEncodedResult(['error' => 'Community Engagement not enabled']);
 			return;
 		}

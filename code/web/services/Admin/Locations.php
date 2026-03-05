@@ -221,6 +221,12 @@ class Admin_Locations extends ObjectEditor {
 				'action' => 'loadLocationsFromILS',
 			];
 		}
+		if ($sierraActive) {
+			$actions[] = [
+				'label' => 'Batch Update Holidays',
+				'action' => 'return AspenDiscovery.Admin.getBatchUpdateHolidayForm("location")',
+			];
+		}
 		return $actions;
 	}
 

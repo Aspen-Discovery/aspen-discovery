@@ -1443,8 +1443,10 @@ class SearchAPI extends AbstractAPI {
 								$results = [];
 								if (($curCount == 1 && $loadFirstResults) || $isLiDA) {
 									if ($isLiDA) {
-										$results = $this->getAppBrowseCategoryResults($temp->textId);
-										$results = $results['items'];
+										if (in_array($temp->source, $this->getValidSourcesForLiDA())) {
+											$results = $this->getAppBrowseCategoryResults($temp->textId);
+											$results = $results['items'];
+										}
 									} else {
 										$this->getBrowseCategoryResults($temp, $results);
 									}
@@ -1622,7 +1624,7 @@ class SearchAPI extends AbstractAPI {
 				}
 				$response['label'] = $sourceList->getTitle();
 				// Search Browse Category //
-			} else {
+			} elseif (!$isLiDA || (in_array($browseCategory->source, $this->getValidSourcesForLiDA()))) {
 				$searchObject = SearchObjectFactory::initSearchObject($browseCategory->source);
 				$defaultFilterInfo = $browseCategory->defaultFilter;
 				$defaultFilters = preg_split('/[\r\n,;]+/', $defaultFilterInfo);
@@ -1764,7 +1766,7 @@ class SearchAPI extends AbstractAPI {
 				$browseCategory = new BrowseCategory();
 				$browseCategory->id = $localBrowseCategory->browseCategoryId;
 				$browseCategory->find(true);
-				if ($isLiDA ? $browseCategory->isValidForDisplayInApp($appUser, true) : $browseCategory->isValidForDisplay($appUser)) {
+				if ($isLiDA ? ($browseCategory->isValidForDisplayInApp($appUser, true) && in_array($browseCategory->source, $this->getValidSourcesForLiDA())) : $browseCategory->isValidForDisplay($appUser)) {
 					$textId = $browseCategory->textId;
 					$isSystemCategory = in_array($textId, [
 						'system_user_lists',
@@ -2029,7 +2031,7 @@ class SearchAPI extends AbstractAPI {
 			$categoryInformation = new BrowseCategory();
 			$categoryInformation->id = $curCategory->browseCategoryId;
 			if ($categoryInformation->find(true)) {
-				if ($categoryInformation->isValidForDisplayInApp($appUser) && ($categoryInformation->source == 'GroupedWork' || $categoryInformation->source == 'List' || $categoryInformation->source == 'Events')) {
+				if ($categoryInformation->isValidForDisplayInApp($appUser) && in_array($categoryInformation->source, $this->getValidSourcesForLiDA())) {
 					if ($categoryInformation->textId == ('system_saved_searches') && $appUser && !($appUser instanceof AspenError)) {
 						$savedSearches = $listApi->getSavedSearches($appUser->id);
 						$allSearches = $savedSearches['searches'];
@@ -2117,7 +2119,7 @@ class SearchAPI extends AbstractAPI {
 								$temp = new BrowseCategory();
 								$temp->id = $subCategory->subCategoryId;
 								if ($temp->find(true)) {
-									if ($temp->isValidForDisplay($appUser, false)) {
+									if ($temp->isValidForDisplay($appUser, false) && in_array($temp->source, $this->getValidSourcesForLiDA())) {
 										if ($temp->source != '') {
 											$parent = new BrowseCategory();
 											$parent->id = $subCategory->browseCategoryId;

@@ -18,7 +18,7 @@
 			<div class="col-xs-4 col-sm-5 col-md-4 col-lg-3 text-center">
 				{if $disableCoverArt != 1}
 					<div id="recordCover" class="text-center row">
-						<a href="#" onclick="return AspenDiscovery.Hoopla.getLargeCover('{$recordDriver->getUniqueID()}')"><img alt="{translate text='Book Cover' isPublicFacing=true inAttribute=true}" class="img-thumbnail{if $useOriginalCoverUrls} use-original-covers{/if} {$coverStyle}" src="{$recordDriver->getBookcoverUrl('medium')}"></a>
+						<a href="#" onclick="return AspenDiscovery.Hoopla.getLargeCover('{$recordDriver->getUniqueID()}')"><img alt="{translate text='Book Cover' isPublicFacing=true inAttribute=true}" class="img-thumbnail{if $useOriginalCoverUrls} use-original-covers{/if} {$coverStyle}" src="{$recordDriver->getBookcoverUrl('medium')}" role="presentation"></a>
 					</div>
 				{/if}
 				{if !empty($showRatings)}

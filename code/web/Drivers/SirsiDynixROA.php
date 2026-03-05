@@ -1318,7 +1318,7 @@ class SirsiDynixROA extends AbstractIlsDriver {
 				$curHold->expirationDate = strtotime($expireDate);
 				$curHold->automaticCancellationDate = strtotime($fillByDate);
 				$curHold->reactivateDate = strtotime($reactivateDate);
-				$curHold->cancelable = !in_array(strtoupper($curHold->status), ['SUSPENDED', 'EXPIRED', 'INSHIPPING', 'INTRANSIT', 'ILL_WYLD', 'ILLSHIPPED']);
+				$curHold->cancelable = !in_array(strtoupper($curHold->status), ['SUSPENDED', 'EXPIRED', 'INSHIPPING', 'INTRANSIT', 'TRANSIT', 'ILL_WYLD', 'ILLSHIPPED']);
 
 				$curHold->frozen = strcasecmp($curHold->status, 'Suspended') == 0;
 				$curHold->canFreeze = $patron->getHomeLibrary()->allowFreezeHolds;
@@ -2247,6 +2247,16 @@ class SirsiDynixROA extends AbstractIlsDriver {
 			$totalFinesOwed = 0;
 
 			if (!empty($blockList->fields->blockList)) {
+				$translationMapFound = false;
+				$indexingProfileId = $this->getIndexingProfile()->id;
+				require_once ROOT_DIR . '/sys/Indexing/TranslationMap.php';
+				$billReasonTranslation = new TranslationMap();
+				$billReasonTranslation->name = "bill_reason";
+				$billReasonTranslation->indexingProfileId = $indexingProfileId;
+				if ($billReasonTranslation->find(true)){
+					$translationMapFound = true;
+				}
+
 				foreach ($blockList->fields->blockList as $block) {
 					$fine = $block->fields;
 					$title = '';
@@ -2261,11 +2271,15 @@ class SirsiDynixROA extends AbstractIlsDriver {
 							$barcode = $fine->item->fields->barcode;
 						}
 					}
+					$billReason = $fine->block->key;
+					if ($translationMapFound){
+						$billReason = $billReasonTranslation->translate($fine->block->key);
+					}
 
 					$fines[] = [
 						'fineId' => str_replace(':', '_', $block->key),
 						'reason' => translate([
-							'text' => $fine->block->key,
+							'text' => $billReason,
 							'isPublicFacing' => true,
 							'isAdminEnteredData' => true,
 						]),

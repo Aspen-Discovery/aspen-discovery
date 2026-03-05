@@ -39,7 +39,9 @@ class ListsRecordDriver extends IndexRecordDriver {
 			$bookCoverUrl = '';
 		}
 		$id = $this->getId();
-		return $bookCoverUrl . "/bookcover.php?type=list&id=$id&size=$size";
+		$listObject = $this->getListObject();
+		$dateUpdated = $listObject instanceof UserList ? $listObject->dateUpdated : '';
+		return $bookCoverUrl . "/bookcover.php?type=list&id=$id&size=$size&dateUpdated=$dateUpdated";
 	}
 
 	/**

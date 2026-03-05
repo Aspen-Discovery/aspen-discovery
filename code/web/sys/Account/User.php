@@ -2685,8 +2685,9 @@ class User extends DataObject {
 				$recordId = $hold->sourceId;
 				$holdId = $hold->cancelId;
 				$holdType = $hold->source;
-
-				if ($frozen == 0 && $canFreeze == 1) {
+				$patronId = $hold->patronId ?? $user->id;
+				$patron = $user->getUserReferredTo($patronId);
+				if ($patron && $frozen == 0 && $canFreeze == 1) {
 					if ($holdType == 'ils') {
 						$tmpResult = $user->freezeHold($recordId, $holdId, $reactivationDate);
 						if ($tmpResult['success']) {
@@ -2804,8 +2805,9 @@ class User extends DataObject {
 				$recordId = $hold->sourceId;
 				$holdId = $hold->cancelId;
 				$holdType = $hold->source;
-
-				if ($frozen == 1 && $canFreeze == 1) {
+				$patronId = $hold->patronId ?? $user->id;
+				$patron = $user->getUserReferredTo($patronId);
+				if ($patron && $frozen == 1 && $canFreeze == 1) {
 					if ($holdType == 'ils') {
 						$tmpResult = $user->thawHold($recordId, $holdId);
 						if ($tmpResult['success']) {
@@ -6628,6 +6630,14 @@ class User extends DataObject {
 		}
 
 		$this->update();
+	}
+
+	public function canSaveSearches(): bool {
+		$userLibrary = $this->getHomeLibrary();
+		if ($userLibrary) {
+			return $userLibrary->enableSavedSearches == 1;
+		}
+		return false;
 	}
 }
 

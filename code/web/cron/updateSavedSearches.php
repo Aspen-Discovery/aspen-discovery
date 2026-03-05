@@ -118,11 +118,14 @@ if ($search->getNumResults() > 0) {
 					}
 					// If the user wishes to receive saved search emails, keep track of those here.
 					if ($userForSearch->notifySavedSearches == TRUE) {
-						if (array_key_exists($userForSearch->email, $usersWithUpdatesToEmail)) {
-							$usersWithUpdatesToEmail[$userForSearch->email][] = $searchEntry->title;
+						$userLibrary = $userForSearch->getHomeLibrary();
+						$baseUrl = $userLibrary->getBaseUrl();
+						$key = $userForSearch->email . '|' . $baseUrl;
+						if (array_key_exists($key, $usersWithUpdatesToEmail)) {
+							$usersWithUpdatesToEmail[$key][] = $searchEntry->title;
 						}
 						else {
-							$usersWithUpdatesToEmail[$userForSearch->email] = [$searchEntry->title];
+							$usersWithUpdatesToEmail[$key] = [$searchEntry->title];
 						}
 					}
 				}
@@ -151,14 +154,17 @@ $searchUpdateLogEntry->update();
 // Now that we know all of the searches that have updates, let's send a single email to each distinct email address from that set.
 require_once ROOT_DIR . '/sys/Email/Mailer.php';
 $mailer = new Mailer();
-foreach ($usersWithUpdatesToEmail as $emailAddress => $searchTitles) {
+foreach ($usersWithUpdatesToEmail as $key => $searchTitles) {
+	$keySeparated = explode('|', $key);
+	$emailAddress = $keySeparated[0];
+	$baseUrl = $keySeparated[1];
 	$body = translate([
 		'text' => 'There are new results appearing in your saved searches!',
 		'isPublicFacing' => true,
-	]) . "\r\n" . $configArray['Site']['url'] . '/Search/History';
+	]) . "\r\n" . $baseUrl . '/Search/History?require_login';
 	$htmlBody = '<p>' . translate([
 		'text' => 'There are new results appearing in %1%your saved searches%2%!',
-		1 => '<a href="' . $configArray['Site']['url'] . '/Search/History">',
+		1 => '<a href="' . $baseUrl . '/Search/History?require_login">',
 		2 => '</a>',
 		'isPublicFacing' => true,
 	]) . '</p><ul>';

@@ -7,6 +7,15 @@ AspenDiscovery.Events = (function(){
 			$.getJSON(ajaxUrl);
 		},
 
+		toggleEventFieldAllowableValues: function() {
+			var toggleAllowableValues = function() {
+				var typeVal = $('#typeSelect').val();
+				$('#propertyRowallowableValues').toggle(typeVal === '3');
+			};
+			toggleAllowableValues();
+			$('#typeSelect').on('change', toggleAllowableValues);
+		},
+
 		//For Aspen Events
 		getEventTypesForLocation: function(locationId) {
 			var url = Globals.path + '/Events/AJAX';

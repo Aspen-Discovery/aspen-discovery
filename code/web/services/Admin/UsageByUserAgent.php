@@ -49,7 +49,6 @@ class Admin_UsageByUserAgent extends Admin_Dashboard {
 		$options = [
 			'totalItems' => $total,
 			'perPage' => $pageSize,
-			'canJumpToPage' => true,
 		];
 		$pager = new Pager($options);
 		$interface->assign('pageLinks', $pager->getLinks());

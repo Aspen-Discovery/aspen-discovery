@@ -915,7 +915,9 @@ class MyAccount_AJAX extends JSON_Action {
 				$cancelId = $hold->cancelId;
 				$holdType = $hold->source;
 				$isIll = $hold->isIll;
-				if ($hold->cancelable) {
+				$patronId = $hold->patronId ?? $user->id;
+				$patron = $user->getUserReferredTo($patronId);
+				if ($patron && $hold->cancelable) {
 					if ($holdType == 'ils') {
 						$tmpResult = $user->cancelHold($recordId, $cancelId, $isIll);
 						if ($tmpResult['success']) {
@@ -9471,6 +9473,8 @@ class MyAccount_AJAX extends JSON_Action {
 				$bookCoverInfo->mediumLoaded = 0;
 				$bookCoverInfo->largeLoaded = 0;
 				$bookCoverInfo->update();
+				// Update dateUpdated to refresh cached image
+				$listEntry->updateParentListDateUpdated();
 			}
 
 			return [
@@ -11865,5 +11869,353 @@ class MyAccount_AJAX extends JSON_Action {
 
 		return $result;
 
+	}
+
+	/** @noinspection PhpUnused */
+	function getMenuDataSearches() {
+		global $timer;
+		$result = [
+			'success' => false,
+			'message' => translate([
+				'text' => 'Unknown Error',
+				'isPublicFacing' => true,
+			]),
+		];
+		if (UserAccount::isLoggedIn()) {
+			$user = UserAccount::getActiveUserObj();
+			if ($user->canSaveSearches()) {
+				$searchEntry = new SearchEntry();
+				$savedSearches = $searchEntry::getUserSavedSearches($user->id);
+				$recentSearches = $searchEntry::getUserRecentSearches(session_id(), $user->id);
+				$timer->logTime("Loaded user searches for menu data");
+				$result = [
+					'success' => true,
+					'numSavedSearches' => count($savedSearches),
+					'numRecentSearches' => count($recentSearches),
+				];
+			} else {
+				$result['message'] = translate([
+					'text' => 'Unknown Error',
+					'isPublicFacing' => true,
+				]);
+			}
+		} else {
+			$result['message'] = 'You must be logged in to get menu data';
+		}
+		return $result;
+	}
+
+	/** @noinspection PhpUnused */
+	public function getSearchHistory(): array {
+		global $interface;
+
+		if (!UserAccount::isLoggedIn()) {
+			return [
+				'success' => false,
+				'message' => translate([
+					'text' => 'You must be logged in to view search history',
+					'isPublicFacing' => true
+				]),
+				'searches' => '',
+				'pagination' => ''
+			];
+		}
+
+		$type = $_REQUEST['type'] ?? 'saved';
+		$sort = $_REQUEST['sort'] ?? 'id';
+		$page = isset($_REQUEST['page']) ? (int)$_REQUEST['page'] : 1;
+		$limit = isset($_REQUEST['limit']) ? (int)$_REQUEST['limit'] : 20;
+		$filter = $_REQUEST['filter'] ?? '';
+
+		// Validate type parameter
+		if (!in_array($type, [
+			'saved',
+			'recent'
+		])) {
+			$type = 'saved';
+		}
+
+		$interface->assign('type', $type);
+		$interface->assign('sort', $sort);
+		$interface->assign('page', $page);
+		$interface->assign('limit', $limit);
+		$interface->assign('savedSearchFilter', $filter);
+
+
+		$sortOptions = [
+			'id' => 'Id (Default)',
+			'created_asc' => 'Date Saved (Oldest First)',
+			'created_desc' => 'Date Saved (Newest First)',
+			'title_asc' => 'Name (A-Z)',
+			'title_desc' => 'Name (Z-A)',
+		];
+		$interface->assign('sortOptions', $sortOptions);
+
+		if ($type === 'saved') {
+			return $this->getSavedSearches();
+		} else {
+			return $this->getRecentSearches();
+		}
+	}
+
+	/** @noinspection PhpUnused */
+	private function getSavedSearches(): array {
+		global $interface;
+
+		$interface->assign('noSavedSearches', false);
+		$result = [
+			'success' => false,
+			'message' => 'Unknown error loading saved searches',
+			'searches' => '',
+			'pagination' => '',
+			'totalCount' => 0,
+		];
+
+		$user = UserAccount::getActiveUserObj();
+		if (!UserAccount::isLoggedIn() || empty($user)) {
+			$result['message'] = translate([
+				'text' => "Your login has timed out. Please login again.",
+				'isPublicFacing' => true,
+			]);
+		} else {
+			$searches = [];
+
+			$sort = $_REQUEST['sort'] ?? 'id';
+			$page = isset($_REQUEST['page']) ? (int)$_REQUEST['page'] : 1;
+			$limit = isset($_REQUEST['limit']) ? (int)$_REQUEST['limit'] : 20;
+			$filter = $_REQUEST['filter'] ?? '';
+			$interface->assign('limit', $limit);
+			$interface->assign('sort', $sort);
+			$interface->assign('filter', $filter);
+
+			$savedSearches = [];
+			$savedSearch = new SearchEntry();
+			$savedSearch->user_id = $user->id;
+			$savedSearch->saved = 1;
+			if (!empty($filter)) {
+				$escapedFilter = $savedSearch->escape('%' . $filter . '%');
+				$savedSearch->whereAdd("title LIKE $escapedFilter");
+			}
+			$totalCount = $savedSearch->count();
+			switch ($sort) {
+				case 'created_asc':
+					$savedSearch->orderBy('created ASC');
+					break;
+				case 'created_desc':
+					$savedSearch->orderBy('created DESC');
+					break;
+				case 'source_asc':
+					$savedSearch->orderBy('searchSource ASC');
+					break;
+				case 'source_desc':
+					$savedSearch->orderBy('searchSource DESC');
+					break;
+				case 'title_asc':
+					$savedSearch->orderBy('title ASC');
+					break;
+				case 'title_desc':
+					$savedSearch->orderBy('title DESC');
+					break;
+				default:
+					$savedSearch->orderBy('id DESC');
+					break;
+			}
+			$savedSearch->limit(($page - 1) * $limit, $limit);
+			$savedSearch->find();
+			while ($savedSearch->fetch()) {
+				$savedSearches[] = clone $savedSearch;
+			}
+
+			foreach ($savedSearches as $savedSearch) {
+				/** @var SearchObject_AbstractGroupedWorkSearcher|SearchObject_BaseSearcher $searchObject */
+				$searchObject = SearchObjectFactory::initSearchObject();
+				$size = strlen($savedSearch->search_object);
+				$minSO = unserialize($savedSearch->search_object);
+				$searchObject->deminify($minSO);
+				$searchObject->activateAllFacets();
+
+				$searchSourceLabels = [
+					'local' => 'Catalog',
+					'genealogy' => 'Genealogy',
+				];
+
+				$searchSourceLabel = $searchObject->getSearchSource();
+				if (array_key_exists($searchSourceLabel, $searchSourceLabels)) {
+					$searchSourceLabel = $searchSourceLabels[$searchSourceLabel];
+				}
+
+				$newItem = [
+					'id' => $savedSearch->id,
+					'time' => date("g:ia, jS M y", $searchObject->getStartTime()),
+					'title' => $savedSearch->title,
+					'url' => $searchObject->renderSearchUrl(),
+					'searchId' => $searchObject->getSearchId(),
+					'description' => $searchObject->displayQuery(),
+					'filters' => $searchObject->getFilterList(),
+					'hits' => number_format($searchObject->getResultTotal()),
+					'source' => $searchSourceLabel,
+					'speed' => round($searchObject->getQuerySpeed(), 2) . "s",
+					// Size is purely for debugging. Not currently displayed in the template.
+					// It's the size of the serialized, minified search in the database.
+					'size' => round($size / 1024, 3) . "kb",
+					'hasNewResults' => $savedSearch->hasNewResults == 1,
+				];
+
+				if ($savedSearch->hasNewResults) {
+					$searchObject->addFilter('time_since_added:Week');
+					$newItem['newTitlesUrl'] = $searchObject->renderSearchUrl();
+				}
+
+				$searches[] = $newItem;
+			}
+
+			if (count($searches) > 0) {
+				$interface->assign('searches', $searches);
+				$interface->assign('userSearchType', 'saved');
+				$interface->assign('totalPages', ceil($totalCount / $limit));
+				$interface->assign('currentPage', $page);
+				$interface->assign('totalCount', $totalCount);
+
+				$result['success'] = true;
+				$result['searches'] = $interface->fetch('Search/historyList.tpl');
+				$result['pagination'] = $interface->fetch('Search/historyPagination.tpl');
+				$result['totalCount'] = $totalCount;
+			} else if (!empty($filter)) {
+				$interface->assign('searches', $searches);
+				$interface->assign('userSearchType', 'saved');
+				$interface->assign('totalPages', ceil($totalCount / $limit));
+				$interface->assign('currentPage', $page);
+				$interface->assign('totalCount', $totalCount);
+
+				$result['success'] = true;
+				$result['searches'] = $interface->fetch('Search/historyList.tpl');
+				$result['pagination'] = $interface->fetch('Search/historyPagination.tpl');
+				$result['totalCount'] = $totalCount;
+			} else {
+				$interface->assign('noSavedSearches', true);
+				$result['message'] = translate([
+					'text' => 'No saved searches found.',
+					'isPublicFacing' => true,
+				]);
+			}
+		}
+
+		return $result;
+	}
+
+	/** @noinspection PhpUnused */
+	private function getRecentSearches(): array {
+		global $interface;
+		$interface->assign('noRecentSearches', false);
+		$result = [
+			'success' => false,
+			'message' => 'Unknown error loading recent searches',
+			'searches' => '',
+			'pagination' => '',
+			'totalCount' => 0,
+		];
+
+		$user = UserAccount::getActiveUserObj();
+		if (!UserAccount::isLoggedIn() || empty($user)) {
+			$result['message'] = translate([
+				'text' => "Your login has timed out. Please login again.",
+				'isPublicFacing' => true,
+			]);
+		} else {
+			$searches = [];
+
+			$sort = $_REQUEST['sort'] ?? 'id';
+			$page = isset($_REQUEST['page']) ? (int)$_REQUEST['page'] : 1;
+			$limit = isset($_REQUEST['limit']) ? (int)$_REQUEST['limit'] : 20;
+			$interface->assign('limit', $limit);
+			$interface->assign('sort', $sort);
+
+			$savedSearches = [];
+			$savedSearch = new SearchEntry();
+			$savedSearch->whereAdd("session_id = '" . session_id() . "' OR user_id = " . $user->id);
+			$savedSearch->saved = 0;
+			$totalCount = $savedSearch->count();
+			switch ($sort) {
+				case 'created_asc':
+					$savedSearch->orderBy('created ASC');
+					break;
+				case 'created_desc':
+					$savedSearch->orderBy('created DESC');
+					break;
+				case 'query_asc':
+					$savedSearch->orderBy('description ASC');
+					break;
+				case 'query_desc':
+					$savedSearch->orderBy('description DESC');
+					break;
+				default:
+					$savedSearch->orderBy('id DESC');
+					break;
+			}
+			$savedSearch->limit(($page - 1) * $limit, $limit);
+			$savedSearch->orderBy('id');
+			$savedSearch->find();
+			while ($savedSearch->fetch()) {
+				$savedSearches[] = clone $savedSearch;
+			}
+
+			foreach ($savedSearches as $savedSearch) {
+				/** @var SearchObject_AbstractGroupedWorkSearcher|SearchObject_BaseSearcher $searchObject */
+				$searchObject = SearchObjectFactory::initSearchObject();
+				$searchObject->init();
+				$size = strlen($savedSearch->search_object);
+				$minSO = unserialize($savedSearch->search_object);
+				$searchObject = SearchObjectFactory::deminify($minSO);
+				$searchObject->activateAllFacets();
+
+				$searchSourceLabels = [
+					'local' => 'Catalog',
+					'genealogy' => 'Genealogy',
+				];
+
+				$searchSourceLabel = $searchObject->getSearchSource();
+				if (array_key_exists($searchSourceLabel, $searchSourceLabels)) {
+					$searchSourceLabel = $searchSourceLabels[$searchSourceLabel];
+				}
+
+				$newItem = [
+					'id' => $savedSearch->id,
+					'time' => date("g:ia, jS M y", $searchObject->getStartTime()),
+					'url' => $searchObject->renderSearchUrl(),
+					'searchId' => $searchObject->getSearchId(),
+					'description' => $searchObject->displayQuery(),
+					'filters' => $searchObject->getFilterList(),
+					'hits' => number_format($searchObject->getResultTotal()),
+					'source' => $searchSourceLabel,
+					'speed' => round($searchObject->getQuerySpeed(), 2) . "s",
+					// Size is purely for debugging. Not currently displayed in the template.
+					// It's the size of the serialized, minified search in the database.
+					'size' => round($size / 1024, 3) . "kb",
+					'hasNewResults' => $savedSearch->hasNewResults == 1,
+				];
+
+				$searches[] = $newItem;
+			}
+
+			if (count($searches) > 0) {
+				$interface->assign('searches', $searches);
+				$interface->assign('userSearchType', 'recent');
+				$interface->assign('totalPages', ceil($totalCount / $limit));
+				$interface->assign('currentPage', $page);
+				$interface->assign('totalCount', $totalCount);
+
+				$result['success'] = true;
+				$result['searches'] = $interface->fetch('Search/historyList.tpl');
+				$result['pagination'] = $interface->fetch('Search/historyPagination.tpl');
+				$result['totalCount'] = $totalCount;
+			} else {
+				$interface->assign('noRecentSearches', true);
+				$result['message'] = translate([
+					'text' => 'No recent searches found.',
+					'isPublicFacing' => true,
+				]);
+			}
+		}
+		return $result;
 	}
 }
