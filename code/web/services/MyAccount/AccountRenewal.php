@@ -4,6 +4,7 @@ require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 class MyAccount_AccountRenewal extends MyAccount {
 	function launch(): void {
 		global $interface;
+		$interface->assign('accessWarningMessage', false);
 		
 		// initial checks on load. Failure will deny access to the stepper
 		$user = UserAccount::getLoggedInUser();
