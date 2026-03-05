@@ -19,6 +19,10 @@
 		document.addEventListener('DOMContentLoaded', function() {
 			let yesButton = document.getElementById('yesButton');
 			let noButton = document.getElementById('noButton');
+			if (!yesButton || !noButton) {
+				return;
+			}
+
 			let continueButton = document.getElementById('continueButton');
 			let affirmationInput = document.getElementById('userAgrees');
 			let warningMessage = document.getElementById('client-warning-message');
