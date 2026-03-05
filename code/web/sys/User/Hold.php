@@ -56,6 +56,7 @@ class Hold extends CircEntry {
 			'reactivateDate',
 			'isIll',
 			'pendingCancellation',
+			'isLocalILL'
 		];
 	}
 

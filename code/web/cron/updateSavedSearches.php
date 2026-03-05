@@ -90,10 +90,16 @@ if ($search->getNumResults() > 0) {
 						global $logger;
 						$logger->log("New results in search " . $searchEntry->title . " for user " . $userForSearch->id, Logger::LOG_ERROR);
 						$appScheme = 'aspen-lida';
-						require_once ROOT_DIR . '/sys/SystemVariables.php';
-						$systemVariables = SystemVariables::getSystemVariables();
-						if ($systemVariables && !empty($systemVariables->appScheme)) {
-							$appScheme = $systemVariables->appScheme;
+						require_once ROOT_DIR . '/sys/AspenLiDA/BrandedAppSetting.php';
+						$brandedSettings = new BrandedAppSetting();
+						if ($brandedSettings->find(true)) {
+							$appScheme = $brandedSettings->slugName;
+						} else {
+							require_once ROOT_DIR . '/sys/SystemVariables.php';
+							$systemVariables = SystemVariables::getSystemVariables();
+							if ($systemVariables && !empty($systemVariables->appScheme)) {
+								$appScheme = $systemVariables->appScheme;
+							}
 						}
 						$notificationToken = new UserNotificationToken();
 						$notificationToken->userId = $userForSearch->id;

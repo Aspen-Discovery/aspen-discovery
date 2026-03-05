@@ -86,6 +86,7 @@ class CommunityEngagement_AJAX extends JSON_Action {
 		}
 
 		global $library;
+		global $interface;
 
 		$campaignId = isset($_REQUEST['campaignId']) ? intval($_REQUEST['campaignId']) : 0;
 		$userId = isset($_REQUEST['userId']) ? intval($_REQUEST['userId']) : 0;
@@ -168,215 +169,53 @@ class CommunityEngagement_AJAX extends JSON_Action {
 					$userEmailOptInSetting = 0;
 				}
 				if (!empty($allEligibleCampaigns)) {
-					$html = '';
-					$html .= "<button class='btn btn-primary btn-sm' onclick='AspenDiscovery.CommunityEngagement.refreshCurrentUserStats($userId); return false;' style='margin: 5px 0;'>Refresh Campaign Progress</button>";
-
+					$campaignDisplayData = [];
 					foreach ($allEligibleCampaigns as $campaign) {
-						$html .= '<div class="dashboardCategory" style="border: 1px solid #3174AF; padding: 15px; margin-bottom: 20px;">';
+						$isRemoved = $this->userRemovedCampaignCheck($campaign->id, $userId);
 
-						$html .= "<h5><a href=\"/CommunityEngagement/CampaignTable?id={$campaign->id}\">" . htmlspecialchars($campaign->name) . "</a></h5>";
-
-						$html .= "<table class='table table-bordered table-sm'>";
-						$html .= "<thead><tr>
-									<th>Milestone</th>
-									<th>Progress</th>
-									<th>Status</th>
-									<th>Reward</th>
-								</tr></thead><tbody>";
+						$milestoneData = [];
 
 						if (!empty($campaign->milestones)) {
 							foreach ($campaign->milestones as $milestone) {
 								$completed = (int)($milestone->completedGoals ?? 0);
 								$total = (int)($milestone->totalGoals ?? 0);
-								$progressBeyondLimit = $milestone->progressBeyondOneHundredPercent ?? false;
-								if (!$progressBeyondLimit && $completed > $total) {
+								if (!$milestone->progressBeyondOneHundredPercent && $completed > $total) {
 									$completed = $total;
 								}
 
-								$progress = "$completed / $total";
 								$percentage = $total > 0 ? round(($completed / $total) * 100) : 0;
 								$isComplete = $milestone->milestoneComplete == 1;
 								$rewardGiven = $milestone->rewardGiven == 1;
 
-								if ($milestone->rewardType == 1 && $milestone->awardAutomatically && $isComplete && !$rewardGiven) {
-									$milestone->rewardGiven = 1;
-									$rewardGiven = 1;
-								}
-
-								$progressData = $milestone->progressData;
-
-								$html .= "<tr><td>" . htmlspecialchars($milestone->name) . "</td>";
-
-								// Progress bar
-								$html .= "<td>
-									{$progress}
-									<div class='progress' style='width:100%; border:1px solid black; border-radius:4px;height:20px;'>
-										<div class='progress-bar' role='progressbar' aria-valuenow='{$percentage}' aria-valuemin='0' aria-valuemax='100' style='width: {$percentage}%; background-color: blue; color: white; text-align: center;'>
-											{$percentage}%
-										</div>
-									</div>";
-
-								if (!empty($progressData)) {
-									$goalCount = 0;
-
-									foreach ($progressData as $progressDataItem) {
-										if ($goalCount < $total || $milestone->progressBeyondOneHundredPercent) {
-											$html .= "<div styel='padding:10px;'>";
-											if (isset($progressDataItem['title'])) {
-												$html .= htmlspecialchars($progressDataItem['title']);
-											}
-											$html .= "</div>";
-											$goalCount++;
-										}
-									}
-								}
-								$html .= "</td>";
-
-								// Status and manual progress
-								$html .= "<td>";
-								if ($isComplete) {
-									$html .= "Complete";
-									if ($milestone->milestoneType === 'manual' && $milestone->progressBeyondOneHundredPercent) {
-										if ($campaign->enrolled) {
-											$html .= "<br><button class='btn btn-primary btn-sm' onclick='AspenDiscovery.CommunityEngagement.adminManuallyProgressMilestone({$milestone->id}, {$userId}, {$campaign->id}); return false;'>Add Progress</button>";
-										} else {
-											$html .= "<br><button class='btn btn-secondary btn-sm' disabled>Add Progress</button>";
-										}
-									}
-								} else {
-									$html .= "Incomplete";
-									if ($milestone->milestoneType === 'manual') {
-										if ($campaign->enrolled) {
-											$html .= "<br><button class='btn btn-primary btn-sm' onclick='AspenDiscovery.CommunityEngagement.adminManuallyProgressMilestone({$milestone->id}, {$userId}, {$campaign->id}); return false;'>Add Progress</button>";
-										} else {
-											$html .= "<br><button class='btn btn-secondary btn-sm' disabled>Add Progress</button>";
-										}
-									}
-								}
-								$html .= "</td>";
-
-								// Reward button
-								$html .= "<td>";
-								$canGiveReward = $isComplete && !$rewardGiven;
-
-								if ($rewardGiven) {
-									$html .= "Reward Given";
-								} else {
-									$disabled = $canGiveReward ? '' : 'disabled';
-									$tooltip = !$canGiveReward ? 'title="Milestone not complete or reward already given."' : '';
-									$onclick = $canGiveReward
-										? "onclick='AspenDiscovery.CommunityEngagement.adminMilestoneRewardGiven({$userId}, {$campaign->id}, {$milestone->id}); return false;'"
-										: '';
-
-									$html .= "<button class='btn btn-primary btn-sm' {$disabled} {$tooltip} {$onclick}>Give Reward</button>";
-								}
-								$html .= "</td></tr>";
+								$milestoneData[] = [
+									'id' => $milestone->id,
+									'name' => $milestone->name,
+									'completed' => $completed,
+									'total' => $total,
+									'percentage' => $percentage,
+									'isComplete' => $isComplete,
+									'rewardGiven' => $rewardGiven,
+									'milestoneType' => $milestone->milestoneType,
+									'progressBeyondLimit' => $milestone->progressBeyondOneHundredPercent,
+								];
 							}
-						} else {
-							$html .= "<tr><td colspan='4'>No milestones defined for this campaign.</td></tr>";
 						}
-
-						$html .= "</tbody></table>";
 
 						$extraCreditActivities = CampaignExtraCredit::getExtraCreditByCampaign($campaign->id, $userId);
 
-						if (!empty($extraCreditActivities)) {
-							$html .= "<h6>Extra Credit Activities</h6>";
-							$html .= "<table class='table table-bordered table-sm'>";
-							$html .= "<thead><tr>
-										<th>Activity</th>
-										<th>Progress</th>
-										<th>Status</th>
-										<th>Reward</th>
-									</tr></thead><tbody>";
-
-							foreach ($extraCreditActivities as $activity) {
-								$completed = (int)($activity->completedGoals ?? 0);
-								$total = (int)($activity->totalGoals ?? 0);
-
-								if ($completed > $total) {
-									$completed = $total;
-								}
-
-								$progress = "$completed / $total";
-								$percentage = $total > 0 ? round(($completed / $total) * 100) : 0;
-								$isComplete = $percentage >= 100;
-								$rewardGiven = $activity->rewardGiven ?? false;
-
-								if ($activity->rewardType == 1 && $activity->awardAutomatically && $isComplete && !$rewardGiven) {
-									$rewardGiven = true;
-								}
-
-								$html .= "<tr>";
-								$html .= "<td>" . htmlspecialchars($activity->name) . "<br><small>" . htmlspecialchars($activity->rewardDescription ?? '') . "</small></td>";
-
-								$html .= "<td>
-											{$progress}
-											<div class='progress' style='width:100%; border:1px solid black; border-radius:4px;height:20px;'>
-												<div class='progress-bar' role='progressbar' aria-valuenow='{$percentage}' aria-valuemin='0' aria-valuemax='100' style='width: {$percentage}%; background-color: green; color: white; text-align: center;'>
-													{$percentage}%
-												</div>
-											</div>
-										</td>";
-
-								$html .= "<td>";
-								if ($isComplete) {
-									$html .= "Complete";
-								} else {
-									$html .= "Incomplete";
-									if ($campaign->enrolled) {
-										$html .= "<br><button class='btn btn-primary btn-sm' onclick='AspenDiscovery.CommunityEngagement.adminManuallyProgressExtraCredit({$activity->id}, {$userId}, {$campaign->id}); return false;'>Add Progress</button>";
-									} else {
-										$html .= "<br><button class='btn btn-secondary btn-sm' disabled>Add Progress</button>";
-									}
-								}
-								$html .= "</td>";
-
-								$html .= "<td>";
-								if ($rewardGiven) {
-									$html .= "Reward Given";
-								} else {
-									$canGiveReward = $isComplete && !$rewardGiven;
-									$disabled = $canGiveReward ? '' : 'disabled';
-									$tooltip = !$canGiveReward ? 'title="Activity not complete or reward already given."' : '';
-									$onclick = $canGiveReward
-										? "onclick='AspenDiscovery.CommunityEngagement.adminExtraCreditRewardGiven({$userId}, {$campaign->id}, {$activity->id}); return false;'"
-										: '';
-
-									$html .= "<button class='btn btn-primary btn-sm' {$disabled} {$tooltip} {$onclick}>Give Reward</button>";
-								}
-								$html .= "</td>";
-
-								$html .= "</tr>";
-							}
-
-							$html .= "</tbody></table>";
-						}
-
-						// Campaign complete / reward section
-						$campaignComplete = $campaign->isComplete == 1;
-						$campaignRewardGiven = $campaign->campaignRewardGiven == 1;
-						$html .= "<p><strong>Campaign Complete:</strong> " . ($campaignComplete ? "Yes" : "No") . "</p>";
-						$html .= "<p><strong>Reward Given:</strong> " . ($campaignRewardGiven ? "Yes" : "No") . "</p>";
-
-						if ($campaign->rewardType == 1 && $campaign->awardAutomatically == 1 && $campaignComplete) {
-							$html .= "<p>Rewarded Automatically</p>";
-						} elseif (!$campaignRewardGiven) {
-							$html .= "<button class='btn btn-primary' style='margin-right: 5px;' onclick='AspenDiscovery.CommunityEngagement.adminCampaignRewardGiven({$userId}, {$campaign->id}); return false;'>Give Campaign Reward</button>";
-						}
-
-						// Enrollment buttons
-						if (($campaign->isActive || $campaign->isUpcoming) && $library->allowAdminToEnrollUsersInAdminView && $campaign->canEnroll) {
-							if ($campaign->enrolled) {
-								$html .= "<button type='button' class='btn btn-danger' onclick='AspenDiscovery.CommunityEngagement.adminUnenroll({$campaign->id}, {$userId}); return false;'>Unenroll</button>";
-							} else {
-								$html .= "<button type='button' class='btn btn-success' onclick='AspenDiscovery.CommunityEngagement.adminEnrollPatron({$campaign->id}, {$userId}, {$userEmailOptInSetting}); return false;'>Enroll</button>";
-							}
-						}
-
-						$html .= "</div>"; // end campaign box
+						$campaignDisplayData[] = [
+							'campaign' => $campaign,
+							'milestones' => $milestoneData,
+							'extraCredit' => $extraCreditActivities,
+							'isRemoved' => $isRemoved,
+						];
 					}
-					$response['html'] = $html;
+
+					$interface->assign('campaigns', $campaignDisplayData);
+					$interface->assign('userId', $userId);
+					$interface->assign('userEmailOptInSetting', $userEmailOptInSetting);
+
+					$response['html'] = $interface->fetch('CommunityEngagement/adminUserCampaigns.tpl');
 					$response['success'] = true;
 				} else {
 					$response['message'] = 'No campaigns found for this user.';
@@ -393,7 +232,95 @@ class CommunityEngagement_AJAX extends JSON_Action {
 		echo json_encode($response);
 		exit;
 	}
-	
+
+	private function userRemovedCampaignCheck($campaignId, $userId) {
+		require_once ROOT_DIR . '/sys/CommunityEngagement/UserRemovedCampaign.php';
+
+		$removed = new UserRemovedCampaign();
+		$removed->campaignId = $campaignId;
+		$removed->userId = $userId;
+
+		return $removed->find(true);
+	}
+
+	public function restoreCampaignForUser() {
+
+		if (!UserAccount::userHasPermission('View Community Engagement Admin View')) {
+			return [
+				'success' => false,
+				'title' => translate([
+					'text' => 'Error',
+					'isPublicFacing' => true,
+				]),
+				'message' => translate([
+					'text' => 'You do not have the correct permissions to carry out this action',
+					'isPublicFacing' => true,
+				]),
+			];
+		}
+
+		$userId = $_REQUEST['userId'] ?? null;
+		$campaignId = $_REQUEST['campaignId'] ?? null;
+
+		if (!$userId) {
+			return [
+				'success' => false,
+				'title' => translate([
+					'text' => 'Error',
+					'isPublicFacing' => true,
+				]),
+				'message' => translate([
+					'text' => 'No User ID ',
+					'isPublicFacing' => true,
+				]),
+			];
+		}
+
+		if (!$campaignId) {
+			return [
+				'success' => false,
+				'title' => translate([
+					'text' => 'Error',
+					'isPublicFacing' => true,
+				]),
+				'message' => translate([
+					'text' => 'No Campaign ID ',
+					'isPublicFacing' => true,
+				]),
+			];
+		}
+		require_once ROOT_DIR . '/sys/CommunityEngagement/UserRemovedCampaign.php';
+
+		$removed = new UserRemovedCampaign();
+		$removed->campaignId = $campaignId;
+		$removed->userId = $userId;
+		if ($removed->find(true)) {
+			$removed->delete();
+			return [
+				'success' => true,
+				'title' => translate([
+					'text' => 'Campaign Restored',
+					'isPublicFacing' => true,
+				]),
+				'message' => translate([
+					'text' => 'The campaign has been restored for this user.',
+					'isPublicFacing' => true,
+				]),
+			];
+		} else {
+			return [
+				'success' => false,
+				'title' => translate([
+					'text' => 'Error',
+					'isPublicFacing' => true,
+				]),
+				'message' => translate([
+					'text' => 'Unable to restore the campaign for this user.',
+					'isPublicFacing' => true,
+				]),
+			];
+		}
+	}
 
 	public function filterLeaderboardCampaigns() {
 		if (!UserAccount::userHasPermission(['View Community Engagement Dashboard'])){
@@ -1219,6 +1146,7 @@ class CommunityEngagement_AJAX extends JSON_Action {
 				$users[] = array(
 					'id' => $user->id,
 					'displayName' => $user->displayName,
+					'ils_barcode' => $user->ils_barcode,
 				);
 			} 
 		}
@@ -1538,5 +1466,47 @@ class CommunityEngagement_AJAX extends JSON_Action {
 			echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 		}
 		exit;
+	}
+
+	public function searchUsers() {
+		$query = $_REQUEST['query'] ?? '';
+
+		$response = [
+			'success' => false,
+			'message' => 'Sorry, you don\'t have permissions to search users'
+		];
+
+		if (!UserAccount::userHasPermission('View Community Engagement Admin View')) {
+			return $response;
+		}
+
+		if (strlen($query) < 2) {
+			$response['message'] = 'Query too short';
+			return $response;
+		}
+
+		require_once ROOT_DIR . '/sys/Account/User.php';
+		$user = new User();
+
+		$escapedQuery = addslashes($query);
+
+		$user->whereAdd("displayName LIKE '%$escapedQuery%' OR ils_barcode LIKE '%$escapedQuery%'");
+
+		$user->limit(0, 25);
+
+		$matches = [];
+		if ($user->find()) {
+			while ($user->fetch()) {
+				$matches[] = [
+					'id' => $user->id,
+					'displayName' => $user->displayName,
+					'ils_barcode' => $user->ils_barcode
+				];
+			}
+		}
+		return [
+			'success' => true,
+			'users' => $matches
+		];
 	}
 }

@@ -782,7 +782,9 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 				}
 			}
 		} elseif ($this->searchType == 'series') {
-			return '/Series/' . urlencode($_GET['id']) . '?';
+			if (isset($_GET['id'])) {
+				return '/Series/' . urlencode($_GET['id']) . '?';
+			}
 		}
 
 		// If none of the special cases were met, use the default from the parent:

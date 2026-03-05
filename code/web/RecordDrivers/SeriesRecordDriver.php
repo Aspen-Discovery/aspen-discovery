@@ -86,7 +86,7 @@ class SeriesRecordDriver extends IndexRecordDriver {
 		$interface->assign('summUrl', $this->getAbsoluteUrl());
 
 		global $solrScope;
-		if ($this->fields["local_time_since_added_$solrScope"]) {
+		if (isset($this->fields["local_time_since_added_$solrScope"])) {
 			$interface->assign('isNew', $this->checkIfContainsNewTitles());
 		} else {
 			$interface->assign('isNew', false);
@@ -115,7 +115,7 @@ class SeriesRecordDriver extends IndexRecordDriver {
 		return [];
 	}
 
-	public function checkIfContainsNewTitles() {
+	public function checkIfContainsNewTitles() : bool {
 		global $solrScope;
 		$series = $this->getSeriesObject();
 		if (!empty($series)) {
@@ -148,7 +148,7 @@ class SeriesRecordDriver extends IndexRecordDriver {
 		$appliedTheme = $interface->getAppliedTheme();
 
 		global $solrScope;
-		if ($this->fields["local_time_since_added_$solrScope"]) {
+		if (isset($this->fields["local_time_since_added_$solrScope"])) {
 			$interface->assign('isNew', in_array('Week', $this->fields["local_time_since_added_$solrScope"]));
 		} else {
 			$interface->assign('isNew', false);

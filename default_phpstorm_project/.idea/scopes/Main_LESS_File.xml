@@ -1,0 +1,3 @@
+<component name="DependencyValidationManager">
+  <scope name="Main LESS File" pattern="file:code/web/interface/themes/responsive/css/main.less" />
+</component>

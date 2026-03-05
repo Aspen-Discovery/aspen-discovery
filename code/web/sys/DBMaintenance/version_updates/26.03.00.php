@@ -25,6 +25,16 @@ function getUpdates26_03_00(): array {
 				"ALTER TABLE location add column locationsToExcludeAvailabilityFor varchar(255) NOT NULL DEFAULT ''",
 			]
 		], //add_locations_to_exclude_availability_for
+		'local_ill_handle_remote_pickups' => [
+			'title' => 'Local ILL handle remote pickups',
+			'description' => 'Add settings to handle remote pickups of materials',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE user_checkout ADD COLUMN isLocalILL TINYINT(1) DEFAULT 0',
+				'ALTER TABLE user_hold ADD COLUMN isLocalILL TINYINT(1) DEFAULT 0',
+				'ALTER TABLE library ADD COLUMN includeRemoteCheckoutsInMaxLocalIllRequests TINYINT(1) DEFAULT 1',
+			]
+		], //local_ill_handle_remote_pickups
 
 		//kirstien
 		'add_cloud_library_sunday_reindex_option' => [
@@ -36,6 +46,15 @@ function getUpdates26_03_00(): array {
 			]
 		],
 		//add_cloud_library_sunday_reindex_option
+		'add_generated_rtl_css_to_theme' => [
+			'title' => 'Add generated RTL CSS to theme',
+			'description' => 'Add generated RTL CSS column to theme to fetch if a RTL language is active',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE themes ADD COLUMN generatedRTLCss LONGTEXT',
+			]
+		],
+		//add_generated_rtl_css_to_theme
 
 		//kodi
 		'add_bill_reason_translation_map' => [
@@ -46,6 +65,14 @@ function getUpdates26_03_00(): array {
 			]
 		],
 		//add_bill_reason_translation_map
+		'remove_unused_permission_loan_rules' => [
+			'title' => 'Remove unused permission loan rules',
+			'description' => 'Remove unused permission loan rules at all times',
+			'sql' => [
+				"DELETE FROM role_permissions WHERE permissionId = (SELECT id FROM permissions WHERE name = 'Administer Loan Rules')",
+				"DELETE FROM permissions WHERE name = 'Administer Loan Rules'",
+			]
+		], //remove_unused_permission_loan_rules
 
 		//yanjun
 		'require_pin_for_palace_project' => [
@@ -70,6 +97,14 @@ function getUpdates26_03_00(): array {
 		//galen
 
 		//alexander
+		'add_option_to_add_location_to_event_thumbail_image' => [
+			'title' => 'Add Option to Add Location to Event Thumnail Image',
+			'description' => 'Add ability to choose to add event location to event thumbnail image',
+			'sql' => [
+				"ALTER TABLE event ADD COLUMN displayEventBranchOnThumbnail TINYINT(1) DEFAULT 0",
+				"ALTER TABLE user_events_entry ADD COLUMN displayEventBranchOnThumbnail TINYINT(1) DEFAULT 0"
+			]
+		], //add_option_to_add_location_to_event_thumbnail_image 
 		'add_default_event_calendar_display_dropdown' => [
 			'title' => 'Add Default Event Calendar Display Dropdown',
 			'description' => 'Add the option of selecting the default display for the native events calendar',
@@ -78,8 +113,38 @@ function getUpdates26_03_00(): array {
 				"ALTER TABLE library ADD COLUMN eventsDefaultCalendarView TINYINT(1) NOT NULL DEFAULT 0",
 			],
 		], //add_default_event_calendar_display_dropdown
+		'add_user_removed_campaigns_table' =>[
+			'title' => 'Add User Removed Campaigns Table',
+			'description' => 'Add the ability for user to remove campaigns from their account area',
+			'continueOnError' => false,
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS user_removed_campaigns (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+					userId INT NOT NULL, 
+					campaignId INT NOT NULL, 
+					UNIQUE KEY user_campaign (userid, campaignId),
+					INDEX (userId),
+					INDEX (campaignId)
+				) ENGINE = InnoDB'
+			]
+		],// add_user_removed_campaigns_table
+
 
 		//chloe
+		'add_option_to_set_display_event_location_on_event_type' => [
+			'title' => 'Add Option to Set Display Event Location On Event Type',
+			'description' => 'Add ability to choose to add event location to event thumbnail image at the event type level',
+			'sql' => [
+				"ALTER TABLE event_type ADD COLUMN displayEventBranchOnThumbnail TINYINT(1) DEFAULT 0",
+			]
+		], //add_option_to_set_customizability_of_display_event_location_on_event_type
+		'add_option_to_set_customizability_of_display_event_location_on_event_type' => [
+			'title' => 'Add Option to Set Customizability Of Display Event Location On Event Type',
+			'description' => 'Add ability to choose the customizability of including event location to event thumbnail image at the event type level',
+			'sql' => [
+				"ALTER TABLE event_type ADD COLUMN displayEventBranchOnThumbnailCustomizable TINYINT(1) DEFAULT 0",
+			]
+		], //add_option_to_set_customizability_of_display_event_location_on_event_type
 
 		//mark j
 		'notify_saved_searches' => [

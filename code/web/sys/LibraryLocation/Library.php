@@ -415,6 +415,7 @@ class Library extends DataObject {
 	public $showGroupedHoldCopiesCount;
 	public $localIllRequestType;
 	public $maximumLocalIllRequests;
+	public $includeRemoteCheckoutsInMaxLocalIllRequests;
 	public $localIllEmail;
 	/** @noinspection PhpUnused */
 	public $_localIllEmailSuccessMessage;
@@ -4142,6 +4143,14 @@ class Library extends DataObject {
 						'description' => 'The maximum number of Local ILL requests to allow. Leave at 0 to not restrict.',
 						'hideInLists' => true,
 						'default' => 0,
+					],
+					'includeRemoteCheckoutsInMaxLocalIllRequests' => [
+						'property' => 'includeRemoteCheckoutsInMaxLocalIllRequests',
+						'type' => 'checkbox',
+						'label' => 'Include Remote Checkouts in Max Local ILL requests',
+						'description' => 'Include Remote Checkouts in Max Local ILL requests',
+						'note' => "Remote checkouts are checkouts that were picked up from the item's owning home group (but that are not owned by the patron's home group)",
+						'default' => 1
 					],
 					'ILLSystem' => [
 						'property' => 'ILLSystem',

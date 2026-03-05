@@ -38,7 +38,7 @@
 							{strip}
 							<div class="checkboxFacet col-tn-12">
 								<label>
-								<input type="checkbox" class="facetSearchPopupValue" checked name="filter[]" value='{$facetName}:{if empty($thisFacet.value)}(""){else}"{$thisFacet.value|escape:url}"{/if}'>
+								<input type="checkbox" class="facetSearchPopupValue" checked name="filter[]" value='{$facetName}:{if empty($thisFacet.value)}(""){else}"{$thisFacet.value|escape:url}"{/if}' {if !empty($thisFacet.isLocked)} data-locked="1"{/if}>
 									&nbsp;
 									{$thisFacet.display}{if $facetCountsToShow == 1 || ($facetCountsToShow == 2 && empty($thisFacet.countIsApproximate))}{if !empty($thisFacet.count)}&nbsp;({if !empty($thisFacet.countIsApproximate)}{/if}{$thisFacet.count|number_format}){/if}{/if}
 								</label>
@@ -51,7 +51,7 @@
 							{if !($thisFacet.isApplied)}
 								<div class="checkboxFacet col-tn-12">
 									<label>
-									<input type="checkbox" class="facetSearchPopupValue" {if !empty($thisFacet.isApplied)}checked{/if} name="filter[]" value='{$facetName}:{if empty($thisFacet.value)}(""){else}"{$thisFacet.value|escape:url}"{/if}'>
+									<input type="checkbox" class="facetSearchPopupValue" {if !empty($thisFacet.isApplied)}checked{/if} name="filter[]" value='{$facetName}:{if empty($thisFacet.value)}(""){else}"{$thisFacet.value|escape:url}"{/if}' {if !empty($thisFacet.isLocked)} data-locked="1"{/if}>
 										&nbsp;
 										{$thisFacet.display}{if $facetCountsToShow == 1 || ($facetCountsToShow == 2 && empty($thisFacet.countIsApproximate))}{if !empty($thisFacet.count)}&nbsp;({if !empty($thisFacet.countIsApproximate)}{/if}{$thisFacet.count|number_format}){/if}{/if}
 									</label>

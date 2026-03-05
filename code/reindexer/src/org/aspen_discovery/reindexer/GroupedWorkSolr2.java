@@ -113,7 +113,8 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 			//seriesWithVolume.values().removeAll(GroupedWorkIndexer.hideSeries);
 			boolean isFirstSeries = true;
 			for (String seriesName : sortedSeriesWithVolume) {
-				if (seriesWithVolume.containsKey(seriesName)) {
+				if (seriesWithVolume.containsKey(seriesName) || seriesWithVolumeUntraced.containsKey(seriesName)) {
+					seriesWithVolume.putAll(seriesWithVolumeUntraced); // Join both types together in the Solr index.
 					doc.addField("series_with_volume", seriesWithVolume.get(seriesName));
 					if (isFirstSeries) {
 						doc.addField("series_author", seriesName + " " + getPrimaryAuthor());

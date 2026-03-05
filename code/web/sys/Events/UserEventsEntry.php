@@ -11,6 +11,7 @@ class UserEventsEntry extends DataObject {
 	public $dateAdded;
 	public $regRequired;
 	public $location;
+	public $displayEventBranchOnThumbnail;
 
 	public function getUniquenessFields(): array {
 		return [

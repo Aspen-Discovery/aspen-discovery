@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{$userLang->code}">
+<html lang="{$userLang->code}" {if $isRTL}dir="rtl"{/if}>
 <head prefix="og: http://ogp.me/ns#">
 	{strip}
 		<title>{$pageTitleShortAttribute|truncate:64:"..."}{if empty($isMobile)} | {$librarySystemName|escape}{/if}</title>

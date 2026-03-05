@@ -1137,8 +1137,9 @@ class SirsiDynixROA extends AbstractIlsDriver {
 						$inHoldGroup = true;
 					}else{
 						$inHoldGroup = false;
+						$owningLocation = $checkout->fields->item->fields->currentLibrary->key;
 						foreach ($holdGroups as $holdGroup){
-							if (in_array($checkout->fields->item->fields->currentLibrary->key, $holdGroup->getLocationCodes())){
+							if (in_array($owningLocation, $holdGroup->getLocationCodes())){
 								$inHoldGroup = true;
 								break;
 							}
@@ -1146,7 +1147,24 @@ class SirsiDynixROA extends AbstractIlsDriver {
 					}
 
 					if (!$inHoldGroup) {
-						$curCheckout->outOfHoldGroupMessage = translate(['text' => 'Provided by Another Library', 'isPublicFacing' => true]);
+						$curCheckout->isLocalILL = true;
+						// The title does not belong to the patron's home group.
+						//Check to see if it was checked out at the owning home group
+						$checkedOutAtOwningHomeGroup = false;
+						$owningLocation = $checkout->fields->item->fields->currentLibrary->key;
+						$checkoutLocation = $checkout->fields->library->key;
+						$checkedOutRemotely = false;
+						if ($checkoutLocation == $owningLocation) {
+							$checkedOutRemotely = true;
+							$curCheckout->isLocalILL = $patron->getHomeLibrary()->includeRemoteCheckoutsInMaxLocalIllRequests == 1;
+							$curCheckout->outOfHoldGroupMessage = translate(['text' => 'Picked Up from Another Library', 'isPublicFacing' => true]);
+						}
+						if (!$checkedOutRemotely) {
+							$curCheckout->outOfHoldGroupMessage = translate([
+								'text' => 'Provided by Another Library',
+								'isPublicFacing' => true
+							]);
+						}
 						$library = $patron->getHomeLibrary();
 						if (!$library->allowRenewingOutOfHoldGroupCheckouts){
 							$curCheckout->canRenew = false;
@@ -1313,6 +1331,9 @@ class SirsiDynixROA extends AbstractIlsDriver {
 					}else{
 						$curHold->outOfHoldGroupMessage = translate(['text' => 'Hold Pending from Another Library', 'isPublicFacing' => true]);
 					}
+					$curHold->isLocalILL = true;
+				}else{
+					$curHold->isLocalILL = false;
 				}
 				$curHold->createDate = strtotime($createDate);
 				$curHold->expirationDate = strtotime($expireDate);

@@ -159,10 +159,16 @@ class LocationSetting extends DataObject {
 		$title = 'Unknown';
 		$fullPath = '';
 
-		require_once ROOT_DIR . '/sys/SystemVariables.php';
-		$systemVariables = SystemVariables::getSystemVariables();
-		if ($systemVariables && !empty($systemVariables->appScheme)) {
-			$scheme = $systemVariables->appScheme;
+		require_once ROOT_DIR . '/sys/AspenLiDA/BrandedAppSetting.php';
+		$brandedSettings = new BrandedAppSetting();
+		if ($brandedSettings->find(true)) {
+			$appScheme = $brandedSettings->slugName;
+		} else {
+			require_once ROOT_DIR . '/sys/SystemVariables.php';
+			$systemVariables = SystemVariables::getSystemVariables();
+			if ($systemVariables && !empty($systemVariables->appScheme)) {
+				$appScheme = $systemVariables->appScheme;
+			}
 		}
 
 		if (strpos($name, 'grouped_work')) {

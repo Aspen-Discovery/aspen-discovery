@@ -882,7 +882,7 @@ public class HooplaExporter2 {
 					String status = availability.getString("status");
 					int holdsQueueSize = status.equals("BORROW") ? 0 : (availability.has("holdsQueueSize")  ? availability.getInt("holdsQueueSize") : 0);
 					int availableCopies = availability.has("availableCopies")  ? availability.getInt("availableCopies") : 0;
-					int totalCopies = availability.getInt("totalCopies");
+					int totalCopies = availability.has("totalCopies")  ? availability.getInt("totalCopies") : 0;
 
 					boolean availabilityChanged = false;
 					try {

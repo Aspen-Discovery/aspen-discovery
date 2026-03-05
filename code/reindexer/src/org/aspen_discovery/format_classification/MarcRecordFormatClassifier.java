@@ -473,15 +473,17 @@ public class MarcRecordFormatClassifier {
 
 	private boolean titleMatchesPattern(org.marc4j.marc.Record record, Pattern patternToLookFor) {
 		String titleField = MarcUtil.getFirstFieldVal(record, "245a");
+		boolean foundMatch = false;
 		if (titleField != null) {
-			return patternToLookFor.matcher(titleField).matches();
-		}else{
+			foundMatch = patternToLookFor.matcher(titleField).matches();
+		}
+		if (!foundMatch) {
 			String titleField2 = MarcUtil.getFirstFieldVal(record, "246a");
 			if (titleField2 != null) {
-				return patternToLookFor.matcher(titleField2).matches();
+				foundMatch = patternToLookFor.matcher(titleField2).matches();
 			}
 		}
-		return false;
+		return foundMatch;
 	}
 
 	public Pattern graphicNovelSubtitle = Pattern.compile("\\b(the|a) graphic novel\\b", Pattern.CASE_INSENSITIVE);
@@ -1483,6 +1485,9 @@ public class MarcRecordFormatClassifier {
 			printFormats.remove("Book");
 		}
 		if (printFormats.contains("BoardBook")){
+			printFormats.remove("Book");
+		}
+		if (printFormats.contains("PictureBook")){
 			printFormats.remove("Book");
 		}
 		if (printFormats.contains("Journal")){

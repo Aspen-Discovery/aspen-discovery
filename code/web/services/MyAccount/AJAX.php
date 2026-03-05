@@ -7790,8 +7790,13 @@ class MyAccount_AJAX extends JSON_Action {
 				$createInvoice->InvoiceNumber = $token;
 				$createInvoice->TypeID = intval($invoiceCloudSetting->invoiceTypeId);
 				$createInvoice->BalanceDue = $payment->totalPaid;
-				$createInvoice->CCServiceFee = $invoiceCloudSetting->ccServiceFee;
-				$createInvoice->ACHServiceFee = $invoiceCloudSetting->ccServiceFee;
+				$ccServiceFee = $invoiceCloudSetting->ccServiceFee;
+				if (isset($ccServiceFee) && str_contains($ccServiceFee, '%')) {
+					$percent = floatval(str_replace('%', '', $ccServiceFee));
+					$ccServiceFee = round($payment->totalPaid * ($percent / 100), 2);
+				}
+				$createInvoice->CCServiceFee = $ccServiceFee;
+				$createInvoice->ACHServiceFee = $ccServiceFee;
 				$createInvoice->DueDate = date('m/d/Y');
 				$createInvoice->InvoiceDate = date('m/d/Y');
 
@@ -9020,6 +9025,7 @@ class MyAccount_AJAX extends JSON_Action {
 						$userEventsEntry->title = mb_substr($title, 0, 50);
 						$eventDate = $recordDriver->getStartDate();
 						$userEventsEntry->eventDate = $eventDate->getTimestamp();
+						$userEventsEntry->displayEventBranchOnThumbnail = $recordDriver->getDisplayBranchOnThumbnail();
 						if ($recordDriver->isRegistrationRequired()) {
 							$regRequired = 1;
 						} else {
@@ -12217,5 +12223,148 @@ class MyAccount_AJAX extends JSON_Action {
 			}
 		}
 		return $result;
+	}
+
+	public function removeCampaignModal() {
+		$activeUser = UserAccount::getActiveUserObj();
+		if (!$activeUser) {
+			return [
+				'success' => false,
+				'title' => translate([
+					'text' => 'Error',
+					'isPublicFacing' => true,
+				]),
+				'message' => translate([
+					'text' => 'You must be logged in.',
+					'isPublicFacing' => true,
+				]),
+			];
+		}
+
+		$userId = $activeUser->id;
+		$campaignId = $_REQUEST['campaignId'] ?? null;
+
+		if (!$campaignId) {
+			return [
+				'sucess' =>false,
+				'title' => translate([
+					'text' => 'Error',
+					'isPublicFacing' => true,
+				]),
+				'message' => translate([
+					'text' => 'Cannot find a campaign with this ID',
+					'isPublicFacing' => true,
+				]),
+			];
+		}
+
+		require_once ROOT_DIR . '/sys/CommunityEngagement/Campaign.php';
+
+		$campaign = new Campaign();
+		$campaign->id = $campaignId;
+		if (!$campaign->find(true)) {
+			return [
+				'sucess' =>false,
+				'title' => translate([
+					'text' => 'Error',
+					'isPublicFacing' => true,
+				]),
+				'message' => translate([
+					'text' => 'Campaign not found',
+					'isPublicFacing' => true,
+				]),
+			];
+		}
+
+		$campaignName = $campaign->name;
+		global $interface;
+		$interface->assign('campaignName', $campaignName);
+
+		return [
+			'success' =>true,
+			'title' => translate([
+				'text' => 'Remove Campaign',
+				'isPublicFacing' => true,
+			]),
+			'modalBody' => $interface->fetch('MyAccount/remove-campaign-modal.tpl'),
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.Account.removeCampaignFromUI($campaignId, $userId)'>" . translate([
+					'text' => 'Remove',
+					'isAdminFacing' => 'true',
+				]) . "</button>",
+		];
+	}
+
+	public function removeCampaignFromUI() {
+
+		$activeUser = UserAccount::getActiveUserObj();
+		if (!$activeUser) {
+			return [
+				'success' => false,
+				'title' => translate([
+					'text' => 'Error',
+					'isPublicFacing' => true,
+				]),
+				'message' => translate([
+					'text' => 'You must be logged in.',
+					'isPublicFacing' => true,
+				]),
+			];
+		}
+
+		$userId = $_REQUEST['userId'] ?? null;
+		$campaignId = $_REQUEST['campaignId'] ?? null;
+
+		if (!$campaignId || !$userId) {
+			return [
+				'success' => false,
+				'title' => translate([
+					'text' => 'Error',
+					'isPublicFacing' => true,
+				]),
+				'message' => translate([
+					'text' => 'Missing Parameter',
+					'isPublicFacing' => true,
+				]),
+			];
+		}
+
+		$isAdmin = UserAccount::userHasPermission('View Community Engagement Admin View');
+		$isSelf  = ($activeUser->id == $userId);
+
+		 if (!$isAdmin && !$isSelf) {
+			 return [
+				 'success' => false,
+				 'title' => translate([
+					 'text' => 'Error',
+					 'isPublicFacing' => true,
+				 ]),
+				 'message' => translate([
+					 'text' => 'You do not have permission to perform this action.',
+					 'isPublicFacing' => true,
+				 ]),
+			 ];
+		 }
+
+		require_once ROOT_DIR . '/sys/CommunityEngagement/UserRemovedCampaign.php';
+
+		$removedCampaign = new UserRemovedCampaign();
+		$removedCampaign->userId = $userId;
+		$removedCampaign->campaignId = $campaignId;
+
+		if (!$removedCampaign->find(true)) {
+			$removedCampaign->insert();
+		}
+
+		return [
+			'success' => true,
+			'title' => translate([
+				'text' => 'Success',
+				'isPublicFacing' => true,
+			]),
+			'message' => translate([
+				'text' => 'Campaign removed from view',
+				'isPublicFacing' => true,
+			]),
+		];
 	}
 }

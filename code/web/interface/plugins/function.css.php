@@ -20,20 +20,14 @@ function smarty_function_css($params, &$smarty) {
 	$local = $configArray['Site']['local'];
 	$filename = $params['filename'];
 
-	// Loop through the available themes looking for the requested CSS file:
+	// Always try to load the main CSS file first
 	$css = false;
 	global $activeLanguage;
 
-	if ($activeLanguage->isRTL()){
-		if (file_exists("{$local}/interface/themes/responsive/css-rtl/{$filename}")) {
-			$css = "/interface/themes/responsive/css-rtl/{$filename}";
-		}
-	} else {
-		// If the file exists on the local file system, set $css to the relative
-		// path needed to link to it from the web interface.
-		if (file_exists("{$local}/interface/themes/responsive/css/{$filename}")) {
-			$css = "/interface/themes/responsive/css/{$filename}";
-		}
+	// If the file exists on the local file system, set $css to the relative
+	// path needed to link to it from the web interface.
+	if (file_exists("{$local}/interface/themes/responsive/css/{$filename}")) {
+		$css = "/interface/themes/responsive/css/{$filename}";
 	}
 
 	// If we couldn't find the file, we shouldn't try to link to it:
@@ -43,5 +37,21 @@ function smarty_function_css($params, &$smarty) {
 
 	// We found the file -- build the link tag:
 	$media = isset($params['media']) ? " media=\"{$params['media']}\"" : '';
-	return "<link rel=\"stylesheet\" type=\"text/css\"{$media} href=\"{$css}?v=" . urlencode($interface->getVariable('aspenVersion')) . '.' . urlencode($interface->getVariable('cssJsCacheCounter')) ."\" />";
+	$version = urlencode($interface->getVariable('aspenVersion')) . '.' . urlencode($interface->getVariable('cssJsCacheCounter'));
+	$output = "<link rel=\"stylesheet\" type=\"text/css\"{$media} href=\"{$css}?v={$version}\" />";
+
+	// For RTL languages, also include the RTL CSS file if it exists
+	if ($activeLanguage->isRTL()) {
+		$rtlFilename = str_replace('.css', '-rtl.css', $filename);
+		if (file_exists("{$local}/interface/themes/responsive/css/{$rtlFilename}")) {
+			$rtlCss = "/interface/themes/responsive/css/{$rtlFilename}";
+			$output .= "\n<link rel=\"stylesheet\" type=\"text/css\"{$media} href=\"{$rtlCss}?v={$version}\" />";
+			if (file_exists("{$local}/interface/themes/responsive/css/main-rtl-supplement.css")) {
+				$supRtlCss = "/interface/themes/responsive/css/main-rtl-supplement.css";
+				$output .= "\n<link rel=\"stylesheet\" type=\"text/css\"{$media} href=\"{$supRtlCss}?v={$version}\" />";
+			}
+		}
+	}
+
+	return $output;
 }
