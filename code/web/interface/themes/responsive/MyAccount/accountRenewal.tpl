@@ -22,7 +22,6 @@
 			let continueButton = document.getElementById('continueButton');
 			let affirmationInput = document.getElementById('userAgrees');
 			let warningMessage = document.getElementById('client-warning-message');
-			let h2 = document.querySelector('h2');
 
 			yesButton.addEventListener('click', function() {
 				affirmationInput.value = 'yes';
