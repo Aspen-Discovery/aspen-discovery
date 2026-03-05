@@ -3986,7 +3986,7 @@ class Koha extends AbstractIlsDriver {
 				'property' => 'minimalSelfRegistrationForm',
 				'type' => 'section',
 				'label' => 'Library Quick Registration Form',
-				'expandByDefault' => false,
+				'expandByDefault' => true,
 				'properties' => []
 			]
 		];
