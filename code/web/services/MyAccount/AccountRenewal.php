@@ -48,7 +48,7 @@ class MyAccount_AccountRenewal extends MyAccount {
 
 
 		// handle user responses to the information check step
-		if (str_starts_with($currentStepName, 'information_step_')) {
+		if ($requestedDirection === 'next' && str_starts_with($currentStepName, 'information_step_')) {
 			$userAgreementCheckOutcome = $this->checkUserAgreement($userAgreementResponse);
 			if (!$userAgreementCheckOutcome['userAgrees']) {
 				$currentWarningMessage = $userAgreementCheckOutcome['message'];
