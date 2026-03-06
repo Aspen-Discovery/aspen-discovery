@@ -7455,7 +7455,49 @@ class Koha extends AbstractIlsDriver {
 		return $result;
 	}
 
-	public function postAccountRenewalRequestForPatron(string $userId, array $params): array {
+	private function formatPatronAttribute(string $key, $value): array {
+		if (str_contains($key, 'borrower_attribute_')) {
+			return [
+				'type'  => 'extended',
+				'code'  => str_replace('borrower_attribute_', '', $key),
+				'value' => $value
+			];
+		}
+
+		if (str_contains($key, 'borrower_')) {
+			return [
+				'type'  => 'standard',
+				'key'   => str_replace('borrower_', '', $key),
+				'value' => $value,
+			];
+		}
+
+		return ['type' => 'ignored'];
+	}
+
+	public function sendAccountRenewalRequest($userId, $requestedChanges, $selfRenewalSettings): array {		
+		$body = [
+			'self_renewal_settings' => $selfRenewalSettings,
+			'patron' => [],
+		];
+
+		foreach ($requestedChanges as $key => $value) {
+			$result = $this->formatPatronAttribute($key, $value);
+
+			if ($result['type'] === 'standard') {
+				$body['patron'][$result['key']] = $result['value'];
+			} elseif ($result['type'] === 'extended') {
+				$body['patron']['extended_attributes'][] = [
+					'code'	  => $result['code'],
+					'attribute' => $result['value']
+				];
+			}
+		}
+
+		return $this->postAccountRenewalRequestForPatron($userId, $body);
+	}
+
+	private function postAccountRenewalRequestForPatron(string $userId, array $params): array {
 		$result = ['success' => false];
 
 		$endpoint = '/api/v1/public/patrons/' . $userId . '/self_renewal';

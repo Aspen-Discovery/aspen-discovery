@@ -291,18 +291,8 @@ class MyAccount_AccountRenewal extends MyAccount {
 	}
 
 	private function sendRenewalRequest($selfRenewalSettings, $userIlsId, $requestedChanges = []) {
-		$patronData = [];
-			foreach ($requestedChanges as $key => $value) {
-			if (str_starts_with($key, 'borrower_')) {
-				$patronData[str_replace('borrower_', '', $key)] = $value;
-			}
-		}
 		$ilsDriver = CatalogFactory::getCatalogConnectionInstance();
-		$params = [
-		'self_renewal_settings' => $selfRenewalSettings,
-		'patron' => $patronData,
-		];
-		return $ilsDriver->postAccountRenewalRequestForPatron($userIlsId, $params);
+		return $ilsDriver->sendAccountRenewalRequest($userIlsId, $requestedChanges, $selfRenewalSettings);
 	}
 
 	function getBreadcrumbs(): array {
