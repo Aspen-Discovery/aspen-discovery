@@ -4414,7 +4414,7 @@ class User extends DataObject {
 		$sections['cataloging']->addAction(new AdminAction('Author Authorities', 'Create and edit authorities for authors.', '/Admin/AuthorAuthorities'), 'Manually Group and Ungroup Works');
 		$sections['cataloging']->addAction(new AdminAction('Records To Not Group', 'Lists records that should not be grouped.', '/Admin/NonGroupedRecords'), 'Manually Group and Ungroup Works');
 		$sections['cataloging']->addAction(new AdminAction('Record Grouping Overrides', 'Manage record-level grouping overrides. These force specific records to stay in specific grouped works regardless of the automatic grouping algorithm.', '/Admin/RecordGroupingOverrides'), 'Manually Group and Ungroup Works');
-		$sections['cataloging']->addAction(new AdminAction('Manual Grouped Works', 'Manually create and manage custom record groups.', '/Admin/ManualGroupedWorks'), 'Manually Group and Ungroup Works');
+		$sections['cataloging']->addAction(new AdminAction('Custom Grouped Works', 'Manually create and manage custom record groups.', '/Admin/ManualGroupedWorks'), 'Manually Group and Ungroup Works');
 		$sections['cataloging']->addAction(new AdminAction('Replacement Costs', 'Define default replacement costs by format.', '/Admin/ReplacementCosts'), 'Administer Replacement Costs');
 		$sections['cataloging']->addAction(new AdminAction('Hidden Series', 'Edit series to be excluded from the Series facet and Series Display Information', '/Admin/HideSeriess'), 'Hide Metadata');
 		$sections['cataloging']->addAction(new AdminAction('Hidden Subjects', 'Edit subjects to be excluded from the Subjects facet.', '/Admin/HideSubjectFacets'), 'Hide Metadata');

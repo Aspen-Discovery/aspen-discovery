@@ -14,7 +14,7 @@ class Admin_ManualGroupedWorks extends ObjectEditor {
 	}
 
 	function getPageTitle(): string {
-		return 'Manual Grouped Works';
+		return 'Custom Grouped Works';
 	}
 
 	function getAllObjects(int $page, int $recordsPerPage): array {
@@ -54,7 +54,7 @@ class Admin_ManualGroupedWorks extends ObjectEditor {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#cataloging', 'Catalog / Grouped Works');
-		$breadcrumbs[] = new Breadcrumb('/Admin/ManualGroupedWorks', 'Manual Grouped Works');
+		$breadcrumbs[] = new Breadcrumb('/Admin/ManualGroupedWorks', 'Custom Grouped Works');
 		return $breadcrumbs;
 	}
 
