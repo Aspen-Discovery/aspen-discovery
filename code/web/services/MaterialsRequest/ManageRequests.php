@@ -384,7 +384,9 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 				$pageDefaults = PageDefaults::getPageDefaultsForUser($user->id, 'MaterialsRequest', 'ManageRequests',null);
 				if ($pageDefaults !== null && !empty($pageDefaults->pageSize)) {
 					$materialsRequestsPerPage =  $pageDefaults->pageSize;
-				}else{
+				} else if ($pageDefaults->pageSize === 0) {
+					$materialsRequestsPerPage = 'all';
+				} else {
 					$materialsRequestsPerPage = 30;
 				}
 			}
