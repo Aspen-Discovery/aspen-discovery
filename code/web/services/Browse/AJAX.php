@@ -829,6 +829,9 @@ class Browse_AJAX extends Action {
 
 		// If this category has subcategories, get the results of a sub-category instead.
 		if (!empty($response['subcategories'])) {
+			require_once ROOT_DIR . '/services/API/SearchAPI.php';
+			$searchAPI = new SearchAPI();
+			$response['parentSearchUrl'] = $searchAPI->getBrowseCategorySearchUrl($textId);
 			$subCategories = $activeCategory->getSubCategories();
 			$subBrowseCategoryLabel = "";
 			// passed URL variable, or first sub-category
@@ -983,6 +986,9 @@ class Browse_AJAX extends Action {
 				'isPublicFacing' => true,
 			]);
 			$result['subcategories'] = $this->getSubCategories();
+			require_once ROOT_DIR . '/services/API/SearchAPI.php';
+			$searchAPI = new SearchAPI();
+			$result['parentSearchUrl'] = $searchAPI->getBrowseCategorySearchUrl($this->browseCategory->textId);
 		}
 
 		// Reload with sub-category

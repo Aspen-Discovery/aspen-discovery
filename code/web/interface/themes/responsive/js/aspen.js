@@ -13023,7 +13023,7 @@ AspenDiscovery.Browse = (function(){
 							AspenDiscovery.Ratings.initializeRaters();
 						});
 
-						$('#selected-browse-search-link').attr('href', data.searchUrl); // set the Label's link
+						$('#selected-browse-search-link').attr('href', data.parentSearchUrl || data.searchUrl); // set the Label's link
 
 						// scroll to the correct category
 						$("#browse-category-carousel").jcarousel('scroll', $("#browse-category-" + data.textId));
@@ -13103,7 +13103,7 @@ AspenDiscovery.Browse = (function(){
 					});
 
 					// update links for more results
-					$('#browse-search-link-' + categoryTextId).attr('href', data.searchUrl);
+					$('#browse-search-link-' + categoryTextId).attr('href', data.parentSearchUrl || data.searchUrl);
 					AspenDiscovery.Browse.patronId = data.patronId;
 
 					// Prevent accidental cover selection when the user clicks too fast
@@ -13235,7 +13235,7 @@ AspenDiscovery.Browse = (function(){
 						AspenDiscovery.Ratings.initializeRaters();
 					});
 
-					$('#selected-browse-search-link').attr('href', data.searchUrl); // update the search link
+					$('#selected-browse-search-link').attr('href', data.parentSearchUrl || data.searchUrl); // update the search link
 
 					if (data.lastPage){
 						$('#more-browse-results').hide(); // hide the load more results
@@ -13515,6 +13515,7 @@ AspenDiscovery.Browse = (function(){
 
 	}
 }(AspenDiscovery.Browse || {}));
+
 AspenDiscovery.CloudLibrary = (function () {
 	return {
 		cancelHold: function (patronId, id) {

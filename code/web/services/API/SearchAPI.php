@@ -1373,6 +1373,7 @@ class SearchAPI extends AbstractAPI {
 					'label' => $subCategory->label,
 					'textId' => $temp->id,
 					'source' => $isLiDA ? "SavedSearch" : "savedSearch",
+					'searchUrl' => $temp->searchUrl ?? $this->getSavedSearchUrl($temp->id),
 					$key => $firstSubCategoryResults,
 				];
 
@@ -1498,6 +1499,63 @@ class SearchAPI extends AbstractAPI {
 			'subCategories' => $subCategories,
 			'parentTextId' => $textId,
 		];
+	}
+
+	public function getBrowseCategorySearchUrl(string $textId): ?string {
+		$browseCategory = $this->getBrowseCategory($textId);
+		if ($browseCategory == null) {
+			return null;
+		}
+
+		if ($browseCategory->source == 'List') {
+			return '/MyAccount/MyList/' . $browseCategory->sourceListId;
+		}
+		if ($browseCategory->source == 'CourseReserve') {
+			return '/CourseReserves/' . $browseCategory->sourceCourseReserveId;
+		}
+		if (str_starts_with($browseCategory->textId, 'system_user_lists_')) {
+			$id = str_replace('system_user_lists_', '', $browseCategory->textId);
+			return '/MyAccount/MyList/' . $id;
+		}
+		if (str_starts_with($browseCategory->textId, 'system_saved_searches_')) {
+			$id = str_replace('system_saved_searches_', '', $browseCategory->textId);
+			return $this->getSavedSearchUrl((int)$id);
+		}
+
+		$searchObject = SearchObjectFactory::initSearchObject($browseCategory->source);
+		$defaultFilterInfo = $browseCategory->defaultFilter;
+		$defaultFilters = preg_split('/[\r\n]+/', $defaultFilterInfo);
+		foreach ($defaultFilters as $filter) {
+			$searchObject->addFilter(trim($filter));
+		}
+		$searchObject->setSort($browseCategory->getSolrSort());
+		if ($browseCategory->searchTerm != '') {
+			SearchObject_BaseSearcher::parseAndSetAdvancedSearchTerms($searchObject, $browseCategory->searchTerm);
+		}
+		$searchObject->clearFacets();
+		if (method_exists($searchObject, 'disableSpelling')) {
+			$searchObject->disableSpelling();
+		}
+		$searchObject->disableLogging();
+		$url = $searchObject->renderSearchUrl();
+		$searchObject->close();
+		return $url;
+	}
+
+	private function getSavedSearchUrl(int $searchId): ?string {
+		require_once ROOT_DIR . '/services/Search/History.php';
+		$savedSearch = History::getSavedSearchObject($searchId);
+		if (!$savedSearch || empty($savedSearch['search_object'])) {
+			return null;
+		}
+		SearchObjectFactory::initSearchObject();
+		$minSO = unserialize($savedSearch['search_object']);
+		$searchObject = SearchObjectFactory::deminify($minSO);
+		$searchObject->getFilterList();
+		$searchObject->displayQuery();
+		$url = $searchObject->renderSearchUrl();
+		$searchObject->close();
+		return $url;
 	}
 
 	/** @deprecated No longer actively used */
