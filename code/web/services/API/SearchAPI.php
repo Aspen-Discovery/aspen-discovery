@@ -1308,186 +1308,196 @@ class SearchAPI extends AbstractAPI {
 
 	function getSubCategories($textId = null, $loadFirstResults = false) : array {
 		$isLiDA = $this->checkIfLiDA();
-		$textId = $this->getTextId($textId);
+		$textId = $this->getTextId($textId); 
 		$user = $this->getUserForApiCall();
 		$key = $isLiDA ? 'records' : 'initialResults';
 		$curCount = 1;
-		if (!empty($textId)) {
-			$activeBrowseCategory = $this->getBrowseCategory($textId);
-			if ($activeBrowseCategory != null) {
-				$subCategories = [];
-				foreach ($activeBrowseCategory->getSubCategories() as $subCategory) {
-					$firstSubCategoryResults = [];
-					// Get information about the subcategory
-					if ($textId == "system_saved_searches") {
-						$label = explode('_', $subCategory->id);
-						$id = $label[3];
-						$temp = new SearchEntry();
-						$temp->id = $id;
-						if ($temp->find(true)) {
-							if (($curCount == 1 && $loadFirstResults) || $isLiDA) {
-								$pageToLoad = 1;
-								require_once ROOT_DIR . '/services/Search/History.php';
-								$savedSearch = History::getSavedSearchObject($temp->id);
-								SearchObjectFactory::initSearchObject();
-								$minSO = unserialize($savedSearch['search_object']);
-								$searchObject = SearchObjectFactory::deminify($minSO);
-								$searchObject->getFilterList();
-								$searchObject->displayQuery();
-								$searchObject->clearFacets();
-								if (method_exists($searchObject, 'disableSpelling')) {
-									$searchObject->disableSpelling();
-								}
-								$searchObject->disableLogging();
-								$searchObject->setLimit(self::ITEMS_PER_PAGE);
-								$searchObject->setPage($pageToLoad);
-								$searchObject->processSearch();
-								$searchObject->setPage($pageToLoad + 1);
-								$searchObject->close();
 
-								if ($isLiDA) {
-									$records = $searchObject->getResultRecordSet();
-								} else {
-									$records = $searchObject->getBrowseRecordHTML();
-								}
-								$firstSubCategoryResults = $records;
-							}
-							$subCategories[] = [
-								'id' => //generate random id to clean up FlatList keys if library uses browse categories in multiple groups
-									'sbc_' . bin2hex(random_bytes(5)),
-								'label' => $subCategory->label,
-								'textId' => $temp->id,
-								'source' => $isLiDA ? "SavedSearch" : "savedSearch",
-								$key => $firstSubCategoryResults,
-							];
-							$curCount++;
-						}
-					} elseif ($textId == "system_user_lists") {
-						$label = explode('_', $subCategory->id);
-						// see if we were provided with a specific user list id prepended to the incoming subcategory id
-						if (isset($label[3]) && $label[3]) {
-							$id = $label[3];
-							$temp = new UserList();
-							$temp->id = $id;
-							$numListItems = $temp->numValidListItems();
-							if ($temp->find(true)) {
-								if ($numListItems > 0) {
-									if (($curCount == 1 && $loadFirstResults) || $isLiDA) {
-										$pageToLoad = 1;
-										if ($isLiDA) {
-											require_once ROOT_DIR . '/services/API/ListAPI.php';
-											$listAPI = new ListAPI();
-											$firstSubCategoryResults = $listAPI->_getUserListTitles($temp->id, 25, $user, 1, $temp->defaultSort);
-										} else {
-											$firstSubCategoryResults = $temp->getBrowseRecords(($pageToLoad - 1) * self::ITEMS_PER_PAGE, self::ITEMS_PER_PAGE);
-										}
-
-									}
-									$subCategories[] = [
-										'id' => //generate random id to clean up FlatList keys if library uses browse categories in multiple groups
-											'sbc_' . bin2hex(random_bytes(5)),
-										'label' => $temp->title,
-										'textId' => $temp->id,
-										'source' => "userList",
-										$key => $firstSubCategoryResults,
-									];
-									$curCount++;
-								}
-							}
-						} else {
-							// if we aren't provided with a specific user list, get all user lists
-							require_once ROOT_DIR . '/services/API/ListAPI.php';
-							$listApi = new ListAPI();
-							$lists = $listApi->getUserLists();
-							$userLists = $lists['lists'] ?? [];
-							if (!empty($userLists)) {
-								foreach ($userLists as $userList) {
-									if ($userList['id'] != "recommendations") {
-										require_once ROOT_DIR . '/sys/UserLists/UserList.php';
-										$list = new UserList();
-										$list->id = $userList['id'];
-										$numListItems = $list->numValidListItems();
-										if ($list->find(true)) {
-											if ($numListItems > 0) {
-												if (($curCount == 1 && $loadFirstResults) || $isLiDA) {
-													$pageToLoad = 1;
-													if ($isLiDA) {
-														require_once ROOT_DIR . '/services/API/ListAPI.php';
-														$listAPI = new ListAPI();
-														$firstSubCategoryResults = $listAPI->_getUserListTitles($temp->id, 25, $user, 1, $temp->defaultSort);
-													} else {
-														$firstSubCategoryResults = $list->getBrowseRecords(($pageToLoad - 1) * self::ITEMS_PER_PAGE, self::ITEMS_PER_PAGE);
-													}
-
-												}
-												$subCategories[] = [
-													'id' => //generate random id to clean up FlatList keys if library uses browse categories in multiple groups
-														'sbc_' . bin2hex(random_bytes(5)),
-													'label' => $list->title,
-													'textId' => $list->id,
-													'source' => $isLiDA ? "List" : "userList",
-													$key => $firstSubCategoryResults,
-												];
-												$curCount++;
-											}
-										}
-									}
-								}
-							}
-						}
-					} else {
-						$temp = new BrowseCategory();
-						$temp->id = $subCategory->subCategoryId;
-						if ($temp->find(true)) {
-							if ($temp->isValidForDisplay()) {
-								$results = [];
-								if (($curCount == 1 && $loadFirstResults) || $isLiDA) {
-									if ($isLiDA) {
-										if (in_array($temp->source, $this->getValidSourcesForLiDA())) {
-											$results = $this->getAppBrowseCategoryResults($temp->textId);
-											$results = $results['items'];
-										}
-									} else {
-										$this->getBrowseCategoryResults($temp, $results);
-									}
-								}
-								$subCategories[] = [
-									'id' => //generate random id to clean up FlatList keys if library uses browse categories in multiple groups
-										'sbc_' . bin2hex(random_bytes(5)),
-									'label' => $temp->label,
-									'textId' => $temp->textId,
-									'source' => $temp->source,
-									'sourceListId' => $temp->sourceListId,
-									'internalId' => $temp->id,
-									$key => $results,
-								];
-								$curCount++;
-							}
-						} else {
-							global $logger;
-							$logger->log("Did not find subcategory with id $subCategory->subCategoryId", Logger::LOG_WARNING);
-						}
-					}
-				}
-				return [
-					'success' => true,
-					'subCategories' => $subCategories,
-					'parentTextId' => $textId,
-				];
-			} else {
-				return [
-					'success' => false,
-					'message' => 'Could not find a category with that text id.',
-					'parentTextId' => $textId,
-				];
-			}
-		} else {
+		if (empty($textId)) {
 			return [
 				'success' => false,
 				'message' => 'Please provide the text id to load sub categories for.',
 				'parentTextId' => null,
+			]; 
+		}
+
+		$activeBrowseCategory = $this->getBrowseCategory($textId);
+		if (!$activeBrowseCategory) {
+			return [
+				'success' => false,
+				'message' => 'Could not find a category with that text id.',
+				'parentTextId' => $textId,
 			];
 		}
+
+		$subCategories = [];
+		foreach ($activeBrowseCategory->getSubCategories() as $subCategory) {
+			$firstSubCategoryResults = [];
+			// Get information about the subcategory
+			if ($textId == "system_saved_searches") {
+				$label = explode('_', $subCategory->id);
+				$id = $label[3];
+				$temp = new SearchEntry();
+				$temp->id = $id;
+				if(!$temp->find(true)) {
+					continue;
+				}
+
+				if (($curCount == 1 && $loadFirstResults) || $isLiDA) {
+					$pageToLoad = 1;
+					require_once ROOT_DIR . '/services/Search/History.php';
+					$savedSearch = History::getSavedSearchObject($temp->id);
+					SearchObjectFactory::initSearchObject();
+					$minSO = unserialize($savedSearch['search_object']);
+					$searchObject = SearchObjectFactory::deminify($minSO);
+					$searchObject->getFilterList();
+					$searchObject->displayQuery();
+					$searchObject->clearFacets();
+					if (method_exists($searchObject, 'disableSpelling')) {
+						$searchObject->disableSpelling();
+					}
+					$searchObject->disableLogging();
+					$searchObject->setLimit(self::ITEMS_PER_PAGE);
+					$searchObject->setPage($pageToLoad);
+					$searchObject->processSearch();
+					$searchObject->setPage($pageToLoad + 1);
+					$searchObject->close();
+
+					$records = $isLiDA ? $searchObject->getResultRecordSet() : $searchObject->getBrowseRecordHTML();
+
+					$firstSubCategoryResults = $records;
+				}
+				$subCategories[] = [
+					'id' => //generate random id to clean up FlatList keys if library uses browse categories in multiple groups
+						'sbc_' . bin2hex(random_bytes(5)),
+					'label' => $subCategory->label,
+					'textId' => $temp->id,
+					'source' => $isLiDA ? "SavedSearch" : "savedSearch",
+					$key => $firstSubCategoryResults,
+				];
+
+				$curCount++;
+			} elseif ($textId == "system_user_lists") {
+				$label = explode('_', $subCategory->id);
+				// see if we were provided with a specific user list id prepended to the incoming subcategory id
+				if (isset($label[3]) && $label[3]) {
+					$id = $label[3];
+					$temp = new UserList();
+					$temp->id = $id;
+					$numListItems = $temp->numValidListItems();
+
+					if (!$temp->find(true) || $numListItems == 0) {
+						continue;
+					}
+
+					if (($curCount == 1 && $loadFirstResults) || $isLiDA) {
+						$pageToLoad = 1;
+						if ($isLiDA) {
+							require_once ROOT_DIR . '/services/API/ListAPI.php';
+							$listAPI = new ListAPI();
+							$firstSubCategoryResults = $listAPI->_getUserListTitles($temp->id, 25, $user, 1, $temp->defaultSort);
+						} else {
+							$firstSubCategoryResults = $temp->getBrowseRecords(($pageToLoad - 1) * self::ITEMS_PER_PAGE, self::ITEMS_PER_PAGE);
+						}
+					}
+					$subCategories[] = [
+						'id' => //generate random id to clean up FlatList keys if library uses browse categories in multiple groups
+							'sbc_' . bin2hex(random_bytes(5)),
+						'label' => $temp->title,
+						'textId' => $temp->id,
+						'source' => "userList",
+						$key => $firstSubCategoryResults,
+					];
+					$curCount++;
+				} else {
+					// if we aren't provided with a specific user list, get all user lists
+					require_once ROOT_DIR . '/services/API/ListAPI.php';
+					$listApi = new ListAPI();
+					$lists = $listApi->getUserLists();
+					$userLists = $lists['lists'] ?? [];
+					
+					if(empty($userLists)) {
+						continue;
+					}
+
+					foreach ($userLists as $userList) {
+						if ($userList['id'] == 'recommendations') {
+							continue;
+						}
+						require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+						$list = new UserList();
+						$list->id = $userList['id'];
+						$numListItems = $list->numValidListItems();
+						if (!$list->find(true) || $numListItems == 0) {
+							continue;
+						}
+
+						if (($curCount == 1 && $loadFirstResults) || $isLiDA) {
+							$pageToLoad = 1;
+							if ($isLiDA) {
+								require_once ROOT_DIR . '/services/API/ListAPI.php';
+								$listAPI = new ListAPI();
+								$firstSubCategoryResults = $listAPI->_getUserListTitles($temp->id, 25, $user, 1, $temp->defaultSort);
+							} else {
+								$firstSubCategoryResults = $list->getBrowseRecords(($pageToLoad - 1) * self::ITEMS_PER_PAGE, self::ITEMS_PER_PAGE);
+							}
+
+						}
+						$subCategories[] = [
+							'id' => //generate random id to clean up FlatList keys if library uses browse categories in multiple groups
+								'sbc_' . bin2hex(random_bytes(5)),
+							'label' => $list->title,
+							'textId' => $list->id,
+							'source' => $isLiDA ? "List" : "userList",
+							$key => $firstSubCategoryResults,
+						];
+						$curCount++;
+						
+					}
+				}
+			} else {
+				$temp = new BrowseCategory();
+				$temp->id = $subCategory->subCategoryId;
+				if (!$temp->find(true)) {
+					global $logger;
+					$logger->log("Did not find subcategory with id $subCategory->subCategoryId", Logger::LOG_WARNING);
+					continue;
+				}
+				
+				if(!$temp->isValidForDisplay()) {
+					continue;
+				}
+				
+				$results = [];
+				if (($curCount == 1 && $loadFirstResults) || $isLiDA) {
+					if ($isLiDA) {
+						if (in_array($temp->source, $this->getValidSourcesForLiDA())) {
+							$results = $this->getAppBrowseCategoryResults($temp->textId);
+							$results = $results['items'];
+						}
+					} else {
+						$this->getBrowseCategoryResults($temp, $results);
+					}
+				}
+
+				$subCategories[] = [
+					'id' => //generate random id to clean up FlatList keys if library uses browse categories in multiple groups
+						'sbc_' . bin2hex(random_bytes(5)),
+					'label' => $temp->label,
+					'textId' => $temp->textId,
+					'source' => $temp->source,
+					'sourceListId' => $temp->sourceListId,
+					'internalId' => $temp->id,
+					$key => $results,
+				];
+				$curCount++;
+			}
+		}
+		return [
+			'success' => true,
+			'subCategories' => $subCategories,
+			'parentTextId' => $textId,
+		];
 	}
 
 	/** @deprecated No longer actively used */
