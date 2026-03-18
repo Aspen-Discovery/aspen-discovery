@@ -479,6 +479,17 @@ class MaterialsRequest_AJAX extends Action {
 
 	/** @noinspection PhpUnused */
 	function selectHoldCandidate() : array {
+		if (!UserAccount::isLoggedIn() || !UserAccount::userHasPermission('Manage Materials Requests')) {
+			return [
+				'success' => false,
+				'title'   => translate(['text'=>'Error','isAdminFacing'=>true]),
+				'message' => translate([
+					'text' => "You do not have the correct permissions for this operation",
+					'isAdminFacing' => true,
+				])
+			];
+		}
+
 		if (empty($_REQUEST['requestId']) || !is_numeric($_REQUEST['requestId'])) {
 			return [
 				'success' => false,
