@@ -41,6 +41,17 @@ class GroupedWork_AJAX extends JSON_Action {
 	function forceReindex() : array {
 		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 
+		if (!UserAccount::isLoggedIn() || !UserAccount::userHasPermission('Force Reindexing of Records')) {
+			return [
+				'success' => false,
+				'title'   => translate(['text'=>'Error','isAdminFacing'=>true]),
+				'message' => translate([
+					'text' => "You do not have the correct permissions for this operation",
+					'isAdminFacing' => true,
+				])
+			];
+		}
+
 		$id = $_REQUEST['id'];
 		$groupedWork = new GroupedWork();
 		$groupedWork->permanent_id = $id;
@@ -64,6 +75,17 @@ class GroupedWork_AJAX extends JSON_Action {
 	/** @noinspection PhpUnused */
 	function viewDebugging() : array {
 		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+
+		if (!UserAccount::isLoggedIn() || !UserAccount::userHasPermission('Force Reindexing of Records')) {
+			return [
+				'success' => false,
+				'title'   => translate(['text'=>'Error','isAdminFacing'=>true]),
+				'message' => translate([
+					'text' => "You do not have the correct permissions for this operation",
+					'isAdminFacing' => true,
+				])
+			];
+		}
 
 		$id = $_REQUEST['id'];
 		$groupedWork = new GroupedWork();
@@ -1186,6 +1208,17 @@ class GroupedWork_AJAX extends JSON_Action {
 	function getUploadCoverForm() : array {
 		global $interface;
 
+		if (!UserAccount::isLoggedIn() || !UserAccount::userHasPermission('Upload Covers')) {
+			return [
+				'success' => false,
+				'title'   => translate(['text'=>'Error','isAdminFacing'=>true]),
+				'message' => translate([
+					'text' => "You do not have the correct permissions for this operation",
+					'isAdminFacing' => true,
+				])
+			];
+		}
+
 		$groupedWorkId = $_REQUEST['id'];
 		$recordType = $_REQUEST['recordType'] ?? 'grouped_work';
 		$recordId = $_REQUEST['recordId'] ?? $groupedWorkId;
@@ -1371,6 +1404,17 @@ class GroupedWork_AJAX extends JSON_Action {
 	function getUploadCoverFormByURL() : array {
 		global $interface;
 
+		if (!UserAccount::isLoggedIn() || !UserAccount::userHasPermission('Upload Covers')) {
+			return [
+				'success' => false,
+				'title'   => translate(['text'=>'Error','isAdminFacing'=>true]),
+				'message' => translate([
+					'text' => "You do not have the correct permissions for this operation",
+					'isAdminFacing' => true,
+				])
+			];
+		}
+
 		$groupedWorkId = $_REQUEST['id'];
 		$recordType = $_REQUEST['recordType'] ?? 'grouped_work';
 		$recordId = $_REQUEST['recordId'] ?? $groupedWorkId;
@@ -1393,6 +1437,17 @@ class GroupedWork_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function uploadCoverByURL() : array {
+		if (!UserAccount::isLoggedIn() || !UserAccount::userHasPermission('Upload Covers')) {
+			return [
+				'success' => false,
+				'title'   => translate(['text'=>'Error','isAdminFacing'=>true]),
+				'message' => translate([
+					'text' => "You do not have the correct permissions for this operation",
+					'isAdminFacing' => true,
+				])
+			];
+		}
+
 		$result = [
 			'success' => false,
 			'title' => translate([
@@ -2462,6 +2517,17 @@ class GroupedWork_AJAX extends JSON_Action {
 	function getPreviewRelatedCover() : array {
 		global $interface;
 
+		if (!UserAccount::isLoggedIn() || !UserAccount::userHasPermission('Upload Covers')) {
+			return [
+				'success' => false,
+				'title'   => translate(['text'=>'Error','isAdminFacing'=>true]),
+				'message' => translate([
+					'text' => "You do not have the correct permissions for this operation",
+					'isAdminFacing' => true,
+				])
+			];
+		}
+
 		$groupedWorkId = $_REQUEST['id'];
 		$recordId = $_REQUEST['recordId'];
 		$recordType = $_REQUEST['recordType'];
@@ -2597,6 +2663,17 @@ class GroupedWork_AJAX extends JSON_Action {
 	function clearRelatedCover() : array {
 		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 
+		if (!UserAccount::isLoggedIn() || !UserAccount::userHasPermission('Upload Covers')) {
+			return [
+				'success' => false,
+				'title'   => translate(['text'=>'Error','isAdminFacing'=>true]),
+				'message' => translate([
+					'text' => "You do not have the correct permissions for this operation",
+					'isAdminFacing' => true,
+				])
+			];
+		}
+
 		$id = $_REQUEST['id'];
 		$groupedWork = new GroupedWork();
 		$groupedWork->permanent_id = $id;
@@ -2624,6 +2701,17 @@ class GroupedWork_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function thirdPartyCoverToggle() : array {
+		if (!UserAccount::isLoggedIn() || !UserAccount::userHasPermission('Upload Covers')) {
+			return [
+				'success' => false,
+				'title'   => translate(['text'=>'Error','isAdminFacing'=>true]),
+				'message' => translate([
+					'text' => "You do not have the correct permissions for this operation",
+					'isAdminFacing' => true,
+				])
+			];
+		}
+
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 		$id = $_REQUEST['id'];
 		$recordDriver = new GroupedWorkDriver($id);
@@ -2700,6 +2788,17 @@ class GroupedWork_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function clearUploadedCover() : array {
+		if (!UserAccount::isLoggedIn() || !UserAccount::userHasPermission('Upload Covers')) {
+			return [
+				'success' => false,
+				'title'   => translate(['text'=>'Error','isAdminFacing'=>true]),
+				'message' => translate([
+					'text' => "You do not have the correct permissions for this operation",
+					'isAdminFacing' => true,
+				])
+			];
+		}
+
 		require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
 		$bookcoverInfo = new BookCoverInfo();
 
