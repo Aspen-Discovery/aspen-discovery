@@ -2289,6 +2289,17 @@ class Record_AJAX extends Action {
 	function forceReindex(): array {
 		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 
+		if (!UserAccount::isLoggedIn() || !UserAccount::userHasPermission('Force Reindexing of Records')) {
+			return [
+				'success' => false,
+				'title'   => translate(['text'=>'Error','isAdminFacing'=>true]),
+				'message' => translate([
+					'text' => "You do not have the correct permissions for this operation",
+					'isAdminFacing' => true,
+				])
+			];
+		}
+
 		$id = $_REQUEST['id'];
 		if (strpos($id, ':') > 0) {
 			[
