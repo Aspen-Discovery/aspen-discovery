@@ -2276,7 +2276,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
 
 		$interface->assign('recordDriver', $this);
-
+		$timer->logTime("Finished grouped work search result render prep");
 		$timer->logTime("Assigned all information to show search results");
 		return 'RecordDrivers/GroupedWork/result.tpl';
 	}
