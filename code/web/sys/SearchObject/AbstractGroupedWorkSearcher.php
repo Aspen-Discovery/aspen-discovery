@@ -445,7 +445,7 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 		$html = [];
 		if (isset($this->indexResult['response'])) {
 			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-			$timer->logTime('Loaded archive links');
+			$timer->logTime('Initialized grouped work result rendering');
 			for ($x = 0; $x < count($this->indexResult['response']['docs']); $x++) {
 				$memoryWatcher->logMemory("Started loading record information for index $x");
 				$current = &$this->indexResult['response']['docs'][$x];
@@ -467,9 +467,11 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 				}
 				/** @var GroupedWorkDriver $record */
 				$record = RecordDriverFactory::initRecordDriver($current);
+				$timer->logTime('Initialized grouped work driver for ' . $current['id']);
 				if (!($record instanceof AspenError)) {
 					$interface->assign('recordDriver', $record);
 					$html[] = $interface->fetch($record->getSearchResult($this->view));
+					$timer->logTime('Rendered grouped work result for ' . $current['id']);
 				} else {
 					$html[] = "Unable to find record";
 				}
@@ -479,6 +481,7 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 				$memoryWatcher->logMemory("Finished loading record information for index $x");
 				$timer->logTime('Loaded search result for ' . $current['id']);
 			}
+			$timer->logTime('Finished grouped work result rendering loop');
 		}
 		return $html;
 	}
