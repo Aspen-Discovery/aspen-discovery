@@ -1168,11 +1168,12 @@ abstract class Solr {
 		if (!$this->isAdvanced($query)) {
 			//Remove extraneous colons to make sure that the query isn't treated as a field spec.
 			$ss = is_null($handler) ? null : $this->_getSearchSpecs($handler);
+			$options['defType'] = 'edismax';
+
 			// Is this a Dismax search?
 			if (isset($ss['DismaxFields'])) {
 				// Specify the fields to do a Dismax search on:
 				//$options['qf'] = implode(' ', $ss['DismaxFields']);
-				$options['defType'] = 'edismax';
 				// Specify the default dismax search handler so we can use any
 				// global settings defined by the user:
 				//$options['qt'] = 'dismax';
@@ -1196,11 +1197,18 @@ abstract class Solr {
 				// Not DisMax... but do we need to format the query based on
 				// a setting in the YAML search specs?	If $ss is an array
 				// at this point, it indicates that we found YAML details.
-				if (is_array($ss)) {
-					$options['q'] = $this->_buildQueryComponent($handler, $query);
-				} elseif (!empty($handler)) {
-					$options['q'] = "({$handler}:{$query})";
-				}
+
+				//Updates to allow use of edismax
+				// if (is_array($ss) && empty($ss['DismaxFields'])) {
+				// 	// Only use buildQueryComponent if NOT using edismax
+				// 	$options['q'] = $this->_buildQueryComponent($handler, $query);
+				// } elseif (!empty($handler) && empty($ss['DismaxFields'])) {
+				// 	$options['q'] = "({$handler}:{$query})";
+				// } else {
+				// 	// edismax path: keep query clean
+				// }
+				$options['q'] = $query;
+
 			}
 		} else {
 			// Force boolean operators to uppercase if we are in a case-insensitive
@@ -1215,6 +1223,19 @@ abstract class Solr {
 				$options['q'] = $this->_buildAdvancedQuery($handler, $query);
 			}
 		}
+
+		$options['qf'] = implode(' ', [
+			'title_exact^6000',
+			'title_left^2500',
+			'title_proper^800',
+			'title^200',
+			'author^250',
+			'subject^800',
+			'topic^125',
+			'series^50',
+			'description^15',
+			'keywords^1'
+		]);
 		$timer->logTime("build query in Solr");
 
 		// Limit Fields
