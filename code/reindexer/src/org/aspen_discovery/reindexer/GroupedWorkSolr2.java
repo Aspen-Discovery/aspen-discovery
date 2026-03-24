@@ -11,6 +11,7 @@ import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.SolrInputField;
 
 import java.util.*;
+import java.util.regex.Pattern;
 
 public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneable {
 
@@ -112,7 +113,8 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 			//seriesWithVolume.values().removeAll(GroupedWorkIndexer.hideSeries);
 			boolean isFirstSeries = true;
 			for (String seriesName : sortedSeriesWithVolume) {
-				if (seriesWithVolume.containsKey(seriesName)) {
+				if (seriesWithVolume.containsKey(seriesName) || seriesWithVolumeUntraced.containsKey(seriesName)) {
+					seriesWithVolume.putAll(seriesWithVolumeUntraced); // Join both types together in the Solr index.
 					doc.addField("series_with_volume", seriesWithVolume.get(seriesName));
 					if (isFirstSeries) {
 						doc.addField("series_author", seriesName + " " + getPrimaryAuthor());
@@ -522,15 +524,14 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 						}
 
 						if (addAllOwningLocations){
-							addAllWithPrefix(owningLocations, scopePrefix, curItem.getLocationOwnedNames());
+							addAllWithPrefix(owningLocations, scopePrefix, curItem.getLocationOwnedNames(), null);
 						}
 						if (addAllOwningLocationsToAvailableAt){
 							availableAtForItem.addAll(curItem.getLocationOwnedNames());
 						}
 
-						for (String availableAtLocation : availableAtForItem) {
-							availableAt.add(scopePrefix + availableAtLocation);
-						}
+						//Filter by locationsToExcludeAvailabilityFor
+						addAllWithPrefix(availableAt, scopePrefix, availableAtForItem, curScope.getLocationsToExcludeAvailabilityForPattern());
 
 						availabilityToggleForScope.local = availabilityToggleForScope.local || availabilityToggleForItem.local;
 						availabilityToggleForScope.available = availabilityToggleForScope.available || availabilityToggleForItem.available;
@@ -758,9 +759,11 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 		}
 	}
 
-	private void addAllWithPrefix(HashSet<String> fieldValues, String scopePrefix, HashSet<String> valuesToAdd) {
+	private void addAllWithPrefix(HashSet<String> fieldValues, String scopePrefix, HashSet<String> valuesToAdd, Pattern valuesToSkip) {
 		for (String valueToAdd : valuesToAdd){
-			fieldValues.add(scopePrefix + valueToAdd);
+			if (valuesToSkip == null || !valuesToSkip.matcher(valueToAdd).matches()) {
+				fieldValues.add(scopePrefix + valueToAdd);
+			}
 		}
 	}
 

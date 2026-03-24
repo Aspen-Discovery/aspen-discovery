@@ -68,7 +68,7 @@ abstract class BaseBrowsable extends DataObject {
 	 *
 	 * @return boolean
 	 */
-	public function updateFromSearch(SearchObject_SolrSearcher $searchObj): bool {
+	public function updateFromSearch(SearchObject_BaseSearcher $searchObj): bool {
 		$this->source = $searchObj->getEngineName();
 		//Search terms
 		$searchTerms = $searchObj->getSearchTerms();
@@ -158,6 +158,9 @@ abstract class BaseBrowsable extends DataObject {
 		}
 		if (array_key_exists('Open Archives', $enabledModules)) {
 			$spotlightSources['OpenArchives'] = 'Open Archives Search';
+		}
+		if (array_key_exists('CloudSource', $enabledModules)) {
+			$spotlightSources['CloudSource'] = 'CloudSource OA Search';
 		}
 		if (array_key_exists('Web Indexer', $enabledModules)) {
 			$spotlightSources['Websites'] = 'Website Search';

@@ -825,8 +825,14 @@ class PalaceProjectDriver extends AbstractEContentDriver {
 		} else {
 			$aspenVersion = 'Primary';
 		}
+		$settings = $this->getSettings();
+		if ($settings->requirePin) {
+			$authorization = base64_encode("$patron->ils_barcode:$patron->ils_password");
+		}else{
+			$authorization = base64_encode("$patron->ils_barcode");
+		}
 		return [
-			'Authorization: Basic ' . base64_encode("$patron->ils_barcode:$patron->ils_password"),
+			'Authorization: Basic ' . $authorization,
 			'Accept: application/opds+json',
 			'User-Agent: Aspen Discovery ' . $aspenVersion,
 		];

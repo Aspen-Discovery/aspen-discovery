@@ -165,6 +165,7 @@ class Library extends DataObject {
 	public $pay360SettingId;
 	public $ncrSettingId;
 	public $usernameField;
+	public $eventsDefaultCalendarView;
 
 	public /** @noinspection PhpUnused */
 		$repeatSearchOption;
@@ -187,6 +188,8 @@ class Library extends DataObject {
 	public /** @noinspection PhpUnused */
 		$systemsToRepeatIn;
 	public $additionalLocationsToShowAvailabilityFor;
+	public /** @noinspection PhpUnused */
+		$locationsToExcludeAvailabilityFor;
 	public $homeLink;
 	public $showAdvancedSearchbox;
 	public $showWebsiteSearch;
@@ -264,6 +267,8 @@ class Library extends DataObject {
 	public $replaceAllFirstNameWithPreferredName;
 	public $allowDateOfBirthUpdates;
 	public $allowPatronAddressUpdates;
+	public $sierraAddressLineForCityState;
+	public $sierraZipOnSameLineAsCityState;
 	/** @noinspection PhpUnused */
 	public $cityStateField;
 	public $allowPatronPhoneNumberUpdates;
@@ -410,6 +415,7 @@ class Library extends DataObject {
 	public $showGroupedHoldCopiesCount;
 	public $localIllRequestType;
 	public $maximumLocalIllRequests;
+	public $includeRemoteCheckoutsInMaxLocalIllRequests;
 	public $localIllEmail;
 	/** @noinspection PhpUnused */
 	public $_localIllEmailSuccessMessage;
@@ -570,7 +576,8 @@ class Library extends DataObject {
 			'squareSettingId',
 			'stripeSettingId',
 			'heyCentricSettingId',
-			'pay360SettingId'
+			'pay360SettingId',
+			'sierraZipOnSameLineAsCityState'
 		];
 	}
 
@@ -1896,6 +1903,26 @@ class Library extends DataObject {
 								'readOnly' => false,
 								'permissions' => ['Library ILS Connection'],
 							],
+							'sierraAddressLineForCityState' => [
+								'property' => 'sierraAddressLineForCityState',
+								'label' => 'Sierra Address Line with City/State',
+								'description' => 'The line within the address block which holds the city and state in Sierra',
+								'type' => 'integer',
+								'min' => 2,
+								'max' => 4,
+								'default' => 2,
+								'permissions' => ['Library ILS Connection'],
+								'relatedIls' => ['sierra'],
+							],
+							'sierraZipOnSameLineAsCityState' => [
+								'property' => 'sierraZipOnSameLineAsCityState',
+								'label' => 'Sierra Zip on the same line as City/State',
+								'description' => 'Check if the Zip code is on the same line as the City/State. If not, it will be the next line down.',
+								'type' => 'checkbox',
+								'default' => 1,
+								'permissions' => ['Library ILS Connection'],
+								'relatedIls' => ['sierra'],
+							],
 							'allowPatronPhoneNumberUpdates' => [
 								'property' => 'allowPatronPhoneNumberUpdates',
 								'type' => 'checkbox',
@@ -2338,9 +2365,9 @@ class Library extends DataObject {
 								'description' => 'Whether or not the user can cancel in transit holds.',
 								'hideInLists' => true,
 								'default' => 1,
-								'note' => 'Applies to CARL.X Only',
+								'note' => 'Applies to CARL.X and Symphony Only',
 								'permissions' => ['Library ILS Connection'],
-								'relatedIls' => ['carlx'],
+								'relatedIls' => ['carlx', 'symphony'],
 							],
 							'allowFreezeHolds' => [
 								'property' => 'allowFreezeHolds',
@@ -3469,8 +3496,17 @@ class Library extends DataObject {
 								'property' => 'additionalLocationsToShowAvailabilityFor',
 								'type' => 'text',
 								'label' => 'Additional Locations to Include in Available At Facet',
-								'description' => 'A list of library codes that you would like included in the available at facet separated by pipes |.',
-								'size' => '20',
+								'description' => 'A list of location codes that you would like included in the available at facet separated by pipes |.',
+								'maxLength' => '255',
+								'hideInLists' => true,
+								'forcesReindex' => true,
+							],
+							'locationsToExcludeAvailabilityFor' => [
+								'property' => 'locationsToExcludeAvailabilityFor',
+								'type' => 'regularExpression',
+								'label' => 'Locations to Exclude from Available At Facet',
+								'description' => 'A list of location names (facet values) that you would like excluded.',
+								'maxLength' => '255',
 								'hideInLists' => true,
 								'forcesReindex' => true,
 							],
@@ -3709,7 +3745,21 @@ class Library extends DataObject {
 							'2' => "Events that occur at one of this library's locations",
 						],
 						'default' => '2',
-					]
+					],
+					'eventsDefaultCalendarView' => [
+						'property' => 'eventsDefaultCalendarView',
+						'permissions' => ['Administer Events for All Locations'],
+						'type' =>'enum',
+						'values' => [
+							'0' => 'All',
+							'1' => 'Home library of the user',
+							'2' => 'First alphabetical library'
+						],
+						'default' => '0',
+						'label' => 'Default Calendar View',
+						'description' => 'The default page your events calendar will load to',
+						'hideInLists' => true,
+					],
 				]
 			],
 
@@ -4093,6 +4143,14 @@ class Library extends DataObject {
 						'description' => 'The maximum number of Local ILL requests to allow. Leave at 0 to not restrict.',
 						'hideInLists' => true,
 						'default' => 0,
+					],
+					'includeRemoteCheckoutsInMaxLocalIllRequests' => [
+						'property' => 'includeRemoteCheckoutsInMaxLocalIllRequests',
+						'type' => 'checkbox',
+						'label' => 'Include Remote Checkouts in Max Local ILL requests',
+						'description' => 'Include Remote Checkouts in Max Local ILL requests',
+						'note' => "Remote checkouts are checkouts that were picked up from the item's owning home group (but that are not owned by the patron's home group)",
+						'default' => 1
 					],
 					'ILLSystem' => [
 						'property' => 'ILLSystem',
@@ -5222,6 +5280,8 @@ class Library extends DataObject {
 			return $this->getILLItemTypes();
 		} elseif ($name == 'userDefinedFields') {
 			return $this->getUserDefinedFields();
+		} elseif ($name == 'baseUrl') {
+			return $this->getBaseUrl();
 		} else {
 			return parent::__get($name);
 		}
@@ -5269,7 +5329,7 @@ class Library extends DataObject {
 	 * @see DB/DB_DataObject::update()
 	 */
 	public function update(string $context = '') : int|bool {
-		//Make sure we have no other default libraries since
+		//Make sure we have no other default libraries since having multiples causes issues.
 		if ($this->isDefault == 1 && $this->_changedFields != null) {
 			if (in_array('isDefault', $this->_changedFields)) {
 				$library = new Library();
@@ -5279,6 +5339,17 @@ class Library extends DataObject {
 					$library->isDefault = 0;
 					$library->update();
 				}
+			}
+		}
+		//Checks to see if cost savings has been enabled/disabled and update all users appropriately.
+		if (!empty($this->_changedFields) && in_array('enableCostSavings', $this->_changedFields)){
+			$libraryLocations = new Location();
+			$libraryLocations->libraryId = $this->libraryId;
+			$libraryLocations->find();
+			while ($libraryLocations->fetch()) {
+				$user = new User();
+				/** @noinspection SqlResolve */
+				$user->query("update user set enableCostSavings = $this->enableCostSavings where homeLocationId = $libraryLocations->locationId");
 			}
 		}
 		//Updates to properly update settings based on the ILS
@@ -5295,6 +5366,7 @@ class Library extends DataObject {
 			$this->showNoticeTypeInProfile = 0;
 			$this->addSMSIndicatorToPhone = 0;
 		}
+		//Note: Anything checking changedFields must be done above this update
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveHolidays();
@@ -5329,16 +5401,6 @@ class Library extends DataObject {
 				$user = new User();
 				/** @noinspection SqlResolve */
 				$user->query("update user set displayName = '' where homeLocationId = $libraryLocations->locationId");
-			}
-		}
-		if (!empty($this->_changedFields) && in_array('enableCostSavings', $this->_changedFields)){
-			$libraryLocations = new Location();
-			$libraryLocations->libraryId = $this->libraryId;
-			$libraryLocations->find();
-			while ($libraryLocations->fetch()) {
-				$user = new User();
-				/** @noinspection SqlResolve */
-				$user->query("update user set enableCostSavings = $this->enableCostSavings where homeLocationId = $libraryLocations->locationId");
 			}
 		}
 		// Do this last so that everything else can update even if we get an error here
@@ -5880,6 +5942,14 @@ class Library extends DataObject {
 		$location->libraryId = $this->libraryId;
 		$location->createSearchInterface = 1;
 		return $location->count();
+	}
+
+	public function getBaseUrl() {
+		global $configArray;
+		if (empty($this->baseUrl)) {
+			return $configArray['Site']['url'];
+		}
+		return $this->baseUrl;
 	}
 
 	protected $_browseCategoryGroup = null;
@@ -6558,6 +6628,7 @@ class Library extends DataObject {
 		$suspendRequiresReactivationDate = false;
 		$showDateWhenSuspending = true;
 		$catalogHasAccountNotifications = false;
+		$reactivateDateNotRequired = false;
 
 		$catalog = CatalogFactory::getCatalogConnectionInstance();
 		if ($catalog != null) {
@@ -6571,6 +6642,7 @@ class Library extends DataObject {
 			$catalogRegistrationCapabilities = $catalog->getRegistrationCapabilities();
 			$suspendRequiresReactivationDate = $catalog->suspendRequiresReactivationDate();
 			$showDateWhenSuspending = $catalog->showDateWhenSuspending();
+			$reactivateDateNotRequired = $catalog->reactivateDateNotRequired();
 		}
 
 		$accountProfile = $this->getAccountProfile();
@@ -6586,6 +6658,7 @@ class Library extends DataObject {
 		$apiInfo['catalogRegistrationCapabilities'] = $catalogRegistrationCapabilities;
 		$apiInfo['suspendRequiresReactivationDate'] = $suspendRequiresReactivationDate;
 		$apiInfo['showDateWhenSuspending'] = $showDateWhenSuspending;
+		$apiInfo['reactivateDateNotRequired'] = $reactivateDateNotRequired;
 
 		$superScopeLabel = $this->getGroupedWorkDisplaySettings()->availabilityToggleLabelSuperScope;
 		$localLabel = $this->getGroupedWorkDisplaySettings()->availabilityToggleLabelLocal;

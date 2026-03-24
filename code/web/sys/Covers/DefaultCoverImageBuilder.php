@@ -507,12 +507,33 @@ class DefaultCoverImageBuilder {
 	}
 
 	/**
+	 * SCRIPT_REGEX_MAP
+	 * 
+	 * Regex mapping for scripts to simplify script selection logic
+	 */
+	private const SCRIPT_REGEX_MAP = [
+		'arabic'     => '/\p{Arabic}/u',
+		'armenian'   => '/\p{Armenian}/u',
+		'hangul'     => '/\p{Hangul}/u',      // Korean
+		'japanese'   => '/[\p{Hiragana}\p{Katakana}]/u', // Kana detection
+		'han'		 => '/\p{Han}/u',
+		'devanagari' => '/\p{Devanagari}/u',  // Hindi
+		'hebrew'     => '/\p{Hebrew}/u',
+		'telugu'     => '/\p{Telugu}/u',
+		'thai'       => '/\p{Thai}/u',
+		'georgian'   => '/\p{Georgian}/u',
+		'ethiopic'   => '/\p{Ethiopic}/u',    // Amharic
+		'bengali'    => '/\p{Bengali}/u',
+		'cyrillic'   => '/[\p{Cyrillic}\p{Greek}]/u',
+	];
+
+	/**
 	 * Detect the primary script used in the supplied text.
 	 *
 	 * When adding new scripts, be cautious of the order of detection conditions.
 	 * Scripts with overlapping character ranges (e.g., Han used in both Chinese and Japanese)
-	 * must be placed appropriately in the if-chain to avoid incorrect classification.
-	 *
+	 * must be placed appropriately in the regex map to avoid incorrect classification.
+	 * 
 	 * @param string $text
 	 * @return string Language
 	 */
@@ -521,50 +542,14 @@ class DefaultCoverImageBuilder {
 		if ($text === '') {
 			return 'latin';
 		}
-		if (preg_match('/\p{Arabic}/u', $text)) {
-			return 'arabic';
-		}
-		if (preg_match('/\p{Armenian}/u', $text)) {
-			return 'armenian';
-		}
-		if (preg_match('/\p{Hangul}/u', $text)) { // Korean
-			return 'hangul';
-		}
-		// First check for any Han (CJK ideographs); used in Chinese & Japanese Kanji.
-		if (preg_match('/\p{Han}/u', $text)) {
-			// If Han is used along with Japanese-specific Kana (Hiragana or Katakana),
-			// it's most likely Japanese text.
-			if (preg_match('/[\p{Hiragana}\p{Katakana}]/u', $text)) {
-				return 'japanese';
-			}
-			return 'han';
-		}
-		if (preg_match('/\p{Devanagari}/u', $text)) { // Hindi
-			return 'devanagari';
-		}
-		if (preg_match('/\p{Hebrew}/u', $text)) {
-			return 'hebrew';
-		}
-		if (preg_match('/\p{Telugu}/u', $text)) {
-			return 'telugu';
-		}
-		if (preg_match('/\p{Thai}/u', $text)) {
-			return 'thai';
-		}
-		if (preg_match('/\p{Georgian}/u', $text)) {
-			return 'georgian';
-		}
-		if (preg_match('/\p{Ethiopic}/u', $text)) { // Amharic
-			return 'ethiopic';
-		}
-		if (preg_match('/\p{Bengali}/u', $text)) {
-			return 'bengali';
-		}
-		if (preg_match('/\p{Cyrillic}/u', $text) || preg_match('/\p{Greek}/u', $text)) {
-			return 'cyrillic';
-		}
-		return 'latin';
 
+		foreach (self::SCRIPT_REGEX_MAP as $language => $pattern){
+			if (preg_match($pattern, $text)) {
+				return $language;
+			}
+		}
+		
+		return 'latin';
 	}
 
 	/**

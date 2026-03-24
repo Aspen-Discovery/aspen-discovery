@@ -60,8 +60,9 @@ class InvoiceCloudSetting extends DataObject {
 				'property' => 'ccServiceFee',
 				'type' => 'text',
 				'label' => 'Credit Card Service Fee',
-				'description' => 'The credit card service fee',
+				'description' => 'The credit card service fee, can be a percentage or a fixed amount',
 				'hideInLists' => true,
+				'note' => 'Enter either a percentage with % (e.g. 2.50%) or a fixed amount (e.g. 1.50) that does NOT include a currency symbol.',
 				'maxLength' => 50,
 			],
 			'forceDebugLog' => [

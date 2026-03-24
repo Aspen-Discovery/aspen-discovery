@@ -52,20 +52,9 @@
 					{else}
 						<div class="clearer"></div>
 						<div id="listTopButtons" class="btn-toolbar">
-							{if !empty($loggedIn) && (in_array('Administer Series', $userPermissions))}
-								<div class="btn-group btn-group-sm">
-									<button value="editList" id="FavEdit" class="btn btn-sm btn-info listViewButton" onclick="return AspenDiscovery.Series.editAction({$series->id})">{translate text='Edit' isPublicFacing=true}</button>
-								</div>
-							{/if}
-
-							<div class="btn-group btn-group-sm">
-								<button value="emailList" id="SeriesEmail" class="btn btn-sm btn-default listViewButton" onclick='return AspenDiscovery.Series.emailAction("{$series->id}")'>{translate text='Email' isPublicFacing=true}</button>
-								<button value="printList" id="SeriesPrint" class="btn btn-sm btn-default listViewButton" onclick='return AspenDiscovery.Series.printAction()'>{translate text='Print' isPublicFacing=true}</button>
-							</div>
-
 							<div class="btn-group" role="group">
 								<button type="button" class="btn btn-sm btn-default btn-info dropdown-toggle listViewButton" data-toggle="dropdown" aria-expanded="false">{translate text='Sort by' isPublicFacing=true}&nbsp;<span class="caret"></span></button>
-								<ul class="dropdown-menu dropdown-menu-right" role="menu">
+								<ul class="dropdown-menu dropdown-menu-left" role="menu">
 									{foreach from=$sortList item=sortData}
 										<li>
 											<a{if empty($sortData.selected)} href="{$sortData.sortUrl|escape}"{/if}> {* only add link on un-selected options *}
@@ -76,6 +65,18 @@
 									{/foreach}
 								</ul>
 							</div>
+
+							<div class="btn-group btn-group-sm">
+								<button value="addToList" id="SeriesAddToList" class="btn btn-sm btn-default listViewButton" onclick="return AspenDiscovery.Account.showSaveToListForm(this, 'Series', {$series->id});">{translate text='Add to List' isPublicFacing=true}</button>
+								<button value="emailList" id="SeriesEmail" class="btn btn-sm btn-default listViewButton" onclick='return AspenDiscovery.Series.emailAction("{$series->id}")'>{translate text='Email' isPublicFacing=true}</button>
+								<button value="printList" id="SeriesPrint" class="btn btn-sm btn-default listViewButton" onclick='return AspenDiscovery.Series.printAction()'>{translate text='Print' isPublicFacing=true}</button>
+							</div>
+
+							{if !empty($loggedIn) && (in_array('Administer Series', $userPermissions))}
+								<div class="btn-group btn-group-sm">
+									<button value="editList" id="FavEdit" class="btn btn-sm btn-info listViewButton" onclick="return AspenDiscovery.Series.editAction({$series->id})">{translate text='Edit' isPublicFacing=true}</button>
+								</div>
+							{/if}
 						</div>
 					{/if}
 				</div>

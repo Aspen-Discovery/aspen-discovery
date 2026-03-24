@@ -1,35 +1,27 @@
 <?php
 
-require_once ROOT_DIR . '/Action.php';
+require_once ROOT_DIR . '/JSON_Action.php';
 require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 
 global $configArray;
 
-class Record_AJAX extends Action {
+class Record_AJAX extends JSON_Action {
 
-	function launch(): void {
-		global $timer;
+	function launch($method = null) : void {
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
-		$timer->logTime("Starting method $method");
-		if (method_exists($this, $method)) {
-			// Methods intend to return JSON data
-			if ($method == 'downloadMarc') {
-				echo $this->$method();
-			} else {
-				header('Content-type: application/json');
-				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-				header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-				echo json_encode($this->$method());
-			}
-		} else {
-			$output = json_encode(['error' => 'invalid_method']);
-			echo $output;
+		if ($method == 'downloadMarc') {
+			echo $this->$method();
 		}
+		parent::launch();
 	}
 
 
 	/** @noinspection PhpUnused */
 	function downloadMarc(): void {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission('Download MARC Records');
+		$this->checkRequiredParameters(['id']);
+
 		$id = $_REQUEST['id'];
 		$marcData = MarcLoader::loadMarcRecordByILSId($id);
 		header('Content-Description: File Transfer');
@@ -48,193 +40,30 @@ class Record_AJAX extends Action {
 
 	/** @noinspection PhpUnused */
 	function getVdxRequestForm(): array {
+		$this->requireLoggedInUser(null, "You must be logged in.  Please close this dialog and login before placing your request.");
+		$this->checkRequiredParameters(['id']);
 		global $interface;
-		if (UserAccount::isLoggedIn()) {
-			$user = UserAccount::getLoggedInUser();
-			$id = $_REQUEST['id'];
-			if (strpos($id, ':') > 0) {
-				[
-					,
-					$id,
-				] = explode(':', $id);
-			}
-			$recordSource = $_REQUEST['recordSource'];
-			$interface->assign('recordSource', $recordSource);
-			require_once ROOT_DIR . '/sys/VDX/VdxSetting.php';
-			require_once ROOT_DIR . '/sys/VDX/VdxForm.php';
-			$vdxSettings = new VdxSetting();
-			if ($vdxSettings->find(true)) {
-				$homeLocation = Location::getDefaultLocationForUser();
-				if ($homeLocation != null) {
-					//Get configuration for the form.
-					$vdxForm = new VdxForm();
-					$vdxForm->id = $homeLocation->vdxFormId;
-					if ($vdxForm->find(true)) {
-						//Check to see if the patron is eligible to place holds
-						$accountSummary = $user->getAccountSummary();
-						if ($accountSummary->isExpired()) {
-							$results = [
-								'title' => translate([
-									'text' => 'Request Title',
-									'isPublicFacing' => true,
-								]),
-								'modalBody' => translate([
-									'text' => 'Your account is not eligible to request titles from other libraries.  Please visit the library to renew your account.',
-									'isPublicFacing' => true,
-								]),
-								'modalButtons' => '',
-								'success' => true,
-							];
-						} elseif ($user->isBlockedFromIllRequests()) {
-							$results = [
-								'title' => translate([
-									'text' => 'Request Title',
-									'isPublicFacing' => true,
-								]),
-								'modalBody' => translate([
-									'text' => 'Your account is not eligible to request titles from other libraries.  Please visit the library to update your account.',
-									'isPublicFacing' => true,
-								]),
-								'modalButtons' => '',
-								'success' => true,
-							];
-						} else {
-							$marcRecord = new MarcRecordDriver($id);
 
-							$interface->assign('vdxForm', $vdxForm);
-							$vdxFormFields = $vdxForm->getFormFields($marcRecord);
-							$interface->assign('structure', $vdxFormFields);
-							$interface->assign('vdxFormFields', $interface->fetch('DataObjectUtil/ajaxForm.tpl'));
-
-							$results = [
-								'title' => translate([
-									'text' => 'Request Title',
-									'isPublicFacing' => true,
-								]),
-								'modalBody' => $interface->fetch("Record/vdx-request-popup.tpl"),
-								'modalButtons' => '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.submitVdxRequest(\'Record\', \'' . $id . '\')">' . translate([
-										'text' => 'Place Request',
-										'isPublicFacing' => true,
-									]) . '</a>',
-								'success' => true,
-							];
-						}
-					} else {
-						$results = [
-							'title' => translate([
-								'text' => 'Invalid Configuration',
-								'isPublicFacing' => true,
-							]),
-							'message' => translate([
-								'text' => "Unable to find the specified form.",
-								'isPublicFacing' => true,
-							]),
-							'success' => false,
-						];
-					}
-				} else {
-					$results = [
-						'title' => translate([
-							'text' => 'Invalid Configuration',
-							'isPublicFacing' => true,
-						]),
-						'message' => translate([
-							'text' => "Unable to determine home library to place request from.",
-							'isPublicFacing' => true,
-						]),
-						'success' => false,
-					];
-				}
-			} else {
-				$results = [
-					'title' => translate([
-						'text' => 'Invalid Configuration',
-						'isPublicFacing' => true,
-					]),
-					'message' => translate([
-						'text' => "VDX Settings do not exist, please contact the library to make a request.",
-						'isPublicFacing' => true,
-					]),
-					'success' => false,
-				];
-			}
-		} else {
-			$results = [
-				'title' => translate([
-					'text' => 'Please login',
-					'isPublicFacing' => true,
-				]),
-				'message' => translate([
-					'text' => "You must be logged in.  Please close this dialog and login before placing your request.",
-					'isPublicFacing' => true,
-				]),
-				'success' => false,
-			];
+		$user = UserAccount::getLoggedInUser();
+		$id = $_REQUEST['id'];
+		if (strpos($id, ':') > 0) {
+			[
+				,
+				$id,
+			] = explode(':', $id);
 		}
-		return $results;
-	}
-
-	/** @noinspection PhpUnused */
-	function submitVdxRequest(): array {
-		if (UserAccount::isLoggedIn()) {
-			require_once ROOT_DIR . '/Drivers/VdxDriver.php';
-			require_once ROOT_DIR . '/sys/VDX/VdxSetting.php';
-			require_once ROOT_DIR . '/sys/VDX/VdxForm.php';
-			$vdxSettings = new VdxSetting();
-			if ($vdxSettings->find(true)) {
-				$vdxDriver = new VdxDriver();
-				$results = $vdxDriver->submitRequest($vdxSettings, UserAccount::getActiveUserObj(), $_REQUEST);
-			} else {
-				$results = [
-					'title' => translate([
-						'text' => 'Invalid Configuration',
-						'isPublicFacing' => true,
-					]),
-					'message' => translate([
-						'text' => "VDX Settings do not exist, please contact the library to make a request.",
-						'isPublicFacing' => true,
-					]),
-					'success' => false,
-				];
-			}
-		} else {
-			$results = [
-				'title' => translate([
-					'text' => 'Please login',
-					'isPublicFacing' => true,
-				]),
-				'message' => translate([
-					'text' => "You must be logged in.  Please close this dialog and login before placing your request.",
-					'isPublicFacing' => true,
-				]),
-				'success' => false,
-			];
-		}
-		return $results;
-	}
-
-	/** @noinspection PhpUnused */
-	function getLocalIllRequestForm(): array {
-		global $interface;
-		if (UserAccount::isLoggedIn()) {
-			$user = UserAccount::getLoggedInUser();
-			$id = $_REQUEST['id'];
-			if (strpos($id, ':') > 0) {
-				[
-					,
-					$id,
-				] = explode(':', $id);
-			}
-			$recordSource = $_REQUEST['recordSource'];
-			$interface->assign('recordSource', $recordSource);
-			require_once ROOT_DIR . '/sys/InterLibraryLoan/LocalIllForm.php';
-
+		$recordSource = $_REQUEST['recordSource'];
+		$interface->assign('recordSource', $recordSource);
+		require_once ROOT_DIR . '/sys/VDX/VdxSetting.php';
+		require_once ROOT_DIR . '/sys/VDX/VdxForm.php';
+		$vdxSettings = new VdxSetting();
+		if ($vdxSettings->find(true)) {
 			$homeLocation = Location::getDefaultLocationForUser();
 			if ($homeLocation != null) {
 				//Get configuration for the form.
-				$localIllForm = new LocalIllForm();
-				$localIllForm->id = $homeLocation->localIllFormId;
-				if ($localIllForm->find(true)) {
+				$vdxForm = new VdxForm();
+				$vdxForm->id = $homeLocation->vdxFormId;
+				if ($vdxForm->find(true)) {
 					//Check to see if the patron is eligible to place holds
 					$accountSummary = $user->getAccountSummary();
 					if ($accountSummary->isExpired()) {
@@ -263,55 +92,26 @@ class Record_AJAX extends Action {
 							'modalButtons' => '',
 							'success' => true,
 						];
-					} elseif (!$user->hasRemainingLocalIllRequests()) {
-						$results = [
-							'title' => translate([
-								'text' => 'No Requests Left',
-								'isPublicFacing' => true,
-							]),
-							'modalBody' => translate([
-								'text' => 'You have reached the maximum number of requests that your library allows. You may request additional titles once the titles you have requested are returned.',
-								'isPublicFacing' => true,
-							]),
-							'modalButtons' => '',
-							'success' => true,
-						];
 					} else {
 						$marcRecord = new MarcRecordDriver($id);
 
-						if ($marcRecord->isValid()) {
-							$interface->assign('localIllForm', $localIllForm);
-							$volumeId = $_REQUEST['volume'] ?? null;
-							$localIllFormFields = $localIllForm->getFormFields($marcRecord, $volumeId);
-							$interface->assign('structure', $localIllFormFields);
-							$interface->assign('localIllFormFields', $interface->fetch('DataObjectUtil/ajaxForm.tpl'));
+						$interface->assign('vdxForm', $vdxForm);
+						$vdxFormFields = $vdxForm->getFormFields($marcRecord);
+						$interface->assign('structure', $vdxFormFields);
+						$interface->assign('vdxFormFields', $interface->fetch('DataObjectUtil/ajaxForm.tpl'));
 
-							$results = [
-								'title' => translate([
-									'text' => 'Request Title',
+						$results = [
+							'title' => translate([
+								'text' => 'Request Title',
+								'isPublicFacing' => true,
+							]),
+							'modalBody' => $interface->fetch("Record/vdx-request-popup.tpl"),
+							'modalButtons' => '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.submitVdxRequest(\'Record\', \'' . $id . '\')">' . translate([
+									'text' => 'Place Request',
 									'isPublicFacing' => true,
-								]),
-								'modalBody' => $interface->fetch("Record/local-ill-request-popup.tpl"),
-								'modalButtons' => '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.submitLocalIllRequest(\'Record\', \'' . $id . '\')">' . translate([
-										'text' => 'Place Request',
-										'isPublicFacing' => true,
-									]) . '</a>',
-								'success' => true,
-							];
-						}else{
-							$results = [
-								'title' => translate([
-									'text' => 'Error',
-									'isPublicFacing' => true,
-								]),
-								'modalBody' => translate([
-									'text' => 'Could not find the specified record, unable to place request.',
-									'isPublicFacing' => true,
-								]),
-								'modalButtons' => '',
-								'success' => true,
-							];
-						}
+								]) . '</a>',
+							'success' => true,
+						];
 					}
 				} else {
 					$results = [
@@ -342,11 +142,170 @@ class Record_AJAX extends Action {
 		} else {
 			$results = [
 				'title' => translate([
-					'text' => 'Please login',
+					'text' => 'Invalid Configuration',
 					'isPublicFacing' => true,
 				]),
 				'message' => translate([
-					'text' => "You must be logged in.  Please close this dialog and login before placing your request.",
+					'text' => "VDX Settings do not exist, please contact the library to make a request.",
+					'isPublicFacing' => true,
+				]),
+				'success' => false,
+			];
+		}
+		return $results;
+	}
+
+	/** @noinspection PhpUnused */
+	function submitVdxRequest(): array {
+		$this->requireLoggedInUser(null, "You must be logged in.  Please close this dialog and login before placing your request.");
+		$this->checkRequiredParameters(['id']);
+
+		require_once ROOT_DIR . '/Drivers/VdxDriver.php';
+		require_once ROOT_DIR . '/sys/VDX/VdxSetting.php';
+		require_once ROOT_DIR . '/sys/VDX/VdxForm.php';
+		$vdxSettings = new VdxSetting();
+		if ($vdxSettings->find(true)) {
+			$vdxDriver = new VdxDriver();
+			$results = $vdxDriver->submitRequest($vdxSettings, UserAccount::getActiveUserObj(), $_REQUEST);
+		} else {
+			$results = [
+				'title' => translate([
+					'text' => 'Invalid Configuration',
+					'isPublicFacing' => true,
+				]),
+				'message' => translate([
+					'text' => "VDX Settings do not exist, please contact the library to make a request.",
+					'isPublicFacing' => true,
+				]),
+				'success' => false,
+			];
+		}
+		return $results;
+	}
+
+	/** @noinspection PhpUnused */
+	function getLocalIllRequestForm(): array {
+		$this->requireLoggedInUser(null, "You must be logged in.  Please close this dialog and login before placing your request.");
+		$this->checkRequiredParameters(['id']);
+
+		global $interface;
+		$user = UserAccount::getLoggedInUser();
+		$id = $_REQUEST['id'];
+		if (strpos($id, ':') > 0) {
+			[
+				,
+				$id,
+			] = explode(':', $id);
+		}
+		$recordSource = $_REQUEST['recordSource'];
+		$interface->assign('recordSource', $recordSource);
+		require_once ROOT_DIR . '/sys/InterLibraryLoan/LocalIllForm.php';
+
+		$homeLocation = Location::getDefaultLocationForUser();
+		if ($homeLocation != null) {
+			//Get configuration for the form.
+			$localIllForm = new LocalIllForm();
+			$localIllForm->id = $homeLocation->localIllFormId;
+			if ($localIllForm->find(true)) {
+				//Check to see if the patron is eligible to place holds
+				$accountSummary = $user->getAccountSummary();
+				if ($accountSummary->isExpired()) {
+					$results = [
+						'title' => translate([
+							'text' => 'Request Title',
+							'isPublicFacing' => true,
+						]),
+						'modalBody' => translate([
+							'text' => 'Your account is not eligible to request titles from other libraries.  Please visit the library to renew your account.',
+							'isPublicFacing' => true,
+						]),
+						'modalButtons' => '',
+						'success' => true,
+					];
+				} elseif ($user->isBlockedFromIllRequests()) {
+					$results = [
+						'title' => translate([
+							'text' => 'Request Title',
+							'isPublicFacing' => true,
+						]),
+						'modalBody' => translate([
+							'text' => 'Your account is not eligible to request titles from other libraries.  Please visit the library to update your account.',
+							'isPublicFacing' => true,
+						]),
+						'modalButtons' => '',
+						'success' => true,
+					];
+				} elseif (!$user->hasRemainingLocalIllRequests()) {
+					$results = [
+						'title' => translate([
+							'text' => 'No Requests Left',
+							'isPublicFacing' => true,
+						]),
+						'modalBody' => translate([
+							'text' => 'You have reached the maximum number of requests that your library allows. You may request additional titles once the titles you have requested are returned.',
+							'isPublicFacing' => true,
+						]),
+						'modalButtons' => '',
+						'success' => true,
+					];
+				} else {
+					$marcRecord = new MarcRecordDriver($id);
+
+					if ($marcRecord->isValid()) {
+						$interface->assign('localIllForm', $localIllForm);
+						$volumeId = $_REQUEST['volume'] ?? null;
+						$localIllFormFields = $localIllForm->getFormFields($marcRecord, $volumeId);
+						$interface->assign('structure', $localIllFormFields);
+						$interface->assign('localIllFormFields', $interface->fetch('DataObjectUtil/ajaxForm.tpl'));
+
+						$results = [
+							'title' => translate([
+								'text' => 'Request Title',
+								'isPublicFacing' => true,
+							]),
+							'modalBody' => $interface->fetch("Record/local-ill-request-popup.tpl"),
+							'modalButtons' => '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.submitLocalIllRequest(\'Record\', \'' . $id . '\')">' . translate([
+									'text' => 'Place Request',
+									'isPublicFacing' => true,
+								]) . '</a>',
+							'success' => true,
+						];
+					}else{
+						$results = [
+							'title' => translate([
+								'text' => 'Error',
+								'isPublicFacing' => true,
+							]),
+							'modalBody' => translate([
+								'text' => 'Could not find the specified record, unable to place request.',
+								'isPublicFacing' => true,
+							]),
+							'modalButtons' => '',
+							'success' => true,
+						];
+					}
+				}
+			} else {
+				$results = [
+					'title' => translate([
+						'text' => 'Invalid Configuration',
+						'isPublicFacing' => true,
+					]),
+					'message' => translate([
+						'text' => "Unable to find the specified form.",
+						'isPublicFacing' => true,
+					]),
+					'success' => false,
+				];
+			}
+		} else {
+			$results = [
+				'title' => translate([
+					'text' => 'Invalid Configuration',
+					'isPublicFacing' => true,
+				]),
+				'message' => translate([
+					'text' => "Unable to determine home library to place request from.",
 					'isPublicFacing' => true,
 				]),
 				'success' => false,
@@ -357,23 +316,10 @@ class Record_AJAX extends Action {
 
 	/** @noinspection PhpUnused */
 	function submitLocalIllRequest(): array {
-		if (UserAccount::isLoggedIn()) {
-			$user = UserAccount::getLoggedInUser();
-			$results = $user->submitLocalIllRequest();
-		} else {
-			$results = [
-				'title' => translate([
-					'text' => 'Please login',
-					'isPublicFacing' => true,
-				]),
-				'message' => translate([
-					'text' => "You must be logged in.  Please close this dialog and login before placing your request.",
-					'isPublicFacing' => true,
-				]),
-				'success' => false,
-			];
-		}
-		return $results;
+		$this->requireLoggedInUser(null, "You must be logged in.  Please close this dialog and login before placing your request.");
+
+		$user = UserAccount::getLoggedInUser();
+		return $user->submitLocalIllRequest();
 	}
 
 	/** @noinspection PhpUnused */
@@ -762,7 +708,7 @@ class Record_AJAX extends Action {
 			$relatedRecord = $marcRecord->getGroupedWorkDriver()->getRelatedRecord($marcRecord->getIdWithSource());
 			$interface->assign('id', $marcRecord->getId());
 
-			list($interLibraryLoanType, $treatHoldAsInterLibraryLoanRequest, $homeLocation, $holdGroups) = $marcRecord->getInterLibraryLoanIntegrationInformation($relatedRecord, 'any');
+			$marcRecord->getInterLibraryLoanIntegrationInformation($relatedRecord, 'any');
 
 			$promptForEdition = (isset($_REQUEST['promptForEdition']) && $_REQUEST['promptForEdition'] === "true");
 
@@ -779,11 +725,13 @@ class Record_AJAX extends Action {
 			$volumeData = [];
 			foreach ($relatedRecord->recordVariations as $variation) {
 				foreach ($variation->getRecords() as $record) {
-					$unsuppressedVolumeData = $record->getUnsuppressedVolumeData(true);
-					foreach ($unsuppressedVolumeData as $volumeInfo) {
-						if (!isset($volumeData[$volumeInfo->volumeId])) {
-							$volumeData[$volumeInfo->volumeId] = clone($volumeInfo);
-							$volumeData[$volumeInfo->volumeId]->setHasLocalItems(false);
+					if ($record->id == $relatedRecord->id) {
+						$unsuppressedVolumeData = $relatedRecord->getUnsuppressedVolumeData(true);
+						foreach ($unsuppressedVolumeData as $volumeInfo) {
+							if (!isset($volumeData[$volumeInfo->volumeId])) {
+								$volumeData[$volumeInfo->volumeId] = clone($volumeInfo);
+								$volumeData[$volumeInfo->volumeId]->setHasLocalItems(false);
+							}
 						}
 					}
 				}
@@ -795,31 +743,34 @@ class Record_AJAX extends Action {
 			foreach ($relatedRecord->recordVariations as $variation) { // check variations for non-econtent items for records that have both econtent and physical items attached
 				if (!($variation->isEContent())) {
 					foreach ($variation->getRecords() as $record) {
-						foreach ($record->getItems() as $item) {
-							if (!$item->isEContent) {
-								if (empty($item->volume)) {
-									$numItemsWithoutVolumes++;
-								} else {
-									if (array_key_exists($item->volumeId, $volumeData)) {
-										$volumeData[$item->volumeId]->addItem($item);
-										if ($item->libraryOwned || $item->locallyOwned) {
-											$volumeData[$item->volumeId]->setHasLocalItems(true);
+						if ($record->id == $relatedRecord->id) {
+							foreach ($record->getItems() as $item) {
+								if (!$item->isEContent) {
+									if (empty($item->volume)) {
+										$numItemsWithoutVolumes++;
+									} else {
+										if (array_key_exists($item->volumeId, $volumeData)) {
+											$volumeData[$item->volumeId]->addItem($item);
+											if ($item->libraryOwned || $item->locallyOwned) {
+												$volumeData[$item->volumeId]->setHasLocalItems(true);
+											}
 										}
+										foreach ($variation->getRelatedRecords() as $edition) {
+											$editionId = $edition->id;
+											$plainEdition = (object)get_object_vars($edition);
+											$status = $interface->fetch('GroupedWork/statusIndicator.tpl', [
+												'statusInformation' => $record->getStatusInformation(),
+												'viewingIndividualRecord' => 1
+											]);
+											$coverUrl = $record->getBookcoverUrl('small');
+											if (array_key_exists($item->volumeId, $volumeData)) {
+												$volumeData[$item->volumeId]->setEdition($editionId, $plainEdition);
+												$volumeData[$item->volumeId]->setEditionStatus($editionId, $status);
+												$volumeData[$item->volumeId]->setEditionCover($editionId, $coverUrl);
+											}
+										}
+										$numItemsWithVolumes++;
 									}
-									foreach ($variation->getRelatedRecords() as $edition) {
-										$editionId = $edition->id;
-										$plainEdition = (object)get_object_vars($edition);
-										$volumeData[$item->volumeId]->setEdition($editionId, $plainEdition);
-										$status = $interface->fetch('GroupedWork/statusIndicator.tpl', [
-											'statusInformation' => $record->getStatusInformation(),
-											'viewingIndividualRecord' => 1
-										]);
-										$coverUrl = $record->getBookcoverUrl('small');
-
-										$volumeData[$item->volumeId]->setEditionStatus($editionId, $status);
-										$volumeData[$item->volumeId]->setEditionCover($editionId, $coverUrl);
-									}
-									$numItemsWithVolumes++;
 								}
 							}
 						}
@@ -829,7 +780,7 @@ class Record_AJAX extends Action {
 
 			list($interLibraryLoanType, , $homeLocation, $holdGroups) = $marcRecord->getInterLibraryLoanIntegrationInformation($relatedRecord, 'any');
 			if ($interLibraryLoanType != null) {
-				foreach ($volumeData as $key => $volumeInfo) {
+				foreach ($volumeData as $volumeInfo) {
 					if ($marcRecord->oneOrMoreHoldableItemsOwnedByPatronHoldGroups($volumeInfo->getItems(), $holdGroups, 'any', $homeLocation->code)){
 						$volumeInfo->setNeedsIllRequest(false);
 					}else{
@@ -973,6 +924,7 @@ class Record_AJAX extends Action {
 	}
 
 	function placeHold(): array {
+		$this->requireLoggedInUser(null, 'You must be logged in to place a hold.  Please close this dialog and login.');
 		global $interface;
 		$recordId = $_REQUEST['id'];
 		if (strpos($recordId, ':') > 0) {
@@ -985,454 +937,444 @@ class Record_AJAX extends Action {
 		}
 
 		$user = UserAccount::getLoggedInUser();
-		if ($user) {
-			//The user is already logged in
-			$alreadyLoggedOut = false;
 
-			if (!empty($_REQUEST['pickupBranch'])) {
-				//Check to see what account we should be placing a hold for
-				//Rather than asking the user for this explicitly, we do it based on the pickup location
-				$pickupBranch = $_REQUEST['pickupBranch'];
+		//The user is already logged in
+		$alreadyLoggedOut = false;
 
-				$pickupSublocationId = $_REQUEST['pickupSublocation'] ?? false;
-				$pickupSublocation = null;
-				if ($pickupSublocationId) {
-					//In the form this is set as the id of the sublocation in Aspen, but we want to pass the ILS ID
-					require_once ROOT_DIR . '/sys/LibraryLocation/Sublocation.php';
-					$pickupSublocationObject = new Sublocation();
-					$pickupSublocationObject->id = $pickupSublocationId;
-					if ($pickupSublocationObject->find(true)) {
-						$pickupSublocation = $pickupSublocationObject->ilsId;
-					}
+		if (!empty($_REQUEST['pickupBranch'])) {
+			//Check to see what account we should be placing a hold for
+			//Rather than asking the user for this explicitly, we do it based on the pickup location
+			$pickupBranch = $_REQUEST['pickupBranch'];
+
+			$pickupSublocationId = $_REQUEST['pickupSublocation'] ?? false;
+			$pickupSublocation = null;
+			if ($pickupSublocationId) {
+				//In the form this is set as the id of the sublocation in Aspen, but we want to pass the ILS ID
+				require_once ROOT_DIR . '/sys/LibraryLocation/Sublocation.php';
+				$pickupSublocationObject = new Sublocation();
+				$pickupSublocationObject->id = $pickupSublocationId;
+				if ($pickupSublocationObject->find(true)) {
+					$pickupSublocation = $pickupSublocationObject->ilsId;
 				}
+			}
 
-				$patron = null;
-				if (!empty($_REQUEST['selectedUser'])) {
-					$selectedUserId = $_REQUEST['selectedUser'];
-					if (is_numeric($selectedUserId)) {
-						if ($user->id == $selectedUserId) {
-							$patron = $user;
-						} else {
-							$linkedUsers = $user->getLinkedUsers();
-							foreach ($linkedUsers as $tmpUser) {
-								if ($tmpUser->id == $selectedUserId) {
-									$patron = $tmpUser;
-									break;
-								}
-							}
-						}
-					}
-				} else {
-					//The block below sets the $patron variable to place the hold through pick-up location. (shouldn't be necessary anymore. plb 10-27-2015)
-					$location = new Location();
-					$userPickupLocations = $location->getPickupBranches($user);
-					foreach ($userPickupLocations as $tmpLocation) {
-						if (isset($tmpLocation->code) && $tmpLocation->code == $pickupBranch) {
-							$patron = $user;
-							break;
-						}
-					}
-					if ($patron == null) {
-						//Check linked users
+			$patron = null;
+			if (!empty($_REQUEST['selectedUser'])) {
+				$selectedUserId = $_REQUEST['selectedUser'];
+				if (is_numeric($selectedUserId)) {
+					if ($user->id == $selectedUserId) {
+						$patron = $user;
+					} else {
 						$linkedUsers = $user->getLinkedUsers();
 						foreach ($linkedUsers as $tmpUser) {
-							$location = new Location();
-							$userPickupLocations = $location->getPickupBranches($tmpUser);
-							foreach ($userPickupLocations as $tmpLocation) {
-								if ($tmpLocation->code == $pickupBranch) {
-									$patron = $tmpUser;
-									break;
-								}
-							}
-							if ($patron != null) {
+							if ($tmpUser->id == $selectedUserId) {
+								$patron = $tmpUser;
 								break;
 							}
 						}
 					}
 				}
+			} else {
+				//The block below sets the $patron variable to place the hold through pick-up location. (shouldn't be necessary anymore. plb 10-27-2015)
+				$location = new Location();
+				$userPickupLocations = $location->getPickupBranches($user);
+				foreach ($userPickupLocations as $tmpLocation) {
+					if (isset($tmpLocation->code) && $tmpLocation->code == $pickupBranch) {
+						$patron = $user;
+						break;
+					}
+				}
 				if ($patron == null) {
-					$results = [
-						'success' => false,
-						'message' => 'You must select a valid user to place the hold for.',
-						'title' => 'Select valid user',
-					];
-				} else {
-					global $library;
-
-					$holdType = $_REQUEST['holdType'];
-
-					if (!empty($_REQUEST['cancelDate'])) {
-						$cancelDate = $_REQUEST['cancelDate'];
-
-						if ($library->maxHoldCancellationDate > 0) {
-							$maxAllowedTimestamp = time() + ($library->maxHoldCancellationDate * 24 * 60 * 60);
-							$cancelDateTimestamp = strtotime($cancelDate);
-
-							if ($cancelDateTimestamp > $maxAllowedTimestamp) {
-								return [
-									'success' => false,
-									'title' => translate([
-										'text' => 'Invalid Cancellation Date',
-										'isPublicFacing' => true,
-									]),
-									'message' => translate([
-										'text' => 'The cancellation date cannot be more than %1% days from today.',
-										1 => $library->maxHoldCancellationDate,
-										'isPublicFacing' => true,
-									]),
-								];
+					//Check linked users
+					$linkedUsers = $user->getLinkedUsers();
+					foreach ($linkedUsers as $tmpUser) {
+						$location = new Location();
+						$userPickupLocations = $location->getPickupBranches($tmpUser);
+						foreach ($userPickupLocations as $tmpLocation) {
+							if ($tmpLocation->code == $pickupBranch) {
+								$patron = $tmpUser;
+								break;
 							}
 						}
-					} else {
-						if ($library->defaultNotNeededAfterDays <= 0) {
-							$cancelDate = null;
-						} else {
-							$nnaDate = time() + $library->defaultNotNeededAfterDays * 24 * 60 * 60;
-							$cancelDate = date('Y-m-d', $nnaDate);
+						if ($patron != null) {
+							break;
 						}
 					}
+				}
+			}
+			if ($patron == null) {
+				$results = [
+					'success' => false,
+					'message' => 'You must select a valid user to place the hold for.',
+					'title' => 'Select valid user',
+				];
+			} else {
+				global $library;
 
-					$promptForEdition = 0;
-					$placeHoldOnEdition = 0;
-					if (isset($_REQUEST['promptForEdition'])) {
-						$promptForEdition = (int)$_REQUEST['promptForEdition'];
-						$placeHoldOnEdition = isset($_REQUEST['placeHoldOnEdition']) ? (int)$_REQUEST['placeHoldOnEdition'] : 0;
-						if ($promptForEdition > 0 && $placeHoldOnEdition > 1) {
-							//Placing a hold on a specific edition
-							$recordId = $_REQUEST['selectedEdition'];
-							if (strpos($recordId, ':') > 0) {
-								[
-									,
-									$shortId,
-								] = explode(':', $recordId, 2);
-							} else {
-								$shortId = $recordId;
+				$holdType = $_REQUEST['holdType'];
+
+				if (!empty($_REQUEST['cancelDate'])) {
+					$cancelDate = $_REQUEST['cancelDate'];
+
+					if ($library->maxHoldCancellationDate > 0) {
+						$maxAllowedTimestamp = time() + ($library->maxHoldCancellationDate * 24 * 60 * 60);
+						$cancelDateTimestamp = strtotime($cancelDate);
+
+						if ($cancelDateTimestamp > $maxAllowedTimestamp) {
+							return [
+								'success' => false,
+								'title' => translate([
+									'text' => 'Invalid Cancellation Date',
+									'isPublicFacing' => true,
+								]),
+								'message' => translate([
+									'text' => 'The cancellation date cannot be more than %1% days from today.',
+									1 => $library->maxHoldCancellationDate,
+									'isPublicFacing' => true,
+								]),
+							];
+						}
+					}
+				} else {
+					if ($library->defaultNotNeededAfterDays <= 0) {
+						$cancelDate = null;
+					} else {
+						$nnaDate = time() + $library->defaultNotNeededAfterDays * 24 * 60 * 60;
+						$cancelDate = date('Y-m-d', $nnaDate);
+					}
+				}
+
+				$promptForEdition = 0;
+				$placeHoldOnEdition = 0;
+				if (isset($_REQUEST['promptForEdition'])) {
+					$promptForEdition = (int)$_REQUEST['promptForEdition'];
+					$placeHoldOnEdition = isset($_REQUEST['placeHoldOnEdition']) ? (int)$_REQUEST['placeHoldOnEdition'] : 0;
+					if ($promptForEdition > 0 && $placeHoldOnEdition > 1) {
+						//Placing a hold on a specific edition
+						$recordId = $_REQUEST['selectedEdition'];
+						if (strpos($recordId, ':') > 0) {
+							[
+								,
+								$shortId,
+							] = explode(':', $recordId, 2);
+						} else {
+							$shortId = $recordId;
+						}
+					}else{
+						//Placing a hold on the suggested edition
+						$rememberUserEditionPreference = isset($_REQUEST['rememberUserEditionPreference']) ? filter_var($_REQUEST['rememberUserEditionPreference'], FILTER_VALIDATE_BOOLEAN) : false;
+						if ($rememberUserEditionPreference !== $user->rememberHoldPromptForEdition) {
+							$user->setRememberHoldPromptForEdition($rememberUserEditionPreference);
+						}
+					}
+				}
+
+				if ($holdType == 'item' && isset($_REQUEST['selectedItem'])) {
+					$return = $patron->placeItemHold($shortId, $_REQUEST['selectedItem'], $pickupBranch, $cancelDate, $pickupSublocation);
+				} else {
+					if (isset($_REQUEST['volume']) && $_REQUEST['volume'] == '~untitled~') {
+						$holdType = 'volume';
+						$_REQUEST['volume'] = '';
+					}
+					if (isset($_REQUEST['volume']) && $holdType == 'volume') {
+						if ($_REQUEST['volume'] === 'unselected') {
+							return [
+								'success' => false,
+								'message' => 'You must select a volume to place the hold on.',
+								'title' => 'Select a volume',
+							];
+						}else {
+							$return = $patron->placeVolumeHold($shortId, $_REQUEST['volume'], $pickupBranch, $pickupSublocation);
+						}
+					} else {
+						$return = $patron->placeHold($shortId, $pickupBranch, $cancelDate, $pickupSublocation);
+					}
+				}
+
+				if (isset($return['items'])) {
+					$results = $this->getItemHoldForm($pickupBranch, $return, $shortId, $patron);
+				} else { // Completed Hold Attempt
+					// Freeze the hold immediately if requested.
+					$freezeHoldImmediately = FALSE;
+					if (isset($_REQUEST['freezeHoldImmediately']) && $_REQUEST['freezeHoldImmediately'] == 'true') {
+						$freezeHoldImmediately = TRUE;
+					}
+					$reactivationDate = isset($_REQUEST['reactivationDate']) ? (string)$_REQUEST['reactivationDate'] : null;
+					if ($freezeHoldImmediately) {
+						$holds = $patron->getHolds();
+						// Find the holdId for use in the freezing process.
+						$holdId = null;
+						/** @var Hold $hold **/
+						foreach ($holds['unavailable'] as $hold) {
+							if ($hold->recordId == $shortId) {
+								$holdId = $hold->cancelId;
+							}
+						}
+						if ($holdId) {
+							$freezeResult = $patron->freezeHold($shortId, $holdId, $reactivationDate);
+							if (!$freezeResult['success']) {
+								$return['message'] .= '<br/>' . $freezeResult['message'];
 							}
 						}else{
-							//Placing a hold on the suggested edition
-							$rememberUserEditionPreference = isset($_REQUEST['rememberUserEditionPreference']) ? filter_var($_REQUEST['rememberUserEditionPreference'], FILTER_VALIDATE_BOOLEAN) : false;
-							if ($rememberUserEditionPreference !== $user->rememberHoldPromptForEdition) {
-								$user->setRememberHoldPromptForEdition($rememberUserEditionPreference);
-							}
+							$return['message'] .= '<br/>' . translate(['text'=>'Could not freeze your hold.', 'isPublicFacing' => true]);
 						}
 					}
 
-					if ($holdType == 'item' && isset($_REQUEST['selectedItem'])) {
-						$return = $patron->placeItemHold($shortId, $_REQUEST['selectedItem'], $pickupBranch, $cancelDate, $pickupSublocation);
-					} else {
-						if (isset($_REQUEST['volume']) && $_REQUEST['volume'] == '~untitled~') {
-							$holdType = 'volume';
-							$_REQUEST['volume'] = '';
-						}
-						if (isset($_REQUEST['volume']) && $holdType == 'volume') {
-							if ($_REQUEST['volume'] === 'unselected') {
-								return [
-									'success' => false,
-									'message' => 'You must select a volume to place the hold on.',
-									'title' => 'Select a volume',
-								];
-							}else {
-								$return = $patron->placeVolumeHold($shortId, $_REQUEST['volume'], $pickupBranch, $pickupSublocation);
-							}
-						} else {
-							$return = $patron->placeHold($shortId, $pickupBranch, $cancelDate, $pickupSublocation);
-						}
-					}
+					$interface->assign('message', $return['message']);
+					$interface->assign('success', $return['success']);
 
-					if (isset($return['items'])) {
-						$results = $this->getItemHoldForm($pickupBranch, $return, $shortId, $patron);
-					} else { // Completed Hold Attempt
-						// Freeze the hold immediately if requested.
-						$freezeHoldImmediately = FALSE;
-						if (isset($_REQUEST['freezeHoldImmediately']) && $_REQUEST['freezeHoldImmediately'] == 'true') {
-							$freezeHoldImmediately = TRUE;
-						}
-						$dateToReactivate = isset($_REQUEST['reactivationDate']) ? (string)$_REQUEST['reactivationDate'] : null;
-						if ($freezeHoldImmediately) {
-							$holds = $patron->getHolds();
-							// Find the holdId for use in the freezing process.
-							$holdId = null;
-							/** @var Hold $hold **/
-							foreach ($holds['unavailable'] as $hold) {
-								if ($hold->recordId == $shortId) {
-									$holdId = $hold->cancelId;
-								}
+					$confirmationNeeded = false;
+					if ($return['success']) {
+						//Only update to remember hold pickup location and the preferred pickup location if the hold is successful
+						if (isset($_REQUEST['rememberHoldPickupLocation']) && ($_REQUEST['rememberHoldPickupLocation'] == 'true' || $_REQUEST['rememberHoldPickupLocation'] == 'on')) {
+							if ($patron->rememberHoldPickupLocation == 0) {
+								$patron->setRememberHoldPickupLocation(1);
+								$patron->update();
 							}
-							if ($holdId) {
-								$freezeResult = $patron->freezeHold($shortId, $holdId, $dateToReactivate);
-								if (!$freezeResult['success']) {
-									$return['message'] .= '<br/>' . $freezeResult['message'];
-								}
-							}else{
-								$return['message'] .= '<br/>' . translate(['text'=>'Could not freeze your hold.', 'isPublicFacing' => true]);
-							}
-						}
-
-						$interface->assign('message', $return['message']);
-						$interface->assign('success', $return['success']);
-
-						$confirmationNeeded = false;
-						if ($return['success']) {
-							//Only update to remember hold pickup location and the preferred pickup location if the hold is successful
-							if (isset($_REQUEST['rememberHoldPickupLocation']) && ($_REQUEST['rememberHoldPickupLocation'] == 'true' || $_REQUEST['rememberHoldPickupLocation'] == 'on')) {
-								if ($patron->rememberHoldPickupLocation == 0) {
-									$patron->setRememberHoldPickupLocation(1);
+							$pickupLocation = new Location();
+							if ($pickupLocation->get('code', $pickupBranch)) {
+								if ($pickupLocation->locationId != $user->pickupLocationId) {
+									$patron->setPickupLocationId($pickupLocation->locationId);
 									$patron->update();
 								}
-								$pickupLocation = new Location();
-								if ($pickupLocation->get('code', $pickupBranch)) {
-									if ($pickupLocation->locationId != $user->pickupLocationId) {
-										$patron->setPickupLocationId($pickupLocation->locationId);
+							}
+
+							require_once ROOT_DIR . '/sys/LibraryLocation/Sublocation.php';
+							$sublocation = new Sublocation();
+							if ($sublocation->get('id', $pickupSublocationId)) {
+								if ($pickupLocation->locationId == $sublocation->locationId) {
+									if ($sublocation->id != $user->pickupSublocationId) {
+										$patron->setPickupSublocationId($sublocation->id);
 										$patron->update();
 									}
 								}
+							}
 
-								require_once ROOT_DIR . '/sys/LibraryLocation/Sublocation.php';
-								$sublocation = new Sublocation();
-								if ($sublocation->get('id', $pickupSublocationId)) {
-									if ($pickupLocation->locationId == $sublocation->locationId) {
-										if ($sublocation->id != $user->pickupSublocationId) {
-											$patron->setPickupSublocationId($sublocation->id);
-											$patron->update();
-										}
+						}
+					} elseif (isset($return['confirmationNeeded']) && $return['confirmationNeeded']) {
+						$confirmationNeeded = true;
+					} else {
+						//Check to see if we can use Interlibrary Loan.  We only allow Interlibrary Loan if the reason is: "hold not allowed"
+						if (array_key_exists('error_code', $return) && (($return['error_code'] == 'hatErrorResponse.17286') || ($return['error_code'] == 'hatErrorResponse.447'))) {
+							//Check to see if we can place the hold via Interlibrary Loan
+							$illLoanType = $user->getInterlibraryLoanType();
+							if ($illLoanType != 'none') {
+								$interface->assign('fromHoldError', true);
+								$marcRecord = new MarcRecordDriver($recordId);
+
+								$volumeLabel = '';
+								$volumeInfo = null;
+								if (isset($_REQUEST['volume'])) {
+									//Get the name of the volume, so we can add it as a note
+									require_once ROOT_DIR . '/sys/ILS/IlsVolumeInfo.php';
+									$volumeDataDB = new IlsVolumeInfo();
+									$volumeDataDB->volumeId = $_REQUEST['volume'];
+									$volumeInfo = $_REQUEST['volume'];
+									if ($volumeDataDB->find(true)) {
+										$volumeLabel = $volumeDataDB->displayLabel;
+									} else {
+										$volumeLabel = $_REQUEST['volume'];
 									}
 								}
 
-							}
-						} elseif (isset($return['confirmationNeeded']) && $return['confirmationNeeded']) {
-							$confirmationNeeded = true;
-						} else {
-							//Check to see if we can use Interlibrary Loan.  We only allow Interlibrary Loan if the reason is: "hold not allowed"
-							if (array_key_exists('error_code', $return) && (($return['error_code'] == 'hatErrorResponse.17286') || ($return['error_code'] == 'hatErrorResponse.447'))) {
-								//Check to see if we can place the hold via Interlibrary Loan
-								$illLoanType = $user->getInterlibraryLoanType();
-								if ($illLoanType != 'none') {
-									$interface->assign('fromHoldError', true);
-									$marcRecord = new MarcRecordDriver($recordId);
+								$homeLocation = Location::getDefaultLocationForUser();
+								if ($homeLocation != null) {
+									if ($illLoanType == 'vdx') {
+										require_once ROOT_DIR . '/sys/VDX/VdxForm.php';
 
-									$volumeLabel = '';
-									$volumeInfo = null;
-									if (isset($_REQUEST['volume'])) {
-										//Get the name of the volume, so we can add it as a note
-										require_once ROOT_DIR . '/sys/ILS/IlsVolumeInfo.php';
-										$volumeDataDB = new IlsVolumeInfo();
-										$volumeDataDB->volumeId = $_REQUEST['volume'];
-										$volumeInfo = $_REQUEST['volume'];
-										if ($volumeDataDB->find(true)) {
-											$volumeLabel = $volumeDataDB->displayLabel;
-										} else {
-											$volumeLabel = $_REQUEST['volume'];
-										}
-									}
+										//Get configuration for the form.
+										$vdxForm = new VdxForm();
+										$vdxForm->id = $homeLocation->vdxFormId;
+										if ($vdxForm->find(true)) {
+											$interface->assign('vdxForm', $vdxForm);
 
-									$homeLocation = Location::getDefaultLocationForUser();
-									if ($homeLocation != null) {
-										if ($illLoanType == 'vdx') {
-											require_once ROOT_DIR . '/sys/VDX/VdxForm.php';
-
-											//Get configuration for the form.
-											$vdxForm = new VdxForm();
-											$vdxForm->id = $homeLocation->vdxFormId;
-											if ($vdxForm->find(true)) {
-												$interface->assign('vdxForm', $vdxForm);
-
-												$vdxFormFields = $vdxForm->getFormFields($marcRecord, $volumeLabel);
-												$interface->assign('structure', $vdxFormFields);
-												$interface->assign('vdxFormFields', $interface->fetch('DataObjectUtil/ajaxForm.tpl'));
-												return [
-													'title' => translate([
-														'text' => 'Hold Failed, Request Title?',
+											$vdxFormFields = $vdxForm->getFormFields($marcRecord, $volumeLabel);
+											$interface->assign('structure', $vdxFormFields);
+											$interface->assign('vdxFormFields', $interface->fetch('DataObjectUtil/ajaxForm.tpl'));
+											return [
+												'title' => translate([
+													'text' => 'Hold Failed, Request Title?',
+													'isPublicFacing' => true,
+												]),
+												'modalBody' => $interface->fetch("Record/vdx-request-popup.tpl"),
+												'modalButtons' => '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.submitVdxRequest(\'Record\', \'' . $recordId . '\')">' . translate([
+														'text' => 'Place Request',
 														'isPublicFacing' => true,
-													]),
-													'modalBody' => $interface->fetch("Record/vdx-request-popup.tpl"),
-													'modalButtons' => '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.submitVdxRequest(\'Record\', \'' . $recordId . '\')">' . translate([
-															'text' => 'Place Request',
-															'isPublicFacing' => true,
-														]) . '</a>',
-													'success' => true,
-													'needsIllRequest' => true,
-												];
-											}
-										} elseif ($illLoanType == 'localIll') {
-											require_once ROOT_DIR . '/sys/InterLibraryLoan/LocalIllForm.php';
-											//Get configuration for the form.
-											$localIllForm = new LocalIllForm();
-											$localIllForm->id = $homeLocation->localIllFormId;
-											if ($localIllForm->find(true)) {
-												$interface->assign('localIllForm', $localIllForm);
+													]) . '</a>',
+												'success' => true,
+												'needsIllRequest' => true,
+											];
+										}
+									} elseif ($illLoanType == 'localIll') {
+										require_once ROOT_DIR . '/sys/InterLibraryLoan/LocalIllForm.php';
+										//Get configuration for the form.
+										$localIllForm = new LocalIllForm();
+										$localIllForm->id = $homeLocation->localIllFormId;
+										if ($localIllForm->find(true)) {
+											$interface->assign('localIllForm', $localIllForm);
 
-												$localIllFormFields = $localIllForm->getFormFields($marcRecord, $volumeInfo);
-												$interface->assign('structure', $localIllFormFields);
-												$interface->assign('localIllFormFields', $interface->fetch('DataObjectUtil/ajaxForm.tpl'));
-												return [
-													'title' => translate([
-														'text' => 'Hold Failed, Request Title?',
+											$localIllFormFields = $localIllForm->getFormFields($marcRecord, $volumeInfo);
+											$interface->assign('structure', $localIllFormFields);
+											$interface->assign('localIllFormFields', $interface->fetch('DataObjectUtil/ajaxForm.tpl'));
+											return [
+												'title' => translate([
+													'text' => 'Hold Failed, Request Title?',
+													'isPublicFacing' => true,
+												]),
+												'modalBody' => $interface->fetch("Record/local-ill-request-popup.tpl"),
+												'modalButtons' => '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.submitLocalIllRequest(\'Record\', \'' . $recordId . '\')">' . translate([
+														'text' => 'Place Request',
 														'isPublicFacing' => true,
-													]),
-													'modalBody' => $interface->fetch("Record/local-ill-request-popup.tpl"),
-													'modalButtons' => '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.submitLocalIllRequest(\'Record\', \'' . $recordId . '\')">' . translate([
-															'text' => 'Place Request',
-															'isPublicFacing' => true,
-														]) . '</a>',
-													'success' => true,
-													'needsIllRequest' => true,
-												];
-											}
+													]) . '</a>',
+												'success' => true,
+												'needsIllRequest' => true,
+											];
 										}
 									}
 								}
 							}
-						}
-
-						$interface->assign('confirmationNeeded', $confirmationNeeded);
-						$homeLibrary = $user->getHomeLibrary();
-						$canUpdateContactInfo = $homeLibrary->allowProfileUpdates == 1;
-						// Set the update permission based on active library's settings. Or allow by default.
-						$canChangeNoticePreference = $homeLibrary->showNoticeTypeInProfile == 1;
-						// when user preference isn't set, they will be shown a link to account profile. this link isn't necessary if the user cannot change notification preference.
-						$interface->assign('canUpdate', $canUpdateContactInfo);
-						$interface->assign('canChangeNoticePreference', $canChangeNoticePreference);
-						$interface->assign('profile', $patron);
-
-						//Get the grouped work for the record
-						global $library;
-						if ($library->showWhileYouWait && !isset($_REQUEST['autologout'])) {
-							$recordDriver = RecordDriverFactory::initRecordDriverById($recordId);
-							if ($recordDriver->isValid()) {
-								$groupedWorkId = $recordDriver->getPermanentId();
-								require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-								$groupedWorkDriver = new GroupedWorkDriver($groupedWorkId);
-								if ($groupedWorkDriver->isValid()) {
-									$whileYouWaitTitles = $groupedWorkDriver->getWhileYouWait($recordDriver->getPrimaryFormat());
-
-									$interface->assign('whileYouWaitTitles', $whileYouWaitTitles);
-								} else {
-									$interface->assign('whileYouWaitTitles', []);
-								}
-							}
-						} else {
-							$interface->assign('whileYouWaitTitles', []);
-						}
-
-						$results = [
-							'success' => $return['success'],
-							'message' => $interface->fetch('Record/hold-success-popup.tpl'),
-							'title' => $return['title'] ?? '',
-							'confirmationNeeded' => $confirmationNeeded,
-						];
-						if (isset($return['viewHoldsAction'])) {
-							$results['viewHoldsAction'] = $return['viewHoldsAction'];
-						}
-						if ($confirmationNeeded) {
-							$results['modalButtons'] = '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.confirmHold(\'Record\', \'' . $shortId . '\', ' . $return['confirmationId'] . ')">' . translate([
-									'text' => 'Yes, Place Hold',
-									'isPublicFacing' => true,
-								]) . '</a>';
-						}
-						if (isset($_REQUEST['autologout']) && $return['success']) {
-							$masqueradeMode = UserAccount::isUserMasquerading();
-							if ($masqueradeMode) {
-								require_once ROOT_DIR . '/services/MyAccount/Masquerade.php';
-								MyAccount_Masquerade::endMasquerade();
-							} else {
-								UserAccount::softLogout();
-							}
-							$results['autologout'] = true;
-							$alreadyLoggedOut = true;
 						}
 					}
-				}
-			} else {
-				$results = [
-					'success' => false,
-					'message' => 'No pick-up location is set.  Please choose a Location for the title to be picked up at.',
-				];
-			}
 
-			if (isset($_REQUEST['autologout']) && !$alreadyLoggedOut && !(isset($results['needsItemLevelHold']) && $results['needsItemLevelHold'])) {
-				// Only go through the auto-logout when the holds process is completed. Item level holds require another round of interaction with the user.
-				$masqueradeMode = UserAccount::isUserMasquerading();
-				if ($masqueradeMode) {
-					require_once ROOT_DIR . '/services/MyAccount/Masquerade.php';
-					MyAccount_Masquerade::endMasquerade();
-				} else {
-					UserAccount::softLogout();
+					$interface->assign('confirmationNeeded', $confirmationNeeded);
+					$homeLibrary = $user->getHomeLibrary();
+					$canUpdateContactInfo = $homeLibrary->allowProfileUpdates == 1;
+					// Set the update permission based on active library's settings. Or allow by default.
+					$canChangeNoticePreference = $homeLibrary->showNoticeTypeInProfile == 1;
+					// when user preference isn't set, they will be shown a link to account profile. this link isn't necessary if the user cannot change notification preference.
+					$interface->assign('canUpdate', $canUpdateContactInfo);
+					$interface->assign('canChangeNoticePreference', $canChangeNoticePreference);
+					$interface->assign('profile', $patron);
+
+					//Get the grouped work for the record
+					global $library;
+					if ($library->showWhileYouWait && !isset($_REQUEST['autologout'])) {
+						$recordDriver = RecordDriverFactory::initRecordDriverById($recordId);
+						if ($recordDriver->isValid()) {
+							$groupedWorkId = $recordDriver->getPermanentId();
+							require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+							$groupedWorkDriver = new GroupedWorkDriver($groupedWorkId);
+							if ($groupedWorkDriver->isValid()) {
+								$whileYouWaitTitles = $groupedWorkDriver->getWhileYouWait($recordDriver->getPrimaryFormat());
+
+								$interface->assign('whileYouWaitTitles', $whileYouWaitTitles);
+							} else {
+								$interface->assign('whileYouWaitTitles', []);
+							}
+						}
+					} else {
+						$interface->assign('whileYouWaitTitles', []);
+					}
+
+					$results = [
+						'success' => $return['success'],
+						'message' => $interface->fetch('Record/hold-success-popup.tpl'),
+						'title' => $return['title'] ?? '',
+						'confirmationNeeded' => $confirmationNeeded,
+					];
+					if (isset($return['viewHoldsAction'])) {
+						$results['viewHoldsAction'] = $return['viewHoldsAction'];
+					}
+					if ($confirmationNeeded) {
+						$results['modalButtons'] = '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.confirmHold(\'Record\', \'' . $shortId . '\', ' . $return['confirmationId'] . ')">' . translate([
+								'text' => 'Yes, Place Hold',
+								'isPublicFacing' => true,
+							]) . '</a>';
+					}
+					if (isset($_REQUEST['autologout']) && $return['success']) {
+						$masqueradeMode = UserAccount::isUserMasquerading();
+						if ($masqueradeMode) {
+							require_once ROOT_DIR . '/services/MyAccount/Masquerade.php';
+							MyAccount_Masquerade::endMasquerade();
+						} else {
+							UserAccount::softLogout();
+						}
+						$results['autologout'] = true;
+						$alreadyLoggedOut = true;
+					}
 				}
-				$results['autologout'] = true;
 			}
 		} else {
 			$results = [
 				'success' => false,
-				'message' => 'You must be logged in to place a hold.  Please close this dialog and login.',
-				'title' => 'Please login',
+				'message' => 'No pick-up location is set.  Please choose a Location for the title to be picked up at.',
 			];
+		}
+
+		if (isset($_REQUEST['autologout']) && !$alreadyLoggedOut && !(isset($results['needsItemLevelHold']) && $results['needsItemLevelHold'])) {
+			// Only go through the auto-logout when the holds process is completed. Item level holds require another round of interaction with the user.
+			$masqueradeMode = UserAccount::isUserMasquerading();
+			if ($masqueradeMode) {
+				require_once ROOT_DIR . '/services/MyAccount/Masquerade.php';
+				MyAccount_Masquerade::endMasquerade();
+			} else {
+				UserAccount::softLogout();
+			}
+			$results['autologout'] = true;
 		}
 		return $results;
 	}
 
 	/** @noinspection PhpUnused */
 	function confirmHold(): array {
+		$this->requireLoggedInUser(null, 'You must be logged in to place a hold.  Please close this dialog and login.');
 		$user = UserAccount::getLoggedInUser();
-		if ($user) {
-			global $interface;
-			$recordId = $_REQUEST['id'];
-			if (strpos($recordId, ':') > 0) {
-				[
-					,
-					$shortId,
-				] = explode(':', $recordId, 2);
-			} else {
-				$shortId = $recordId;
-			}
-			$confirmationId = $_REQUEST['confirmationId'];
-			$return = $user->confirmHold($recordId, $confirmationId);
-			$confirmationNeeded = false;
-			if (isset($return['confirmationNeeded']) && $return['confirmationNeeded']) {
-				$confirmationNeeded = true;
-			}
-			$interface->assign('confirmationNeeded', $confirmationNeeded);
 
-			//Get the grouped work for the record
-			global $library;
-			if ($library->showWhileYouWait && !isset($_REQUEST['autologout'])) {
-				$recordDriver = RecordDriverFactory::initRecordDriverById($recordId);
-				if ($recordDriver->isValid()) {
-					$groupedWorkId = $recordDriver->getPermanentId();
-					require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-					$groupedWorkDriver = new GroupedWorkDriver($groupedWorkId);
-					$whileYouWaitTitles = $groupedWorkDriver->getWhileYouWait($recordDriver->getPrimaryFormat());
+		global $interface;
+		$recordId = $_REQUEST['id'];
+		if (strpos($recordId, ':') > 0) {
+			[
+				,
+				$shortId,
+			] = explode(':', $recordId, 2);
+		} else {
+			$shortId = $recordId;
+		}
+		$confirmationId = $_REQUEST['confirmationId'];
+		$return = $user->confirmHold($recordId, $confirmationId);
+		$confirmationNeeded = false;
+		if (isset($return['confirmationNeeded']) && $return['confirmationNeeded']) {
+			$confirmationNeeded = true;
+		}
+		$interface->assign('confirmationNeeded', $confirmationNeeded);
 
-					$interface->assign('whileYouWaitTitles', $whileYouWaitTitles);
-				}
-			} else {
-				$interface->assign('whileYouWaitTitles', []);
-			}
+		//Get the grouped work for the record
+		global $library;
+		if ($library->showWhileYouWait && !isset($_REQUEST['autologout'])) {
+			$recordDriver = RecordDriverFactory::initRecordDriverById($recordId);
+			if ($recordDriver->isValid()) {
+				$groupedWorkId = $recordDriver->getPermanentId();
+				require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+				$groupedWorkDriver = new GroupedWorkDriver($groupedWorkId);
+				$whileYouWaitTitles = $groupedWorkDriver->getWhileYouWait($recordDriver->getPrimaryFormat());
 
-			$interface->assign('message', $return['message']);
-			$results = [
-				'success' => $return['success'],
-				'message' => $interface->fetch('Record/hold-success-popup.tpl'),
-				'title' => $return['title'] ?? '',
-				'confirmationNeeded' => $confirmationNeeded,
-			];
-			if ($confirmationNeeded) {
-				$results['modalButtons'] = '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.confirmHold(\'Record\', \'' . $shortId . '\', ' . $return['confirmationId'] . ')">' . translate([
-						'text' => 'Yes, Place Hold',
-						'isPublicFacing' => true,
-					]) . '</a>';
+				$interface->assign('whileYouWaitTitles', $whileYouWaitTitles);
 			}
 		} else {
-			$results = [
-				'title' => 'Please login',
-				'message' => "You must be logged in.  Please close this dialog and login before placing your hold.",
-				'success' => false,
-			];
+			$interface->assign('whileYouWaitTitles', []);
+		}
+
+		$interface->assign('message', $return['message']);
+		$results = [
+			'success' => $return['success'],
+			'message' => $interface->fetch('Record/hold-success-popup.tpl'),
+			'title' => $return['title'] ?? '',
+			'confirmationNeeded' => $confirmationNeeded,
+		];
+		if ($confirmationNeeded) {
+			$results['modalButtons'] = '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.confirmHold(\'Record\', \'' . $shortId . '\', ' . $return['confirmationId'] . ')">' . translate([
+					'text' => 'Yes, Place Hold',
+					'isPublicFacing' => true,
+				]) . '</a>';
 		}
 		return $results;
 	}
 
 	/** @noinspection PhpUnused */
 	function getUploadPDFForm(): array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission('Upload PDFs');
+		$this->checkRequiredParameters(['id']);
 		global $interface;
 
 		$id = $_REQUEST['id'];
@@ -1463,6 +1405,9 @@ class Record_AJAX extends Action {
 
 	/** @noinspection PhpUnused */
 	function getUploadSupplementalFileForm(): array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission('Upload Supplemental Files');
+		$this->checkRequiredParameters(['id']);
 		global $interface;
 
 		$id = $_REQUEST['id'];
@@ -1493,75 +1438,79 @@ class Record_AJAX extends Action {
 
 	/** @noinspection PhpUnused */
 	function uploadPDF(): array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission('Upload PDFs');
+		$this->checkRequiredParameters(['id']);
+
 		$result = [
 			'success' => false,
 			'title' => 'Uploading PDF',
 			'message' => 'Sorry your pdf could not be uploaded',
 		];
-		if (UserAccount::isLoggedIn() && (UserAccount::userHasPermission('Upload PDFs'))) {
-			if (isset($_FILES['pdfFile'])) {
-				$uploadedFile = $_FILES['pdfFile'];
-				if (isset($uploadedFile["error"]) && $uploadedFile["error"] == 4) {
-					$result['message'] = "No PDF was uploaded";
-				} elseif (isset($uploadedFile["error"]) && $uploadedFile["error"] > 0) {
-					$result['message'] = "Error in file upload " . $uploadedFile["error"];
+
+		if (isset($_FILES['pdfFile'])) {
+			$uploadedFile = $_FILES['pdfFile'];
+			if (isset($uploadedFile["error"]) && $uploadedFile["error"] == 4) {
+				$result['message'] = "No PDF was uploaded";
+			} elseif (isset($uploadedFile["error"]) && $uploadedFile["error"] > 0) {
+				$result['message'] = "Error in file upload " . $uploadedFile["error"];
+			} else {
+				$id = $_REQUEST['id'];
+				$recordDriver = RecordDriverFactory::initRecordDriverById($id);
+				if (!$recordDriver->isValid()) {
+					$result['message'] = "Could not find the record to attach this file to";
 				} else {
-					$id = $_REQUEST['id'];
-					$recordDriver = RecordDriverFactory::initRecordDriverById($id);
-					if (!$recordDriver->isValid()) {
-						$result['message'] = "Could not find the record to attach this file to";
-					} else {
-						//Upload data files
-						global $serverName;
-						$dataPath = '/data/aspen-discovery/' . $serverName . '/uploads/record_pdfs/';
-						if (!file_exists($dataPath)) {
-							global $configArray;
-							if ($configArray['System']['operatingSystem'] == 'windows') {
-								if (!mkdir($dataPath, 0777, true)) {
-									$result['message'] = 'Could not create the directory on the server';
-								}
-							} else {
-								if (!mkdir($dataPath, 0755, true)) {
-									$result['message'] = 'Could not create the directory on the server';
-								}
-							}
-						}
-						$destFullPath = $dataPath . $recordDriver->getId() . '_' . $uploadedFile["name"];
-						if (!file_exists($destFullPath)) {
-							$fileType = $uploadedFile["type"];
-							if ($fileType == 'application/pdf') {
-								if (copy($uploadedFile["tmp_name"], $destFullPath)) {
-									require_once ROOT_DIR . '/sys/File/FileUpload.php';
-									$fileUpload = new FileUpload();
-									$fileUpload->title = $_REQUEST['title'];
-									$fileUpload->fullPath = $destFullPath;
-									$fileUpload->type = 'RecordPDF';
-									$fileUpload->insert();
-
-									require_once ROOT_DIR . '/sys/ILS/RecordFile.php';
-									$recordFile = new RecordFile();
-									$recordFile->type = $recordDriver->getRecordType();
-									$recordFile->identifier = $recordDriver->getUniqueID();
-									$recordFile->fileId = $fileUpload->id;
-									$recordFile->insert();
-
-									$result['success'] = true;
-
-								} else {
-									$result['message'] = 'Could not save the file on the server';
-								}
-							} else {
-								$result['message'] = 'Incorrect file type.  Please upload a PDF';
+					//Upload data files
+					global $serverName;
+					$dataPath = '/data/aspen-discovery/' . $serverName . '/uploads/record_pdfs/';
+					if (!file_exists($dataPath)) {
+						global $configArray;
+						if ($configArray['System']['operatingSystem'] == 'windows') {
+							if (!mkdir($dataPath, 0777, true)) {
+								$result['message'] = 'Could not create the directory on the server';
 							}
 						} else {
-							$result['message'] = 'A file with this name already exists. Please rename your file.';
+							if (!mkdir($dataPath, 0755, true)) {
+								$result['message'] = 'Could not create the directory on the server';
+							}
 						}
 					}
+					$destFullPath = $dataPath . $recordDriver->getId() . '_' . $uploadedFile["name"];
+					if (!file_exists($destFullPath)) {
+						$fileType = $uploadedFile["type"];
+						if ($fileType == 'application/pdf') {
+							if (copy($uploadedFile["tmp_name"], $destFullPath)) {
+								require_once ROOT_DIR . '/sys/File/FileUpload.php';
+								$fileUpload = new FileUpload();
+								$fileUpload->title = $_REQUEST['title'];
+								$fileUpload->fullPath = $destFullPath;
+								$fileUpload->type = 'RecordPDF';
+								$fileUpload->insert();
+
+								require_once ROOT_DIR . '/sys/ILS/RecordFile.php';
+								$recordFile = new RecordFile();
+								$recordFile->type = $recordDriver->getRecordType();
+								$recordFile->identifier = $recordDriver->getUniqueID();
+								$recordFile->fileId = $fileUpload->id;
+								$recordFile->insert();
+
+								$result['success'] = true;
+
+							} else {
+								$result['message'] = 'Could not save the file on the server';
+							}
+						} else {
+							$result['message'] = 'Incorrect file type.  Please upload a PDF';
+						}
+					} else {
+						$result['message'] = 'A file with this name already exists. Please rename your file.';
+					}
 				}
-			} else {
-				$result['message'] = 'No file was uploaded, please try again.';
 			}
+		} else {
+			$result['message'] = 'No file was uploaded, please try again.';
 		}
+
 		if ($result['success']) {
 			$result['message'] = 'Your file has been uploaded successfully';
 		}
@@ -1570,107 +1519,110 @@ class Record_AJAX extends Action {
 
 	/** @noinspection PhpUnused */
 	function uploadSupplementalFile(): array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission('Upload Supplemental Files');
+		$this->checkRequiredParameters(['id']);
+
 		$result = [
 			'success' => false,
 			'title' => 'Uploading Supplemental File',
 			'message' => 'Sorry your file could not be uploaded',
 		];
-		if (UserAccount::isLoggedIn() && (UserAccount::userHasPermission('Upload Supplemental Files'))) {
-			if (isset($_FILES['supplementalFile'])) {
-				$uploadedFile = $_FILES['supplementalFile'];
-				if (isset($uploadedFile["error"]) && $uploadedFile["error"] == 4) {
-					$result['message'] = "No File was uploaded";
-				} elseif (isset($uploadedFile["error"]) && $uploadedFile["error"] > 0) {
-					$result['message'] = "Error in file upload " . $uploadedFile["error"];
+
+		if (isset($_FILES['supplementalFile'])) {
+			$uploadedFile = $_FILES['supplementalFile'];
+			if (isset($uploadedFile["error"]) && $uploadedFile["error"] == 4) {
+				$result['message'] = "No File was uploaded";
+			} elseif (isset($uploadedFile["error"]) && $uploadedFile["error"] > 0) {
+				$result['message'] = "Error in file upload " . $uploadedFile["error"];
+			} else {
+				$id = $_REQUEST['id'];
+				$recordDriver = RecordDriverFactory::initRecordDriverById($id);
+				if (!$recordDriver->isValid()) {
+					$result['message'] = "Could not find the record to attach this file to";
 				} else {
-					$id = $_REQUEST['id'];
-					$recordDriver = RecordDriverFactory::initRecordDriverById($id);
-					if (!$recordDriver->isValid()) {
-						$result['message'] = "Could not find the record to attach this file to";
-					} else {
-						//Upload data files
-						global $serverName;
-						$dataPath = '/data/aspen-discovery/' . $serverName . '/uploads/record_files/';
-						if (!file_exists($dataPath)) {
-							global $configArray;
-							if ($configArray['System']['operatingSystem'] == 'windows') {
-								if (!mkdir($dataPath, 0777, true)) {
-									$result['message'] = 'Could not create the directory on the server';
-								}
-							} else {
-								if (!mkdir($dataPath, 0755, true)) {
-									$result['message'] = 'Could not create the directory on the server';
-								}
-							}
-						}
-						$destFullPath = $dataPath . $recordDriver->getId() . '_' . $uploadedFile["name"];
-						if (!file_exists($destFullPath)) {
-							$fileType = $uploadedFile["type"];
-							$fileOk = false;
-							if (in_array($fileType, [
-								'application/vnd.ms-excel',
-								'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-								'application/vnd.oasis.opendocument.spreadsheet',
-								'application/msword',
-								'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-								'application/vnd.oasis.opendocument.text',
-								'text/csv',
-								'application/vnd.ms-powerpoint',
-								'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-								'application/vnd.oasis.opendocument.presentation',
-							])) {
-								$fileOk = true;
-							} elseif ($fileType = 'application/octet-stream') {
-								$fileExtension = $uploadedFile["name"];
-								$fileExtension = strtolower(substr($fileExtension, strrpos($fileExtension, '.') + 1));
-								if (in_array($fileExtension, [
-									'csv',
-									'doc',
-									'docx',
-									'odp',
-									'ods',
-									'odt',
-									'pdf',
-									'ppt',
-									'pptx',
-									'xls',
-									'xlsx',
-								])) {
-									$fileOk = true;
-								}
-							}
-							if ($fileOk) {
-								if (copy($uploadedFile["tmp_name"], $destFullPath)) {
-									require_once ROOT_DIR . '/sys/File/FileUpload.php';
-									$fileUpload = new FileUpload();
-									$fileUpload->title = $_REQUEST['title'];
-									$fileUpload->fullPath = $destFullPath;
-									$fileUpload->type = 'RecordSupplementalFile';
-									$fileUpload->insert();
-
-									require_once ROOT_DIR . '/sys/ILS/RecordFile.php';
-									$recordFile = new RecordFile();
-									$recordFile->type = $recordDriver->getRecordType();
-									$recordFile->identifier = $recordDriver->getUniqueID();
-									$recordFile->fileId = $fileUpload->id;
-									$recordFile->insert();
-
-									$result['success'] = true;
-
-								} else {
-									$result['message'] = 'Could not save the file on the server';
-								}
-							} else {
-								$result['message'] = "Incorrect file type ($fileType).  Please upload one of the following files: .CSV, .DOC, .DOCX, .ODP, .ODS, .ODT, .PDF, .PPT, .PPTX, .XLS, .XLSX";
+					//Upload data files
+					global $serverName;
+					$dataPath = '/data/aspen-discovery/' . $serverName . '/uploads/record_files/';
+					if (!file_exists($dataPath)) {
+						global $configArray;
+						if ($configArray['System']['operatingSystem'] == 'windows') {
+							if (!mkdir($dataPath, 0777, true)) {
+								$result['message'] = 'Could not create the directory on the server';
 							}
 						} else {
-							$result['message'] = 'A file with this name already exists. Please rename your file.';
+							if (!mkdir($dataPath, 0755, true)) {
+								$result['message'] = 'Could not create the directory on the server';
+							}
 						}
 					}
+					$destFullPath = $dataPath . $recordDriver->getId() . '_' . $uploadedFile["name"];
+					if (!file_exists($destFullPath)) {
+						$fileType = $uploadedFile["type"];
+						$fileOk = false;
+						if (in_array($fileType, [
+							'application/vnd.ms-excel',
+							'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+							'application/vnd.oasis.opendocument.spreadsheet',
+							'application/msword',
+							'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+							'application/vnd.oasis.opendocument.text',
+							'text/csv',
+							'application/vnd.ms-powerpoint',
+							'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+							'application/vnd.oasis.opendocument.presentation',
+						])) {
+							$fileOk = true;
+						} elseif ($fileType = 'application/octet-stream') {
+							$fileExtension = $uploadedFile["name"];
+							$fileExtension = strtolower(substr($fileExtension, strrpos($fileExtension, '.') + 1));
+							if (in_array($fileExtension, [
+								'csv',
+								'doc',
+								'docx',
+								'odp',
+								'ods',
+								'odt',
+								'pdf',
+								'ppt',
+								'pptx',
+								'xls',
+								'xlsx',
+							])) {
+								$fileOk = true;
+							}
+						}
+						if ($fileOk) {
+							if (copy($uploadedFile["tmp_name"], $destFullPath)) {
+								require_once ROOT_DIR . '/sys/File/FileUpload.php';
+								$fileUpload = new FileUpload();
+								$fileUpload->title = $_REQUEST['title'];
+								$fileUpload->fullPath = $destFullPath;
+								$fileUpload->type = 'RecordSupplementalFile';
+								$fileUpload->insert();
+
+								require_once ROOT_DIR . '/sys/ILS/RecordFile.php';
+								$recordFile = new RecordFile();
+								$recordFile->type = $recordDriver->getRecordType();
+								$recordFile->identifier = $recordDriver->getUniqueID();
+								$recordFile->fileId = $fileUpload->id;
+								$recordFile->insert();
+
+								$result['success'] = true;
+
+							} else {
+								$result['message'] = 'Could not save the file on the server';
+							}
+						} else {
+							$result['message'] = "Incorrect file type ($fileType).  Please upload one of the following files: .CSV, .DOC, .DOCX, .ODP, .ODS, .ODT, .PDF, .PPT, .PPTX, .XLS, .XLSX";
+						}
+					} else {
+						$result['message'] = 'A file with this name already exists. Please rename your file.';
+					}
 				}
-			} else {
-				$result['message'] = 'No file was uploaded, please try again.';
 			}
+		} else {
+			$result['message'] = 'No file was uploaded, please try again.';
 		}
 		if ($result['success']) {
 			$result['message'] = 'Your file has been uploaded successfully';
@@ -1680,49 +1632,45 @@ class Record_AJAX extends Action {
 
 	/** @noinspection PhpUnused */
 	function deleteUploadedFile(): array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission(['Upload PDFs', 'Upload Supplemental Files']);
+		$this->checkRequiredParameters(['id']);
 		$result = [
 			'success' => false,
 			'title' => 'Deleting Uploaded File',
 		];
-		if (UserAccount::isLoggedIn() && (UserAccount::userHasPermission([
-				'Upload PDFs',
-				'Upload Supplemental Files',
-			]))) {
-			$fileId = $_REQUEST['fileId'];
-			$id = $_REQUEST['id'];
+		$fileId = $_REQUEST['fileId'];
+		$id = $_REQUEST['id'];
 
-			/** @var MarcRecordDriver $recordDriver */
-			$recordDriver = RecordDriverFactory::initRecordDriverById($id);
-			if ($recordDriver->isValid()) {
-				require_once ROOT_DIR . '/sys/ILS/RecordFile.php';
-				$recordFile = new RecordFile();
-				$recordFile->type = $recordDriver->getRecordType();
-				$recordFile->identifier = $recordDriver->getUniqueID();
-				$recordFile->fileId = $fileId;
-				if ($recordFile->find(true)) {
-					require_once ROOT_DIR . '/sys/File/FileUpload.php';
-					$fileUpload = new FileUpload();
-					$fileUpload->id = $fileId;
-					if ($fileUpload->find(true)) {
-						if (unlink($fileUpload->fullPath)) {
-							$fileUpload->delete();
-							$recordFile->delete();
-							$result['success'] = true;
-							$result['message'] = 'The file was deleted successfully';
-						} else {
-							$result['message'] = 'Could not delete the file';
-						}
+		/** @var MarcRecordDriver $recordDriver */
+		$recordDriver = RecordDriverFactory::initRecordDriverById($id);
+		if ($recordDriver->isValid()) {
+			require_once ROOT_DIR . '/sys/ILS/RecordFile.php';
+			$recordFile = new RecordFile();
+			$recordFile->type = $recordDriver->getRecordType();
+			$recordFile->identifier = $recordDriver->getUniqueID();
+			$recordFile->fileId = $fileId;
+			if ($recordFile->find(true)) {
+				require_once ROOT_DIR . '/sys/File/FileUpload.php';
+				$fileUpload = new FileUpload();
+				$fileUpload->id = $fileId;
+				if ($fileUpload->find(true)) {
+					if (unlink($fileUpload->fullPath)) {
+						$fileUpload->delete();
+						$recordFile->delete();
+						$result['success'] = true;
+						$result['message'] = 'The file was deleted successfully';
 					} else {
-						$result['message'] = 'Could not find the file to delete';
+						$result['message'] = 'Could not delete the file';
 					}
 				} else {
-					$result['message'] = 'The file does not appear to be attached to this record';
+					$result['message'] = 'Could not find the file to delete';
 				}
 			} else {
-				$result['message'] = 'Could not load the record to delete the file from';
+				$result['message'] = 'The file does not appear to be attached to this record';
 			}
 		} else {
-			$result['message'] = 'You do not have the correct permissions to delete this file';
+			$result['message'] = 'Could not load the record to delete the file from';
 		}
 		return $result;
 	}
@@ -1901,6 +1849,12 @@ class Record_AJAX extends Action {
 	}
 
 	function getStaffView(): array {
+		global $interface;
+		if (!$interface->getVariable('showStaffView')) {
+			$this->failureResult(null, 'Staff View is not available.');
+		}
+		$this->checkRequiredParameters(['id']);
+
 		$result = [
 			'success' => false,
 			'message' => 'Unknown error loading staff view',
@@ -1923,15 +1877,7 @@ class Record_AJAX extends Action {
 		return $result;
 	}
 
-	/**
-	 * @param string $recordSource
-	 * @param bool $rememberHoldPickupLocation
-	 * @param MarcRecordDriver $marcRecord
-	 * @param Location[] $locations
-	 * @param bool|null $promptForEdition
-	 * @return bool
-	 */
-	function setupHoldForm(string $recordSource, ?bool &$rememberHoldPickupLocation, MarcRecordDriver $marcRecord, ?array &$locations, $selectedVariationId, ?bool $promptForEdition): bool {
+	private function setupHoldForm(string $recordSource, ?bool &$rememberHoldPickupLocation, MarcRecordDriver $marcRecord, ?array &$locations, $selectedVariationId, ?bool $promptForEdition): bool {
 		global $interface;
 		$user = UserAccount::getLoggedInUser();
 		if ($user->getCatalogDriver() == null) {
@@ -2063,7 +2009,7 @@ class Record_AJAX extends Action {
 
 		$preferredPickupSublocationIsValid = true;
 		if ($preferredPickupLocationIsValid) {
-			//The preferred location is valid, check to see if sublocations are in use and if so if the preferred pickup area is valid
+			//The preferred location is valid, check to see if sublocations are in use and if so is the preferred pickup area is valid
 			$preferredSublocationsAtPreferredLocation = $preferredPickupLocation->getPickupSublocations($user);
 			if (count($preferredSublocationsAtPreferredLocation) > 1) {
 				$preferredPickupSublocationIsValid = false;
@@ -2197,6 +2143,7 @@ class Record_AJAX extends Action {
 		$interface->assign('rememberHoldPickupLocation', $rememberHoldPickupLocation);
 		$interface->assign('rememberHoldPromptForEdition', $user->rememberHoldPromptForEdition);
 		$interface->assign('userHoldPromptForEditionPreference', $user->holdPromptForEdition);
+		$interface->assign('allowFreezeHolds', $library->allowFreezeHolds);
 		$interface->assign('promptToFreezeHoldsImmediately', $user->promptToFreezeHoldsImmediately);
 		$interface->assign('onlyValidPickupLocation', $onlyValidPickupLocation ?? null);
 
@@ -2255,7 +2202,7 @@ class Record_AJAX extends Action {
 	 * @param $patron
 	 * @return array
 	 */
-	protected function getItemHoldForm($pickupBranch, array $return, string $shortId, $patron): array {
+	private function getItemHoldForm($pickupBranch, array $return, string $shortId, $patron): array {
 		global $interface;
 		$interface->assign('pickupBranch', $pickupBranch);
 		$items = $return['items'];
@@ -2285,6 +2232,10 @@ class Record_AJAX extends Action {
 
 	/** @noinspection PhpUnused */
 	function forceReindex(): array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission('Force Reindexing of Records');
+		$this->checkRequiredParameters(['id']);
+
 		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 
 		$id = $_REQUEST['id'];
@@ -2441,108 +2392,83 @@ class Record_AJAX extends Action {
 
 	/** @noinspection PhpUnused */
 	public function getLocalIllEmailForm() : array {
+		$this->requireLoggedInUser(null, "You must be logged in.  Please close this dialog and login before placing your request.");
 		global $interface;
-		if (UserAccount::isLoggedIn()) {
-			$id = $_REQUEST['id'];
-			if (strpos($id, ':') > 0) {
-				[
-					,
-					$id,
-				] = explode(':', $id);
-			}
-			$recordSource = $_REQUEST['recordSource'];
-			$interface->assign('recordSource', $recordSource);
-			$marcRecord = new MarcRecordDriver($id);
-			$volume = $_REQUEST['volume'] ?? '';
 
-			if (empty($volume)) {
-				//Get the list of requestable volumes?
-			}
-
-			$structure = [
-				'title' => [
-					'property' => 'title',
-					'type' => 'text',
-					'label' => 'Title',
-					'readOnly' => false,
-					'default' => $marcRecord->getTitle(),
-				],
-				'author' => [
-					'property' => 'author',
-					'type' => 'text',
-					'label' => 'Author',
-					'readOnly' => false,
-					'default' => $marcRecord->getAuthor(),
-				],
-				'volume' => [
-					'property' => 'volume',
-					'type' => 'text',
-					'label' => 'Volume To Request',
-					'readOnly' => false,
-					'default' => $volume,
-				],
-				'note' => [
-					'property' => 'note',
-					'type' => 'textarea',
-					'label' => 'Note',
-					'readOnly' => false,
-					'default' => '',
-				],
-				'recordId' => [
-					'property' => 'recordId',
-					'type' => 'hidden',
-					'label' => 'Record ID',
-					'default' => $marcRecord->getUniqueID(),
-				],
-			];
-
-			$interface->assign('structure', $structure);
-			$interface->assign('canSave', false);
-			$formFields = $interface->fetch('DataObjectUtil/objectEditForm.tpl');
-			$interface->assign('formFields', $formFields);
-			$interface->assign('message', $interface->fetch('Record/local-ill-email-form.tpl'));
-			$results = [
-				'success' => true,
-				'title' => translate([
-					'text' => 'Request Title',
-					'isPublicFacing' => true,
-				]),
-				'modalBody' => $interface->fetch('Record/local-ill-email-form.tpl'),
-				'modalButtons' => "<button type='submit' name='submit' id='requestTitleButton' class='btn btn-primary' onclick='return AspenDiscovery.Record.submitLocalIllEmailForm();'><i class='fas fa-spinner fa-spin hidden' role='status' aria-hidden='true'></i>&nbsp;" . translate(['text' => "Submit Request", 'isPublicFacing' => true]) . "</button>",
-			];
-		} else {
-			$results = [
-				'title' => translate([
-					'text' => 'Please login',
-					'isPublicFacing' => true,
-				]),
-				'message' => translate([
-					'text' => "You must be logged in.  Please close this dialog and login before placing your request.",
-					'isPublicFacing' => true,
-				]),
-				'success' => false,
-			];
+		$id = $_REQUEST['id'];
+		if (strpos($id, ':') > 0) {
+			[
+				,
+				$id,
+			] = explode(':', $id);
 		}
-		return $results;
+		$recordSource = $_REQUEST['recordSource'];
+		$interface->assign('recordSource', $recordSource);
+		$marcRecord = new MarcRecordDriver($id);
+		$volume = $_REQUEST['volume'] ?? '';
+
+		if (empty($volume)) {
+			//Get the list of requestable volumes?
+		}
+
+		$structure = [
+			'title' => [
+				'property' => 'title',
+				'type' => 'text',
+				'label' => 'Title',
+				'readOnly' => false,
+				'default' => $marcRecord->getTitle(),
+			],
+			'author' => [
+				'property' => 'author',
+				'type' => 'text',
+				'label' => 'Author',
+				'readOnly' => false,
+				'default' => $marcRecord->getAuthor(),
+			],
+			'volume' => [
+				'property' => 'volume',
+				'type' => 'text',
+				'label' => 'Volume To Request',
+				'readOnly' => false,
+				'default' => $volume,
+			],
+			'note' => [
+				'property' => 'note',
+				'type' => 'textarea',
+				'label' => 'Note',
+				'readOnly' => false,
+				'default' => '',
+			],
+			'recordId' => [
+				'property' => 'recordId',
+				'type' => 'hidden',
+				'label' => 'Record ID',
+				'default' => $marcRecord->getUniqueID(),
+			],
+		];
+
+		$interface->assign('structure', $structure);
+		$interface->assign('canSave', false);
+		$formFields = $interface->fetch('DataObjectUtil/objectEditForm.tpl');
+		$interface->assign('formFields', $formFields);
+		$interface->assign('message', $interface->fetch('Record/local-ill-email-form.tpl'));
+		return [
+			'success' => true,
+			'title' => translate([
+				'text' => 'Request Title',
+				'isPublicFacing' => true,
+			]),
+			'modalBody' => $interface->fetch('Record/local-ill-email-form.tpl'),
+			'modalButtons' => "<button type='submit' name='submit' id='requestTitleButton' class='btn btn-primary' onclick='return AspenDiscovery.Record.submitLocalIllEmailForm();'><i class='fas fa-spinner fa-spin hidden' role='status' aria-hidden='true'></i>&nbsp;" . translate(['text' => "Submit Request", 'isPublicFacing' => true]) . "</button>",
+		];
 	}
 
+	/** @noinspection PhpUnused */
 	public function submitLocalIllEmailForm() : array {
-		if (UserAccount::isLoggedIn()) {
-			$user = UserAccount::getLoggedInUser();
-			return $user->submitLocalIllRequestEmail();
-		} else {
-			$results = [
-				'title' => translate([
-					'text' => 'Please login',
-					'isPublicFacing' => true,
-				]),
-				'message' => translate([
-					'text' => "You must be logged in.  Please close this dialog and login before placing your request.",
-					'isPublicFacing' => true,
-				]),
-				'success' => false,
-			];
-		}
-		return $results;
+		$this->requireLoggedInUser(null, "You must be logged in.  Please close this dialog and login before placing your request.");
+
+		$user = UserAccount::getLoggedInUser();
+		return $user->submitLocalIllRequestEmail();
 	}
 }

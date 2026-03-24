@@ -36,6 +36,8 @@ class HeroSliderPlaylist extends DataObject {
 				$libraryList[$homeLibrary->libraryId] = $homeLibrary->displayName;
 			}
 		}
+		$allLibraryList = Library::getLibraryList(false);
+		$allLibraryList[-1] = 'All Libraries';
 
 		$playlistImageStructure = HeroSliderPlaylistImage::getObjectStructure($context);
 
@@ -58,6 +60,7 @@ class HeroSliderPlaylist extends DataObject {
 				'property' => 'libraryId',
 				'type' => 'enum',
 				'values' => $libraryList,
+				'allValues' => $allLibraryList,
 				'label' => 'Library',
 				'description' => 'The library this playlist belongs to.',
 			],

@@ -688,7 +688,8 @@ class SideLoad extends DataObject {
 			return true;
 		}elseif (UserAccount::userHasPermission('Administer Side Loads for Home Library') || UserAccount::userHasPermission('Administer Side Load Scopes for Home Library')){
 			//If we see it, we can edit it, but it might be read-only
-			return true;
+			$libraryList = Library::getLibraryList(true);
+			return ($this->sharing == 1 || in_array($this->owningLibrary, array_keys($libraryList)));
 		}else{
 			return false;
 		}

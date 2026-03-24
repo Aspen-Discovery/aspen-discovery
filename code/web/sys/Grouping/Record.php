@@ -550,15 +550,19 @@ class Grouping_Record {
 		return false;
 	}
 
+	private ?float $_holdRatio = null;
 	/**
 	 * @return float
 	 */
 	function getHoldRatio(): float {
-		if ($this->getCopies() > 0) {
-			return $this->_statusInformation->getNumHolds() / $this->getCopies();
-		} else {
-			return 0;
+		if ($this->_holdRatio == null) {
+			if ($this->getCopies() > 0) {
+				$this->_holdRatio = $this->_statusInformation->getNumHolds() / $this->getCopies();
+			} else {
+				$this->_holdRatio = 0;
+			}
 		}
+		return $this->_holdRatio;
 	}
 
 	/**
@@ -583,6 +587,18 @@ class Grouping_Record {
 
 	function getGroupedStatus(): string {
 		return $this->_statusInformation->getGroupedStatus();
+	}
+
+	private ?float $statusRanking = null;
+	function getStatusRanking(): float {
+		if (is_null($this->statusRanking)) {
+			if (isset(GroupedWorkDriver::$statusRankings[$this->getGroupedStatus()])) {
+				$this->statusRanking = GroupedWorkDriver::$statusRankings[$this->getGroupedStatus()];
+			}else{
+				return 3.5;
+			}
+		}
+		return $this->statusRanking;
 	}
 
 	function addOnOrderCopies($numCopies) :void {

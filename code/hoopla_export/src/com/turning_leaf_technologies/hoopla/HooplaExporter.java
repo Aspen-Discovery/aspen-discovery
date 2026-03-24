@@ -664,7 +664,7 @@ public class HooplaExporter {
 				logger.error("Unable to find settings for Hoopla when processing single title, please add settings to the database");
 			}
 		}catch (Exception e){
-			logEntry.incErrors("Error exporting hoopla data", e);
+			logEntry.incErrors("Error exporting single hoopla title", e);
 		}
 		return updatesRun;
 	}

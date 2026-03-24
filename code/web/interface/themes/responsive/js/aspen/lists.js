@@ -8,6 +8,8 @@ AspenDiscovery.Lists = (function(){
 		editListAction: function (){
 			$('#listDescription,#listTitle,#FavEdit,.listViewButton').hide();
 			$('#listEditControls,#FavSave,.listEditButton').show();
+			const element = document.getElementById('listEditControls');
+			element.scrollIntoView();
 			return false;
 		},
 

@@ -1,9 +1,15 @@
 <?php
+
+use JetBrains\PhpStorm\NoReturn;
+
 require_once ROOT_DIR . '/JSON_Action.php';
 
 class WebBuilder_AJAX extends JSON_Action {
 	/** @noinspection PhpUnused */
 	function getPortalCellValuesForSource(): array {
+		$this->checkRequiredModule('Web Builder');
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission(['Administer All Custom Pages', 'Administer Library Custom Pages',]);
 		$result = [
 			'success' => false,
 			'message' => translate([
@@ -391,6 +397,9 @@ class WebBuilder_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function getSourceValuesForPlacard(): array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission(['Administer All Web Resources', 'Administer Library Web Resources','Administer All Placards', 'Administer Library Placards']);
+
 		$result = [
 			'success' => false,
 			'message' => translate([
@@ -468,7 +477,10 @@ class WebBuilder_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function checkLinkedObject() {
+	function checkLinkedObject() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission(['Administer All Web Resources', 'Administer Library Web Resources']);
+
 		if (!empty($_REQUEST['objectId']) && is_numeric($_REQUEST['objectId'])) {
 			require_once ROOT_DIR . '/sys/LocalEnrichment/Placard.php';
 			$placard = new Placard();
@@ -504,7 +516,10 @@ class WebBuilder_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function saveLinkedObject() {
+	function saveLinkedObject() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission(['Administer All Placards', 'Administer Library Placards']);
+
 		//Save Linked Placard
 		require_once ROOT_DIR . '/sys/LocalEnrichment/Placard.php';
 		$fileType = substr($_REQUEST['image'], 0, -3);
@@ -534,156 +549,145 @@ class WebBuilder_AJAX extends JSON_Action {
 			$result = [
 				'success' => true,
 			];
+		}else{
+			$result = [
+				'success' => false,
+				'message' => 'Could not find the placard to update.'
+			];
 		}
 		return $result;
 	}
 	/** @noinspection PhpUnused */
-	function uploadImage() {
+	function uploadImage(): array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission(['Administer All Web Content', 'Administer Web Content for Home Library']);
+
 		$result = [
 			'success' => false,
 			'message' => 'Unknown error uploading image',
 		];
-		if (UserAccount::isLoggedIn()) {
-			if (UserAccount::userHasPermission(['Administer All Web Content', 'Administer Web Content for Home Library'])) {
-				if (!empty($_FILES)) {
-					require_once ROOT_DIR . '/sys/File/ImageUpload.php';
-					$structure = ImageUpload::getObjectStructure('');
-					foreach ($_FILES as $file) {
-						$image = new ImageUpload();
-						$image->type = 'web_builder_image';
-						$image->fullSizePath = $file['name'];
-						$image->generateXLargeSize = true;
-						$image->generateLargeSize = true;
-						$image->generateMediumSize = true;
-						$image->generateSmallSize = true;
-						$destFileName = $file['name'];
-						$destFolder = $structure['fullSizePath']['path'];
-						if (!is_dir($destFolder)) {
-							if (!mkdir($destFolder, 0755, true)) {
-								$result['message'] = 'Could not create directory to upload files';
-								if (IPAddress::showDebuggingInformation()) {
-									$result['message'] .= " " . $destFolder;
-								}
-							}
-						}
-						$destFullPath = $destFolder . '/' . $destFileName;
-						if (file_exists($destFullPath)) {
-							$image->find(true);
-						}
-
-						$image->title = $file['name'];
-						$copyResult = copy($file["tmp_name"], $destFullPath);
-						if ($copyResult) {
-							$image->update();
-							$result = [
-								'success' => true,
-								'title' => $image->title,
-								'imageUrl' => $image->getDisplayUrl('full'),
-							];
-							break;
-						} else {
-							$result['message'] = 'Could not save the image to disk';
+		if (!empty($_FILES)) {
+			require_once ROOT_DIR . '/sys/File/ImageUpload.php';
+			$structure = ImageUpload::getObjectStructure();
+			foreach ($_FILES as $file) {
+				$image = new ImageUpload();
+				$image->type = 'web_builder_image';
+				$image->fullSizePath = $file['name'];
+				$image->generateXLargeSize = true;
+				$image->generateLargeSize = true;
+				$image->generateMediumSize = true;
+				$image->generateSmallSize = true;
+				$destFileName = $file['name'];
+				$destFolder = $structure['fullSizePath']['path'];
+				if (!is_dir($destFolder)) {
+					if (!mkdir($destFolder, 0755, true)) {
+						$result['message'] = 'Could not create directory to upload files';
+						if (IPAddress::showDebuggingInformation()) {
+							$result['message'] .= " " . $destFolder;
 						}
 					}
-				} else {
-					$result['message'] = 'No file was selected';
 				}
-			} else {
-				$result['message'] = 'You don\'t have the correct permissions to upload an image';
+				$destFullPath = $destFolder . '/' . $destFileName;
+				if (file_exists($destFullPath)) {
+					$image->find(true);
+				}
+
+				$image->title = $file['name'];
+				$copyResult = copy($file["tmp_name"], $destFullPath);
+				if ($copyResult) {
+					$image->update();
+					$result = [
+						'success' => true,
+						'title' => $image->title,
+						'imageUrl' => $image->getDisplayUrl('full'),
+					];
+					break;
+				} else {
+					$result['message'] = 'Could not save the image to disk';
+				}
 			}
 		} else {
-			$result['message'] = 'You must be logged in to upload an image';
+			$result['message'] = 'No file was selected';
 		}
 		return $result;
 	}
 
 	/** @noinspection PhpUnused */
-	function uploadImageTinyMCE() {
-		if (UserAccount::isLoggedIn()) {
-			if (UserAccount::userHasPermission(['Administer All Web Content', 'Administer Web Content for Home Library'])) {
-				if (!empty($_FILES)) {
-					require_once ROOT_DIR . '/sys/File/ImageUpload.php';
-					$structure = ImageUpload::getObjectStructure('');
-					foreach ($_FILES as $file) {
-						$image = new ImageUpload();
-						$image->type = 'web_builder_image';
-						$image->fullSizePath = $file['name'];
-						$image->generateXLargeSize = true;
-						$image->generateLargeSize = true;
-						$image->generateMediumSize = true;
-						$image->generateSmallSize = true;
-						$destFileName = $file['name'];
-						$destFolder = $structure['fullSizePath']['path'];
-						if (!is_dir($destFolder)) {
-							if (!mkdir($destFolder, 0755, true)) {
-								$result['message'] = 'Could not create directory to upload files';
-								if (IPAddress::showDebuggingInformation()) {
-									$result['message'] .= " " . $destFolder;
-								}
-							}
-						}
-						$destFullPath = $destFolder . '/' . $destFileName;
-						if (file_exists($destFullPath)) {
-							$image->find(true);
-						}
-
-						$image->title = $file['name'];
-						$copyResult = copy($file["tmp_name"], $destFullPath);
-						if ($copyResult) {
-							$image->update();
-							$result = [
-								'location' => $image->getDisplayUrl('full'),
-							];
-							break;
-						} else {
-							$result['message'] = 'Could not save the image to disk';
+	function uploadImageTinyMCE() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission(['Administer All Web Content', 'Administer Web Content for Home Library']);
+		if (!empty($_FILES)) {
+			require_once ROOT_DIR . '/sys/File/ImageUpload.php';
+			$structure = ImageUpload::getObjectStructure();
+			$result = [
+				'success' => true,
+				'message' => ''
+			];
+			foreach ($_FILES as $file) {
+				$image = new ImageUpload();
+				$image->type = 'web_builder_image';
+				$image->fullSizePath = $file['name'];
+				$image->generateXLargeSize = true;
+				$image->generateLargeSize = true;
+				$image->generateMediumSize = true;
+				$image->generateSmallSize = true;
+				$destFileName = $file['name'];
+				$destFolder = $structure['fullSizePath']['path'];
+				if (!is_dir($destFolder)) {
+					if (!mkdir($destFolder, 0755, true)) {
+						$result['message'] = 'Could not create directory to upload files';
+						if (IPAddress::showDebuggingInformation()) {
+							$result['message'] .= " " . $destFolder;
 						}
 					}
-				} else {
-					$result['message'] = 'No file was selected';
 				}
-			} else {
-				$result['message'] = 'You don\'t have the correct permissions to upload an image';
+				$destFullPath = $destFolder . '/' . $destFileName;
+				if (file_exists($destFullPath)) {
+					$image->find(true);
+				}
+
+				$image->title = $file['name'];
+				$copyResult = copy($file["tmp_name"], $destFullPath);
+				if ($copyResult) {
+					$image->update();
+					$result = [
+						'location' => $image->getDisplayUrl('full'),
+					];
+					break;
+				} else {
+					$result['message'] = 'Could not save the image to disk';
+				}
 			}
 		} else {
-			$result['message'] = 'You must be logged in to upload an image';
+			$result['message'] = 'No file was selected';
 		}
 		return $result;
 	}
 
 	/** @noinspection PhpUnused */
-	function getUploadImageForm() {
+	function getUploadImageForm() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission(['Administer All Web Content', 'Administer Web Content for Home Library']);
+
 		global $interface;
-		$result = [
-			'success' => false,
-			'message' => 'Unknown error getting upload form',
+		$editorName = strip_tags($_REQUEST['editorName']);
+		$interface->assign('editorName', $editorName);
+		return [
+			'success' => true,
+			'title' => 'Upload an Image',
+			'modalBody' => $interface->fetch('WebBuilder/uploadImage.tpl'),
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='return AspenDiscovery.WebBuilder.doImageUpload()'>Upload Image</button>",
 		];
-		if (UserAccount::isLoggedIn()) {
-			if (UserAccount::userHasPermission(['Administer All Web Content', 'Administer Web Content for Home Library'])) {
-				$editorName = strip_tags($_REQUEST['editorName']);
-				$interface->assign('editorName', $editorName);
-				$result = [
-					'success' => true,
-					'title' => 'Upload an Image',
-					'modalBody' => $interface->fetch('WebBuilder/uploadImage.tpl'),
-					'modalButtons' => "<button class='tool btn btn-primary' onclick='return AspenDiscovery.WebBuilder.doImageUpload()'>Upload Image</button>",
-				];
-			} else {
-				$result['message'] = 'You don\'t have the correct permissions to upload an image';
-			}
-		} else {
-			$result['message'] = 'You must be logged in to upload an image';
-		}
-
-		return $result;
 	}
 
 	/** @noinspection PhpUnused */
-	function getAddQuickPollOptionForm() {
+	function getAddQuickPollOptionForm() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission(['Administer All Quick Polls', 'Administer Library Quick Polls']);
+
 		global $interface;
 		$result = [
 			'success' => false,
-			'message' => translate(['text'=>'Unknown error getting add option form', 'isPublicFacing'=>true]),
 		];
 		$pollId = $_REQUEST['pollId'];
 		if (!is_numeric($pollId)) {
@@ -701,7 +705,7 @@ class WebBuilder_AJAX extends JSON_Action {
 					$result['message'] = translate(['text'=>'Display form', 'isPublicFacing'=>true]);
 					$result['title'] = translate(['text'=>'Add Poll Option', 'isPublicFacing'=>true]);
 					$result['modalBody'] = $interface->fetch('WebBuilder/addQuickPollOptionForm.tpl');
-					$result['modalButtons'] = "<button class='tool btn btn-primary' onclick=\"AspenDiscovery.WebBuilder.addQuickPollOption('{$pollId}')\">" . translate([
+					$result['modalButtons'] = "<button class='tool btn btn-primary' onclick=\"AspenDiscovery.WebBuilder.addQuickPollOption('$pollId')\">" . translate([
 							'text' => 'Add Option',
 							'isPublicFacing' => true,
 						]) . "</button>";
@@ -716,11 +720,14 @@ class WebBuilder_AJAX extends JSON_Action {
 		return $result;
 	}
 
-	function addQuickPollOption() {
+	/** @noinspection PhpUnused */
+	function addQuickPollOption() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission(['Administer All Quick Polls', 'Administer Library Quick Polls']);
+
 		global $interface;
 		$result = [
 			'success' => false,
-			'message' => translate(['text'=>'Unknown error adding poll option', 'isPublicFacing'=>true]),
 		];
 		$pollId = $_REQUEST['pollId'];
 		if (!is_numeric($pollId)) {
@@ -772,341 +779,302 @@ class WebBuilder_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function deleteCell(): array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission([
+			'Administer All Custom Pages',
+			'Administer Library Custom Pages',
+		]);
 		$result = [
 			'success' => false,
 		];
-		if (UserAccount::isLoggedIn()) {
-			if (UserAccount::userHasPermission([
-				'Administer All Custom Pages',
-				'Administer Library Custom Pages',
-			])) {
-				if (isset($_REQUEST['id'])) {
-					require_once ROOT_DIR . '/sys/WebBuilder/PortalCell.php';
-					require_once ROOT_DIR . '/sys/WebBuilder/PortalRow.php';
-					$portalCell = new PortalCell();
-					$portalCell->id = $_REQUEST['id'];
-					if ($portalCell->find(true)) {
-						// Update the widths of the cells based on the number of cells in the row.
-						$portalRow = new PortalRow();
-						$portalRow->id = $portalCell->portalRowId;
-						$portalCell->delete();
-						if ($portalRow->find(true)) {
-							$portalRow->resizeColumnWidths();
-						}
-						$result['success'] = true;
-						//$result['message'] = 'The cell was deleted successfully.';
-						global $interface;
-						$interface->assign('portalRow', $portalRow);
-						$interface->assign('inPageEditor', false);
-						$result['rowId'] = $portalCell->portalRowId;
-						$result['newRow'] = $interface->fetch('DataObjectUtil/portalRow.tpl');
-					} else {
-						$result['message'] = 'Unable to find that cell; it may have been already deleted.';
-					}
-				} else {
-					$result['message'] = 'No cell id was provided.';
+
+		if (isset($_REQUEST['id'])) {
+			require_once ROOT_DIR . '/sys/WebBuilder/PortalCell.php';
+			require_once ROOT_DIR . '/sys/WebBuilder/PortalRow.php';
+			$portalCell = new PortalCell();
+			$portalCell->id = $_REQUEST['id'];
+			if ($portalCell->find(true)) {
+				// Update the widths of the cells based on the number of cells in the row.
+				$portalRow = new PortalRow();
+				$portalRow->id = $portalCell->portalRowId;
+				$portalCell->delete();
+				if ($portalRow->find(true)) {
+					$portalRow->resizeColumnWidths();
 				}
+				$result['success'] = true;
+				//$result['message'] = 'The cell was deleted successfully.';
+				global $interface;
+				$interface->assign('portalRow', $portalRow);
+				$interface->assign('inPageEditor', false);
+				$result['rowId'] = $portalCell->portalRowId;
+				$result['newRow'] = $interface->fetch('DataObjectUtil/portalRow.tpl');
 			} else {
-				$result['message'] = 'You don\'t have the correct permissions to delete a cell.';
+				$result['message'] = 'Unable to find that cell; it may have been already deleted.';
 			}
 		} else {
-			$result['message'] = 'You must be logged in to delete a cell.';
+			$result['message'] = 'No cell id was provided.';
 		}
 		return $result;
 	}
 
 	/** @noinspection PhpUnused */
 	function deleteRow(): array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission([
+			'Administer All Custom Pages',
+			'Administer Library Custom Pages',
+		]);
 		$result = [
 			'success' => false,
 		];
-		if (UserAccount::isLoggedIn()) {
-			if (UserAccount::userHasPermission([
-				'Administer All Custom Pages',
-				'Administer Library Custom Pages',
-			])) {
-				if (isset($_REQUEST['id'])) {
-					require_once ROOT_DIR . '/sys/WebBuilder/PortalRow.php';
-					$portalRow = new PortalRow();
-					$portalRow->id = $_REQUEST['id'];
-					if ($portalRow->find(true)) {
-						$portalRow->delete();
-						$result['success'] = true;
-						//$result['message'] = 'The row was deleted successfully.';
-					} else {
-						$result['message'] = 'Unable to find that row; it may have been already deleted.';
-					}
-				} else {
-					$result['message'] = 'No row id was provided.';
-				}
+
+		if (isset($_REQUEST['id'])) {
+			require_once ROOT_DIR . '/sys/WebBuilder/PortalRow.php';
+			$portalRow = new PortalRow();
+			$portalRow->id = $_REQUEST['id'];
+			if ($portalRow->find(true)) {
+				$portalRow->delete();
+				$result['success'] = true;
+				//$result['message'] = 'The row was deleted successfully.';
 			} else {
-				$result['message'] = 'You don\'t have the correct permissions to delete a row.';
+				$result['message'] = 'Unable to find that row; it may have been already deleted.';
 			}
 		} else {
-			$result['message'] = 'You must be logged in to delete a row.';
+			$result['message'] = 'No row id was provided.';
 		}
 		return $result;
 	}
 
 	/** @noinspection PhpUnused */
-	function moveRow() {
+	function moveRow() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission([
+			'Administer All Custom Pages',
+			'Administer Library Custom Pages',
+		]);
 		$result = [
 			'success' => false,
-			'message' => 'Unknown error moving row',
 		];
-		if (UserAccount::isLoggedIn()) {
-			if (UserAccount::userHasPermission([
-				'Administer All Custom Pages',
-				'Administer Library Custom Pages',
-			])) {
-				if (isset($_REQUEST['rowId'])) {
-					require_once ROOT_DIR . '/sys/WebBuilder/PortalPage.php';
-					require_once ROOT_DIR . '/sys/WebBuilder/PortalRow.php';
-					$portalRow = new PortalRow();
-					$portalRow->id = $_REQUEST['rowId'];
-					if ($portalRow->find(true)) {
-						//Figure out new weights for rows
-						$direction = $_REQUEST['direction'];
-						$oldWeight = $portalRow->weight;
-						if ($direction == 'up') {
-							$newWeight = $oldWeight - 1;
-						} else {
-							$newWeight = $oldWeight + 1;
-						}
-						$rowToSwap = new PortalRow();
-						$rowToSwap->portalPageId = $portalRow->portalPageId;
-						$rowToSwap->weight = $newWeight;
-						if ($rowToSwap->find(true)) {
-							$portalRow->weight = $newWeight;
-							$portalRow->update();
-							$rowToSwap->weight = $oldWeight;
-							$rowToSwap->update();
 
-							$result['success'] = true;
-							$result['message'] = 'The row was moved successfully';
-							$result['swappedWithId'] = $rowToSwap->id;
-						} else {
-							if ($direction == 'up') {
-								$result['message'] = 'Row is already at the top';
-							} else {
-								$result['message'] = 'Row is already at the bottom';
-							}
-						}
-					} else {
-						$result['message'] = 'Unable to find that row';
-					}
+		if (isset($_REQUEST['rowId'])) {
+			require_once ROOT_DIR . '/sys/WebBuilder/PortalPage.php';
+			require_once ROOT_DIR . '/sys/WebBuilder/PortalRow.php';
+			$portalRow = new PortalRow();
+			$portalRow->id = $_REQUEST['rowId'];
+			if ($portalRow->find(true)) {
+				//Figure out new weights for rows
+				$direction = $_REQUEST['direction'];
+				$oldWeight = $portalRow->weight;
+				if ($direction == 'up') {
+					$newWeight = $oldWeight - 1;
 				} else {
-					$result['message'] = 'No row id was provided';
+					$newWeight = $oldWeight + 1;
+				}
+				$rowToSwap = new PortalRow();
+				$rowToSwap->portalPageId = $portalRow->portalPageId;
+				$rowToSwap->weight = $newWeight;
+				if ($rowToSwap->find(true)) {
+					$portalRow->weight = $newWeight;
+					$portalRow->update();
+					$rowToSwap->weight = $oldWeight;
+					$rowToSwap->update();
+
+					$result['success'] = true;
+					$result['message'] = 'The row was moved successfully';
+					$result['swappedWithId'] = $rowToSwap->id;
+				} else {
+					if ($direction == 'up') {
+						$result['message'] = 'Row is already at the top';
+					} else {
+						$result['message'] = 'Row is already at the bottom';
+					}
 				}
 			} else {
-				$result['message'] = 'You don\'t have the correct permissions to move a row';
+				$result['message'] = 'Unable to find that row';
 			}
 		} else {
-			$result['message'] = 'You must be logged in to move a row';
+			$result['message'] = 'No row id was provided';
 		}
 		return $result;
 	}
 
 	/** @noinspection PhpUnused */
-	function moveCell() {
+	function moveCell() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission([
+			'Administer All Custom Pages',
+			'Administer Library Custom Pages',
+		]);
 		$result = [
 			'success' => false,
-			'message' => 'Unknown error moving cell',
 		];
-		if (UserAccount::isLoggedIn()) {
-			if (UserAccount::userHasPermission([
-				'Administer All Custom Pages',
-				'Administer Library Custom Pages',
-			])) {
-				if (isset($_REQUEST['cellId'])) {
-					require_once ROOT_DIR . '/sys/WebBuilder/PortalRow.php';
-					require_once ROOT_DIR . '/sys/WebBuilder/PortalCell.php';
-					$portalCell = new PortalCell();
-					$portalCell->id = $_REQUEST['cellId'];
-					if ($portalCell->find(true)) {
-						//Figure out new weights for rows
-						$direction = $_REQUEST['direction'];
-						$oldWeight = $portalCell->weight;
-						if ($direction == 'left') {
-							$newWeight = $oldWeight - 1;
-						} else {
-							$newWeight = $oldWeight + 1;
-						}
-						$cellToSwap = new PortalCell();
-						$cellToSwap->portalRowId = $portalCell->portalRowId;
-						$cellToSwap->weight = $newWeight;
-						if ($cellToSwap->find(true)) {
-							$portalCell->weight = $newWeight;
-							$portalCell->update();
-							$cellToSwap->weight = $oldWeight;
-							$cellToSwap->update();
 
-							$result['success'] = true;
-							$result['message'] = 'The cell was moved successfully';
-							$result['swappedWithId'] = $cellToSwap->id;
-						} else {
-							if ($direction == 'left') {
-								$result['message'] = 'The cell is already the first cell in the row';
-							} else {
-								$result['message'] = 'The cell is already the last cell in the row';
-							}
-						}
-					} else {
-						$result['message'] = 'Unable to find that cell';
-					}
+		if (isset($_REQUEST['cellId'])) {
+			require_once ROOT_DIR . '/sys/WebBuilder/PortalRow.php';
+			require_once ROOT_DIR . '/sys/WebBuilder/PortalCell.php';
+			$portalCell = new PortalCell();
+			$portalCell->id = $_REQUEST['cellId'];
+			if ($portalCell->find(true)) {
+				//Figure out new weights for rows
+				$direction = $_REQUEST['direction'];
+				$oldWeight = $portalCell->weight;
+				if ($direction == 'left') {
+					$newWeight = $oldWeight - 1;
 				} else {
-					$result['message'] = 'No cell id was provided';
+					$newWeight = $oldWeight + 1;
+				}
+				$cellToSwap = new PortalCell();
+				$cellToSwap->portalRowId = $portalCell->portalRowId;
+				$cellToSwap->weight = $newWeight;
+				if ($cellToSwap->find(true)) {
+					$portalCell->weight = $newWeight;
+					$portalCell->update();
+					$cellToSwap->weight = $oldWeight;
+					$cellToSwap->update();
+
+					$result['success'] = true;
+					$result['message'] = 'The cell was moved successfully';
+					$result['swappedWithId'] = $cellToSwap->id;
+				} else {
+					if ($direction == 'left') {
+						$result['message'] = 'The cell is already the first cell in the row';
+					} else {
+						$result['message'] = 'The cell is already the last cell in the row';
+					}
 				}
 			} else {
-				$result['message'] = 'You don\'t have the correct permissions to move a cell';
+				$result['message'] = 'Unable to find that cell';
 			}
 		} else {
-			$result['message'] = 'You must be logged in to move a cell';
+			$result['message'] = 'No cell id was provided';
 		}
 		return $result;
 	}
 
 	/** @noinspection PhpUnused */
-	function addRow() {
+	function addRow() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission([
+			'Administer All Custom Pages',
+			'Administer Library Custom Pages',
+		]);
 		$result = [
 			'success' => false,
-			'message' => 'Unknown error adding row',
 		];
-		if (UserAccount::isLoggedIn()) {
-			if (UserAccount::userHasPermission([
-				'Administer All Custom Pages',
-				'Administer Library Custom Pages',
-			])) {
-				if (isset($_REQUEST['pageId'])) {
-					require_once ROOT_DIR . '/sys/WebBuilder/PortalPage.php';
-					require_once ROOT_DIR . '/sys/WebBuilder/PortalRow.php';
-					$portalPage = new PortalPage();
-					$portalPage->id = $_REQUEST['pageId'];
-					if ($portalPage->find(true)) {
-						$portalRow = new PortalRow();
-						$portalRow->portalPageId = $portalPage->id;
-						$portalRow->weight = count($portalPage->getRows());
-						$portalRow->insert();
-						global $interface;
-						$interface->assign('portalRow', $portalRow);
-						$interface->assign('inPageEditor', true);
 
-						$result['success'] = true;
-						$result['message'] = 'Added a new row';
-						$result['newRow'] = $interface->fetch('DataObjectUtil/portalRow.tpl');
-					} else {
-						$result['message'] = 'Unable to find that page';
-					}
-				} else {
-					$result['message'] = 'No page id was provided';
-				}
+		if (isset($_REQUEST['pageId'])) {
+			require_once ROOT_DIR . '/sys/WebBuilder/PortalPage.php';
+			require_once ROOT_DIR . '/sys/WebBuilder/PortalRow.php';
+			$portalPage = new PortalPage();
+			$portalPage->id = $_REQUEST['pageId'];
+			if ($portalPage->find(true)) {
+				$portalRow = new PortalRow();
+				$portalRow->portalPageId = $portalPage->id;
+				$portalRow->weight = count($portalPage->getRows());
+				$portalRow->insert();
+				global $interface;
+				$interface->assign('portalRow', $portalRow);
+				$interface->assign('inPageEditor', true);
+
+				$result['success'] = true;
+				$result['message'] = 'Added a new row';
+				$result['newRow'] = $interface->fetch('DataObjectUtil/portalRow.tpl');
 			} else {
-				$result['message'] = 'You don\'t have the correct permissions to add a row';
+				$result['message'] = 'Unable to find that page';
 			}
 		} else {
-			$result['message'] = 'You must be logged in to add a row';
+			$result['message'] = 'No page id was provided';
 		}
 		return $result;
 	}
 
 	/** @noinspection PhpUnused */
-	function addCell() {
+	function addCell() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission([
+			'Administer All Custom Pages',
+			'Administer Library Custom Pages',
+		]);
 		$result = [
 			'success' => false,
-			'message' => 'Unknown error adding cell',
 		];
-		if (UserAccount::isLoggedIn()) {
-			if (UserAccount::userHasPermission([
-				'Administer All Custom Pages',
-				'Administer Library Custom Pages',
-			])) {
-				if (isset($_REQUEST['rowId'])) {
-					require_once ROOT_DIR . '/sys/WebBuilder/PortalRow.php';
-					require_once ROOT_DIR . '/sys/WebBuilder/PortalCell.php';
-					$portalRow = new PortalRow();
-					$portalRow->id = $_REQUEST['rowId'];
-					if ($portalRow->find(true)) {
-						$portalCell = new PortalCell();
-						$portalCell->portalRowId = $portalRow->id;
-						$portalCell->weight = count($portalRow->getCells());
-						$portalCell->widthTiny = 12;
-						$portalCell->widthXs = 12;
-						$portalCell->widthSm = 12;
-						$portalCell->widthMd = 12;
-						$portalCell->widthLg = 12;
-						$portalCell->insert();
 
-						$portalRow->resizeColumnWidths();
+		if (isset($_REQUEST['rowId'])) {
+			require_once ROOT_DIR . '/sys/WebBuilder/PortalRow.php';
+			require_once ROOT_DIR . '/sys/WebBuilder/PortalCell.php';
+			$portalRow = new PortalRow();
+			$portalRow->id = $_REQUEST['rowId'];
+			if ($portalRow->find(true)) {
+				$portalCell = new PortalCell();
+				$portalCell->portalRowId = $portalRow->id;
+				$portalCell->weight = count($portalRow->getCells());
+				$portalCell->widthTiny = 12;
+				$portalCell->widthXs = 12;
+				$portalCell->widthSm = 12;
+				$portalCell->widthMd = 12;
+				$portalCell->widthLg = 12;
+				$portalCell->insert();
 
-						global $interface;
-						$interface->assign('portalCell', $portalCell);
-						$interface->assign('portalRow', $portalRow);
+				$portalRow->resizeColumnWidths();
 
-						$result['success'] = true;
-						$result['message'] = 'Added a new cell';
-						$interface->assign('inPageEditor', true);
-						$result['newCell'] = $interface->fetch('DataObjectUtil/portalCell.tpl');
-						$result['newRow'] = $interface->fetch('DataObjectUtil/portalRow.tpl');
-					} else {
-						$result['message'] = 'Unable to find that row';
-					}
-				} else {
-					$result['message'] = 'No row id was provided';
-				}
+				global $interface;
+				$interface->assign('portalCell', $portalCell);
+				$interface->assign('portalRow', $portalRow);
+
+				$result['success'] = true;
+				$result['message'] = 'Added a new cell';
+				$interface->assign('inPageEditor', true);
+				$result['newCell'] = $interface->fetch('DataObjectUtil/portalCell.tpl');
+				$result['newRow'] = $interface->fetch('DataObjectUtil/portalRow.tpl');
 			} else {
-				$result['message'] = 'You don\'t have the correct permissions to add a cell';
+				$result['message'] = 'Unable to find that row';
 			}
 		} else {
-			$result['message'] = 'You must be logged in to add a cell';
+			$result['message'] = 'No row id was provided';
 		}
 		return $result;
 	}
 
-	function getEditCellForm() {
+	/** @noinspection PhpUnused */
+	function getEditCellForm() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission([
+			'Administer All Custom Pages',
+			'Administer Library Custom Pages',
+		]);
 		$result = [
 			'success' => false,
-			'message' => 'Unknown error adding cell',
 		];
-		if (UserAccount::isLoggedIn()) {
-			if (UserAccount::userHasPermission([
-				'Administer All Custom Pages',
-				'Administer Library Custom Pages',
-			])) {
-				if (isset($_REQUEST['cellId'])) {
-					require_once ROOT_DIR . '/sys/WebBuilder/PortalCell.php';
-					$portalCell = new PortalCell();
-					$portalCell->id = $_REQUEST['cellId'];
-					if ($portalCell->find(true)) {
-						global $interface;
-						$interface->assign('object', $portalCell);
-						$interface->assign('structure', PortalCell::getObjectStructure(''));
-						$interface->assign('saveButtonText', 'Update');
-						$result['success'] = true;
-						$result['message'] = 'Display form';
-						$result['title'] = 'Edit Cell';
-						$result['modalBody'] = $interface->fetch('DataObjectUtil/objectEditForm.tpl');
-						$result['modalButtons'] = "<button class='tool btn btn-primary' onclick='AspenDiscovery.WebBuilder.editCell()'>" . translate([
-								'text' => 'Update Cell',
-								'isAdminFacing' => true,
-							]) . "</button>";
-					} else {
-						$result['message'] = 'Unable to find that cell';
-					}
-				} else {
-					$result['message'] = 'No cell id was provided';
-				}
+
+		if (isset($_REQUEST['cellId'])) {
+			require_once ROOT_DIR . '/sys/WebBuilder/PortalCell.php';
+			$portalCell = new PortalCell();
+			$portalCell->id = $_REQUEST['cellId'];
+			if ($portalCell->find(true)) {
+				global $interface;
+				$interface->assign('object', $portalCell);
+				$interface->assign('structure', PortalCell::getObjectStructure());
+				$interface->assign('saveButtonText', 'Update');
+				$result['success'] = true;
+				$result['message'] = 'Display form';
+				$result['title'] = 'Edit Cell';
+				$result['modalBody'] = $interface->fetch('DataObjectUtil/objectEditForm.tpl');
+				$result['modalButtons'] = "<button class='tool btn btn-primary' onclick='AspenDiscovery.WebBuilder.editCell()'>" . translate([
+						'text' => 'Update Cell',
+						'isAdminFacing' => true,
+					]) . "</button>";
 			} else {
-				$result['message'] = 'You don\'t have the correct permissions to edit a cell';
+				$result['message'] = 'Unable to find that cell';
 			}
 		} else {
-			$result['message'] = 'You must be logged in to edit a cell';
+			$result['message'] = 'No cell id was provided';
 		}
 		return $result;
 
 	}
 
 	/** @noinspection PhpUnused */
-	function getHoursAndLocations() {
+	function getHoursAndLocations() : string {
 		//Get a list of locations for the current library
 		global $library;
 		global $configArray;
@@ -1207,7 +1175,7 @@ class WebBuilder_AJAX extends JSON_Action {
 			];
 
 			if (!empty($mapsKey)) {
-				$libraryLocation['map_link'] = "http://maps.google.com/maps?f=q&hl=en&geocode=&q=$mapAddress&ie=UTF8&z=15&iwloc=addr&om=1&t=m&key=$mapsKey";
+				$libraryLocation['map_link'] = "https://maps.google.com/maps?f=q&hl=en&geocode=&q=$mapAddress&ie=UTF8&z=15&iwloc=addr&om=1&t=m&key=$mapsKey";
 			}
 			$libraryLocations[$locationToProcess->locationId] = $libraryLocation;
 		}
@@ -1259,7 +1227,7 @@ class WebBuilder_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function trackWebResourceUsage() {
+	function trackWebResourceUsage() : void {
 		$id = $_REQUEST['id'];
 		$authType = $_REQUEST['authType'];
 
@@ -1293,40 +1261,17 @@ class WebBuilder_AJAX extends JSON_Action {
 			}
 		}
 	}
-	function saveAsTemplate(){
+
+	/** @noinspection PhpUnused */
+	function saveAsTemplate() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission([
+			'Administer All Grapes Pages',
+			'Administer Library Custom Pages'
+		]);
+
 		require_once ROOT_DIR . '/sys/WebBuilder/GrapesTemplate.php';
 
-		$activeUser = UserAccount::getActiveUserObj();
-		
-		if (!$activeUser) {
-			return [
-				'success' => false,
-				'title' => translate([
-					'text' =>'Error',
-					'isPublicFacing' => true,
-				]),
-				'message' => translate([
-					'text' => 'You must be logged in to save grapes templates.',
-					'isPublicFacing' => true
-				])
-			];
-		}
-		if (!UserAccount::userHasPermission([
-			'Administer All Grapes Pages',
-			'Administer Library Custom Pages',
-		])) {
-			return [
-				'success' => false,
-				'title' => translate([
-					'text' =>'Error',
-					'isPublicFacing' => true,
-				]),
-				'message' => translate([
-					'text' => 'You do not have the correct permissions to save grapes templates.',
-					'isPublicFacing' => true
-				])
-			];
-		}
 		try {
 			$newGrapesPageContent = json_decode(file_get_contents("php://input"), true);
 			$templateId = $newGrapesPageContent['templateId'];
@@ -1392,47 +1337,20 @@ class WebBuilder_AJAX extends JSON_Action {
 			];
 		}
 	}
-  
-	function saveAsPage() {
-		require_once ROOT_DIR .  '/sys/WebBuilder/GrapesPage.php';
 
-		$activeUser = UserAccount::getActiveUserObj();
-
-		if (!$activeUser) {
-			return [
-				'success' => false,
-				'title' => translate([
-					'text' =>'Error',
-					'isPublicFacing' => true,
-				]),
-				'message' => translate([
-					'text' => 'You must be logged in to save grapes pages.',
-					'isPublicFacing' => true
-				])
-			];
-		}
-		if (!UserAccount::userHasPermission([
+	/** @noinspection PhpUnused */
+	function saveAsPage() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission([
 			'Administer All Grapes Pages',
-			'Administer Library Custom Pages',
-		])) {
-			return [
-				'success' => false,
-				'title' => translate([
-					'text' =>'Error',
-					'isPublicFacing' => true,
-				]),
-				'message' => translate([
-					'text' => 'You do not have the correct permissions to save grapes pages.',
-					'isPublicFacing' => true
-				])
-			];
-		}
+			'Administer Library Custom Pages'
+		]);
 
+		require_once ROOT_DIR .  '/sys/WebBuilder/GrapesPage.php';
 		try {
 			$newGrapesPageContent = json_decode(file_get_contents("php://input"), true);
 			$grapesPageId = $newGrapesPageContent['grapesPageId'];
 			$grapesGenId = $newGrapesPageContent['grapesGenId'];
-			$templateId = $newGrapesPageContent['templateId'];
 			$html = $newGrapesPageContent['html'];
 			$css = $newGrapesPageContent['css'];
 			$grapesPage = new GrapesPage();
@@ -1495,78 +1413,82 @@ class WebBuilder_AJAX extends JSON_Action {
 			];
 		}
 	}
-  
-	  function loadGrapesPage() {
-		  require_once ROOT_DIR . '/sys/WebBuilder/GrapesPage.php';
-		  require_once ROOT_DIR . '/sys/WebBuilder/GrapesTemplate.php';
-  
-		  $grapesPageId = $_GET['id'];
-		  $response = [];
-  
-		  $grapesPage = new GrapesPage();
-		  $grapesPage->id = $grapesPageId;
-  
-		  if ($grapesPage->find(true)) {
-			  if(empty($grapesPage->templateContent) && $grapesPage->templatesSelect !== null) {
-				  $template = new GrapesTemplate();
-				  $template->id = $grapesPage->templatesSelect;
-  
-				  if ($template->find(true)) {
-					  $response['success'] = true;
-					  $response['html'] = $template->htmlData;
-					  $response['css'] = $template->cssData;
-					  $response['projectData'] = json_decode($template->templateContent, true);
-  
-					  $grapesPage->templateContent = json_decode($template->templateContent, true);
-					  $grapesPage->htmlData = $template->htmlData;
-					  $grapesPage->cssData = $template->cssData;
-					  $grapesPage->update();
-				  } else {
-					  $response['success'] = false;
-					  $response['message'] = 'Template not found';
-				  }
-			  } elseif (!empty($grapesPage->templateContent)) {
-				  $response['success'] = true;
-				  $response['html'] = $grapesPage->htmlData;
-				  $response['css'] = $grapesPage->cssData;
-				  $response['projectData'] = json_decode($grapesPage->templateContent, true);
-			  } else {
-				  $response['success'] = false;
-				  $response['message'] = 'Template Content and Template Select are both empty';
-			  }
-		  } else {
-			  $response['success'] = false;
-			  $response['message'] = 'Page not found';
-		  }
-		  echo json_encode($response);
-		  exit();
+
+	/** @noinspection PhpUnused */
+	#[NoReturn]
+	function loadGrapesPage() : void {
+		require_once ROOT_DIR . '/sys/WebBuilder/GrapesPage.php';
+		require_once ROOT_DIR . '/sys/WebBuilder/GrapesTemplate.php';
+
+		$grapesPageId = $_GET['id'];
+		$response = [];
+
+		$grapesPage = new GrapesPage();
+		$grapesPage->id = $grapesPageId;
+
+		if ($grapesPage->find(true)) {
+			if(empty($grapesPage->templateContent) && $grapesPage->templatesSelect !== null) {
+				$template = new GrapesTemplate();
+				$template->id = $grapesPage->templatesSelect;
+
+				if ($template->find(true)) {
+					$response['success'] = true;
+					$response['html'] = $template->htmlData;
+					$response['css'] = $template->cssData;
+					$response['projectData'] = json_decode($template->templateContent, true);
+
+					$grapesPage->templateContent = json_decode($template->templateContent, true);
+					$grapesPage->htmlData = $template->htmlData;
+					$grapesPage->cssData = $template->cssData;
+					$grapesPage->update();
+				} else {
+					$response['success'] = false;
+					$response['message'] = 'Template not found';
+				}
+			} elseif (!empty($grapesPage->templateContent)) {
+				$response['success'] = true;
+				$response['html'] = $grapesPage->htmlData;
+				$response['css'] = $grapesPage->cssData;
+				$response['projectData'] = json_decode($grapesPage->templateContent, true);
+			} else {
+				$response['success'] = false;
+				$response['message'] = 'Template Content and Template Select are both empty';
+			}
+		} else {
+			$response['success'] = false;
+			$response['message'] = 'Page not found';
+		}
+		echo json_encode($response);
+		exit();
 	  }
-  
-	  function loadGrapesTemplate() {
-		  require_once ROOT_DIR . '/sys/WebBuilder/GrapesTemplate.php';
-  
-		  $templateId = $_GET['id'];
-		  $response = [];
-  
-		  $template = new GrapesTemplate();
-		  $template->id = $templateId;
-  
-		  if ($template->find(true)) {
-			  if ($template->htmlData !== null && $template->cssData !== null) {
-				  $response['success'] = true;
-				  $response['html'] = $template->htmlData;
-				  $response['css'] = $template->cssData;
-				  $response['projectData'] = json_decode($template->templateContent, true);
-			  } else {
-				  $response['success'] = false;
-				  $response['message'] = 'Template has no data.';
-			  }
-		  } else {
-			  $response['success'] = false;
-			  $response['message'] = 'Template not found.';
-		  }
-		  echo json_encode($response);
-		  exit();
-	  }
+
+	/** @noinspection PhpUnused */
+	#[NoReturn]
+	function loadGrapesTemplate() : void {
+		require_once ROOT_DIR . '/sys/WebBuilder/GrapesTemplate.php';
+
+		$templateId = $_GET['id'];
+		$response = [];
+
+		$template = new GrapesTemplate();
+		$template->id = $templateId;
+
+		if ($template->find(true)) {
+			if ($template->htmlData !== null && $template->cssData !== null) {
+				$response['success'] = true;
+				$response['html'] = $template->htmlData;
+				$response['css'] = $template->cssData;
+				$response['projectData'] = json_decode($template->templateContent, true);
+			} else {
+				$response['success'] = false;
+				$response['message'] = 'Template has no data.';
+			}
+		} else {
+			$response['success'] = false;
+			$response['message'] = 'Template not found.';
+		}
+		echo json_encode($response);
+		exit();
+	}
 
 }

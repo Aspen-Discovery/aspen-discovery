@@ -121,11 +121,21 @@ class HooplaProcessor2 {
 				}
 				JSONObject rawResponse = new JSONObject(rawResponseString);
 
-				if (rawResponse.has("title")){
-					title = rawResponse.getString("title");
-				}
-				if (rawResponse.has("subtitle")){
-					subTitle = rawResponse.getString("subtitle");
+				if (rawResponse.has("seasonNumber")) {
+					if (rawResponse.has("seriesName")){
+						title = rawResponse.getString("seriesName");
+					}
+					title += " - Season " + rawResponse.get("seasonNumber").toString();
+					if (rawResponse.has("episodeNumber")) {
+						title += " Episode " + rawResponse.get("episodeNumber").toString();
+					}
+				}else {
+					if (rawResponse.has("title")) {
+						title = rawResponse.getString("title");
+					}
+					if (rawResponse.has("subtitle")) {
+						subTitle = rawResponse.getString("subtitle");
+					}
 				}
 
 				String fullTitle = title + " " + subTitle;
@@ -153,8 +163,23 @@ class HooplaProcessor2 {
 
 				if (!series.isEmpty()){
 					groupedWork.addSeries(series);
-					String volume = rawResponse.optString("episodeNumber", rawResponse.optString("episode", ""));
-					groupedWork.addSeriesWithVolume(series, volume, 2);
+					if (rawResponse.has("seriesNumber")) {
+						String volume = rawResponse.optString("seriesNumber", rawResponse.optString("volume", ""));
+						if (rawResponse.has("episodeNumber") || rawResponse.has("episode")) {
+							volume += " Episode " + rawResponse.optString("episodeNumber", rawResponse.optString("episode", ""));
+						}
+						groupedWork.addSeriesWithVolume(series, volume, 2, false);
+					}
+				}
+
+				if (rawResponse.has("atosBookLevel")) {
+					groupedWork.setAcceleratedReaderReadingLevel(rawResponse.getString("atosBookLevel"));
+				}
+				if (rawResponse.has("interestLevel")){
+					groupedWork.setAcceleratedReaderInterestLevel(rawResponse.getString("interestLevel"));
+				}
+				if (rawResponse.has("lexile")) {
+					groupedWork.setLexileScore(rawResponse.getString("lexile"));
 				}
 
 				boolean children = productRS.getBoolean("children");
@@ -166,10 +191,44 @@ class HooplaProcessor2 {
 					groupedWork.addTargetAudience("Juvenile");
 					groupedWork.addTargetAudienceFull("Juvenile");
 					if ( groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Target/full target audience is Juvenile based on Hoopla record", 2);}
-				}else {
-					//Todo: Also check the genres (Children's, Teen
+				} else {
 					boolean foundAudience = false;
-					if (rawResponse.has("genres")) {
+					if (rawResponse.has("audience")) {
+						if (rawResponse.get("audience") instanceof JSONArray){
+							JSONArray audiences = rawResponse.getJSONArray("audience");
+							for (int i = 0; i < audiences.length(); i++) {
+								if (audiences.getString(i).equals("Juvenile")) {
+									isKids = true;
+									groupedWork.addTargetAudience("Juvenile");
+									groupedWork.addTargetAudienceFull("Juvenile");
+								} else if (audiences.getString(i).equals("Young Adult")) {
+									isTeen = true;
+									groupedWork.addTargetAudience("Young Adult");
+									groupedWork.addTargetAudienceFull("Young Adult");
+								} else if (audiences.getString(i).equals("General Adult") || audiences.getString(i).equals("Mature")) {
+									isAdult = true;
+									groupedWork.addTargetAudience("Adult");
+									groupedWork.addTargetAudienceFull("Adult");
+								}
+								foundAudience = true;
+							}
+						} else {
+							if (rawResponse.getString("audience").equals("Juvenile")) {
+								isKids = true;
+								groupedWork.addTargetAudience("Juvenile");
+								groupedWork.addTargetAudienceFull("Juvenile");
+							} else if (rawResponse.getString("audience").equals("Young Adult")) {
+								isTeen = true;
+								groupedWork.addTargetAudience("Young Adult");
+								groupedWork.addTargetAudienceFull("Young Adult");
+							} else if (rawResponse.getString("audience").equals("General Adult") || rawResponse.getString("audience").equals("Mature")) {
+								isAdult = true;
+								groupedWork.addTargetAudience("Adult");
+								groupedWork.addTargetAudienceFull("Adult");
+							}
+							foundAudience = true;
+						}
+					} else if (rawResponse.has("genres")) {
 						JSONArray genres = rawResponse.getJSONArray("genres");
 						for (int i = 0; i < genres.length(); i++) {
 							if (genres.getString(i).equals("Teen") || genres.getString(i).startsWith("Young Adult")) {

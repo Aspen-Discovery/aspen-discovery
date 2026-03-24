@@ -49,7 +49,7 @@
 			{/foreach}
 		</div>
 
-		{if !empty($isLoggedIn)}
+		{if !empty($loggedIn) && $numHiddenCategory > 0}
 			<div class="row text-center" style="margin-top: 2em">
 				<div class="col-xs-12">
 					<hr/>
@@ -154,7 +154,7 @@
 			{/if}
 
 			{* add link to restore hidden browse categories if user has any hidden *}
-			{if !empty($isLoggedIn) && $numHiddenCategory > 0}
+			{if !empty($loggedIn) && $numHiddenCategory > 0}
 			<div class="row text-center" {if !empty($showBrowseContent)}style="margin-top: 2em"{/if}>
 				<div class="col-xs-12">
 					<a  class="btn {if !empty($showBrowseContent)}btn-default{else}btn-primary{/if}"  href="#" role="button" title="{translate text='Show Hidden Browse Categories' inAttribute=true isPublicFacing=true}" onclick="return AspenDiscovery.Account.showHiddenBrowseCategories('{$loggedInUser}')">

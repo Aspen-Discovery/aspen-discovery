@@ -113,8 +113,16 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 				$price = 0;
 			}
 			$interface->assign('price', $price);
+			$audience = null;
+			if (isset($rawData->audience)) {
+				$audience = $rawData->audience;
+			}
+			$interface->assign('audience', $audience);
 		}
 		unset($rawData->price);
+		unset($rawData->ppuPrice);
+		unset($rawData->ppuPrices);
+		unset($rawData->audience);
 
 		$interface->assign('hooplaExtract', $rawData);
 		$interface->assign('hooplaType', $this->getHooplaType());
@@ -132,6 +140,17 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 			return $this->hooplaExtract->title;
 		} elseif (!empty($this->hooplaRawMetadata->subtitle)) {
 			return $this->hooplaExtract->title . ': ' . $this->hooplaRawMetadata->subtitle;
+		} elseif (!empty($this->hooplaRawMetadata->seasonNumber)) {
+			if (empty($this->hooplaRawMetadata->seriesName)) {
+				$title = $this->hooplaExtract->title;
+			}else{
+				$title = $this->hooplaRawMetadata->seriesName;
+			}
+			$title .= " - Season " . $this->hooplaRawMetadata->seasonNumber;
+			if (!empty($this->hooplaRawMetadata->episodeNumber)) {
+				$title .= " : Episode " . $this->hooplaRawMetadata->episodeNumber;
+			}
+			return $title;
 		} else {
 			return $this->hooplaExtract->title;
 		}

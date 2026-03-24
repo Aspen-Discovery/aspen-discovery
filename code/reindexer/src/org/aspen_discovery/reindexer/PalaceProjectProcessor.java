@@ -89,10 +89,12 @@ public class PalaceProjectProcessor {
 				String primaryFormat;
 				switch (type) {
 					case "http://bib.schema.org/Audiobook":
+					case "http://schema.org/Audiobook":
 						formatCategory = "Audio Books";
 						primaryFormat = "eAudiobook";
 						break;
 					case "http://schema.org/EBook":
+					case "http://schema.org/Book":
 						//TODO: May need to check the subjects to determine if this is a comic/graphic novel
 						formatCategory = "eBook";
 						primaryFormat = "eBook";
@@ -136,9 +138,16 @@ public class PalaceProjectProcessor {
 
 				String primaryAuthor = "";
 				if (metadata.has("author")){
-					JSONObject authorObject = metadata.getJSONObject("author");
-					primaryAuthor = authorObject.getString("name");
-					primaryAuthor = AspenStringUtils.swapFirstLastNames(primaryAuthor);
+					Object authorInfo = metadata.get("author");
+					if (authorInfo instanceof JSONArray){
+						JSONArray authors = metadata.getJSONArray("author");
+						if (!authors.isEmpty()){
+							primaryAuthor = AspenStringUtils.swapFirstLastNames(authors.getJSONObject(0).getString("name"));
+						}
+					}else if (authorInfo instanceof JSONObject){
+						JSONObject authorInfoObj = metadata.getJSONObject("author");
+						primaryAuthor = AspenStringUtils.swapFirstLastNames(authorInfoObj.getString("name"));
+					}
 				}else if (metadata.has("publisher")){
 					JSONObject publisherObject = metadata.getJSONObject("publisher");
 					primaryAuthor = publisherObject.getString("name");
@@ -224,7 +233,7 @@ public class PalaceProjectProcessor {
 				if (fictionNonFiction != null){
 					groupedWork.addLiteraryForm(fictionNonFiction);
 					groupedWork.addLiteraryFormFull(fictionNonFiction);
-					if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Literary Form is " + fictionNonFiction + " based on Palace Project", 2);}
+					if (groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Literary Form is " + fictionNonFiction + " based on Palace Project", 2);}
 				}
 				if (!genres.isEmpty()) {
 					groupedWork.addGenre(genres);
@@ -236,11 +245,11 @@ public class PalaceProjectProcessor {
 					audience = "Unknown";
 					groupedWork.addTargetAudience("Unknown");
 					groupedWork.addTargetAudienceFull("Unknown");
-					if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Target/full target audience is unknown based on Palace Project record", 2);}
+					if (groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Target/full target audience is unknown based on Palace Project record", 2);}
 				}else {
 					groupedWork.addTargetAudience(audience);
 					groupedWork.addTargetAudienceFull(audience);
-					if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Target/full target audience is " + audience + " based on Palace Project record", 2);}
+					if (groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Target/full target audience is " + audience + " based on Palace Project record", 2);}
 				}
 
 				if (metadata.has("narrator")) {

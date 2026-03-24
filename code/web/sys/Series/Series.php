@@ -139,14 +139,15 @@ class Series extends DataObject {
 
 
 	public function update(string $context = '') : int|bool {
-		$this->dateUpdated = time();
+
+		if (!empty($this->_changedFields)) {
+			$this->reloadCover();
+			$this->__set('dateUpdated', time());
+		}
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->reindexMembers();
 			$this->saveSeriesMembers();
-			if (in_array('cover', $this->_changedFields)) {
-				$this->reloadCover();
-			}
 		}
 		return $ret;
 	}

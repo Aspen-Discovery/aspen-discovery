@@ -731,6 +731,24 @@ AspenDiscovery.Admin = (function () {
 					document.getElementById(property + 'Hex').value = "#636363";
 					document.getElementById(property).value = "#636363";
 				}
+			} else if (property === 'successButtonBackgroundColor') {
+				if (extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#5cb85c";
+					document.getElementById(property).value = "#5cb85c";
+				}
+			} else if (property === 'successButtonForegroundColor') {
+				if (extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#000000";
+					document.getElementById(property).value = "#000000";
+				}
 			} else if (property === 'infoButtonBackgroundColor') {
 				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
@@ -3068,6 +3086,33 @@ AspenDiscovery.Admin = (function () {
 				$('#propertyRowmaterialIcon').show();
 				$('#propertyRowuploadIcon').hide();
 			}
+		},
+
+		getBatchUpdateHolidayForm: function (scope){
+			console.log(scope);
+			var url = Globals.path + "/Admin/AJAX?method=getBatchUpdateHolidayForm&scopeLevel=" + scope;
+			AspenDiscovery.Account.ajaxLightbox(url, true);
+		},
+
+		batchUpdateHolidays: function(holidayInfo, scope) {
+			//var holidayInfo = $('#holidayInformation').val();
+			var url = Globals.path + "/Admin/AJAX?method=batchUpdateHolidays&scope=" + scope;
+			var params = new FormData();
+			params.append('holidayInfo', holidayInfo);
+
+			$.ajax({
+				url: url,
+				type: 'POST',
+				data: params,
+				dataType: 'json',
+				success: function (data) {
+					AspenDiscovery.showMessage(data.title, data.message, true, data.success);
+				},
+				async: false,
+				contentType: false,
+				processData: false
+			});
+			return false;
 		},
 	};
 }(AspenDiscovery.Admin || {}));

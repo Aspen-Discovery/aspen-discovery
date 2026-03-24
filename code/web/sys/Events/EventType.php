@@ -18,6 +18,8 @@ class EventType extends DataObject {
 	public $archived;
 	public $eventFieldSetId;
 	public $includeInReports;
+	public $displayEventBranchOnThumbnail;
+	public $displayEventBranchOnThumbnailCustomizable;
 
 	public $_libraries;
 	public $_locations;
@@ -33,6 +35,7 @@ class EventType extends DataObject {
 			'lengthCustomizable',
 			'archived',
 			'includeInReports',
+			'displayEventBranchOnThumbnailCustomizable',
 		];
 	}
 
@@ -88,6 +91,20 @@ class EventType extends DataObject {
 				'label' => 'Description Customizable?',
 				'default' => true,
 				'description' => 'Can users change the description for individual events of this type?',
+			],
+			'displayEventBranchOnThumbnail' => [
+				'property' => 'displayEventBranchOnThumbnail',
+				'type' => 'checkbox',
+				'label' => 'Display Event Branch on Thumbnail',
+				'default' => false,
+				'description' => 'Whether or not to display the event branch on the thubmnail image. Can be overridden for specific events.',
+			],
+			'displayEventBranchOnThumbnailCustomizable' => [
+				'property' => 'displayEventBranchOnThumbnailCustomizable',
+				'type' => 'checkbox',
+				'label' => 'Display Event Branch on Thumbnail Customizable?',
+				'default' => true,
+				'description' => 'Can users change the display the event branch on the thubmnail image setting for individual events of this type?',
 			],
 			'cover' => [
 				'property' => 'cover',

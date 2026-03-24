@@ -1704,7 +1704,7 @@ class BookCoverProcessor {
 				return true;
 			} else {
 				$title = $series->displayName;
-				$seriesTitles = $series->getSeriesMembers();
+				$seriesTitles = $series->getSeriesMembers(null, false, false);
 				$coverBuilder->getCover($title, $seriesTitles, $this->cacheFile);
 				return $this->processImageURL('default', $this->cacheFile, false);
 			}
@@ -1964,12 +1964,16 @@ class BookCoverProcessor {
 				$props = [
 					'eventDate' => $startDate,
 					'isPastEvent' => true,
+					'branch' => $userEntry->location,
+					'displayBranchOnThumbnail' => $userEntry->displayEventBranchOnThumbnail,
 				];
 				$title = $userEntry->title;
 			} else{
 				$props = [
 					'eventDate' => $driver->getStartDateFromDB($id),
 					'isPastEvent' => true,
+					'branch' => $driver->getBranchFromDB($id),
+					'displayBranchOnThumbnail' => $driver->getDisplayBranchOnThumbnailFromDB($id),
 				];
 				$title = $driver->getTitleFromDB($id);
 			}
@@ -1983,6 +1987,9 @@ class BookCoverProcessor {
 			$props = [
 				'eventDate' => $driver->getStartDate(),
 				'isPastEvent' => $isPast,
+				'branch' => $driver->getBranch(),
+				'displayBranchOnThumbnail' => $driver->getDisplayBranchOnThumbnail(),
+
 			];
 			$coverBuilder->getCover($driver->getTitle(), $this->cacheFile, $props);
 		}

@@ -1443,8 +1443,10 @@ class SearchAPI extends AbstractAPI {
 								$results = [];
 								if (($curCount == 1 && $loadFirstResults) || $isLiDA) {
 									if ($isLiDA) {
-										$results = $this->getAppBrowseCategoryResults($temp->textId);
-										$results = $results['items'];
+										if (in_array($temp->source, $this->getValidSourcesForLiDA())) {
+											$results = $this->getAppBrowseCategoryResults($temp->textId);
+											$results = $results['items'];
+										}
 									} else {
 										$this->getBrowseCategoryResults($temp, $results);
 									}
@@ -1622,7 +1624,7 @@ class SearchAPI extends AbstractAPI {
 				}
 				$response['label'] = $sourceList->getTitle();
 				// Search Browse Category //
-			} else {
+			} elseif (!$isLiDA || (in_array($browseCategory->source, $this->getValidSourcesForLiDA()))) {
 				$searchObject = SearchObjectFactory::initSearchObject($browseCategory->source);
 				$defaultFilterInfo = $browseCategory->defaultFilter;
 				$defaultFilters = preg_split('/[\r\n,;]+/', $defaultFilterInfo);
@@ -1764,7 +1766,7 @@ class SearchAPI extends AbstractAPI {
 				$browseCategory = new BrowseCategory();
 				$browseCategory->id = $localBrowseCategory->browseCategoryId;
 				$browseCategory->find(true);
-				if ($isLiDA ? $browseCategory->isValidForDisplayInApp($appUser, true) : $browseCategory->isValidForDisplay($appUser)) {
+				if ($isLiDA ? ($browseCategory->isValidForDisplayInApp($appUser, true) && in_array($browseCategory->source, $this->getValidSourcesForLiDA())) : $browseCategory->isValidForDisplay($appUser)) {
 					$textId = $browseCategory->textId;
 					$isSystemCategory = in_array($textId, [
 						'system_user_lists',
@@ -2029,7 +2031,7 @@ class SearchAPI extends AbstractAPI {
 			$categoryInformation = new BrowseCategory();
 			$categoryInformation->id = $curCategory->browseCategoryId;
 			if ($categoryInformation->find(true)) {
-				if ($categoryInformation->isValidForDisplayInApp($appUser) && ($categoryInformation->source == 'GroupedWork' || $categoryInformation->source == 'List')) {
+				if ($categoryInformation->isValidForDisplayInApp($appUser) && in_array($categoryInformation->source, $this->getValidSourcesForLiDA())) {
 					if ($categoryInformation->textId == ('system_saved_searches') && $appUser && !($appUser instanceof AspenError)) {
 						$savedSearches = $listApi->getSavedSearches($appUser->id);
 						$allSearches = $savedSearches['searches'];
@@ -2117,7 +2119,7 @@ class SearchAPI extends AbstractAPI {
 								$temp = new BrowseCategory();
 								$temp->id = $subCategory->subCategoryId;
 								if ($temp->find(true)) {
-									if ($temp->isValidForDisplay($appUser, false)) {
+									if ($temp->isValidForDisplay($appUser, false) && in_array($temp->source, $this->getValidSourcesForLiDA())) {
 										if ($temp->source != '') {
 											$parent = new BrowseCategory();
 											$parent->id = $subCategory->browseCategoryId;
@@ -2654,6 +2656,11 @@ class SearchAPI extends AbstractAPI {
 						$sourceList->id = $browseCategory->sourceListId;
 						if ($sourceList->find(true)) {
 							$records = $sourceList->getBrowseRecordsRaw(($pageToLoad - 1) * $pageSize, $pageSize, $isLida, $appVersion);
+							// Convert to indexed array if it's an associative array
+							if (is_array($records) && !empty($records)) {
+								$records = array_values($records);
+							}
+
 							$response['message'] = 'Results found for browse category';
 						} else {
 							$records = [];
@@ -3532,7 +3539,7 @@ class SearchAPI extends AbstractAPI {
 					$items[$recordKey]['source'] = $eventSource;
 					$items[$recordKey]['title'] = $record['title'];
 					$items[$recordKey]['author'] = null;
-					$items[$recordKey]['image'] = $configArray['Site']['url'] . '/bookcover.php?id=' . $record['id'] . '&size=medium&type=' . $eventSource . '_event';
+					$items[$recordKey]['image'] = $configArray['Site']['url'] . '/bookcover.php?id=' . $record['id'] . '&size=medium&type=' . $eventSource === 'aspenEvents' ? 'aspenEvent' : $eventSource . '_event';
 					$items[$recordKey]['language'] = null;
 					$items[$recordKey]['summary'] = isset($record['description']) ? strip_tags($record['description']) : null;
 					$items[$recordKey]['registration_required'] = $registrationRequired;

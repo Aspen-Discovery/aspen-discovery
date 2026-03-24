@@ -230,7 +230,7 @@ class ItemAPI extends AbstractAPI {
 
 		// Retrieve Full Marc Record
 		disableErrorHandler();
-		$fieldsToReturn = 'isbn,upc,issn,title_display,author_display,publisher,placeOfPublication,edition,callnumber,genre,series,physical,lccn,contents,format,format_category,language';
+		$fieldsToReturn = 'isbn,upc,issn,title_display,author_display,publisherStr,placeOfPublication,edition,callnumber,genre,series,physical,lccn,contents,format,format_category,language,recordtype,id';
 
 		if (!($record = $this->db->getRecord($this->id, $fieldsToReturn))) {
 			return [

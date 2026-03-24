@@ -1137,8 +1137,9 @@ class SirsiDynixROA extends AbstractIlsDriver {
 						$inHoldGroup = true;
 					}else{
 						$inHoldGroup = false;
+						$owningLocation = $checkout->fields->item->fields->currentLibrary->key;
 						foreach ($holdGroups as $holdGroup){
-							if (in_array($checkout->fields->item->fields->currentLibrary->key, $holdGroup->getLocationCodes())){
+							if (in_array($owningLocation, $holdGroup->getLocationCodes())){
 								$inHoldGroup = true;
 								break;
 							}
@@ -1146,7 +1147,24 @@ class SirsiDynixROA extends AbstractIlsDriver {
 					}
 
 					if (!$inHoldGroup) {
-						$curCheckout->outOfHoldGroupMessage = translate(['text' => 'Provided by Another Library', 'isPublicFacing' => true]);
+						$curCheckout->isLocalILL = true;
+						// The title does not belong to the patron's home group.
+						//Check to see if it was checked out at the owning home group
+						$checkedOutAtOwningHomeGroup = false;
+						$owningLocation = $checkout->fields->item->fields->currentLibrary->key;
+						$checkoutLocation = $checkout->fields->library->key;
+						$checkedOutRemotely = false;
+						if ($checkoutLocation == $owningLocation) {
+							$checkedOutRemotely = true;
+							$curCheckout->isLocalILL = $patron->getHomeLibrary()->includeRemoteCheckoutsInMaxLocalIllRequests == 1;
+							$curCheckout->outOfHoldGroupMessage = translate(['text' => 'Picked Up from Another Library', 'isPublicFacing' => true]);
+						}
+						if (!$checkedOutRemotely) {
+							$curCheckout->outOfHoldGroupMessage = translate([
+								'text' => 'Provided by Another Library',
+								'isPublicFacing' => true
+							]);
+						}
 						$library = $patron->getHomeLibrary();
 						if (!$library->allowRenewingOutOfHoldGroupCheckouts){
 							$curCheckout->canRenew = false;
@@ -1313,12 +1331,18 @@ class SirsiDynixROA extends AbstractIlsDriver {
 					}else{
 						$curHold->outOfHoldGroupMessage = translate(['text' => 'Hold Pending from Another Library', 'isPublicFacing' => true]);
 					}
+					$curHold->isLocalILL = true;
+				}else{
+					$curHold->isLocalILL = false;
 				}
 				$curHold->createDate = strtotime($createDate);
 				$curHold->expirationDate = strtotime($expireDate);
 				$curHold->automaticCancellationDate = strtotime($fillByDate);
 				$curHold->reactivateDate = strtotime($reactivateDate);
 				$curHold->cancelable = !in_array(strtoupper($curHold->status), ['SUSPENDED', 'EXPIRED', 'INSHIPPING', 'INTRANSIT', 'ILL_WYLD', 'ILLSHIPPED']);
+				if (strtoupper($curHold->status) == 'TRANSIT') {
+					$curHold->cancelable == $patron->getHomeLibrary()->allowCancellingInTransitHolds;
+				}
 
 				$curHold->frozen = strcasecmp($curHold->status, 'Suspended') == 0;
 				$curHold->canFreeze = $patron->getHomeLibrary()->allowFreezeHolds;
@@ -2247,6 +2271,16 @@ class SirsiDynixROA extends AbstractIlsDriver {
 			$totalFinesOwed = 0;
 
 			if (!empty($blockList->fields->blockList)) {
+				$translationMapFound = false;
+				$indexingProfileId = $this->getIndexingProfile()->id;
+				require_once ROOT_DIR . '/sys/Indexing/TranslationMap.php';
+				$billReasonTranslation = new TranslationMap();
+				$billReasonTranslation->name = "bill_reason";
+				$billReasonTranslation->indexingProfileId = $indexingProfileId;
+				if ($billReasonTranslation->find(true)){
+					$translationMapFound = true;
+				}
+
 				foreach ($blockList->fields->blockList as $block) {
 					$fine = $block->fields;
 					$title = '';
@@ -2261,11 +2295,15 @@ class SirsiDynixROA extends AbstractIlsDriver {
 							$barcode = $fine->item->fields->barcode;
 						}
 					}
+					$billReason = $fine->block->key;
+					if ($translationMapFound){
+						$billReason = $billReasonTranslation->translate($fine->block->key);
+					}
 
 					$fines[] = [
 						'fineId' => str_replace(':', '_', $block->key),
 						'reason' => translate([
-							'text' => $fine->block->key,
+							'text' => $billReason,
 							'isPublicFacing' => true,
 							'isAdminEnteredData' => true,
 						]),

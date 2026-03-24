@@ -43,6 +43,13 @@ function getUpdates26_02_00(): array {
 				) ENGINE INNODB CHARACTER SET utf8 COLLATE utf8_general_ci",
 			]
 		], //admin_property_search_index
+		'force_regrouping_of_hoopla' => [
+			'title' => 'Force Regrouping of Hoopla',
+			'description' => 'Force Regrouping of Hoopla',
+			'sql' => [
+				"UPDATE hoopla_settings set regroupAllRecords = 1"
+			]
+		], //force_regrouping_of_hoopla
 
 		//kirstien
 		'aspen_lida_home_screen_links_permissions' => [
@@ -125,6 +132,30 @@ function getUpdates26_02_00(): array {
 			]
 		],
 		//add_require_confirmation_to_sco_custom_message
+		'aspen_lida_home_screen_links_groups_permissions' => [
+			'title' => 'Aspen LiDA Home Screen Link Groups Permissions',
+			'description' => 'Create permissions for managing Aspen LiDA Home Screen Links Groups.',
+			'continueOnError' => false,
+			'sql' => [
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES
+				('Aspen LiDA', 'Administer Selected Aspen LiDA Home Screen Link Groups', '', 161, 'Allows the user to view and edit only the Aspen LiDA Home Screen Link Groups they are assigned to.')
+				"
+			],
+		],
+		//aspen_lida_home_screen_links_groups_permissions
+		'aspen_lida_home_screen_link_group_users_table' => [
+			'title' => 'Aspen LiDA Home Screen Link Group Users Table',
+			'description' => 'Create tables to store users who can edit Home Screen Link Groups.',
+			'continueOnError' => false,
+			'sql' => [
+				"CREATE TABLE IF NOT EXISTS `aspen_lida_home_screen_link_group_users` (
+				`id` int(11) NOT NULL AUTO_INCREMENT,
+				`homeScreenLinkGroupId` int(11),
+				`userId` int(11),
+				PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;",
+			],
+		],
+		//aspen_lida_home_screen_link_group_users_table
 
 
 		//kodi
@@ -187,6 +218,13 @@ function getUpdates26_02_00(): array {
 				"ALTER TABLE self_registration_form_sierra ADD COLUMN cityDropdown tinyint(1) DEFAULT 0",
 			]
 		], //sierra_self_registation_form_city_dropdown
+		'fix_cloudsource_permissions' => [
+			'title' => 'Add Cloud Source Permission Section',
+			'description' => 'Add Cloud Source permission section so it does not appear under a blank accordion',
+			'sql' => [
+				"UPDATE permissions SET sectionName = 'CloudSource OA' WHERE name = 'Administer CloudSource OA'",
+			]
+		], //add_cloudsource_permissions
 
 		//yanjun
 		'overdrive_qr_sessions' => [
@@ -302,6 +340,14 @@ function getUpdates26_02_00(): array {
 		],  //share_tools_add_granularity
 
 		//lucas
+		'nightly_index_trigger_tracking' => [
+			'title' => 'Nightly Index Trigger Tracking',
+			'description' => 'Add a column to system_variables to track what triggered the nightly reindex.',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE system_variables ADD COLUMN nightlyIndexTrigger TEXT DEFAULT NULL",
+			]
+		], //nightly_index_trigger_tracking
 
 
 		//tomas

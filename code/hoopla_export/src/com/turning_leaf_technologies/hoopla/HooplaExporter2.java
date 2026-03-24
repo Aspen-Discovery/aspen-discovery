@@ -557,7 +557,15 @@ public class HooplaExporter2 {
 								logEntry.incErrors("Error updating lastRecordProcessed ", e);
 							}
 						} else {
+							// No more records to extact from global content
 							startToken = null;
+							try {
+								updateLastRecordProcessedStmt.setString(1, "0");
+								updateLastRecordProcessedStmt.setLong(2, settingsId);
+								updateLastRecordProcessedStmt.executeUpdate();
+							} catch (SQLException e) {
+								logEntry.incErrors("Error updating lastRecordProcessed ", e);
+							}
 						}
 
 					}
@@ -592,7 +600,6 @@ public class HooplaExporter2 {
 			logEntry.saveResults();
 			logEntry.addNote("Completed " + numRecordsToExtract + " global content updates");
 			logEntry.saveResults();
-
 		} catch (SQLException e) {
 			logEntry.incErrors("Error updating settings", e);
 		}
@@ -873,9 +880,9 @@ public class HooplaExporter2 {
 				JSONObject availability = availabilityInfo.getJSONObject("availability");
 				if (!availability.isEmpty()) {
 					String status = availability.getString("status");
-					int holdsQueueSize = status.equals("BORROW") ? 0 : availability.getInt("holdsQueueSize");
-					int availableCopies = availability.getInt("availableCopies");
-					int totalCopies = availability.getInt("totalCopies");
+					int holdsQueueSize = status.equals("BORROW") ? 0 : (availability.has("holdsQueueSize")  ? availability.getInt("holdsQueueSize") : 0);
+					int availableCopies = availability.has("availableCopies")  ? availability.getInt("availableCopies") : 0;
+					int totalCopies = availability.has("totalCopies")  ? availability.getInt("totalCopies") : 0;
 
 					boolean availabilityChanged = false;
 					try {
@@ -1256,7 +1263,7 @@ public class HooplaExporter2 {
 				logEntry.incErrors("Unable to find settings for Hoopla when processing single title, please add settings to the database");
 			}
 		}catch (Exception e){
-			logEntry.incErrors("Error exporting hoopla data", e);
+			logEntry.incErrors("Error exporting single hoopla title", e);
 		}
 		return updatesRun;
 	}
@@ -1491,42 +1498,37 @@ public class HooplaExporter2 {
 	}
 
 	private void regroupAllRecords(Connection dbConn, long settingsId, GroupedWorkIndexer indexer, HooplaExtractLogEntry2 logEntry)  throws SQLException {
-		logEntry.addNote("Starting to regroup all records");
-		PreparedStatement getAllRecordsToRegroupStmt = dbConn.prepareStatement("SELECT hooplaId, UNCOMPRESS(rawResponse) as rawResponse from hoopla_export where active = 1", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-		//It turns out to be quite slow to look this up repeatedly, grab the existing values for all and store in memory
-		PreparedStatement getOriginalPermanentIdForRecordStmt = dbConn.prepareStatement("SELECT identifier, permanent_id from grouped_work_primary_identifiers join grouped_work on grouped_work_id = grouped_work.id WHERE type = 'hoopla'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-		HashMap<Long, String> allPermanentIdsForHoopla = new HashMap<>();
-		ResultSet getOriginalPermanentIdForRecordRS = getOriginalPermanentIdForRecordStmt.executeQuery();
-		while (getOriginalPermanentIdForRecordRS.next()){
-			allPermanentIdsForHoopla.put(getOriginalPermanentIdForRecordRS.getLong("identifier"), getOriginalPermanentIdForRecordRS.getString("permanent_id"));
-		}
-		getOriginalPermanentIdForRecordRS.close();
-		getOriginalPermanentIdForRecordStmt.close();
-		ResultSet allRecordsToRegroupRS = getAllRecordsToRegroupStmt.executeQuery();
-		while (allRecordsToRegroupRS.next()) {
-			logEntry.incRecordsRegrouped();
-			long recordIdentifier = allRecordsToRegroupRS.getLong("hooplaId");
-			String originalGroupedWorkId;
-			originalGroupedWorkId = allPermanentIdsForHoopla.get(recordIdentifier);
-			if (originalGroupedWorkId == null){
-				originalGroupedWorkId = "false";
+		try {
+			logEntry.addNote("Starting to regroup all records");
+			PreparedStatement getAllRecordsToRegroupStmt = dbConn.prepareStatement("SELECT hooplaId, permanent_id, UNCOMPRESS(rawResponse) as rawResponse from hoopla_export left join grouped_work_primary_identifiers on type = 'hoopla' AND grouped_work_primary_identifiers.identifier = hoopla_export.hooplaId inner join grouped_work on grouped_work_id = grouped_work.id", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			ResultSet allRecordsToRegroupRS = getAllRecordsToRegroupStmt.executeQuery();
+			while (allRecordsToRegroupRS.next()) {
+				logEntry.incRecordsRegrouped();
+				long recordIdentifier = allRecordsToRegroupRS.getLong("hooplaId");
+				String originalGroupedWorkId;
+				originalGroupedWorkId = allRecordsToRegroupRS.getString("permanent_id");
+				if (originalGroupedWorkId == null) {
+					originalGroupedWorkId = "false";
+				}
+				String rawResponseString = new String(allRecordsToRegroupRS.getBytes("rawResponse"), StandardCharsets.UTF_8);
+				JSONObject rawResponse = new JSONObject(rawResponseString);
+				//Pass null to processMarcRecord.  It will do the lookup to see if there is an existing id there.
+				String groupedWorkId = getRecordGroupingProcessor().groupHooplaRecord(rawResponse, recordIdentifier);
+				if (!originalGroupedWorkId.equals(groupedWorkId)) {
+					logEntry.incChangedAfterGrouping();
+				}
+				//process records to regroup after every 1000 changes, so we keep up with the changes.
+				if (logEntry.getNumChangedAfterGrouping() % 1000 == 0) {
+					indexer.processScheduledWorks(logEntry, false, -1);
+				}
 			}
-			String rawResponseString = new String(allRecordsToRegroupRS.getBytes("rawResponse"), StandardCharsets.UTF_8);
-			JSONObject rawResponse = new JSONObject(rawResponseString);
-			//Pass null to processMarcRecord.  It will do the lookup to see if there is an existing id there.
-			String groupedWorkId = getRecordGroupingProcessor().groupHooplaRecord(rawResponse, recordIdentifier);
-			if (!originalGroupedWorkId.equals(groupedWorkId)) {
-				logEntry.incChangedAfterGrouping();
-			}
-			//process records to regroup after every 1000 changes, so we keep up with the changes.
-			if (logEntry.getNumChangedAfterGrouping() % 1000 == 0){
+
+			//Finish reindexing anything that just changed
+			if (logEntry.getNumChangedAfterGrouping() > 0) {
 				indexer.processScheduledWorks(logEntry, false, -1);
 			}
-		}
-
-		//Finish reindexing anything that just changed
-		if (logEntry.getNumChangedAfterGrouping() > 0){
-			indexer.processScheduledWorks(logEntry, false, -1);
+		}catch (Exception e){
+			logEntry.incErrors("Error regrouping records", e);
 		}
 
 		try {

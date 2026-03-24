@@ -3,16 +3,20 @@
 require_once ROOT_DIR . '/JSON_Action.php';
 
 class Series_AJAX extends JSON_Action {
+	function launch($method = null): void {
+		$this->checkRequiredModule('Series');
+		parent::launch($method);
+	}
 
 	/** @noinspection PhpUnused */
-	function sendEmail() {
+	function sendEmail() : array {
 		global $interface;
 
 		// Get data from AJAX request
-		if (isset($_REQUEST['seriesId']) && ctype_digit($_REQUEST['seriesId'])) { // validly formatted List Id
+		if (isset($_REQUEST['seriesId']) && ctype_digit($_REQUEST['seriesId'])) { // validly formatted Series ID
 			$seriesId = $_REQUEST['seriesId'];
 			$to = $_REQUEST['to'];
-			$from = isset($_REQUEST['from']) ? $_REQUEST['from'] : '';
+			$from = $_REQUEST['from'] ?? '';
 			$message = $_REQUEST['message'];
 
 			//Load the series
@@ -29,7 +33,7 @@ class Series_AJAX extends JSON_Action {
 				$interface->assign('titles', $titleDetails);
 				$interface->assign('list', $series);
 
-				if (strpos($message, 'http') === false && strpos($message, 'mailto') === false && $message == strip_tags($message)) {
+				if (!str_contains($message, 'http') && !str_contains($message, 'mailto') && $message == strip_tags($message)) {
 					$interface->assign('from', $from);
 					$interface->assign('message', $message);
 					$body = $interface->fetch('Emails/series.tpl');
@@ -43,11 +47,6 @@ class Series_AJAX extends JSON_Action {
 						$result = [
 							'result' => true,
 							'message' => 'Your email was sent successfully.',
-						];
-					} elseif (($emailResult instanceof AspenError)) {
-						$result = [
-							'result' => false,
-							'message' => "Your email message could not be sent: {$emailResult->getMessage()}.",
 						];
 					} else {
 						$result = [
@@ -63,6 +62,11 @@ class Series_AJAX extends JSON_Action {
 						'message' => 'Sorry, we can&apos;t send emails with html or other data in it.',
 					];
 				}
+			} else {
+				$result = [
+					'result' => false,
+					'message' => 'Sorry, we could not find that series.',
+				];
 			}
 		} else { // Invalid listId
 			$result = [
@@ -75,7 +79,7 @@ class Series_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function getEmailSeriesForm() {
+	function getEmailSeriesForm() : array {
 		global $interface;
 		if (isset($_REQUEST['seriesId']) && ctype_digit($_REQUEST['seriesId'])) {
 			$seriesId = $_REQUEST['seriesId'];

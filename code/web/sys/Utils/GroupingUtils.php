@@ -122,7 +122,7 @@ function compareItemBasics($a, $b) :int  {
  * @param string $str The string to parse.
  * @return ?DateTime Returns a DateTime object for sorting, or null if no date is found.
  */
-function getSortableDate(string $str) : ?DateTime {
+function getSortableDate(?string $str) : ?DateTime {
 	//Cache results so we don't need to constantly parse dates from call numbers during sorts.
 	global $sortableDateCache;
 	if ($sortableDateCache == null) {

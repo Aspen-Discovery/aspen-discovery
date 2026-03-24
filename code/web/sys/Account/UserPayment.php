@@ -12,6 +12,7 @@ class UserPayment extends DataObject {
 	public $transactionId;
 	public $completed;
 	public $cancelled;
+	public $declined;
 	public $error;
 	public $message;
 	public $finesPaid;

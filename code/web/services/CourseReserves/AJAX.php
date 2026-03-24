@@ -4,12 +4,15 @@ require_once ROOT_DIR . '/JSON_Action.php';
 
 class CourseReserves_AJAX extends JSON_Action {
 	/** @noinspection PhpUnused */
-	function getAddBrowseCategoryFromCourseReservesForm() {
+	function getAddBrowseCategoryFromCourseReservesForm() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission(['Administer All Browse Categories', 'Administer Library Browse Categories','Administer Selected Browse Category Groups']);
+
 		global $interface;
 
 		// Select List Creation using Object Editor functions
 		require_once ROOT_DIR . '/sys/Browse/SubBrowseCategories.php';
-		$temp = SubBrowseCategories::getObjectStructure('');
+		$temp = SubBrowseCategories::getObjectStructure();
 		$temp['subCategoryId']['values'] = [0 => 'Select One'] + $temp['subCategoryId']['values'];
 		// add default option that denotes nothing has been selected to the options list
 		// (this preserves the keys' numeric values (which is essential as they are the Id values) as well as the array's order)
@@ -33,64 +36,58 @@ class CourseReserves_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function sendEmail() {
+	function sendEmail() : array {
 		global $interface;
+		$this->checkRequiredParameters(['reserveId']);
 
 		// Get data from AJAX request
-		if (isset($_REQUEST['reserveId']) && ctype_digit($_REQUEST['reserveId'])) { // validly formatted List Id
-			$reserveId = $_REQUEST['reserveId'];
-			$to = $_REQUEST['to'];
-			$from = isset($_REQUEST['from']) ? $_REQUEST['from'] : '';
-			$message = $_REQUEST['message'];
+		$reserveId = $_REQUEST['reserveId'];
+		$to = $_REQUEST['to'];
+		$from = $_REQUEST['from'] ?? '';
+		$message = $_REQUEST['message'];
 
-			//Load the course reserve
-			require_once ROOT_DIR . '/sys/CourseReserves/CourseReserve.php';
-			$courseReserve = new CourseReserve();
-			$courseReserve->id = $reserveId;
-			if ($courseReserve->find(true)) {
-				// Build List
-				$listEntries = $courseReserve->getTitles();
-				$interface->assign('listEntries', $listEntries);
+		//Load the course reserve
+		require_once ROOT_DIR . '/sys/CourseReserves/CourseReserve.php';
+		$courseReserve = new CourseReserve();
+		$courseReserve->id = $reserveId;
+		if ($courseReserve->find(true)) {
+			// Build List
+			$listEntries = $courseReserve->getTitles();
+			$interface->assign('listEntries', $listEntries);
 
-				$titleDetails = $courseReserve->getCourseReserveRecords(0, -1, 'recordDrivers');
-				// get all titles for email list, not just a page's worth
-				$interface->assign('titles', $titleDetails);
-				$interface->assign('list', $courseReserve);
+			$titleDetails = $courseReserve->getCourseReserveRecords(0, -1, 'recordDrivers');
+			// get all titles for email list, not just a page's worth
+			$interface->assign('titles', $titleDetails);
+			$interface->assign('list', $courseReserve);
 
-				if (strpos($message, 'http') === false && strpos($message, 'mailto') === false && $message == strip_tags($message)) {
-					$interface->assign('from', $from);
-					$interface->assign('message', $message);
-					$body = $interface->fetch('Emails/course-reserve.tpl');
+			if (!str_contains($message, 'http') && !str_contains($message, 'mailto') && $message == strip_tags($message)) {
+				$interface->assign('from', $from);
+				$interface->assign('message', $message);
+				$body = $interface->fetch('Emails/course-reserve.tpl');
 
-					require_once ROOT_DIR . '/sys/Email/Mailer.php';
-					$mail = new Mailer();
-					$subject = $courseReserve->getTitle();
-					$emailResult = $mail->send($to, $subject, $body);
+				require_once ROOT_DIR . '/sys/Email/Mailer.php';
+				$mail = new Mailer();
+				$subject = $courseReserve->getTitle();
+				$emailResult = $mail->send($to, $subject, $body);
 
-					if ($emailResult === true) {
-						$result = [
-							'result' => true,
-							'message' => 'Your email was sent successfully.',
-						];
-					} elseif (($emailResult instanceof AspenError)) {
-						$result = [
-							'result' => false,
-							'message' => "Your email message could not be sent: {$emailResult->getMessage()}.",
-						];
-					} else {
-						$result = [
-							'result' => false,
-							'message' => 'Your email message could not be sent due to an unknown error.',
-						];
-						global $logger;
-						$logger->log("Mail List Failure (unknown reason), parameters: $to, $from, $subject, $body", Logger::LOG_ERROR);
-					}
+				if ($emailResult === true) {
+					$result = [
+						'result' => true,
+						'message' => 'Your email was sent successfully.',
+					];
 				} else {
 					$result = [
 						'result' => false,
-						'message' => 'Sorry, we can&apos;t send emails with html or other data in it.',
+						'message' => 'Your email message could not be sent due to an unknown error.',
 					];
+					global $logger;
+					$logger->log("Mail List Failure (unknown reason), parameters: $to, $from, $subject, $body", Logger::LOG_ERROR);
 				}
+			} else {
+				$result = [
+					'result' => false,
+					'message' => 'Sorry, we can&apos;t send emails with html or other data in it.',
+				];
 			}
 		} else { // Invalid listId
 			$result = [
@@ -103,7 +100,7 @@ class CourseReserves_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function getEmailCourseReserveForm() {
+	function getEmailCourseReserveForm() : array {
 		global $interface;
 		if (isset($_REQUEST['reserveId']) && ctype_digit($_REQUEST['reserveId'])) {
 			$reserveId = $_REQUEST['reserveId'];

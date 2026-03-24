@@ -245,14 +245,15 @@ class ExploreMore {
 					foreach ($results['response']['docs'] as $doc) {
 						/** @var ListsRecordDriver $driver */
 						$driver = $searchObjectSolr->getRecordDriverForResult($doc);
+						$id = str_replace('WebResource:', '', $driver->getId());
 						if ($numCatalogResultsAdded < $this->numEntriesToAdd) {
 							//Add a link to the actual title
 							$exploreMoreOptions['sampleRecords']['websites'][] = [
 								'label' => $driver->getTitle(),
 								'description' => $driver->getTitle(),
 								'image' => $driver->getBookcoverUrl('medium'),
-								'link' => $driver->getLinkUrl(),
-								'onclick' => 'AspenDiscovery.Websites.trackUsage(' . $driver->getId() . ')',
+								'link' => 'javascript:;',
+								'onclick' => "AspenDiscovery.WebBuilder.getWebResource('{$id}'); AspenDiscovery.Websites.trackUsage('{$driver->getId()}');",
 								'usageCount' => 1,
 								'openInNewWindow' => false,
 							];

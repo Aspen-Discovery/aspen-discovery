@@ -6,6 +6,9 @@ class Admin_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function getReindexNotes() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission(['View System Reports','View Indexing Logs']);
+		$this->checkRequiredParameters(['id']);
 		$id = $_REQUEST['id'];
 		require_once ROOT_DIR . '/sys/Indexing/ReindexLogEntry.php';
 		$reindexProcess = new ReindexLogEntry();
@@ -44,6 +47,9 @@ class Admin_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function getCronProcessNotes() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission(['View System Reports']);
+		$this->checkRequiredParameters(['id']);
 		$id = $_REQUEST['id'];
 		$cronProcess = new CronProcessLogEntry();
 		$cronProcess->id = $id;
@@ -79,6 +85,10 @@ class Admin_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function getCronNotes() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission(['View System Reports']);
+		$this->checkRequiredParameters(['id']);
+
 		$id = $_REQUEST['id'];
 		$cronLog = new CronLogEntry();
 		$cronLog->id = $id;
@@ -118,6 +128,10 @@ class Admin_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function getExtractNotes() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission(['View System Reports','View Indexing Logs']);
+		$this->checkRequiredParameters(['id']);
+
 		$id = $_REQUEST['id'];
 		$source = $_REQUEST['source'];
 		$extractLog = null;
@@ -217,6 +231,10 @@ class Admin_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function getAddToSpotlightForm() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission(['Administer All Collection Spotlights', 'Administer Library Collection Spotlights']);
+		$this->checkRequiredParameters(['id', 'source']);
+
 		global $interface;
 		// Display Page
 		$interface->assign('id', strip_tags($_REQUEST['id']));
@@ -255,49 +273,37 @@ class Admin_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function ungroupRecord() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission('Manually Group and Ungroup Works');
 		/** @noinspection PhpArrayIndexImmediatelyRewrittenInspection */
-		$results = [
-			'success' => false,
-			'message' => translate([
-				'text' => 'Unknown Error',
-				'isPublicFacing' => true,
-			]),
-		];
-		if (UserAccount::isLoggedIn() && (UserAccount::userHasPermission('Manually Group and Ungroup Works'))) {
-			require_once ROOT_DIR . '/sys/Grouping/NonGroupedRecord.php';
-			$ungroupedRecord = new NonGroupedRecord();
-			/** @var GroupedWorkSubDriver $record */
-			$record = RecordDriverFactory::initRecordDriverById($_REQUEST['recordId']);
-			if ($record instanceof AspenError) {
-				$results['message'] = "Unable to find the record for this id";
-			} else {
-				[
-					$source,
-					$recordId,
-				] = explode(':', $_REQUEST['recordId']);
-				$ungroupedRecord->source = $source;
-				$ungroupedRecord->recordId = $recordId;
-				if ($ungroupedRecord->find(true)) {
-					$results['success'] = true;
-					$results['message'] = 'This record has already been ungrouped';
-				} else {
-					$ungroupedRecord->notes = '';
-					$ungroupedRecord->insert();
-					$groupedWork = new GroupedWork();
-					$groupedWork->permanent_id = $record->getPermanentId();
-					if ($groupedWork->find(true)) {
-						$groupedWork->forceReindex(true);
-					}
-					$results['success'] = true;
-					$results['message'] = 'This record has been ungrouped and the index will update shortly';
-				}
-			}
-
+		$results = $this->failureResult(null, 'Unknown Error');
+		require_once ROOT_DIR . '/sys/Grouping/NonGroupedRecord.php';
+		$ungroupedRecord = new NonGroupedRecord();
+		/** @var GroupedWorkSubDriver $record */
+		$record = RecordDriverFactory::initRecordDriverById($_REQUEST['recordId']);
+		if ($record instanceof AspenError) {
+			$results['message'] = "Unable to find the record for this id";
 		} else {
-			$results['message'] = translate([
-				'text' => "You do not have the correct permissions for this operation",
-				'isAdminFacing' => true,
-			]);
+			[
+				$source,
+				$recordId,
+			] = explode(':', $_REQUEST['recordId']);
+			$ungroupedRecord->source = $source;
+			$ungroupedRecord->recordId = $recordId;
+			if ($ungroupedRecord->find(true)) {
+				$results['success'] = true;
+				$results['message'] = 'This record has already been ungrouped';
+			} else {
+				$ungroupedRecord->notes = '';
+				$ungroupedRecord->insert();
+				$groupedWork = new GroupedWork();
+				$groupedWork->permanent_id = $record->getPermanentId();
+				if ($groupedWork->find(true)) {
+					$groupedWork->forceReindex(true);
+				}
+				$results['success'] = true;
+				$results['message'] = 'This record has been ungrouped and the index will update shortly';
+			}
 		}
 		return $results;
 	}
@@ -307,10 +313,7 @@ class Admin_AJAX extends JSON_Action {
 		global $interface;
 		$release = $_REQUEST['release'];
 		$releaseNotesPath = ROOT_DIR . '/release_notes';
-		$results = [
-			'success' => false,
-			'message' => 'Unknown error loading release notes',
-		];
+		$results = $this->failureResultAdmin(null, 'Unknown error loading release notes');
 		if (!file_exists($releaseNotesPath . '/' . $release . '.MD')) {
 			$results['message'] = 'Could not find notes for that release';
 		} else {
@@ -340,160 +343,135 @@ class Admin_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function getCreateRoleForm() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission('Administer Permissions');
 		global $interface;
-		if (UserAccount::userHasPermission('Administer Permissions')) {
 
-			$roles = [];
-			require_once ROOT_DIR . '/sys/Administration/Role.php';
-			$role = new Role();
-			$role->orderBy('name');
-			$role->find();
-			while ($role->fetch()) {
-				$roles[$role->roleId]['roleId'] = $role->roleId;
-				$roles[$role->roleId]['name'] = $role->name;
-			}
-
-			$interface->assign('permissionRoles', $roles);
-
-			return [
-				'title' => translate([
-					'text' => 'Create New Role',
-					'isAdminFacing' => true,
-				]),
-				'modalBody' => $interface->fetch('Admin/createRoleForm.tpl'),
-				'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.Admin.createRole();'>" . translate([
-						'text' => "Create Role",
-						'isAdminFacing' => true,
-					]),
-				"</button>",
-			];
-		} else {
-			return [
-				'success' => false,
-				'message' => translate([
-					'text' => "Sorry, you don't have permissions to add roles",
-					'isAdminFacing' => true,
-				]),
-			];
+		$roles = [];
+		require_once ROOT_DIR . '/sys/Administration/Role.php';
+		$role = new Role();
+		$role->orderBy('name');
+		$role->find();
+		while ($role->fetch()) {
+			$roles[$role->roleId]['roleId'] = $role->roleId;
+			$roles[$role->roleId]['name'] = $role->name;
 		}
+
+		$interface->assign('permissionRoles', $roles);
+
+		return [
+			'title' => translate([
+				'text' => 'Create New Role',
+				'isAdminFacing' => true,
+			]),
+			'modalBody' => $interface->fetch('Admin/createRoleForm.tpl'),
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.Admin.createRole();'>" . translate([
+					'text' => "Create Role",
+					'isAdminFacing' => true,
+				]),
+			"</button>",
+		];
+
 	}
 
 	/** @noinspection PhpUnused */
 	function createRole() : array {
-		if (UserAccount::userHasPermission('Administer Permissions')) {
-			if (isset($_REQUEST['roleName'])) {
-				$name = $_REQUEST['roleName'];
-				$description = $_REQUEST['description'];
-				$copyFrom = $_REQUEST['copyFrom'];
-				require_once ROOT_DIR . '/sys/Administration/Role.php';
-				$existingRole = new Role;
-				$existingRole->name = $name;
-				if ($existingRole->find(true)) {
-					return [
-						'success' => false,
-						'message' => "$name already exists",
-					];
-				} else {
-					$curPermissions = [];
-					if ($copyFrom != "-1" || $copyFrom != -1) {
-						$curRole = new Role();
-						$curRole->roleId = $copyFrom;
-						if ($curRole->find(true)) {
-							$curPermissions = $curRole->getPermissions();
-						}
-					}
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission('Administer Permissions');
 
-					$newRole = new Role();
-					$newRole->name = $name;
-					$newRole->description = $description;
-					$newRole->insert();
-
-					if (count($curPermissions) > 0) {
-						foreach ($curPermissions as $curPermission) {
-							require_once ROOT_DIR . '/sys/Administration/Permission.php';
-							$permission = new Permission();
-							$permission->name = $curPermission;
-							if ($permission->find(true)) {
-								require_once ROOT_DIR . '/sys/Administration/RolePermissions.php';
-								$newPermission = new RolePermissions();
-								$newPermission->roleId = $newRole->roleId;
-								$newPermission->permissionId = $permission->id;
-								$newPermission->insert();
-							}
-						}
-					}
-
-					return [
-						'success' => true,
-						'message' => "$name was created successfully",
-						'roleId' => $newRole->roleId,
-					];
-				}
-			} else {
+		if (isset($_REQUEST['roleName'])) {
+			$name = $_REQUEST['roleName'];
+			$description = $_REQUEST['description'];
+			$copyFrom = $_REQUEST['copyFrom'];
+			require_once ROOT_DIR . '/sys/Administration/Role.php';
+			$existingRole = new Role;
+			$existingRole->name = $name;
+			if ($existingRole->find(true)) {
 				return [
 					'success' => false,
-					'message' => "The role name must be provided",
+					'message' => "$name already exists",
+				];
+			} else {
+				$curPermissions = [];
+				if ($copyFrom != "-1" || $copyFrom != -1) {
+					$curRole = new Role();
+					$curRole->roleId = $copyFrom;
+					if ($curRole->find(true)) {
+						$curPermissions = $curRole->getPermissions();
+					}
+				}
+
+				$newRole = new Role();
+				$newRole->name = $name;
+				$newRole->description = $description;
+				$newRole->insert();
+
+				if (count($curPermissions) > 0) {
+					foreach ($curPermissions as $curPermission) {
+						require_once ROOT_DIR . '/sys/Administration/Permission.php';
+						$permission = new Permission();
+						$permission->name = $curPermission;
+						if ($permission->find(true)) {
+							require_once ROOT_DIR . '/sys/Administration/RolePermissions.php';
+							$newPermission = new RolePermissions();
+							$newPermission->roleId = $newRole->roleId;
+							$newPermission->permissionId = $permission->id;
+							$newPermission->insert();
+						}
+					}
+				}
+
+				return [
+					'success' => true,
+					'message' => "$name was created successfully",
+					'roleId' => $newRole->roleId,
 				];
 			}
 		} else {
-			return [
-				'success' => false,
-				'message' => translate([
-					'text' => "Sorry, you don't have permissions to add roles",
-					'isAdminFacing' => true,
-				]),
-			];
+			return $this->failureResultAdmin(null, 'The role name must be provided');
 		}
 	}
 
 	/** @noinspection PhpUnused */
 	function deleteRole() : array {
-		if (UserAccount::userHasPermission('Administer Permissions')) {
-			if (isset($_REQUEST['roleId']) && is_numeric($_REQUEST['roleId'])) {
-				//Check to be sure the role is not used by anyone
-				require_once ROOT_DIR . '/sys/Administration/UserRoles.php';
-				$usersForRole = new UserRoles();
-				$usersForRole->roleId = $_REQUEST['roleId'];
-				$usersForRole->find();
-				if ($usersForRole->getNumResults() > 0) {
-					return [
-						'success' => false,
-						'message' => "The role is in use by " . $usersForRole->getNumResults() . " users, please remove them from the role before deleting",
-					];
-				} else {
-					$role = new Role();
-					$role->roleId = $_REQUEST['roleId'];
-					$role->delete();
-					return [
-						'success' => true,
-						'message' => "The role was deleted successfully",
-					];
-				}
-			} else {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission('Administer Permissions');
+
+		if (isset($_REQUEST['roleId']) && is_numeric($_REQUEST['roleId'])) {
+			//Check to be sure the role is not used by anyone
+			require_once ROOT_DIR . '/sys/Administration/UserRoles.php';
+			$usersForRole = new UserRoles();
+			$usersForRole->roleId = $_REQUEST['roleId'];
+			$usersForRole->find();
+			if ($usersForRole->getNumResults() > 0) {
 				return [
 					'success' => false,
-					'message' => "The role to delete must be provided",
+					'message' => "The role is in use by " . $usersForRole->getNumResults() . " users, please remove them from the role before deleting",
 				];
+			} else {
+				$role = new Role();
+				$role->roleId = $_REQUEST['roleId'];
+				$role->delete();
+				return $this->successResultAdmin(null, 'The role was deleted successfully');
 			}
 		} else {
-			return [
-				'success' => false,
-				'message' => "Sorry, you don't have permissions to delete roles",
-			];
+			return $this->failureResultAdmin(null, 'The role to delete must be provided');
 		}
 	}
 
 	/** @noinspection PhpUnused */
 	function getBatchUpdateFieldForm() : array {
+		$this->requireLoggedInUser();
+
 		$moduleName = $_REQUEST['moduleName'];
 		$toolName = $_REQUEST['toolName'];
 		$batchUpdateScope = $_REQUEST['batchUpdateScope'];
 
-		/** @noinspection PhpIncludeInspection */
 		require_once ROOT_DIR . '/services/' . $moduleName . '/' . $toolName . '.php';
 		$fullToolName = $moduleName . '_' . $toolName;
 		/** @var ObjectEditor $tool */
 		$tool = new $fullToolName();
+		$this->checkRequiredPermission($tool->getViewPermissions());
 
 		if ($tool->canBatchEdit()) {
 			$structure = $tool->getObjectStructure();
@@ -515,15 +493,13 @@ class Admin_AJAX extends JSON_Action {
 					]) . "</button>",
 			];
 		} else {
-			return [
-				'success' => false,
-				'message' => "Sorry, you don't have permission to batch edit",
-			];
+			return $this->failureResultAdmin(null, "Sorry, you don't have permission to batch edit");
 		}
 	}
 
 	/** @noinspection PhpUnused */
 	function doBatchUpdateField() : array {
+		$this->requireLoggedInUser();
 		$moduleName = $_REQUEST['moduleName'];
 		$toolName = $_REQUEST['toolName'];
 		$batchUpdateScope = $_REQUEST['batchUpdateScope'];
@@ -531,19 +507,17 @@ class Admin_AJAX extends JSON_Action {
 		if (isset($_REQUEST['newValue'])) {
 			$newValue = $_REQUEST['newValue'];
 		} else {
-			return [
-				'success' => false,
-				'message' => "New Value was not provided",
-			];
+			return $this->failureResultAdmin(null, 'New Value was not provided');
 		}
 
-		/** @noinspection PhpIncludeInspection */
 		require_once ROOT_DIR . '/services/' . $moduleName . '/' . $toolName . '.php';
 		$fullToolName = $moduleName . '_' . $toolName;
 		/** @var ObjectEditor $tool */
 		$tool = new $fullToolName();
+		$this->checkRequiredPermission($tool->getViewPermissions());
 
 		if ($tool->canBatchEdit()) {
+
 			$structure = $tool->getObjectStructure();
 			$batchFormatFields = $tool->getBatchUpdateFields($structure);
 			$fieldStructure = null;
@@ -554,10 +528,7 @@ class Admin_AJAX extends JSON_Action {
 				}
 			}
 			if ($fieldStructure == null) {
-				return [
-					'success' => false,
-					'message' => "Could not find the selected field to edit",
-				];
+				return $this->failureResultAdmin(null, 'Could not find the selected field to edit');
 			} else {
 				if ($batchUpdateScope == 'all') {
 					$numObjects = $tool->getNumObjects();
@@ -657,16 +628,17 @@ class Admin_AJAX extends JSON_Action {
 				}
 			}
 		} else {
-			return [
-				'success' => false,
-				'title' => 'Error Processing Update',
-				'message' => "Sorry, you don't have permission to batch edit",
-			];
+			return $this->failureResultAdmin('Error Processing Update', "Sorry, you don't have permission to batch edit");
 		}
 	}
 
 	/** @noinspection PhpUnused */
 	function getCopyFacetGroupForm() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission([
+			'Administer All Grouped Work Facets',
+			'Administer Library Grouped Work Facets',
+		]);
 		if (!empty($_REQUEST['facetGroupId'])) {
 			global $interface;
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWorkFacetGroup.php';
@@ -725,7 +697,11 @@ class Admin_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function doCopyFacetGroup() : array {
-
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission([
+			'Administer All Grouped Work Facets',
+			'Administer Library Grouped Work Facets',
+		]);
 		if (!empty($_REQUEST['name'])) {
 			$facetsProcessed = 0;
 			$id = $_REQUEST['id'];
@@ -763,11 +739,7 @@ class Admin_AJAX extends JSON_Action {
 						}
 					}
 				} else {
-					return [
-						'success' => false,
-						'title' => 'Error',
-						'message' => "Unable to create new facet group",
-					];
+					return $this->failureResultAdmin('Error', "Unable to create new facet group");
 				}
 			}
 
@@ -791,119 +763,115 @@ class Admin_AJAX extends JSON_Action {
 				];
 			}
 		} else {
-			return [
-				'success' => false,
-				'title' => 'Error',
-				'message' => "A name was not provided for the new facet group",
-			];
+			return $this->failureResultAdmin('Error', "A name was not provided for the new facet group");
 		}
 	}
     /** @noinspection PhpUnused */
     function getCopyEventsFacetGroupForm() : array {
-        if (!empty($_REQUEST['facetGroupId'])) {
-            global $interface;
-            require_once ROOT_DIR . '/sys/Events/EventsFacetGroup.php';
-            $facetGroup = new EventsFacetGroup();
-            $facetGroup->id = $_REQUEST['facetGroupId'];
-            if ($facetGroup->find(true)) {
-                $facetId = $facetGroup->id;
-                $facetLabel = $facetGroup->name;
-                $interface->assign('facetId', $facetId);
-                $interface->assign('facetLabel', $facetLabel);
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission(['Administer Events Facet Settings']);
+		if (!empty($_REQUEST['facetGroupId'])) {
+			global $interface;
+			require_once ROOT_DIR . '/sys/Events/EventsFacetGroup.php';
+			$facetGroup = new EventsFacetGroup();
+			$facetGroup->id = $_REQUEST['facetGroupId'];
+			if ($facetGroup->find(true)) {
+				$facetId = $facetGroup->id;
+				$facetLabel = $facetGroup->name;
+				$interface->assign('facetId', $facetId);
+				$interface->assign('facetLabel', $facetLabel);
 
-                $modalBody = $interface->fetch('Admin/copyEventsFacetGroupForm.tpl');
+				$modalBody = $interface->fetch('Admin/copyEventsFacetGroupForm.tpl');
 
-                return [
-                    'success' => true,
-                    'title' => translate([
-                        'text' => "Copy $facetLabel Events Facet Group",
-                        'isAdminFacing' => true,
-                    ]),
-                    'modalBody' => $modalBody,
-                    'modalButtons' => "<button onclick=\"return AspenDiscovery.Admin.processCopyEventsFacetGroupForm();\" class=\"modal-buttons btn btn-primary\">" . translate([
-                            'text' => 'Copy',
-                            'isAdminFacing' => true,
-                        ]) . "</button>",
-                ];
-            }else{
-                return[
-                    'success' => false,
-                    'message' => translate([
-                        'text' => "Facet Group to copy could not be found.",
-                        'isAdminFacing' => true,
-                    ])
-                ];
-            }
-        }else{
-            return[
-                'success' => false,
-                'message' => translate([
-                    'text' => "Facet Group to copy was not provided.",
-                    'isAdminFacing' => true,
-                ])
-            ];
-        }
-    }
+				return [
+					'success' => true,
+					'title' => translate([
+						'text' => "Copy $facetLabel Events Facet Group",
+						'isAdminFacing' => true,
+					]),
+					'modalBody' => $modalBody,
+					'modalButtons' => "<button onclick=\"return AspenDiscovery.Admin.processCopyEventsFacetGroupForm();\" class=\"modal-buttons btn btn-primary\">" . translate([
+							'text' => 'Copy',
+							'isAdminFacing' => true,
+						]) . "</button>",
+				];
+			}else{
+				return[
+					'success' => false,
+					'message' => translate([
+						'text' => "Facet Group to copy could not be found.",
+						'isAdminFacing' => true,
+					])
+				];
+			}
+		}else{
+			return[
+				'success' => false,
+				'message' => translate([
+					'text' => "Facet Group to copy was not provided.",
+					'isAdminFacing' => true,
+				])
+			];
+		}
+	}
 
-    /** @noinspection PhpUnused */
-    function doCopyEventsFacetGroup() : array {
+	/** @noinspection PhpUnused */
+	function doCopyEventsFacetGroup() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission(['Administer Events Facet Settings']);
+		if (!empty($_REQUEST['name'])) {
+			$facetsProcessed = 0;
+			$id = $_REQUEST['id'];
+			$name = $_REQUEST['name'];
 
-        if (!empty($_REQUEST['name'])) {
-            $facetsProcessed = 0;
-            $id = $_REQUEST['id'];
-            $name = $_REQUEST['name'];
+			require_once ROOT_DIR . '/sys/Events/EventsFacetGroup.php';
+			$curObj = new EventsFacetGroup();
+			$curObj->id = $id;
+			if ($curObj->find(true)) {
+				$curObjFacets = $curObj->getFacets();
+				$newGroup = new EventsFacetGroup();
+				$newGroup->name = $name;
+				if (isset($curObj->eventFacetCountsToShow)) {
+					$newGroup->eventFacetCountsToShow = $curObj->eventFacetCountsToShow;
+				}
+				if ($newGroup->insert()) {
+					foreach ($curObjFacets as $curFacet) {
+						$newFacet = $curFacet;
+						$newFacet->id = null;
+						$newFacet->facetGroupId = $newGroup->id;
+						$newFacet->insert();
+						$facetsProcessed++;
+					}
+				} else {
+					return $this->failureResultAdmin('Error', "Unable to create new facet group");
+				}
+			}
 
-            require_once ROOT_DIR . '/sys/Events/EventsFacetGroup.php';
-            $curObj = new EventsFacetGroup();
-            $curObj->id = $id;
-            if ($curObj->find(true)) {
-                $curObjFacets = $curObj->getFacets();
-                $newGroup = new EventsFacetGroup();
-                $newGroup->name = $name;
-                if (isset($curObj->eventFacetCountsToShow)) {
-                    $newGroup->eventFacetCountsToShow = $curObj->eventFacetCountsToShow;
-                }
-                if ($newGroup->insert()) {
-                    foreach ($curObjFacets as $curFacet) {
-                        $newFacet = $curFacet;
-                        $newFacet->id = null;
-                        $newFacet->facetGroupId = $newGroup->id;
-                        $newFacet->insert();
-                        $facetsProcessed++;
-                    }
-                } else {
-                    return [
-                        'success' => false,
-                        'title' => 'Error',
-                        'message' => "Unable to create new facet group",
-                    ];
-                }
-            }
-
-            if ($facetsProcessed > 0) {
-                return [
-                    'success' => true,
-                    'title' => 'Success',
-                    'message' => "Copied $facetsProcessed facets to $name",
-                ];
-            } else {
-                return [
-                    'success' => false,
-                    'title' => 'Error',
-                    'message' => "Unable to copy existing facets into $name",
-                ];
-            }
-        } else {
-            return [
-                'success' => false,
-                'title' => 'Error',
-                'message' => "A name was not provided for the new facet group",
-            ];
-        }
-    }
+			if ($facetsProcessed > 0) {
+				return [
+					'success' => true,
+					'title' => 'Success',
+					'message' => "Copied $facetsProcessed facets to $name",
+				];
+			} else {
+				return [
+					'success' => false,
+					'title' => 'Error',
+					'message' => "Unable to copy existing facets into $name",
+				];
+			}
+		} else {
+			return $this->failureResultAdmin('Error', "A name was not provided for the new facet group");
+		}
+	}
 
 	/** @noinspection PhpUnused */
 	function getCopyDisplaySettingsForm() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission([
+			'Administer All Grouped Work Display Settings',
+			'Administer Library Grouped Work Display Settings',
+		]);
 		if (!empty($_REQUEST['settingsId'])) {
 			global $interface;
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWorkDisplaySetting.php';
@@ -930,24 +898,20 @@ class Admin_AJAX extends JSON_Action {
 						]) . "</button>",
 				];
 			} else {
-				return [
-					'success' => false,
-					'title' => 'Error',
-					'message' => "Could not find Grouped Work Display Setting to copy",
-				];
+				return $this->failureResultAdmin('Error', "Could not find Grouped Work Display Setting to copy");
 			}
 		} else {
-			return [
-				'success' => false,
-				'title' => 'Error',
-				'message' => "Grouped Work Display Setting to copy was not found",
-			];
+			return $this->failureResultAdmin('Error', "Grouped Work Display Setting to copy was not found");
 		}
 	}
 
 	/** @noinspection PhpUnused */
 	function doCopyDisplaySettings() : array {
-
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission([
+			'Administer All Grouped Work Display Settings',
+			'Administer Library Grouped Work Display Settings',
+		]);
 		if (!empty($_REQUEST['name'])) {
 			$id = $_REQUEST['id'];
 			$name = $_REQUEST['name'];
@@ -966,36 +930,25 @@ class Admin_AJAX extends JSON_Action {
 						'message' => "Copied Grouped Work Display Settings to $name",
 					];
 				} else {
-					return [
-						'success' => false,
-						'title' => 'Error',
-						'message' => "Unable to create new Grouped Work Display Setting",
-					];
+					return $this->failureResultAdmin('Error', "Unable to create new Grouped Work Display Setting");
 				}
 			} else {
-				return [
-					'success' => false,
-					'title' => 'Error',
-					'message' => "Could not find Grouped Work Display Setting to copy",
-				];
+				return $this->failureResultAdmin('Error', "Could not find Grouped Work Display Setting to copy");
 			}
 
 		} else {
-			return [
-				'success' => false,
-				'title' => 'Error',
-				'message' => "A name was not provided for the new Grouped Work Display Setting",
-			];
+			return $this->failureResultAdmin('Error', "A name was not provided for the new Grouped Work Display Setting");
 		}
 	}
 
 	/** @noinspection PhpUnused */
 	function getBatchDeleteForm() : array {
+		$this->requireLoggedInUser();
+
 		$moduleName = $_REQUEST['moduleName'];
 		$toolName = $_REQUEST['toolName'];
 		$batchDeleteScope = $_REQUEST['batchDeleteScope'];
 
-		/** @noinspection PhpIncludeInspection */
 		require_once ROOT_DIR . '/services/' . $moduleName . '/' . $toolName . '.php';
 		$fullToolName = $moduleName . '_' . $toolName;
 		/** @var ObjectEditor $tool */
@@ -1021,15 +974,14 @@ class Admin_AJAX extends JSON_Action {
 					]) . "</button>",
 			];
 		} else {
-			return [
-				'success' => false,
-				'message' => "Sorry, you don't have permission to batch edit",
-			];
+			return $this->failureResultAdmin(null, "Sorry, you don't have permission to batch edit");
 		}
 	}
 
 	/** @noinspection PhpUnused */
 	function doBatchDelete() : array {
+		$this->requireLoggedInUser();
+
 		$moduleName = $_REQUEST['moduleName'];
 		$toolName = $_REQUEST['toolName'];
 		$batchDeleteScope = $_REQUEST['batchDeleteScope'];
@@ -1123,20 +1075,16 @@ class Admin_AJAX extends JSON_Action {
 			}
 
 		} else {
-			return [
-				'success' => false,
-				'title' => 'Error Processing Update',
-				'message' => "Sorry, you don't have permission to batch delete.",
-			];
+			return $this->failureResultAdmin('Error Processing Update', "Sorry, you don't have permission to batch delete.");
 		}
 	}
 
 	/** @noinspection PhpUnused */
 	function getFilterOptions() : array {
+		$this->requireLoggedInUser();
 		$moduleName = $_REQUEST['moduleName'];
 		$toolName = $_REQUEST['toolName'];
 
-		/** @noinspection PhpIncludeInspection */
 		require_once ROOT_DIR . '/services/' . $moduleName . '/' . $toolName . '.php';
 		$fullToolName = $moduleName . '_' . $toolName;
 		/** @var ObjectEditor $tool */
@@ -1148,11 +1096,7 @@ class Admin_AJAX extends JSON_Action {
 			global $interface;
 			$interface->assign('availableFilters', $availableFilters);
 			if (count($availableFilters) == 0) {
-				return [
-					'success' => false,
-					'title' => 'Error',
-					'message' => "There are no fields left to use as filters",
-				];
+				return $this->failureResultAdmin('Error', "There are no fields left to use as filters");
 			} else {
 				$modalBody = $interface->fetch('Admin/selectFilterForm.tpl');
 				return [
@@ -1169,26 +1113,22 @@ class Admin_AJAX extends JSON_Action {
 				];
 			}
 		} else {
-			return [
-				'success' => false,
-				'title' => 'Error',
-				'message' => "Sorry, this form cannot be filtered",
-			];
+			return $this->failureResultAdmin('Error', "Sorry, this form cannot be filtered");
 		}
 	}
 
 	/** @noinspection PhpUnused */
 	function getNewFilterRow() : array {
+		$this->requireLoggedInUser();
 		$moduleName = $_REQUEST['moduleName'];
 		$toolName = $_REQUEST['toolName'];
 		$selectedFilter = $_REQUEST['selectedFilter'];
 
-		/** @noinspection PhpIncludeInspection */
 		require_once ROOT_DIR . '/services/' . $moduleName . '/' . $toolName . '.php';
 		$fullToolName = $moduleName . '_' . $toolName;
 		/** @var ObjectEditor $tool */
 		$tool = new $fullToolName();
-
+		$this->checkRequiredPermission($tool->getViewPermissions());
 		$objectStructure = $tool->getObjectStructure();
 		if ($tool->canFilter($objectStructure)) {
 			$availableFilters = $tool->getFilterFields($objectStructure);
@@ -1229,6 +1169,7 @@ class Admin_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function deleteNYTList() : array {
+		$this->requireLoggedInUser();
 		$result = [
 			'success' => false,
 			'message' => translate([
@@ -1248,7 +1189,7 @@ class Admin_AJAX extends JSON_Action {
 			//Perform an action on the list, but verify that the user has permission to do so.
 			$userCanEdit = false;
 			$userObj = UserAccount::getActiveUserObj();
-			if ($userObj != false) {
+			if ($userObj !== false) {
 				$userCanEdit = $userObj->canEditList($list);
 			}
 			if ($userCanEdit) {
@@ -1266,6 +1207,8 @@ class Admin_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function getFormPTypeSetting() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission(['Administer Patron Types']);
 		require_once ROOT_DIR . '/sys/Account/PType.php';
 		$pType = $_REQUEST["data"]["pType"];
 		$selected = $_REQUEST["data"]["selected"];
@@ -1425,6 +1368,8 @@ class Admin_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function getSearchCommunityContentForm() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission('Import Content from Community');
 		global $interface;
 		require_once ROOT_DIR . '/sys/SystemVariables.php';
 		$systemVariables = SystemVariables::getSystemVariables();
@@ -1467,55 +1412,50 @@ class Admin_AJAX extends JSON_Action {
 		}
 	}
 
-	function toggleFieldLock() {
-		$result = [
-			'success' => false,
-			'message' => 'Unknown error changing field locking',
-		];
-		if (UserAccount::isLoggedIn()) {
-			if (UserAccount::userHasPermission('Lock Administration Fields')) {
-				if (!preg_match_all('/^[a-zA-Z0-9]*$/',$_REQUEST['moduleName'])){
-					$result['message'] = translate(['text'=>'Invalid module name', 'isAdminFacing'=>true]);
-				}elseif (!preg_match_all('/^[a-zA-Z0-9]*$/',$_REQUEST['toolName'])){
-					$result['message'] = translate(['text'=>'Invalid tool name', 'isAdminFacing'=>true]);
-				}elseif (!preg_match_all('/^[a-zA-Z0-9]*$/',$_REQUEST['fieldName'])){
-					$result['message'] = translate(['text'=>'Invalid field name', 'isAdminFacing'=>true]);
-				}
-				$moduleName = $_REQUEST['moduleName'];
-				$toolName = $_REQUEST['toolName'];
-				$fieldName = $_REQUEST['fieldName'];
-				require_once ROOT_DIR . '/sys/Administration/FieldLock.php';
-				$fieldLock = new FieldLock();
-				$fieldLock->module = $moduleName;
-				$fieldLock->toolName = $toolName;
-				$fieldLock->field = $fieldName;
-				if ($fieldLock->find(true)) {
-					//We're disabling the locking
-					if ($fieldLock->delete()) {
-						$result = [
-							'success' => true,
-							'lockToggle' => "<a id=\"fieldLock$fieldName\" onclick=\"return AspenDiscovery.Admin.toggleFieldLock('$moduleName', '$toolName', '$fieldName');\" role=\"button\"><i role=\"presentation\" class=\"text-info fas fa-unlock-alt\" title=\"" . translate(['text'=>"Click to toggle field locking", 'isAdminFacing'=>true, 'inAttribute'=>true]) . "\"></i></a>",
-						];
-					}
-				} else {
-					//We're enabling locking
-					if ($fieldLock->insert()) {
-						$result = [
-							'success' => true,
-							'lockToggle' => "<a id=\"fieldLock$fieldName\" onclick=\"return AspenDiscovery.Admin.toggleFieldLock('$moduleName', '$toolName', '$fieldName');\" role=\"button\"><i role=\"presentation\" class=\"text-info fas fa-lock\" title=\"" . translate(['text'=>"Click to toggle field locking", 'isAdminFacing'=>true, 'inAttribute'=>true]) . "\"></i></a>",
-						];
-					}
-				}
-			}else {
-				$result['message'] = 'You don\'t have the correct permissions to change field locking';
+	/** @noinspection PhpUnused */
+	function toggleFieldLock() : array {
+		$this->requireLoggedInUser(null, 'You must be logged in to change field locking');
+		$this->checkRequiredPermission('Lock Administration Fields');
+		$result = $this->failureResultAdmin(null, 'Unknown error changing field locking');
+		if (!preg_match_all('/^[a-zA-Z0-9]*$/',$_REQUEST['moduleName'])){
+			$result['message'] = translate(['text'=>'Invalid module name', 'isAdminFacing'=>true]);
+		}elseif (!preg_match_all('/^[a-zA-Z0-9]*$/',$_REQUEST['toolName'])){
+			$result['message'] = translate(['text'=>'Invalid tool name', 'isAdminFacing'=>true]);
+		}elseif (!preg_match_all('/^[a-zA-Z0-9]*$/',$_REQUEST['fieldName'])){
+			$result['message'] = translate(['text'=>'Invalid field name', 'isAdminFacing'=>true]);
+		}
+		$moduleName = $_REQUEST['moduleName'];
+		$toolName = $_REQUEST['toolName'];
+		$fieldName = $_REQUEST['fieldName'];
+		require_once ROOT_DIR . '/sys/Administration/FieldLock.php';
+		$fieldLock = new FieldLock();
+		$fieldLock->module = $moduleName;
+		$fieldLock->toolName = $toolName;
+		$fieldLock->field = $fieldName;
+		if ($fieldLock->find(true)) {
+			//We're disabling the locking
+			if ($fieldLock->delete()) {
+				$result = [
+					'success' => true,
+					'lockToggle' => "<a id=\"fieldLock$fieldName\" onclick=\"return AspenDiscovery.Admin.toggleFieldLock('$moduleName', '$toolName', '$fieldName');\" role=\"button\"><i role=\"presentation\" class=\"text-info fas fa-unlock-alt\" title=\"" . translate(['text'=>"Click to toggle field locking", 'isAdminFacing'=>true, 'inAttribute'=>true]) . "\"></i></a>",
+				];
 			}
 		} else {
-			$result['message'] = 'You must be logged in to change field locking';
+			//We're enabling locking
+			if ($fieldLock->insert()) {
+				$result = [
+					'success' => true,
+					'lockToggle' => "<a id=\"fieldLock$fieldName\" onclick=\"return AspenDiscovery.Admin.toggleFieldLock('$moduleName', '$toolName', '$fieldName');\" role=\"button\"><i role=\"presentation\" class=\"text-info fas fa-lock\" title=\"" . translate(['text'=>"Click to toggle field locking", 'isAdminFacing'=>true, 'inAttribute'=>true]) . "\"></i></a>",
+				];
+			}
 		}
 		return $result;
 	}
 
-	public function getCopyMenuLinksForm() {
+	/** @noinspection PhpUnused */
+	public function getCopyMenuLinksForm() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission('Library Menu');
 		$result = [
 			'success' => false,
 			'message' =>  translate([
@@ -1582,7 +1522,10 @@ class Admin_AJAX extends JSON_Action {
 		return $result;
 	}
 
-	public function copyMenuLinks() {
+	/** @noinspection PhpUnused */
+	public function copyMenuLinks() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission('Library Menu');
 		$result = [
 			'success' => false,
 			'title' => translate([
@@ -1677,20 +1620,28 @@ class Admin_AJAX extends JSON_Action {
 		return $result;
 	}
 
-	public function exportUsageData() {
+	/** @noinspection PhpUnused */
+	public function exportUsageData() : void {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission([
+			'View Dashboards',
+			'View System Reports',
+		]);
 		require_once ROOT_DIR . '/services/Admin/UsageGraphs.php';
 		$aspenUsageGraph = new Admin_UsageGraphs();
-		$aspenUsageGraph->buildCSV();
-
+		$aspenUsageGraph->buildCSV('Admin');
 	}
+
 	/**
 	 * Retrieves patron types for the admin_sso account profile and
 	 * all relevant primary ILS account profiles associated with the current SSO Setting
 	 * to help identify which patron types are missing in the admin_sso profile.
 	 */
 	/** @noinspection PhpUnused */
-	function getSSOPatronTypesForProfiles(): array
-	{
+	function getSSOPatronTypesForProfiles(): array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission(['Single sign-on']);
+
 		$ssoSettingId = $_REQUEST['ssoSettingId'] ?? null;
 
 		require_once ROOT_DIR . '/sys/Authentication/SSOSetting.php';
@@ -1755,11 +1706,17 @@ class Admin_AJAX extends JSON_Action {
 		return $result;
 	}
 
+	/** @noinspection PhpUnused */
 	function getNotificationDevicesForUser(): array {
-		$result = [
-			'success' => false,
-			'message' => 'Unknown error getting devices',
-		];
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission([
+			'Send Notifications to All Libraries',
+			'Send Notifications to All Locations',
+			'Send Notifications to Home Library',
+			'Send Notifications to Home Location',
+			'Send Notifications to Home Library Locations',
+		]);
+		$result = $this->failureResultAdmin(null, 'Unknown error getting devices');
 
 		$user = $_REQUEST['user'] ?? null;
 		if ($user) {
@@ -1796,7 +1753,7 @@ class Admin_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function searchReleaseNotes() {
+	function searchReleaseNotes() : array {
 		$resultsHTML = [];
 		$resultsHTML['html'] = '';
 		$results = [];
@@ -1831,7 +1788,7 @@ class Admin_AJAX extends JSON_Action {
 				$resultsHTML['html'] .= '<h4>Results Found: </h4><ul>';
 
 				foreach ($results as $releaseNote) {
-					$resultsHTML['html'] .= "<li><a href='/Admin/ReleaseNotes?release={$releaseNote}'" . '>' . $releaseNote . '</a></li>';
+					$resultsHTML['html'] .= "<li><a href='/Admin/ReleaseNotes?release=$releaseNote'" . '>' . $releaseNote . '</a></li>';
 				}
 
 				$resultsHTML['html'] .= '</ul>';
@@ -1847,6 +1804,15 @@ class Admin_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	public function searchAdminSettings() : array {
+		$this->requireLoggedInUser();
+		$activeUser = UserAccount::getLoggedInUser();
+		if (!$activeUser->isUserAdmin()) {
+			return [
+				'success' => false,
+				'message' => 'You do not have permission to access this functionality.'
+			];
+		}
+
 		require_once ROOT_DIR . '/sys/Administration/AdminPropertySearchEntry.php';
 		global $interface;
 		$error = '';
@@ -1878,8 +1844,298 @@ class Admin_AJAX extends JSON_Action {
 
 		$results = $interface->fetch('Admin/adminSettingSearchResults.tpl');
 		return [
-			'success' => false,
+			'success' => true,
 			'results' => $results
 		];
+	}
+
+	/** @noinspection PhpUnused */
+	public function getBatchUpdateHolidayForm() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission(['Library ILS Connection', 'Library Holidays']);
+		global $interface;
+		$scopeLevel = $_REQUEST['scopeLevel'];
+		if ($scopeLevel == 'library') {
+			return [
+				'title' => translate([
+					'text' => 'Library Holidays Batch Update',
+					'isPublicFacing' => true,
+				]),
+				'modalBody' => $interface->fetch('Admin/batchUpdateHolidaysForm.tpl'),
+				'modalButtons' => '<button type="button" class="tool btn btn-primary" id="batchUpdateLibraryHolidays" onclick="AspenDiscovery.Admin.batchUpdateHolidays($(\'#holidayInformation\').val(), \'library\'); return false;">' . translate([
+						'text' => "Upload Library Holiday Information",
+						'isPublicFacing' => true,
+					]) . "</button>" .
+					'<button type="button" class="tool btn btn-primary" id="batchUpdateAllHolidays" onclick="AspenDiscovery.Admin.batchUpdateHolidays($(\'#holidayInformation\').val(), \'all\'); return false;">' . translate([
+						'text' => "Upload All Holiday Information",
+						'isPublicFacing' => true,
+					]) . "</button>",
+			];
+		}
+		return [
+			'title' => translate([
+				'text' => 'Location Holidays Batch Update',
+				'isPublicFacing' => true,
+			]),
+			'modalBody' => $interface->fetch('Admin/batchUpdateHolidaysForm.tpl'),
+			'modalButtons' => '<button type="button" class="tool btn btn-primary" id="batchUpdateLocationHolidays" onclick="AspenDiscovery.Admin.batchUpdateHolidays($(\'#holidayInformation\').val(), \'location\'); return false;">' . translate([
+					'text' => "Upload Location Holiday Information",
+					'isPublicFacing' => true,
+				]) . "</button>" .
+				'<button type="button" class="tool btn btn-primary" id="batchUpdateAllHolidays" onclick="AspenDiscovery.Admin.batchUpdateHolidays($(\'#holidayInformation\').val(), \'all\'); return false;">' . translate([
+					'text' => "Upload All Holiday Information",
+					'isPublicFacing' => true,
+				]) . "</button>",
+		];
+	}
+	/** @noinspection PhpUnused */
+	public function batchUpdateHolidays() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission(['Library ILS Connection', 'Library Holidays']);
+
+		$holidayInformation = $_REQUEST['holidayInfo'];
+		$scope = $_REQUEST['scope'];
+		$currentYear = date('Y');
+		$holidaysAdded = 0;
+		$locationClosuresAdded = 0;
+		$dayMap = [
+			'sun' => 0,
+			'mon' => 1,
+			'tue' => 2,
+			'wed' => 3,
+			'thu' => 4,
+			'fri' => 5,
+			'sat' => 6,
+		];
+
+		//get list of libraries/locations the user can edit if they don't have both "Administer All" permissions
+		if (!UserAccount::userHasPermission('Administer All Libraries')){
+			$libraryList = Library::getLibraryList(true);
+		}
+		if (!UserAccount::userHasPermission('Administer All Locations')){
+			$locationList = Location::getLocationList(true);
+		}
+
+		//parse data
+		$rows = $this->parseSierraHolidayData($holidayInformation);
+
+		$libraryCodes = [];
+		$library = new Library();
+		$library->find();
+		while ($library->fetch()){
+			$libraryCodes[$library->libraryId] = $library->ilsCode;
+		}
+		$locationCodes = [];
+		$location = new Location();
+		$location->find();
+		while ($location->fetch()){
+			$locationCodes[$location->locationId] = $location->code;
+		}
+
+
+		//go through each row and update according to user permissions and scope
+		foreach ($rows as $row) {
+			$libraryLocationCode = $row[0];
+			$holidayDate = $row[1];
+			$holidayDates = [];
+
+			if (strlen($holidayDate) > 3){
+				$holidayDate = $currentYear . '-' . str_replace('/', '-', $holidayDate);
+			} else {
+				$holidayDates = $this->getDatesForDayOfWeek($holidayDate);
+			}
+
+			if ($libraryLocationCode == "?????") { //update all libraries
+				if ($scope == 'library' || $scope == 'all') {
+					foreach ($libraryCodes as $libId => $libraryCode) {
+						if (empty($libraryList) || array_key_exists($libId, $libraryList)) {
+							require_once ROOT_DIR . '/sys/LibraryLocation/Holiday.php';
+							$holiday = new Holiday();
+							$holiday->libraryId = $libId;
+							$holiday->name = '';
+							if (!empty($holidayDates)) {
+								foreach ($holidayDates as $holidayDate) {
+									$holiday->date = $holidayDate;
+									if ($holiday->insert()) {
+										$holidaysAdded++;
+									}
+								}
+							} else {
+								$holiday->date = $holidayDate;
+								if ($holiday->insert()) {
+									$holidaysAdded++;
+								}
+							}
+						}
+					}
+				} if (($scope == 'location' || $scope == 'all') && strlen($holidayDate) == 3) {
+					foreach ($locationCodes as $locId => $locationCode) {
+						if (empty($locationList) || array_key_exists($locId, $locationList)) {
+							require_once ROOT_DIR . '/sys/LibraryLocation/LocationHours.php';
+							$locationClosure = new LocationHours();
+							$locationClosure->locationId = $locId;
+							$locationClosure->day = $dayMap[$holidayDate];
+							if (!$locationClosure->find(true)) {
+								$locationClosure->closed = 1;
+								$locationClosure->open = '00:00:00';
+								$locationClosure->close = '00:00:00';
+								if ($locationClosure->insert()) {
+									$locationClosuresAdded++;
+								}
+							}
+						}
+					}
+				}
+			} else {
+				$libraryLocationCode = strtr($libraryLocationCode, ['?' => '.', '*' => '.*']);
+				if ($scope == 'library' || $scope == 'all') {
+					$libraries = preg_grep("/^". $libraryLocationCode . "/", $libraryCodes);
+					foreach ($libraries as $libId => $lib) {
+						if (empty($libraryList) || array_key_exists($libId, $libraryList)) {
+							require_once ROOT_DIR . '/sys/LibraryLocation/Holiday.php';
+							$holiday = new Holiday();
+							$holiday->libraryId = $libId;
+							$holiday->name = '';
+							if (!empty($holidayDates)) {
+								foreach ($holidayDates as $holidayDate) {
+									$holiday->date = $holidayDate;
+									if ($holiday->insert()) {
+										$holidaysAdded++;
+									}
+								}
+							} else {
+								$holiday->date = $holidayDate;
+								if ($holiday->insert()) {
+									$holidaysAdded++;
+								}
+							}
+						}
+					}
+				} if ((($scope == 'location' || $scope == 'all')) && strlen($holidayDate) == 3) {
+					$locations = preg_grep("/^" . $libraryLocationCode . "/", $locationCodes);
+					foreach ($locations as $locId => $loc){
+						if (empty($locationList) || array_key_exists($locId, $locationList)) {
+							require_once ROOT_DIR . '/sys/LibraryLocation/LocationHours.php';
+							$locationClosure = new LocationHours();
+							$locationClosure->locationId = $locId;
+							$locationClosure->day = $dayMap[$holidayDate];
+							$locationClosure->closed = 1;
+							if (!$locationClosure->find(true)) {
+								$locationClosure->open = '00:00:00';
+								$locationClosure->close = '00:00:00';
+								if ($locationClosure->insert()) {
+									$locationClosuresAdded++;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		if ($scope == 'all') {
+			return [
+				'success' => true,
+				'title' => translate([
+					'text' => 'Success!',
+					'isAdminFacing' => true,
+				]),
+				'message' => translate([
+					'text' => 'Successfully added %1% library holidays and %2% location closures',
+					1 => $holidaysAdded,
+					2 => $locationClosuresAdded,
+					'isAdminFacing' => true,
+				]),
+			];
+		} elseif ($scope == 'library') {
+			return [
+				'success' => true,
+				'title' => translate([
+					'text' => 'Success!',
+					'isAdminFacing' => true,
+				]),
+				'message' => translate([
+					'text' => 'Successfully added %1% library holidays',
+					1 => $holidaysAdded,
+					'isAdminFacing' => true,
+				]),
+			];
+		}
+		return [
+			'success' => true,
+			'title' => translate([
+				'text' => 'Success!',
+				'isAdminFacing' => true,
+			]),
+			'message' => translate([
+				'text' => 'Successfully added %1% location closures',
+				1 => $locationClosuresAdded,
+				'isAdminFacing' => true,
+			]),
+		];
+	}
+
+	private function parseSierraHolidayData($holidayInformation): array {
+		//parse text into an array of rows that are an array of columns
+		$rows = [];
+
+		// Split into lines
+		$lines = preg_split('/\r?\n/', trim($holidayInformation));
+
+		foreach ($lines as $line) {
+			//replace commas with spaces since we split info up based on whitespace between values later
+			$line = trim(str_replace(',', ' ', $line));
+
+			// Skip blank lines
+			if ($line === '') {
+				continue;
+			}
+
+			// Primary split: one or more tabs OR two or more consecutive spaces
+			$cols = preg_split('/\t+|\s{2,}/', $line, -1, PREG_SPLIT_NO_EMPTY);
+
+			// Fallback: if only 1 column found, try splitting on any whitespace
+			if (count($cols) < 2) {
+				$cols = preg_split('/\s+/', $line, 3, PREG_SPLIT_NO_EMPTY);
+			}
+
+			$count = count($cols);
+
+			if ($count >= 3) {
+				// 3+ columns: skip the first (number prefix), keep the next two
+				$rows[] = array_map('trim', array_slice($cols, 1, 2));
+			} elseif ($count === 2) {
+				// 2 columns: no number prefix, use both as-is
+				$rows[] = array_map('trim', $cols);
+			} //else we ignore current line since we need a library/location code & date
+		}
+
+		return $rows;
+	}
+
+	private function getDatesForDayOfWeek(string $dayName): array {
+		$map = [
+			'mon' => 'Monday',
+			'tue' => 'Tuesday',
+			'wed' => 'Wednesday',
+			'thu' => 'Thursday',
+			'fri' => 'Friday',
+			'sat' => 'Saturday',
+			'sun' => 'Sunday',
+		];
+
+		$dayName = $map[strtolower(substr($dayName, 0, 3))] ?? $dayName;
+
+		$year      = date('Y');
+		$startDate = new DateTime("first $dayName of January $year");
+		$endDate   = new DateTime("$year-12-31");
+		$interval  = new DateInterval('P7D');
+		$dates     = [];
+
+		while ($startDate <= $endDate) {
+			$dates[] = $startDate->format('Y-m-d');
+			$startDate->add($interval);
+		}
+
+		return $dates;
 	}
 }

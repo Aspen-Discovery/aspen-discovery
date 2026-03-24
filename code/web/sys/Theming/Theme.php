@@ -302,6 +302,32 @@ class Theme extends DataObject {
 	public /** @noinspection PhpUnused */
 		$actionButtonHoverBorderColorDefault;
 
+	public static $defaultSuccessButtonBackgroundColor = '#5cb85c';
+	public static $defaultSuccessButtonForegroundColor = '#000000';
+	public static $defaultSuccessButtonBorderColor = '#4cae4c';
+	public static $defaultSuccessButtonHoverBackgroundColor = '#449d44';
+	public static $defaultSuccessButtonHoverForegroundColor = '#000000';
+	public static $defaultSuccessButtonHoverBorderColor = '#398439';
+
+	public $successButtonBackgroundColor;
+	public /** @noinspection PhpUnused */
+		$successButtonBackgroundColorDefault;
+	public $successButtonForegroundColor;
+	public /** @noinspection PhpUnused */
+		$successButtonForegroundColorDefault;
+	public $successButtonBorderColor;
+	public /** @noinspection PhpUnused */
+		$successButtonBorderColorDefault;
+	public $successButtonHoverBackgroundColor;
+	public /** @noinspection PhpUnused */
+		$successButtonHoverBackgroundColorDefault;
+	public $successButtonHoverForegroundColor;
+	public /** @noinspection PhpUnused */
+		$successButtonHoverForegroundColorDefault;
+	public $successButtonHoverBorderColor;
+	public /** @noinspection PhpUnused */
+		$successButtonHoverBorderColorDefault;
+
 	public static $defaultInfoButtonBackgroundColor = '#8cd2e7';
 	public static $defaultInfoButtonForegroundColor = '#000000';
 	public static $defaultInfoButtonBorderColor = '#999999';
@@ -523,6 +549,7 @@ class Theme extends DataObject {
 	public $additionalCss;
 
 	public $generatedCss;
+	public $generatedRTLCss;
 
 	//Cookie Consent Themeing Options
 	public static $defaultCookieConsentBackgroundColor = '#1D7FF0';
@@ -2129,6 +2156,73 @@ class Theme extends DataObject {
 						],
 					],
 
+					'successButtonSection' => [
+						'property' => 'successButtonSection',
+						'type' => 'section',
+						'label' => 'Success Button',
+						'hideInLists' => true,
+						'properties' => [
+							'successButtonBackgroundColor' => [
+								'property' => 'successButtonBackgroundColor',
+								'type' => 'color',
+								'label' => 'Background Color',
+								'description' => 'Background Color',
+								'required' => false,
+								'hideInLists' => true,
+								'default' => Theme::$defaultSuccessButtonBackgroundColor,
+								'checkContrastWith' => 'successButtonForegroundColor',
+							],
+							'successButtonForegroundColor' => [
+								'property' => 'successButtonForegroundColor',
+								'type' => 'color',
+								'label' => 'Text Color',
+								'description' => 'Text Color',
+								'required' => false,
+								'hideInLists' => true,
+								'default' => Theme::$defaultSuccessButtonForegroundColor,
+								'checkContrastWith' => 'successButtonBackgroundColor',
+							],
+							'successButtonBorderColor' => [
+								'property' => 'successButtonBorderColor',
+								'type' => 'color',
+								'label' => 'Border Color',
+								'description' => 'Border Color',
+								'required' => false,
+								'hideInLists' => true,
+								'default' => Theme::$defaultSuccessButtonBorderColor,
+							],
+							'successButtonHoverBackgroundColor' => [
+								'property' => 'successButtonHoverBackgroundColor',
+								'type' => 'color',
+								'label' => 'Hover Background Color',
+								'description' => 'Hover Background Color',
+								'required' => false,
+								'hideInLists' => true,
+								'default' => Theme::$defaultSuccessButtonHoverBackgroundColor,
+								'checkContrastWith' => 'successButtonHoverForegroundColor',
+							],
+							'successButtonHoverForegroundColor' => [
+								'property' => 'successButtonHoverForegroundColor',
+								'type' => 'color',
+								'label' => 'Hover Text Color',
+								'description' => 'Hover Text Color',
+								'required' => false,
+								'hideInLists' => true,
+								'default' => Theme::$defaultSuccessButtonHoverForegroundColor,
+								'checkContrastWith' => 'successButtonHoverBackgroundColor',
+							],
+							'successButtonHoverBorderColor' => [
+								'property' => 'successButtonHoverBorderColor',
+								'type' => 'color',
+								'label' => 'Hover Border Color',
+								'description' => 'Hover Border Color',
+								'required' => false,
+								'hideInLists' => true,
+								'default' => Theme::$defaultSuccessButtonHoverBorderColor,
+							],
+						],
+					],
+
 					'infoButtonSection' => [
 						'property' => 'infoButtonSection',
 						'type' => 'section',
@@ -2730,6 +2824,14 @@ class Theme extends DataObject {
 		if ($toolsButtonHoverContrast < $minContrastRatio) {
 			$validationResults['errors'][] = 'Tools Button Hover contrast does not meet accessibility guidelines, contrast is: ' . ($toolsButtonHoverContrast);
 		}
+		$successButtonContrast = ColorUtils::calculateColorContrast($this->successButtonBackgroundColor, $this->successButtonForegroundColor);
+		if ($successButtonContrast < $minContrastRatio) {
+			$validationResults['errors'][] = 'Success Button contrast does not meet accessibility guidelines, contrast is: ' . ($successButtonContrast);
+		}
+		$successButtonHoverContrast = ColorUtils::calculateColorContrast($this->successButtonHoverBackgroundColor, $this->successButtonHoverForegroundColor);
+		if ($successButtonHoverContrast < $minContrastRatio) {
+			$validationResults['errors'][] = 'Success Button Hover contrast does not meet accessibility guidelines, contrast is: ' . ($successButtonHoverContrast);
+		}
 		$infoButtonContrast = ColorUtils::calculateColorContrast($this->infoButtonBackgroundColor, $this->infoButtonForegroundColor);
 		if ($infoButtonContrast < $minContrastRatio) {
 			$validationResults['errors'][] = 'Info Button contrast does not meet accessibility guidelines, contrast is: ' . ($infoButtonContrast);
@@ -2777,6 +2879,7 @@ class Theme extends DataObject {
 		if ($context != 'saveGeneratedCss') {
 			//No need to regenerate CSS because that is called upstream.
 			$this->generatedCss = $this->generateCss();
+			$this->generatedRTLCss = $this->generateRtlCss();
 		}
 		$this->clearDefaultCovers();
 		if ($context != 'saveGeneratedCss') {
@@ -2838,6 +2941,7 @@ class Theme extends DataObject {
 					$child->id = $themeId;
 					if ($child->find(true)) {
 						$child->generateCss(true);
+						$child->generateRtlCss(true);
 					}
 				}
 			}
@@ -2947,6 +3051,12 @@ class Theme extends DataObject {
 		$this->getValueForPropertyUsingDefaults('toolsButtonHoverBackgroundColor', Theme::$defaultToolsButtonHoverBackgroundColor, $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('toolsButtonHoverForegroundColor', Theme::$defaultToolsButtonHoverForegroundColor, $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('toolsButtonHoverBorderColor', Theme::$defaultToolsButtonHoverBorderColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('successButtonBackgroundColor', Theme::$defaultSuccessButtonBackgroundColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('successButtonForegroundColor', Theme::$defaultSuccessButtonForegroundColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('successButtonBorderColor', Theme::$defaultSuccessButtonBorderColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('successButtonHoverBackgroundColor', Theme::$defaultSuccessButtonHoverBackgroundColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('successButtonHoverForegroundColor', Theme::$defaultSuccessButtonHoverForegroundColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('successButtonHoverBorderColor', Theme::$defaultSuccessButtonHoverBorderColor, $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('infoButtonBackgroundColor', Theme::$defaultInfoButtonBackgroundColor, $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('infoButtonForegroundColor', Theme::$defaultInfoButtonForegroundColor, $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('infoButtonBorderColor', Theme::$defaultInfoButtonBorderColor, $appliedThemes);
@@ -3097,6 +3207,12 @@ class Theme extends DataObject {
 		$interface->assign('toolsButtonHoverBackgroundColor', $this->toolsButtonHoverBackgroundColor);
 		$interface->assign('toolsButtonHoverForegroundColor', $this->toolsButtonHoverForegroundColor);
 		$interface->assign('toolsButtonHoverBorderColor', $this->toolsButtonHoverBorderColor);
+		$interface->assign('successButtonBackgroundColor', $this->successButtonBackgroundColor);
+		$interface->assign('successButtonForegroundColor', $this->successButtonForegroundColor);
+		$interface->assign('successButtonBorderColor', $this->successButtonBorderColor);
+		$interface->assign('successButtonHoverBackgroundColor', $this->successButtonHoverBackgroundColor);
+		$interface->assign('successButtonHoverForegroundColor', $this->successButtonHoverForegroundColor);
+		$interface->assign('successButtonHoverBorderColor', $this->successButtonHoverBorderColor);
 		$interface->assign('infoButtonBackgroundColor', $this->infoButtonBackgroundColor);
 		$interface->assign('infoButtonForegroundColor', $this->infoButtonForegroundColor);
 		$interface->assign('infoButtonBorderColor', $this->infoButtonBorderColor);
@@ -3280,6 +3396,81 @@ class Theme extends DataObject {
 		}
 
 		return $this->_allAppliedThemes;
+	}
+
+	function generateRTLCss($saveChanges = false): string {
+		$base = $this->generatedCss;
+		$previousRTLCss = $this->generatedRTLCss;
+		$updatedRTLCss = $this->createRtlFromBaseCss($base);
+
+		if ($updatedRTLCss != $previousRTLCss) {
+			$this->__set('generatedRTLCss', $updatedRTLCss);
+			if ($saveChanges) {
+				$this->update('saveGeneratedCss');
+			}
+		}
+		return $this->generatedRTLCss;
+	}
+
+	private function createRtlFromBaseCss($baseCss): string {
+		// Extract CSS content from the base CSS (remove <style> tags if present)
+		$cssContent = preg_replace('/<style[^>]*>|<\/style>/', '', $baseCss);
+
+		// Process CSS rules to flip RTL properties
+		$rtlCss = preg_replace_callback('/([^{]+){([^}]+)}/', function ($matches) {
+			$selector = trim($matches[1]);
+			$rules = trim($matches[2]);
+
+			// Only process rules that contain RTL-relevant properties
+			if (preg_match('/(border-.*-left|border-.*-right|left|right|margin-left|margin-right|padding-left|padding-right|text-align|float)/', $rules)) {
+				// Flip directional properties
+				$rtlRules = str_replace([
+					'border-left:',
+					'border-right:',
+					'border-top-left-radius:',
+					'border-top-right-radius:',
+					'border-bottom-left-radius:',
+					'border-bottom-right-radius:',
+					'margin-left:',
+					'margin-right:',
+					'padding-left:',
+					'padding-right:',
+					'left:',
+					'right:',
+					'text-align: left',
+					'text-align: right',
+					'float: left',
+					'float: right'
+				], [
+					'border-right:',
+					'border-left:',
+					'border-top-right-radius:',
+					'border-top-left-radius:',
+					'border-bottom-right-radius:',
+					'border-bottom-left-radius:',
+					'margin-right:',
+					'margin-left:',
+					'padding-right:',
+					'padding-left:',
+					'right:',
+					'left:',
+					'text-align: right',
+					'text-align: left',
+					'float: right',
+					'float: left'
+				], $rules);
+
+				return $selector . ' { ' . $rtlRules . ' }';
+			}
+			return ''; // Skip non-RTL rules
+		}, $cssContent);
+
+		// Clean up extra whitespace and return wrapped in style tags
+		$rtlCss = preg_replace('/\s+/', ' ', $rtlCss);
+		$rtlCss = preg_replace('/\s*{\s*/', ' { ', $rtlCss);
+		$rtlCss = preg_replace('/\s*}\s*/', ' } ', $rtlCss);
+
+		return '<style>' . "\n" . '/* RTL-specific overrides */' . "\n" . $rtlCss . "\n" . '</style>';
 	}
 
 	protected $_parentTheme = false;
@@ -3541,6 +3732,7 @@ class Theme extends DataObject {
 		unset($this->additionalCssType);
 		unset($this->additionalCss);
 		unset($this->generatedCss);
+		unset($this->generatedRTLCss);
 		unset($this->__table);
 		unset($this->__primaryKey);
 		unset($this->__displayNameColumn);
@@ -3566,6 +3758,7 @@ class Theme extends DataObject {
 		unset($this->customBodyFont);
 		unset($this->customHeadingFont);
 		unset($this->generatedCss);
+		unset($this->generatedRTLCss);
 	}
 
 	/**
@@ -3822,3 +4015,4 @@ class Theme extends DataObject {
 		return true;
 	}
 }
+

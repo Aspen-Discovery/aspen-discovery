@@ -4,17 +4,9 @@ require_once ROOT_DIR . '/JSON_Action.php';
 
 class CurbsidePickups_AJAX extends JSON_Action {
 
-	function launch($method = null): void {
-		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
-		if (method_exists($this, $method)) {
-			parent::launch($method);
-		} else {
-			echo json_encode(['error' => 'invalid_method']);
-		}
-	}
-
 	/** @noinspection PhpUnused */
 	function getCurbsidePickupScheduler(): array {
+		$this->requireLoggedInUser();
 		global $interface;
 		global $library;
 
@@ -76,6 +68,7 @@ class CurbsidePickups_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function createCurbsidePickup(): array {
+		$this->requireLoggedInUser();
 		global $interface;
 		global $library;
 		$user = UserAccount::getLoggedInUser();
@@ -90,12 +83,7 @@ class CurbsidePickups_AJAX extends JSON_Action {
 				'isPublicFacing' => true,
 			]),
 		];
-		if (!$user) {
-			$result['message'] = translate([
-				'text' => 'You must be logged in to schedule a curbside pickup. Please close this modal and log in.',
-				'isPublicFacing' => true,
-			]);
-		} elseif (!empty($_REQUEST['patronId'])) {
+		if (!empty($_REQUEST['patronId'])) {
 			$patronId = $_REQUEST['patronId'];
 			$patronOwningHold = $user->getUserReferredTo($patronId);
 
@@ -181,6 +169,8 @@ class CurbsidePickups_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function getCancelCurbsidePickup(): array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredParameters(['patronId', 'pickupId']);
 		$patronId = $_REQUEST['patronId'];
 		$pickupId = $_REQUEST['pickupId'];
 		return [
@@ -202,6 +192,8 @@ class CurbsidePickups_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function checkInCurbsidePickup(): array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredParameters(['patronId', 'pickupId']);
 		global $interface;
 		global $library;
 		$results = [
@@ -216,59 +208,50 @@ class CurbsidePickups_AJAX extends JSON_Action {
 			]),
 		];
 
-		if (!isset($_REQUEST['patronId']) || !isset($_REQUEST['pickupId'])) {
-			global $logger;
-			$logger->log('Check-In for Curbside Pickup: No patron ID and/or pickup ID was passed in the AJAX call.', Logger::LOG_ERROR);
+		$patronId = $_REQUEST['patronId'];
+		$pickupId = $_REQUEST['pickupId'];
+
+		require_once ROOT_DIR . '/sys/CurbsidePickups/CurbsidePickupSetting.php';
+		$curbsidePickupSetting = new CurbsidePickupSetting();
+		$curbsidePickupSetting->id = $library->curbsidePickupSettingId;
+		if ($curbsidePickupSetting->find(true)) {
+			$interface->assign('contentCheckedIn', $curbsidePickupSetting->contentCheckedIn);
+		}
+
+		$user = UserAccount::getActiveUserObj();
+		$patron = $user->getUserReferredTo($patronId);
+		if ($patron === false) {
 			$results['message'] = translate([
-				'text' => 'No patron or pickup was specified.',
+				'text' => 'Invalid patron specified.',
 				'isPublicFacing' => true,
 			]);
-		} else {
-			$patronId = $_REQUEST['patronId'];
-			$pickupId = $_REQUEST['pickupId'];
+			return $results;
+		}
+		$result = $user->getCatalogDriver()->checkInCurbsidePickup($patron, $pickupId);
 
-			require_once ROOT_DIR . '/sys/CurbsidePickups/CurbsidePickupSetting.php';
-			$curbsidePickupSetting = new CurbsidePickupSetting();
-			$curbsidePickupSetting->id = $library->curbsidePickupSettingId;
-			if ($curbsidePickupSetting->find(true)) {
-				$interface->assign('contentCheckedIn', $curbsidePickupSetting->contentCheckedIn);
-			}
-
-			$user = UserAccount::getActiveUserObj();
-			$patron = $user->getUserReferredTo($patronId);
-			if ($patron === false) {
-				$results['message'] = translate([
-					'text' => 'Invalid patron specified.',
+		if ($result['success']) {
+			$interface->assign('scheduleResultMessage', $result['message']);
+			$interface->assign('contentSuccess', $curbsidePickupSetting->contentCheckedIn);
+			$results = [
+				'success' => true,
+				'title' => translate([
+					'text' => 'Checked In Curbside Pickup',
 					'isPublicFacing' => true,
-				]);
-				return $results;
-			}
-			$result = $user->getCatalogDriver()->checkInCurbsidePickup($patron, $pickupId);
-
-			if ($result['success']) {
-				$interface->assign('scheduleResultMessage', $result['message']);
-				$interface->assign('contentSuccess', $curbsidePickupSetting->contentCheckedIn);
-				$results = [
-					'success' => true,
-					'title' => translate([
-						'text' => 'Checked In Curbside Pickup',
-						'isPublicFacing' => true,
-					]),
-					'body' => $interface->fetch('MyAccount/curbsidePickupsNewSuccess.tpl'),
-				];
-			} else {
-				$results = [
-					'success' => false,
-					'title' => translate([
-						'text' => 'Failed to Check In for Curbside Pickup',
-						'isPublicFacing' => true,
-					]),
-					'body' => translate([
-						'text' => $result['message'],
-						'isPublicFacing' => true,
-					]),
-				];
-			}
+				]),
+				'body' => $interface->fetch('MyAccount/curbsidePickupsNewSuccess.tpl'),
+			];
+		} else {
+			$results = [
+				'success' => false,
+				'title' => translate([
+					'text' => 'Failed to Check In for Curbside Pickup',
+					'isPublicFacing' => true,
+				]),
+				'body' => translate([
+					'text' => $result['message'],
+					'isPublicFacing' => true,
+				]),
+			];
 		}
 
 		return $results;
@@ -276,7 +259,8 @@ class CurbsidePickups_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function cancelCurbsidePickup(): array {
-		global $interface;
+		$this->requireLoggedInUser();
+		$this->checkRequiredParameters(['patronId', 'pickupId']);
 		$results = [
 			'success' => false,
 			'title' => translate([
@@ -285,53 +269,44 @@ class CurbsidePickups_AJAX extends JSON_Action {
 			]),
 		];
 
-		if (!isset($_REQUEST['patronId']) || !isset($_REQUEST['pickupId'])) {
-			global $logger;
-			$logger->log('Cancelling Curbside Pickup: No patron ID and/or pickup ID was passed in the AJAX call.', Logger::LOG_ERROR);
+		$patronId = $_REQUEST['patronId'];
+		$pickupId = $_REQUEST['pickupId'];
+
+		$user = UserAccount::getActiveUserObj();
+		$patron = $user->getUserReferredTo($patronId);
+		if ($patron === false) {
 			$results['message'] = translate([
-				'text' => 'No patron or pickup was specified.',
+				'text' => 'Invalid patron specified.',
 				'isPublicFacing' => true,
 			]);
-		} else {
-			$patronId = $_REQUEST['patronId'];
-			$pickupId = $_REQUEST['pickupId'];
+			return $results;
+		}
+		$result = $user->getCatalogDriver()->cancelCurbsidePickup($patron, $pickupId);
 
-			$user = UserAccount::getActiveUserObj();
-			$patron = $user->getUserReferredTo($patronId);
-			if ($patron === false) {
-				$results['message'] = translate([
-					'text' => 'Invalid patron specified.',
+		if ($result['success']) {
+			$results = [
+				'success' => true,
+				'title' => translate([
+					'text' => 'Cancel Curbside Pickup',
 					'isPublicFacing' => true,
-				]);
-				return $results;
-			}
-			$result = $user->getCatalogDriver()->cancelCurbsidePickup($patron, $pickupId);
-
-			if ($result['success']) {
-				$results = [
-					'success' => true,
-					'title' => translate([
-						'text' => 'Cancel Curbside Pickup',
-						'isPublicFacing' => true,
-					]),
-					'body' => translate([
-						'text' => 'Your pickup was cancelled successfully.',
-						'isPublicFacing' => true,
-					]),
-				];
-			} else {
-				$results = [
-					'success' => false,
-					'title' => translate([
-						'text' => 'Cancel Curbside Pickup',
-						'isPublicFacing' => true,
-					]),
-					'body' => translate([
-						'text' => $result['message'],
-						'isPublicFacing' => true,
-					]),
-				];
-			}
+				]),
+				'body' => translate([
+					'text' => 'Your pickup was cancelled successfully.',
+					'isPublicFacing' => true,
+				]),
+			];
+		} else {
+			$results = [
+				'success' => false,
+				'title' => translate([
+					'text' => 'Cancel Curbside Pickup',
+					'isPublicFacing' => true,
+				]),
+				'body' => translate([
+					'text' => $result['message'],
+					'isPublicFacing' => true,
+				]),
+			];
 		}
 
 		return $results;
@@ -339,21 +314,11 @@ class CurbsidePickups_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function getCurbsidePickupUnavailableDays(): array {
-		if (isset($_REQUEST['locationCode'])) {
-			$pickupLocation = $_REQUEST['locationCode'];
-		} else {
-			return [
-				'success' => false,
-				'title' => translate([
-					'text' => 'Error loading curbside pickup availability',
-					'isPublicFacing' => true,
-				]),
-				'body' => translate([
-					'text' => "A valid pickup location parameter was not provided.",
-					'isPublicFacing' => true,
-				]),
-			];
-		}
+		$this->requireLoggedInUser();
+		$this->checkRequiredParameters(['locationCode']);
+
+		$pickupLocation = $_REQUEST['locationCode'];
+
 		$user = UserAccount::getActiveUserObj();
 		$pickupSettings = $user->getCatalogDriver()->getCurbsidePickupSettings($pickupLocation);
 		if (!empty($pickupSettings['disabledDays']) && is_array($pickupSettings['disabledDays'])) {
@@ -371,22 +336,11 @@ class CurbsidePickups_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function getCurbsidePickupAvailableTimes(): array {
-		if (isset($_REQUEST['locationCode']) && isset($_REQUEST['date'])) {
-			$pickupLocation = $_REQUEST['locationCode'];
-			$pickupDate = $_REQUEST['date'];
-		} else {
-			return [
-				'success' => false,
-				'title' => translate([
-					'text' => 'Error loading curbside pickup availability',
-					'isPublicFacing' => true,
-				]),
-				'body' => translate([
-					'text' => "A valid pickup date was not provided.",
-					'isPublicFacing' => true,
-				]),
-			];
-		}
+		$this->requireLoggedInUser();
+		$this->checkRequiredParameters(['locationCode', 'date']);
+
+		$pickupLocation = $_REQUEST['locationCode'];
+		$pickupDate = $_REQUEST['date'];
 
 		$user = UserAccount::getActiveUserObj();
 		$pickupSettings = $user->getCatalogDriver()->getCurbsidePickupSettings($pickupLocation);

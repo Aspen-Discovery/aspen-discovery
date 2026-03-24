@@ -1,5 +1,6 @@
 <?php /** @noinspection PhpMissingFieldTypeInspection */
 require_once ROOT_DIR . '/sys/AspenLiDA/HomeScreenLinkGroupEntry.php';
+require_once ROOT_DIR . '/sys/AspenLiDA/HomeScreenLinkGroupUser.php';
 
 class HomeScreenLinkGroup extends DataObject {
 	public $__table = 'aspen_lida_home_screen_link_group';
@@ -13,6 +14,8 @@ class HomeScreenLinkGroup extends DataObject {
 	protected $_libraries;
 	protected $_locations;
 
+	protected $_additionalEditors;
+
 	static $_objectStructure = [];
 
 	static function getObjectStructure(string $context = ''): array {
@@ -25,6 +28,9 @@ class HomeScreenLinkGroup extends DataObject {
 		$homeScreenLinkStructure = HomeScreenLinkGroupEntry::getObjectStructure($context);
 		unset($homeScreenLinkStructure['weight']);
 		unset($homeScreenLinkStructure['homeScreenLinkGroupId']);
+
+		$homeScreenLinkGroupUserStructure = HomeScreenLinkGroupUser::getObjectStructure($context);
+		unset($homeScreenLinkGroupUserStructure['homeScreenLinkGroupId']);
 
 		$structure = [
 			'id' => [
@@ -59,6 +65,24 @@ class HomeScreenLinkGroup extends DataObject {
 				'canDelete' => true,
 			],
 
+			'additionalEditors' => [
+				'property' => 'additionalEditors',
+				'type' => 'oneToMany',
+				'label' => 'Additional Users who can edit this group',
+				'description' => 'A list of users that can only edit specified Home Screen link groups',
+				'keyThis' => 'id',
+				'keyOther' => 'homeScreenLinkGroupId',
+				'subObjectType' => 'HomeScreenLinkGroupUser',
+				'structure' => $homeScreenLinkGroupUserStructure,
+				'sortable' => false,
+				'storeDb' => true,
+				'allowEdit' => false,
+				'canEdit' => false,
+				'canAddNew' => true,
+				'canDelete' => true,
+				'hideInLists' => true,
+			],
+
 			'libraries' => [
 				'property' => 'libraries',
 				'type' => 'multiSelect',
@@ -78,6 +102,12 @@ class HomeScreenLinkGroup extends DataObject {
 			],
 		];
 
+		if (UserAccount::userHasPermission('Administer Selected Aspen LiDA Home Screen Link Groups') && !(UserAccount::userHasPermission('AAdminister All Aspen LiDA Home Screen Links') || UserAccount::userHasPermission('Administer Library Aspen LiDA Home Screen Links'))) {
+			unset($structure['additionalEditors']);
+			unset($structure['libraries']);
+			unset($structure['locations']);
+		}
+
 		self::$_objectStructure[$context] = $structure;
 		return self::$_objectStructure[$context];
 	}
@@ -89,6 +119,8 @@ class HomeScreenLinkGroup extends DataObject {
 			return $this->getLocations();
 		} elseif ($name == 'homeScreenLinks') {
 			return $this->getHomeScreenLinks();
+		} elseif ($name == 'additionalEditors') {
+			return $this->getAdditionalEditors();
 		} else {
 			return parent::__get($name);
 		}
@@ -101,6 +133,8 @@ class HomeScreenLinkGroup extends DataObject {
 			$this->setLocations($value);
 		} elseif ($name == 'homeScreenLinks') {
 			$this->_homeScreenLinks = $value;
+		} elseif ($name == 'additionalEditors') {
+			$this->_additionalEditors = $value;
 		} else {
 			parent::__set($name, $value);
 		}
@@ -118,6 +152,7 @@ class HomeScreenLinkGroup extends DataObject {
 			$this->saveLibraries();
 			$this->saveLocations();
 			$this->saveHomeScreenLinks();
+			$this->saveAdditionalEditors();
 		}
 
 		return $ret;
@@ -254,6 +289,42 @@ class HomeScreenLinkGroup extends DataObject {
 
 	public function setLocations($val): void {
 		$this->_locations = $val;
+	}
+
+	public function getAdditionalEditors(): ?array {
+		if (!isset($this->_additionalEditors) && $this->id) {
+			$this->_additionalEditors = [];
+			$homeScreenLinkGroupUser = new HomeScreenLinkGroupUser();
+			$homeScreenLinkGroupUser->homeScreenLinkGroupId = $this->id;
+			$homeScreenLinkGroupUser->find();
+			while ($homeScreenLinkGroupUser->fetch()) {
+				$this->_additionalEditors[$homeScreenLinkGroupUser->id] = clone($homeScreenLinkGroupUser);
+			}
+			uasort($this->_additionalEditors, function ($a, $b) {
+				return strcasecmp($a->getUserDisplayName(), $b->getUserDisplayName());
+			});
+		}
+		return $this->_additionalEditors;
+	}
+
+	public function saveAdditionalEditors(): void {
+		if (isset ($this->_additionalEditors) && is_array($this->_additionalEditors)) {
+			$uniqueUsers = [];
+			/**
+			 * @var int $homeScreenLinkGroupUserId
+			 * @var HomeScreenLinkGroupUser $homeScreenLinkUser
+			 */
+			foreach ($this->_additionalEditors as $homeScreenLinkGroupUserId => $homeScreenLinkUser) {
+				if (in_array($homeScreenLinkUser->userId, $uniqueUsers)) {
+					$homeScreenLinkUser->delete();
+					unset($this->_additionalEditors[$homeScreenLinkGroupUserId]);
+				} else {
+					$uniqueUsers[] = $homeScreenLinkUser->userId;
+				}
+			}
+			$this->saveOneToManyOptions($this->_additionalEditors, 'homeScreenLinkGroupId');
+			unset($this->_additionalEditors);
+		}
 	}
 
 	public function getHomeScreenLinks(): ?array {

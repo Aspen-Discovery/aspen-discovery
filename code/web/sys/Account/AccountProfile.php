@@ -402,7 +402,7 @@ class AccountProfile extends DataObject {
 								'label' => 'API Version',
 								'maxLength' => 10,
 								'description' => 'Optional description for the version of the API. Required for Sierra.',
-								'relatedIls' => ['polaris','sierra'],
+								'relatedIls' => ['polaris','sierra','carlx'],
 							],
 							'workstationId' => [
 								'property' => 'workstationId',
@@ -586,8 +586,8 @@ class AccountProfile extends DataObject {
 	function getIndexingProfile() : ?IndexingProfile {
 		if ($this->_indexingProfile === false) {
 			global $indexingProfiles;
-			if (array_key_exists($this->name, $indexingProfiles)) {
-				$this->_indexingProfile = $indexingProfiles[$this->name];
+			if (array_key_exists($this->recordSource, $indexingProfiles)) {
+				$this->_indexingProfile = $indexingProfiles[$this->recordSource];
 			} else {
 				$this->_indexingProfile = null;
 			}

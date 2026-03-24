@@ -51,7 +51,7 @@ class CloudSourceSetting extends DataObject
 				'property' => 'baseUrl',
 				'type' => 'url',
 				'label' => 'Base URL',
-				'description' => 'The url of the open archives site',
+				'description' => 'The base url for CloudSource OA',
 				'size' => '255',
 			],
 			'accessToken' => [

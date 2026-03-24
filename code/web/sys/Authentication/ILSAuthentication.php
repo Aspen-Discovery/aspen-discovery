@@ -78,7 +78,7 @@ class ILSAuthentication implements Authentication {
 
 		//Password is not required if we have validated via single sign on or if the user is masquerading
 		if ($this->username == '' || ($this->password == '' && !$validatedViaSSO && !UserAccount::isUserMasquerading())) {
-			$validUser = new AspenError('Login information cannot be blank when validating account in ILS Authentication.');
+			$validUser = new AspenError(translate(['text' => 'Login information cannot be blank when validating account in ILS Authentication.', 'isPublicFacing' => true]));
 		} else {
 			// Connect to the correct catalog depending on the driver for this account
 			$catalog = CatalogFactory::getCatalogConnectionInstance($this->driverName);

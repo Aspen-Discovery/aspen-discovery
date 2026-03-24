@@ -127,6 +127,9 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher {
 		}
 		$facetConfig = $this->getFacetConfig();
 		foreach ($this->filterList as $field => $filter) {
+			if (!isset($facetConfig[$field])) {
+				continue;
+			}
 			/** @var FacetSetting $facetInfo */
 			$facetInfo = $facetConfig[$field];
 			$fieldPrefix = "";

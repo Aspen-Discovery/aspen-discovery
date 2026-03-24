@@ -116,11 +116,11 @@ class Events_EventGraphs extends Admin_Admin {
 
 		// Form options
 		$timeframe = $_REQUEST['timeframe'] ?? 'days';
-		$location = $_REQUEST['locationValue'] ?? '';
-		$sublocation = $_REQUEST['sublocationValue'] ?? '';
+		$location = $_REQUEST['location'] ?? '';
+		$sublocation = $_REQUEST['sublocation'] ?? '';
 		$fromDate = $_REQUEST['fromDate'] ?? '';
 		$toDate = $_REQUEST['toDate'] ?? '';
-		$eventType = $_REQUEST['eventTypeValue'] ?? '';
+		$eventType = $_REQUEST['type'] ?? '';
 		$graphOption = $_REQUEST['graphOption'] ?? 0;
 		$separateEventTypes = false;
 		$separateLocations = false;

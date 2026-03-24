@@ -5,7 +5,6 @@ require_once ROOT_DIR . '/sys/Pager.php';
 require_once ROOT_DIR . '/sys/SearchObject/BaseSearcher.php';
 
 class SearchObject_CloudSourceSearcher extends SearchObject_BaseSearcher{
-
 	static $instance;
 	/** @var CloudSourceSetting */
 
@@ -25,14 +24,8 @@ class SearchObject_CloudSourceSearcher extends SearchObject_BaseSearcher{
 
 	// STATS
 	protected $resultsTotal = 0;
-
 	protected $searchTerms;
-
 	protected $lastSearchResults;
-
-	// Module and Action for building search results
-	protected $resultsModule = 'Search';
-	protected $resultsAction = 'Results';
 
 	/** @var string */
 	protected $searchSource = 'local';
@@ -42,11 +35,7 @@ class SearchObject_CloudSourceSearcher extends SearchObject_BaseSearcher{
 	protected $holdings = true;
 	protected $didYouMean = false;
 	protected $language = 'en';
-	protected $idsToFetch = array();
-	/**@var int */
-	protected $maxTopics = 1;
-	protected $groupFilters = array();
-	protected $openAccessFilter = false;
+
 	protected $expand = true;
 	protected $sortOptions = array();
 	/**
@@ -64,11 +53,7 @@ class SearchObject_CloudSourceSearcher extends SearchObject_BaseSearcher{
 	 * @var int
 	 */
 	protected $page = 1;
-	/**
-	 * @var int
-	 */
-	protected $maxRecDb = 2;
-	protected $bookMark;
+
 	protected $debug = false;
 	protected $journalTitle = false;
 	protected $lightWeightRes = true;
@@ -77,11 +62,10 @@ class SearchObject_CloudSourceSearcher extends SearchObject_BaseSearcher{
 	 * @var string mixed
 	 */
 	private $searchIndex = '';
-
-
 	protected $facetFields;
 
 	public function __construct() {
+		parent::__construct();
 		//Initialize properties with default values
 		$this->searchSource = 'cloudsource';
 		$this->searchType = 'cloudsource';
@@ -176,7 +160,12 @@ class SearchObject_CloudSourceSearcher extends SearchObject_BaseSearcher{
 		$settings = $this->getSettings();
 		$curlConnection = $this->getCurlConnection();
 		$url = $settings->baseUrl . '/api/cloudsourcesearch/search';
-		$searchTerm = $this->searchTerms[0]['lookfor'];
+		if (!empty($this->searchTerms) && is_array($this->searchTerms)) {
+			$searchTerm = $this->searchTerms[0]['lookfor'];
+		} else {
+			$searchTerm = '';
+		}
+
 		$start = 0;
 		if ($this->page > 1) {
 			$start = 20 * ($this->page - 1);
@@ -406,20 +395,22 @@ class SearchObject_CloudSourceSearcher extends SearchObject_BaseSearcher{
 		if (isset($this->facetFields)) {
 			foreach ($this->facetFields as $facetField) {
 				$facetId = $facetField->name;
+				//replace period with underscore so side facet accordion functions properly
+				$facetIdForSideFacets = str_replace(".", "_", $facetField->name);
 				$displayName = $facetField->label;
 
-				$availableFacets[$facetId] = [
+				$availableFacets[$facetIdForSideFacets] = [
 					'collapseByDefault' => true,
 					'multiSelect' =>true,
 					'label' =>$displayName,
 					'valuesToShow' =>5,
 				];
 				if ($facetId == 'fieldOfStudy') {
-					$availableFacets[$facetId]['collapseByDefault'] = false;
+					$availableFacets[$facetIdForSideFacets]['collapseByDefault'] = false;
 				}
 
 				if ($facetId == 'peerReviewed') {
-					$availableFacets[$facetId]['multiSelect'] = false;
+					$availableFacets[$facetIdForSideFacets]['multiSelect'] = false;
 				}
 
 				$list = [];
@@ -427,7 +418,7 @@ class SearchObject_CloudSourceSearcher extends SearchObject_BaseSearcher{
 					$facetValue = $value->name;
 					$facetDisplay = $value->label;
 					//Ensures selected facet stays checked when selected - interacts with .tpl
-					$isApplied = array_key_exists($facetId, $this->filterList) && in_array($facetValue, $this->filterList[$facetId]);
+					$isApplied = array_key_exists($facetIdForSideFacets, $this->filterList) && in_array($facetValue, $this->filterList[$facetId]);
 					$facetSettings = [
 						'value' => $facetValue,
 						'display' =>$facetDisplay,
@@ -441,7 +432,7 @@ class SearchObject_CloudSourceSearcher extends SearchObject_BaseSearcher{
 					}
 					$list[] = $facetSettings;
 				}
-				$availableFacets[$facetId]['list'] = $list;
+				$availableFacets[$facetIdForSideFacets]['list'] = $list;
 			}
 		}
 		return $availableFacets;
@@ -495,7 +486,7 @@ class SearchObject_CloudSourceSearcher extends SearchObject_BaseSearcher{
 		return $this->searchIndex;
 	}
 
-	public function setSearchTerm() {
+	public function setSearchTerm($searchTerm = null) {
 		if (is_array($this->searchTerms) && count($this->searchTerms) > 0) {
 			if (strpos($this->searchTerms[0], ':') !== false) {
 				[$searchIndex, $term] = explode(':', $this->searchTerms[0], 2);
@@ -509,12 +500,64 @@ class SearchObject_CloudSourceSearcher extends SearchObject_BaseSearcher{
 					'index' => $this->getDefaultIndex(),
 				]);
 			}
-		} else {
+		} elseif (!empty($searchTerm)) {
 			$this->setSearchTerms([
-				'lookfor' => '',
+				'lookfor' => $searchTerm,
 				'index' => $this->getDefaultIndex(),
 			]);
+		} else {
+				$this->setSearchTerms([
+					'lookfor' => '',
+					'index' => $this->getDefaultIndex(),
+				]);
 		}
+	}
+	function getBrowseRecordHTML() {
+		global $interface;
+		$html = [];
+		global $logger;
+
+		if (isset($this->lastSearchResults)) {
+			for ($x = 0; $x < count($this->lastSearchResults); $x++) {
+				$current = &$this->lastSearchResults[$x];
+				$interface->assign('recordIndex', $x + 1);
+				$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
+				require_once ROOT_DIR . '/RecordDrivers/CloudSourceRecordDriver.php';
+				$record = new CloudSourceRecordDriver($current);
+				if ($record->isValid()) {
+					$interface->assign('recordDriver', $record);
+					$html[] = $interface->fetch($record->getBrowseResult());
+				} else {
+					$html[] = "Unable to find record";
+				}
+			}
+		}
+
+		return $html;
+	}
+
+	public function getSpotlightResults(CollectionSpotlight $spotlight) {
+		$spotlightResults = [];
+		if (isset($this->lastSearchResults)) {
+			for ($x = 0; $x < count($this->lastSearchResults); $x++) {
+				$current = &$this->lastSearchResults[$x];
+				require_once ROOT_DIR . '/RecordDrivers/CloudSourceRecordDriver.php';
+				$record = new CloudSourceRecordDriver($current);
+				if ($record->isValid()) {
+					if (!empty($orderedListOfIDs)) {
+						$position = array_search($current['id'], $orderedListOfIDs);
+						if ($position !== false) {
+							$spotlightResults[$position] = $record->getSpotlightResult($spotlight, $position);
+						}
+					} else {
+						$spotlightResults[] = $record->getSpotlightResult($spotlight, $x);
+					}
+				} else {
+					$spotlightResults[] = "Unable to find record";
+				}
+			}
+		}
+		return $spotlightResults;
 	}
 
 	public function getIndexError() {
@@ -546,7 +589,10 @@ class SearchObject_CloudSourceSearcher extends SearchObject_BaseSearcher{
 	}
 
 	public function getEngineName() {
-		return 'cloudsource';
+		return 'CloudSource';
+	}
+	public function disableSpelling() {
+		//Do nothing for now
 	}
 
 	function getSearchesFile() {

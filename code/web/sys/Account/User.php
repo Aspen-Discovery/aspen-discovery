@@ -57,6 +57,7 @@ class User extends DataObject {
 	public $checkoutInfoLastLoaded;
 	public $optInToAllCampaignLeaderboards;
 	public $campaignNotificationsByEmail;
+	public $notifySavedSearches;
 
 	public $onboardAppNotifications;
 	public $shouldAskBrightness;
@@ -1705,6 +1706,7 @@ class User extends DataObject {
 		$this->__set('showHoldHelpMessages', (isset($_POST['showHoldHelpMessages']) && $_POST['showHoldHelpMessages'] == 'on') ? 1 : 0);
 		$this->__set('promptToFreezeHoldsImmediately', (isset($_POST['promptToFreezeHoldsImmediately']) && $_POST['promptToFreezeHoldsImmediately'] == 'on') ? 1 : 0);
 		$this->__set('disableCirculationActions', (isset($_POST['disableCirculationActions']) && $_POST['disableCirculationActions'] == 'on') ? 0 : 1);
+		$this->__set('notifySavedSearches', (isset($_POST['notifySavedSearches']) && $_POST['notifySavedSearches'] == 'on') ? 1 : 0);
 		$homeLibrary = $this->getHomeLibrary();
 		if ($homeLibrary !== null && $homeLibrary->enableCostSavings) {
 			$this->__set('enableCostSavings', (isset($_POST['enableCostSavings']) && $_POST['enableCostSavings'] == 'on') ? 1 : 0);
@@ -2144,6 +2146,10 @@ class User extends DataObject {
 
 	public function areCirculationActionsDisabled(): bool {
 		return !$this->hasIlsConnection() || $this->disableCirculationActions;
+	}
+
+	public function areSavedSearchNotificationsEnabled(): bool {
+		return $this->notifySavedSearches;
 	}
 
 	public function getCirculatedRecordActions(string $source, string $recordId, bool $loadingLinkedUser = false): array {
@@ -2670,6 +2676,7 @@ class User extends DataObject {
 		$numHoldsAlreadyFrozen = 0;
 
 		if ($total >= 1) {
+			/** @var Hold $hold */
 			foreach ($allUnavailableHolds as $hold) {
 				$frozen = $hold->frozen;
 				if ($frozen) {
@@ -2679,10 +2686,10 @@ class User extends DataObject {
 				$recordId = $hold->sourceId;
 				$holdId = $hold->cancelId;
 				$holdType = $hold->source;
-
-				if ($frozen == 0 && $canFreeze == 1) {
+				$patron = $user->getUserReferredTo($hold->userId);
+				if ($patron && $frozen == 0 && $canFreeze == 1) {
 					if ($holdType == 'ils') {
-						$tmpResult = $user->freezeHold($recordId, $holdId, $reactivationDate);
+						$tmpResult = $patron->freezeHold($recordId, $holdId, $reactivationDate);
 						if ($tmpResult['success']) {
 							$success++;
 						} else {
@@ -2691,7 +2698,7 @@ class User extends DataObject {
 					} elseif ($holdType == 'axis360') {
 						require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
 						$driver = new Axis360Driver();
-						$tmpResult = $driver->freezeHold($user, $recordId);
+						$tmpResult = $driver->freezeHold($patron, $recordId);
 						if ($tmpResult['success']) {
 							$success++;
 						} else {
@@ -2700,7 +2707,7 @@ class User extends DataObject {
 					} elseif ($holdType == 'overdrive') {
 						require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 						$driver = new OverDriveDriver();
-						$tmpResult = $driver->freezeHold($user, $recordId);
+						$tmpResult = $driver->freezeHold($patron, $recordId);
 						if ($tmpResult['success']) {
 							$success++;
 						} else {
@@ -2792,30 +2799,31 @@ class User extends DataObject {
 		$total = count($allHolds['unavailable']);
 
 		if ($total >= 1) {
+			/** @var Hold $hold */
 			foreach ($allUnavailableHolds as $hold) {
 				$frozen = $hold->frozen;
 				$canFreeze = $hold->canFreeze;
 				$recordId = $hold->sourceId;
 				$holdId = $hold->cancelId;
 				$holdType = $hold->source;
-
-				if ($frozen == 1 && $canFreeze == 1) {
+				$patron = $user->getUserReferredTo($hold->userId);
+				if ($patron && $frozen == 1 && $canFreeze == 1) {
 					if ($holdType == 'ils') {
-						$tmpResult = $user->thawHold($recordId, $holdId);
+						$tmpResult = $patron->thawHold($recordId, $holdId);
 						if ($tmpResult['success']) {
 							$success++;
 						}
 					} elseif ($holdType == 'axis360') {
 						require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
 						$driver = new Axis360Driver();
-						$tmpResult = $driver->thawHold($user, $recordId);
+						$tmpResult = $driver->thawHold($patron, $recordId);
 						if ($tmpResult['success']) {
 							$success++;
 						}
 					} elseif ($holdType == 'overdrive') {
 						require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 						$driver = new OverDriveDriver();
-						$tmpResult = $driver->thawHold($user, $recordId);
+						$tmpResult = $driver->thawHold($patron, $recordId);
 						if ($tmpResult['success']) {
 							$success++;
 						}
@@ -2823,7 +2831,7 @@ class User extends DataObject {
 						//Cloud library holds cannot be frozen
 //						require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
 //						$driver = new CloudLibraryDriver();
-//						$tmpResult = $driver->thawHold($user, $recordId);
+//						$tmpResult = $driver->thawHold($patron, $recordId);
 //						if($tmpResult['success']){$success++;}
 					} else {
 						$failed++;
@@ -3735,10 +3743,16 @@ class User extends DataObject {
 			require_once ROOT_DIR . '/sys/Notifications/ExpoNotification.php';
 			require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
 			$appScheme = 'aspen-lida';
-			require_once ROOT_DIR . '/sys/SystemVariables.php';
-			$systemVariables = SystemVariables::getSystemVariables();
-			if ($systemVariables && !empty($systemVariables->appScheme)) {
-				$appScheme = $systemVariables->appScheme;
+			require_once ROOT_DIR . '/sys/AspenLiDA/BrandedAppSetting.php';
+			$brandedSettings = new BrandedAppSetting();
+			if ($brandedSettings->find(true)) {
+				$appScheme = $brandedSettings->slugName;
+			} else {
+				require_once ROOT_DIR . '/sys/SystemVariables.php';
+				$systemVariables = SystemVariables::getSystemVariables();
+				if ($systemVariables && !empty($systemVariables->appScheme)) {
+					$appScheme = $systemVariables->appScheme;
+				}
 			}
 			$notificationToken = new UserNotificationToken();
 			$notificationToken->userId = $this->id;
@@ -3789,10 +3803,16 @@ class User extends DataObject {
 			require_once ROOT_DIR . '/sys/Notifications/ExpoNotification.php';
 			require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
 			$appScheme = 'aspen-lida';
-			require_once ROOT_DIR . '/sys/SystemVariables.php';
-			$systemVariables = SystemVariables::getSystemVariables();
-			if ($systemVariables && !empty($systemVariables->appScheme)) {
-				$appScheme = $systemVariables->appScheme;
+			require_once ROOT_DIR . '/sys/AspenLiDA/BrandedAppSetting.php';
+			$brandedSettings = new BrandedAppSetting();
+			if ($brandedSettings->find(true)) {
+				$appScheme = $brandedSettings->slugName;
+			} else {
+				require_once ROOT_DIR . '/sys/SystemVariables.php';
+				$systemVariables = SystemVariables::getSystemVariables();
+				if ($systemVariables && !empty($systemVariables->appScheme)) {
+					$appScheme = $systemVariables->appScheme;
+				}
 			}
 			$notificationToken = new UserNotificationToken();
 			$notificationToken->userId = $this->id;
@@ -4908,11 +4928,13 @@ class User extends DataObject {
 			$sections['aspen_lida']->addAction(new AdminAction('Self-Check Completion Messages', 'Define messages to show when self-check checkouts are completed in Aspen LiDA.', '/AspenLiDA/SelfCheckCompletionMessages'), 'Administer Aspen LiDA Self-Check Settings');
 			$sections['aspen_lida']->addAction(new AdminAction('Home Screen Link Groups', 'Define settings for home screen link groups in Aspen LiDA.', '/AspenLiDA/HomeScreenLinkGroups'), [
 				'Administer All Aspen LiDA Home Screen Links',
-				'Administer Library Aspen LiDA Home Screen Links'
+				'Administer Library Aspen LiDA Home Screen Links',
+				'Administer Selected Aspen LiDA Home Screen Link Groups'
 			]);
 			$sections['aspen_lida']->addAction(new AdminAction('Home Screen Links', 'Define settings for home screen links in Aspen LiDA.', '/AspenLiDA/HomeScreenLinks'), [
 				'Administer All Aspen LiDA Home Screen Links',
-				'Administer Library Aspen LiDA Home Screen Links'
+				'Administer Library Aspen LiDA Home Screen Links',
+				'Administer Selected Aspen LiDA Home Screen Link Groups'
 			]);
 		}
 		if (array_key_exists('Series', $enabledModules)) {
@@ -5420,14 +5442,14 @@ class User extends DataObject {
 				foreach ($holds as $holdSection) {
 					/** @var Hold $hold */
 					foreach ($holdSection as $hold) {
-						if (!empty($hold->outOfHoldGroupMessage)) {
+						if ($hold->isLocalILL) {
 							$numLocalIllRequests++;
 						}
 					}
 				}
-				$checkouts = $this->getCatalogDriver()->getCheckouts($this);
+				$checkouts = $this->getCatalogDriver()->getCheckouts($this, true);
 				foreach ($checkouts as $checkout) {
-					if (!empty($checkout->outOfHoldGroupMessage)) {
+					if ($checkout->isLocalILL) {
 						$numLocalIllRequests++;
 					}
 				}
@@ -6620,6 +6642,14 @@ class User extends DataObject {
 		}
 
 		$this->update();
+	}
+
+	public function canSaveSearches(): bool {
+		$userLibrary = $this->getHomeLibrary();
+		if ($userLibrary) {
+			return $userLibrary->enableSavedSearches == 1;
+		}
+		return false;
 	}
 }
 

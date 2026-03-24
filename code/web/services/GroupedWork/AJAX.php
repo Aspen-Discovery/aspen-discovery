@@ -14,24 +14,21 @@ class GroupedWork_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function deleteUserReview() : array {
+		$this->requireLoggedInUser(null, 'You must be logged in to delete ratings.');
 		$id = $_REQUEST['id'];
 		$result = ['result' => false];
-		if (!UserAccount::isLoggedIn()) {
-			$result['message'] = 'You must be logged in to delete ratings.';
+		require_once ROOT_DIR . '/sys/LocalEnrichment/UserWorkReview.php';
+		$userWorkReview = new UserWorkReview();
+		$userWorkReview->groupedRecordPermanentId = $id;
+		$userWorkReview->userId = UserAccount::getActiveUserId();
+		if ($userWorkReview->find(true)) {
+			$userWorkReview->delete();
+			$result = [
+				'result' => true,
+				'message' => 'We successfully deleted the rating for you.',
+			];
 		} else {
-			require_once ROOT_DIR . '/sys/LocalEnrichment/UserWorkReview.php';
-			$userWorkReview = new UserWorkReview();
-			$userWorkReview->groupedRecordPermanentId = $id;
-			$userWorkReview->userId = UserAccount::getActiveUserId();
-			if ($userWorkReview->find(true)) {
-				$userWorkReview->delete();
-				$result = [
-					'result' => true,
-					'message' => 'We successfully deleted the rating for you.',
-				];
-			} else {
-				$result['message'] = 'Sorry, we could not find that review in the system.';
-			}
+			$result['message'] = 'Sorry, we could not find that review in the system.';
 		}
 
 		return $result;
@@ -39,6 +36,9 @@ class GroupedWork_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function forceReindex() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission('Force Reindexing of Records');
+		$this->checkRequiredParameters(['id']);
 		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 
 		$id = $_REQUEST['id'];
@@ -63,6 +63,10 @@ class GroupedWork_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function viewDebugging() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission('Force Reindexing of Records');
+		$this->checkRequiredParameters(['id']);
+
 		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 
 		$id = $_REQUEST['id'];
@@ -99,6 +103,10 @@ class GroupedWork_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function resetDebugging() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission('Force Reindexing of Records');
+		$this->checkRequiredParameters(['id']);
+
 		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 
 		$id = $_REQUEST['id'];
@@ -124,6 +132,7 @@ class GroupedWork_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function getDescription() : array {
+		$this->checkRequiredParameters(['id']);
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 		$result = [
 			'success' => false,
@@ -149,6 +158,8 @@ class GroupedWork_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function getEnrichmentInfo() : array {
+		$this->checkRequiredParameters(['id']);
+
 		global $interface;
 		global $memoryWatcher;
 
@@ -247,6 +258,8 @@ class GroupedWork_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function getMoreLikeThis() : array {
+		$this->checkRequiredParameters(['id']);
+
 		global $configArray;
 		global $memoryWatcher;
 
@@ -298,6 +311,8 @@ class GroupedWork_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function getWhileYouWait() : array {
+		$this->checkRequiredParameters(['id']);
+
 		global $interface;
 
 		$id = $_REQUEST['id'];
@@ -330,11 +345,13 @@ class GroupedWork_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function getYouMightAlsoLike() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredParameters(['id']);
+
 		global $interface;
 		global $memoryWatcher;
 
 		$id = $_REQUEST['id'];
-		$format = $_REQUEST['activeFormat'];
 
 		global $library;
 		if (!$library->showYouMightAlsoLike) {
@@ -389,7 +406,7 @@ class GroupedWork_AJAX extends JSON_Action {
 		];
 	}
 
-	function getScrollerTitle($record, $index, $scrollerName) : array {
+	private function getScrollerTitle($record, $index, $scrollerName) : array {
 		$cover = $record['mediumCover'];
 		$title = preg_replace("~\\s*([/:])\\s*$~", "", $record['title']);
 		$series = '';
@@ -462,6 +479,8 @@ class GroupedWork_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function getGoDeeperData() : array {
+		$this->checkRequiredParameters(['id']);
+
 		require_once(ROOT_DIR . '/Drivers/marmot_inc/GoDeeperData.php');
 		$dataType = strip_tags($_REQUEST['dataType']);
 
@@ -481,6 +500,8 @@ class GroupedWork_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function getWorkInfo() : array {
+		$this->checkRequiredParameters(['id']);
+
 		global $interface;
 		global $library;
 		$groupedWorkDisplaySettings = $library->getGroupedWorkDisplaySettings();
@@ -556,31 +577,9 @@ class GroupedWork_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function rateTitle() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredParameters(['id', 'rating']);
 		require_once(ROOT_DIR . '/sys/LocalEnrichment/UserWorkReview.php');
-		if (!UserAccount::isLoggedIn()) {
-			return [
-				'error' => translate([
-					'text' => 'Please login to rate this title.',
-					'isPublicFacing' => true,
-				]),
-			];
-		}
-		if (empty($_REQUEST['id'])) {
-			return [
-				'error' => translate([
-					'text' => 'ID for the item to rate is required.',
-					'isPublicFacing' => true,
-				]),
-			];
-		}
-		if (empty($_REQUEST['rating']) || !ctype_digit($_REQUEST['rating'])) {
-			return [
-				'error' => translate([
-					'text' => 'Invalid value for rating.',
-					'isPublicFacing' => true,
-				]),
-			];
-		}
 		$rating = $_REQUEST['rating'];
 		//Save the rating
 		$workReview = new UserWorkReview();
@@ -589,7 +588,7 @@ class GroupedWork_AJAX extends JSON_Action {
 		if (empty($workReview->title)) {
 			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 			$driver = new GroupedWorkDriver($_REQUEST['id']);
-			if ($driver && $driver->isValid()) {
+			if ($driver->isValid()) {
 				$workReview->title = $driver->getTitle();
 			}
 		}
@@ -681,40 +680,35 @@ class GroupedWork_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function getPromptForReviewForm() : array {
+		$this->requireLoggedInUser();
 		$user = UserAccount::getActiveUserObj();
-		if ($user) {
-			if (!$user->noPromptForUserReviews) {
-				global $interface;
-				$id = $_REQUEST['id'];
-				if (!empty($id)) {
-					$results = [
-						'prompt' => true,
-						'title' => translate([
-							'text' => 'Add a Review',
-							'isPublicFacing' => true,
-						]),
-						'modalBody' => $interface->fetch("GroupedWork/prompt-for-review-form.tpl"),
-						'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.GroupedWork.showReviewForm(this, \"$id\");'>" . translate([
-								'text' => "Submit A Review",
-								'isPublicFacing' => true,
-							]) . "</button>",
-					];
-				} else {
-					$results = [
-						'error' => true,
-						'message' => 'Invalid ID.',
-					];
-				}
-			} else {
-				// Option already set to not prompt, don't prompt.
+
+		if (!$user->noPromptForUserReviews) {
+			global $interface;
+			$id = $_REQUEST['id'];
+			if (!empty($id)) {
 				$results = [
-					'prompt' => false,
+					'prompt' => true,
+					'title' => translate([
+						'text' => 'Add a Review',
+						'isPublicFacing' => true,
+					]),
+					'modalBody' => $interface->fetch("GroupedWork/prompt-for-review-form.tpl"),
+					'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.GroupedWork.showReviewForm(this, \"$id\");'>" . translate([
+							'text' => "Submit A Review",
+							'isPublicFacing' => true,
+						]) . "</button>",
+				];
+			} else {
+				$results = [
+					'error' => true,
+					'message' => 'Invalid ID.',
 				];
 			}
 		} else {
+			// Option already set to not prompt, don't prompt.
 			$results = [
-				'error' => true,
-				'message' => 'You are not logged in.',
+				'prompt' => false,
 			];
 		}
 		return $results;
@@ -722,123 +716,102 @@ class GroupedWork_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function setNoMoreReviews() : array {
+		$this->requireLoggedInUser();
 		$user = UserAccount::getActiveUserObj();
-		if ($user) {
-			$user->noPromptForUserReviews = 1;
-			$success = $user->update();
-			return ['success' => $success];
-		} else {
-			return ['success' => false];
-		}
+
+		$user->noPromptForUserReviews = 1;
+		$success = $user->update();
+		return ['success' => $success];
 	}
 
 	/** @noinspection PhpUnused */
 	function getReviewForm() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredParameters(['id']);
 		global $interface;
 		$id = $_REQUEST['id'];
-		if (!empty($id)) {
-			$interface->assign('id', $id);
 
-			// check if rating/review exists for user and work
-			require_once ROOT_DIR . '/sys/LocalEnrichment/UserWorkReview.php';
-			$groupedWorkReview = new UserWorkReview();
-			$groupedWorkReview->userId = UserAccount::getActiveUserId();
-			$groupedWorkReview->groupedRecordPermanentId = $id;
-			if ($groupedWorkReview->find(true)) {
-				$interface->assign('userRating', $groupedWorkReview->rating);
-				$interface->assign('userReview', $groupedWorkReview->review);
-			}
+		$interface->assign('id', $id);
 
-			$results = [
-				'title' => translate([
-					'text' => 'Review',
-					'isPublicFacing' => true,
-				]),
-				'modalBody' => $interface->fetch("GroupedWork/review-form-body.tpl"),
-				'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.GroupedWork.saveReview(\"$id\");'>" . translate([
-						'text' => "Submit Review",
-						'isPublicFacing' => true,
-					]) . "</button>",
-			];
-		} else {
-			$results = [
-				'error' => true,
-				'message' => translate([
-					'text' => 'Invalid ID.',
-					'isPublicFacing' => true,
-				]),
-			];
+		// check if rating/review exists for user and work
+		require_once ROOT_DIR . '/sys/LocalEnrichment/UserWorkReview.php';
+		$groupedWorkReview = new UserWorkReview();
+		$groupedWorkReview->userId = UserAccount::getActiveUserId();
+		$groupedWorkReview->groupedRecordPermanentId = $id;
+		if ($groupedWorkReview->find(true)) {
+			$interface->assign('userRating', $groupedWorkReview->rating);
+			$interface->assign('userReview', $groupedWorkReview->review);
 		}
-		return $results;
+
+		return [
+			'title' => translate([
+				'text' => 'Review',
+				'isPublicFacing' => true,
+			]),
+			'modalBody' => $interface->fetch("GroupedWork/review-form-body.tpl"),
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.GroupedWork.saveReview(\"$id\");'>" . translate([
+					'text' => "Submit Review",
+					'isPublicFacing' => true,
+				]) . "</button>",
+		];
 	}
 
 	/** @noinspection PhpUnused */
 	function saveReview() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredParameters(['id']);
+
 		$result = [];
 
-		if (!UserAccount::isLoggedIn()) {
-			$result['success'] = false;
-			$result['message'] = translate([
-				'text' => 'Please login before adding a review.',
-				'isPublicFacing' => true,
-			]);
-		} elseif (empty($_REQUEST['id'])) {
-			$result['success'] = false;
-			$result['message'] = translate([
-				'text' => 'ID for the item to review is required.',
-				'isPublicFacing' => true,
-			]);
-		} else {
-			require_once ROOT_DIR . '/sys/LocalEnrichment/UserWorkReview.php';
-			$id = $_REQUEST['id'];
-			$rating = $_REQUEST['rating'] ?? '';
-			$HadReview = isset($_REQUEST['comment']); // did form have the review field turned on? (maybe only ratings instead)
-			$comment = $HadReview ? trim($_REQUEST['comment']) : ''; //avoids undefined index notice when doing only ratings.
+		require_once ROOT_DIR . '/sys/LocalEnrichment/UserWorkReview.php';
+		$id = $_REQUEST['id'];
+		$rating = $_REQUEST['rating'] ?? '';
+		$HadReview = isset($_REQUEST['comment']); // did form have the review field turned on? (maybe only ratings instead)
+		$comment = $HadReview ? trim($_REQUEST['comment']) : ''; //avoids undefined index notice when doing only ratings.
 
-			$groupedWorkReview = new UserWorkReview();
-			$groupedWorkReview->userId = UserAccount::getActiveUserId();
-			$groupedWorkReview->groupedRecordPermanentId = $id;
-			$newReview = true;
-			if ($groupedWorkReview->find(true)) { // check for existing rating by user
-				$newReview = false;
-			}
-			// set the user's rating and/or review
-			if (!empty($rating) && is_numeric($rating)) {
-				$groupedWorkReview->rating = $rating;
-			}
-			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-			$driver = new GroupedWorkDriver($id);
-			if ($driver && $driver->isValid()) {
-				$groupedWorkReview->title = $driver->getTitle();
-			}
-			if ($newReview) {
-				$groupedWorkReview->review = $HadReview ? $comment : ''; // set an empty review when the user was doing only ratings. (per library settings) //TODO there is no default value in the database.
-				$groupedWorkReview->dateRated = time();
-				$success = $groupedWorkReview->insert();
+		$groupedWorkReview = new UserWorkReview();
+		$groupedWorkReview->userId = UserAccount::getActiveUserId();
+		$groupedWorkReview->groupedRecordPermanentId = $id;
+		$newReview = true;
+		if ($groupedWorkReview->find(true)) { // check for existing rating by user
+			$newReview = false;
+		}
+		// set the user's rating and/or review
+		if (!empty($rating) && is_numeric($rating)) {
+			$groupedWorkReview->rating = $rating;
+		}
+		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+		$driver = new GroupedWorkDriver($id);
+		if ($driver && $driver->isValid()) {
+			$groupedWorkReview->title = $driver->getTitle();
+		}
+		if ($newReview) {
+			$groupedWorkReview->review = $HadReview ? $comment : ''; // set an empty review when the user was doing only ratings. (per library settings) //TODO there is no default value in the database.
+			$groupedWorkReview->dateRated = time();
+			$success = $groupedWorkReview->insert();
+		} else {
+			if ((!empty($rating) && $rating != $groupedWorkReview->rating) || ($HadReview && $comment != $groupedWorkReview->review)) { // update gives an error if the updated values are the same as stored values.
+				if ($HadReview) {
+					$groupedWorkReview->review = $comment;
+				} // only update the review if the review input was in the form.
+				$success = $groupedWorkReview->update();
 			} else {
-				if ((!empty($rating) && $rating != $groupedWorkReview->rating) || ($HadReview && $comment != $groupedWorkReview->review)) { // update gives an error if the updated values are the same as stored values.
-					if ($HadReview) {
-						$groupedWorkReview->review = $comment;
-					} // only update the review if the review input was in the form.
-					$success = $groupedWorkReview->update();
-				} else {
-					$success = true;
-				} // pretend success since values are already set to same values.
-			}
-			if (!$success) { // if SQL save didn't work, let user know.
-				$result['success'] = false;
-				$result['message'] = translate([
-					'text' => 'Failed to save rating or review.',
-					'isPublicFacing' => true,
-				]);
-			} else { // successfully saved
-				$result['success'] = true;
-				$result['newReview'] = $newReview;
-				$result['reviewId'] = $groupedWorkReview->id;
-				global $interface;
-				$interface->assign('review', $groupedWorkReview);
-				$result['reviewHtml'] = $interface->fetch('GroupedWork/view-user-review.tpl');
-			}
+				$success = true;
+			} // pretend success since values are already set to same values.
+		}
+		if (!$success) { // if SQL save didn't work, let user know.
+			$result['success'] = false;
+			$result['message'] = translate([
+				'text' => 'Failed to save rating or review.',
+				'isPublicFacing' => true,
+			]);
+		} else { // successfully saved
+			$result['success'] = true;
+			$result['newReview'] = $newReview;
+			$result['reviewId'] = $groupedWorkReview->id;
+			global $interface;
+			$interface->assign('review', $groupedWorkReview);
+			$result['reviewHtml'] = $interface->fetch('GroupedWork/view-user-review.tpl');
 		}
 
 		return $result;
@@ -846,6 +819,8 @@ class GroupedWork_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function getEmailForm() : array {
+		$this->checkRequiredParameters(['id']);
+
 		global $interface;
 		require_once ROOT_DIR . '/sys/Email/Mailer.php';
 
@@ -872,6 +847,8 @@ class GroupedWork_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function sendEmail() : array {
+		$this->checkRequiredParameters(['id']);
+
 		global $interface;
 
 		$to = strip_tags($_REQUEST['to']);
@@ -953,37 +930,30 @@ class GroupedWork_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function markNotInterested() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredParameters(['id']);
 		$result = [
 			'result' => false,
 			'message' => "Unknown error.",
 		];
-		if (UserAccount::isLoggedIn()) {
-			$id = $_REQUEST['id'];
-			require_once ROOT_DIR . '/sys/LocalEnrichment/NotInterested.php';
-			$notInterested = new NotInterested();
-			$notInterested->userId = UserAccount::getActiveUserId();
-			$notInterested->groupedRecordPermanentId = $id;
 
-			if (!$notInterested->find(true)) {
-				$notInterested->dateMarked = time();
-				if ($notInterested->insert()) {
+		$id = $_REQUEST['id'];
+		require_once ROOT_DIR . '/sys/LocalEnrichment/NotInterested.php';
+		$notInterested = new NotInterested();
+		$notInterested->userId = UserAccount::getActiveUserId();
+		$notInterested->groupedRecordPermanentId = $id;
 
-					// Reset any cached suggestion browse category for the user
-					$this->clearMySuggestionsBrowseCategoryCache();
+		if (!$notInterested->find(true)) {
+			$notInterested->dateMarked = time();
+			if ($notInterested->insert()) {
 
-					$result = [
-						'result' => true,
-						'message' => translate([
-							'text' => "You won't be shown this title in the future. It may take a few minutes before the title is removed from your recommendations.",
-							'isPublicFacing' => 'true',
-						]),
-					];
-				}
-			} else {
+				// Reset any cached suggestion browse category for the user
+				$this->clearMySuggestionsBrowseCategoryCache();
+
 				$result = [
-					'result' => false,
+					'result' => true,
 					'message' => translate([
-						'text' => "This record was already marked as something you aren't interested in.",
+						'text' => "You won't be shown this title in the future. It may take a few minutes before the title is removed from your recommendations.",
 						'isPublicFacing' => 'true',
 					]),
 				];
@@ -992,7 +962,7 @@ class GroupedWork_AJAX extends JSON_Action {
 			$result = [
 				'result' => false,
 				'message' => translate([
-					'text' => "Please log in.",
+					'text' => "This record was already marked as something you aren't interested in.",
 					'isPublicFacing' => 'true',
 				]),
 			];
@@ -1002,6 +972,9 @@ class GroupedWork_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function clearNotInterested() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredParameters(['id']);
+
 		$idToClear = $_REQUEST['id'];
 		require_once ROOT_DIR . '/sys/LocalEnrichment/NotInterested.php';
 		$notInterested = new NotInterested();
@@ -1184,6 +1157,10 @@ class GroupedWork_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function getUploadCoverForm() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission('Upload Covers');
+		$this->checkRequiredParameters(['id']);
+
 		global $interface;
 
 		$groupedWorkId = $_REQUEST['id'];
@@ -1208,6 +1185,10 @@ class GroupedWork_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function uploadCover() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission('Upload Covers');
+		$this->checkRequiredParameters(['id']);
+
 		$result = [
 			'success' => false,
 			'title' => translate([
@@ -1219,133 +1200,133 @@ class GroupedWork_AJAX extends JSON_Action {
 				'isAdminFacing' => true,
 			]),
 		];
-		if (UserAccount::isLoggedIn() && (UserAccount::userHasPermission('Upload Covers'))) {
-			if (isset($_FILES['coverFile'])) {
-				$uploadedFile = $_FILES['coverFile'];
-				if (isset($uploadedFile["error"]) && $uploadedFile["error"] == 4) {
+
+		if (isset($_FILES['coverFile'])) {
+			$uploadedFile = $_FILES['coverFile'];
+			if (isset($uploadedFile["error"]) && $uploadedFile["error"] == 4) {
+				$result['message'] = translate([
+					'text' => "No Cover file was uploaded",
+					'isAdminFacing' => true,
+				]);
+			} elseif (isset($uploadedFile["error"]) && $uploadedFile["error"] > 0) {
+				$result['message'] = translate([
+					'text' => "Error in file upload for cover %1%",
+					1 => $uploadedFile["error"],
+					"isAdminFacing" => true,
+				]);
+			} else {
+				$id = $_REQUEST['id'];
+				$recordType = $_REQUEST['recordType'] ?? 'grouped_work';
+				$recordId = $_REQUEST['recordId'] ?? $id;
+				$uploadOption = $_REQUEST['uploadOption'];
+
+				if($recordType !== 'grouped_work') {
+					$id = $recordId;
+				}
+
+				global $configArray;
+				$destFullPath = $configArray['Site']['coverPath'] . '/original/' . $id . '.png';
+				require_once ROOT_DIR . '/sys/Covers/CoverImageUtils.php';
+
+				/** @noinspection SpellCheckingInspection */
+				if ($uploadOption == 'andgrouped') { //update image for grouped work and individual bib record
+					$res = formatImageUpload($uploadedFile, $destFullPath, $id, $recordType);
+					/** @noinspection PhpIfWithCommonPartsInspection */
+					if ($res) {
+						$id = $_REQUEST['id'];
+						$recordType = 'grouped_work';
+						$destFullPath = $configArray['Site']['coverPath'] . '/original/' . $id . '.png';
+						$res = formatImageUpload($uploadedFile, $destFullPath, $id, $recordType);
+						$result = $res;
+					}else{
+						$result = $res;
+					}
 					$result['message'] = translate([
-						'text' => "No Cover file was uploaded",
+						'text' => 'Your cover has been uploaded successfully',
 						'isAdminFacing' => true,
 					]);
-				} elseif (isset($uploadedFile["error"]) && $uploadedFile["error"] > 0) {
-					$result['message'] = translate([
-						'text' => "Error in file upload for cover %1%",
-						1 => $uploadedFile["error"],
-						"isAdminFacing" => true,
-					]);
-				} else {
-					$id = $_REQUEST['id'];
-					$recordType = $_REQUEST['recordType'] ?? 'grouped_work';
-					$recordId = $_REQUEST['recordId'] ?? $id;
-					$uploadOption = $_REQUEST['uploadOption'];
+				} /** @noinspection SpellCheckingInspection */
+				elseif ($uploadOption == 'alldefault') {//update image for all records in grouped work with default covers
+					$res = formatImageUpload($uploadedFile, $destFullPath, $id, $recordType);
+					if ($res) {
+						require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+						require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
+						$id = $_REQUEST['id'];
+						$recordDriver = new GroupedWorkDriver($id);
+						$relatedRecords = $recordDriver->getRelatedRecords(true);
 
-					if($recordType !== 'grouped_work') {
-						$id = $recordId;
-					}
-
-					global $configArray;
-					$destFullPath = $configArray['Site']['coverPath'] . '/original/' . $id . '.png';
-					require_once ROOT_DIR . '/sys/Covers/CoverImageUtils.php';
-
-					/** @noinspection SpellCheckingInspection */
-					if ($uploadOption == 'andgrouped') { //update image for grouped work and individual bib record
-						$res = formatImageUpload($uploadedFile, $destFullPath, $id, $recordType);
-						/** @noinspection PhpIfWithCommonPartsInspection */
-						if ($res) {
-							$id = $_REQUEST['id'];
-							$recordType = 'grouped_work';
-							$destFullPath = $configArray['Site']['coverPath'] . '/original/' . $id . '.png';
-							$res = formatImageUpload($uploadedFile, $destFullPath, $id, $recordType);
-							$result = $res;
-						}else{
-							$result = $res;
+						foreach ($relatedRecords as $record) {
+							require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
+							$hasDefaultCover = new BookCoverInfo();
+							$hasDefaultCover->__set('id',$record->id);
+							$hasDefaultCover->__set('imageSource', 'default');
+							if ($hasDefaultCover->find(true)){
+								$id = substr(strstr($record->id, ':'), 1);
+								$recordType = $record->source;
+								$destFullPath = $configArray['Site']['coverPath'] . '/original/' . $id . '.png';
+								$res = formatImageUpload($uploadedFile, $destFullPath, $id, $recordType);
+								if ($res){
+									continue;
+								}else{
+									$result = $res;
+								}
+							}
 						}
+						$result['success'] = true;
 						$result['message'] = translate([
 							'text' => 'Your cover has been uploaded successfully',
 							'isAdminFacing' => true,
 						]);
-					} /** @noinspection SpellCheckingInspection */
-					elseif ($uploadOption == 'alldefault') {//update image for all records in grouped work with default covers
-						$res = formatImageUpload($uploadedFile, $destFullPath, $id, $recordType);
-						if ($res) {
+					} else {
+						$result = $res;
+						$result['message'] = translate([
+							'text' => 'Your cover could not be uploaded',
+							'isAdminFacing' => true,
+						]);
+					}
+				}else{ //only updating grouped work or individual bib cover
+					if($recordType == 'grouped_work') {
+						if (formatImageUpload($uploadedFile, $destFullPath, $id, $recordType)) {
 							require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-							require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
-							$id = $_REQUEST['id'];
 							$recordDriver = new GroupedWorkDriver($id);
 							$relatedRecords = $recordDriver->getRelatedRecords(true);
-
-							foreach ($relatedRecords as $record) {
-								require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
-								$hasDefaultCover = new BookCoverInfo();
-								$hasDefaultCover->__set('id',$record->id);
-								$hasDefaultCover->__set('imageSource', 'default');
-								if ($hasDefaultCover->find(true)){
-									$id = substr(strstr($record->id, ':'), 1);
-									$recordType = $record->source;
-									$destFullPath = $configArray['Site']['coverPath'] . '/original/' . $id . '.png';
-									$res = formatImageUpload($uploadedFile, $destFullPath, $id, $recordType);
-									if ($res){
-										continue;
-									}else{
-										$result = $res;
-									}
-								}
-							}
-							$result['success'] = true;
-							$result['message'] = translate([
-								'text' => 'Your cover has been uploaded successfully',
-								'isAdminFacing' => true,
-							]);
-						} else {
-							$result = $res;
-							$result['message'] = translate([
-								'text' => 'Your cover could not be uploaded',
-								'isAdminFacing' => true,
-							]);
-						}
-					}else{ //only updating grouped work or individual bib cover
-						if($recordType == 'grouped_work') {
-							if (formatImageUpload($uploadedFile, $destFullPath, $id, $recordType)) {
-								require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-								$recordDriver = new GroupedWorkDriver($id);
-								$relatedRecords = $recordDriver->getRelatedRecords(true);
-								if (sizeof($relatedRecords) == 1) {
-									$id = substr(strstr($relatedRecords[0]->id, ':'), 1);
-									$recordType = $relatedRecords[0]->source;
-									$destFullPath = $configArray['Site']['coverPath'] . '/original/' . $id . '.png';
-									$result = formatImageUpload($uploadedFile, $destFullPath, $id, $recordType);
-									if ($result['success'] = true){
-										$result['message'] = translate([
-											'text' => 'Your cover has been uploaded successfully',
-											'isAdminFacing' => true,
-										]);
-									}
-								}else{
-									$result['success'] = true;
+							if (sizeof($relatedRecords) == 1) {
+								$id = substr(strstr($relatedRecords[0]->id, ':'), 1);
+								$recordType = $relatedRecords[0]->source;
+								$destFullPath = $configArray['Site']['coverPath'] . '/original/' . $id . '.png';
+								$result = formatImageUpload($uploadedFile, $destFullPath, $id, $recordType);
+								if ($result['success'] = true){
 									$result['message'] = translate([
 										'text' => 'Your cover has been uploaded successfully',
 										'isAdminFacing' => true,
 									]);
 								}
-							}
-						} else {
-							$result = formatImageUpload($uploadedFile, $destFullPath, $id, $recordType);
-							if ($result['success'] = true){
+							}else{
+								$result['success'] = true;
 								$result['message'] = translate([
 									'text' => 'Your cover has been uploaded successfully',
 									'isAdminFacing' => true,
 								]);
 							}
 						}
+					} else {
+						$result = formatImageUpload($uploadedFile, $destFullPath, $id, $recordType);
+						if ($result['success'] = true){
+							$result['message'] = translate([
+								'text' => 'Your cover has been uploaded successfully',
+								'isAdminFacing' => true,
+							]);
+						}
 					}
 				}
-			} else {
-				$result['message'] = translate([
-					'text' => 'No cover was uploaded, please try again.',
-					'isAdminFacing' => true,
-				]);
 			}
+		} else {
+			$result['message'] = translate([
+				'text' => 'No cover was uploaded, please try again.',
+				'isAdminFacing' => true,
+			]);
 		}
+
 		if ($result['success']) {
 			require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
 			$bookCoverInfo = new BookCoverInfo();
@@ -1369,6 +1350,10 @@ class GroupedWork_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function getUploadCoverFormByURL() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission('Upload Covers');
+		$this->checkRequiredParameters(['id']);
+
 		global $interface;
 
 		$groupedWorkId = $_REQUEST['id'];
@@ -1393,6 +1378,10 @@ class GroupedWork_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function uploadCoverByURL() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission('Upload Covers');
+		$this->checkRequiredParameters(['id']);
+
 		$result = [
 			'success' => false,
 			'title' => translate([
@@ -1598,6 +1587,8 @@ class GroupedWork_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function getCopyDetails() : array {
+		$this->checkRequiredParameters(['id']);
+
 		global $interface;
 
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
@@ -1672,6 +1663,10 @@ class GroupedWork_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function getGroupWithForm() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission('Manually Group and Ungroup Works');
+		$this->checkRequiredParameters(['id']);
+
 		$results = [
 			'success' => false,
 			'message' => translate([
@@ -1680,36 +1675,29 @@ class GroupedWork_AJAX extends JSON_Action {
 			]),
 		];
 
-		if (UserAccount::isLoggedIn() && (UserAccount::userHasPermission('Manually Group and Ungroup Works'))) {
-			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
-			$groupedWork = new GroupedWork();
-			$id = $_REQUEST['id'];
-			$groupedWork->permanent_id = $id;
-			if ($groupedWork->find(true)) {
-				global $interface;
-				$interface->assign('id', $id);
-				$interface->assign('groupedWork', $groupedWork);
-				$results = [
-					'success' => true,
-					'title' => translate([
-						'text' => "Group this with another work",
-						'isAdminFacing' => true,
-					]),
-					'modalBody' => $interface->fetch("GroupedWork/groupWithForm.tpl"),
-					'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.GroupedWork.processGroupWithForm()'>" . translate([
-							'text' => "Group",
-							'isAdminFacing' => true,
-						]) . "</button>",
-				];
-			} else {
-				$results['message'] = translate([
-					'text' => "Could not find a work with that id",
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+		$groupedWork = new GroupedWork();
+		$id = $_REQUEST['id'];
+		$groupedWork->permanent_id = $id;
+		if ($groupedWork->find(true)) {
+			global $interface;
+			$interface->assign('id', $id);
+			$interface->assign('groupedWork', $groupedWork);
+			$results = [
+				'success' => true,
+				'title' => translate([
+					'text' => "Group this with another work",
 					'isAdminFacing' => true,
-				]);
-			}
+				]),
+				'modalBody' => $interface->fetch("GroupedWork/groupWithForm.tpl"),
+				'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.GroupedWork.processGroupWithForm()'>" . translate([
+						'text' => "Group",
+						'isAdminFacing' => true,
+					]) . "</button>",
+			];
 		} else {
 			$results['message'] = translate([
-				'text' => "You do not have the correct permissions for this operation",
+				'text' => "Could not find a work with that id",
 				'isAdminFacing' => true,
 			]);
 		}
@@ -1718,6 +1706,10 @@ class GroupedWork_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function getGroupWithInfo() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission('Manually Group and Ungroup Works');
+		$this->checkRequiredParameters(['id']);
+
 		/** @noinspection PhpArrayIndexImmediatelyRewrittenInspection */
 		$results = [
 			'success' => false,
@@ -1726,30 +1718,24 @@ class GroupedWork_AJAX extends JSON_Action {
 				'isAdminFacing' => true,
 			]),
 		];
-		if (UserAccount::isLoggedIn() && (UserAccount::userHasPermission('Manually Group and Ungroup Works'))) {
-			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
-			$groupedWork = new GroupedWork();
-			$id = $_REQUEST['id'];
-			$groupedWork->permanent_id = $id;
-			if ($groupedWork->find(true)) {
-				$results['success'] = true;
-				$results['message'] = "<div class='row'><div class='col-tn-3'>" . translate([
-						'text' => 'Title',
-						'isAdminFacing' => true,
-					]) . "</div><div class='col-tn-9'><strong>$groupedWork->full_title</strong></div></div>";
-				$results['message'] .= "<div class='row'><div class='col-tn-3'>" . translate([
-						'text' => 'Author',
-						'isAdminFacing' => true,
-					]) . "</div><div class='col-tn-9'><strong>$groupedWork->author</strong></div></div>";
-			} else {
-				$results['message'] = translate([
-					'text' => "Could not find a work with that id",
+
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+		$groupedWork = new GroupedWork();
+		$id = $_REQUEST['id'];
+		$groupedWork->permanent_id = $id;
+		if ($groupedWork->find(true)) {
+			$results['success'] = true;
+			$results['message'] = "<div class='row'><div class='col-tn-3'>" . translate([
+					'text' => 'Title',
 					'isAdminFacing' => true,
-				]);
-			}
+				]) . "</div><div class='col-tn-9'><strong>$groupedWork->full_title</strong></div></div>";
+			$results['message'] .= "<div class='row'><div class='col-tn-3'>" . translate([
+					'text' => 'Author',
+					'isAdminFacing' => true,
+				]) . "</div><div class='col-tn-9'><strong>$groupedWork->author</strong></div></div>";
 		} else {
 			$results['message'] = translate([
-				'text' => "You do not have the correct permissions for this operation",
+				'text' => "Could not find a work with that id",
 				'isAdminFacing' => true,
 			]);
 		}
@@ -1758,6 +1744,10 @@ class GroupedWork_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function processGroupWithForm() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission('Manually Group and Ungroup Works');
+		$this->checkRequiredParameters(['id']);
+
 		/** @noinspection PhpArrayIndexImmediatelyRewrittenInspection */
 		$results = [
 			'success' => false,
@@ -1766,121 +1756,114 @@ class GroupedWork_AJAX extends JSON_Action {
 				'isPublicFacing' => true,
 			]),
 		];
-		if (UserAccount::isLoggedIn() && (UserAccount::userHasPermission('Manually Group and Ungroup Works'))) {
-			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 
-			$id = $_REQUEST['id'];
-			$originalGroupedWork = new GroupedWork();
-			$originalGroupedWork->permanent_id = $id;
-			if (!empty($id) && $originalGroupedWork->find(true)) {
-				require_once ROOT_DIR . '/sys/Grouping/ManualGroupedWork.php';
-				$sourceManualGroupedWork = new ManualGroupedWork();
-				$sourceManualGroupedWork->grouped_work_permanent_id = $originalGroupedWork->permanent_id;
-				if ($sourceManualGroupedWork->find(true)) {
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+
+		$id = $_REQUEST['id'];
+		$originalGroupedWork = new GroupedWork();
+		$originalGroupedWork->permanent_id = $id;
+		if (!empty($id) && $originalGroupedWork->find(true)) {
+			require_once ROOT_DIR . '/sys/Grouping/ManualGroupedWork.php';
+			$sourceManualGroupedWork = new ManualGroupedWork();
+			$sourceManualGroupedWork->grouped_work_permanent_id = $originalGroupedWork->permanent_id;
+			if ($sourceManualGroupedWork->find(true)) {
+				$results['message'] = translate([
+					'text' => "Cannot group a manually created grouped work. Edit the manually created grouped work to add any records.",
+					'isAdminFacing' => true,
+				]);
+				return $results;
+			}
+
+			$workToGroupWithId = $_REQUEST['groupWithId'];
+			$workToGroupWith = new GroupedWork();
+			$workToGroupWith->permanent_id = $workToGroupWithId;
+			if (!empty($workToGroupWithId) && $workToGroupWith->find(true)) {
+				$manualGroupedWork = new ManualGroupedWork();
+				$manualGroupedWork->grouped_work_permanent_id = $workToGroupWith->permanent_id;
+				if ($manualGroupedWork->find(true)) {
 					$results['message'] = translate([
-						'text' => "Cannot group a manually created grouped work. Edit the manually created grouped work to add any records.",
+						'text' => "Cannot group with a manually created grouped work. Edit the manually created grouped work to add any records.",
 						'isAdminFacing' => true,
 					]);
 					return $results;
 				}
 
-				$workToGroupWithId = $_REQUEST['groupWithId'];
-				$workToGroupWith = new GroupedWork();
-				$workToGroupWith->permanent_id = $workToGroupWithId;
-				if (!empty($workToGroupWithId) && $workToGroupWith->find(true)) {
-					$manualGroupedWork = new ManualGroupedWork();
-					$manualGroupedWork->grouped_work_permanent_id = $workToGroupWith->permanent_id;
-					if ($manualGroupedWork->find(true)) {
-						$results['message'] = translate([
-							'text' => "Cannot group with a manually created grouped work. Edit the manually created grouped work to add any records.",
-							'isAdminFacing' => true,
-						]);
-						return $results;
-					}
-
-					$okToGroup = false;
-					if ($originalGroupedWork->grouping_category == $workToGroupWith->grouping_category) {
-						$okToGroup = true;
-					}elseif (($originalGroupedWork->grouping_category == 'comic') && ($workToGroupWith->grouping_category == 'book')) {
-						//Comics can go onto books
-						$okToGroup = true;
-					}elseif (($workToGroupWith->grouping_category == 'other')) {
-						$okToGroup = true;
-					}elseif (($originalGroupedWork->grouping_category == 'other')) {
-						//Other can go onto anything else
-						$tmpWork = $originalGroupedWork;
-						$originalGroupedWork = $workToGroupWith;
-						$workToGroupWith = $tmpWork;
-						$okToGroup = true;
-					}elseif (($originalGroupedWork->grouping_category == 'book') && ($workToGroupWith->grouping_category == 'comic')) {
-						//These are ok to group, but we want the comic to go on the book.
-						$tmpWork = $originalGroupedWork;
-						$originalGroupedWork = $workToGroupWith;
-						$workToGroupWith = $tmpWork;
-						$okToGroup = true;
-					}
-					if (!$okToGroup) {
-						$results['message'] = translate([
-							'text' => "These are different categories of works, cannot group.",
-							'isAdminFacing' => true,
-						]);
-					} else {
-						require_once ROOT_DIR . '/sys/Grouping/GroupedWorkAlternateTitle.php';
-						$groupedWorkAlternateTitle = new GroupedWorkAlternateTitle();
-						$groupedWorkAlternateTitle->permanent_id = $workToGroupWith->permanent_id;
-						//Check to see if the author has an authority
-						require_once ROOT_DIR . '/sys/Grouping/AuthorAuthority.php';
-						require_once ROOT_DIR . '/sys/Grouping/AuthorAuthorityAlternative.php';
-						$authorAuthorityAlternative = new AuthorAuthorityAlternative();
-						$authorAuthorityAlternative->normalized = $originalGroupedWork->author;
-						$useOriginalAuthor = true;
-						if ($authorAuthorityAlternative->find(true)) {
-							$authorAuthority = new AuthorAuthority();
-							$authorAuthority->id = $authorAuthorityAlternative->authorId;
-							if ($authorAuthority->find(true)) {
-								$useOriginalAuthor = false;
-								$groupedWorkAlternateTitle->alternateAuthor = $authorAuthority->normalized;
-							}
-						}
-						if ($useOriginalAuthor) {
-							$groupedWorkAlternateTitle->alternateAuthor = $originalGroupedWork->author;
-						}
-						$groupedWorkAlternateTitle->alternateTitle = $originalGroupedWork->full_title;
-						$groupedWorkAlternateTitle->alternateGroupingCategory = $originalGroupedWork->grouping_category;
-						if (!$groupedWorkAlternateTitle->find(true)) {
-							$groupedWorkAlternateTitle->addedBy = UserAccount::getActiveUserId();
-							$groupedWorkAlternateTitle->dateAdded = time();
-							$groupedWorkAlternateTitle->insert();
-							$originalGroupedWork->forceReindex(true);
-							$workToGroupWith->forceReindex(true);
-							$results['success'] = true;
-							$results['message'] = translate([
-								'text' => "Your works have been grouped successfully, the index will update shortly.",
-								'isAdminFacing' => true,
-							]);
-						}else{
-							$results['message'] = translate([
-								'text' => "This grouping already exists.",
-								'isAdminFacing' => true,
-							]);
-						}
-					}
-				} else {
+				$okToGroup = false;
+				if ($originalGroupedWork->grouping_category == $workToGroupWith->grouping_category) {
+					$okToGroup = true;
+				}elseif (($originalGroupedWork->grouping_category == 'comic') && ($workToGroupWith->grouping_category == 'book')) {
+					//Comics can go onto books
+					$okToGroup = true;
+				}elseif (($workToGroupWith->grouping_category == 'other')) {
+					$okToGroup = true;
+				}elseif (($originalGroupedWork->grouping_category == 'other')) {
+					//Other can go onto anything else
+					$tmpWork = $originalGroupedWork;
+					$originalGroupedWork = $workToGroupWith;
+					$workToGroupWith = $tmpWork;
+					$okToGroup = true;
+				}elseif (($originalGroupedWork->grouping_category == 'book') && ($workToGroupWith->grouping_category == 'comic')) {
+					//These are ok to group, but we want the comic to go on the book.
+					$tmpWork = $originalGroupedWork;
+					$originalGroupedWork = $workToGroupWith;
+					$workToGroupWith = $tmpWork;
+					$okToGroup = true;
+				}
+				if (!$okToGroup) {
 					$results['message'] = translate([
-						'text' => "Could not find work to group with",
+						'text' => "These are different categories of works, cannot group.",
 						'isAdminFacing' => true,
 					]);
+				} else {
+					require_once ROOT_DIR . '/sys/Grouping/GroupedWorkAlternateTitle.php';
+					$groupedWorkAlternateTitle = new GroupedWorkAlternateTitle();
+					$groupedWorkAlternateTitle->permanent_id = $workToGroupWith->permanent_id;
+					//Check to see if the author has an authority
+					require_once ROOT_DIR . '/sys/Grouping/AuthorAuthority.php';
+					require_once ROOT_DIR . '/sys/Grouping/AuthorAuthorityAlternative.php';
+					$authorAuthorityAlternative = new AuthorAuthorityAlternative();
+					$authorAuthorityAlternative->normalized = $originalGroupedWork->author;
+					$useOriginalAuthor = true;
+					if ($authorAuthorityAlternative->find(true)) {
+						$authorAuthority = new AuthorAuthority();
+						$authorAuthority->id = $authorAuthorityAlternative->authorId;
+						if ($authorAuthority->find(true)) {
+							$useOriginalAuthor = false;
+							$groupedWorkAlternateTitle->alternateAuthor = $authorAuthority->normalized;
+						}
+					}
+					if ($useOriginalAuthor) {
+						$groupedWorkAlternateTitle->alternateAuthor = $originalGroupedWork->author;
+					}
+					$groupedWorkAlternateTitle->alternateTitle = $originalGroupedWork->full_title;
+					$groupedWorkAlternateTitle->alternateGroupingCategory = $originalGroupedWork->grouping_category;
+					if (!$groupedWorkAlternateTitle->find(true)) {
+						$groupedWorkAlternateTitle->addedBy = UserAccount::getActiveUserId();
+						$groupedWorkAlternateTitle->dateAdded = time();
+						$groupedWorkAlternateTitle->insert();
+						$originalGroupedWork->forceReindex(true);
+						$workToGroupWith->forceReindex(true);
+						$results['success'] = true;
+						$results['message'] = translate([
+							'text' => "Your works have been grouped successfully, the index will update shortly.",
+							'isAdminFacing' => true,
+						]);
+					}else{
+						$results['message'] = translate([
+							'text' => "This grouping already exists.",
+							'isAdminFacing' => true,
+						]);
+					}
 				}
 			} else {
 				$results['message'] = translate([
-					'text' => "Could not find work for original id",
+					'text' => "Could not find work to group with",
 					'isAdminFacing' => true,
 				]);
 			}
-
 		} else {
 			$results['message'] = translate([
-				'text' => "You do not have the correct permissions for this operation",
+				'text' => "Could not find work for original id",
 				'isAdminFacing' => true,
 			]);
 		}
@@ -1889,6 +1872,10 @@ class GroupedWork_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function getGroupWithSearchForm() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission('Manually Group and Ungroup Works');
+		$this->checkRequiredParameters(['id']);
+
 		$results = [
 			'success' => false,
 			'message' => translate([
@@ -1897,83 +1884,76 @@ class GroupedWork_AJAX extends JSON_Action {
 			]),
 		];
 
-		if (UserAccount::isLoggedIn() && (UserAccount::userHasPermission('Manually Group and Ungroup Works'))) {
-			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
-			$groupedWork = new GroupedWork();
-			$id = $_REQUEST['id'];
-			$groupedWork->permanent_id = $id;
-			if ($groupedWork->find(true)) {
-				global $interface;
-				$interface->assign('id', $id);
-				$interface->assign('groupedWork', $groupedWork);
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+		$groupedWork = new GroupedWork();
+		$id = $_REQUEST['id'];
+		$groupedWork->permanent_id = $id;
+		if ($groupedWork->find(true)) {
+			global $interface;
+			$interface->assign('id', $id);
+			$interface->assign('groupedWork', $groupedWork);
 
-				$searchId = $_REQUEST['searchId'];
-				/** @var SearchObject_AbstractGroupedWorkSearcher $searchObject */
-				$searchObject = SearchObjectFactory::initSearchObject();
-				$searchObject->init();
-				$searchObject = $searchObject->restoreSavedSearch($searchId, false);
+			$searchId = $_REQUEST['searchId'];
+			/** @var SearchObject_AbstractGroupedWorkSearcher $searchObject */
+			$searchObject = SearchObjectFactory::initSearchObject();
+			$searchObject->init();
+			$searchObject = $searchObject->restoreSavedSearch($searchId, false);
 
-				if (!empty($_REQUEST['page'])) {
-					$searchObject->setPage($_REQUEST['page']);
-				}
+			if (!empty($_REQUEST['page'])) {
+				$searchObject->setPage($_REQUEST['page']);
+			}
 
-				$searchResults = $searchObject->processSearch(false, false);
-				$availableRecords = [];
-				$availableRecords[-1] = translate([
-					'text' => "Select the primary work",
-					'isAdminFacing' => true,
-				]);
-				$recordIndex = ($searchObject->getPage() - 1) * $searchObject->getLimit();
-				foreach ($searchResults['response']['docs'] as $doc) {
-					$recordIndex++;
-					if ($doc['id'] != $id) {
-						$primaryWork = new GroupedWork();
-						$primaryWork->permanent_id = $doc['id'];
-						if ($primaryWork->find(true)) {
-							require_once ROOT_DIR . '/sys/Grouping/ManualGroupedWork.php';
-							$manualGroupedWork = new ManualGroupedWork();
-							$manualGroupedWork->grouped_work_permanent_id = $primaryWork->permanent_id;
-							if ($manualGroupedWork->find(true)) {
-								continue;
-							}
+			$searchResults = $searchObject->processSearch(false, false);
+			$availableRecords = [];
+			$availableRecords[-1] = translate([
+				'text' => "Select the primary work",
+				'isAdminFacing' => true,
+			]);
+			$recordIndex = ($searchObject->getPage() - 1) * $searchObject->getLimit();
+			foreach ($searchResults['response']['docs'] as $doc) {
+				$recordIndex++;
+				if ($doc['id'] != $id) {
+					$primaryWork = new GroupedWork();
+					$primaryWork->permanent_id = $doc['id'];
+					if ($primaryWork->find(true)) {
+						require_once ROOT_DIR . '/sys/Grouping/ManualGroupedWork.php';
+						$manualGroupedWork = new ManualGroupedWork();
+						$manualGroupedWork->grouped_work_permanent_id = $primaryWork->permanent_id;
+						if ($manualGroupedWork->find(true)) {
+							continue;
+						}
 
-							$isValidForGrouping = false;
-							if ($primaryWork->grouping_category == $groupedWork->grouping_category) {
-								$isValidForGrouping = true;
-							}elseif (($groupedWork->grouping_category == 'comic' && $primaryWork->grouping_category == 'book') || ($groupedWork->grouping_category == 'book' && $primaryWork->grouping_category == 'comic')){
-								$isValidForGrouping = true;
-							}elseif ($groupedWork->grouping_category == 'other' || $primaryWork->grouping_category == 'other') {
-								$isValidForGrouping = true;
-							}
-							if ($isValidForGrouping) {
-								$availableRecords[$doc['id']] = "$recordIndex) $primaryWork->full_title $primaryWork->author";
-							}
+						$isValidForGrouping = false;
+						if ($primaryWork->grouping_category == $groupedWork->grouping_category) {
+							$isValidForGrouping = true;
+						}elseif (($groupedWork->grouping_category == 'comic' && $primaryWork->grouping_category == 'book') || ($groupedWork->grouping_category == 'book' && $primaryWork->grouping_category == 'comic')){
+							$isValidForGrouping = true;
+						}elseif ($groupedWork->grouping_category == 'other' || $primaryWork->grouping_category == 'other') {
+							$isValidForGrouping = true;
+						}
+						if ($isValidForGrouping) {
+							$availableRecords[$doc['id']] = "$recordIndex) $primaryWork->full_title $primaryWork->author";
 						}
 					}
 				}
-				$interface->assign('availableRecords', $availableRecords);
-
-				$results = [
-					'success' => true,
-					'title' => translate([
-						'text' => "Group this with another work",
-						'isAdminFacing' => true,
-					]),
-					'modalBody' => $interface->fetch("GroupedWork/groupWithSearchForm.tpl"),
-					'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.GroupedWork.processGroupWithForm()'>" . translate([
-							'text' => "Group",
-							'isAdminFacing' => true,
-						]) . "</button>",
-				];
-			} else {
-				$results['message'] = translate([
-					'text' => "Could not find a work with that id",
-					'isAdminFacing' => true,
-				]);
 			}
+			$interface->assign('availableRecords', $availableRecords);
+
+			$results = [
+				'success' => true,
+				'title' => translate([
+					'text' => "Group this with another work",
+					'isAdminFacing' => true,
+				]),
+				'modalBody' => $interface->fetch("GroupedWork/groupWithSearchForm.tpl"),
+				'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.GroupedWork.processGroupWithForm()'>" . translate([
+						'text' => "Group",
+						'isAdminFacing' => true,
+					]) . "</button>",
+			];
 		} else {
 			$results['message'] = translate([
-				'text' => "You do not have the correct permissions for this operation",
+				'text' => "Could not find a work with that id",
 				'isAdminFacing' => true,
 			]);
 		}
@@ -1981,6 +1961,11 @@ class GroupedWork_AJAX extends JSON_Action {
 	}
 
 	function getStaffView() : array {
+		global $interface;
+		if (!$interface->getVariable('showStaffView')) {
+			$this->failureResult(null, 'Staff View is not available.');
+		}
+
 		$id = $_REQUEST['id'];
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 		$recordDriver = new GroupedWorkDriver($id);
@@ -1994,6 +1979,9 @@ class GroupedWork_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function deleteRecordGroupingOverride() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission('Manually Group and Ungroup Works');
+		$this->checkRequiredParameters(['id']);
 		$result = [
 			'success' => false,
 			'title' => translate([
@@ -2005,33 +1993,27 @@ class GroupedWork_AJAX extends JSON_Action {
 				'isAdminFacing' => true,
 			]),
 		];
-		if (UserAccount::isLoggedIn() && (UserAccount::userHasPermission('Manually Group and Ungroup Works'))) {
-			$id = $_REQUEST['id'];
-			require_once ROOT_DIR . '/sys/Grouping/RecordGroupingOverride.php';
-			$override = new RecordGroupingOverride();
-			$override->id = $id;
-			if ($override->find(true)) {
-				$override->delete();
-				$result = [
-					'success' => true,
-					'title' => translate([
-						'text' => 'Deleted Record Grouping Override',
-						'isAdminFacing' => true,
-					]),
-					'message' => translate([
-						'text' => "Successfully deleted the record grouping override.",
-						'isAdminFacing' => true,
-					]),
-				];
-			} else {
-				$result['message'] = translate([
-					'text' => "Could not find the record grouping override to delete.",
+
+		$id = $_REQUEST['id'];
+		require_once ROOT_DIR . '/sys/Grouping/RecordGroupingOverride.php';
+		$override = new RecordGroupingOverride();
+		$override->id = $id;
+		if ($override->find(true)) {
+			$override->delete();
+			$result = [
+				'success' => true,
+				'title' => translate([
+					'text' => 'Deleted Record Grouping Override',
 					'isAdminFacing' => true,
-				]);
-			}
+				]),
+				'message' => translate([
+					'text' => "Successfully deleted the record grouping override.",
+					'isAdminFacing' => true,
+				]),
+			];
 		} else {
 			$result['message'] = translate([
-				'text' => "You do not have the correct permissions to delete record grouping overrides.",
+				'text' => "Could not find the record grouping override to delete.",
 				'isAdminFacing' => true,
 			]);
 		}
@@ -2040,6 +2022,10 @@ class GroupedWork_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function deleteAlternateTitle() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission('Manually Group and Ungroup Works');
+		$this->checkRequiredParameters(['id']);
+
 		$result = [
 			'success' => false,
 			'message' => translate([
@@ -2047,29 +2033,23 @@ class GroupedWork_AJAX extends JSON_Action {
 				'isAdminFacing' => true,
 			]),
 		];
-		if (UserAccount::isLoggedIn() && (UserAccount::userHasPermission('Manually Group and Ungroup Works'))) {
-			$id = $_REQUEST['id'];
-			require_once ROOT_DIR . '/sys/Grouping/GroupedWorkAlternateTitle.php';
-			$alternateTitle = new GroupedWorkAlternateTitle();
-			$alternateTitle->id = $id;
-			if ($alternateTitle->find(true)) {
-				$alternateTitle->delete();
-				$result = [
-					'success' => true,
-					'message' => translate([
-						'text' => "Successfully deleted the alternate title",
-						'isAdminFacing' => true,
-					]),
-				];
-			} else {
-				$result['message'] = translate([
-					'text' => "Could not find the alternate title to delete",
+
+		$id = $_REQUEST['id'];
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWorkAlternateTitle.php';
+		$alternateTitle = new GroupedWorkAlternateTitle();
+		$alternateTitle->id = $id;
+		if ($alternateTitle->find(true)) {
+			$alternateTitle->delete();
+			$result = [
+				'success' => true,
+				'message' => translate([
+					'text' => "Successfully deleted the alternate title",
 					'isAdminFacing' => true,
-				]);
-			}
+				]),
+			];
 		} else {
 			$result['message'] = translate([
-				'text' => "You do not have the correct permissions for this operation",
+				'text' => "Could not find the alternate title to delete",
 				'isAdminFacing' => true,
 			]);
 		}
@@ -2078,6 +2058,9 @@ class GroupedWork_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function deleteUngrouping() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission('Manually Group and Ungroup Works');
+		$this->checkRequiredParameters(['ungroupingId']);
 		$result = [
 			'success' => false,
 			'message' => translate([
@@ -2085,35 +2068,29 @@ class GroupedWork_AJAX extends JSON_Action {
 				'isAdminFacing' => true,
 			]),
 		];
-		if (UserAccount::isLoggedIn() && (UserAccount::userHasPermission('Manually Group and Ungroup Works'))) {
-			$id = $_REQUEST['ungroupingId'];
-			require_once ROOT_DIR . '/sys/Grouping/NonGroupedRecord.php';
-			$nonGroupedRecord = new NonGroupedRecord();
-			$nonGroupedRecord->id = $id;
-			if ($nonGroupedRecord->find(true)) {
-				$nonGroupedRecord->delete();
-				require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
-				$groupedRecord = new GroupedWork();
-				$groupedRecord->permanent_id = $_REQUEST['id'];
-				if ($groupedRecord->find(true)) {
-					$groupedRecord->forceReindex(true);
-				}
-				$result = [
-					'success' => true,
-					'message' => translate([
-						'text' => "This title can group with other records again",
-						'isAdminFacing' => true,
-					]),
-				];
-			} else {
-				$result['message'] = translate([
-					'text' => "Could not find the ungrouping entry to delete",
-					'isAdminFacing' => true,
-				]);
+
+		$id = $_REQUEST['ungroupingId'];
+		require_once ROOT_DIR . '/sys/Grouping/NonGroupedRecord.php';
+		$nonGroupedRecord = new NonGroupedRecord();
+		$nonGroupedRecord->id = $id;
+		if ($nonGroupedRecord->find(true)) {
+			$nonGroupedRecord->delete();
+			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+			$groupedRecord = new GroupedWork();
+			$groupedRecord->permanent_id = $_REQUEST['id'];
+			if ($groupedRecord->find(true)) {
+				$groupedRecord->forceReindex(true);
 			}
+			$result = [
+				'success' => true,
+				'message' => translate([
+					'text' => "This title can group with other records again",
+					'isAdminFacing' => true,
+				]),
+			];
 		} else {
 			$result['message'] = translate([
-				'text' => "You do not have the correct permissions for this operation",
+				'text' => "Could not find the ungrouping entry to delete",
 				'isAdminFacing' => true,
 			]);
 		}
@@ -2122,6 +2099,10 @@ class GroupedWork_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function getDisplayInfoForm() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission('Set Grouped Work Display Information');
+		$this->checkRequiredParameters(['id']);
+
 		$results = [
 			'success' => false,
 			'message' => translate([
@@ -2129,62 +2110,56 @@ class GroupedWork_AJAX extends JSON_Action {
 				'isAdminFacing' => true,
 			]),
 		];
-		if (UserAccount::isLoggedIn() && (UserAccount::userHasPermission('Set Grouped Work Display Information'))) {
-			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
-			$groupedWork = new GroupedWork();
-			$id = $_REQUEST['id'];
-			$groupedWork->permanent_id = $id;
-			if ($groupedWork->find(true)) {
-				global $interface;
-				$interface->assign('id', $id);
-				$interface->assign('groupedWork', $groupedWork);
 
-				require_once ROOT_DIR . '/sys/Grouping/GroupedWorkDisplayInfo.php';
-				$existingDisplayInfo = new GroupedWorkDisplayInfo();
-				$existingDisplayInfo->permanent_id = $id;
-				if ($existingDisplayInfo->find(true)) {
-					$interface->assign('title', $existingDisplayInfo->title);
-					$interface->assign('author', $existingDisplayInfo->author);
-					$interface->assign('seriesName', $existingDisplayInfo->seriesName);
-					$interface->assign('seriesDisplayOrder', ($existingDisplayInfo->seriesDisplayOrder == 0) ? '' : $existingDisplayInfo->seriesDisplayOrder);
-					$interface->assign('description', $existingDisplayInfo->description);
-				} else {
-					require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-					$recordDriver = new GroupedWorkDriver($id);
-					$interface->assign('title', $recordDriver->getTitle());
-					$interface->assign('author', $recordDriver->getPrimaryAuthor());
-					$series = $recordDriver->getSeries();
-					if (!empty($series)) {
-						$interface->assign('seriesName', $series['seriesTitle']);
-						$interface->assign('seriesDisplayOrder', $series['volume']);
-					} else {
-						$interface->assign('seriesName', '');
-						$interface->assign('seriesDisplayOrder', '');
-					}
-					$interface->assign('description', '');
-				}
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+		$groupedWork = new GroupedWork();
+		$id = $_REQUEST['id'];
+		$groupedWork->permanent_id = $id;
+		if ($groupedWork->find(true)) {
+			global $interface;
+			$interface->assign('id', $id);
+			$interface->assign('groupedWork', $groupedWork);
 
-				$results = [
-					'success' => true,
-					'title' => translate([
-						'text' => "Set Display Information",
-						'isAdminFacing' => true,
-					]),
-					'modalBody' => $interface->fetch("GroupedWork/groupedWorkDisplayInfoForm.tpl"),
-					'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.GroupedWork.processGroupedWorkDisplayInfoForm(\"$id\")'>" . translate([
-							'text' => "Set Display Info",
-							'isAdminFacing' => true,
-						]) . "</button>",
-				];
+			require_once ROOT_DIR . '/sys/Grouping/GroupedWorkDisplayInfo.php';
+			$existingDisplayInfo = new GroupedWorkDisplayInfo();
+			$existingDisplayInfo->permanent_id = $id;
+			if ($existingDisplayInfo->find(true)) {
+				$interface->assign('title', $existingDisplayInfo->title);
+				$interface->assign('author', $existingDisplayInfo->author);
+				$interface->assign('seriesName', $existingDisplayInfo->seriesName);
+				$interface->assign('seriesDisplayOrder', ($existingDisplayInfo->seriesDisplayOrder == 0) ? '' : $existingDisplayInfo->seriesDisplayOrder);
+				$interface->assign('description', $existingDisplayInfo->description);
 			} else {
-				$results['message'] = translate([
-					'text' => "Could not find a work with that id",
-					'isAdminFacing' => true,
-				]);
+				require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+				$recordDriver = new GroupedWorkDriver($id);
+				$interface->assign('title', $recordDriver->getTitle());
+				$interface->assign('author', $recordDriver->getPrimaryAuthor());
+				$series = $recordDriver->getSeries();
+				if (!empty($series)) {
+					$interface->assign('seriesName', $series['seriesTitle']);
+					$interface->assign('seriesDisplayOrder', $series['volume']);
+				} else {
+					$interface->assign('seriesName', '');
+					$interface->assign('seriesDisplayOrder', '');
+				}
+				$interface->assign('description', '');
 			}
+
+			$results = [
+				'success' => true,
+				'title' => translate([
+					'text' => "Set Display Information",
+					'isAdminFacing' => true,
+				]),
+				'modalBody' => $interface->fetch("GroupedWork/groupedWorkDisplayInfoForm.tpl"),
+				'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.GroupedWork.processGroupedWorkDisplayInfoForm(\"$id\")'>" . translate([
+						'text' => "Set Display Info",
+						'isAdminFacing' => true,
+					]) . "</button>",
+			];
 		} else {
 			$results['message'] = translate([
-				'text' => "You do not have the correct permissions for this operation",
+				'text' => "Could not find a work with that id",
 				'isAdminFacing' => true,
 			]);
 		}
@@ -2193,6 +2168,10 @@ class GroupedWork_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function processDisplayInfoForm() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission('Set Grouped Work Display Information');
+		$this->checkRequiredParameters(['id']);
+
 		$results = [
 			'success' => false,
 			'title' => translate([
@@ -2204,67 +2183,61 @@ class GroupedWork_AJAX extends JSON_Action {
 				'isAdminFacing' => true,
 			]),
 		];
-		if (UserAccount::isLoggedIn() && (UserAccount::userHasPermission('Set Grouped Work Display Information'))) {
-			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
-			$groupedWork = new GroupedWork();
-			$id = $_REQUEST['id'];
-			$groupedWork->permanent_id = $id;
-			if ($groupedWork->find(true)) {
-				$title = $_REQUEST['title'] ?? '';
-				$author = $_REQUEST['author'] ?? '';
-				$seriesName = $_REQUEST['seriesName'] ?? '';
-				$seriesDisplayOrder = $_REQUEST['seriesDisplayOrder'] ?? '';
-				$description = $_REQUEST['description'] ?? '';
-				if (!is_numeric($seriesDisplayOrder)) {
-					$seriesDisplayOrder = '0';
-				}
-				if (empty($title) && empty($author) && empty($seriesName) && empty($seriesDisplayOrder) && empty($description)) {
-					$results['message'] = translate([
-						'text' => "Please specify at least one piece of information.",
-						'isAdminFacing' => true,
-					]);
-				} else {
-					require_once ROOT_DIR . '/sys/Grouping/GroupedWorkDisplayInfo.php';
-					$existingDisplayInfo = new GroupedWorkDisplayInfo();
-					$existingDisplayInfo->permanent_id = $id;
-					$isNew = true;
-					if ($existingDisplayInfo->find(true)) {
-						$isNew = false;
-					}
-					$existingDisplayInfo->title = $title;
-					$existingDisplayInfo->author = $author;
-					$existingDisplayInfo->seriesName = $seriesName;
-					$existingDisplayInfo->seriesDisplayOrder = $seriesDisplayOrder;
-					$existingDisplayInfo->description = $description;
-					if ($isNew) {
-						$existingDisplayInfo->addedBy = UserAccount::getActiveUserId();
-						$existingDisplayInfo->dateAdded = time();
-					}
-					$existingDisplayInfo->update();
 
-					$groupedWork->forceReindex();
-
-					$results = [
-						'success' => true,
-						'title' => translate([
-							'text' => 'Successfully Set Display Information',
-							'isAdminFacing' => true,
-						]),
-						'message' => translate([
-							'text' => 'The display information has been set, and the grouped work will be reindexed shortly.',
-							'isAdminFacing' => true,
-						]),
-					];
-				}
-			} else {
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+		$groupedWork = new GroupedWork();
+		$id = $_REQUEST['id'];
+		$groupedWork->permanent_id = $id;
+		if ($groupedWork->find(true)) {
+			$title = $_REQUEST['title'] ?? '';
+			$author = $_REQUEST['author'] ?? '';
+			$seriesName = $_REQUEST['seriesName'] ?? '';
+			$seriesDisplayOrder = $_REQUEST['seriesDisplayOrder'] ?? '';
+			$description = $_REQUEST['description'] ?? '';
+			if (!is_numeric($seriesDisplayOrder)) {
+				$seriesDisplayOrder = '0';
+			}
+			if (empty($title) && empty($author) && empty($seriesName) && empty($seriesDisplayOrder) && empty($description)) {
 				$results['message'] = translate([
-					'text' => "Could not find a grouped work with the provided ID.",
+					'text' => "Please specify at least one piece of information.",
 					'isAdminFacing' => true,
 				]);
+			} else {
+				require_once ROOT_DIR . '/sys/Grouping/GroupedWorkDisplayInfo.php';
+				$existingDisplayInfo = new GroupedWorkDisplayInfo();
+				$existingDisplayInfo->permanent_id = $id;
+				$isNew = true;
+				if ($existingDisplayInfo->find(true)) {
+					$isNew = false;
+				}
+				$existingDisplayInfo->title = $title;
+				$existingDisplayInfo->author = $author;
+				$existingDisplayInfo->seriesName = $seriesName;
+				$existingDisplayInfo->seriesDisplayOrder = $seriesDisplayOrder;
+				$existingDisplayInfo->description = $description;
+				if ($isNew) {
+					$existingDisplayInfo->addedBy = UserAccount::getActiveUserId();
+					$existingDisplayInfo->dateAdded = time();
+				}
+				$existingDisplayInfo->update();
+
+				$groupedWork->forceReindex();
+
+				$results = [
+					'success' => true,
+					'title' => translate([
+						'text' => 'Successfully Set Display Information',
+						'isAdminFacing' => true,
+					]),
+					'message' => translate([
+						'text' => 'The display information has been set, and the grouped work will be reindexed shortly.',
+						'isAdminFacing' => true,
+					]),
+				];
 			}
 		} else {
 			$results['message'] = translate([
-				'text' => "You do not have the correct permissions to update the display information.",
+				'text' => "Could not find a grouped work with the provided ID.",
 				'isAdminFacing' => true,
 			]);
 		}
@@ -2273,6 +2246,9 @@ class GroupedWork_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function deleteDisplayInfo() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission('Set Grouped Work Display Information');
+		$this->checkRequiredParameters(['id']);
 		$result = [
 			'success' => false,
 			'title' => translate([
@@ -2284,39 +2260,33 @@ class GroupedWork_AJAX extends JSON_Action {
 				'isAdminFacing' => true,
 			]),
 		];
-		if (UserAccount::isLoggedIn() && (UserAccount::userHasPermission('Set Grouped Work Display Information'))) {
-			$id = $_REQUEST['id'];
-			require_once ROOT_DIR . '/sys/Grouping/GroupedWorkDisplayInfo.php';
-			$existingDisplayInfo = new GroupedWorkDisplayInfo();
-			$existingDisplayInfo->permanent_id = $id;
-			if ($existingDisplayInfo->find(true)) {
-				$existingDisplayInfo->delete();
-				require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
-				$groupedWork = new GroupedWork();
-				$groupedWork->permanent_id = $id;
-				if ($groupedWork->find(true)) {
-					$groupedWork->forceReindex();
-				}
-				$result = [
-					'success' => true,
-					'title' => translate([
-						'text' => 'Successfully Deleted Display Information',
-						'isAdminFacing' => true,
-					]),
-					'message' => translate([
-						'text' => "Successfully deleted the display information. The grouped work will be reindexed shortly.",
-						'isAdminFacing' => true,
-					]),
-				];
-			} else {
-				$result['message'] = translate([
-					'text' => "Could not find the display information to delete. It may have already been deleted.",
-					'isAdminFacing' => true,
-				]);
+
+		$id = $_REQUEST['id'];
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWorkDisplayInfo.php';
+		$existingDisplayInfo = new GroupedWorkDisplayInfo();
+		$existingDisplayInfo->permanent_id = $id;
+		if ($existingDisplayInfo->find(true)) {
+			$existingDisplayInfo->delete();
+			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+			$groupedWork = new GroupedWork();
+			$groupedWork->permanent_id = $id;
+			if ($groupedWork->find(true)) {
+				$groupedWork->forceReindex();
 			}
+			$result = [
+				'success' => true,
+				'title' => translate([
+					'text' => 'Successfully Deleted Display Information',
+					'isAdminFacing' => true,
+				]),
+				'message' => translate([
+					'text' => "Successfully deleted the display information. The grouped work will be reindexed shortly.",
+					'isAdminFacing' => true,
+				]),
+			];
 		} else {
 			$result['message'] = translate([
-				'text' => "You do not have the correct permissions to delete display information.",
+				'text' => "Could not find the display information to delete. It may have already been deleted.",
 				'isAdminFacing' => true,
 			]);
 		}
@@ -2460,6 +2430,10 @@ class GroupedWork_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function getPreviewRelatedCover() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission('Upload Covers');
+		$this->checkRequiredParameters(['id']);
+
 		global $interface;
 
 		$groupedWorkId = $_REQUEST['id'];
@@ -2484,105 +2458,77 @@ class GroupedWork_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function setRelatedCover() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission('Upload Covers');
+		$this->checkRequiredParameters(['id']);
+
 		$groupedWorkId = $_REQUEST['id'] ?? '';
 		$recordId = $_REQUEST['recordId'] ?? '';
 		$recordType = $_REQUEST['recordType'] ?? '';
 		$currentSourceLabel = $recordType !== '' ? ucwords(str_replace('_', ' ', strtolower($recordType))) : '';
 		$currentReferenceLabel = $currentSourceLabel !== '' && $recordId !== '' ? $currentSourceLabel . ' (ID: ' . $recordId . ')' : $recordId;
 
-		if (empty($groupedWorkId)) {
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+		$groupedWork = new GroupedWork();
+		$groupedWork->permanent_id = $groupedWorkId;
+
+		if ($groupedWork->find(true)) {
+			$previousReferenceCover = $groupedWork->referenceCover;
+			if ($previousReferenceCover) {
+				if (str_contains($previousReferenceCover, ':')) {
+					[
+						$prevType,
+						$prevId,
+					] = explode(':', $previousReferenceCover, 2);
+				} else {
+					$prevType = 'grouped_work';
+					$prevId = $previousReferenceCover;
+				}
+				$prevSourceLabel = $prevType !== '' ? ucwords(str_replace('_', ' ', strtolower($prevType))) : '';
+				$previousReferenceLabel = $prevSourceLabel !== '' && $prevId !== '' ? $prevSourceLabel . ' (ID: ' . $prevId . ')' : $prevId;
+			} else {
+				$previousReferenceLabel = translate([
+					'text' => 'No related cover was previously selected',
+					'isAdminFacing' => true,
+				]);
+			}
+			$originalRecordType = $_REQUEST['recordType'] ?? null;
+			$originalRecordId = $_REQUEST['recordId'] ?? null;
+			// Temporarily reset request context so clearUploadedCover clears the grouped work's cached cover.
+			$_REQUEST['recordType'] = 'grouped_work';
+			$_REQUEST['recordId'] = $groupedWorkId;
+			$this->clearUploadedCover();
+			if ($originalRecordType !== null) {
+				$_REQUEST['recordType'] = $originalRecordType;
+			} else {
+				unset($_REQUEST['recordType']);
+			}
+			if ($originalRecordId !== null) {
+				$_REQUEST['recordId'] = $originalRecordId;
+			} else {
+				unset($_REQUEST['recordId']);
+			}
+			$groupedWork->referenceCover = $recordType . ':' . $recordId;
+			$groupedWork->update();
 			return [
-				'success' => false,
+				'success' => true,
 				'message' => translate([
-					'text' => 'No grouped work ID was provided.',
+					'text' => 'The grouped work now uses the cover from %1%. Previously used: %2%.',
+					1 => $currentReferenceLabel,
+					2 => $previousReferenceLabel,
 					'isAdminFacing' => true,
 				]),
 				'title' => translate([
-					'text' => 'Cover Update Failed',
+					'text' => 'Cover Updated',
 					'isAdminFacing' => true,
 				]),
 			];
-		}
-
-		if (UserAccount::isLoggedIn() && (UserAccount::userHasPermission('Upload Covers'))) {
-			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
-			$groupedWork = new GroupedWork();
-			$groupedWork->permanent_id = $groupedWorkId;
-
-			if ($groupedWork->find(true)) {
-				$previousReferenceCover = $groupedWork->referenceCover;
-				if ($previousReferenceCover) {
-					if (str_contains($previousReferenceCover, ':')) {
-						[
-							$prevType,
-							$prevId,
-						] = explode(':', $previousReferenceCover, 2);
-					} else {
-						$prevType = 'grouped_work';
-						$prevId = $previousReferenceCover;
-					}
-					$prevSourceLabel = $prevType !== '' ? ucwords(str_replace('_', ' ', strtolower($prevType))) : '';
-					$previousReferenceLabel = $prevSourceLabel !== '' && $prevId !== '' ? $prevSourceLabel . ' (ID: ' . $prevId . ')' : $prevId;
-				} else {
-					$previousReferenceLabel = translate([
-						'text' => 'No related cover was previously selected',
-						'isAdminFacing' => true,
-					]);
-				}
-				$originalRecordType = $_REQUEST['recordType'] ?? null;
-				$originalRecordId = $_REQUEST['recordId'] ?? null;
-				// Temporarily reset request context so clearUploadedCover clears the grouped work's cached cover.
-				$_REQUEST['recordType'] = 'grouped_work';
-				$_REQUEST['recordId'] = $groupedWorkId;
-				$this->clearUploadedCover();
-				if ($originalRecordType !== null) {
-					$_REQUEST['recordType'] = $originalRecordType;
-				} else {
-					unset($_REQUEST['recordType']);
-				}
-				if ($originalRecordId !== null) {
-					$_REQUEST['recordId'] = $originalRecordId;
-				} else {
-					unset($_REQUEST['recordId']);
-				}
-				$groupedWork->referenceCover = $recordType . ':' . $recordId;
-				$groupedWork->update();
-				return [
-					'success' => true,
-					'message' => translate([
-						'text' => 'The grouped work now uses the cover from %1%. Previously used: %2%.',
-						1 => $currentReferenceLabel,
-						2 => $previousReferenceLabel,
-						'isAdminFacing' => true,
-					]),
-					'title' => translate([
-						'text' => 'Cover Updated',
-						'isAdminFacing' => true,
-					]),
-				];
-			} else {
-				return [
-					'success' => false,
-					'message' => translate([
-						'text' => 'Aspen could not locate the grouped work while applying the cover from %1%.',
-						1 => $currentReferenceLabel,
-						'isAdminFacing' => true,
-					]),
-					'title' => translate([
-						'text' => 'Cover Update Failed',
-						'isAdminFacing' => true,
-					]),
-				];
-			}
 		} else {
 			return [
 				'success' => false,
 				'message' => translate([
-					'text' => 'Log in with the Upload Covers permission to apply the cover from %1%.',
-					1 => $currentReferenceLabel !== '' ? $currentReferenceLabel : translate([
-						'text' => 'the selected record',
-						'isAdminFacing' => true,
-					]),
+					'text' => 'Aspen could not locate the grouped work while applying the cover from %1%.',
+					1 => $currentReferenceLabel,
 					'isAdminFacing' => true,
 				]),
 				'title' => translate([
@@ -2595,6 +2541,10 @@ class GroupedWork_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function clearRelatedCover() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission('Upload Covers');
+		$this->checkRequiredParameters(['id']);
+
 		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 
 		$id = $_REQUEST['id'];
@@ -2624,6 +2574,10 @@ class GroupedWork_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function thirdPartyCoverToggle() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission('Upload Covers');
+		$this->checkRequiredParameters(['id']);
+
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 		$id = $_REQUEST['id'];
 		$recordDriver = new GroupedWorkDriver($id);
@@ -2700,6 +2654,10 @@ class GroupedWork_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function clearUploadedCover() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission('Upload Covers');
+		$this->checkRequiredParameters(['id']);
+
 		require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
 		$bookcoverInfo = new BookCoverInfo();
 
@@ -2950,6 +2908,10 @@ class GroupedWork_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function getMoveRecordForm(): array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission('Manually Group and Ungroup Works');
+		$this->checkRequiredParameters(['recordId']);
+
 		$results = [
 			'success' => false,
 			'title' => translate([
@@ -2962,79 +2924,75 @@ class GroupedWork_AJAX extends JSON_Action {
 			]),
 		];
 
-		if (UserAccount::isLoggedIn() && UserAccount::userHasPermission('Manually Group and Ungroup Works')) {
-			$recordId = $_REQUEST['recordId'] ?? '';
-			$parts = explode(':', $recordId, 2);
-			if (count($parts) != 2) {
-				$results['message'] = translate([
-					'text' => 'Invalid record ID format.',
-					'isAdminFacing' => true,
-				]);
-				return $results;
-			}
-			[$source, $identifier] = $parts;
-
-			require_once ROOT_DIR . '/sys/Grouping/GroupedWorkPrimaryIdentifier.php';
-			$primaryIdentifier = new GroupedWorkPrimaryIdentifier();
-			$primaryIdentifier->type = $source;
-			$primaryIdentifier->identifier = $identifier;
-			if (!$primaryIdentifier->find(true)) {
-				$results['message'] = translate([
-					'text' => 'Could not find the current grouped work for this record.',
-					'isAdminFacing' => true,
-				]);
-				return $results;
-			}
-
-			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
-			$currentWork = new GroupedWork();
-			$currentWork->id = $primaryIdentifier->grouped_work_id;
-			if (!$currentWork->find(true)) {
-				$results['message'] = translate([
-					'text' => 'Could not find the current grouped work.',
-					'isAdminFacing' => true,
-				]);
-				return $results;
-			}
-
-			require_once ROOT_DIR . '/sys/Grouping/RecordGroupingOverride.php';
-			$existingOverride = new RecordGroupingOverride();
-			$existingOverride->source = $source;
-			$existingOverride->record_id = $identifier;
-			$hasExistingOverride = $existingOverride->find(true);
-
-			global $interface;
-			$interface->assign('recordId', $recordId);
-			$interface->assign('source', $source);
-			$interface->assign('identifier', $identifier);
-			$interface->assign('currentWork', $currentWork);
-			$interface->assign('existingOverride', $hasExistingOverride ? $existingOverride : null);
-
-			$results = [
-				'success' => true,
-				'title' => translate([
-					'text' => 'Move Record to Another Work',
-					'isAdminFacing' => true,
-				]),
-				'modalBody' => $interface->fetch('GroupedWork/moveRecordForm.tpl'),
-				'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.GroupedWork.processMoveRecordForm()'>" .
-					translate([
-						'text' => 'Move Record',
-						'isAdminFacing' => true,
-					]) . "</button>",
-			];
-		} else {
+		$recordId = $_REQUEST['recordId'] ?? '';
+		$parts = explode(':', $recordId, 2);
+		if (count($parts) != 2) {
 			$results['message'] = translate([
-				'text' => 'You do not have the correct permissions to move records between works.',
+				'text' => 'Invalid record ID format.',
 				'isAdminFacing' => true,
 			]);
+			return $results;
 		}
+		[$source, $identifier] = $parts;
+
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWorkPrimaryIdentifier.php';
+		$primaryIdentifier = new GroupedWorkPrimaryIdentifier();
+		$primaryIdentifier->type = $source;
+		$primaryIdentifier->identifier = $identifier;
+		if (!$primaryIdentifier->find(true)) {
+			$results['message'] = translate([
+				'text' => 'Could not find the current grouped work for this record.',
+				'isAdminFacing' => true,
+			]);
+			return $results;
+		}
+
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+		$currentWork = new GroupedWork();
+		$currentWork->id = $primaryIdentifier->grouped_work_id;
+		if (!$currentWork->find(true)) {
+			$results['message'] = translate([
+				'text' => 'Could not find the current grouped work.',
+				'isAdminFacing' => true,
+			]);
+			return $results;
+		}
+
+		require_once ROOT_DIR . '/sys/Grouping/RecordGroupingOverride.php';
+		$existingOverride = new RecordGroupingOverride();
+		$existingOverride->source = $source;
+		$existingOverride->record_id = $identifier;
+		$hasExistingOverride = $existingOverride->find(true);
+
+		global $interface;
+		$interface->assign('recordId', $recordId);
+		$interface->assign('source', $source);
+		$interface->assign('identifier', $identifier);
+		$interface->assign('currentWork', $currentWork);
+		$interface->assign('existingOverride', $hasExistingOverride ? $existingOverride : null);
+
+		$results = [
+			'success' => true,
+			'title' => translate([
+				'text' => 'Move Record to Another Work',
+				'isAdminFacing' => true,
+			]),
+			'modalBody' => $interface->fetch('GroupedWork/moveRecordForm.tpl'),
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.GroupedWork.processMoveRecordForm()'>" .
+				translate([
+					'text' => 'Move Record',
+					'isAdminFacing' => true,
+				]) . "</button>",
+		];
 
 		return $results;
 	}
 
 	/** @noinspection PhpUnused */
 	function getMoveRecordInfo(): array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission('Manually Group and Ungroup Works');
+		$this->checkRequiredParameters(['targetWorkId']);
 		$results = [
 			'success' => false,
 			'title' => translate([
@@ -3047,36 +3005,34 @@ class GroupedWork_AJAX extends JSON_Action {
 			]),
 		];
 
-		if (UserAccount::isLoggedIn() && UserAccount::userHasPermission('Manually Group and Ungroup Works')) {
-			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
-			$targetWorkId = trim($_REQUEST['targetWorkId'] ?? '');
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+		$targetWorkId = trim($_REQUEST['targetWorkId'] ?? '');
 
-			if (strlen($targetWorkId) === 36) {
-				$groupedWork = new GroupedWork();
-				$groupedWork->permanent_id = $targetWorkId;
-				if ($groupedWork->find(true)) {
-					$results['success'] = true;
-					$results['message'] = "<div class='row'><div class='col-tn-3'>" .
-						translate([
-							'text' => 'Title',
-							'isAdminFacing' => true,
-						]) .
-						"</div><div class='col-tn-9'><strong>{$groupedWork->full_title}</strong></div></div>" .
-						"<div class='row'><div class='col-tn-3'>" .
-						translate([
-							'text' => 'Author',
-							'isAdminFacing' => true,
-						]) .
-						"</div><div class='col-tn-9'><strong>{$groupedWork->author}</strong></div></div>";
-				} else {
-					$results['message'] = translate([
-						'text' => 'Could not find a work with that ID.',
+		if (strlen($targetWorkId) === 36) {
+			$groupedWork = new GroupedWork();
+			$groupedWork->permanent_id = $targetWorkId;
+			if ($groupedWork->find(true)) {
+				$results['success'] = true;
+				$results['message'] = "<div class='row'><div class='col-tn-3'>" .
+					translate([
+						'text' => 'Title',
 						'isAdminFacing' => true,
-					]);
-				}
+					]) .
+					"</div><div class='col-tn-9'><strong>{$groupedWork->full_title}</strong></div></div>" .
+					"<div class='row'><div class='col-tn-3'>" .
+					translate([
+						'text' => 'Author',
+						'isAdminFacing' => true,
+					]) .
+					"</div><div class='col-tn-9'><strong>{$groupedWork->author}</strong></div></div>";
 			} else {
-				$results['message'] = '';
+				$results['message'] = translate([
+					'text' => 'Could not find a work with that ID.',
+					'isAdminFacing' => true,
+				]);
 			}
+		} else {
+			$results['message'] = '';
 		}
 
 		return $results;
@@ -3084,6 +3040,10 @@ class GroupedWork_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function processMoveRecordForm(): array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission('Manually Group and Ungroup Works');
+		$this->checkRequiredParameters(['recordId']);
+
 		$results = [
 			'success' => false,
 			'title' => translate([
@@ -3096,153 +3056,144 @@ class GroupedWork_AJAX extends JSON_Action {
 			]),
 		];
 
-		if (UserAccount::isLoggedIn() && UserAccount::userHasPermission('Manually Group and Ungroup Works')) {
-			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
-			require_once ROOT_DIR . '/sys/Grouping/RecordGroupingOverride.php';
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+		require_once ROOT_DIR . '/sys/Grouping/RecordGroupingOverride.php';
 
-			$recordId = $_REQUEST['recordId'] ?? '';
-			$parts = explode(':', $recordId, 2);
-			if (count($parts) != 2) {
-				$results['message'] = translate([
-					'text' => 'Invalid record ID format',
-					'isAdminFacing' => true,
-				]);
-				return $results;
-			}
-			[$source, $identifier] = $parts;
-
-			require_once ROOT_DIR . '/sys/Grouping/ManuallyGroupedWorkRecord.php';
-			$manuallyGroupedRecord = new ManuallyGroupedWorkRecord();
-			$manuallyGroupedRecord->selectAdd();
-			$manuallyGroupedRecord->selectAdd('manually_grouped_work_id');
-			$manuallyGroupedRecord->type = $source;
-			$manuallyGroupedRecord->identifier = $identifier;
-			if ($manuallyGroupedRecord->find(true)) {
-				require_once ROOT_DIR . '/sys/Grouping/ManualGroupedWork.php';
-				$manualGroupedWork = new ManualGroupedWork();
-				$manualGroupedWork->selectAdd();
-				$manualGroupedWork->selectAdd('id, title');
-				$manualGroupedWork->id = $manuallyGroupedRecord->manually_grouped_work_id;
-				if ($manualGroupedWork->find(true)) {
-					$results['message'] = translate([
-						'text' => "Cannot move a record that is part of manually grouped work '%1%' (ID: %2%). First, remove it from the manual group.",
-						'isAdminFacing' => true,
-						1 => $manualGroupedWork->title,
-						2 => $manualGroupedWork->id,
-					]);
-					return $results;
-				}
-			}
-
-			$targetPermanentId = trim($_REQUEST['targetWorkId'] ?? '');
-
-			$targetWork = new GroupedWork();
-			$targetWork->permanent_id = $targetPermanentId;
-			if (!$targetWork->find(true)) {
-				$results['message'] = translate([
-					'text' => 'Could not find the target work.',
-					'isAdminFacing' => true,
-				]);
-				return $results;
-			}
-
-			require_once ROOT_DIR . '/sys/Grouping/ManualGroupedWork.php';
-			$targetManualGroupedWork = new ManualGroupedWork();
-			$targetManualGroupedWork->selectAdd();
-			$targetManualGroupedWork->selectAdd('id, title');
-			$targetManualGroupedWork->grouped_work_permanent_id = $targetWork->permanent_id;
-			if ($targetManualGroupedWork->find(true)) {
-				$results['message'] = translate([
-					'text' => "Cannot move a record to manually grouped work '%1%' (ID: %2%). Instead, edit the manually grouped work to add records.",
-					'isAdminFacing' => true,
-					1 => $targetManualGroupedWork->title,
-					2 => $targetManualGroupedWork->id,
-				]);
-				return $results;
-			}
-
-			require_once ROOT_DIR . '/sys/Grouping/GroupedWorkPrimaryIdentifier.php';
-			$primaryIdentifier = new GroupedWorkPrimaryIdentifier();
-			$primaryIdentifier->type = $source;
-			$primaryIdentifier->identifier = $identifier;
-			if (!$primaryIdentifier->find(true)) {
-				$results['message'] = translate([
-					'text' => 'Could not find the current grouped work for this record.',
-					'isAdminFacing' => true,
-				]);
-				return $results;
-			}
-
-			$currentWork = new GroupedWork();
-			$currentWork->id = $primaryIdentifier->grouped_work_id;
-			if (!$currentWork->find(true)) {
-				$results['message'] = translate([
-					'text' => 'Could not find the current grouped work.',
-					'isAdminFacing' => true,
-				]);
-				return $results;
-			}
-
-			if ($currentWork->permanent_id == $targetWork->permanent_id) {
-				$results['message'] = translate([
-					'text' => 'This record is already in the target grouped work.',
-					'isAdminFacing' => true,
-				]);
-				return $results;
-			}
-
-			// Validate category compatibility (same rules as Group With Work).
-			$okToGroup = false;
-			if ($currentWork->grouping_category == $targetWork->grouping_category) {
-				$okToGroup = true;
-			} elseif (($currentWork->grouping_category == 'comic') && ($targetWork->grouping_category == 'book')) {
-				$okToGroup = true;
-			} elseif ($targetWork->grouping_category == 'other') {
-				$okToGroup = true;
-			} elseif ($currentWork->grouping_category == 'other') {
-				$okToGroup = true;
-			} elseif (($currentWork->grouping_category == 'book') && ($targetWork->grouping_category == 'comic')) {
-				$okToGroup = true;
-			}
-
-			if (!$okToGroup) {
-				$results['message'] = translate([
-					'text' => 'These are different categories of works, so the record cannot be moved.',
-					'isAdminFacing' => true,
-				]);
-				return $results;
-			}
-
-			$override = new RecordGroupingOverride();
-			$override->source = $source;
-			$override->record_id = $identifier;
-			if ($override->find(true)) {
-				$override->grouped_work_permanent_id = $targetWork->permanent_id;
-				$override->update();
-			} else {
-				$override->grouped_work_permanent_id = $targetWork->permanent_id;
-				$override->added_by = UserAccount::getActiveUserId();
-				$override->insert();
-			}
-
-			$results = [
-				'success' => true,
-				'title' => translate([
-					'text' => 'Successfully Moved Record to Another Work',
-					'isAdminFacing' => true,
-				]),
-				'message' => translate([
-					'text' => 'The record will be moved to the target work after reindexing.',
-					'isAdminFacing' => true,
-				]),
-			];
-		} else {
+		$recordId = $_REQUEST['recordId'] ?? '';
+		$parts = explode(':', $recordId, 2);
+		if (count($parts) != 2) {
 			$results['message'] = translate([
-				'text' => 'You do not have the correct permissions to move records between works.',
+				'text' => 'Invalid record ID format',
 				'isAdminFacing' => true,
 			]);
+			return $results;
+		}
+		[$source, $identifier] = $parts;
+
+		require_once ROOT_DIR . '/sys/Grouping/ManuallyGroupedWorkRecord.php';
+		$manuallyGroupedRecord = new ManuallyGroupedWorkRecord();
+		$manuallyGroupedRecord->selectAdd();
+		$manuallyGroupedRecord->selectAdd('manually_grouped_work_id');
+		$manuallyGroupedRecord->type = $source;
+		$manuallyGroupedRecord->identifier = $identifier;
+		if ($manuallyGroupedRecord->find(true)) {
+			require_once ROOT_DIR . '/sys/Grouping/ManualGroupedWork.php';
+			$manualGroupedWork = new ManualGroupedWork();
+			$manualGroupedWork->selectAdd();
+			$manualGroupedWork->selectAdd('id, title');
+			$manualGroupedWork->id = $manuallyGroupedRecord->manually_grouped_work_id;
+			if ($manualGroupedWork->find(true)) {
+				$results['message'] = translate([
+					'text' => "Cannot move a record that is part of manually grouped work '%1%' (ID: %2%). First, remove it from the manual group.",
+					'isAdminFacing' => true,
+					1 => $manualGroupedWork->title,
+					2 => $manualGroupedWork->id,
+				]);
+				return $results;
+			}
 		}
 
-		return $results;
+		$targetPermanentId = trim($_REQUEST['targetWorkId'] ?? '');
+
+		$targetWork = new GroupedWork();
+		$targetWork->permanent_id = $targetPermanentId;
+		if (!$targetWork->find(true)) {
+			$results['message'] = translate([
+				'text' => 'Could not find the target work.',
+				'isAdminFacing' => true,
+			]);
+			return $results;
+		}
+
+		require_once ROOT_DIR . '/sys/Grouping/ManualGroupedWork.php';
+		$targetManualGroupedWork = new ManualGroupedWork();
+		$targetManualGroupedWork->selectAdd();
+		$targetManualGroupedWork->selectAdd('id, title');
+		$targetManualGroupedWork->grouped_work_permanent_id = $targetWork->permanent_id;
+		if ($targetManualGroupedWork->find(true)) {
+			$results['message'] = translate([
+				'text' => "Cannot move a record to manually grouped work '%1%' (ID: %2%). Instead, edit the manually grouped work to add records.",
+				'isAdminFacing' => true,
+				1 => $targetManualGroupedWork->title,
+				2 => $targetManualGroupedWork->id,
+			]);
+			return $results;
+		}
+
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWorkPrimaryIdentifier.php';
+		$primaryIdentifier = new GroupedWorkPrimaryIdentifier();
+		$primaryIdentifier->type = $source;
+		$primaryIdentifier->identifier = $identifier;
+		if (!$primaryIdentifier->find(true)) {
+			$results['message'] = translate([
+				'text' => 'Could not find the current grouped work for this record.',
+				'isAdminFacing' => true,
+			]);
+			return $results;
+		}
+
+		$currentWork = new GroupedWork();
+		$currentWork->id = $primaryIdentifier->grouped_work_id;
+		if (!$currentWork->find(true)) {
+			$results['message'] = translate([
+				'text' => 'Could not find the current grouped work.',
+				'isAdminFacing' => true,
+			]);
+			return $results;
+		}
+
+		if ($currentWork->permanent_id == $targetWork->permanent_id) {
+			$results['message'] = translate([
+				'text' => 'This record is already in the target grouped work.',
+				'isAdminFacing' => true,
+			]);
+			return $results;
+		}
+
+		// Validate category compatibility (same rules as Group With Work).
+		$okToGroup = false;
+		if ($currentWork->grouping_category == $targetWork->grouping_category) {
+			$okToGroup = true;
+		} elseif (($currentWork->grouping_category == 'comic') && ($targetWork->grouping_category == 'book')) {
+			$okToGroup = true;
+		} elseif ($targetWork->grouping_category == 'other') {
+			$okToGroup = true;
+		} elseif ($currentWork->grouping_category == 'other') {
+			$okToGroup = true;
+		} elseif (($currentWork->grouping_category == 'book') && ($targetWork->grouping_category == 'comic')) {
+			$okToGroup = true;
+		}
+
+		if (!$okToGroup) {
+			$results['message'] = translate([
+				'text' => 'These are different categories of works, so the record cannot be moved.',
+				'isAdminFacing' => true,
+			]);
+			return $results;
+		}
+
+		$override = new RecordGroupingOverride();
+		$override->source = $source;
+		$override->record_id = $identifier;
+		if ($override->find(true)) {
+			$override->grouped_work_permanent_id = $targetWork->permanent_id;
+			$override->update();
+		} else {
+			$override->grouped_work_permanent_id = $targetWork->permanent_id;
+			$override->added_by = UserAccount::getActiveUserId();
+			$override->insert();
+		}
+
+		return [
+			'success' => true,
+			'title' => translate([
+				'text' => 'Successfully Moved Record to Another Work',
+				'isAdminFacing' => true,
+			]),
+			'message' => translate([
+				'text' => 'The record will be moved to the target work after reindexing.',
+				'isAdminFacing' => true,
+			]),
+		];
 	}
 }

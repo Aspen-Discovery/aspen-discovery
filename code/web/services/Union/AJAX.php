@@ -5,7 +5,7 @@ require_once ROOT_DIR . '/JSON_Action.php';
 class Union_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
-	function getCombinedResults() {
+	function getCombinedResults() : array {
 		$source = $_REQUEST['source'];
 		$numberOfResults = $_REQUEST['numberOfResults'];
 		$sectionId = $_REQUEST['id'];
@@ -13,7 +13,6 @@ class Union_AJAX extends JSON_Action {
 			$className,
 			$id,
 		] = explode(':', $sectionId);
-		$sectionObject = null;
 		if ($className == 'LibraryCombinedResultSection') {
 			$sectionObject = new LibraryCombinedResultSection();
 			$sectionObject->id = $id;
@@ -30,7 +29,6 @@ class Union_AJAX extends JSON_Action {
 		}
 		$searchTerm = $_REQUEST['searchTerm'];
 		$searchType = $_REQUEST['searchType'];
-		$showCovers = $_REQUEST['showCovers'];
 		$this->setShowCovers();
 
 		$fullResultsLink = $sectionObject->getResultsLink($searchTerm, $searchType);
@@ -91,10 +89,10 @@ class Union_AJAX extends JSON_Action {
 	 * @param string $searcherType
 	 * @param string $searchTerm
 	 * @param int $numberOfResults
-	 * @param $fullResultsLink
+	 * @param string $fullResultsLink
 	 * @return string
 	 */
-	private function getResultsFromSolrSearcher($searcherType, $searchTerm, $numberOfResults, $fullResultsLink) {
+	private function getResultsFromSolrSearcher(string $searcherType, string $searchTerm, int $numberOfResults, string $fullResultsLink) : string {
 		global $interface;
 		$interface->assign('viewingCombinedResults', true);
 		/** @var SearchObject_SolrSearcher $searchObject */
@@ -105,14 +103,14 @@ class Union_AJAX extends JSON_Action {
 			'index' => $searchObject->getDefaultIndex(),
 			'lookfor' => $searchTerm,
 		]);
-		$searchObject->processSearch(true, false);
+		$searchObject->processSearch(true);
 		$summary = $searchObject->getResultSummary();
 		$records = $searchObject->getCombinedResultsHTML();
 		if ($summary['resultTotal'] == 0) {
 			$results = '<div class="clearfix"></div><div>' . translate(['text'=>'No results match your search.', 'isPublicFacing'=>true]) . '</div>';
 		} else {
 			$formattedNumResults = number_format($summary['resultTotal']);
-			$results = "<a href='{$fullResultsLink}' class='btn btn-default combined-results-button'>See all {$formattedNumResults} results <i class='fas fa-chevron-right fa-lg' role='presentation'></i></a><div class='clearfix'></div>";
+			$results = "<a href='$fullResultsLink' class='btn btn-default combined-results-button'>See all $formattedNumResults results <i class='fas fa-chevron-right fa-lg' role='presentation'></i></a><div class='clearfix'></div>";
 
 			$interface->assign('recordSet', $records);
 			$interface->assign('showExploreMoreBar', false);
@@ -121,7 +119,7 @@ class Union_AJAX extends JSON_Action {
 		return $results;
 	}
 
-	private function getResultsFromEbscohost($searchTerm, $numberOfResults, $fullResultsLink) {
+	private function getResultsFromEbscohost($searchTerm, $numberOfResults, $fullResultsLink) : string {
 		global $interface;
 		$interface->assign('viewingCombinedResults', true);
 		if ($searchTerm == '') {
@@ -142,14 +140,14 @@ class Union_AJAX extends JSON_Action {
 					}
 				}
 			}
-			$ebscohostSearcher->processSearch(true, false);
+			$ebscohostSearcher->processSearch(true);
 			$summary = $ebscohostSearcher->getResultSummary();
 			$records = $ebscohostSearcher->getCombinedResultHTML();
 			if ($summary['resultTotal'] == 0) {
 				$results = '<div class="clearfix"></div><div>' . translate(['text'=>'No results match your search.', 'isPublicFacing'=>true]) . '</div>';
 			} else {
 				$formattedNumResults = number_format($summary['resultTotal']);
-				$results = "<a href='{$fullResultsLink}' class='btn btn-default combined-results-button'>See all {$formattedNumResults} results <i class='fas fa-chevron-right fa-lg' role='presentation'></i></a><div class='clearfix'></div>";
+				$results = "<a href='$fullResultsLink' class='btn btn-default combined-results-button'>See all $formattedNumResults results <i class='fas fa-chevron-right fa-lg' role='presentation'></i></a><div class='clearfix'></div>";
 
 				$records = array_slice($records, 0, $numberOfResults);
 				global $interface;
@@ -168,7 +166,7 @@ class Union_AJAX extends JSON_Action {
 	 * @param string $fullResultsLink
 	 * @return string
 	 */
-	private function getResultsFromEDS($searchTerm, $numberOfResults, $fullResultsLink) {
+	private function getResultsFromEDS(string $searchTerm, int $numberOfResults, string $fullResultsLink) : string {
 		global $interface;
 		$interface->assign('viewingCombinedResults', true);
 		if ($searchTerm == '') {
@@ -181,14 +179,14 @@ class Union_AJAX extends JSON_Action {
 				'index' => $edsSearcher->getDefaultIndex(),
 				'lookfor' => $searchTerm,
 			]);
-			$edsSearcher->processSearch(true, false);
+			$edsSearcher->processSearch(true);
 			$summary = $edsSearcher->getResultSummary();
 			$records = $edsSearcher->getCombinedResultHTML();
 			if ($summary['resultTotal'] == 0) {
 				$results = '<div class="clearfix"></div><div>' . translate(['text'=>'No results match your search.', 'isPublicFacing'=>true]) . '</div>';
 			} else {
 				$formattedNumResults = number_format($summary['resultTotal']);
-				$results = "<a href='{$fullResultsLink}' class='btn btn-default combined-results-button'>See all {$formattedNumResults} results <i class='fas fa-chevron-right fa-lg' role='presentation'></i></a><div class='clearfix'></div>";
+				$results = "<a href='$fullResultsLink' class='btn btn-default combined-results-button'>See all $formattedNumResults results <i class='fas fa-chevron-right fa-lg' role='presentation'></i></a><div class='clearfix'></div>";
 
 				$records = array_slice($records, 0, $numberOfResults);
 				global $interface;
@@ -201,13 +199,7 @@ class Union_AJAX extends JSON_Action {
 		return $results;
 	}
 
-	/**
-	 * @param $searchTerm
-	 * @param $numberOfResults
-	 * @param $fullResultsLink
-	 * @return string
-	 */
-	private function getResultsFromDPLA($searchTerm, $numberOfResults, $fullResultsLink) {
+	private function getResultsFromDPLA(string $searchTerm, int $numberOfResults, string $fullResultsLink) : string {
 		global $interface;
 		$interface->assign('viewingCombinedResults', true);
 		require_once ROOT_DIR . '/sys/SearchObject/DPLA.php';
@@ -217,21 +209,15 @@ class Union_AJAX extends JSON_Action {
 			$results = '<div class="clearfix"></div><div>' . translate(['text'=>'No results match your search.', 'isPublicFacing'=>true]) . '</div>';
 		} else {
 			$formattedNumResults = number_format($dplaResults['resultTotal']);
-			$results = "<a href='{$fullResultsLink}' class='btn btn-default combined-results-button' target='_blank' aria-label='See all {$formattedNumResults} results (".translate(['text' => 'opens in a new window', 'isPublicFacing' => true]).")'>See all {$formattedNumResults} results <i class='fas fa-chevron-right fa-lg' role='presentation'></i></a><div class='clearfix'></div>";
+			$results = "<a href='$fullResultsLink' class='btn btn-default combined-results-button' target='_blank' aria-label='See all $formattedNumResults results (".translate(['text' => 'opens in a new window', 'isPublicFacing' => true]).")'>See all $formattedNumResults results <i class='fas fa-chevron-right fa-lg' role='presentation'></i></a><div class='clearfix'></div>";
 			$results .= $dpla->formatCombinedResults($dplaResults['records'], false);
 		}
 
 		return $results;
 	}
 
-	/**
-	 * @param $searchTerm
-	 * @param $numberOfResults
-	 * @param $fullResultsLink
-	 * @return string
-	 */
 	//return results from a summon search which are set to $source = 'summon' for the display of combined results
-	 private function getResultsFromSummon($searchTerm, $numberOfResults, $fullResultsLink) {
+	private function getResultsFromSummon(string $searchTerm, int $numberOfResults, string $fullResultsLink) : string {
 		global $interface;
 		//Assign template variable - value true
 		$interface->assign('viewingCombinedResults', true);
@@ -249,34 +235,34 @@ class Union_AJAX extends JSON_Action {
 			]);
 			//Retrieve results
 			//Process the search - param 1 $returnIndexErrors = true, param 2 $recommendations = false;
-			$summonSearcher->sendRequest();
-			$summary = $summonSearcher->getResultSummary();
-			$records = $summonSearcher->getCombinedResultHTML();
-			//Handle no results
-			if ($summary['resultTotal'] == 0) {
-				$results = '<div class="clearfix"></div><div>' . translate(['text'=>'No results match your search.', 'isPublicFacing'=>true]) . '</div>';
-			} else {
-				$formattedNumResults = number_format($summary['resultTotal']);
-				$results = "<a href='{$fullResultsLink}' class='btn btn-default combined-results-button'>See all {$formattedNumResults} results <i class='fas fa-chevron-right fa-lg' role='presentation'></i></a><div class='clearfix'></div>";
+			try {
+				$summonSearcher->sendRequest();
+				$summary = $summonSearcher->getResultSummary();
+				$records = $summonSearcher->getCombinedResultHTML();
 
-				$records = array_slice($records, 0, $numberOfResults);
-				global $interface;
-				$interface->assign('recordSet', $records);
-				$interface->assign('showExploreMoreBar', false);
-				$results .= $interface->fetch('Search/list-list.tpl');
+				//Handle no results
+				if ($summary['resultTotal'] == 0) {
+					$results = '<div class="clearfix"></div><div>' . translate(['text'=>'No results match your search.', 'isPublicFacing'=>true]) . '</div>';
+				} else {
+					$formattedNumResults = number_format($summary['resultTotal']);
+					$results = "<a href='$fullResultsLink' class='btn btn-default combined-results-button'>See all $formattedNumResults results <i class='fas fa-chevron-right fa-lg' role='presentation'></i></a><div class='clearfix'></div>";
+
+					$records = array_slice($records, 0, $numberOfResults);
+					global $interface;
+					$interface->assign('recordSet', $records);
+					$interface->assign('showExploreMoreBar', false);
+					$results .= $interface->fetch('Search/list-list.tpl');
+				}
+			}catch (Exception){
+				$results = '<div class="clearfix"></div><div>' . translate(['text'=>'An error occurred searching Summon.', 'isPublicFacing'=>true]) . '</div>';
 			}
+
 		}
 		return $results;
 	}
 
-	/**
-	 * @param $searchTerm
-	 * @param $numberOfResults
-	 * @param $fullResultsLink
-	 * @return string
-	 */
 	//return results from a gale search which are set to $source = 'gale' for the display of combined results
-	private function getResultsFromGale($searchTerm, $numberOfResults, $fullResultsLink) {
+	private function getResultsFromGale(string $searchTerm, int $numberOfResults, string $fullResultsLink) : string {
 		global $interface;
 		//Assign template variable - value true
 		$interface->assign('viewingCombinedResults', true);
@@ -294,7 +280,7 @@ class Union_AJAX extends JSON_Action {
 			]);
 			//Retrieve results
 			//Process the search - param 1 $returnIndexErrors = true, param 2 $recommendations = false;
-			$galeSearcher->processSearch(true, false);
+			$galeSearcher->processSearch(true);
 			$summary = $galeSearcher->getResultSummary();
 			$records = $galeSearcher->getCombinedResultHTML();
 			//Handle no results
@@ -302,7 +288,7 @@ class Union_AJAX extends JSON_Action {
 				$results = '<div class="clearfix"></div><div>' . translate(['text'=>'No results match your search.', 'isPublicFacing'=>true]) . '</div>';
 			} else {
 				$formattedNumResults = number_format($summary['resultTotal']);
-				$results = "<a href='{$fullResultsLink}' class='btn btn-default combined-results-button'>See all {$formattedNumResults} results <i class='fas fa-chevron-right fa-lg' role='presentation'></i></a><div class='clearfix'></div>";
+				$results = "<a href='$fullResultsLink' class='btn btn-default combined-results-button'>See all $formattedNumResults results <i class='fas fa-chevron-right fa-lg' role='presentation'></i></a><div class='clearfix'></div>";
 
 				$records = array_slice($records, 0, $numberOfResults);
 				global $interface;
@@ -314,14 +300,8 @@ class Union_AJAX extends JSON_Action {
 		return $results;
 	}
 
-	/**
-	 * @param $searchTerm
-	 * @param $numberOfResults
-	 * @param $fullResultsLink
-	 * @return string
-	 */
 	//return results from a cloudsearch search which are set to $source = 'cloudsearch' for the display of combined results
-	private function getResultsFromCloudSource($searchTerm, $numberOfResults, $fullResultsLink) {
+	private function getResultsFromCloudSource(string $searchTerm, int $numberOfResults, string $fullResultsLink) : string {
 		global $interface;
 		//Assign template variable - value true
 		$interface->assign('viewingCombinedResults', true);
@@ -346,7 +326,7 @@ class Union_AJAX extends JSON_Action {
 				$results = '<div class="clearfix"></div><div>' . translate(['text'=>'No results match your search.', 'isPublicFacing'=>true]) . '</div>';
 			} else {
 				$formattedNumResults = number_format($summary['resultTotal']);
-				$results = "<a href='{$fullResultsLink}' class='btn btn-default combined-results-button'>See all {$formattedNumResults} results <i class='fas fa-chevron-right fa-lg' role='presentation'></i></a><div class='clearfix'></div>";
+				$results = "<a href='$fullResultsLink' class='btn btn-default combined-results-button'>See all $formattedNumResults results <i class='fas fa-chevron-right fa-lg' role='presentation'></i></a><div class='clearfix'></div>";
 
 				$records = array_slice($records, 0, $numberOfResults);
 				global $interface;
@@ -358,14 +338,7 @@ class Union_AJAX extends JSON_Action {
 		return $results;
 	}
 
-	/**
-	 * @param $searchType
-	 * @param $searchTerm
-	 * @param $numberOfResults
-	 * @param $fullResultsLink
-	 * @return string
-	 */
-	private function getResultsFromInnReach($searchType, $searchTerm, $numberOfResults, $fullResultsLink) {
+	private function getResultsFromInnReach(string $searchType, int $searchTerm, string $numberOfResults, string $fullResultsLink) : string {
 		global $interface;
 		$interface->assign('viewingCombinedResults', true);
 		require_once ROOT_DIR . '/sys/InterLibraryLoan/InnReach.php';
@@ -385,7 +358,7 @@ class Union_AJAX extends JSON_Action {
 				$results = '<div class="clearfix"></div><div>' . translate(['text'=>'No results match your search.', 'isPublicFacing'=>true]) . '</div>';
 			} else {
 				$formattedNumResults = number_format($innReachResults['resultTotal']);
-				$results = "<a href='{$fullResultsLink}' class='btn btn-default combined-results-button' target='_blank' aria-label='See all {$formattedNumResults} results (".translate(['text' => 'opens in a new window', 'isPublicFacing' => true]).")'>See all {$formattedNumResults} results <i class='fas fa-chevron-right fa-lg' role='presentation'></i></a><div class='clearfix'></div>";
+				$results = "<a href='$fullResultsLink' class='btn btn-default combined-results-button' target='_blank' aria-label='See all $formattedNumResults results (".translate(['text' => 'opens in a new window', 'isPublicFacing' => true]).")'>See all $formattedNumResults results <i class='fas fa-chevron-right fa-lg' role='presentation'></i></a><div class='clearfix'></div>";
 				$interface->assign('innReachResults', $innReachResults['records']);
 				$results .= $interface->fetch('Union/innReach.tpl');
 			}
@@ -393,13 +366,7 @@ class Union_AJAX extends JSON_Action {
 		return $results;
 	}
 
-	/**
-	 * @param $searchType
-	 * @param $searchTerm
-	 * @param $numberOfResults
-	 * @return string
-	 */
-	private function getResultsFromShareIt($searchType, $searchTerm, $numberOfResults) {
+	private function getResultsFromShareIt(string $searchType, int $searchTerm, string $numberOfResults) : string {
 		global $interface;
 		$interface->assign('viewingCombinedResults', true);
 		require_once ROOT_DIR . '/sys/InterLibraryLoan/ShareIt.php';
@@ -419,7 +386,7 @@ class Union_AJAX extends JSON_Action {
 				$results = '<div class="clearfix"></div><div>' . translate(['text'=>'No results match your search.', 'isPublicFacing'=>true]) . '</div>';
 			} else {
 				$fullResultsLink = $shareItResults['searchLink'];
-				$results = "<a href='{$fullResultsLink}' class='btn btn-default combined-results-button' target='_blank' aria-label='See all results (".translate(['text' => 'opens in a new window', 'isPublicFacing' => true, 'inAttribute'=>true]).")'>See all results <i class='fas fa-chevron-right fa-lg' role='presentation'></i></a><div class='clearfix'></div>";
+				$results = "<a href='$fullResultsLink' class='btn btn-default combined-results-button' target='_blank' aria-label='See all results (".translate(['text' => 'opens in a new window', 'isPublicFacing' => true, 'inAttribute'=>true]).")'>See all results <i class='fas fa-chevron-right fa-lg' role='presentation'></i></a><div class='clearfix'></div>";
 				$interface->assign('shareItResults', $shareItResults['records']);
 				$results .= $interface->fetch('Union/shareIt.tpl');
 			}

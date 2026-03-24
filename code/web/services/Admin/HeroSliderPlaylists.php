@@ -13,8 +13,11 @@ class Admin_HeroSliderPlaylists extends ObjectEditor {
 		$image = new ImageUpload();
 		$image->type = 'hero_slider';
 		if (!UserAccount::userHasPermission('Administer All Hero Sliders')) {
-			$homeLibrary = Library::getPatronHomeLibrary();
-			$image->whereAdd("owningLibrary = $homeLibrary->libraryId OR sharing = 2");
+			$libraryList = Library::getLibraryList(true);
+			$validIds = array_keys($libraryList);
+			$validIds[] = -1;
+			$libraries = implode(',', $validIds);
+			$image->whereAdd("owningLibrary IN ($libraries) OR sharing = 2");
 		}
 		$numAvailableImages = $image->count();
 		if ($numAvailableImages == 0) {
@@ -42,8 +45,10 @@ class Admin_HeroSliderPlaylists extends ObjectEditor {
 		$object = new HeroSliderPlaylist();
 
 		if (!UserAccount::userHasPermission('Administer All Hero Sliders')) {
-			$homeLibrary = Library::getPatronHomeLibrary();
-			$object->whereAdd("libraryId = {$homeLibrary->libraryId} OR libraryId = -1");
+			$libraryList = Library::getLibraryList(true);
+			$validIds = array_keys($libraryList);
+			$validIds[] = -1;
+			$object->whereAddIn("libraryId", $validIds, false);
 		}
 
 		$object->orderBy($this->getSort());

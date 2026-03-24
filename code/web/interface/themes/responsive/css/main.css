@@ -7643,6 +7643,12 @@ rapi-doc::part(textbox):focus {
   -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(102, 175, 233, 0.6);
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(102, 175, 233, 0.6);
 }
+.pagination {
+  margin: 20px 0 10px;
+}
+.jump-to-page {
+  margin-bottom: 15px !important;
+}
 .ui-rater > span {
   vertical-align: top;
 }
@@ -9214,7 +9220,6 @@ a.placard-image-link {
   clear: both;
   font-weight: normal;
   line-height: 18px;
-  color: #555555;
   white-space: nowrap;
 }
 .ui-autocomplete .ui-menu-item > a.ui-menu-item-wrapper.ui-state-hover,
@@ -10814,7 +10819,6 @@ td[data-entry-id]:has(.date-edit:focus)::after {
 .applied-filters .facetValueBadge {
   margin: 3px 3px 3px 3px;
   padding: 2px 7px 2px 5px;
-  border: 1px solid #999999;
   border-radius: 15px;
   font-size: smaller;
   display: inline-block;
@@ -11209,10 +11213,6 @@ td[data-entry-id]:has(.date-edit:focus)::after {
   display: flex;
   width: 100%;
 }
-.slider-button {
-  cursor: pointer;
-  z-index: 2;
-}
 .slider-wrapper {
   display: flex;
   overflow: hidden;
@@ -11231,9 +11231,8 @@ td[data-entry-id]:has(.date-edit:focus)::after {
 .slider-button {
   width: 32px;
   height: 32px;
-  border-radius: 50%;
-  background: #fff !important;
-  border: 2px solid #000 !important;
+  border-radius: 50% !important;
+  border-width: 2px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -11242,27 +11241,25 @@ td[data-entry-id]:has(.date-edit:focus)::after {
   transform: translateY(-50%);
   position: absolute;
   z-index: 10;
+  margin-top: 0 !important;
 }
-.slider-button:after {
-  content: "";
-  display: block;
-  width: 16px;
-  height: 16px;
-  background-size: 16px 16px;
-  background-repeat: no-repeat;
-  background-position: center;
+.slider-button i {
+  line-height: inherit;
+  transform: scale(0.85);
 }
 .slider-button-prev {
   left: 10px;
 }
-.slider-button-prev:after {
-  background-image: url("data:image/svg+xml,%3Csvg%20width%3D%2716%27%20height%3D%2716%27%20viewBox%3D%270%200%2016%2016%27%20fill%3D%27none%27%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%3E%3Cpath%20d%3D%27M10%204L6%208L10%2012%27%20stroke%3D%27black%27%20stroke-width%3D%272%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27/%3E%3C/svg%3E");
+.slider-button-prev i {
+  position: relative;
+  left: -1px;
 }
 .slider-button-next {
   right: 10px;
 }
-.slider-button-next:after {
-  background-image: url("data:image/svg+xml,%3Csvg%20width='16'%20height='16'%20viewBox='0%200%2016%2016'%20fill='none'%20xmlns='http://www.w3.org/2000/svg'%3E%3Cpath%20d='M6%204L10%208L6%2012'%20stroke='black'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'/%3E%3C/svg%3E");
+.slider-button-next i {
+  position: relative;
+  right: -1px;
 }
 .slider-button-disabled {
   opacity: 0;
@@ -11565,7 +11562,8 @@ td[data-entry-id]:has(.date-edit:focus)::after {
   font-weight: bold;
 }
 .calendar-event-time,
-.calendar-event-field {
+.calendar-event-field,
+.calendar-event-location {
   font-size: 12px;
 }
 .calendar-event-description {
@@ -11690,21 +11688,24 @@ td[data-entry-id]:has(.date-edit:focus)::after {
   }
   .calendar-row .calendar-day-cell .calendar-events.wrap-title .calendar-event-title,
   .calendar-row .calendar-day-cell .calendar-events.wrap-title .calendar-event-time,
-  .calendar-row .calendar-day-cell .calendar-events.wrap-title .calendar-event-field {
+  .calendar-row .calendar-day-cell .calendar-events.wrap-title .calendar-event-field,
+  .calendar-row .calendar-day-cell .calendar-events.wrap-title .calendar-event-location {
     overflow: visible;
     white-space: normal;
     max-height: 3.5vh;
   }
   .calendar-row .calendar-day-cell .calendar-events .calendar-event:has(.calendar-event-state) .calendar-event-title,
   .calendar-row .calendar-day-cell .calendar-events .calendar-event:has(.calendar-event-state) .calendar-event-time,
-  .calendar-row .calendar-day-cell .calendar-events .calendar-event:has(.calendar-event-state) .calendar-event-field {
+  .calendar-row .calendar-day-cell .calendar-events .calendar-event:has(.calendar-event-state) .calendar-event-field,
+  .calendar-row .calendar-day-cell .calendar-events .calendar-event:has(.calendar-event-state) .calendar-event-location {
     overflow: visible;
     white-space: normal;
     height: 3.5vh;
   }
   .calendar-row .calendar-day-cell .calendar-events .calendar-event-title,
   .calendar-row .calendar-day-cell .calendar-events .calendar-event-time,
-  .calendar-row .calendar-day-cell .calendar-events .calendar-event-field {
+  .calendar-row .calendar-day-cell .calendar-events .calendar-event-field,
+  .calendar-row .calendar-day-cell .calendar-events .calendar-event-location {
     overflow: clip;
     white-space: nowrap;
     font-size: 0.85rem;
@@ -11892,21 +11893,24 @@ td[data-entry-id]:has(.date-edit:focus)::after {
   }
   [data-context="print-layout"] .calendar-row .calendar-day-cell .calendar-events.wrap-title .calendar-event-title,
   [data-context="print-layout"] .calendar-row .calendar-day-cell .calendar-events.wrap-title .calendar-event-time,
-  [data-context="print-layout"] .calendar-row .calendar-day-cell .calendar-events.wrap-title .calendar-event-field {
+  [data-context="print-layout"] .calendar-row .calendar-day-cell .calendar-events.wrap-title .calendar-event-field,
+  [data-context="print-layout"] .calendar-row .calendar-day-cell .calendar-events.wrap-title .calendar-event-location {
     overflow: visible;
     white-space: normal;
     max-height: 3.5vh;
   }
   [data-context="print-layout"] .calendar-row .calendar-day-cell .calendar-events .calendar-event:has(.calendar-event-state) .calendar-event-title,
   [data-context="print-layout"] .calendar-row .calendar-day-cell .calendar-events .calendar-event:has(.calendar-event-state) .calendar-event-time,
-  [data-context="print-layout"] .calendar-row .calendar-day-cell .calendar-events .calendar-event:has(.calendar-event-state) .calendar-event-field {
+  [data-context="print-layout"] .calendar-row .calendar-day-cell .calendar-events .calendar-event:has(.calendar-event-state) .calendar-event-field,
+  [data-context="print-layout"] .calendar-row .calendar-day-cell .calendar-events .calendar-event:has(.calendar-event-state) .calendar-event-location {
     overflow: visible;
     white-space: normal;
     height: 3.5vh;
   }
   [data-context="print-layout"] .calendar-row .calendar-day-cell .calendar-events .calendar-event-title,
   [data-context="print-layout"] .calendar-row .calendar-day-cell .calendar-events .calendar-event-time,
-  [data-context="print-layout"] .calendar-row .calendar-day-cell .calendar-events .calendar-event-field {
+  [data-context="print-layout"] .calendar-row .calendar-day-cell .calendar-events .calendar-event-field,
+  [data-context="print-layout"] .calendar-row .calendar-day-cell .calendar-events .calendar-event-location {
     overflow: clip;
     white-space: nowrap;
     font-size: 0.85rem;
@@ -11988,6 +11992,11 @@ td[data-entry-id]:has(.date-edit:focus)::after {
 @media (min-width: 768px) and (min-width: 2800px) {
   [data-context="print-layout"] .calendar-row .calendar-day-cell .calendar-events .calendar-event div {
     font-size: 2.5rem;
+  }
+}
+@media (max-width: 767px) {
+  .calendar-location-filter {
+    text-align: left !important;
   }
 }
 .blockhead {

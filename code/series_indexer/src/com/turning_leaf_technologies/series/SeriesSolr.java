@@ -114,11 +114,16 @@ class SeriesSolr {
 	}
 
 	void setAudiences(String[] audiences) {
-		Collections.addAll(this.audiences, audiences);
+		for (String audience : audiences) {
+			audience = audience.trim();
+			if (!audience.isEmpty()) {
+				this.audiences.add(audience);
+			}
+		}
 	}
 
 	void setAudience(String audiences) {
-		this.audiences.add(audiences);
+		this.audiences.add(audiences.trim());
 	}
 
 	void addListTitle(@SuppressWarnings("SameParameterValue") String source, String groupedWorkId, Object title, Object author, SolrDocument work) {

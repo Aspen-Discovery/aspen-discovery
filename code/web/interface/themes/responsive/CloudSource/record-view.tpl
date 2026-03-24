@@ -73,11 +73,13 @@
 					{if count($record->author) > 1}
 						<li>{translate text="Authors: " isPublicFacing=true}
 							{foreach from=$record->author item=$author}
-								<ul>{$author->name}</ul>
+								<ul>
+									<li>{$author->name}</li>
+								</ul>
 							{/foreach}
 						</li>
 					{else}
-						<li>{translate text="Author: " isPublicFacing=true}{$author[0]->name}</li>
+						<li>{translate text="Author: " isPublicFacing=true}{$record->author[0]->name}</li>
 					{/if}
 				{/if}
 				{if !empty($record->peerReviewed)}
@@ -96,13 +98,13 @@
 					{if count($record->publicationCountry) > 1}
 						<li>{translate text="Country of Publication: " isPublicFacing=true}
 							{foreach from=$record->publicationCountry item=$publicationCountry}
-								<ul>{$publicationCountry}</ul>
+								<ul>
+									<li>{$publicationCountry}</li>
+								</ul>
 							{/foreach}
 						</li>
 					{else}
-						{foreach from=$record->publicationCountry item=$publicationCountry}
-						<li>{translate text="Country of Publication: " isPublicFacing=true}{$publicationCountry}</li>
-						{/foreach}
+						<li>{translate text="Country of Publication: " isPublicFacing=true}{$record->publicationCountry[0]}</li>
 					{/if}
 				{/if}
 				{if !empty($record->license)}
@@ -113,26 +115,26 @@
 						{if count($record->publication->issn) > 1}
 							<li>{translate text="ISSNs: " isPublicFacing=true}
 								{foreach from=$record->publication->issn item=$issn}
-									<ul>{$issn}</ul>
+									<ul>
+										<li>{$issn}</li>
+									</ul>
 								{/foreach}
 							</li>
 						{else}
-							{foreach from=$record->publication->issn item=$issn}
-								<li>{translate text="ISSN: " isPublicFacing=true}{$issn}</li>
-							{/foreach}
+							<li>{translate text="ISSN: " isPublicFacing=true}{$record->publication->issn[0]}</li>
 						{/if}
 					{/if}
 					{if !empty($record->publication->alternateName)}
 						{if count($record->publication->alternateName) > 1}
 							<li>{translate text="Alternate Names: " isPublicFacing=true}
 								{foreach from=$record->publication->alternateName item=$alternateName}
-									<ul>{$alternateName}</ul>
+									<ul>
+										<li>{$alternateName}</li>
+									</ul>
 								{/foreach}
 							</li>
 						{else}
-							{foreach from=$record->publication->alternateName item=$alternateName}
-								<li>{translate text="Alternate Name: " isPublicFacing=true}{$alternateName}</li>
-							{/foreach}
+							<li>{translate text="Alternate Name: " isPublicFacing=true}{$record->publication->alternateName[0]}</li>
 						{/if}
 					{/if}
 					{if !empty($record->publication->volume)}

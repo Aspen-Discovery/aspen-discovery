@@ -388,6 +388,17 @@ div.striped > div:nth-child(odd), div.striped > div:nth-child(odd){ldelim}
 {rdelim}
 
 {* Alerts *}
+.alert-success{ldelim}
+	background-color: {$successButtonBackgroundColor};
+	border-color: {$successButtonBorderColor};
+	color: {$successButtonForegroundColor};
+{rdelim}
+
+.alert-success a{ldelim}
+	color: {$successButtonForegroundColor} !important;
+	text-decoration: underline;
+{rdelim}
+
 .alert-info{ldelim}
     background-color: {$infoButtonBackgroundColor};
     border-color: {$infoButtonBorderColor};
@@ -445,7 +456,7 @@ div.striped > div:nth-child(odd), div.striped > div:nth-child(odd){ldelim}
     border-color: {$defaultButtonBorderColor};
 {rdelim}
 
-.btn-default:hover, .btn-default:focus, .btn-default a:hover, .btn-default a:focus{ldelim}
+.btn-default:hover, .btn-default:focus, .btn-default a:hover, a.btn-default:hover, .btn-default a:focus, a.btn-default:focus{ldelim}
     background-color: {$defaultButtonHoverBackgroundColor} !important;
     color: {$defaultButtonHoverForegroundColor} !important;
     border-color: {$defaultButtonHoverBorderColor};
@@ -487,6 +498,18 @@ div.striped > div:nth-child(odd), div.striped > div:nth-child(odd){ldelim}
     background-color: {$actionButtonHoverBackgroundColor} !important;
     color: {$actionButtonHoverForegroundColor} !important;
     border-color: {$actionButtonHoverBorderColor};
+{rdelim}
+
+.btn-success,.btn-success:visited,a.btn-success,a.btn-success:visited{ldelim}
+	background-color: {$successButtonBackgroundColor} !important;
+	color: {$successButtonForegroundColor} !important;
+	border-color: {$successButtonBorderColor};
+{rdelim}
+
+.btn-success:hover, .btn-success:focus, .btn-success:active, .btn-success.active, .open .dropdown-toggle.btn-success{ldelim}
+	background-color: {$successButtonHoverBackgroundColor} !important;
+	color: {$successButtonHoverForegroundColor} !important;
+	border-color: {$successButtonHoverBorderColor};
 {rdelim}
 
 .btn-info,.btn-info:visited,a.btn-info,a.btn-info:visited{ldelim}
@@ -916,6 +939,10 @@ pre a{ldelim}
 {rdelim}
 
 .calendar-event-time, .calendar-event-field{ldelim}
+    color: {$primaryForegroundColor};
+{rdelim}
+
+.calendar-event-location{ldelim}
     color: {$primaryForegroundColor};
 {rdelim}
 

@@ -81,7 +81,8 @@ class AspenLiDA_HomeScreenLinks extends ObjectEditor {
 	public function getViewPermissions() : array {
 		return [
 			'Administer All Aspen LiDA Home Screen Links',
-			'Administer Library Aspen LiDA Home Screen Links'
+			'Administer Library Aspen LiDA Home Screen Links',
+			'Administer Selected Aspen LiDA Home Screen Link Groups'
 		];
 	}
 

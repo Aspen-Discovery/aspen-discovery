@@ -22,7 +22,7 @@
 					<div>
 						<input type="hidden" name="myListActionHead" id="myListActionHead" class="form">
 						<h1 id="listTitle">{$userList->title|escape:"html"}</h1>
-						{if $inListGroup && !empty($allowEdit)}
+						{if $inListGroup && !empty($allowEdit) && !empty($showListGroup)}
 							<div id="listGroup">
 								<small>{translate text='In Group' isPublicFacing=true}  <a href="/MyAccount/Lists?groupId={$listGroupInfo->id}">{$listGroupInfo->getFullGroupTitle()}</a></small>
 							</div>

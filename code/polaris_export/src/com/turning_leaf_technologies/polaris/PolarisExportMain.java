@@ -962,6 +962,8 @@ public class PolarisExportMain {
 	}
 
 	private static int updateBibsFromPolarisFull(long lastExtractTime) {
+		bibIdsUpdatedDuringContinuous = Collections.synchronizedSet(new HashSet<>());
+
 		int numChanges = 0;
 
 		//Get a paged list of all bibs

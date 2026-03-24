@@ -25,8 +25,10 @@ class Admin_HeroSliderLocations extends ObjectEditor {
 		$object = new HeroSliderLocation();
 
 		if (!UserAccount::userHasPermission('Administer All Hero Sliders')) {
-			$homeLibrary = Library::getPatronHomeLibrary();
-			$object->whereAdd("libraryId = $homeLibrary->libraryId OR libraryId = -1");
+			$libraryList = Library::getLibraryList(true);
+			$validIds = array_keys($libraryList);
+			$validIds[] = -1;
+			$object->whereAddIn('libraryId', $validIds, false);
 		}
 
 		$object->orderBy($this->getSort());
@@ -73,8 +75,10 @@ class Admin_HeroSliderLocations extends ObjectEditor {
 		$playlist = new HeroSliderPlaylist();
 		$playlist->orderBy('name ASC');
 		if (!UserAccount::userHasPermission('Administer All Hero Sliders')) {
-			$homeLibrary = Library::getPatronHomeLibrary();
-			$playlist->whereAdd("libraryId = {$homeLibrary->libraryId} OR libraryId = -1");
+			$libraryList = Library::getLibraryList(true);
+			$validIds = array_keys($libraryList);
+			$validIds[] = -1;
+			$playlist->whereAddIn('libraryId', $validIds, false);
 		}
 		$numAvailablePlaylists = $playlist->count();
 		if ($numAvailablePlaylists == 0) {

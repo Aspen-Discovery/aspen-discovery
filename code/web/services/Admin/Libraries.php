@@ -357,6 +357,10 @@ class Admin_Libraries extends ObjectEditor {
 				'label' => 'Update From ILS',
 				'action' => 'loadLibrariesFromILS',
 			];
+			$actions[] = [
+				'label' => 'Batch Update Holidays',
+				'action' => 'return AspenDiscovery.Admin.getBatchUpdateHolidayForm("library")',
+			];
 		}
 		return $actions;
 	}

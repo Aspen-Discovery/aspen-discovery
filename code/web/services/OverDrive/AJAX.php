@@ -5,9 +5,8 @@ require_once ROOT_DIR . '/JSON_Action.php';
 global $configArray;
 
 class OverDrive_AJAX extends JSON_Action {
-
-	function launch($method = null) : void {
-		$method = $_GET['method'];
+	function launch($method = null): void {
+		$method = $method ?? $_GET['method'];
 		//Backwards compatibility with old Pika calls
 		switch ($method) {
 			case 'CheckoutOverDriveItem':
@@ -23,173 +22,139 @@ class OverDrive_AJAX extends JSON_Action {
 				$method = 'returnCheckout';
 				break;
 		}
+
+		$this->checkRequiredModule('OverDrive');
 		parent::launch($method);
 	}
 
 	function placeHold() : array {
+		$this->requireLoggedInUser(null, 'You must be logged in to place a hold.');
 		global $logger;
 		$logger->log("Starting OverDrive/placeHold session: " . session_id(), Logger::LOG_DEBUG);
 
 		$overDriveId = $_REQUEST['overDriveId'];
-		if (UserAccount::isLoggedIn()) {
-			$user = UserAccount::getLoggedInUser();
-			$logger->log("User is logged in $user->id", Logger::LOG_ERROR);
-			$patronId = $_REQUEST['patronId'];
-			$patron = $user->getUserReferredTo($patronId);
-			if ($patron) {
-				if (isset($_REQUEST['overdriveEmail'])) {
-					if ($_REQUEST['overdriveEmail'] != $patron->overdriveEmail) {
-						$patron->overdriveEmail = $_REQUEST['overdriveEmail'];
-						$patron->update();
-					}
-				}
-				if (isset($_REQUEST['promptForOverdriveEmail'])) {
-					if ($_REQUEST['promptForOverdriveEmail'] == 1 || $_REQUEST['promptForOverdriveEmail'] == 'yes' || $_REQUEST['promptForOverdriveEmail'] == 'on') {
-						$patron->promptForOverdriveEmail = 1;
-					} else {
-						$patron->promptForOverdriveEmail = 0;
-					}
+		$user = UserAccount::getLoggedInUser();
+		$logger->log("User is logged in $user->id", Logger::LOG_ERROR);
+		$patronId = $_REQUEST['patronId'];
+		$patron = $user->getUserReferredTo($patronId);
+		if ($patron) {
+			if (isset($_REQUEST['overdriveEmail'])) {
+				if ($_REQUEST['overdriveEmail'] != $patron->overdriveEmail) {
+					$patron->overdriveEmail = $_REQUEST['overdriveEmail'];
 					$patron->update();
 				}
-
-				require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
-				$driver = new OverDriveDriver();
-				return $driver->placeHold($patron, $overDriveId);
-			} else {
-				$logger->log("Logged in user $user->id not valid for patron $patronId", Logger::LOG_DEBUG);
-				return [
-					'result' => false,
-					'message' => translate([
-						'text' => 'Sorry, it looks like you don\'t have permissions to place holds for that user.',
-						'isPublicFacing' => true,
-					]),
-				];
 			}
+			if (isset($_REQUEST['promptForOverdriveEmail'])) {
+				if ($_REQUEST['promptForOverdriveEmail'] == 1 || $_REQUEST['promptForOverdriveEmail'] == 'yes' || $_REQUEST['promptForOverdriveEmail'] == 'on') {
+					$patron->promptForOverdriveEmail = 1;
+				} else {
+					$patron->promptForOverdriveEmail = 0;
+				}
+				$patron->update();
+			}
+
+			require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+			$driver = new OverDriveDriver();
+			return $driver->placeHold($patron, $overDriveId);
 		} else {
-			$logger->log("User is not logged in", Logger::LOG_DEBUG);
+			$logger->log("Logged in user $user->id not valid for patron $patronId", Logger::LOG_DEBUG);
 			return [
 				'result' => false,
-				'message' => 'You must be logged in to place a hold.',
+				'message' => translate([
+					'text' => 'Sorry, it looks like you don\'t have permissions to place holds for that user.',
+					'isPublicFacing' => true,
+				]),
 			];
 		}
 	}
 
 	function renewCheckout() : array {
+		$this->requireLoggedInUser(null, 'You must be logged in to place renew title.');
 		$user = UserAccount::getLoggedInUser();
 		$overDriveId = $_REQUEST['overDriveId'];
-		if ($user) {
-			$patronId = $_REQUEST['patronId'];
-			$patron = $user->getUserReferredTo($patronId);
-			if ($patron) {
-				require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
-				$driver = new OverDriveDriver();
-				return $driver->renewCheckout($patron, $overDriveId);
-			} else {
-				return [
-					'result' => false,
-					'message' => 'Sorry, it looks like you don\'t have permissions to modify checkouts for that user.',
-				];
-			}
+		$patronId = $_REQUEST['patronId'];
+		$patron = $user->getUserReferredTo($patronId);
+		if ($patron) {
+			require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+			$driver = new OverDriveDriver();
+			return $driver->renewCheckout($patron, $overDriveId);
 		} else {
 			return [
 				'result' => false,
-				'message' => 'You must be logged in to renew titles.',
+				'message' => 'Sorry, it looks like you don\'t have permissions to modify checkouts for that user.',
 			];
 		}
 	}
 
 	function checkOutTitle() : array {
+		$this->requireLoggedInUser(null, 'You must be logged in to checkout an item.');
 		$user = UserAccount::getLoggedInUser();
 		$overDriveId = $_REQUEST['overDriveId'];
-		if ($user) {
-			$patronId = $_REQUEST['patronId'];
-			$patron = $user->getUserReferredTo($patronId);
-			if ($patron) {
-				require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
-				$driver = new OverDriveDriver();
-				$result = $driver->checkOutTitle($patron, $overDriveId);
-				//$logger->log("Checkout result = $result", Logger::LOG_NOTICE);
-				if ($result['success']) {
-					$result['buttons'] = '<a class="btn btn-primary" href="/MyAccount/CheckedOut" role="button">' . translate([
-							'text' => 'View My Check Outs',
-							'isPublicFacing' => true,
-						]) . '</a>';
-				}
-				return $result;
-			} else {
-				return [
-					'result' => false,
-					'message' => 'Sorry, it looks like you don\'t have permissions to checkout titles for that user.',
-				];
+		$patronId = $_REQUEST['patronId'];
+		$patron = $user->getUserReferredTo($patronId);
+		if ($patron) {
+			require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+			$driver = new OverDriveDriver();
+			$result = $driver->checkOutTitle($patron, $overDriveId);
+			//$logger->log("Checkout result = $result", Logger::LOG_NOTICE);
+			if ($result['success']) {
+				$result['buttons'] = '<a class="btn btn-primary" href="/MyAccount/CheckedOut" role="button">' . translate([
+						'text' => 'View My Check Outs',
+						'isPublicFacing' => true,
+					]) . '</a>';
 			}
+			return $result;
 		} else {
 			return [
 				'result' => false,
-				'message' => 'You must be logged in to checkout an item.',
+				'message' => 'Sorry, it looks like you don\'t have permissions to checkout titles for that user.',
 			];
 		}
 	}
 
 	/** @noinspection PhpUnused */
 	function returnCheckout() : array {
+		$this->requireLoggedInUser(null, 'You must be logged in to return an item.');
 		$user = UserAccount::getLoggedInUser();
 		$overDriveId = $_REQUEST['overDriveId'];
-		if ($user) {
-			$patronId = $_REQUEST['patronId'];
-			$patron = $user->getUserReferredTo($patronId);
-			if ($patron) {
-				require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
-				$driver = new OverDriveDriver();
-				return $driver->returnCheckout($patron, $overDriveId);
-			} else {
-				return [
-					'result' => false,
-					'message' => 'Sorry, it looks like you don\'t have permissions to return titles for that user.',
-				];
-			}
+		$patronId = $_REQUEST['patronId'];
+		$patron = $user->getUserReferredTo($patronId);
+		if ($patron) {
+			require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+			$driver = new OverDriveDriver();
+			return $driver->returnCheckout($patron, $overDriveId);
 		} else {
 			return [
 				'result' => false,
-				'message' => 'You must be logged in to return an item.',
+				'message' => 'Sorry, it looks like you don\'t have permissions to return titles for that user.',
 			];
 		}
 	}
 
 	/** @noinspection PhpUnused */
 	function getDownloadLink() : array {
+		$this->requireLoggedInUser(null, 'You must be logged in to download a title.');
 		$user = UserAccount::getLoggedInUser();
 		$overDriveId = $_REQUEST['overDriveId'];
 		$formatId = $_REQUEST['formatId'];
 		$isSupplement = (int)filter_var($_REQUEST['isSupplement'], FILTER_VALIDATE_BOOLEAN);
-		if ($user) {
-			$patronId = $_REQUEST['patronId'];
-			$patron = $user->getUserReferredTo($patronId);
-			if ($patron) {
-				require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
-				$driver = new OverDriveDriver();
-				return $driver->getDownloadLink($overDriveId, $patron);
-			} else {
-				return [
-					'result' => false,
-					'message' => 'Sorry, it looks like you don\'t have permissions to download titles for that user.',
-				];
-			}
+		$patronId = $_REQUEST['patronId'];
+		$patron = $user->getUserReferredTo($patronId);
+		if ($patron) {
+			require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+			$driver = new OverDriveDriver();
+			return $driver->getDownloadLink($overDriveId, $patron);
 		} else {
 			return [
 				'result' => false,
-				'message' => 'You must be logged in to download a title.',
+				'message' => 'Sorry, it looks like you don\'t have permissions to download titles for that user.',
 			];
 		}
 	}
 
 	/** @noinspection PhpUnused */
 	function getHoldPrompts() : array {
-		if (!UserAccount::isLoggedIn()) {
-			return [
-				'success' => false,
-				'message' => translate(['text'=>'You must be logged in to place holds, please login again.', 'isPublicFacing'=>true]),
-			];
-		}
+		$this->requireLoggedInUser(null, 'You must be logged in to place a hold.');
 		$user = UserAccount::getLoggedInUser();
 		global $interface;
 		$id = $_REQUEST['id'];
@@ -300,81 +265,66 @@ class OverDrive_AJAX extends JSON_Action {
 	}
 
 	function cancelHold(): array {
+		$this->requireLoggedInUser(null, 'You must be logged in to cancel a hold.');
 		$user = UserAccount::getLoggedInUser();
 		$overDriveId = $_REQUEST['overDriveId'];
-		if ($user) {
-			$patronId = $_REQUEST['patronId'];
-			$patron = $user->getUserReferredTo($patronId);
-			if ($patron) {
-				require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
-				$driver = new OverDriveDriver();
-				return $driver->cancelHold($patron, $overDriveId);
-			} else {
-				return [
-					'result' => false,
-					'message' => 'Sorry, it looks like you don\'t have permissions to download cancel holds for that user.',
-				];
-			}
+		$patronId = $_REQUEST['patronId'];
+		$patron = $user->getUserReferredTo($patronId);
+		if ($patron) {
+			require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+			$driver = new OverDriveDriver();
+			return $driver->cancelHold($patron, $overDriveId);
 		} else {
 			return [
 				'result' => false,
-				'message' => 'You must be logged in to cancel holds.',
+				'message' => 'Sorry, it looks like you don\'t have permissions to download cancel holds for that user.',
 			];
 		}
 	}
 
 	function freezeHold(): array {
+		$this->requireLoggedInUser(null, 'You must be logged in to freeze a hold.');
+		$this->checkRequiredParameters(['patronId']);
 		$user = UserAccount::getLoggedInUser();
 		$result = [
 			'success' => false,
 			'message' => 'Error freezing hold.',
 		];
-		if (!$user) {
+
+		$patronId = $_REQUEST['patronId'];
+		$patronOwningHold = $user->getUserReferredTo($patronId);
+
+		if (!$patronOwningHold) {
 			$result['message'] = translate([
-				'text' => 'You must be logged in to freeze a hold.  Please close this dialog and login again.',
+				'text' => 'Sorry, you do not have access to freeze holds for the supplied user.',
 				'isPublicFacing' => true,
 			]);
-		} elseif (!empty($_REQUEST['patronId'])) {
-			$patronId = $_REQUEST['patronId'];
-			$patronOwningHold = $user->getUserReferredTo($patronId);
-
-			if (!$patronOwningHold) {
+		} else {
+			if (empty($_REQUEST['overDriveId'])) {
+				// We aren't getting all the expected data, so make a log entry and tell the user.
 				$result['message'] = translate([
-					'text' => 'Sorry, you do not have access to freeze holds for the supplied user.',
+					'text' => 'Information about the hold to be frozen was not provided.',
 					'isPublicFacing' => true,
 				]);
 			} else {
-				if (empty($_REQUEST['overDriveId'])) {
-					// We aren't getting all the expected data, so make a log entry and tell the user.
-					$result['message'] = translate([
-						'text' => 'Information about the hold to be frozen was not provided.',
-						'isPublicFacing' => true,
-					]);
-				} else {
-					$overDriveId = $_REQUEST['overDriveId'];
-					$result = $patronOwningHold->freezeOverDriveHold($overDriveId);
+				$overDriveId = $_REQUEST['overDriveId'];
+				$result = $patronOwningHold->freezeOverDriveHold($overDriveId);
 
-					if (!$result['success'] && is_array($result['message'])) {
-						/** @var string[] $messageArray */
-						$messageArray = $result['message'];
-						$result['message'] = implode('; ', $messageArray);
-					}
+				if (!$result['success'] && is_array($result['message'])) {
+					/** @var string[] $messageArray */
+					$messageArray = $result['message'];
+					$result['message'] = implode('; ', $messageArray);
 				}
 			}
-		} else {
-			// We aren't getting all the expected data, so make a log entry and tell user.
-			global $logger;
-			$logger->log('Freeze Hold, no patron Id was passed in AJAX call.', Logger::LOG_ERROR);
-			$result['message'] = translate([
-				'text' => 'No Patron was specified.',
-				'isPublicFacing' => true,
-			]);
 		}
 
 		return $result;
 	}
 
 	function thawHold(): array {
+		$this->requireLoggedInUser(null, 'You must be logged in to thaw a hold.');
+		$this->checkRequiredParameters(['patronId']);
+
 		$user = UserAccount::getLoggedInUser();
 		$result = [ // set default response
 			'success' => false,
@@ -384,42 +334,35 @@ class OverDrive_AJAX extends JSON_Action {
 			]),
 		];
 
-		if (!$user) {
+		$patronId = $_REQUEST['patronId'];
+		$patronOwningHold = $user->getUserReferredTo($patronId);
+
+		if ($patronOwningHold === false) {
 			$result['message'] = translate([
-				'text' => 'You must be logged in to thaw a hold.  Please close this dialog and login again.',
+				'text' => 'Sorry, you do not have access to thaw holds for the supplied user.',
 				'isPublicFacing' => true,
 			]);
-		} elseif (!empty($_REQUEST['patronId'])) {
-			$patronId = $_REQUEST['patronId'];
-			$patronOwningHold = $user->getUserReferredTo($patronId);
-
-			if ($patronOwningHold === false) {
+		} else {
+			if (empty($_REQUEST['overDriveId'])) {
 				$result['message'] = translate([
-					'text' => 'Sorry, you do not have access to thaw holds for the supplied user.',
+					'text' => 'Information about the hold to be thawed was not provided.',
 					'isPublicFacing' => true,
 				]);
 			} else {
-				if (empty($_REQUEST['overDriveId'])) {
-					$result['message'] = translate([
-						'text' => 'Information about the hold to be thawed was not provided.',
-						'isPublicFacing' => true,
-					]);
-				} else {
-					$overDriveId = $_REQUEST['overDriveId'];
-					$result = $patronOwningHold->thawOverDriveHold($overDriveId);
-				}
+				$overDriveId = $_REQUEST['overDriveId'];
+				$result = $patronOwningHold->thawOverDriveHold($overDriveId);
 			}
-		} else {
-			// We aren't getting all the expected data, so make a log entry and tell the user.
-			global $logger;
-			$logger->log('Thaw Hold, no patron Id was passed in AJAX call.', Logger::LOG_ERROR);
-			$result['message'] = 'No Patron was specified.';
 		}
 
 		return $result;
 	}
 
 	function getStaffView() : array {
+		global $interface;
+		if (!$interface->getVariable('showStaffView')) {
+			$this->failureResult(null, 'Staff View is not available.');
+		}
+
 		$result = [
 			'success' => false,
 			'message' => 'Unknown error loading staff view',
@@ -428,7 +371,6 @@ class OverDrive_AJAX extends JSON_Action {
 		require_once ROOT_DIR . '/RecordDrivers/OverDriveRecordDriver.php';
 		$recordDriver = new OverDriveRecordDriver($id);
 		if ($recordDriver->isValid()) {
-			global $interface;
 			$interface->assign('recordDriver', $recordDriver);
 			$result = [
 				'success' => true,

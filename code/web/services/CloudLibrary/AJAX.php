@@ -2,28 +2,19 @@
 require_once ROOT_DIR . '/JSON_Action.php';
 
 class CloudLibrary_AJAX extends JSON_Action {
+	function launch($method = null): void {
+		$this->checkRequiredModule('Cloud Library');
+		parent::launch($method);
+	}
 	function placeHold(): array {
+		$this->requireLoggedInUser("Error Placing Hold on CloudLibrary Title", 'You must be logged in to place a hold.');
 		$user = UserAccount::getLoggedInUser();
 
 		$id = $_REQUEST['id'];
-		if ($user) {
-			$patronId = $_REQUEST['patronId'];
-			$patron = $user->getUserReferredTo($patronId);
-			if ($patron) {
-				return $this->processHoldOrCheckout($id, $patron);
-			} else {
-				return [
-					'result' => false,
-					'title' => translate([
-						'text' => "Error Placing Hold on CloudLibrary Title",
-						'isPublicFacing' => true,
-					]),
-					'message' => translate([
-						'text' => 'Sorry, it looks like you don\'t have permissions to place holds for that user.',
-						'isPublicFacing' => true,
-					]),
-				];
-			}
+		$patronId = $_REQUEST['patronId'];
+		$patron = $user->getUserReferredTo($patronId);
+		if ($patron) {
+			return $this->processHoldOrCheckout($id, $patron);
 		} else {
 			return [
 				'result' => false,
@@ -32,7 +23,7 @@ class CloudLibrary_AJAX extends JSON_Action {
 					'isPublicFacing' => true,
 				]),
 				'message' => translate([
-					'text' => 'You must be logged in to place a hold.',
+					'text' => 'Sorry, it looks like you don\'t have permissions to place holds for that user.',
 					'isPublicFacing' => true,
 				]),
 			];
@@ -40,26 +31,14 @@ class CloudLibrary_AJAX extends JSON_Action {
 	}
 
 	function checkOutTitle(): array {
+		$this->requireLoggedInUser("Error Checking Out CloudLibrary Title", 'You must be logged in to checkout an item.');
 		$user = UserAccount::getLoggedInUser();
 		$id = $_REQUEST['id'];
-		if ($user) {
-			$patronId = $_REQUEST['patronId'];
-			$patron = $user->getUserReferredTo($patronId);
-			if ($patron) {
-				return $this->processHoldOrCheckout($id, $patron);
-			} else {
-				return [
-					'result' => false,
-					'title' => translate([
-						'text' => "Error Checking Out CloudLibrary Title",
-						'isPublicFacing' => true,
-					]),
-					'message' => translate([
-						'text' => 'Sorry, it looks like you don\'t have permissions to checkout titles for that user.',
-						'isPublicFacing' => true,
-					]),
-				];
-			}
+
+		$patronId = $_REQUEST['patronId'];
+		$patron = $user->getUserReferredTo($patronId);
+		if ($patron) {
+			return $this->processHoldOrCheckout($id, $patron);
 		} else {
 			return [
 				'result' => false,
@@ -68,7 +47,7 @@ class CloudLibrary_AJAX extends JSON_Action {
 					'isPublicFacing' => true,
 				]),
 				'message' => translate([
-					'text' => 'You must be logged in to checkout an item.',
+					'text' => 'Sorry, it looks like you don\'t have permissions to checkout titles for that user.',
 					'isPublicFacing' => true,
 				]),
 			];
@@ -221,29 +200,20 @@ class CloudLibrary_AJAX extends JSON_Action {
 	}
 
 	function cancelHold(): array {
+		$this->requireLoggedInUser(null, 'You must be logged in to cancel holds.');
 		$user = UserAccount::getLoggedInUser();
 		$id = $_REQUEST['recordId'];
-		if ($user) {
-			$patronId = $_REQUEST['patronId'];
-			$patron = $user->getUserReferredTo($patronId);
-			if ($patron) {
-				require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
-				$driver = new CloudLibraryDriver();
-				return $driver->cancelHold($patron, $id);
-			} else {
-				return [
-					'result' => false,
-					'message' => translate([
-						'text' => 'Sorry, it looks like you don\'t have permissions to cancel holds for that user.',
-						'isPublicFacing' => true,
-					]),
-				];
-			}
+		$patronId = $_REQUEST['patronId'];
+		$patron = $user->getUserReferredTo($patronId);
+		if ($patron) {
+			require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
+			$driver = new CloudLibraryDriver();
+			return $driver->cancelHold($patron, $id);
 		} else {
 			return [
 				'result' => false,
 				'message' => translate([
-					'text' => 'You must be logged in to cancel holds.',
+					'text' => 'Sorry, it looks like you don\'t have permissions to cancel holds for that user.',
 					'isPublicFacing' => true,
 				]),
 			];
@@ -251,29 +221,20 @@ class CloudLibrary_AJAX extends JSON_Action {
 	}
 
 	function renewCheckout() : array {
+		$this->requireLoggedInUser(null, 'You must be logged in to renew titles.');
 		$user = UserAccount::getLoggedInUser();
 		$id = $_REQUEST['recordId'];
-		if ($user) {
-			$patronId = $_REQUEST['patronId'];
-			$patron = $user->getUserReferredTo($patronId);
-			if ($patron) {
-				require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
-				$driver = new CloudLibraryDriver();
-				return $driver->renewCheckout($patron, $id);
-			} else {
-				return [
-					'result' => false,
-					'message' => translate([
-						'text' => 'Sorry, it looks like you don\'t have permissions to modify checkouts for that user.',
-						'isPublicFacing' => true,
-					]),
-				];
-			}
+		$patronId = $_REQUEST['patronId'];
+		$patron = $user->getUserReferredTo($patronId);
+		if ($patron) {
+			require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
+			$driver = new CloudLibraryDriver();
+			return $driver->renewCheckout($patron, $id);
 		} else {
 			return [
 				'result' => false,
 				'message' => translate([
-					'text' => 'You must be logged in to renew titles.',
+					'text' => 'Sorry, it looks like you don\'t have permissions to modify checkouts for that user.',
 					'isPublicFacing' => true,
 				]),
 			];
@@ -282,29 +243,20 @@ class CloudLibrary_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function returnCheckout() : array {
+		$this->requireLoggedInUser(null, 'You must be logged in to return titles.');
 		$user = UserAccount::getLoggedInUser();
 		$id = $_REQUEST['recordId'];
-		if ($user) {
-			$patronId = $_REQUEST['patronId'];
-			$patron = $user->getUserReferredTo($patronId);
-			if ($patron) {
-				require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
-				$driver = new CloudLibraryDriver();
-				return $driver->returnCheckout($patron, $id);
-			} else {
-				return [
-					'result' => false,
-					'message' => translate([
-						'text' => 'Sorry, it looks like you don\'t have permissions to modify checkouts for that user.',
-						'isPublicFacing' => true,
-					]),
-				];
-			}
+		$patronId = $_REQUEST['patronId'];
+		$patron = $user->getUserReferredTo($patronId);
+		if ($patron) {
+			require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
+			$driver = new CloudLibraryDriver();
+			return $driver->returnCheckout($patron, $id);
 		} else {
 			return [
 				'result' => false,
 				'message' => translate([
-					'text' => 'You must be logged in to return titles.',
+					'text' => 'Sorry, it looks like you don\'t have permissions to modify checkouts for that user.',
 					'isPublicFacing' => true,
 				]),
 			];
@@ -315,7 +267,7 @@ class CloudLibrary_AJAX extends JSON_Action {
 	 * @param User $user
 	 * @return User[]
 	 */
-	private function getCloudLibraryUsers(User $user) {
+	private function getCloudLibraryUsers(User $user) : array {
 		global $interface;
 		$users = $user->getRelatedEcontentUsers('cloud_library');
 		$usersWithCloudLibraryAccess = [];
@@ -442,7 +394,11 @@ class CloudLibrary_AJAX extends JSON_Action {
 		return $result;
 	}
 
-	function getStaffView() {
+	function getStaffView() : array {
+		global $interface;
+		if (!$interface->getVariable('showStaffView')) {
+			$this->failureResult(null, 'Staff View is not available.');
+		}
 		$result = [
 			'success' => false,
 			'message' => translate([
@@ -454,11 +410,6 @@ class CloudLibrary_AJAX extends JSON_Action {
 		require_once ROOT_DIR . '/RecordDrivers/CloudLibraryRecordDriver.php';
 		$recordDriver = new CloudLibraryRecordDriver($id);
 		if ($recordDriver->isValid()) {
-			global $interface;
-			$readerName = new OverDriveDriver();
-			$readerName = $readerName->getReaderName();
-			$interface->assign('readerName', $readerName);
-
 			$interface->assign('recordDriver', $recordDriver);
 			$result = [
 				'success' => true,
@@ -474,7 +425,7 @@ class CloudLibrary_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function getLargeCover() {
+	function getLargeCover() : array {
 		global $interface;
 
 		$id = $_REQUEST['id'];
@@ -492,6 +443,7 @@ class CloudLibrary_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function addAlternateLibraryCard(): array {
+		$this->requireLoggedInUser();
 		$jsonData = file_get_contents('php://input');
 		$cardData = json_decode($jsonData, true);
 		$user = UserAccount::getLoggedInUser();
@@ -533,6 +485,7 @@ class CloudLibrary_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function getAlternateLibraryCardPrompts($type, $patronId, $titleId): array {
+		$this->requireLoggedInUser();
 		global $library;
 		global $interface;
 		$user = UserAccount::getLoggedInUser();

@@ -525,13 +525,7 @@ class SystemAPI extends AbstractAPI {
 
 		// make sure full nightly index is set to run after completing db updates
 		require_once ROOT_DIR . '/sys/SystemVariables.php';
-		$systemVariables = SystemVariables::getSystemVariables();
-		if ($systemVariables->find(true)) {
-			if($systemVariables->runNightlyFullIndex == 0) {
-				$systemVariables->runNightlyFullIndex = 1;
-				$systemVariables->update();
-			}
-		}
+		SystemVariables::forceNightlyIndex('System API DB Updates');
 
 		$this->updateAdminPropertiesSearchIndex();
 

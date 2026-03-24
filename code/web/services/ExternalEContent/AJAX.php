@@ -1,33 +1,23 @@
 <?php
 
-require_once ROOT_DIR . '/Action.php';
+require_once ROOT_DIR . '/JSON_Action.php';
 require_once ROOT_DIR . '/RecordDrivers/ExternalEContentDriver.php';
 
-class ExternalEContent_AJAX extends Action {
-
-	function launch() {
-		global $timer;
+class ExternalEContent_AJAX extends JSON_Action {
+	function launch($method = null) : void {
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
-		$timer->logTime("Starting method $method");
-		if (method_exists($this, $method)) {
-			// Methods intend to return JSON data
-			if ($method == 'downloadMarc') {
-				echo $this->$method();
-			} else {
-				header('Content-type: application/json');
-				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-				header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-				echo json_encode($this->$method());
-			}
-		} else {
-			$output = json_encode(['error' => 'invalid_method']);
-			echo $output;
+		if ($method == 'downloadMarc') {
+			echo $this->$method();
 		}
+		parent::launch();
 	}
 
 
 	/** @noinspection PhpUnused */
-	function downloadMarc() {
+	function downloadMarc() : void {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission('Download MARC Records');
+		$this->checkRequiredParameters(['id']);
 		$id = $_REQUEST['id'];
 		$marcData = MarcLoader::loadMarcRecordByILSId($id);
 		header('Content-Description: File Transfer');
@@ -45,6 +35,12 @@ class ExternalEContent_AJAX extends Action {
 	}
 
 	function getStaffView(): array {
+		global $interface;
+		if (!$interface->getVariable('showStaffView')) {
+			$this->failureResult(null, 'Staff View is not available.');
+		}
+		$this->checkRequiredParameters(['id']);
+
 		$result = [
 			'success' => false,
 			'message' => 'Unknown error loading staff view',
@@ -69,6 +65,7 @@ class ExternalEContent_AJAX extends Action {
 
 	/** @noinspection PhpUnused */
 	function showSelectItemToViewForm(): array {
+		$this->checkRequiredParameters(['id']);
 		global $interface;
 
 		$id = $_REQUEST['id'];
@@ -117,18 +114,12 @@ class ExternalEContent_AJAX extends Action {
 
 	/** @noinspection PhpUnused */
 	function viewItem(): array {
+		$this->checkRequiredParameters(['id', 'selectedItem']);
 		$id = $_REQUEST['id'];
 		$itemId = $_REQUEST['selectedItem'];
 
 		$recordDriver = $this->loadRecordDriver($id);
 		if ($recordDriver->isValid()) {
-			if (strpos($id, ':')) {
-				[
-					,
-					$id,
-				] = explode(':', $id);
-			}
-
 			$idWithSource = $recordDriver->getIdWithSource();
 			$relatedRecord = $recordDriver->getGroupedWorkDriver()->getRelatedRecord($idWithSource);
 			$allItems = $relatedRecord->getItems();
@@ -159,7 +150,7 @@ class ExternalEContent_AJAX extends Action {
 
 	}
 
-	function loadRecordDriver($id) : ExternalEContentDriver {
+	private function loadRecordDriver($id) : ExternalEContentDriver {
 		global $activeRecordProfile;
 		$subType = '';
 		if (isset($activeRecordProfile)) {

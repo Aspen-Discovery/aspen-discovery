@@ -127,7 +127,7 @@ class IndexingProfile extends DataObject {
 		$treatItemsAsEcontent;
 	public $format;
 	public /** @noinspection PhpUnused */
-		$useSierraMatTypeForFormat;
+		$use650ForPictureBooks;
 	public /** @noinspection PhpUnused */
 		$eContentDescriptor;
 	public /** @noinspection PhpUnused */
@@ -265,6 +265,7 @@ class IndexingProfile extends DataObject {
 			'numMillisecondsToPauseAfterBibLookups',
 			'numExtractionThreads',
 			'prioritizeAvailableRecordsForTitleSelection',
+			'use650ForPictureBooks'
 		];
 	}
 
@@ -661,12 +662,13 @@ class IndexingProfile extends DataObject {
 						'note'        => 'Only applies when all items have formats of either Book or Large Print',
 						'forcesReindex' => true,
 					],
-					'prioritizeAvailableRecordsForTitleSelection' => [
-						'property' => 'prioritizeAvailableRecordsForTitleSelection',
+					'use650ForPictureBooks' => [
+						'property' => 'use650ForPictureBooks',
 						'type' => 'checkbox',
-						'label' => 'Prioritize Available Records for Title Selection',
-						'description' => 'When checked, if there are available records in a grouped work, titles from those available records will be prioritized as the display title for the grouped work.',
-						'default' => 0,
+						'label' => 'Use 650 for Picture Books',
+						'default' => true,
+						'description' => 'Check 650 fields when determining looking for Picture Books',
+						'note'        => 'When deselected, only the 655 field will be selected (Bib level format only)',
 						'forcesReindex' => true,
 					],
 					'formatMap' => [
@@ -798,6 +800,14 @@ class IndexingProfile extends DataObject {
 						'label' => 'Display Title Strip Regex',
 						'description' => 'Regular expression to remove matching text from display titles. Only applies to ILS records. Example: \s*\[LARGE PRINT\]$ to remove &quot;[LARGE PRINT]&quot; suffix.',
 						'note' => 'Uses case-sensitive matching. Use (?i) at the start of the pattern for case-insensitive matching.',
+						'forcesReindex' => true,
+					],
+					'prioritizeAvailableRecordsForTitleSelection' => [
+						'property' => 'prioritizeAvailableRecordsForTitleSelection',
+						'type' => 'checkbox',
+						'label' => 'Prioritize Available Records for Title Selection',
+						'description' => 'When checked, if there are available records in a grouped work, titles from those available records will be prioritized as the display title for the grouped work.',
+						'default' => 0,
 						'forcesReindex' => true,
 					],
 					'audienceOptionsSection' => [

@@ -520,7 +520,7 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 	 * @return array
 	 */
 	public function getSearchSuggestions($searchTerm, $searchIndex) : array {
-		if ($searchIndex == 'Title' || $searchIndex == 'StartOfTitle' || $searchIndex == 'Series') {
+		if ($searchIndex == 'Title' || $searchIndex == 'AllTitles' || $searchIndex == 'StartOfTitle' || $searchIndex == 'Series') {
 			$suggestionHandler = 'title_suggest';
 		} elseif ($searchIndex == 'Author') {
 			$suggestionHandler = 'author_suggest';
@@ -570,7 +570,7 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 	 */
 	public function runSearchInterpreter(string $type, bool $enableSearchInterpreter, string $searchTerm): string {
 		$splitPattern = "/[|,]\s*/";
-		if ($type == 'Keyword' && $enableSearchInterpreter && !empty($searchTerm)) {
+		if ($type == 'Keyword' && $enableSearchInterpreter && !empty($searchTerm) && empty($this->filterList)) {
 			$changeMade = false;
 			$searchTermLower = strtolower($searchTerm);
 
@@ -773,9 +773,18 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 		} elseif ($this->searchType == 'favorites') {
 			return '/MyAccount/Home?';
 		} elseif ($this->searchType == 'list') {
-			return '/MyAccount/MyList/' . urlencode($_GET['id']) . '?';
+			if (isset($_GET['id'])) {
+				return '/MyAccount/MyList/' . urlencode($_GET['id']) . '?';
+			}elseif (is_array($this->searchTerms)) {
+				$firstSearchTerm = reset($this->searchTerms);
+				if ($firstSearchTerm['index'] == 'list_link') {
+					return '/MyAccount/MyList/' . urlencode($firstSearchTerm['lookfor']) . '?';
+				}
+			}
 		} elseif ($this->searchType == 'series') {
-			return '/Series/' . urlencode($_GET['id']) . '?';
+			if (isset($_GET['id'])) {
+				return '/Series/' . urlencode($_GET['id']) . '?';
+			}
 		}
 
 		// If none of the special cases were met, use the default from the parent:
@@ -1157,13 +1166,18 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 	}
 
 	public function getSearchIndexes() : array {
+		$titleSearch = 'Title';
+		$systemVariables = SystemVariables::getSystemVariables();
+		if ($systemVariables && (int)$systemVariables->titleSearchBehavior == 2) {
+			$titleSearch = 'AllTitles';
+		}
 		return [
 			'Keyword' => translate([
 				'text' => 'Keyword',
 				'isPublicFacing' => true,
 				'inAttribute' => true,
 			]),
-			'Title' => translate([
+			$titleSearch => translate([
 				'text' => 'Title',
 				'isPublicFacing' => true,
 				'inAttribute' => true,

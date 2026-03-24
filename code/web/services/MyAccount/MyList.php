@@ -107,6 +107,8 @@ class MyAccount_MyList extends MyAccount {
 
 		//Perform an action on the list, but verify that the user has permission to do so.
 		$userCanEdit = false;
+		//Only show list groups if the active user has the
+		$showListGroup = false;
 		$userObj = UserAccount::getActiveUserObj();
 		if ($userObj !== false) {
 			$userCanEdit = $userObj->canEditList($list);
@@ -116,7 +118,11 @@ class MyAccount_MyList extends MyAccount {
 				$hasUploadedCover = file_exists($customCoverPath);
 				$interface->assign('hasUploadedCover', $hasUploadedCover);
 			}
+			if ($userObj->id == $list->user_id) {
+				$showListGroup = true;
+			}
 		}
+		$interface->assign('showListGroup', $showListGroup);
 
 		if ($userCanEdit && (isset($_REQUEST['myListActionHead']) || isset($_REQUEST['myListActionItem']) || isset($_GET['delete']))) {
 			if (isset($_REQUEST['myListActionHead']) && strlen($_REQUEST['myListActionHead']) > 0) {
@@ -132,7 +138,9 @@ class MyAccount_MyList extends MyAccount {
 						$list->searchable = isset($_REQUEST['searchable']) && ($_REQUEST['searchable'] == 'true' || $_REQUEST['searchable'] == 'on');
 						$list->displayListAuthor = isset($_REQUEST['displayListAuthor']) && ($_REQUEST['displayListAuthor'] == 'true' || $_REQUEST['displayListAuthor'] == 'on');
 					}
-					$list->listGroupId = isset($_REQUEST['listGroupSelect']) ? intval($_REQUEST['listGroupSelect']) : -1;
+					if ($showListGroup) {
+						$list->listGroupId = isset($_REQUEST['listGroupSelect']) ? intval($_REQUEST['listGroupSelect']) : -1;
+					}
 					$this->reloadCover();
 					$list->update();
 					$list->fixWeights();
@@ -293,7 +301,6 @@ class MyAccount_MyList extends MyAccount {
 		if ($list->listGroupId > 0) {
 			$inListGroup = true;
 		}
-		$interface->assign('inListGroup', $inListGroup);
 
 		require_once ROOT_DIR . '/sys/UserLists/UserListGroup.php';
 		$listGroupInfo = null;
@@ -302,12 +309,16 @@ class MyAccount_MyList extends MyAccount {
 			$listGroup->id = $list->listGroupId;
 			if ($listGroup->find(true)) {
 				$listGroupInfo = clone $listGroup;
+			}else{
+				//The list group was deleted
+				$inListGroup = false;
 			}
 		}
+		$interface->assign('inListGroup', $inListGroup);
 		$interface->assign('listGroupInfo', $listGroupInfo);
 
 		$userListGroups = [];
-		if ($userCanEdit) {
+		if ($userCanEdit && $showListGroup) {
 			$listGroup = new UserListGroup();
 			$userListGroups = $listGroup->getListGroups(UserAccount::getActiveUserObj());
 		}
@@ -445,13 +456,6 @@ class MyAccount_MyList extends MyAccount {
 		$interface->assign('recordsPerPage', $pageInfo['perPage']);
 
 		$link = $_SERVER['REQUEST_URI'];
-		if (preg_match('/[&?]page=/', $link)) {
-			$link = preg_replace("/page=\\d+/", "page=%d", $link);
-		} elseif (strpos($link, "?") > 0) {
-			$link .= "&page=%d";
-		} else {
-			$link .= "?page=%d";
-		}
 		$options = [
 			'totalItems' => $pageInfo['resultTotal'],
 			'perPage' => $pageInfo['perPage'],

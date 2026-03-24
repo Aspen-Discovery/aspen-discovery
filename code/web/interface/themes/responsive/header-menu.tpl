@@ -19,8 +19,8 @@
 	{/if}
 
 	{if !empty($showLibraryHoursAndLocationsLink)}
-		<a href="/AJAX/JSON?method=getHoursAndLocations" data-title="{translate text="Library Hours and Locations" inAttribute=true isAdminFacing=true}" class="modalDialogTrigger">
-			<div id="home-page-hours-locations" class="header-menu-option">
+		<div id="home-page-hours-locations" class="header-menu-option">
+			<a href="/AJAX/JSON?method=getHoursAndLocations" data-title="{translate text="Library Hours and Locations" inAttribute=true isAdminFacing=true}" class="modalDialogTrigger">
 				<i class="fas fa-map-marker-alt fa-fw" role="presentation"></i>
 				<span>
 				{if $numLocations == 1}
@@ -37,8 +37,8 @@
 					{/if}
 				{/if}
 				</span>
-			</div>
-		</a>
+			</a>
+		</div>
 	{/if}
 
 	{if !empty($libraryLinks)}
@@ -119,18 +119,18 @@
 			</div>
 		{/if}
 		{foreach from=$validLanguages key=languageCode item=language}
-			{if $userLang->code!=$languageCode}
-				<a tabindex="0" onclick="return AspenDiscovery.setLanguage('{$languageCode}')">
-			{/if}
-				<div class="header-menu-option languageSelect{if $userLang->code==$languageCode}ed{/if}">
+			<div class="header-menu-option languageSelect{if $userLang->code==$languageCode}ed{/if}">
+				{if $userLang->code!=$languageCode}
+					<a tabindex="0" href="#" onclick="return AspenDiscovery.setLanguage('{$languageCode}')">
+				{/if}
 					{if $userLang->code==$languageCode}
 						<i class="fas fa-check fa-fw" role="presentation"></i>&nbsp;
 					{/if}
 					{$language->displayName|escape}
-				</div>
-			{if $userLang->code!=$languageCode}
-			</a>
-			{/if}
+				{if $userLang->code!=$languageCode}
+					</a>
+				{/if}
+			</div>
 		{/foreach}
 	{/if}
 	{if !empty($masqueradeMode)}

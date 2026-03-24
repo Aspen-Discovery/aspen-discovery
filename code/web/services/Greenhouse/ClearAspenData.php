@@ -107,7 +107,7 @@ class Greenhouse_ClearAspenData extends Admin_Admin {
 
 						//Also force a nightly index
 						require_once ROOT_DIR . '/sys/SystemVariables.php';
-						SystemVariables::forceNightlyIndex();
+						SystemVariables::forceNightlyIndex('Greenhouse Clear Data');
 
 						$indexingProfile = new IndexingProfile();
 						$allIndexingProfiles = $indexingProfile->fetchAll();

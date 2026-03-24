@@ -275,26 +275,27 @@ class GroupedWorkFormatSortingGroup extends DataObject {
 		return $ret;
 	}
 
-	private function getArrayNameForGroupingCategory($groupingCategory) : string {
-		$internalArrayName = null;
+	private function getArrayNameForGroupingCategory(string $groupingCategory): string {
+		static $logged = false;
+		global $logger;
 		switch ($groupingCategory) {
 			case 'book':
-				$internalArrayName = '_sortedBookFormats';
-				break;
+				return '_sortedBookFormats';
 			case 'comic':
-				$internalArrayName = '_sortedComicFormats';
-				break;
+				return '_sortedComicFormats';
 			case 'movie':
-				$internalArrayName = '_sortedMovieFormats';
-				break;
+				return '_sortedMovieFormats';
 			case 'music':
-				$internalArrayName = '_sortedMusicFormats';
-				break;
+				return '_sortedMusicFormats';
 			case 'other':
-				$internalArrayName = '_sortedOtherFormats';
-				break;
+				return '_sortedOtherFormats';
+			default:
+				if (!$logged && isset($logger)) {
+					$logger->log('Invalid grouping category: ' . $groupingCategory, Logger::LOG_WARNING);
+					$logged = true;
+				}
+				return '';
 		}
-		return $internalArrayName;
 	}
 
 	public function saveSortedFormats($groupingCategory) : void {

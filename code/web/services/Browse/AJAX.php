@@ -1,12 +1,13 @@
 <?php
 
-require_once ROOT_DIR . '/Action.php';
+require_once ROOT_DIR . '/JSON_Action.php';
 
-class Browse_AJAX extends Action {
+class Browse_AJAX extends JSON_Action {
 
+	/** @noinspection PhpMissingClassConstantTypeInspection */
 	const ITEMS_PER_PAGE = 24;
 
-	function launch() {
+	function launch($method = null) : void {
 		header('Content-type: application/json');
 		$method = $_REQUEST['method'];
 		$allowed_methods = [
@@ -23,16 +24,18 @@ class Browse_AJAX extends Action {
 			'getMoreBrowseSubCategoryResultsLink'
 		];
 		if (in_array($method, $allowed_methods)) {
-			$response = $this->$method();
+			parent::launch($method);
 		} else {
 			$response = ['result' => false];
+			echo json_encode($response);
 		}
-		echo json_encode($response);
 	}
 
 	/** @noinspection PhpUnused */
-	function getAddBrowseCategoryForm() {
+	function getAddBrowseCategoryForm() : array {
 		global $interface;
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission(['Administer All Browse Categories', 'Administer Library Browse Categories','Administer Selected Browse Category Groups']);
 
 		$interface->assign('searchId', strip_tags($_REQUEST['searchId']));
 
@@ -48,6 +51,9 @@ class Browse_AJAX extends Action {
 
 	/** @noinspection PhpUnused */
 	function getUpdateBrowseCategoryForm(): array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission(['Administer All Browse Categories', 'Administer Library Browse Categories','Administer Selected Browse Category Groups']);
+
 		global $interface;
 
 		require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
@@ -163,11 +169,14 @@ class Browse_AJAX extends Action {
 
 	/** @noinspection PhpUnused */
 	function getNewBrowseCategoryForm(): array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission(['Administer All Browse Categories', 'Administer Library Browse Categories','Administer Selected Browse Category Groups']);
+
 		global $interface;
 
 		// Select List Creation using Object Editor functions
 		require_once ROOT_DIR . '/sys/Browse/SubBrowseCategories.php';
-		$temp = SubBrowseCategories::getObjectStructure('');
+		$temp = SubBrowseCategories::getObjectStructure();
 		$temp['subCategoryId']['values'] = [0 => 'Select One'] + $temp['subCategoryId']['values'];
 		// add default option that denotes nothing has been selected to the options list
 		// (this preserves the keys' numeric values (which is essential as they are the Id values) as well as the array's order)
@@ -195,6 +204,9 @@ class Browse_AJAX extends Action {
 
 	/** @noinspection PhpUnused */
 	function updateBrowseCategory(): array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission(['Administer All Browse Categories', 'Administer Library Browse Categories','Administer Selected Browse Category Groups']);
+
 		$textId = $_REQUEST['categoryName'] ?? '';
 
 		require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
@@ -269,9 +281,9 @@ class Browse_AJAX extends Action {
 				];
 			}
 
-			$message = "Browse category '{$categoryLabel}' was successfully updated";
+			$message = "Browse category '$categoryLabel' was successfully updated";
 			if (!empty($updateType) && !empty($updateTarget)) {
-				$message .= " to use {$updateType}: '{$updateTarget}'";
+				$message .= " to use $updateType: '$updateTarget'";
 			}
 			$message .= ".";
 
@@ -291,6 +303,9 @@ class Browse_AJAX extends Action {
 
 	/** @noinspection PhpUnused */
 	function createBrowseCategory(): array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission(['Administer All Browse Categories', 'Administer Library Browse Categories','Administer Selected Browse Category Groups']);
+
 		global $library;
 		global $locationSingleton;
 		$searchLocation = $locationSingleton->getSearchLocation();
@@ -302,7 +317,7 @@ class Browse_AJAX extends Action {
 
 		//Get the text id for the category
 		$textId = str_replace(' ', '_', strtolower(trim($categoryName)));
-		$textId = preg_replace('/[^\w\d_]/', '', $textId);
+		$textId = preg_replace('/[^\w_]/', '', $textId);
 		if (strlen($textId) == 0) {
 			return [
 				'success' => false,
@@ -471,18 +486,17 @@ class Browse_AJAX extends Action {
 		}
 	}
 
-	/** @var  BrowseCategory $browseCategory */
-	private $browseCategory;
+	private BrowseCategory|SearchEntry|UserList|null $browseCategory = null;
 
 	/**
 	 * @param bool $reload Reload object's BrowseCategory
-	 * @return BrowseCategory
+	 * @return BrowseCategory|SearchEntry|UserList|null
 	 */
-	private function getBrowseCategory($reload = false) {
+	private function getBrowseCategory(?bool $reload = false) : BrowseCategory|SearchEntry|UserList|null{
 		if ($this->browseCategory && !$reload) {
 			return $this->browseCategory;
 		}
-		if (strpos($this->textId, "system_saved_searches_") !== false) {
+		if (str_contains($this->textId, "system_saved_searches_")) {
 			$label = explode('_', $this->textId);
 			$id = $label[3];
 			$searchEntry = new SearchEntry();
@@ -491,7 +505,7 @@ class Browse_AJAX extends Action {
 			if ($result) {
 				$this->browseCategory = $searchEntry;
 			}
-		} elseif (strpos($this->textId, "system_user_lists_") !== false) {
+		} elseif (str_contains($this->textId, "system_user_lists_")) {
 			$label = explode('_', $this->textId);
 			$id = $label[3];
 			require_once ROOT_DIR . '/sys/UserLists/UserList.php';
@@ -513,13 +527,8 @@ class Browse_AJAX extends Action {
 		return $this->browseCategory;
 	}
 
-	private function getSuggestionsBrowseCategoryResults($pageToLoad = 1) {
-		if (!UserAccount::isLoggedIn()) {
-			return [
-				'success' => false,
-				'message' => 'Your session has timed out, please login again to view suggestions',
-			];
-		}
+	private function getSuggestionsBrowseCategoryResults($pageToLoad = 1) : array {
+		$this->requireLoggedInUser(null, 'Your session has timed out, please login again to view suggestions');
 		//Do not cache browse category results in memory because they are generally too large and because they can be slow to delete
 		$browseMode = $this->setBrowseMode();
 
@@ -567,7 +576,7 @@ class Browse_AJAX extends Action {
 		return $result;
 	}
 
-	function getBrowseCategoryResults($pageToLoad = 1) {
+	function getBrowseCategoryResults($pageToLoad = 1) : array {
 		$lastPage = false;
 		global $interface;
 		$accessibleBrowseCategories = $interface->getVariable('accessibleBrowseCategories');
@@ -594,12 +603,12 @@ class Browse_AJAX extends Action {
 					$result['label'] = $browseCategory->title;
 				}
 
-				if (strpos($this->textId, "system_user_lists_") !== false) {
+				if (str_contains($this->textId, "system_user_lists_")) {
 					$browseCategory->source = "userList";
 					$browseCategory->sourceListId = $browseCategory->id;
 				}
 
-				if (strpos($this->textId, "system_saved_searches_") !== false) {
+				if (str_contains($this->textId, "system_saved_searches_")) {
 					$browseCategory->source = "SavedSearch";
 					$browseCategory->sourceListId = $browseCategory->id;
 				}
@@ -653,7 +662,7 @@ class Browse_AJAX extends Action {
 
 					// Search Browse Category //
 				} else {
-					if (strpos($this->textId, "system_saved_searches_") !== false) {
+					if (str_contains($this->textId, "system_saved_searches_")) {
 						$id = str_replace('system_saved_searches_', '', $this->textId);
 						require_once ROOT_DIR . '/services/Search/History.php';
 						$savedSearch = History::getSavedSearchObject($id);
@@ -678,13 +687,19 @@ class Browse_AJAX extends Action {
 
 					//Get titles for the list
 					$searchObject->clearFacets();
-					$searchObject->disableSpelling();
+					if (method_exists($searchObject, 'disableSpelling')) {
+						$searchObject->disableSpelling();
+					}
 					$searchObject->disableLogging();
 					$searchObject->setLimit(self::ITEMS_PER_PAGE);
 					$searchObject->setPage($pageToLoad);
 					$searchObject->processSearch();
 
-					$records = $searchObject->getBrowseRecordHTML();
+					if (method_exists($searchObject, 'getBrowseRecordHTML')) {
+						$records = $searchObject->getBrowseRecordHTML();
+					}else{
+						$records = [];
+					}
 
 					// Do we need to initialize the ajax ratings?
 					if ($this->browseMode == 0) {
@@ -709,7 +724,9 @@ class Browse_AJAX extends Action {
 
 					//TODO: Check if last page
 					$searchObject->setPage($pageToLoad + 1);
-					$preloadedRecords = $searchObject->getBrowseRecordHTML();
+					if (method_exists($searchObject, 'getBrowseRecordHTML')) {
+						$preloadedRecords = $searchObject->getBrowseRecordHTML();
+					}
 
 					// Shutdown the search object
 					$searchObject->close();
@@ -738,13 +755,13 @@ class Browse_AJAX extends Action {
 		}
 	}
 
-	public $browseModes = // Valid Browse Modes
+	public array $browseModes = // Valid Browse Modes
 		[
 			'covers',
 			// default Mode
 			'grid',
 		];
-	private $browseMode; // Selected Browse Mode
+	private ?string $browseMode = null; // Selected Browse Mode
 
 	function setBrowseMode() {
 		// Set Browse Mode //
@@ -776,31 +793,23 @@ class Browse_AJAX extends Action {
 		return $browseMode;
 	}
 
-	public $textId;
+	public ?string $textId = null;
 
 	/**
-	 * @param null $textId Optional Id to set the object's textId to
-	 * @return null         Return the object's textId value
+	 * @param ?string$textId Optional Id to set the object's textId to
+	 * @return ?string         Return the object's textId value
 	 */
-	function setTextId($textId = null) {
+	private function setTextId(?string $textId = null) : ?string {
 		if ($textId) {
 			$this->textId = $textId;
-		} elseif ($this->textId == null) { // set Id only once
-			$this->textId = isset($_REQUEST['textId']) ? $_REQUEST['textId'] : null;
+		} elseif ($this->textId == null) { // set ID only once
+			$this->textId = $_REQUEST['textId'] ?? null;
 		}
 		return $this->textId;
 	}
 
-	function setBrowseCategory($category) {
-		if($category) {
-			$this->browseCategory = $category;
-		}
-
-		return $this->browseCategory;
-	}
-
 	/** @noinspection PhpUnused */
-	function getBrowseCategoryInfo($textId = null) {
+	function getBrowseCategoryInfo($textId = null) : array {
 		$textId = $this->setTextId($textId);
 		if ($textId == null) {
 			return ['success' => false];
@@ -899,7 +908,7 @@ class Browse_AJAX extends Action {
 		$result = $this->getBrowseCategoryResults();
 
 		// Update Stats
-		if ((strpos($this->textId, "system_saved_searches_") !== false) || (strpos($this->textId, "system_user_lists_") !== false)) {
+		if ((str_contains($this->textId, "system_saved_searches_")) || (str_contains($this->textId, "system_user_lists_"))) {
 			$this->upParentBrowseCategoryCounter();
 		} else {
 			$this->upBrowseCategoryCounter();
@@ -912,18 +921,18 @@ class Browse_AJAX extends Action {
 	 *  Updates the displayed Browse Category's Shown Stats. Use near the end of
 	 *  your actions.
 	 */
-	private function upBrowseCategoryCounter() {
+	private function upBrowseCategoryCounter(): void {
 		if ($this->browseCategory) {
 			$this->browseCategory->numTimesShown += 1;
 			$this->browseCategory->update_stats_only();
 		}
 	}
 
-	private function upParentBrowseCategoryCounter() {
+	private function upParentBrowseCategoryCounter(): void {
 		require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
 		$parentBrowseCategory = new BrowseCategory();
 
-		if (strpos($this->textId, "system_saved_searches_") !== false) {
+		if (str_contains($this->textId, "system_saved_searches_")) {
 			$browseCategory = new BrowseCategory();
 			$browseCategory->textId = "system_saved_searches";
 			$result = $browseCategory->find(true);
@@ -932,7 +941,7 @@ class Browse_AJAX extends Action {
 			}
 		}
 
-		if (strpos($this->textId, "system_user_lists_") !== false) {
+		if (str_contains($this->textId, "system_user_lists_")) {
 			$browseCategory = new BrowseCategory();
 			$browseCategory->textId = "system_user_lists";
 			$result = $browseCategory->find(true);
@@ -947,7 +956,7 @@ class Browse_AJAX extends Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function getBrowseSubCategoryInfo() {
+	function getBrowseSubCategoryInfo() : array {
 
 		if (isset($_REQUEST['textId'])) {
 			if (($_REQUEST['textId'] == "system_saved_searches") || ($_REQUEST['textId'] == "system_user_lists")) {
@@ -1009,18 +1018,17 @@ class Browse_AJAX extends Action {
 		}
 
 		// Update Stats
-		if ((strpos($this->textId, "system_saved_searches_") !== false) || (strpos($this->textId, "system_user_lists_") !== false)) {
+		if ((str_contains($this->textId, "system_saved_searches_")) || (str_contains($this->textId, "system_user_lists_"))) {
 			$this->upParentBrowseCategoryCounter();
 		} else {
 			$this->upBrowseCategoryCounter();
 		}
 
-		$result = (isset($result)) ? array_merge($subCategoryResult, $result) : $subCategoryResult;
-		return $result;
+		return (isset($result)) ? array_merge($subCategoryResult, $result) : $subCategoryResult;
 	}
 
 	/** @noinspection PhpUnused */
-	function getMoreBrowseSubCategoryResultsLink() {
+	function getMoreBrowseSubCategoryResultsLink() : array {
 		if (isset($_REQUEST['textId'])) {
 			if (($_REQUEST['textId'] == 'system_saved_searches') || ($_REQUEST['textId'] == 'system_user_lists')) {
 				$subCategoryTextId = $_REQUEST['textId'] . '_' . $_REQUEST['subCategoryTextId'];
@@ -1047,7 +1055,7 @@ class Browse_AJAX extends Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function getMoreBrowseResults($textId = null, $pageToLoad = null) {
+	function getMoreBrowseResults($textId = null, $pageToLoad = null) : array {
 		$textId = $this->setTextId($textId);
 		if ($textId == null) {
 			return ['success' => false];
@@ -1055,18 +1063,18 @@ class Browse_AJAX extends Action {
 
 		// Get More Results requires a defined page to load
 		if ($pageToLoad == null) {
-			$pageToLoad = (int)$_REQUEST['pageToLoad'];
-			if (!is_int($pageToLoad)) {
+			if (!is_int($_REQUEST['pageToLoad'])) {
 				return ['success' => false];
 			}
+			$pageToLoad = $_REQUEST['pageToLoad'];
 		}
 		return $this->getBrowseCategoryResults($pageToLoad);
 	}
 
 	/**
-	 * @return string
+	 * @return ?string
 	 */
-	function getSubCategories() {
+	function getSubCategories() : ?string {
 		global $interface;
 		$accessibleBrowseCategories = $interface->getVariable('accessibleBrowseCategories');
 		require_once ROOT_DIR . '/services/API/SearchAPI.php';
@@ -1095,7 +1103,8 @@ class Browse_AJAX extends Action {
 	 * This is used in the Drupal module, but not in Aspen itself
 	 */
 	/** @noinspection PhpUnusedPrivateMethodInspection */
-	private function getActiveBrowseCategories() {
+	/** @deprecated as of 26.01. Use getBrowseCategories(). */
+	private function getActiveBrowseCategories() : array {
 		require_once ROOT_DIR . '/services/API/SearchAPI.php';
 		$searchAPI = new SearchAPI();
 		return $searchAPI->getActiveBrowseCategories();

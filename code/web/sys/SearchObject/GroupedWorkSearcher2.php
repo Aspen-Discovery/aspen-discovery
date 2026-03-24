@@ -429,7 +429,7 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 				$handler = 'SubjectProper';
 			} elseif ($handler == 'AllFields') {
 				$handler = 'KeywordProper';
-			} elseif ($handler == 'Title') {
+			} elseif ($handler == 'Title' || $handler == 'AllTitles') {
 				$handler = 'TitleProper';
 			} elseif ($handler == 'Series') {
 				$handler = 'SeriesProper';

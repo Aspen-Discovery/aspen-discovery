@@ -1,10 +1,13 @@
 {strip}
-	<h1>{translate text="Campaigns" isPublicFacing=true}</h1>
+	{if !empty($accountMessages)}
+		{include file='systemMessages.tpl' messages=$accountMessages}
+	{/if}
+	<h1 id="my-campaigns-title">{translate text="Campaigns" isPublicFacing=true}</h1>
 	{if $webBuilderEnabled && $displayCampaignLeaderboard}
-		<h3><a href="/CommunityEngagement/Leaderboard">See the Leaderboard</a></h3>
+		<h3 id="campaigns-leaderboard-link"><a href="/CommunityEngagement/Leaderboard">See the Leaderboard</a></h3>
 	{/if}
 	{if empty($campaignList)}
-		<div class="alert alert-info">
+		<div class="alert alert-info no-campaigns-alert">
 			{translate text="There are no available campaigns at the moment" isPublicFacing=true}
 		</div>
 	{else}
@@ -16,8 +19,8 @@
 			{/if}
 		{/foreach}
 		{if $hasEnrolledCampaigns}
-			<h2>{translate text="Your Campaigns" isPublicFacing=true}</h2>
-			<table id="yourCampaignsTable" class="table table-striped">
+			<h2 id="campaign-section-heading-yours" class="campaign-section-heading">{translate text="Your Campaigns" isPublicFacing=true}</h2>
+			<table id="yourCampaignsTable" class="table table-striped campaigns-table campaigns-table-yours">
 				<thead>
 					<tr>
 						<th>{translate text="Campaign Name" isPublicFacing=true}</th>
@@ -38,19 +41,21 @@
 					{capture name="emailOptOut"}{translate text="Opt Out of Emails for {$campaign->name}" isPublicFacing=true inAttribute=true}{/capture}
 					{capture name="emailOptIn"}{translate text="Opt Into Emails for {$campaign->name}" isPublicFacing=true inAttribute=true}{/capture}
 					{if $campaign->enrolled && ($campaign->isActive || $campaign->isUpcoming)}
-						<tr>
-							<td>{$campaign->name}</td>
-							<td>{$campaign->startDate}</td>
-							<td>{$campaign->endDate}</td>
-							<td>
-								<div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+						<tr class="campaign-row campaign-row-yours">
+							<td class="campaign-name-cell">{$campaign->name}</td>
+							<td class="campaign-start-date-cell">{$campaign->startDate}</td>
+							<td class="campaign-end-date-cell">{$campaign->endDate}</td>
+							<td class="campaign-reward-cell">
+								<div id="campaign-reward-container-your-campaigns" class="campaign-reward-container" style="display: flex; flex-direction: column; align-items: center; text-align: center;">
 									{if $campaign->displayName}
-										{$campaign->rewardName}<br>
+										<div class="campaign-reward-name">{$campaign->rewardName}<br></div>
 									{/if}
 									{if $campaign->rewardType == 1}
 										{if $campaign->campaignRewardGiven || $campaign->awardAutomatically ==1 && $campaign->isComplete}
 											{if $campaign->rewardExists}
-												<img src="{$campaign->badgeImage}" alt="{$campaign->rewardName}" style="width:100px; height:100px; padding:10px;" />
+												<div class="campaign-reward-image">
+													<img src="{$campaign->badgeImage}" alt="{$campaign->rewardName}" style="width:100px; height:100px; padding:10px;" />
+												</div>
 											{/if}
 											<a href="/Search/ShareCampaigns?rewardName={$campaign->rewardName}&rewardImage={$campaign->badgeImage}&rewardId={$campaign->rewardId}">
 												{translate text="Share on Social Media" isPublicFacing=true}
@@ -59,37 +64,37 @@
 											{include file="MyAccount/rewardImage.tpl" imageProperty="badgeImage"}
 										{/if}
 									{/if}
-									<div style="margin-top:20px;">
+									<div class="campaign-reward-description" style="margin-top:20px;">
 										{$campaign->rewardDescription}
 									</div>
 								</div>
 							</td>
-							<td>{$campaign->numCompletedMilestones} / {$campaign->numCampaignMilestones}</td>
-							<td>
-								<button class="btn btn-primary btn-sm" onclick="toggleActionButtons({$resultIndex});" aria-expanded="false" id="toggle-actions-{$resultIndex}" aria-label="{$smarty.capture.toggleLabel|strip_tags|escape:'html'}">
+							<td class="campaign-milestones-completed-cell">{$campaign->numCompletedMilestones} / {$campaign->numCampaignMilestones}</td>
+							<td class="campaign-manage-cell">
+								<button class="btn btn-primary btn-sm campaign-btn campaign-btn-manage" onclick="toggleActionButtons({$resultIndex});" aria-expanded="false" id="toggle-actions-{$resultIndex}" aria-label="{$smarty.capture.toggleLabel|strip_tags|escape:'html'}">
 									{translate text="Manage Campaign" isPublicFacing=true}
 								</button>
-								<div class="action-buttons" id="actions-{$resultIndex}" style="display:none;" role="group" aria-labelledby="toggle-actions-{$resultIndex}">
+								<div class="action-buttons camapign-manage-actions" id="actions-{$resultIndex}" style="display:none;" role="group" aria-labelledby="toggle-actions-{$resultIndex}">
 										{if $useCampaignLeaderboards && $campaignLeaderboardDisplay == 'displayUser'}
 											{if $campaign->optInToCampaignLeaderboard == 0}
-												<button class="btn btn-primary btn-sm" aria-label="{$smarty.capture.joinLeaderboard|strip_tags|escape:'html'}" onclick="AspenDiscovery.CommunityEngagement.optInToCampaignLeaderboard({$campaign->id}, {$userId});">{translate text=" Join Leaderboard" isPublicFacing=true}</button>
+												<button class="btn btn-primary btn-sm campaign-btn campaign-btn-join-leaderboard" aria-label="{$smarty.capture.joinLeaderboard|strip_tags|escape:'html'}" onclick="AspenDiscovery.CommunityEngagement.optInToCampaignLeaderboard({$campaign->id}, {$userId});">{translate text=" Join Leaderboard" isPublicFacing=true}</button>
 											{else}
-												<button class="btn btn-primary btn-sm" aria-label="{$smarty.capture.leaveLeaderboard|strip_tags|escape:'html'}" onclick="AspenDiscovery.CommunityEngagement.optOutOfCampaignLeaderboard({$campaign->id}, {$userId});">{translate text="Leave Leaderboard " isPublicFacing=true}</button>
+												<button class="btn btn-primary btn-sm campaign-btn campaign-btn-leave-leaderboard" aria-label="{$smarty.capture.leaveLeaderboard|strip_tags|escape:'html'}" onclick="AspenDiscovery.CommunityEngagement.optOutOfCampaignLeaderboard({$campaign->id}, {$userId});">{translate text="Leave Leaderboard " isPublicFacing=true}</button>
 											{/if}
 										{/if}
-									
+
 										{if $campaign->optInToCampaignEmailNotifications}
-											<button class="btn btn-primary btn-sm" aria-label="{$smarty.capture.emailOptOut|strip_tags|escape:'html'}" onclick="AspenDiscovery.CommunityEngagement.optOutOfCampaignEmailNotifications({$campaign->id}, {$userId});">{translate text="Email Notifications Opt Out" isPublicFacing=true}</button>
+											<button class="btn btn-primary btn-sm campaign-btn campaign-btn-email-opt-out" aria-label="{$smarty.capture.emailOptOut|strip_tags|escape:'html'}" onclick="AspenDiscovery.CommunityEngagement.optOutOfCampaignEmailNotifications({$campaign->id}, {$userId});">{translate text="Email Notifications Opt Out" isPublicFacing=true}</button>
 										{else}
-											<button class="btn btn-primary btn-sm" aria-label="{$smarty.capture.emailOptIn|strip_tags|escape:'html'}" onclick="AspenDiscovery.CommunityEngagement.optInToCampaignEmailNotifications({$campaign->id}, {$userId});">{translate text="Email Notifications Opt In" isPublicFacing=true}</button>
+											<button class="btn btn-primary btn-sm campaign-btn campaign-btn-email-opt-in" aria-label="{$smarty.capture.emailOptIn|strip_tags|escape:'html'}" onclick="AspenDiscovery.CommunityEngagement.optInToCampaignEmailNotifications({$campaign->id}, {$userId});">{translate text="Email Notifications Opt In" isPublicFacing=true}</button>
 										{/if}
 								</div>
 							</td>
-							<td>
-								<button class="btn btn-primary btn-sm" aria-label="{$smarty.capture.unenrollLabel|strip_tags|escape:'html'}" onclick="AspenDiscovery.Account.unenroll({$campaign->id}, {$userId});">{translate text="Unenroll" isPublicFacing=true}</button>
+							<td class="campaign-unenroll-cell">
+								<button class="btn btn-primary btn-sm campaign-btn campaign-btn-unenroll" aria-label="{$smarty.capture.unenrollLabel|strip_tags|escape:'html'}" onclick="AspenDiscovery.Account.unenroll({$campaign->id}, {$userId});">{translate text="Unenroll" isPublicFacing=true}</button>
 							</td>
-							<td>
-								<button class="btn btn-primary btn-sm" aria-label="{$smarty.capture.campaignInfoLabel|strip_tags|escape:'html'}" onclick="toggleYourCampaignInfo({$resultIndex});">{translate text="Campaign Information" isPublicFacing=true}</button>
+							<td class="campaign-info-cell">
+								<button class="btn btn-primary btn-sm campaign-btn campaign-btn-info" aria-label="{$smarty.capture.campaignInfoLabel|strip_tags|escape:'html'}" onclick="toggleYourCampaignInfo({$resultIndex});">{translate text="Campaign Information" isPublicFacing=true}</button>
 							</td>
 						</tr>
 							{* <tr id="campaignInfo_{$resultIndex}" style="display:none;"> *}
@@ -105,10 +110,10 @@
 									{assign var="showAddProgressExtraCreditColumn" value="true"}
 								{/if}
 							{/foreach}
-							<tr id="yourCampaigns_{$resultIndex}" class="campaign-dropdown" style="display:none;">
+							<tr id="yourCampaigns_{$resultIndex}" class="campaign-dropdown campaign-info-row" style="display:none;">
 								<td colspan="8">
 									{* <h4>{translate text="Milestones"}</h4> *}
-									<table class="table table-bordered">
+									<table class="table table-bordered milestone-table">
 									<thead>
 										<tr>
 											<th>{translate text="Milestone" isPublicFacing=true}</th>
@@ -122,16 +127,18 @@
 									</thead>
 										<tbody>
 										{foreach from=$campaign->milestones item="milestone"}
-											<tr>
-												<td>{$milestone->name}</td>
-												<td>
-													<div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+											<tr class="milestone-row">
+												<td class="milestone-name-cell">{$milestone->name}</td>
+												<td class="milestone-reward-cell">
+													<div class="milestone-reward-container" style="display: flex; flex-direction: column; align-items: center; text-align: center;">
 														{if $milestone->displayName}
-															{$milestone->rewardName}
+															<div class="milestone-reward-name">{$milestone->rewardName}</div>
 														{/if}
 														{if $milestone->rewardType == 1 && $milestone->rewardGiven || $milestone->rewardType ==1 && $milestone->milestoneComplete && $milestone->awardAutomatically}
 															{if $milestone->rewardExists}
-																<img src="{$milestone->rewardImage}" alt="{$milestone->rewardName}" style="width:100px; height:100px; padding:10px;" />
+																<div class="milestone-reward-image">
+																	<img src="{$milestone->rewardImage}" alt="{$milestone->rewardName}" style="width:100px; height:100px; padding:10px;" />
+																</div>
 															{/if}
 															<a href="/Search/ShareCampaigns?rewardName={$milestone->rewardName}&rewardImage={$milestone->rewardImage}&rewardId={$milestone->rewardId}">
 																{translate text="Share on Social Media" isPublicFacing=true}
@@ -139,12 +146,12 @@
 														{else}
 															{include file="MyAccount/rewardImage.tpl" imageProperty="rewardImage" campaign=$milestone}
 														{/if}
-														<div style="margin-top:10px;">
+														<div class="milestone-reward-description" style="margin-top:10px;">
 															{$milestone->rewardDescription}
 														</div>
 													</div>
 												</td>
-												<td>
+												<td class="milestone-progress-data-cell">
 													{if $milestone->completedGoals <= $milestone->totalGoals}
 														{$milestone->completedGoals}/ {$milestone->totalGoals}
 													{else}
@@ -155,22 +162,22 @@
 
 													{foreach from=$milestone->progressData item="progressData"}
 														{if !empty($progressData.title) && $goalCount < $goalLimit  || $milestone->progressBeyondOneHundredPercent}
-															<div style="padding:10px;">
+															<div class="milestone-progress-item" style="padding:10px;">
 																{$progressData.title}
 															</div>
 															{assign var="goalCount" value=$goalCount+1}
 														{/if}
 													{/foreach}
 												</td>
-												<td style="position: relative; text-align: center; vertical-align: middle;">
-													<div class="progress" style="width:100%; border:1px solid black; border-radius:4px;height:20px;">
+												<td class="milestone-progress-cell" style="position: relative; text-align: center; vertical-align: middle;">
+													<div class="progress milestone-progress-bar" style="width:100%; border:1px solid black; border-radius:4px;height:20px;">
 														<div class="progress-bar" role="progressbar" aria-valuenow="{$milestone->progress}" aria-valuemin="0"
 														aria-valuemax="100" style="width: {$milestone->progress}%; line-height: 20px; text-align: center; color: #fff;">
 															{$milestone->progress}%
 														</div>
 													</div>
 													{if $milestone->progressBeyondOneHundredPercent && $milestone->extraProgress > 0}
-														<div class="extra-progress" aria-valuenow="{$milestone->extraProgress}" style="margin-top: 10px; font-weight: bold; display: flex; justify-content: center; align-items: center;">
+														<div class="extra-progress milestone-extra-progress" aria-valuenow="{$milestone->extraProgress}" style="margin-top: 10px; font-weight: bold; display: flex; justify-content: center; align-items: center;">
 															<span style="background-color: #3174AF; color: white; border-radius: 50%; width: 60px; height: 60px; text-align: center; display: flex; align-items: center; justify-content: center;">
 																{$milestone->extraProgress}%
 															</span>
@@ -178,8 +185,8 @@
 													{/if}
 												</td>
 												 {if $milestone->allowPatronProgressInput}
-													<td>
-												 		<button class="btn btn-primary btn-sm" onclick="AspenDiscovery.CommunityEngagement.manuallyProgressMilestone({$milestone->id}, {$userId}, {$campaign->id});" {if $milestone->milestoneComplete && !$milestone->progressBeyondOneHundredPercent}disabled{/if}>{translate text="Add Progress" isPublicFacing=true}</button>
+													<td class="milestone-add-progress-cell">
+												 		<button class="btn btn-primary btn-sm campaign-btn campaign-btn-add-progress" onclick="AspenDiscovery.CommunityEngagement.manuallyProgressMilestone({$milestone->id}, {$userId}, {$campaign->id});" {if $milestone->milestoneComplete && !$milestone->progressBeyondOneHundredPercent}disabled{/if}>{translate text="Add Progress" isPublicFacing=true}</button>
 													</td>
 												{/if}
 											</tr>
@@ -187,7 +194,7 @@
 										</tbody>
 									</table>
 									{if $campaign->extraCreditActivities|@count > 0}
-										<table class="table table-bordered">
+										<table class="table table-bordered extra-credit-table">
 											<thead>
 												<tr>
 													<th>{translate text="Extra Credit" isPublicFacing=true}</th>
@@ -201,36 +208,38 @@
 											</thead>
 											<tbody>
 												{foreach from=$campaign->extraCreditActivities item="extraCreditActivity"}
-													<tr>
-														<td>{$extraCreditActivity.name}</td>
-														<td>
-															{if $extraCreditActivity.displayName}
-																<div>{$extraCreditActivity.rewardName}</div>
-															{/if}
-															{if $extraCreditActivity.rewardType == 1 && $extraCreditActivity.rewardGiven || $extraCreditActivity.rewardType ==1 && $extraCreditActivity.isComplete && $extraCreditActivity.awardAutomatically}
-																{if $extraCreditActivity.rewardExists}
-																	<div id="extraCrdeitRewardImageYourCampaigns">
-																		<img src="{$extraCreditActivity.rewardImage}" alt="{$extraCreditActivity.rewardName}" style="width:100px; height:100px; padding:10px;"/>
-																	</div>
+													<tr class="extra-credit-row">
+														<td class="extra-credit-name-cell">{$extraCreditActivity.name}</td>
+														<td class="extra-credit-reward-cell">
+															<div class="extra-credit-reward-container">
+																{if $extraCreditActivity.displayName}
+																	<div class="extra-credit-reward-name">{$extraCreditActivity.rewardName}</div>
 																{/if}
-																<div id="extraCreditRewardShareLinkYourCampaigns">
-																	<a href="/Search/ShareCampaigns?rewardName={$extraCreditActivity.rewardName}&rewardImage={$extraCreditActivity.rewardImage}&rewardId={$extraCreditActivity.rewardId}">
-																		{translate text="Share on Social Media" isPublicFacing=true}
-																	</a>
-																</div>
-															{else}
-																{include file="MyAccount/rewardImage.tpl" imageProperty="rewardImage" campaign=$extraCreditActivity}
-															{/if}
+																{if $extraCreditActivity.rewardType == 1 && $extraCreditActivity.rewardGiven || $extraCreditActivity.rewardType ==1 && $extraCreditActivity.isComplete && $extraCreditActivity.awardAutomatically}
+																	{if $extraCreditActivity.rewardExists}
+																		<div id="extraCreditRewardImageYourCampaigns" class="extra-credit-reward-image">
+																			<img src="{$extraCreditActivity.rewardImage}" alt="{$extraCreditActivity.rewardName}" style="width:100px; height:100px; padding:10px;"/>
+																		</div>
+																	{/if}
+																	<div id="extraCreditRewardShareLinkYourCampaigns" class="extra-credit-reward-share">
+																		<a href="/Search/ShareCampaigns?rewardName={$extraCreditActivity.rewardName}&rewardImage={$extraCreditActivity.rewardImage}&rewardId={$extraCreditActivity.rewardId}">
+																			{translate text="Share on Social Media" isPublicFacing=true}
+																		</a>
+																	</div>
+																{else}
+																	{include file="MyAccount/rewardImage.tpl" imageProperty="rewardImage" campaign=$extraCreditActivity}
+																{/if}
+															</div>
 														</td>
-														<td>
+														<td class="extra-credit-progress-data-cell">
 															{if $extraCreditActivity.completedGoals <= $extraCreditActivity.totalGoals}
 																{$extraCreditActivity.completedGoals}/ {$extraCreditActivity.totalGoals}
 															{else}
 																{$extraCreditActivity.totalGoals} / {$extraCreditActivity.totalGoals}
 															{/if}
 														</td>
-														<td style="position: relative; text-align: center; vertical-align: middle;">
-															<div class="progress" style="width:100%; border:1px solid black; border-radius:4px; height:20px;">
+														<td class="extra-credit-progress-cell" style="position: relative; text-align: center; vertical-align: middle;">
+															<div class="progress extra-credit-progress-bar" style="width:100%; border:1px solid black; border-radius:4px; height:20px;">
 																<div class="progress-bar" role="progressbar" aria-valuenow="{$extraCreditActivity.progress}" aria-valuemin="0"
 																	aria-valuemax="100" style="width: {$extraCreditActivity.progress}%; line-height: 20px; text-align: center; color: #fff;">
 																	{$extraCreditActivity.progress}%
@@ -238,8 +247,8 @@
 															</div>
 														</td>
 														{if $extraCreditActivity.allowPatronProgressInput}
-														<td>
-														<button class="btn btn-primary btn-sm" onclick="AspenDiscovery.CommunityEngagement.addProgressToExtraCreditActivity({$extraCreditActivity.id}, {$userId}, {$campaign->id});" {if $extraCreditActivity.isComplete}disabled{/if}>{translate text="Add Progress" isPublicFacing=true}</button>
+														<td class="extra-credit-add-progress-cell">
+														<button class="btn btn-primary btn-sm campaign-btn campaign-btn-add-progress" onclick="AspenDiscovery.CommunityEngagement.addProgressToExtraCreditActivity({$extraCreditActivity.id}, {$userId}, {$campaign->id});" {if $extraCreditActivity.isComplete}disabled{/if}>{translate text="Add Progress" isPublicFacing=true}</button>
 														</td>
 														{/if}
 													</tr>
@@ -262,10 +271,10 @@
 				{/if}
 			{/foreach}
 			{if $hasLinkedCampaigns}
-				<h2>{translate text="Linked Account Campaigns" isPublicFacing=true}</h2>
+				<h2 id="campaign-section-heading-linked" class="campaign-section-heading">{translate text="Linked Account Campaigns" isPublicFacing=true}</h2>
 				{foreach from=$linkedCampaigns item="linkedUser"}
-					<h3>{$linkedUser.linkedUserName}</h3>
-					<table id="linkedAccountCampaignsTable" class="table table-striped">
+					<h3 id="campaign-linked-user-name">{$linkedUser.linkedUserName}</h3>
+					<table id="linkedAccountCampaignsTable" class="table table-striped campaigns-table campaigns-table-linked">
 						<thead>
 							<tr>
 								<th>{translate text="Campaign Name" isPublicFacing=true}</th>
@@ -288,38 +297,40 @@
 											{assign var="showLinkedUserAddProgressColumn" value=true}
 										{/if}
 									{/foreach}
-								<tr>
-									<td>{$campaign.campaignName}</td>
-									<td>{$campaign.startDate}</td>
-									<td>{$campaign.endDate}</td>
-									<td>
-										<div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+								<tr class="campaign-row campaign-row-linked">
+									<td class="campaign-name-cell">{$campaign.campaignName}</td>
+									<td class="campaign-start-date-cell">{$campaign.startDate}</td>
+									<td class="campaign-end-date-cell">{$campaign.endDate}</td>
+									<td class="campaign-reward-cell">
+										<div id="campaign-reward-container-your-campaigns" class="campaign-reward-container" style="display: flex; flex-direction: column; align-items: center; text-align: center;">
 											{if $campaign.campaignReward.displayName}
-												{$campaign.campaignReward.rewardName}
+												<div class="campaign-reward-name">{$campaign.campaignReward.rewardName}</div>
 											{/if}
 											{if $campaign.campaignReward.rewardType == 1}
 												{if $campaign.rewardGiven || $campaign.campaignReward.awardAutomatically == 1 && $campaign.isComplete}
 													{if $campaign.campaignReward.rewardExists}
-														<img src="{$campaign.campaignReward.badgeImage}" alt="{$campaign.campaignReward.rewardName}" style="width:100px; height:100px; padding:10px;" />
+														<div class="campaign-reward-image">
+															<img src="{$campaign.campaignReward.badgeImage}" alt="{$campaign.campaignReward.rewardName}" style="width:100px; height:100px; padding:10px;" />
+														</div>
 													{/if}
 												{else}
 													{include file="MyAccount/rewardImage.tpl" imageProperty="badgeImage" campaign=$campaign.campaignReward}
 												{/if}
 											{/if}
-											<div style="margin-top:20px;">
+											<div class="campaign-reward-description" style="margin-top:20px;">
 												{$campaign.campaignReward.rewardDescription}
 											</div>
 										</div>
 									</td>
-									<td>{$campaign.numCompletedMilestones} / {$campaign.numCampaignMilestones}</td>
-									<td>
+									<td class="campaign-milestones-completed-cell">{$campaign.numCompletedMilestones} / {$campaign.numCampaignMilestones}</td>
+									<td class="campaign-action-cell">
 										{if $campaign.isEnrolled}
-											<button class="btn btn-primary btn-sm" aria-label="{$smarty.capture.linkedUnenrollLabel|strip_tags|escape:'html'}" onclick="AspenDiscovery.Account.unenroll({$campaign.campaignId}, {$linkedUser.linkedUserId});">{translate text="Unenroll" isPublicFacing=true}</button>
+											<button class="btn btn-primary btn-sm campaign-btn campaign-btn-unenroll" aria-label="{$smarty.capture.linkedUnenrollLabel|strip_tags|escape:'html'}" onclick="AspenDiscovery.Account.unenroll({$campaign.campaignId}, {$linkedUser.linkedUserId});">{translate text="Unenroll" isPublicFacing=true}</button>
 										{else}
 											{if $campaign.canEnroll}
-												<button class="btn btn-primary btn-sm" aria-label="{$smarty.capture.linkedEnrollLabel|strip_tags|escape:'html'}" onclick="AspenDiscovery.Account.enroll({$campaign.campaignId}, {$linkedUser.linkedUserId});">{translate text="Enroll" isPublicFacing=true}</button>
+												<button class="btn btn-primary btn-sm campaign-btn campaign-btn-enroll" aria-label="{$smarty.capture.linkedEnrollLabel|strip_tags|escape:'html'}" onclick="AspenDiscovery.Account.enroll({$campaign.campaignId}, {$linkedUser.linkedUserId});">{translate text="Enroll" isPublicFacing=true}</button>
 											{else}
-												<td>
+												<td class="campaign-enrollment-status-cell">
 													{if $campaign.enrollmentStatus == 'not_yet_open'}
 														<span class="text-muted">{translate text="Enrollment Opens" isPublicFacing=true} {$campaign.startDate|date_format:"%B %e, %Y"}</span>
 													{elseif $campaign.enrollmentStatus == 'closed'}
@@ -329,13 +340,20 @@
 											{/if}
 										{/if}
 									</td>
-									<td>
-										<button class="btn btn-primary btn-sm" aria-label="{$smarty.capture.linkedCampaignInfoLabel|strip_tags|escape:'html'}" onclick="toggleLinkedUserCampaignInfo('linkedUserCampaigns_{$resultIndex}');">{translate text="Campaign Information" isPublicFacing=true}</button>
+									<td class="campaign-info-cell">
+										<button class="btn btn-primary btn-sm campaign-btn-info" aria-label="{$smarty.capture.linkedCampaignInfoLabel|strip_tags|escape:'html'}" onclick="toggleLinkedUserCampaignInfo('linkedUserCampaigns_{$resultIndex}');">{translate text="Campaign Information" isPublicFacing=true}</button>
 									</td>
+									{if !$campaign.isEnrolled}
+										<td class="campaign-remove-cell">
+											<button class="btn btn-danger btn-sm campaign-btn campaign-btn-remove-campaign" aria-label="{translate text="Remove Campaign" isPublicFacing=true inAttribute=true}" onclick="AspenDiscovery.Account.removeCampaign({$campaign.campaignId}, {$linkedUser.linkedUserId}); return false;">{translate text="Remove Campaign" isPublicFacing=true}</button>
+										</td>
+									{else}
+										<td class="campaign-remove-cell"></td>
+									{/if}
 								</tr>
-								<tr id="linkedUserCampaigns_{$resultIndex}" class="campaign-dropdown" style="display:none;">
+								<tr id="linkedUserCampaigns_{$resultIndex}" class="campaign-dropdown campaign-info-row" style="display:none;">
 									<td colspan="7">
-										<table class="table table-bordered">
+										<table class="table table-bordered milestone-table">
 											<thead>
 												<tr>
 													<th>{translate text="Milestone" isPublicFacing=true}</th>
@@ -349,28 +367,30 @@
 											</thead>
 											<tbody>
 											{foreach from=$campaign.milestones item="milestone"}
-												<tr>
-													<td>{$milestone.milestoneName}</td>
-													<td>
-														<div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+												<tr class="milestone-row">
+													<td class="milestone-name-cell">{$milestone.milestoneName}</td>
+													<td class="milestone-reward-cell">
+														<div class="milestone-reward-container" style="display: flex; flex-direction: column; align-items: center; text-align: center;">
 															{if $milestone.displayName}
-																{$milestone.rewardName} 
+																<div class="milestone-reward-name">{$milestone.rewardName}</div>
 															{/if}
 															{if $milestone.rewardType == 1}
 																{if $milestone.rewardGiven || $milestone.awardAutomatically == 1 && $milestone.milestoneComplete}
 																	{if $milestone.rewardExists}
-																		<img src="{$milestone.badgeImage}" alt="{$milestone.rewardName}" style="width:100px; height:100px; padding:10px;" />
+																		<div class="milestone-reward-image">
+																			<img src="{$milestone.badgeImage}" alt="{$milestone.rewardName}" style="width:100px; height:100px; padding:10px;" />
+																		</div>
 																	{/if}
 																{else}
 																	{include file="MyAccount/rewardImage.tpl" imageProperty="badgeImage" campaign=$milestone}
 																{/if}
 															{/if}
-															<div style="margin-top:10px;">
+															<div class="milestone-reward-description" style="margin-top:10px;">
 																{$milestone.rewardDescription}
 															</div>
 														</div>
 													</td>
-													<td>
+													<td class="milestone-progress-data-cell">
 														{if $milestone.completedGoals <= $milestone.totalGoals}
 															{$milestone.completedGoals} / {$milestone.totalGoals}
 														{else}
@@ -381,22 +401,22 @@
 
 														{foreach from=$milestone.progressData item="progressData"}
 															{if !empty($progressData.title) && $goalCount < $goalLimit || $milestone.progressBeyondOneHundredPercent}
-																<div style="padding:10px;">
+																<div class="milestone-progress-item" style="padding:10px;">
 																	{$progressData.title}
 																</div>
 																{assign var="goalCount" value=$goalCount+1}
 															{/if}
 														{/foreach}
 													</td>
-													<td style="position: relative; text-align: center; vertical-align: middle;">
-														<div class="progress" style="width:100%; border:1px solid black; border-radius:4px; height:20px;">
+													<td class="milestone-progress-cell" style="position: relative; text-align: center; vertical-align: middle;">
+														<div class="progress milestone-progress-bar" style="width:100%; border:1px solid black; border-radius:4px; height:20px;">
 															<div class="progress-bar" role="progressbar" aria-valuenow="{$milestone.progress}" aria-valuemin="0" aria-valuemax="100" style="width: {$milestone.progress}%; line-height: 20px; text-align: center; color: #fff;">
 																{$milestone.progress}%
 															</div>
 														</div>
 
 														{if $milestone.progressBeyondOneHundredPercent && $milestone.extraProgress > 0}
-															<div class="extra-progress" aria-valuenow="{$milestone.extraProgress}" style="margin-top: 10px; font-weight: bold; display: flex; justify-content: center; align-items: center;">
+															<div class="extra-progress milestone-extra-progress" aria-valuenow="{$milestone.extraProgress}" style="margin-top: 10px; font-weight: bold; display: flex; justify-content: center; align-items: center;">
 																<span style="background-color: #3174AF; color: white; border-radius: 50%; width: 60px; height: 60px; text-align: center; display: flex; align-items: center; justify-content: center;">
 																	{$milestone.extraProgress}%
 																</span>
@@ -404,8 +424,8 @@
 														{/if}
 													</td>
 													{if $milestone.allowPatronProgressInput && $campaign.isEnrolled}
-														<td>
-															<button class="btn btn-primary btn-sm" onclick="AspenDiscovery.CommunityEngagement.manuallyProgressMilestone({$milestone.id}, {$linkedUser.linkedUserId}, {$campaign.campaignId});" {if $milestone.milestoneComplete && !$milestone.progressBeyondOneHundredPercent}disabled{/if}>{translate text="Add Progress" isPublicFacing=true}</button>
+														<td class="milestone-add-progress-cell">
+															<button class="btn btn-primary btn-sm campaign-btn-add-progress" onclick="AspenDiscovery.CommunityEngagement.manuallyProgressMilestone({$milestone.id}, {$linkedUser.linkedUserId}, {$campaign.campaignId});" {if $milestone.milestoneComplete && !$milestone.progressBeyondOneHundredPercent}disabled{/if}>{translate text="Add Progress" isPublicFacing=true}</button>
 														</td>
 													{/if}
 												</tr>
@@ -419,7 +439,7 @@
 											{/if}
 										{/foreach}
 										{if $campaign.extraCreditActivities|@count > 0}
-											<table class="table table-bordered">
+											<table class="table table-bordered extra-credit-table">
 												<thead>
 													<tr>
 														<th>{translate text="Extra Credit" isPublicFacing=true}</th>
@@ -433,30 +453,32 @@
 												</thead>
 												<tbody>
 												{foreach from=$campaign.extraCreditActivities item="extraCreditActivity"}
-													<tr>
-														<td>{$extraCreditActivity.name}</td>
-														<td>
-															{if $extraCreditActivity.displayName}
-																<div>{$extraCreditActivity.rewardName}</div>
-															{/if}
-															{if $extraCreditActivity.rewardType == 1 && $extraCreditActivity.rewardGiven || $extraCreditActivity.rewardType ==1 && $extraCreditActivity.isComplete && $extraCreditActivity.awardAutomatically}
-																{if $extraCreditActivity.rewardExists}
-																	<div id="extraCrdeitRewardImageYourCampaigns">
-																		<img src="{$extraCreditActivity.rewardImage}" alt="{$extraCreditActivity.rewardName}" style="width:100px; height:100px; padding:10px;" />
-																	</div>
+													<tr class="extra-credit-row">
+														<td class="extra-credit-name-cell">{$extraCreditActivity.name}</td>
+														<td class="extra-credit-reward-cell">
+															<div class="extra-credit-reward-container">
+																{if $extraCreditActivity.displayName}
+																	<div class="extra-credit-reward-name">{$extraCreditActivity.rewardName}</div>
 																{/if}
-															{else}
-																{include file="MyAccount/rewardImage.tpl" imageProperty="rewardImage" campaign=$extraCreditActivity}
-															{/if}
+																{if $extraCreditActivity.rewardType == 1 && $extraCreditActivity.rewardGiven || $extraCreditActivity.rewardType ==1 && $extraCreditActivity.isComplete && $extraCreditActivity.awardAutomatically}
+																	{if $extraCreditActivity.rewardExists}
+																		<div id="extraCreditRewardImageLinkedCampaigns" class="extra-credit-reward-image">
+																			<img src="{$extraCreditActivity.rewardImage}" alt="{$extraCreditActivity.rewardName}" style="width:100px; height:100px; padding:10px;" />
+																		</div>
+																	{/if}
+																{else}
+																	{include file="MyAccount/rewardImage.tpl" imageProperty="rewardImage" campaign=$extraCreditActivity}
+																{/if}
+															</div>
 														</td>
-														<td>
+														<td class="extra-credit-progress-data-cell">
 															{if $extraCreditActivity.completedGoals <= $extraCreditActivity.totalGoals}
 																{$extraCreditActivity.completedGoals} / {$extraCreditActivity.totalGoals}
 															{else}
 																{$extraCreditActivity.totalGoals} / {$extraCreditActivity.totalGoals}
 															{/if}
 														</td>
-														<td style="position: relative; text-align: center; vertical-align: middle;">
+														<td class="extra-credit-progress-cell" style="position: relative; text-align: center; vertical-align: middle;">
 															<div class="progress" style="width:100%; border:1px solid black; border-radius:4px; height:20px;">
 																<div class="progress-bar" role="progressbar" aria-valuenow="{$extraCreditActivity.progress}" aria-valuemin="0" aria-valuemax="100" style="width: {$extraCreditActivity.progress}%; line-height: 20px; text-align: center; color: #fff;">
 																	{$extraCreditActivity.progress}%
@@ -464,8 +486,8 @@
 															</div>
 														</td>
 														{if $extraCreditActivity.allowPatronProgressInput && $campaign.isEnrolled}
-															<td>
-														<button class="btn btn-primary btn-sm" onclick="AspenDiscovery.CommunityEngagement.addProgressToExtraCreditActivity({$extraCreditActivity.id}, {$linkedUser.linkedUserId}, {$campaign.campaignId});"{if $extraCreditActivity.isComplete}disabled{/if}>{translate text="Add Progress" isPublicFacing=true}</button>
+															<td class="extra-credit-add-progress-cell">
+														<button class="btn btn-primary btn-sm campaign-btn-add-progress" onclick="AspenDiscovery.CommunityEngagement.addProgressToExtraCreditActivity({$extraCreditActivity.id}, {$linkedUser.linkedUserId}, {$campaign.campaignId});"{if $extraCreditActivity.isComplete}disabled{/if}>{translate text="Add Progress" isPublicFacing=true}</button>
 															</td>
 														{/if}
 													</tr>
@@ -488,8 +510,8 @@
 			{/if}
 		{/foreach}
 		{if $hasActiveCampaigns}
-			<h2>{translate text="Active Campaigns" isPublicFacing=true}</h2>
-			<table id="activeCampaignsTable" class="table table-striped">
+			<h2 id="campaign-section-heading-active" class="campaign-section-heading">{translate text="Active Campaigns" isPublicFacing=true}</h2>
+			<table id="activeCampaignsTable" class="table table-striped campaigns-table campaigns-table-active">
 				<thead>
 					<tr>
 						<th>{translate text="Campaign Name" isPublicFacing=true}</th>
@@ -505,45 +527,45 @@
 				{capture name="activeEnrollLabel"}{translate text="Enroll in {$campaign->name}" isPublicFacing=true inAttribute=true}{/capture}
 
 					{if $campaign->isActive && !$campaign->enrolled}
-						<tr id="campaign_{$campaign->id}">
-							<td>
+						<tr id="campaign_{$campaign->id}" class="campaign-row campaign-row-active">
+							<td class="campaign-name-cell">
 								{$campaign->name}
 								{if $userCanAdvertise}
 									<a href="/Search/AdvertiseCampaigns?campaignId={$campaign->id}"><br/>{translate text="Advertise" isAdminFacing=true}</a>
 								{/if}
 							</td>
-							<td>
-								<div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+							<td class="campaign-reward-cell">
+								<div id="campaign-reward-container-active-campaigns" class="campaign-reward-container" style="display: flex; flex-direction: column; align-items: center; text-align: center;">
 									{if $campaign->displayName}
-										{$campaign->rewardName}<br>
+										<div class="campaign-reward-name">{$campaign->rewardName}<br></div>
 									{/if}
 									{include file="MyAccount/rewardImage.tpl" imageProperty="badgeImage"}
-									<div style="margin-top:20px;">
+									<div class="campaign-reward-description" style="margin-top:20px;">
 										{$campaign->rewardDescription}
 									</div>
 								</div>
 							</td>
-							<td>{$campaign->endDate}</td>
+							<td class="campaign-end-date-cell">{$campaign->endDate}</td>
 							{if $campaign->enrolled}
-								<td>{translate text="Enrolled" isPublicFacing=true}</td>
+								<td class="campaign-status-cell">{translate text="Enrolled" isPublicFacing=true}</td>
 							{else}
-								<td>{translate text="Not Enrolled" isPublicFacing=true}</td>
+								<td class="campaign-status-cell">{translate text="Not Enrolled" isPublicFacing=true}</td>
 							{/if}
 							{if $campaign->enrolled}
-								<td>
-									<button class="btn btn-sm btn-primary" aria-label="{$smarty.capture.activeUnenrollLabel|strip_tags|escape:'html'}" onclick="AspenDiscovery.Account.unenroll({$campaign->id}, {$userId});">
+								<td class="campaign-action-cell">
+									<button class="btn btn-sm btn-primary campaign-btn campaign-btn-unenroll" aria-label="{$smarty.capture.activeUnenrollLabel|strip_tags|escape:'html'}" onclick="AspenDiscovery.Account.unenroll({$campaign->id}, {$userId});">
 										{translate text="Unenroll" isPublicFacing=true}
 									</button>
 								</td>
 							{else}
 								{if $campaign->canEnroll}
-									<td>
-										<button class="btn btn-sm btn-primary" aria-label="{$smarty.capture.activeEnrollLabel|strip_tags|escape:'html'}" onclick="AspenDiscovery.Account.enroll({$campaign->id}, {$userId});">
+									<td class="campaign-action-cell">
+										<button class="btn btn-sm btn-primary campaign-btn campaign-btn-enroll" aria-label="{$smarty.capture.activeEnrollLabel|strip_tags|escape:'html'}" onclick="AspenDiscovery.Account.enroll({$campaign->id}, {$userId});">
 											{translate text="Enroll" isPublicFacing=true}
 										</button>
 									</td>
 								{else}
-									<td>
+									<td class="campaign-enrollment-status-cell">
 										{if $campaign->enrollmentStatus == 'not_yet_open'}
 											<span class="text-muted">{translate text="Enrollment Opens" isPublicFacing=true} {$campaign->enrollmentStartDate|date_format:"%B %e, %Y"}</span>
 										{elseif $campaign->enrollmentStatus == 'closed'}
@@ -552,18 +574,25 @@
 									</td>
 								{/if}
 							{/if}
-							<td>
-								<button class="btn btn-primary btn-sm" aria-label="{$smarty.capture.activeCampaignInfoLabel|strip_tags|escape:'html'}" onclick="toggleActiveCampaignInfo({$resultIndex});">
+							<td class="campaign-info-cell">
+								<button class="btn btn-primary btn-sm campaign-btn-info" aria-label="{$smarty.capture.activeCampaignInfoLabel|strip_tags|escape:'html'}" onclick="toggleActiveCampaignInfo({$resultIndex});">
 									{translate text="Campaign Information" isPublicFacing=true}
 								</button>
 							</td>
+							{if !$campaign->enrolled}
+								<td class="campaign-remove-cell">
+									<button class="btn btn-danger btn-sm campaign-btn-remove-campaign" aria-label="{translate text="Remove Campaign" isPublicFacing=true inAttribute=true}" onclick="AspenDiscovery.Account.removeCampaign({$campaign->id}, {$userId}); return false;">{translate text="Remove Campaign" isPublicFacing=true}</button>
+								</td>
+							{else}
+								<td class="campaign-remove-cell"></td>
+							{/if}
 						</tr>
 							{* <tr id="campaignInfo_{$resultIndex}" style="display:none;"> *}
-							<tr id="activeCampaigns_{$resultIndex}" class="campaign-dropdown" style="display:none;">
+							<tr id="activeCampaigns_{$resultIndex}" class="campaign-dropdown campaign-info-row" style="display:none;">
 
 								<td colspan="6">
 									{* <h4>{translate text="Milestones"}</h4> *}
-									<table class="table table-bordered">
+									<table class="table table-bordered milestone-table">
 
 									<thead>
 										<tr>
@@ -573,15 +602,15 @@
 									</thead>
 										<tbody>
 										{foreach from=$campaign->milestones item="milestone"}
-											<tr>
-												<td>{$milestone->name}</td>
-												<td>
-													<div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+											<tr class="milestone-row">
+												<td class="milestone-name-cell">{$milestone->name}</td>
+												<td class="milestone-reward-cell">
+													<div class="milestone-reward-container" style="display: flex; flex-direction: column; align-items: center; text-align: center;">
 														{if $milestone->displayName}
-															{$milestone->rewardName}
+															<div class="milestone-reward-name">{$milestone->rewardName}</div>
 														{/if}
 														{include file="MyAccount/rewardImage.tpl" imageProperty="rewardImage" campaign=$milestone}
-														<div style="margin-top:10px;">
+														<div class="milestone-reward-description" style="margin-top:10px;">
 															{$milestone->rewardDescription}
 														</div>
 													</div>
@@ -591,7 +620,7 @@
 										</tbody>
 									</table>
 									{if $campaign->extraCreditActivities|@count > 0}
-										<table class="table table-bordered">
+										<table class="table table-bordered extra-credit-table">
 											<thead>
 												<tr>
 													<th>{translate text="Extra Credit Activity" isPublicFacing=true}</th>
@@ -600,13 +629,15 @@
 											</thead>
 											<tbody>
 											{foreach from=$campaign->extraCreditActivities item="extraCredit"}
-												<tr>
-													<td>{$extraCredit.name}</td>
-													<td>
-														{if $extraCredit.displayName}
-															<div>{$extraCredit.rewardName}</div>
-														{/if}
-														{include file="MyAccount/rewardImage.tpl" imageProperty="rewardImage" campaign=$extraCredit}
+												<tr class="extra-credit-row">
+													<td class="extra-credit-name-cell">{$extraCredit.name}</td>
+													<td class="extra-credit-reward-cell">
+														<div class="extra-credit-reward-container">
+															{if $extraCredit.displayName}
+																<div class="extra-credit-reward-name">{$extraCredit.rewardName}</div>
+															{/if}
+															{include file="MyAccount/rewardImage.tpl" imageProperty="rewardImage" campaign=$extraCredit}
+														</div>
 													</td>
 												</tr>
 											{/foreach}
@@ -628,8 +659,8 @@
 			{/if}
 		{/foreach}
 		{if $hasUpcomingCampaigns}
-			<h2>{translate text="Upcoming Campaigns" isPublicFacing=true}</h2>
-			<table id ="upcomingCampaignsTable" class="table table-striped">
+			<h2 id="campaign-section-heading-upcoming" class="campaign-section-heading">{translate text="Upcoming Campaigns" isPublicFacing=true}</h2>
+			<table id ="upcomingCampaignsTable" class="table table-striped campaigns-table campaigns-table-upcoming">
 				<thead>
 					<tr>
 						<th>{translate text="Campaign Name" isPublicFacing=true}</th>
@@ -642,41 +673,41 @@
 				</tbody>
 				{foreach from=$campaignList item="campaign" key="resultIndex"}
 					{if $campaign->isUpcoming && !$campaign->enrolled}
-						<tr id="campaign_{$campaign->id}">
-							<td>
+						<tr id="campaign_{$campaign->id}" class="campaign-row campaign-row-upcoming">
+							<td class="campaign-name-cell">
 								{$campaign->name}
 								{if $userCanAdvertise}
 									<a href="/Search/AdvertiseCampaigns?campaignId={$campaign->id}"><br/>{translate text="Advertise" isAdminFacing=true}</a>
 								{/if}
 							</td>
-							<td>
-								<div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+							<td class="campaign-reward-cell">
+								<div id="campaign-reward-container-upcoming-campaigns" class="campaign-reward-container" style="display: flex; flex-direction: column; align-items: center; text-align: center;">
 									{if $campaign->displayName}
-										{$campaign->rewardName}<br>
+										<div class="campaign-reward-name">{$campaign->rewardName}<br></div>
 									{/if}
 									{include file="MyAccount/rewardImage.tpl" imageProperty="badgeImage"}
-									<div style="margin-top:20px;">
+									<div class="campaign-reward-description" style="margin-top:20px;">
 										{$campaign->rewardDescription}
 									</div>
 								</div>
 							</td>
-							<td>{$campaign->startDate}</td>
+							<td class="campaign-start-date-cell">{$campaign->startDate}</td>
 							{if $campaign->enrolled}
-								<td>{translate text="Enrolled" isPublicFacing=true}</td>
+								<td class="campaign-status-cell">{translate text="Enrolled" isPublicFacing=true}</td>
 							{else}
-								<td>{translate text="Not Enrolled" isPublicFacing=true}</td>
+								<td class="campaign-status-cell">{translate text="Not Enrolled" isPublicFacing=true}</td>
 							{/if}
 							{if $campaign->enrolled}
-								<td>
-									<button class="btn btn-primary btn-sm" aria-label="{$smarty.capture.unenrollLabel|strip_tags|escape:'html'}" onclick="AspenDiscovery.Account.unenroll({$campaign->id}, {$userId});">{translate text="Unenroll" isPublicFacing=true}</button>
+								<td class="campaign-action-cell">
+									<button class="btn btn-primary btn-sm campaign-btn-unenroll" aria-label="{$smarty.capture.unenrollLabel|strip_tags|escape:'html'}" onclick="AspenDiscovery.Account.unenroll({$campaign->id}, {$userId});">{translate text="Unenroll" isPublicFacing=true}</button>
 								</td>
 							{else}
 								{if $campaign->canEnroll}
-									<td>
-										<button class="btn btn-primary btn-sm" aria-label="{$smarty.capture.enrollLabel|strip_tags|escape:'html'}" onclick="AspenDiscovery.Account.enroll({$campaign->id}, {$userId});">{translate text="Enroll" isPublicFacing=true}</button>
+									<td class="campaign-action-cell">
+										<button class="btn btn-primary btn-sm campaign-btn-enroll" aria-label="{$smarty.capture.enrollLabel|strip_tags|escape:'html'}" onclick="AspenDiscovery.Account.enroll({$campaign->id}, {$userId});">{translate text="Enroll" isPublicFacing=true}</button>
 									</td>
 								{else}
-									<td>
+									<td class="campaign-enrollment-status-cell">
 										{if $campaign->enrollmentStatus == 'not_yet_open'}
 											<span class="text-muted">{translate text="Enrollment Opens" isPublicFacing=true} {$campaign->enrollmentStartDate|date_format:"%B %e, %Y"}</span>
 										{elseif $campaign->enrollmentStatus == 'closed'}
@@ -685,14 +716,21 @@
 									</td>
 								{/if}
 							{/if}
-								<td>
-									<button class="btn btn-primary btn-sm" aria-label="{$smarty.capture.campaignInfoLabel|strip_tags|escape:'html'}" onclick="toggleUpcomingCampaignInfo({$resultIndex});">{translate text="Campaign Information" isPublicFacing=true}</button>
+								<td class="campaign-info-cell">
+									<button class="btn btn-primary btn-sm campaign-btn-info" aria-label="{$smarty.capture.campaignInfoLabel|strip_tags|escape:'html'}" onclick="toggleUpcomingCampaignInfo({$resultIndex});">{translate text="Campaign Information" isPublicFacing=true}</button>
 								</td>
+								{if !$campaign->enrolled}
+									<td class="campaign-remove-cell">
+										<button class="btn btn-danger btn-sm campaign-btn-remove-campaign" aria-label="{translate text="Remove Campaign" isPublicFacing=true inAttribute=true}" onclick="AspenDiscovery.Account.removeCampaign({$campaign->id}, {$userId}); return false;">{translate text="Remove Campaign" isPublicFacing=true}</button>
+									</td>
+								{else}
+									<td class="campaign-remove-cell"></td>
+								{/if}
 						</tr>
-						<tr id="upcomingCampaigns_{$resultIndex}" class="campaign-dropdown" style="display:none;">
+						<tr id="upcomingCampaigns_{$resultIndex}" class="campaign-dropdown campaign-info-row" style="display:none;">
 								<td colspan="6">
 									{* <h4>{translate text="Milestones"}</h4> *}
-									<table class="table table-bordered">
+									<table class="table table-bordered milestone-table">
 									<thead>
 										<tr>
 											<th>{translate text="Milestone" isPublicFacing=true}</th>
@@ -701,12 +739,12 @@
 									</thead>
 										<tbody>
 										{foreach from=$campaign->milestones item="milestone"}
-											<tr>
-												<td>{$milestone->name}</td>
-												<td>
-													<div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+											<tr class="milestone-row">
+												<td class="milestone-name-cell">{$milestone->name}</td>
+												<td class="milestone-reward-cell">
+													<div class="milestone-reward-container" style="display: flex; flex-direction: column; align-items: center; text-align: center;">
 														{if $milestone->displayName}
-															{$milestone->rewardName}
+															<div class="milestone-reward-name">{$milestone->rewardName}</div>
 														{/if}
 														{include file="MyAccount/rewardImage.tpl" imageProperty="rewardImage" campaign=$milestone}
 													</div>
@@ -716,7 +754,7 @@
 										</tbody>
 									</table>
 									{if $campaign->extraCreditActivities|@count > 0}
-										<table class="table table-bordered">
+										<table class="table table-bordered extra-credit-table">
 											<thead>
 												<tr>
 													<th>{translate text="Extra Credit" isPublicFacing=true}</th>
@@ -725,13 +763,15 @@
 											</thead>
 											<tbody>
 											{foreach from=$campaign->extraCreditActivities item="extraCreditActivity"}
-												<tr>
-													<td>{$extraCreditActivity.name}</td>
-													<td>
-														{if $extraCreditActivity.displayName}
-															<div>{$extraCreditActivity.rewardName}</div>
-														{/if}
-														{include file="MyAccount/rewardImage.tpl" imageProperty="rewardImage" campaign=$extraCreditActivity}
+												<tr class="extra-credit-row">
+													<td class="extra-credit-name-cell">{$extraCreditActivity.name}</td>
+													<td class="extra-credit-reward-cell">
+														<div class="extra-credit-reward-container">
+															{if $extraCreditActivity.displayName}
+																<div class="extra-credit-reward-name">{$extraCreditActivity.rewardName}</div>
+															{/if}
+															{include file="MyAccount/rewardImage.tpl" imageProperty="rewardImage" campaign=$extraCreditActivity}
+														</div>
 													</td>
 												</tr>
 											{/foreach}
@@ -750,8 +790,8 @@
 			{break}
 		{/foreach}
 		{if $hasPastCampaigns}
-			<h2>{translate text="Past Campaigns" isPublicFacing=true}</h2>
-			<table id="pastCampaignsTable" class="table table-striped">
+			<h2 id="campaign-section-heading-past" class="campaign-section-heading">{translate text="Past Campaigns" isPublicFacing=true}</h2>
+			<table id="pastCampaignsTable" class="table table-striped campaigns-table campaigns-table-past">
 				<thead>
 					<tr>
 						<th>{translate text="Campaign Name" isPublicFacing=true}</th>
@@ -764,25 +804,28 @@
 				{foreach from=$pastCampaigns item="campaign" key="resultIndex"}
 				{capture name="pastCampaignInfoLabel"}{translate text="See data for {$campaign->name}" isPublicFacing=true inAttribute=true}{/capture}
 
-					<tr>
-						<td>{$campaign->name}</td>
-						<td>{$campaign->startDate}</td>
-						<td>{$campaign->endDate}</td>
-						<td>
-							<div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+					<tr class="campaign-row campaign-row-past">
+						<td class="campaign-name-cell">{$campaign->name}</td>
+						<td class="campaign-start-date-cell">{$campaign->startDate}</td>
+						<td class="campaign-end-date-cell">{$campaign->endDate}</td>
+						<td class="campaign-reward-cell">
+							<div id="campaign-reward-container-past-campaigns" class="campaign-reward-container" style="display: flex; flex-direction: column; align-items: center; text-align: center;">
 								{if $campaign->displayName}
-									{$campaign->rewardName}<br>
+									<div class="campaign-reward-name">{$campaign->rewardName}<br></div>
 								{/if}
 								{include file="MyAccount/rewardImage.tpl" imageProperty="rewardImage"}
 							</div>
 						</td>
-						<td>
-							<button class="btn btn-primary btn-small" aria-label="{$smarty.capture.pastCampaignInfoLabel|strip_tags|escape:'html'}" onclick="togglePastCampaignInfo({$resultIndex});">{translate text="Campaign Information" isPublicFacing=true}</button>
+						<td class="campaign-info-cell">
+							<button class="btn btn-primary btn-small campaign-btn-info" aria-label="{$smarty.capture.pastCampaignInfoLabel|strip_tags|escape:'html'}" onclick="togglePastCampaignInfo({$resultIndex});">{translate text="Campaign Information" isPublicFacing=true}</button>
+						</td>
+						<td class="campaign-remove-cell">
+							<button class="btn btn-danger btn-sm campaign-btn-remove-campaign" aria-label="{translate text="Remove Campaign" isPublicFacing=true inAttribute=true}" onclick="AspenDiscovery.Account.removeCampaign({$campaign->id}, {$userId}); return false;">{translate text="Remove Campaign" isPublicFacing=true}</button>
 						</td>
 					</tr>
-					<tr id="pastCampaigns_{$resultIndex}" class="campaign-dropdown" style="display:none;">
+					<tr id="pastCampaigns_{$resultIndex}" class="campaign-dropdown campaign-info-row" style="display:none;">
 						<td colspan="5">
-							<table class="table table-bordered">
+							<table class="table table-bordered milestone-table">
 								<thead>
 									<tr>
 										<th>{translate text="Milestone" isPublicFacing=true}</th>
@@ -791,14 +834,14 @@
 								</thead>
 								<tbody>
 									{foreach from=$campaign->milestones item="milestone"}
-										<tr>
-											<td>
+										<tr class="milestone-row">
+											<td class="milestone-name-cell">
 												{$milestone->name}
 											</td>
-											<td>
-												<div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+											<td class="milestone-reward-cell">
+												<div class="milestone-reward-container" style="display: flex; flex-direction: column; align-items: center; text-align: center;">
 													{if $milestone->displayName}
-														{$milestone->rewardName}
+														<div class="milestone-reward-name">{$milestone->rewardName}</div>
 													{/if}
 													{include file="MyAccount/rewardImage.tpl" imageProperty="rewardImage" campaign=$milestone}
 												</div>
@@ -808,7 +851,7 @@
 								</tbody>
 							</table>
 							{if $campaign->extraCreditActivities|@count > 0}
-								<table class="table table-bordered">
+								<table class="table table-bordered extra-credit-table">
 									<thead>
 										<tr>
 											<th>{translate text="Extra Credit" isPublicFacing=true}</th>
@@ -817,15 +860,17 @@
 									</thead>
 									<tbody>
 										{foreach from=$campaign->extraCreditActivities item="extraCredit"}
-											<tr>
-												<td>
+											<tr class="extra-credit-row">
+												<td class="extra-credit-name-cell">
 													{$extraCredit.name}
 												</td>
-												<td>
-													{if $extraCredit.displayName}
-														<div>{$extraCredit.rewardName}</div>
-													{/if}
-													{include file="MyAccount/rewardImage.tpl" imageProperty="rewardImage" campaign=$extraCredit}
+												<td class="extra-credit-reward-cell">
+													<div class="extra-credit-reward-container">
+														{if $extraCredit.displayName}
+															<div class="extra-credit-reward-name">{$extraCredit.rewardName}</div>
+														{/if}
+														{include file="MyAccount/rewardImage.tpl" imageProperty="rewardImage" campaign=$extraCredit}
+													</div>
 												</td>
 											</tr>
 										{/foreach}
@@ -846,8 +891,8 @@
 			{/if}
 		{/foreach}
 		{if $hasEnrolledPastCampaigns}
-			<h2>{translate text="Your Past Campaigns" isPublicFacing=true}</h2>
-			<table class="table table-striped">
+			<h2 id="campaign-section-heading-past-yours" class="campaign-section-heading">{translate text="Your Past Campaigns" isPublicFacing=true}</h2>
+			<table id="yourPastCampaignsTable" class="table table-striped campaigns-table campaigns-table-past-yours">
 				<thead>
 					<tr>
 						<th>{translate text="Campaign Name" isPublicFacing=true}</th>
@@ -861,14 +906,14 @@
 				{capture name="pastCampaignInfoLabel"}{translate text="See data for {$campaign->name}" isPublicFacing=true inAttribute=true}{/capture}
 
 					{if $campaign->enrolled}
-							<tr>
-								<td>{$campaign->name}</td>
-								<td>{$campaign->startDate}</td>
-								<td>{$campaign->endDate}</td>
-								<td>
-									<div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+							<tr class="campaign-row campaign-row-past-yours">
+								<td class="campaign-name-cell">{$campaign->name}</td>
+								<td class="campaign-start-date-cell">{$campaign->startDate}</td>
+								<td class="campaign-end-date-cell">{$campaign->endDate}</td>
+								<td class="campaign-reward-cell">
+									<div id="campaign-reward-container-your-past-campaigns" class="campaign-reward-container" style="display: flex; flex-direction: column; align-items: center; text-align: center;">
 										{if $campaign->displayName}
-											{$campaign->rewardName}<br>
+											<div class="campaign-reward-name">{$campaign->rewardName}<br></div>
 										{/if}
 										{if $campaign->rewardType == 0 || $campaign->rewardType == 1 && $campaign->awardAutomatically == 0}
 											{if $campaign->campaignRewardGiven }
@@ -889,13 +934,16 @@
 										{/if}
 									</div>
 								</td>
-								<td>
-									<button class="btn btn-primary btn-sm" aria-label="{$smarty.capture.pastCampaignInfoLabel|strip_tags|escape:'html'}" onclick="toggleYourPastCampaignInfo({$resultIndex});">{translate text="Campaign Information" isPublicFacing=true}</button>
+								<td class="campaign-info-cell">
+									<button class="btn btn-primary btn-sm campaign-btn-info" aria-label="{$smarty.capture.pastCampaignInfoLabel|strip_tags|escape:'html'}" onclick="toggleYourPastCampaignInfo({$resultIndex});">{translate text="Campaign Information" isPublicFacing=true}</button>
+								</td>
+								<td class="campaign-remove-cell">
+									<button class="btn btn-danger btn-sm campaign-btn-remove-campaign" aria-label="{translate text="Remove Campaign" isPublicFacing=true inAttribute=true}" onclick="AspenDiscovery.Account.removeCampaign({$campaign->id}, {$userId}); return false;">{translate text="Remove Campaign" isPublicFacing=true}</button>
 								</td>
 							</tr>
-							<tr id="yourPastCampaigns_{$resultIndex}" style="display:none;">
+							<tr id="yourPastCampaigns_{$resultIndex}" class="campaign-dropdown campaign-info-row" style="display:none;">
 								<td colspan="5">
-									<table class="table table-bordered">
+									<table class="table table-bordered milestone-table">
 										<thead>
 											<th>{translate text="Milestone" isPublicFacing=true}</th>
 											<th>{translate text="Milestone Progress" isPublicFacing=true}</th>
@@ -904,12 +952,12 @@
 										</thead>
 										<tbody>
 										{foreach from=$campaign->milestones item="milestone"}
-											<tr>
-												<td>
+											<tr class="milestone-row">
+												<td class="milestone-name-cell">
 													{$milestone->name}
 												</td>
-												<td style="position: relative; text-align: center; vertical-align: middle;">
-													<div class="progress" style="width:100%; border:1px solid black; border-radius:4px;height:20px;">
+												<td class="milestone-progress-cell" style="position: relative; text-align: center; vertical-align: middle;">
+													<div class="progress milestone-progress-bar" style="width:100%; border:1px solid black; border-radius:4px;height:20px;">
 														<div class="progress-bar" role="progressbar" aria-valuenow="{$milestone->progress}" aria-valuemin="0"
 														aria-valuemax="100" style="width: {$milestone->progress}%; line-height: 20px; text-align: center; color: #fff;">
 															{$milestone->progress}%
@@ -917,21 +965,21 @@
 													</div>
 
 												{if $milestone->progressBeyondOneHundredPercent && $milestone->extraProgress > 0}
-													<div class="extra-progress" aria-valuenow="{$milestone->extraProgress}" style="margin-top: 10px; font-weight: bold; display: flex; justify-content: center; align-items: center;">
+													<div class="extra-progress milestone-extra-progress" aria-valuenow="{$milestone->extraProgress}" style="margin-top: 10px; font-weight: bold; display: flex; justify-content: center; align-items: center;">
 														<span style="background-color: #3174AF; color: white; border-radius: 50%; width: 60px; height: 60px; text-align: center; display: flex; align-items: center; justify-content: center;">
 															{$milestone->extraProgress}%
 														</span>
 													</div>
 												{/if}
 											</td>
-											<td>
-												<div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+											<td class="milestone-reward-cell">
+												<div class="milestone-reward-container" style="display: flex; flex-direction: column; align-items: center; text-align: center;">
 													{if $milestone->displayName}
-														{$milestone->rewardName}
+														<div class="milestone-reward-name">{$milestone->rewardName}</div>
 													{/if}
 												</div>
 											</td>
-											<td>
+											<td class="milestone-reward-status">
 												{if $milestone->rewardType == 0 || $milestone->rewardType == 1 && $milestone->awardAutomatically == 0}
 													{if $milestone->rewardGiven}
 														{translate text="Reward Given" isPublicFacing=true}<br>
@@ -957,7 +1005,7 @@
 									</tbody>
 								</table>
 								{if $campaign->extraCreditActivities|@count > 0}
-									<table class="table table-bordered">
+									<table class="table table-bordered extra-credit-table">
 										<thead>
 											<th>{translate text="Extra Credit" isPublicFacing=true}</th>
 											<th>{translate text="Progress" isPublicFacing=true}</th>
@@ -966,31 +1014,33 @@
 										</thead>
 										<tbody>
 											{foreach from=$campaign->extraCreditActivities item="extraCreditActivity"}
-												<tr>
-													<td>{$extraCreditActivity.name}</td>
-													<td style="position: relative; text-align: center; vertical-align: middle;">
-														<div class="progress" style="width:100%; border:1px solid black; border-radius:4px;height:20px;">
+												<tr class="extra-credit-row">
+													<td class="extra-credit-name-cell">{$extraCreditActivity.name}</td>
+													<td class="extra-credit-progress-cell" style="position: relative; text-align: center; vertical-align: middle;">
+														<div class="progress extra-credit-progress-bar" style="width:100%; border:1px solid black; border-radius:4px;height:20px;">
 															<div class="progress-bar" role="progressbar" aria-valuenow="{$extraCreditActivity.progress}" aria-valuemin="0"
 															aria-valuemax="100" style="width: {$extraCreditActivity.progress}%; line-height: 20px; text-align: center; color: #fff;">
 																{$extraCreditActivity.progress}%
 															</div>
 														</div>
 													</td>
-													<td>
-														{if $extraCreditActivity.displayName}
-															<div>{$extraCreditActivity.rewardName}</div>
-														{/if}
-														{if $extraCreditActivity.rewardType == 1 && $extraCreditActivity.rewardGiven || $extraCreditActivity.rewardType ==1 && $extraCreditActivity.isComplete && $extraCreditActivity.awardAutomatically}
-															{if $extraCreditActivity.rewardExists}
-																<div id="extraCrdeitRewardImageYourCampaigns">
-																	<img src="{$extraCreditActivity.rewardImage}" alt="{$extraCreditActivity.rewardName}" style="width:100px; height:100px; padding:10px;" />
-																</div>
+													<td class="extra-credit-reward-cell">
+														<div class="extra-credit-reward-container">
+															{if $extraCreditActivity.displayName}
+																<div class="extra-credit-reward-name">{$extraCreditActivity.rewardName}</div>
 															{/if}
-														{else}
-															{include file="MyAccount/rewardImage.tpl" imageProperty="rewardImage" campaign=$extraCreditActivity}
-														{/if}
+															{if $extraCreditActivity.rewardType == 1 && $extraCreditActivity.rewardGiven || $extraCreditActivity.rewardType ==1 && $extraCreditActivity.isComplete && $extraCreditActivity.awardAutomatically}
+																{if $extraCreditActivity.rewardExists}
+																	<div id="extraCreditRewardImageYourPastCampaigns"  class="extra-credit-reward-image">
+																		<img src="{$extraCreditActivity.rewardImage}" alt="{$extraCreditActivity.rewardName}" style="width:100px; height:100px; padding:10px;" />
+																	</div>
+																{/if}
+															{else}
+																{include file="MyAccount/rewardImage.tpl" imageProperty="rewardImage" campaign=$extraCreditActivity}
+															{/if}
+														</div>
 													</td>
-													<td>
+													<td class="extra-credit-reward-status">
 														{if $extraCreditActivity.rewardType == 0 || $extraCreditActivity.rewardType == 1 && $extraCreditActivity.awardAutomatically == 0}
 														{if $extraCreditActivity.rewardGiven}
 															<a href="/Search/ShareCampaigns?rewardName={$extraCreditActivity.rewardName}&rewardImage={$extraCreditActivity.rewardImage}&rewardId={$extraCreditActivity.rewardId}">
@@ -1104,7 +1154,7 @@
 			if (campaignId) {
 				const targetRow = document.getElementById('campaign_' + campaignId);
 				const referenceButton = document.querySelector('.btn-primary');
-				
+
 				if (targetRow) {
 					setTimeout(() => {
 						targetRow.scrollIntoView({ behavior: 'smooth', block: 'center' });

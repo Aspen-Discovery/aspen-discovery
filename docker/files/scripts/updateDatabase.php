@@ -167,13 +167,7 @@ function runPendingDatabaseUpdates() {
 
 function prepareNightlyFullIndexing(): void {
 	require_once ROOT_DIR . '/sys/SystemVariables.php';
-	$systemVariables = SystemVariables::getSystemVariables();
-	if ($systemVariables->find(true)) {
-		if($systemVariables->runNightlyFullIndex == 0) {
-			$systemVariables->runNightlyFullIndex = 1;
-			$systemVariables->update();
-		}
-	}
+	SystemVariables::forceNightlyIndex('Docker DB Update');
 }
 
 function runDatabaseUpdate(&$availableUpdates, $updateName): array {

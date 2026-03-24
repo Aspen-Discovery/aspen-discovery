@@ -22,6 +22,8 @@ class Events_Calendar extends Action {
 		$lastDayInMonth = 0;
 		$formattedWeekYear = '';
 		$formattedMonthYear = '';
+		$interface->assign('monthNumber', '');
+		$interface->assign('weekNumber', '');
 		if (!empty($_REQUEST['week'])) {
 			$week = $_REQUEST['week'];
 			$interface->assign("weekNumber", $week);
@@ -113,6 +115,92 @@ class Events_Calendar extends Action {
 		$searchObject->setLimit(1000);
 		//We have a default hidden filter to only show events after today, needs to be cleared for calendars.
 		$searchObject->clearHiddenFilters();
+
+		global $library;
+		$locations = Location::getLocationList(false, true);
+		if ($library->aspenEventsToInclude == 2) {
+			$libraryLocations = [];
+
+			foreach ($locations as $code => $name) {
+				$location = new Location();
+				$location->code = $code;
+
+				if ($location->find(true) && $location->libraryId == $library->libraryId) {
+					$libraryLocations[$code] = $name;
+				}
+			}
+			$locations = $libraryLocations;
+			$selectedLocation = key($locations);
+
+		} else {
+			$selectedLocation = 'all';
+		}
+		asort($locations);
+
+		$eventsDefaultCalendarView = $library->eventsDefaultCalendarView ?? 0;
+
+		if ($eventsDefaultCalendarView == 1 && $library->aspenEventsToInclude != 2) {
+			if (UserAccount::isLoggedIn()) {
+				$user = userAccount::getActiveUserObj();
+				if ($user) {
+					if ($user->getHomeLibrary() != null) {
+						$selectedLocation = $user->getHomeLibrary();
+					} else {
+						$selectedLocation = $library;
+					}
+				}
+			}
+			$selectedCode = array_search($selectedLocation, $locations);
+			if ($selectedCode !== false) {
+				$selectedLocation = $selectedCode;
+			} else {
+				$selectedLocation = 'all';
+			}
+		} elseif ($eventsDefaultCalendarView == 2 && $library->aspenEventsToInclude != 2) {
+			reset($locations);
+			$selectedLocation = key($locations);
+		} else {
+			$selectedLocation = 'all';
+		}
+
+		if (isset($_REQUEST['location'])) {
+			$selectedLocation = $_REQUEST['location'];
+		}
+
+		if (isset($_REQUEST['location'])) {
+			$selectedLocation = $_REQUEST['location'];
+		}
+
+		if ($selectedLocation === 'all') {
+			if ($library->aspenEventsToInclude == 2) {
+				$libraryBranches = $locations;
+				unset($libraryBranches['all']);
+				$branchNames = array_values($libraryBranches);
+				if (!empty($branchNames)) {
+					$searchObject->addHiddenFilter('branch', '("' . implode('" OR "', $branchNames) . '")');
+				}
+			}
+		} else {
+			if (!empty($locations[$selectedLocation])) {
+				$branchName = $locations[$selectedLocation];
+				$searchObject->addHiddenFilter('branch', '"' . $branchName . '"');
+			}
+		}
+
+		$locationParam = '&location=' . urlencode($selectedLocation);
+		if (isset($prevLink)) $prevLink .= $locationParam;
+		if (isset($nextLink)) $nextLink .= $locationParam;
+		if (isset($weekLink)) $weekLink .= $locationParam;
+		if (isset($monthLink)) $monthLink .= $locationParam;
+
+
+		
+		if (isset($prevLink)) $interface->assign('prevLink', $prevLink);
+		if (isset($nextLink)) $interface->assign('nextLink', $nextLink);
+		if (isset($weekLink)) $interface->assign('weekLink', $weekLink);
+		if (isset($monthLink)) $interface->assign('monthLink', $monthLink);
+		
+
 		//Instead we limit to just this month.
 		if ($useWeek) {
 			$searchObject->addHiddenFilter("event_week", '"' . $weekFilter . '"');
@@ -161,6 +249,59 @@ class Events_Calendar extends Action {
 		$searchObject->close();
 
 		$searchResults = $searchObject->getResultRecordSet();
+		$allLocations = $locations;
+
+		$dropdownSearchObject = SearchObjectFactory::initSearchObject('Events');
+		$dropdownSearchObject->init();
+		$dropdownSearchObject->setPrimarySearch(false);
+		$dropdownSearchObject->setLimit(1000);
+		$dropdownSearchObject->clearHiddenFilters();
+
+		if ($useWeek) {
+			$dropdownSearchObject->addHiddenFilter("event_week", '"' . $weekFilter . '"');
+		} else {
+			$dropdownSearchObject->addHiddenFilter("event_month", '"' . $monthFilter . '"');
+		}
+
+		if ($selectedLocation === 'all' && $library->aspenEventsToInclude == 2) {
+			$libraryBranches = $allLocations;
+			unset($libraryBranches['all']);
+			$branchNames = array_values($libraryBranches);
+			if (!empty($branchNames)) {
+				$dropdownSearchObject->addHiddenFilter('branch', '("' . implode('" OR "', $branchNames) . '")');
+			}
+		}
+
+		$dropdownSearchObject->processSearch(true, true);
+		$allEvents = $dropdownSearchObject->getResultRecordSet();
+		$dropdownSearchObject->close();
+
+		$locationsWithEvents = [];
+		foreach ($allEvents as $result) {
+			if (!empty($result['branch'])) {
+				foreach ($result['branch'] as $branchName) {
+					$locationCode = array_search($branchName, $allLocations);
+					if ($locationCode !== false && !isset($locationsWithEvents[$locationCode])) {
+						$locationsWithEvents[$locationCode] = $branchName;
+					}
+				}
+			}
+		}
+
+		if (!empty($locationsWithEvents)) {
+			if (isset($allLocations['all'])) {
+				$locationsWithEvents = ['all' => $allLocations['all']] + $locationsWithEvents;
+			}
+			asort($locationsWithEvents);
+			$locations = $locationsWithEvents;
+			
+			if (!isset($locations[$selectedLocation])) {
+				$selectedLocation = 'all';
+			}
+		}
+
+		$interface->assign('locations', $locations);
+		$interface->assign('selectedLocation', $selectedLocation);
 
 		$defaultTimezone = new DateTimeZone(date_default_timezone_get());
 
@@ -178,7 +319,7 @@ class Events_Calendar extends Action {
 			/** @noinspection PhpSuspiciousNameCombinationInspection */
 			$maxDay = cal_days_in_month(CAL_GREGORIAN, $month, $year);
 		}
-		for ($i = 0; $i < 5; $i++) {
+		for ($i = 0; $i < 6; $i++) {
 			$week = [
 				'days' => [],
 			];
@@ -187,6 +328,9 @@ class Events_Calendar extends Action {
 			if ($i == 0) {
 				if (!$useWeek) {
 					$startDayIndex = $calendarStartDay->format('N');
+					if ($startDayIndex == 7) {
+						$startDayIndex = 0;
+					}
 				}
 				for ($j = 0; $j < $startDayIndex; $j++) {
 					$week['days'][] = [
@@ -284,6 +428,7 @@ class Events_Calendar extends Action {
 							'isCancelled' => $isCancelled,
 							'hiddenTimestamps' => $hiddenTimestamps,
 							'eventFields' => $eventFields,
+							'location' => $result['branch'][0],
 						];
 					}
 				}

@@ -131,8 +131,7 @@ class CloudSourceRecordDriver extends RecordInterface {
 		return 'RecordDrivers/CloudSource/result.tpl';
 	}
 
-	public function getBrowseResult()
-	{
+	public function getBrowseResult() {
 		global $interface;
 
 		$interface->assign('summId', $this->getUniqueID());
@@ -147,6 +146,8 @@ class CloudSourceRecordDriver extends RecordInterface {
 		if ($appliedTheme) {
 			if ($appliedTheme->browseCategoryImageSize == 1) {
 				$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('large'));
+			} else {
+				$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
 			}
 			$accessibleBrowseCategories = $appliedTheme->accessibleBrowseCategories;
 		} else {

@@ -188,6 +188,32 @@ SubjectProper:
     - era_proper:
       - [onephrase, 300]
 
+AllTitles:
+  QueryFields:
+    - title_exact:
+      - [localized_callnumber, 10000]
+    - title_left:
+      - [text_left, 8000]
+    - title_proper:
+      - [exact, 800]
+      - [onephrase, 500]
+      - [and, 200]
+    - title:
+      - [onephrase, 200]
+      - [and, 125]
+    - title_alt:
+      - [and, 100]
+    - title_new:
+      - [and, 50]
+    - series_proper:
+      - [exact, 800]
+      - [onephrase, 300]
+      - [and, 50]
+    - series:
+      - [exact, 600]
+      - [onephrase, 200]
+      - [and, 50]
+
 Title:
   QueryFields:
     - title_exact:
@@ -207,22 +233,6 @@ Title:
       - [onephrase, 200]
     - title:
       - [and, 125]
-    - title_alt:
-      - [and, 100]
-    - title_new:
-      - [and, 50]
-    - series_proper:
-      - [exact, 200]
-    - series_proper:
-      - [onephrase, 100]
-    - series_proper:
-      - [and, 25]
-    - series:
-      - [exact, 100]
-    - series:
-      - [onephrase, 50]
-    - series:
-      - [and, 10]
 
 TitleProper:
   QueryFields:
@@ -230,8 +240,6 @@ TitleProper:
       - [localized_callnumber, 2400]
     - title_proper:
       - [onephrase, 850]
-    - series_proper:
-      - [onephrase, 100]
 
 StartOfTitle:
   QueryFields:

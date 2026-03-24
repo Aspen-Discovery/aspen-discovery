@@ -635,6 +635,10 @@ class AspenSite extends DataObject {
 		}
 	}
 
+	public function getVersion() : string {
+		return $this->version;
+	}
+
 	public function getCurrentVersion() : string {
 		$version = translate([
 			'text' => 'Unknown',
@@ -680,7 +684,7 @@ class AspenSite extends DataObject {
 		return AspenSite::$_timezones[$this->timezone];
 	}
 
-	public function getSiteBaseUrl() {
+	public function getSiteBaseUrl() : string|bool {
 		if($this->baseUrl) {
 			return $this->baseUrl;
 		}
@@ -696,6 +700,10 @@ class AspenSite extends DataObject {
 
 	public function isSendSlackAlerts() : bool {
 		return $this->sendSlackAlerts;
+	}
+
+	public function isOptOutBatchUpdates() : bool {
+		return $this->optOutBatchUpdates;
 	}
 
 	public function getSiteName() {
@@ -738,6 +746,10 @@ class AspenSite extends DataObject {
 			$lastUpdate['status'] = $scheduledUpdates->status;
 		}
 		return $lastUpdate;
+	}
+
+	public function setId(int $id) : void {
+		$this->__set('id', $id);
 	}
 
 	private function setIsOnline(int $online) : void {

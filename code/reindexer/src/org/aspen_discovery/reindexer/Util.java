@@ -19,7 +19,7 @@ public class Util {
 		}
 		return crSeparatedString.toString();
 	}
-	
+
 	static String getCRSeparatedStringFromSet(Set<String> values) {
 		if (values.isEmpty()){
 			return "";
@@ -76,7 +76,12 @@ public class Util {
 		if (isbn10.length() != 10){
 			return null;
 		}
-		String isbn = "978" + isbn10.substring(0, 9);
+		String isbnWithoutCheckDigit = isbn10.substring(0, 9);
+		if (!isbnWithoutCheckDigit.matches("\\d+")){
+			//This ISBN isn't valid, has a non-digit (likely X) in the middle of the ISBN
+			return null;
+		}
+		String isbn = "978" + isbnWithoutCheckDigit;
 		//Calculate the 13 digit checksum
 		int sumOfDigits = 0;
 		for (int i = 0; i < 12; i++){

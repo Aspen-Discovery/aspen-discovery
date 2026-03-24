@@ -16,6 +16,7 @@ import java.io.*;
 import java.sql.*;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -289,31 +290,97 @@ public class GroupedReindexMain {
 		//If this is the nightly index, check to see if we need to run
 		SystemUtils.printMemoryStats(logger);
 		if (isNightlyReindex) {
+			logger.debug("Nightly reindex mode detected, checking triggers...");
 			boolean arDataReloaded = loadAcceleratedReaderData();
 			if (!arDataReloaded) { //Force nightly update to run if AR data was reloaded
 				try {
 					logger.info("Checking to see if nightly index should run");
-					PreparedStatement getRunNightlyIndexStmt = dbConn.prepareStatement("SELECT runNightlyFullIndex FROM system_variables");
+					PreparedStatement getRunNightlyIndexStmt = dbConn.prepareStatement("SELECT runNightlyFullIndex, nightlyIndexTrigger FROM system_variables");
 					ResultSet getRunNightlyIndexRS = getRunNightlyIndexStmt.executeQuery();
 					if (getRunNightlyIndexRS.next()){
 						boolean runNightlyFullIndex = getRunNightlyIndexRS.getBoolean("runNightlyFullIndex");
+						String nightlyIndexTrigger = getRunNightlyIndexRS.getString("nightlyIndexTrigger");
+						boolean hasDbTriggers = nightlyIndexTrigger != null && !nightlyIndexTrigger.isEmpty();
+						boolean isManualCli = System.console() != null;
+						logger.debug("DB state: runNightlyFullIndex=" + runNightlyFullIndex);
+						logger.debug("DB state: nightlyIndexTrigger=" + (nightlyIndexTrigger != null ? "\"" + nightlyIndexTrigger.replace("\n", "\\n") + "\"" : "NULL"));
+						logger.debug("Detection: hasDbTriggers=" + hasDbTriggers + ", isManualCli=" + isManualCli + " (System.console()=" + (System.console() != null ? "present" : "null") + ")");
+						if (hasDbTriggers) {
+							for (String trigger : nightlyIndexTrigger.split("\n")) {
+								logger.debug("  " + trigger.trim());
+							}
+						}
 						if (!runNightlyFullIndex){
+							logger.debug("runNightlyFullIndex=0, exiting without full reindex");
 							logEntry.addNote("Nightly index does not need to be run");
 							logEntry.setFinished();
 							System.exit(0);
 						}
+						StringBuilder triggerNote = new StringBuilder("Nightly reindex triggered by:");
+						boolean hasTriggers = false;
+						if (hasDbTriggers) {
+							for (String trigger : nightlyIndexTrigger.split("\n")) {
+								String t = trigger.trim();
+								if (!t.isEmpty()) {
+									triggerNote.append(hasTriggers ? ", " : " ").append(t);
+									hasTriggers = true;
+								}
+							}
+						}
+						if (isManualCli) {
+							String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+							triggerNote.append(hasTriggers ? ", " : " ").append("Manual CLI (Triggered at " + timestamp + ")");
+							hasTriggers = true;
+						}
+						if (!hasTriggers) {
+							triggerNote.append(" direct DB write (runNightlyFullIndex set without using forceNightlyIndex)");
+						}
+						logEntry.addNote(triggerNote.toString());
+						logEntry.saveResults();
 					}
 					getRunNightlyIndexStmt.close();
 				}catch (SQLException e) {
 					logger.error("Unable to determine if the nightly index should run, running it", e);
 				}
+			} else {
+				// AR data was reloaded, log the trigger and read any additional triggers
+				logger.debug("AR data was reloaded, forcing nightly index");
+				StringBuilder triggerNote = new StringBuilder("Nightly reindex triggered by: AR data reload");
+				try {
+					PreparedStatement getTriggerStmt = dbConn.prepareStatement("SELECT nightlyIndexTrigger FROM system_variables");
+					ResultSet getTriggerRS = getTriggerStmt.executeQuery();
+					if (getTriggerRS.next()) {
+						String nightlyIndexTrigger = getTriggerRS.getString("nightlyIndexTrigger");
+						logger.debug("Additional DB triggers: " + (nightlyIndexTrigger != null ? "\"" + nightlyIndexTrigger.replace("\n", "\\n") + "\"" : "NULL"));
+						if (nightlyIndexTrigger != null && !nightlyIndexTrigger.isEmpty()) {
+							logger.debug("Additional pending triggers:");
+							for (String trigger : nightlyIndexTrigger.split("\n")) {
+								String t = trigger.trim();
+								logger.debug("  " + t);
+								if (!t.isEmpty()) {
+									triggerNote.append(", ").append(t);
+								}
+							}
+						}
+					}
+					getTriggerStmt.close();
+				} catch (SQLException e) {
+					logger.error("Unable to read nightly index triggers", e);
+				}
+				if (System.console() != null) {
+					String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+					triggerNote.append(", Manual CLI (Triggered at " + timestamp + ")");
+				}
+				logEntry.addNote(triggerNote.toString());
+				logEntry.saveResults();
 			}
 
 			try {
 				//Mark that the nightly index does not need to run since we are currently running it.
-				dbConn.prepareStatement("UPDATE system_variables set runNightlyFullIndex = 0 WHERE true").executeUpdate();
+				logger.debug("Clearing nightly index flags: runNightlyFullIndex=0, nightlyIndexTrigger=NULL");
+				dbConn.prepareStatement("UPDATE system_variables SET runNightlyFullIndex = 0, nightlyIndexTrigger = NULL WHERE true").executeUpdate();
 			}catch (SQLException e) {
-				logger.error("Unable to determine if the nightly index should run, running it", e);
+				logger.error("Unable to reset the nightly index flags", e);
 			}
 		}
 	}

@@ -86,7 +86,7 @@ class Grouping_Item {
 			$this->atActiveNearbyLocation2 = str_contains($itemDetails['locationOwnedScopes'], "~$atNearbyLocation2~");
 		}
 		$this->available = $itemDetails['available'] == "1";
-		$this->holdable = $itemDetails['holdable'] == "1";
+		$this->holdable = $itemDetails['holdable'] == "1" ? 1 : 0;
 		$this->inLibraryUseOnly = $itemDetails['inLibraryUseOnly'] == "1";
 		$this->locationCode = $itemDetails['locationCode'];
 		$this->subLocation = $itemDetails['subLocationCode'];

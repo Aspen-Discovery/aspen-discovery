@@ -6,72 +6,53 @@
 			</div>
 		{/if}
 
+		{if !empty($accountMessages)}
+			{include file='systemMessages.tpl' messages=$accountMessages}
+		{/if}
+
 		<h1>{translate text="Your Searches" isPublicFacing=true}</h1>
-		{if empty($noHistory)}
-			{if !empty($saved)}
-				<div class="resultHead"><h2>{translate text="Saved Searches" isPublicFacing=true}</h2></div>
-				<table class="table table-bordered table-striped" width="100%">
-					<tr>
-						<th width="4%">{translate text="Id" isPublicFacing=true}</th>
-						<th width="18%">{translate text="Time" isPublicFacing=true}</th>
-						<th>{translate text="Name" isPublicFacing=true}</th>
-						<th width="30%">{translate text="Search" isPublicFacing=true}</th>
-						<th width="28%">{translate text="Limits" isPublicFacing=true}</th>
-						<th width="10%">{translate text="Search Source" isPublicFacing=true}</th>
-						<th width="5%">{translate text="Results" isPublicFacing=true}</th>
-						<th width="5%">{translate text="Delete" isPublicFacing=true}</th>
-					</tr>
-					{foreach item=info from=$saved name=historyLoop}
-					<tr>
-						<td>{$info.id}</td>
-						<td>{$info.time}</td>
-						<td>{$info.title}{if !empty($info.hasNewResults)}<a href="{$info.newTitlesUrl|escape}"><span class="label badge-updated">{translate text="Updated" isPublicFacing=true}</span></a>{/if}</td>
-						<td><a href="{$info.url|escape}">{if empty($info.description)}{translate text="Anything (Empty Search)" isPublicFacing=true}{else}{$info.description|escape}{/if}</a></td>
-						<td>{foreach from=$info.filters item=filters key=field}{foreach from=$filters item=filter}
-							<b>{translate text=$field|escape isPublicFacing=true}</b>: {$filter.display|escape}<br/>
-						{/foreach}{/foreach}</td>
-						<td>{$info.source}</td>
-						<td>{$info.hits}</td>
-						<td><a class="btn btn-xs btn-warning" role="button" href="/MyAccount/SaveSearch?delete={$info.searchId|escape:"url"}&amp;mode=history">{translate text="Delete" isPublicFacing=true}</a></td>
-					</tr>
-					{/foreach}
-				</table>
-				<br/>
-			{/if}
 
-			{if !empty($links)}
-				<div class="resultHead"><h2>{translate text="Recent Searches" isPublicFacing=true}</h2></div>
-				<table class="table table-bordered table-striped" width="100%">
-					<tr>
-						<th width="15%">{translate text="Time" isPublicFacing=true}</th>
-						<th width="30%">{translate text="Search" isPublicFacing=true}</th>
-						<th width="30%">{translate text="Limits" isPublicFacing=true}</th>
-						<th width="10%">{translate text="Search Source" isPublicFacing=true}</th>
-						<th width="10%">{translate text="Results" isPublicFacing=true}</th>
-						<th width="5%">{translate text="Save?" isPublicFacing=true}</th>
-					</tr>
-					{foreach item=info from=$links name=historyLoop}
-						<tr>
-							<td>{$info.time}</td>
-							<td><a href="{$info.url|escape}">{if empty($info.description)}{translate text="Anything (empty search)" isPublicFacing=true}{else}{$info.description|escape}{/if}</a></td>
-							<td>
-							{foreach from=$info.filters item=filters key=field}
-								{foreach from=$filters item=filter}
-									<b>{translate text=$field|escape isPublicFacing=true}</b>: {$filter.display|escape}<br>
-								{/foreach}
-							{/foreach}</td>
-							<td>{$info.source}</td>
-							<td>{$info.hits}</td>
-							<td><a class="btn btn-xs btn-info" role="button" onclick="return AspenDiscovery.Account.showSaveSearchForm('{$info.searchId}')">{translate text="Save" isPublicFacing=true}</a></td>
-						</tr>
-					{/foreach}
-				</table>
-				<br><a class="btn btn-warning" role="button" href="/Search/History?purge=true">{translate text="Delete my unsaved searches" isPublicFacing=true}</a>
-			{/if}
+        {if $numSavedSearches > 0 || $numRecentSearches > 0}
+		<ul class="nav nav-tabs" role="tablist" id="searchHistoryTab">
+            {if $numSavedSearches > 0}<li role="presentation"{if $tab=='saved'} class="active"{/if}><a href="#saved" aria-controls="saved" role="tab" data-toggle="tab">{translate text="Saved Searches" isPublicFacing=true} <span class="badge"><span class="saved-searches-count-placeholder">&nbsp;</span></span></a></li>{/if}
+			{if $numRecentSearches > 0}<li role="presentation"{if $tab=='recent'} class="active"{/if}><a href="#recent" aria-controls="recent" role="tab" data-toggle="tab">{translate text="Recent Searches" isPublicFacing=true} <span class="badge"><span class="recent-searches-count-placeholder">&nbsp;</span></span></a></li>{/if}
 
-		{else}
-			<h1>{translate text="Recent Searches" isPublicFacing=true}</h1>
-			{translate text="There are currently no searches in your history." isPublicFacing=true}
+		</ul>
+
+		<div class="tab-content" id="searchHistory">
+            {if $numSavedSearches > 0}
+	            <div role="tabpanel" class="tab-pane{if $tab=='saved'} active{/if}" id="saved" aria-label="">
+					<div id="savedSearchesPlaceholder">{translate text="Loading Saved Searches" isPublicFacing=true}</div>
+					<div id="savedSearchesPagination"></div>
+				</div>
+            {/if}
+            {if $numRecentSearches > 0}
+				<div role="tabpanel" class="tab-pane{if $tab=='recent'} active{/if}" id="recent" aria-label="">
+					<div id="recentSearchesPlaceholder">{translate text="Loading Recent Searches" isPublicFacing=true}</div>
+					<div id="recentSearchesPagination"></div>
+				</div>
+			{/if}
+		</div>
+	        <script type="text/javascript">
+                {literal}
+		        $(document).ready(function() {
+			        $("a[href='#saved']").on('show.bs.tab', function (e) {
+				        AspenDiscovery.Account.loadSearchHistory('saved', {/literal}{$page}{literal}, {/literal}{$limit}{literal}, '{/literal}{$sort}{literal}');
+			        });
+			        $("a[href='#recent']").on('show.bs.tab', function (e) {
+				        AspenDiscovery.Account.loadSearchHistory('recent', {/literal}{$page}{literal}, {/literal}{$limit}{literal}, 'id');
+			        });
+                    {/literal}{if $numSavedSearches > 0}{literal}
+			        AspenDiscovery.Account.loadSearchHistory('saved', {/literal}{$page}{literal}, {/literal}{$limit}{literal}, '{/literal}{$sort}{literal}');
+					 {/literal}{else}{literal}
+                    AspenDiscovery.Account.loadSearchHistory('recent', {/literal}{$page}{literal}, {/literal}{$limit}{literal}, 'id');
+			        {/literal}{/if}{literal}
+		        });
+                {/literal}
+	        </script>
+
+        {else}
+            {translate text="There are currently no searches in your history." isPublicFacing=true}
 		{/if}
 	</div>
 

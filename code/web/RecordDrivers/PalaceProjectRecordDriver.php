@@ -126,7 +126,15 @@ class PalaceProjectRecordDriver extends GroupedWorkSubDriver {
 	 * @return  string
 	 */
 	public function getAuthor() : string {
-		return $this->palaceProjectRawMetadata->metadata->author->name;
+		if (!empty($this->palaceProjectRawMetadata->metadata->author)) {
+			if (is_array($this->palaceProjectRawMetadata->metadata->author)) {
+				return $this->palaceProjectRawMetadata->metadata->author[0]->name;
+			}else {
+				return $this->palaceProjectRawMetadata->metadata->author->name;
+			}
+		}else {
+			return '';
+		}
 	}
 
 	/**
@@ -354,8 +362,13 @@ class PalaceProjectRecordDriver extends GroupedWorkSubDriver {
 	function getContributors() : array {
 		$contributors = [];
 		if (!empty($this->palaceProjectRawMetadata->metadata->author)) {
-			$author = $this->palaceProjectRawMetadata->metadata->author;
-			$contributors[] = $author->name;
+			if (!empty($this->palaceProjectRawMetadata->metadata->author)) {
+				if (is_array($this->palaceProjectRawMetadata->metadata->author)) {
+					foreach ($this->palaceProjectRawMetadata->metadata->author as $author) {
+						$contributors[] = $author->name;
+					}
+				}
+			}
 		}
 		if (!empty($this->palaceProjectRawMetadata->metadata->narrator)) {
 			$narrator = $this->palaceProjectRawMetadata->metadata->narrator;
@@ -426,7 +439,11 @@ class PalaceProjectRecordDriver extends GroupedWorkSubDriver {
 	 */
 	function getPrimaryAuthor() : string {
 		if (!empty($this->palaceProjectRawMetadata->metadata->author)) {
-			return $this->palaceProjectRawMetadata->metadata->author->name;
+			if (is_array($this->palaceProjectRawMetadata->metadata->author)) {
+				return $this->palaceProjectRawMetadata->metadata->author[0]->name;
+			}else {
+				return $this->palaceProjectRawMetadata->metadata->author->name;
+			}
 		}else {
 			return '';
 		}

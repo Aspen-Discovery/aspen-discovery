@@ -44,6 +44,8 @@ class HeroSliderLocation extends DataObject {
 				$libraryList[$homeLibrary->libraryId] = $homeLibrary->displayName;
 			}
 		}
+		$allLibraryList = Library::getLibraryList(false);
+		$allLibraryList[-1] = 'All Libraries';
 
 		// Playlist list
 		$playlistList = [];
@@ -89,6 +91,7 @@ class HeroSliderLocation extends DataObject {
 				'property' => 'libraryId',
 				'type' => 'enum',
 				'values' => $libraryList,
+				'allValues' => $allLibraryList,
 				'label' => 'Library',
 				'description' => 'On what library catalogs to display this hero slider.',
 			],

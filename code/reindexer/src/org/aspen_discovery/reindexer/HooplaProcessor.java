@@ -151,7 +151,7 @@ class HooplaProcessor {
 					if (rawResponse.has("episode")){
 						volume = rawResponse.get("episode").toString();
 					}
-					groupedWork.addSeriesWithVolume(series, volume, 2);
+					groupedWork.addSeriesWithVolume(series, volume, 2, false);
 				}
 
 				boolean children = rawResponse.getBoolean("children");

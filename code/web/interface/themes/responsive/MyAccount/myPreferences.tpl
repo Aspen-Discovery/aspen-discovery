@@ -440,6 +440,14 @@
 											<option value="2" {if $profile->searchPreferenceLanguage == 2}selected{/if}>{translate text="Yes, only show my preferred language" isPublicFacing=true}</option>
 										</select>
 									</div>
+									<div class="form-group propertyRow">
+										<label for="notifySavedSearches" class="control-label">{translate text='Notify me by email when new titles are added to my saved searches' isPublicFacing=true}</label>&nbsp;
+											{if $edit == true}
+												<input type="checkbox" class="form-control" name="notifySavedSearches" id="notifySavedSearches" {if $profile->notifySavedSearches==1}checked='checked'{/if} data-switch="">
+											{else}
+												&nbsp;{if $profile->notifySavedSearches==0} {translate text='No' isPublicFacing=true}{else} {translate text='Yes' isPublicFacing=true}{/if}
+											{/if}
+									</div> 
 
 									{* Course Reserves *}
 									{if !empty($validCourseReservesSorts)}

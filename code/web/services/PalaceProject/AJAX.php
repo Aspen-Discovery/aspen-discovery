@@ -2,7 +2,17 @@
 require_once ROOT_DIR . '/JSON_Action.php';
 
 class PalaceProject_AJAX extends JSON_Action {
+	function launch($method = null): void {
+		$this->checkRequiredModule('Palace Project');
+		parent::launch($method);
+	}
+
 	function getStaffView() : array {
+		global $interface;
+		if (!$interface->getVariable('showStaffView')) {
+			$this->failureResult(null, 'Staff View is not available.');
+		}
+
 		$result = [
 			'success' => false,
 			'message' => translate([
@@ -14,7 +24,6 @@ class PalaceProject_AJAX extends JSON_Action {
 		require_once ROOT_DIR . '/RecordDrivers/PalaceProjectRecordDriver.php';
 		$recordDriver = new PalaceProjectRecordDriver($id);
 		if ($recordDriver->isValid()) {
-			global $interface;
 			$interface->assign('recordDriver', $recordDriver);
 			$result = [
 				'success' => true,
@@ -90,6 +99,7 @@ class PalaceProject_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function getCheckOutPrompts() : array {
+		$this->requireLoggedInUser();
 		$user = UserAccount::getLoggedInUser();
 		global $interface;
 		$id = $_REQUEST['id'];
@@ -151,46 +161,35 @@ class PalaceProject_AJAX extends JSON_Action {
 	}
 
 	function checkOutTitle() : array {
+		$this->requireLoggedInUser("Error Checking Out Title", 'You must be logged in to checkout an item.');
+
 		$user = UserAccount::getLoggedInUser();
 		$id = $_REQUEST['id'];
-		if ($user) {
-			$patronId = $_REQUEST['patronId'];
-			$patron = $user->getUserReferredTo($patronId);
-			if ($patron) {
-				require_once ROOT_DIR . '/Drivers/PalaceProjectDriver.php';
-				$driver = new PalaceProjectDriver();
-				$result = $driver->checkoutTitle($patron, $id);
-				//$logger->log("Checkout result = $result", Logger::LOG_NOTICE);
-				if ($result['success']) {
-					/** @noinspection HtmlUnknownTarget */
-					$result['title'] = translate([
-						'text' => "Title Checked Out Successfully",
+
+		$patronId = $_REQUEST['patronId'];
+		$patron = $user->getUserReferredTo($patronId);
+		if ($patron) {
+			require_once ROOT_DIR . '/Drivers/PalaceProjectDriver.php';
+			$driver = new PalaceProjectDriver();
+			$result = $driver->checkoutTitle($patron, $id);
+			//$logger->log("Checkout result = $result", Logger::LOG_NOTICE);
+			if ($result['success']) {
+				/** @noinspection HtmlUnknownTarget */
+				$result['title'] = translate([
+					'text' => "Title Checked Out Successfully",
+					'isPublicFacing' => true,
+				]);
+				$result['buttons'] = '<a class="btn btn-primary" href="/MyAccount/CheckedOut" role="button">' . translate([
+						'text' => 'View My Check Outs',
 						'isPublicFacing' => true,
-					]);
-					$result['buttons'] = '<a class="btn btn-primary" href="/MyAccount/CheckedOut" role="button">' . translate([
-							'text' => 'View My Check Outs',
-							'isPublicFacing' => true,
-						]) . '</a>';
-				} else {
-					$result['title'] = translate([
-						'text' => "Error Checking Out Title",
-						'isPublicFacing' => true,
-					]);
-				}
-				return $result;
+					]) . '</a>';
 			} else {
-				return [
-					'result' => false,
-					'title' => translate([
-						'text' => "Error Checking Out Title",
-						'isPublicFacing' => true,
-					]),
-					'message' => translate([
-						'text' => 'Sorry, it looks like you don\'t have permissions to checkout titles for that user.',
-						'isPublicFacing' => true,
-					]),
-				];
+				$result['title'] = translate([
+					'text' => "Error Checking Out Title",
+					'isPublicFacing' => true,
+				]);
 			}
+			return $result;
 		} else {
 			return [
 				'result' => false,
@@ -199,7 +198,7 @@ class PalaceProject_AJAX extends JSON_Action {
 					'isPublicFacing' => true,
 				]),
 				'message' => translate([
-					'text' => 'You must be logged in to checkout an item.',
+					'text' => 'Sorry, it looks like you don\'t have permissions to checkout titles for that user.',
 					'isPublicFacing' => true,
 				]),
 			];
@@ -208,29 +207,21 @@ class PalaceProject_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function returnCheckout() : array {
+		$this->requireLoggedInUser(null, 'You must be logged in to return titles.');
+
 		$user = UserAccount::getLoggedInUser();
 		$id = $_REQUEST['recordId'];
-		if ($user) {
-			$patronId = $_REQUEST['patronId'];
-			$patron = $user->getUserReferredTo($patronId);
-			if ($patron) {
-				require_once ROOT_DIR . '/Drivers/PalaceProjectDriver.php';
-				$driver = new PalaceProjectDriver();
-				return $driver->returnCheckout($patron, $id);
-			} else {
-				return [
-					'result' => false,
-					'message' => translate([
-						'text' => 'Sorry, it looks like you don\'t have permissions to modify checkouts for that user.',
-						'isPublicFacing' => true,
-					]),
-				];
-			}
+		$patronId = $_REQUEST['patronId'];
+		$patron = $user->getUserReferredTo($patronId);
+		if ($patron) {
+			require_once ROOT_DIR . '/Drivers/PalaceProjectDriver.php';
+			$driver = new PalaceProjectDriver();
+			return $driver->returnCheckout($patron, $id);
 		} else {
 			return [
 				'result' => false,
 				'message' => translate([
-					'text' => 'You must be logged in to return titles.',
+					'text' => 'Sorry, it looks like you don\'t have permissions to modify checkouts for that user.',
 					'isPublicFacing' => true,
 				]),
 			];
@@ -239,6 +230,8 @@ class PalaceProject_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function getHoldPrompts() : array {
+		$this->requireLoggedInUser(null, 'You must be logged in to return titles.');
+
 		$user = UserAccount::getLoggedInUser();
 		global $interface;
 		$id = $_REQUEST['id'];
@@ -293,46 +286,35 @@ class PalaceProject_AJAX extends JSON_Action {
 	}
 
 	function placeHold() : array {
+		$this->requireLoggedInUser(null, 'You must be logged in to place a hold.');
+
 		$user = UserAccount::getLoggedInUser();
 		$id = $_REQUEST['id'];
-		if ($user) {
-			$patronId = $_REQUEST['patronId'];
-			$patron = $user->getUserReferredTo($patronId);
-			if ($patron) {
-				require_once ROOT_DIR . '/Drivers/PalaceProjectDriver.php';
-				$driver = new PalaceProjectDriver();
-				$result = $driver->placeHold($patron, $id);
-				//$logger->log("Checkout result = $result", Logger::LOG_NOTICE);
-				if ($result['success']) {
-					/** @noinspection HtmlUnknownTarget */
-					$result['title'] = translate([
-						'text' => "Hold Placed Successfully",
+
+		$patronId = $_REQUEST['patronId'];
+		$patron = $user->getUserReferredTo($patronId);
+		if ($patron) {
+			require_once ROOT_DIR . '/Drivers/PalaceProjectDriver.php';
+			$driver = new PalaceProjectDriver();
+			$result = $driver->placeHold($patron, $id);
+			//$logger->log("Checkout result = $result", Logger::LOG_NOTICE);
+			if ($result['success']) {
+				/** @noinspection HtmlUnknownTarget */
+				$result['title'] = translate([
+					'text' => "Hold Placed Successfully",
+					'isPublicFacing' => true,
+				]);
+				$result['buttons'] = '<a class="btn btn-primary" href="/MyAccount/CheckedOut" role="button">' . translate([
+						'text' => 'View My Check Outs',
 						'isPublicFacing' => true,
-					]);
-					$result['buttons'] = '<a class="btn btn-primary" href="/MyAccount/CheckedOut" role="button">' . translate([
-							'text' => 'View My Check Outs',
-							'isPublicFacing' => true,
-						]) . '</a>';
-				} else {
-					$result['title'] = translate([
-						'text' => "Error Checking Out Title",
-						'isPublicFacing' => true,
-					]);
-				}
-				return $result;
+					]) . '</a>';
 			} else {
-				return [
-					'result' => false,
-					'title' => translate([
-						'text' => "Error Checking Out Title",
-						'isPublicFacing' => true,
-					]),
-					'message' => translate([
-						'text' => 'Sorry, it looks like you don\'t have permissions to checkout titles for that user.',
-						'isPublicFacing' => true,
-					]),
-				];
+				$result['title'] = translate([
+					'text' => "Error Checking Out Title",
+					'isPublicFacing' => true,
+				]);
 			}
+			return $result;
 		} else {
 			return [
 				'result' => false,
@@ -341,7 +323,7 @@ class PalaceProject_AJAX extends JSON_Action {
 					'isPublicFacing' => true,
 				]),
 				'message' => translate([
-					'text' => 'You must be logged in to checkout an item.',
+					'text' => 'Sorry, it looks like you don\'t have permissions to checkout titles for that user.',
 					'isPublicFacing' => true,
 				]),
 			];
@@ -349,29 +331,22 @@ class PalaceProject_AJAX extends JSON_Action {
 	}
 
 	function cancelHold(): array {
+		$this->requireLoggedInUser(null, 'You must be logged in to cancel a hold.');
+
 		$user = UserAccount::getLoggedInUser();
 		$id = $_REQUEST['recordId'];
-		if ($user) {
-			$patronId = $_REQUEST['patronId'];
-			$patron = $user->getUserReferredTo($patronId);
-			if ($patron) {
-				require_once ROOT_DIR . '/Drivers/PalaceProjectDriver.php';
-				$driver = new PalaceProjectDriver();
-				return $driver->cancelHold($patron, $id);
-			} else {
-				return [
-					'result' => false,
-					'message' => translate([
-						'text' => 'Sorry, it looks like you don\'t have permissions to cancel holds for that user.',
-						'isPublicFacing' => true,
-					]),
-				];
-			}
+
+		$patronId = $_REQUEST['patronId'];
+		$patron = $user->getUserReferredTo($patronId);
+		if ($patron) {
+			require_once ROOT_DIR . '/Drivers/PalaceProjectDriver.php';
+			$driver = new PalaceProjectDriver();
+			return $driver->cancelHold($patron, $id);
 		} else {
 			return [
 				'result' => false,
 				'message' => translate([
-					'text' => 'You must be logged in to cancel holds.',
+					'text' => 'Sorry, it looks like you don\'t have permissions to cancel holds for that user.',
 					'isPublicFacing' => true,
 				]),
 			];

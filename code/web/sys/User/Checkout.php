@@ -81,6 +81,7 @@ class Checkout extends CircEntry {
 			'isSupplemental',
 			'isIll',
 			'showFineButton',
+			'isLocalILL'
 		];
 	}
 

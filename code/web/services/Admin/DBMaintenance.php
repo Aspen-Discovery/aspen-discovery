@@ -45,7 +45,7 @@ class Admin_DBMaintenance extends Admin_Admin {
 		if (isset($_REQUEST['submitting'])) {
 			//Also force a nightly index
 			require_once ROOT_DIR . '/sys/SystemVariables.php';
-			SystemVariables::forceNightlyIndex();
+			SystemVariables::forceNightlyIndex('DB Maintenance');
 
 			Theme::updateCssForAllThemes();
 

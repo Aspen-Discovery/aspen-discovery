@@ -3,12 +3,12 @@
 }
 @media screen and (max-width: 550px) {
   #fullScreenCalendar {
-    display: none;
+	display: none;
   }
 }
 @media screen and (min-width: 550px) {
   #smallScreenCalendar {
-    display: none;
+	display: none;
   }
 }
 .calendar-nav{
@@ -125,7 +125,7 @@
 	font-weight: bold;
 }
 
-.calendar-event-time, .calendar-event-field{
+.calendar-event-time, .calendar-event-field, .calendar-event-location {
 	font-size: 12px;
 }
 
@@ -317,7 +317,7 @@
 					overflow: clip;
 
 					&.wrap-title {
-						.calendar-event-title, .calendar-event-time, .calendar-event-field{
+						.calendar-event-title, .calendar-event-time, .calendar-event-field, .calendar-event-location{
 							overflow: visible;
 							white-space: normal;
 							max-height: 3.5vh;
@@ -325,14 +325,14 @@
 					}
 
 					.calendar-event:has(.calendar-event-state) {
-						.calendar-event-title, .calendar-event-time, .calendar-event-field{
+						.calendar-event-title, .calendar-event-time, .calendar-event-field, .calendar-event-location{
 							overflow: visible;
 							white-space: normal;
 							height: 3.5vh;
 						}
 					}
 
-					.calendar-event-title, .calendar-event-time, .calendar-event-field {
+					.calendar-event-title, .calendar-event-time, .calendar-event-field, .calendar-event-location {
 						overflow: clip;
 						white-space: nowrap;
 						font-size: 0.85rem;
@@ -403,4 +403,10 @@
 
 [data-context="print-layout"] {
 	.print-styles();
+}
+
+@media (max-width: 767px) {
+	.calendar-location-filter {
+		text-align: left !important;
+	}
 }

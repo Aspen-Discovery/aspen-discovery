@@ -220,10 +220,10 @@ AspenDiscovery.GroupedWork = (function(){
 						});
 
 						html += '</ul>';
-
 						var carouselElement = $('#moreLikeThisCarousel');
-						carouselElement.html(html);
 						var jCarousel = carouselElement.jcarousel();
+
+						carouselElement.html(html);
 
 						// Reload carousel
 						jCarousel.jcarousel('reload');
@@ -232,7 +232,10 @@ AspenDiscovery.GroupedWork = (function(){
 					}
 
 				} catch (e) {
-					alert("error loading enrichment: " + e);
+					setTimeout(function (){
+						var jCarousel = carouselElement.jcarousel();
+						jCarousel.jcarousel('reload');
+					},1000);
 				}
 			});
 		},
@@ -933,7 +936,7 @@ AspenDiscovery.GroupedWork = (function(){
 					html += '<div role="option" tabindex="0" class="slider-slide horizontal-edition-option' + (idx === 0 ? ' active' : '') + '">';
 					html += '<label for="editionOption' + idx + '">';
 					html += '<div class="edition-radio"><input type="radio" name="selectedEdition" id="editionOption' + idx + '" value="' + edition.id + '" ' + (idx === 0 ? 'checked' : '') + '> ' + edition.label + '</div>';
-					html += '<div class="edition-cover"><img src="' + edition.coverUrl + '" class="img-thumbnail" alt="Book Cover"></div>';
+					html += '<div class="edition-cover"><img src="' + edition.coverUrl + '" class="img-thumbnail" alt="Book Cover" role="presentation"></div>';
 					html += '<div class="edition-data">' + edition.publicationDate + '. ' + edition.publisher + '. ' + edition.physical + '.<br/>' + edition.statusIndicator + '<br/><span>' + current + ' of ' + count + ' editions</span></div>';
 					html += '</label></div>';
 				});

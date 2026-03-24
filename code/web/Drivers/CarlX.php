@@ -65,6 +65,18 @@ class CarlX extends AbstractIlsDriver {
 		if (IPAddress::showDebuggingInformation() || php_sapi_name() === 'cli') {
 			$soapRequestOptions['trace'] = true;
 		}
+		if ( $requestName === 'updatePatron' && $this->accountProfile->apiVersion == '2025r2' ) {
+			if( $request->Modifiers === '' ) {
+				$request->Modifiers = new stdClass();
+			}
+			if (empty($this->accountProfile->staffUsername)) {
+				$logger->log('No Staff Username configured in Account Profile', Logger::LOG_ERROR);
+				$result['message'] = 'No Staff Username configured in Account Profile';
+				return $result;
+			}
+			$staff = $this->accountProfile->staffUsername;
+			$request->Modifiers->StaffID = $staff;
+		}
 		while (!$connectionPassed && $numTries < 2) {
 			try {
 				try {

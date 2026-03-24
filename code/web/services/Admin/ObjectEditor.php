@@ -338,7 +338,6 @@ abstract class ObjectEditor extends Admin_Admin {
 					'totalItems' => $numObjects,
 					'perPage' => $recordsPerPage,
 					'canChangeRecordsPerPage' => true,
-					'canJumpToPage' => true,
 					'fileName' => $cleanUrl,
 				];
 				$pager = new Pager($options);
