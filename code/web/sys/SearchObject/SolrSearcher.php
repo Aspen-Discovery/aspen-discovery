@@ -819,36 +819,52 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher {
 	protected function processSearchSuggestions(string $searchTerm, string $suggestionHandler) {
 		$suggestions = $this->indexEngine->getSearchSuggestions($searchTerm, $suggestionHandler);
 		$allSuggestions = [];
-		if (isset($suggestions['suggest'])) {
-			foreach ($suggestions['suggest'] as $suggestionType => $suggestedSearchesByType) {
-				foreach ($suggestedSearchesByType as $term => $suggestionsForTerm) {
-					foreach ($suggestionsForTerm['suggestions'] as $index => $suggestion) {
-						$nonHighlightedTerm = preg_replace('~</?b>~', '', $suggestion['term']);
-						if (strcasecmp($nonHighlightedTerm, $searchTerm) === 0) {
-							continue;
-						}
-						//Remove the old value if this is a duplicate (after incrementing the weight)
-						foreach ($allSuggestions as $key => $value) {
-							if ($value['nonHighlightedTerm'] == $nonHighlightedTerm) {
-								$suggestion['weight'] += $value['numSearches'];
-								unset($allSuggestions[$key]);
-								break;
-							}
-						}
-						$allSuggestions[str_pad(($suggestion['weight'] + count($suggestionsForTerm['suggestions']) - $index), 10, '0', STR_PAD_LEFT) . $nonHighlightedTerm] = [
-							'phrase' => $suggestion['term'],
-							'numSearches' => $suggestion['weight'],
-							'numResults' => $suggestion['weight'],
-							'nonHighlightedTerm' => $nonHighlightedTerm,
-						];
-					}
-				}
-			}
+		
+		if (!isset($suggestions['suggest'])) {
+			return [];
 		}
 
+		$allSuggestions = $this->getAllSuggestions($searchTerm, $suggestions['suggest']);
+
 		krsort($allSuggestions);
-		if (count($allSuggestions) > 8) {
-			$allSuggestions = array_slice($allSuggestions, 0, 8);
+		
+		return array_slice($allSuggestions, 0, 8);
+	}
+
+	private function getAllSuggestions(string $searchTerm, array $suggestions) : array {
+		
+		$allSuggestions = [];
+		foreach ($suggestions as $suggestedSearchesByType) {
+			foreach ($suggestedSearchesByType as $suggestionsForTerm) {
+				foreach ($suggestionsForTerm['suggestions'] as $index => $suggestion) {
+					$nonHighlightedTerm = preg_replace('~</?b>~', '', $suggestion['term']);
+					if (strcasecmp($nonHighlightedTerm, $searchTerm) === 0) {
+						continue;
+					}
+					//Remove the old value if this is a duplicate (after incrementing the weight)
+					foreach ($allSuggestions as $key => $value) {
+						if ($value['nonHighlightedTerm'] == $nonHighlightedTerm) {
+							$suggestion['weight'] += $value['numSearches'];
+							unset($allSuggestions[$key]);
+							break;
+						}
+					}
+
+					$sortKey = str_pad(
+						$suggestion['weight'] + count($suggestionsForTerm['suggestions']) - $index,
+						10,
+						'0',
+						STR_PAD_LEFT
+					) . $nonHighlightedTerm;
+					
+					$allSuggestions[$sortKey] = [
+						'phrase' => $suggestion['term'],
+						'numSearches' => $suggestion['weight'],
+						'numResults' => $suggestion['weight'],
+						'nonHighlightedTerm' => $nonHighlightedTerm,
+					];
+				}
+			}
 		}
 		return $allSuggestions;
 	}
