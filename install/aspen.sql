@@ -3117,6 +3117,7 @@ CREATE TABLE `library` (
   `systemsToRepeatIn` varchar(255) DEFAULT '',
   `homeLink` varchar(255) NOT NULL DEFAULT 'default',
   `showAdvancedSearchbox` tinyint(4) NOT NULL DEFAULT 1,
+  `simplifiedSearchBox` tinyint(1) NOT NULL DEFAULT 0,
   `validPickupSystems` varchar(500) DEFAULT '',
   `allowProfileUpdates` tinyint(4) NOT NULL DEFAULT 1,
   `allowRenewals` tinyint(4) NOT NULL DEFAULT 1,

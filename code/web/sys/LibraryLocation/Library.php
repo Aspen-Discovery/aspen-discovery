@@ -196,6 +196,7 @@ class Library extends DataObject {
 	public $homeLink;
 	public $showAdvancedSearchbox;
 	public $showWebsiteSearch;
+	public $simplifiedSearchBox;
 	public $enableInnReachIntegration;
 	public /** @noinspection PhpUnused */
 		$showInnReachResultsAtEndOfSearch;
@@ -3539,6 +3540,14 @@ class Library extends DataObject {
 								'note' => 'When enabled, "Library Websites" search will only appear if Web Builder or Indexed Websites also exist.',
 								'hideInLists' => true,
 								'default' => 1,
+							],
+							'simplifiedSearchBox' => [
+								'property' => 'simplifiedSearchBox',
+								'type' => 'checkbox',
+								'label' => 'Use Simplified Search Box',
+								'description' => 'Hides the search type dropdown and moves the Search button to a more prominent position. Advanced Search is accessible via the collection dropdown.',
+								'hideInLists' => true,
+								'default' => 0,
 							],
 						],
 					],
