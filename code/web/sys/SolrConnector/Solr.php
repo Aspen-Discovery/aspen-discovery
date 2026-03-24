@@ -506,26 +506,30 @@ abstract class Solr {
 
 		// Add highlighting because suggestion highlighting still does not
 		// work in Solr (https://issues.apache.org/jira/browse/SOLR-7964).
-		if (isset($result['suggest']) && !empty($phrase)) {
-			$searchTerms = preg_split('/\s+/', strtolower(trim($phrase)));
-			$searchTerms = array_filter($searchTerms, function($term) { return strlen($term) > 1; });
+		if (!(isset($result['suggest']) && !empty($phrase))) {
+			return $result;
+		}
+		
+		$searchTerms = preg_split('/\s+/', strtolower(trim($phrase)));
+		$searchTerms = array_filter($searchTerms, function($term) { return strlen($term) > 1; });
 
-			foreach ($result['suggest'] as &$dictionary) {
-				foreach ($dictionary as &$queryData) {
-					if (isset($queryData['suggestions'])) {
-						foreach ($queryData['suggestions'] as &$suggestion) {
-							if (isset($suggestion['term'])) {
-								foreach ($searchTerms as $term) {
-									$pattern = '/(' . preg_quote($term, '/') . ')/i';
-									$suggestion['term'] = preg_replace($pattern, '<b>$1</b>', $suggestion['term']);
-								}
-							}
-						}
+		foreach ($result['suggest'] as &$dictionary) {
+			foreach ($dictionary as &$queryData) {
+				if (!isset($queryData['suggestions'])) {
+					continue;
+				}
+				foreach ($queryData['suggestions'] as &$suggestion) {
+					if (!isset($suggestion['term'])) {
+						continue;
+					}
+					foreach ($searchTerms as $term) {
+						$pattern = '/(' . preg_quote($term, '/') . ')/i';
+						$suggestion['term'] = preg_replace($pattern, '<b>$1</b>', $suggestion['term']);
 					}
 				}
 			}
 		}
-
+		
 		return $result;
 	}
 
