@@ -511,7 +511,7 @@ abstract class Solr {
 		}
 		
 		$searchTerms = preg_split('/\s+/', strtolower(trim($phrase)));
-		$searchTerms = array_filter($searchTerms, function($term) { return strlen($term) > 1; });
+		$searchTerms = array_filter($searchTerms, fn($term) => strlen($term) > 1);
 
 		foreach ($result['suggest'] as &$dictionary) {
 			foreach ($dictionary as &$queryData) {
