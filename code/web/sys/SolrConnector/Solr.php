@@ -497,7 +497,7 @@ abstract class Solr {
 			$options['suggest.cfq'] = implode(' AND ', $cfqFilters);
 		}
 
-		$result = $this->_select('GET', $options, false, $suggestionHandler);
+		$result = $this->_selectSearchSuggestions('GET', $options, false, $suggestionHandler);
 		if ($result instanceof AspenError) {
 			AspenError::raiseError($result);
 		}elseif (empty($result)) {
@@ -531,6 +531,126 @@ abstract class Solr {
 		}
 		
 		return $result;
+	}
+
+	/**
+	 * Submit REST Request to read data
+	 *
+	 * @param string $method HTTP Method to use: GET, POST,
+	 * @param array $params Array of parameters for the request
+	 * @param bool $returnSolrError If Solr reports a syntax error,
+	 *                                                                                    should we fail outright (false) or
+	 *                                                                                    treat it as an empty result set with
+	 *                                                                                    an error key set (true)?
+	 * @return    array|AspenError                                                     The Solr response (or an AspenError)
+	 * @access    protected
+	 */
+	protected function _selectSearchSuggestions($method = 'GET', $params = [], $returnSolrError = false, $queryHandler = 'select') {
+		global $timer;
+		global $memoryWatcher;
+
+		$memoryWatcher->logMemory('Start Solr Select Search Suggestions');
+
+		$params['wt'] = 'json';
+		$params['json.nl'] = 'arrarr';
+
+		// Build query string for use with GET or POST:
+		$query = $this->getParsedValues($params);
+		$queryString = implode('&', $query);
+
+		// Set full search URL
+		$this->fullSearchUrl = $this->host . "/select/?" . $queryString;
+
+		// Set debug (if applicable)
+		$this->setDebugStatus($method, $queryString);
+		
+		// Send Request
+		$timer->logTime("Prepare to send request to solr");
+		$memoryWatcher->logMemory('Prepare to send request to solr');
+		$result = $this->sendSearchSuggestionRequest($method, $queryHandler, $queryString);
+
+		$timer->logTime("Send data to solr for select $queryString");
+		$memoryWatcher->logMemory("Send data to solr for select $queryString");
+
+		return $this->_process($result, $returnSolrError, $queryString);
+	}
+
+	private function setDebugStatus(string $method, string $queryString) : void {
+		if ($this->debug || $this->debugSolrQuery) {
+			$solrQueryDebug = "";
+			if ($this->debugSolrQuery) {
+				$solrQueryDebug .= "$method: ";
+			}
+			//Add debug parameter so we can see the explain section at the bottom.
+			$this->debugSearchUrl = $this->host . "/select/?debugQuery=on&" . $queryString;
+
+			if ($this->debugSolrQuery) {
+				$solrQueryDebug .= "<a href='" . $this->debugSearchUrl . "' target='_blank'>$this->fullSearchUrl</a>";
+			}
+
+			if ($this->isPrimarySearch) {
+				global $interface;
+				if ($interface) {
+					$interface->assign('solrLinkDebug', $solrQueryDebug);
+				}
+			}
+		}
+	}
+
+	private function getParsedValues(array $params) : array {
+		$query = [];
+
+		$parseAdditional = function($add) {
+				return ($add instanceof FacetSetting) ?
+						$add->facetName :
+						$add;
+			};
+
+		$parseValue = function($val) use ($parseAdditional){
+			$retVal = match(true){
+				is_array($val) => array_map($parseAdditional, $val),
+				default => $val
+			};
+
+			return urlencode($retVal);
+		};
+
+		$filterFunc = fn($value, $function) => !($function === '' || ($function === 'facet.field' && empty($value)));
+
+		$paramsToParse = array_filter($params, $filterFunc, mode: 1);
+
+		foreach($paramsToParse as $function => $value){
+			$query[] = "$function=" . $parseValue($value);
+		}
+
+		return $query;
+	}
+
+	private function sendSearchSuggestionRequest(string $method, string $queryHandler, string $queryString) : bool | string {
+		
+		$this->setPostConnectionTimeouts();
+		
+		$result = match(true) {
+			$method === 'GET' => $this->client->curlGetPage($this->host . "/$queryHandler/?$queryString"),
+			$method === 'POST' => $this->client->curlPostPage($this->host . "/$queryHandler/", $queryString),
+			default => false
+		};
+
+		return $result;
+	}
+
+	private function setPostConnectionTimeouts() : void {
+		// Get System Variables
+		require_once ROOT_DIR . '/sys/SystemVariables.php';
+		$systemVariables = SystemVariables::getSystemVariables();
+		
+		// Set Necessary Timeouts
+		if ($systemVariables && $systemVariables->solrConnectTimeout > 0) {
+			$this->client->setConnectTimeout($systemVariables->solrConnectTimeout);
+		}
+		if ($systemVariables && $systemVariables->solrQueryTimeout > 0) {
+			$this->client->setTimeout($systemVariables->solrQueryTimeout);
+		}
 	}
 
 	/**
