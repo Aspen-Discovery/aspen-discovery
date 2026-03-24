@@ -576,24 +576,24 @@ abstract class Solr {
 	}
 
 	private function setDebugStatus(string $method, string $queryString) : void {
-		if ($this->debug || $this->debugSolrQuery) {
-			$solrQueryDebug = "";
-			if ($this->debugSolrQuery) {
-				$solrQueryDebug .= "$method: ";
-			}
-			//Add debug parameter so we can see the explain section at the bottom.
-			$this->debugSearchUrl = $this->host . "/select/?debugQuery=on&" . $queryString;
+		if (!($this->debug || $this->debugSolrQuery)) {
+			return;
+		}
+		
+		$solrQueryDebug = "";
+		if ($this->debugSolrQuery) {
+			$solrQueryDebug .= "$method: ";
+		}
+		//Add debug parameter so we can see the explain section at the bottom.
+		$this->debugSearchUrl = $this->host . "/select/?debugQuery=on&" . $queryString;
 
-			if ($this->debugSolrQuery) {
-				$solrQueryDebug .= "<a href='" . $this->debugSearchUrl . "' target='_blank'>$this->fullSearchUrl</a>";
-			}
+		if ($this->debugSolrQuery) {
+			$solrQueryDebug .= "<a href='" . $this->debugSearchUrl . "' target='_blank'>$this->fullSearchUrl</a>";
+		}
 
-			if ($this->isPrimarySearch) {
-				global $interface;
-				if ($interface) {
-					$interface->assign('solrLinkDebug', $solrQueryDebug);
-				}
-			}
+		global $interface;
+		if ($this->isPrimarySearch && $interface) {
+			$interface->assign('solrLinkDebug', $solrQueryDebug);
 		}
 	}
 
