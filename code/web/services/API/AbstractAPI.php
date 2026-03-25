@@ -20,7 +20,7 @@ abstract class AbstractAPI extends Action{
 				}
 			}
 		}
-		return true;
+		return false;
 	}
 
 	function getLiDAVersion() {

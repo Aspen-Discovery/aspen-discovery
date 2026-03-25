@@ -519,7 +519,7 @@ class UserList extends DataObject {
 		$searchObject->disableBoosting();
 		$searchObject->setPrimarySearch(false);
 		//We need to log this to search history to be able to apply facets
-		$searchObject->disableLogging();
+		//$searchObject->disableLogging();
 		$searchObject->setFieldsToReturn('id');
 		$searchObject->setPage(($start / $numItems) + 1);
 		$searchObject->setLimit($numItems);

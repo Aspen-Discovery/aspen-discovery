@@ -585,6 +585,10 @@ class GroupedWork_AJAX extends JSON_Action {
 		$workReview = new UserWorkReview();
 		$workReview->groupedRecordPermanentId = $_REQUEST['id'];
 		$workReview->userId = UserAccount::getActiveUserId();
+		$reviewExists = false;
+		if ($workReview->find(true)) {
+			$reviewExists = true;
+		}
 		if (empty($workReview->title)) {
 			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 			$driver = new GroupedWorkDriver($_REQUEST['id']);
@@ -592,7 +596,7 @@ class GroupedWork_AJAX extends JSON_Action {
 				$workReview->title = $driver->getTitle();
 			}
 		}
-		if ($workReview->find(true)) {
+		if ($reviewExists) {
 			if ($rating != $workReview->rating) { // update gives an error if the rating value is the same as stored.
 				$workReview->rating = $rating;
 				$success = $workReview->update();

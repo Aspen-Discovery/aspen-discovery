@@ -960,7 +960,11 @@ class Browse_AJAX extends JSON_Action {
 
 		if (isset($_REQUEST['textId'])) {
 			if (($_REQUEST['textId'] == "system_saved_searches") || ($_REQUEST['textId'] == "system_user_lists")) {
-				$subCategoryTextId = $_REQUEST['textId'] . "_" . $_REQUEST['subCategoryTextId'];
+				if (str_starts_with($_REQUEST['subCategoryTextId'], 'system_saved_searches') || str_starts_with($_REQUEST['subCategoryTextId'], 'system_user_lists')) {
+					$subCategoryTextId = $_REQUEST['subCategoryTextId'];
+				}else{
+					$subCategoryTextId = $_REQUEST['textId'] . "_" . $_REQUEST['subCategoryTextId'];
+				}
 			} else {
 				$subCategoryTextId = $_REQUEST['subCategoryTextId'];
 			}
