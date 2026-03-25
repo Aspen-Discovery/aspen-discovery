@@ -533,48 +533,6 @@ abstract class Solr {
 		return $result;
 	}
 
-	/**
-	 * Submit REST Request to read data
-	 *
-	 * @param string $method HTTP Method to use: GET, POST,
-	 * @param array $params Array of parameters for the request
-	 * @param bool $returnSolrError If Solr reports a syntax error,
-	 *                                                                                    should we fail outright (false) or
-	 *                                                                                    treat it as an empty result set with
-	 *                                                                                    an error key set (true)?
-	 * @return    array|AspenError                                                     The Solr response (or an AspenError)
-	 * @access    protected
-	 */
-	protected function _selectSearchSuggestions($method = 'GET', $params = [], $returnSolrError = false, $queryHandler = 'select') {
-		global $timer;
-		global $memoryWatcher;
-
-		$memoryWatcher->logMemory('Start Solr Select Search Suggestions');
-
-		$params['wt'] = 'json';
-		$params['json.nl'] = 'arrarr';
-
-		// Build query string for use with GET or POST:
-		$query = $this->getParsedValues($params);
-		$queryString = implode('&', $query);
-
-		// Set full search URL
-		$this->fullSearchUrl = $this->host . "/select/?" . $queryString;
-
-		// Set debug (if applicable)
-		$this->setDebugStatus($method, $queryString);
-		
-		// Send Request
-		$timer->logTime("Prepare to send request to solr");
-		$memoryWatcher->logMemory('Prepare to send request to solr');
-		$result = $this->sendSearchSuggestionRequest($method, $queryHandler, $queryString);
-
-		$timer->logTime("Send data to solr for select $queryString");
-		$memoryWatcher->logMemory("Send data to solr for select $queryString");
-
-		return $this->_process($result, $returnSolrError, $queryString);
-	}
-
 	private function setDebugStatus(string $method, string $queryString) : void {
 		if (!($this->debug || $this->debugSolrQuery)) {
 			return;
