@@ -81,8 +81,13 @@ class AJAX extends JSON_Action {
 			$searchSuggestions = $commonSearchTerms;
 			$memCache->set($cacheKey, $searchSuggestions, $configArray['Caching']['search_suggestions']);
 			$timer->logTime("Loaded search suggestions $cacheKey");
+		}else{
+			$searchSuggestions = [];
 		}
-		return $searchSuggestions;
+		return [
+			'success' => true,
+			'suggestions' => $searchSuggestions
+		];
 	}
 
 	/** @noinspection PhpUnused */
@@ -545,6 +550,54 @@ class AJAX extends JSON_Action {
 			$response['success'] = true;
 			$response['message'] = 'That facet is already unlocked.';
 		}
+		return $response;
+	}
+
+	/** @noinspection PhpUnused */
+	function clearAllLockedFacets(): array {
+		$response = [
+			'success' => false,
+			'message' => translate([
+				'text' => 'Unknown Error',
+				'isPublicFacing' => true,
+			]),
+		];
+
+		$searchObject = SearchObjectFactory::initSearchObject();
+		/** @var SearchObject_BaseSearcher|null $activeSearch */
+		$activeSearch = $searchObject->loadLastSearch();
+		if ($activeSearch === null) {
+			$response['message'] = 'Could not load search for which to clear locked filters.';
+			return $response;
+		}
+		$lockSection = $activeSearch->getSearchName();
+		$isLoggedIn = UserAccount::isLoggedIn();
+		$user = $isLoggedIn ? UserAccount::getActiveUserObj() : null;
+
+		if ($isLoggedIn) {
+			$lockedFacets = !empty($user->lockedFacets) ? json_decode($user->lockedFacets, true) : [];
+		} else {
+			$lockedFacets = $_SESSION['lockedFilters'] ?? [];
+		}
+
+		// Nothing to clear for this search type.
+		if (!isset($lockedFacets[$lockSection])) {
+			$response['success'] = true;
+			$response['message'] = '';
+			return $response;
+		}
+
+		unset($lockedFacets[$lockSection]);
+
+		if ($isLoggedIn) {
+			$user->lockedFacets = json_encode($lockedFacets);
+			$user->update();
+		} else {
+			$_SESSION['lockedFilters'] = $lockedFacets;
+		}
+
+		$response['success'] = true;
+		$response['message'] = '';
 		return $response;
 	}
 

@@ -13,6 +13,12 @@ class SearchObjectFactory {
 	 */
 	static function initSearchObject(string $engine = 'GroupedWork') : mixed{
 		global $configArray;
+		$engine = match ($engine) {
+			'local' => 'GroupedWork',
+			'series', 'list', 'events' => ucfirst($engine),
+			'cloudsource' => 'CloudSource',
+			default => $engine,
+		};
 		$path = "{$configArray['Site']['local']}/sys/SearchObject/{$engine}Searcher.php";
 		if ($engine == 'GroupedWork' || !is_readable($path)) {
 			require_once ROOT_DIR . '/sys/SystemVariables.php';

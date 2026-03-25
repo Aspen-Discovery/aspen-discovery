@@ -43,7 +43,7 @@
 			<div class="horizontalSliders"><div class="row horizontalFormatSelector">
 				<div class="col-xs-12">
 					<div class="slider-container" role="region" id="slider-{$summId|escape}">
-						<button type="button" class="slider-button slider-button-prev btn btn-editions" id="slider-prev-{$summId|escape}"></button>
+						<button type="button" class="slider-button slider-button-prev btn btn-editions" id="slider-prev-{$summId|escape}"><i class="fas fa-chevron-left"></i></button>
 						<div class="slider-wrapper" role="listbox" aria-activedescendant="slide-{$summId|escape}-0">
 	                        {assign var=firstFormat value=""}
 	                        {foreach from=$relatedManifestations item=$manifestation name=manifestations}
@@ -57,7 +57,7 @@
 								</div>
 	                        {/foreach}
 						</div>
-						<button type="button" class="slider-button slider-button-next btn btn-editions" id="slider-next-{$summId|escape}"></button>
+						<button type="button" class="slider-button slider-button-next btn btn-editions" id="slider-next-{$summId|escape}"><i class="fas fa-chevron-right"></i></button>
 					</div>
 					<script>
 						$(document).ready(function(){ldelim}
@@ -76,11 +76,11 @@
 			<div class="row variationsInfo">
 				<div class="col-xs-12">
 					<div role="region" class="slider-container variations" id="variationsInfo_{$summId|escape}" style="display: none;">
-						<button type="button" class="slider-button slider-button-prev btn btn-editions" id="slider-prev-{$summId|escape}"></button>
+						<button type="button" class="slider-button slider-button-prev btn btn-editions" id="slider-prev-{$summId|escape}"><i class="fas fa-chevron-left"></i></button>
 						<div role="listbox" class="slider-wrapper" id="slider-variations-{$summId|escape}" aria-activedescendant="slide-{$summId|escape}-0">
 
 						</div>
-						<button type="button" class="slider-button slider-button-next btn btn-editions" id="slider-next-{$summId|escape}"></button>
+						<button type="button" class="slider-button slider-button-next btn btn-editions" id="slider-next-{$summId|escape}"><i class="fas fa-chevron-right"></i></button>
 					</div>
 				</div>
 			</div>

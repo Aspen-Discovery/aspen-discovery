@@ -64,6 +64,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 	private long fullMarcExportRecordIdThreshold;
 	private long lastVolumeExportTimestamp;
 	private boolean checkRecordForLargePrint;
+	private boolean use650ForPictureBooks;
 	private char subLocationSubfield;
 	private int determineAudienceBy;
 	private char audienceSubfield;
@@ -205,6 +206,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 
 		this.setFormatSubfield(getCharFromRecordSet(indexingProfileRS, "format"));
 		this.setCheckRecordForLargePrint(indexingProfileRS.getBoolean("checkRecordForLargePrint"));
+		this.setUse650ForPictureBooks(indexingProfileRS.getBoolean("use650ForPictureBooks"));
 
 		this.setDoAutomaticEcontentSuppression(indexingProfileRS.getBoolean("doAutomaticEcontentSuppression"));
 		this.setSuppressRecordsWithUrlsMatching(indexingProfileRS.getString("suppressRecordsWithUrlsMatching"));
@@ -842,6 +844,14 @@ public class IndexingProfile extends BaseIndexingSettings {
 
 	public boolean getCheckRecordForLargePrint() {
 		return checkRecordForLargePrint;
+	}
+
+	private void setUse650ForPictureBooks(boolean use650ForPictureBooks) {
+		this.use650ForPictureBooks = use650ForPictureBooks;
+	}
+
+	public boolean getUse650ForPictureBooks() {
+		return use650ForPictureBooks;
 	}
 
 	public void setCollectionSubfield(char collectionSubfield) {

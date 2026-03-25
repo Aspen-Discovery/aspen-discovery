@@ -2597,8 +2597,16 @@ td[data-entry-id]::after {
   right: 10px;
 }
 
+.slider-button-prev i {
+  right: -1px;
+}
+
 .slider-button-next {
   left: 10px;
+}
+
+.slider-button-next i {
+  left: -1px;
 }
 
 .horizDisplayShowEditionsRow .horiz-line-left {

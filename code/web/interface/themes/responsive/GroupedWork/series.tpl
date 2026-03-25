@@ -8,8 +8,8 @@
 					<div class="loading">{translate text="Loading titles in this series..." isPublicFacing=true}</div>
 				</div>
 
-				<a href="#" class="jcarousel-control-prev" aria-label="{translate text="Previous Item" inAttribute=true isPublicFacing=true}"><i class="fas fa-caret-left"></i></a>
-				<a href="#" class="jcarousel-control-next" aria-label="{translate text="Next Item" inAttribute=true isPublicFacing=true}"><i class="fas fa-caret-right"></i></a>
+				<a href="#" class="jcarousel-control-prev" aria-label="{translate text="Previous Item" inAttribute=true isPublicFacing=true}"><i class="fas fa-caret-left {if $isRTL}fa-flip-horizontal{/if}"></i></a>
+				<a href="#" class="jcarousel-control-next" aria-label="{translate text="Next Item" inAttribute=true isPublicFacing=true}"><i class="fas fa-caret-right {if $isRTL}fa-flip-horizontal{/if}"></i></a>
 			</div>
 		</div>
 	</div>

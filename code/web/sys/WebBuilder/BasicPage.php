@@ -478,6 +478,20 @@ class BasicPage extends DB_LibraryLinkedObject {
 		return $result;
 	}
 
+	public function canActiveUserEdit() : bool {
+		//Active user can edit if they have permission to edit everything or this is for their home location or sharing allows editing
+		if (UserAccount::userHasPermission('Administer All Basic Pages')) {
+			return true;
+		}elseif (UserAccount::userHasPermission('Administer Library Basic Pages')){
+			//If we see it, we can edit it, but it might be read-only
+			$libraryList = Library::getLibraryList(true);
+			$relatedLibraries = $this->getLibraries();
+			return !empty(array_intersect(array_keys($libraryList), $relatedLibraries));
+		}else{
+			return false;
+		}
+	}
+
 	public function canView(): bool {
 		global $locationSingleton;
 

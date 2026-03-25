@@ -20,7 +20,7 @@ abstract class AbstractAPI extends Action{
 				}
 			}
 		}
-		return false;
+		return true;
 	}
 
 	function getLiDAVersion() {
@@ -140,6 +140,12 @@ abstract class AbstractAPI extends Action{
 				'library_calendar_event',
 				'event_aspenEvent',
 				'grouped_work'
+			];
+		} elseif ($context == 'list') {
+			return [
+				'GroupedWork',
+				'Events',
+				'Lists'
 			];
 		} else {
 			return [

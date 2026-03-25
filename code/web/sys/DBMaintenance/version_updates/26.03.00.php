@@ -42,6 +42,13 @@ function getUpdates26_03_00(): array {
 				"UPDATE hoopla_settings set regroupAllRecords = 1"
 			]
 		], //force_regrouping_of_hoopla_26_03
+		'indexing_profile_use_650_for_picture_books' => [
+			'title' => 'Indexing Profile Use 650 for Picture Books',
+			'description' => 'Allow using 650 for Picture Books in Indexing Profile',
+			'sql' => [
+				'ALTER TABLE indexing_profiles ADD COLUMN use650ForPictureBooks TINYINT(1) DEFAULT 0'
+			]
+		], //indexing_profile_use_650_for_picture_books
 
 		//kirstien
 		'add_cloud_library_sunday_reindex_option' => [

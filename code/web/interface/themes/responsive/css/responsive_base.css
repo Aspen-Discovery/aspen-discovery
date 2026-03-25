@@ -10788,6 +10788,10 @@ td[data-entry-id]:has(.date-edit:focus)::after {
 .facetTitle {
   padding: 8px 10px 6px 10px;
 }
+.facetTitle .facetLock a,
+.facetTitle .facetLock i {
+  color: inherit !important;
+}
 .exploreMoreTitle {
   padding: 8px 30px 6px 15px;
 }

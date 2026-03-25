@@ -62,17 +62,64 @@ class SideFacets implements RecommendationInterface {
 		$interface->assign('hasSearchableFacets', $this->searchObject->hasSearchableFacets());
 		$interface->assign('removeAllFiltersUrl', $this->searchObject->getRemoveAllFiltersUrl());
 
+		$isLoggedIn = UserAccount::isLoggedIn();
+		$user = $isLoggedIn ? UserAccount::getActiveUserObj() : null;
 		$lockSection = $this->searchObject->getSearchName();
-		if (UserAccount::isLoggedIn()) {
-			$user = UserAccount::getActiveUserObj();
-			$lockedFacets = !empty($user->lockedFacets) ? json_decode($user->lockedFacets, true) : [];
+		if ($isLoggedIn) {
+			$lockedFacetsBySection = !empty($user->lockedFacets) ? json_decode($user->lockedFacets, true) : [];
 		} else {
-			$lockedFacets = $_SESSION['lockedFilters'] ?? [];
+			$lockedFacetsBySection = $_SESSION['lockedFilters'] ?? [];
 		}
-		$lockedFacets = $lockedFacets[$lockSection] ?? [];
+		$lockedFacets = $lockedFacetsBySection[$lockSection] ?? [];
+
+		//Get applied facets
+		$filterList = $this->searchObject->getFilterList();
+		$lockedFacetsChanged = false;
+		$unscopedFieldCache = [];
+		$lockedValuesIndexByFacet = [];
+		foreach ($filterList as $facet) {
+			foreach ($facet as $filter) {
+				if (!empty($filter['field']) && array_key_exists('value', $filter)) {
+					$field = $filter['field'];
+					if (!isset($unscopedFieldCache[$field])) {
+						$unscopedFieldCache[$field] = $this->searchObject->getUnscopedFieldName($field);
+					}
+					$unscopedField = $unscopedFieldCache[$field];
+					$lockedFacetKey = null;
+					if (array_key_exists($field, $lockedFacets)) {
+						$lockedFacetKey = $field;
+					} elseif (array_key_exists($unscopedField, $lockedFacets)) {
+						$lockedFacetKey = $unscopedField;
+					}
+					if ($lockedFacetKey !== null) {
+						if (!isset($lockedValuesIndexByFacet[$lockedFacetKey])) {
+							$lockedValuesIndexByFacet[$lockedFacetKey] = array_fill_keys($lockedFacets[$lockedFacetKey], true);
+						}
+						if (!isset($lockedValuesIndexByFacet[$lockedFacetKey][$filter['value']])) {
+							$lockedFacets[$lockedFacetKey][] = $filter['value'];
+							$lockedValuesIndexByFacet[$lockedFacetKey][$filter['value']] = true;
+							$lockedFacetsChanged = true;
+						}
+					}
+				}
+			}
+		}
+		if ($lockedFacetsChanged) {
+			if ($isLoggedIn) {
+				$lockedFacetsBySection[$lockSection] = $lockedFacets;
+				$user->lockedFacets = json_encode($lockedFacetsBySection);
+				$user->update();
+			} else {
+				$lockedFacetsBySection[$lockSection] = $lockedFacets;
+				$_SESSION['lockedFilters'] = $lockedFacetsBySection;
+			}
+		}
 		$lockedValuesByUnscoped = [];
 		foreach ($lockedFacets as $lockedFacetKey => $lockedValues) {
-			$unscopedKey = $this->searchObject->getUnscopedFieldName($lockedFacetKey);
+			if (!isset($unscopedFieldCache[$lockedFacetKey])) {
+				$unscopedFieldCache[$lockedFacetKey] = $this->searchObject->getUnscopedFieldName($lockedFacetKey);
+			}
+			$unscopedKey = $unscopedFieldCache[$lockedFacetKey];
 			// To make sure the scoped field (e.g. available_at_main) still shows as locked even when the field names differ.
 			if (!isset($lockedValuesByUnscoped[$unscopedKey])) {
 				$lockedValuesByUnscoped[$unscopedKey] = [];
@@ -81,9 +128,6 @@ class SideFacets implements RecommendationInterface {
 				$lockedValuesByUnscoped[$unscopedKey] = array_values(array_unique(array_merge($lockedValuesByUnscoped[$unscopedKey], $lockedValues)));
 			}
 		}
-
-		//Get applied facets
-		$filterList = $this->searchObject->getFilterList();
 		foreach ($filterList as $facetKey => &$facet) {
 			//Remove any top facets since the removal links are displayed above results
 			if (str_starts_with($facet[0]['field'], 'availability_toggle')) {
@@ -92,11 +136,19 @@ class SideFacets implements RecommendationInterface {
 			}
 			foreach ($facet as &$filter) {
 				if (!empty($filter['field']) && array_key_exists('value', $filter)) {
-					$unscopedField = $this->searchObject->getUnscopedFieldName($filter['field']);
+					if (!isset($unscopedFieldCache[$filter['field']])) {
+						$unscopedFieldCache[$filter['field']] = $this->searchObject->getUnscopedFieldName($filter['field']);
+					}
+					$unscopedField = $unscopedFieldCache[$filter['field']];
 					$filter['unscopedField'] = $unscopedField;
 					$lockedValues = $lockedFacets[$filter['field']] ?? ($lockedValuesByUnscoped[$unscopedField] ?? []);
-					if (!empty($lockedValues) && in_array($filter['value'], $lockedValues)) {
-						$filter['isLocked'] = true;
+					if (!empty($lockedValues)) {
+						if (!isset($lockedValuesIndexByFacet[$filter['field']])) {
+							$lockedValuesIndexByFacet[$filter['field']] = array_fill_keys($lockedValues, true);
+						}
+						if (isset($lockedValuesIndexByFacet[$filter['field']][$filter['value']])) {
+							$filter['isLocked'] = true;
+						}
 					}
 				}
 			}

@@ -1,2 +1,9 @@
 /* main-rtl.css supplement for RTL languages */
 /* This file is included after main-rtl.css and is used to override any styles that need to be different for RTL languages. */
+.jcarousel-pagination {
+    transform: translate(50%, 0);
+    left: auto;
+}
+.jcarousel-control-next {
+    right: auto;
+}

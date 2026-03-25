@@ -10878,8 +10878,6 @@ class MyAccount_AJAX extends JSON_Action {
 
 		$sortOptions = [
 			'id' => 'Id (Default)',
-			'created_asc' => 'Date Saved (Oldest First)',
-			'created_desc' => 'Date Saved (Newest First)',
 			'title_asc' => 'Name (A-Z)',
 			'title_desc' => 'Name (Z-A)',
 		];
@@ -10908,8 +10906,6 @@ class MyAccount_AJAX extends JSON_Action {
 
 		$user = UserAccount::getActiveUserObj();
 
-		$searches = [];
-
 		$sort = $_REQUEST['sort'] ?? 'id';
 		$page = isset($_REQUEST['page']) ? (int)$_REQUEST['page'] : 1;
 		$limit = isset($_REQUEST['limit']) ? (int)$_REQUEST['limit'] : 20;
@@ -10918,8 +10914,10 @@ class MyAccount_AJAX extends JSON_Action {
 		$interface->assign('sort', $sort);
 		$interface->assign('filter', $filter);
 
+		$searches = [];
 		$savedSearches = [];
 		$savedSearch = new SearchEntry();
+		$savedSearch->whereAdd("searchSource <> 'user_list'");
 		$savedSearch->user_id = $user->id;
 		$savedSearch->saved = 1;
 		if (!empty($filter)) {
@@ -11059,6 +11057,7 @@ class MyAccount_AJAX extends JSON_Action {
 		$savedSearches = [];
 		$savedSearch = new SearchEntry();
 		$savedSearch->whereAdd("session_id = '" . session_id() . "' OR user_id = " . $user->id);
+		$savedSearch->whereAdd("searchSource <> 'user_list'");
 		$savedSearch->saved = 0;
 		$totalCount = $savedSearch->count();
 		switch ($sort) {

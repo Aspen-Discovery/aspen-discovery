@@ -22,7 +22,7 @@
 			</div>
 			{if !empty($removeAllFiltersUrl)}
 				<div class="removeAllFilters">
-					<a class="btn btn-default btn-sm removeAllFiltersBtn" href="{$removeAllFiltersUrl}">{translate text="Clear All" isPublicFacing=true}</a>
+					<a class="btn btn-default btn-sm removeAllFiltersBtn" href="{$removeAllFiltersUrl}" onclick="return AspenDiscovery.Searches.clearAllFiltersAndUnlock('{$removeAllFiltersUrl|escape:'javascript'}');">{translate text="Clear All" isPublicFacing=true}</a>
 				</div>
 			{/if}
 		{/if}
