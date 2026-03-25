@@ -497,7 +497,7 @@ abstract class Solr {
 			$options['suggest.cfq'] = implode(' AND ', $cfqFilters);
 		}
 
-		$result = $this->_selectSearchSuggestions('GET', $options, false, $suggestionHandler);
+		$result = $this->_select('GET', $options, false, $suggestionHandler);
 		if ($result instanceof AspenError) {
 			AspenError::raiseError($result);
 		}elseif (empty($result)) {
@@ -601,18 +601,22 @@ abstract class Solr {
 		$query = [];
 
 		$parseAdditional = function($add) {
-				return ($add instanceof FacetSetting) ?
-						$add->facetName :
-						$add;
+			$retVal = match(true) {
+				($add instanceof FacetSetting) => $add->facetName,
+				default => $add
 			};
-
-		$parseValue = function($val) use ($parseAdditional){
-			$retVal = match(true){
-				is_array($val) => array_map($parseAdditional, $val),
-				default => $val
-			};
-
 			return urlencode($retVal);
+		};
+
+		$parseArrayValue = function($function, $val) use ($parseAdditional){
+			$encodedVals = array_map($parseAdditional, $val);
+			$retVal = array_map(fn($v) => "$function=$v", $encodedVals);
+			return $retVal;
+		};
+
+		$parseStringVal = function($function, $val) {
+			$valStr = urlencode($val);
+			return "$function=$valStr";
 		};
 
 		$filterFunc = fn($value, $function) => !($function === '' || ($function === 'facet.field' && empty($value)));
@@ -620,7 +624,12 @@ abstract class Solr {
 		$paramsToParse = array_filter($params, $filterFunc, mode: 1);
 
 		foreach($paramsToParse as $function => $value){
-			$query[] = "$function=" . $parseValue($value);
+			if (!is_array($value)) {
+				$query[] = $parseStringVal($function, $value);
+				continue;
+			}
+			
+			$query = array_merge($query, $parseArrayValue($function, $value));
 		}
 
 		return $query;
@@ -1774,79 +1783,23 @@ abstract class Solr {
 
 		$memoryWatcher->logMemory('Start Solr Select');
 
-		//$this->pingServer();
-
 		$params['wt'] = 'json';
 		$params['json.nl'] = 'arrarr';
 
 		// Build query string for use with GET or POST:
-		$query = [];
-		if ($params) {
-			foreach ($params as $function => $value) {
-				if ($function != '') {
-					if ($function === 'facet.field') {
-						// If we stripped all values, skip the parameter:
-						if (empty($value)) {
-							continue;
-						}
-					}
-					if (is_array($value)) {
-						foreach ($value as $additional) {
-							if ($additional instanceof FacetSetting) {
-								$additional = urlencode($additional->facetName);
-								$query[] = "$function=$additional";
-							} elseif (is_string($additional)) {
-								$additional = urlencode($additional);
-								$query[] = "$function=$additional";
-							}
-						}
-					} else {
-						$value = urlencode($value);
-						$query[] = "$function=$value";
-					}
-				}
-			}
-		}
+		$query = $this->getParsedValues($params);
 		$queryString = implode('&', $query);
 
+		// Set full search URL
 		$this->fullSearchUrl = $this->host . "/select/?" . $queryString;
-		if ($this->debug || $this->debugSolrQuery) {
-			$solrQueryDebug = "";
-			if ($this->debugSolrQuery) {
-				$solrQueryDebug .= "$method: ";
-			}
-			//Add debug parameter so we can see the explain section at the bottom.
-			$this->debugSearchUrl = $this->host . "/select/?debugQuery=on&" . $queryString;
 
-			if ($this->debugSolrQuery) {
-				$solrQueryDebug .= "<a href='" . $this->debugSearchUrl . "' target='_blank'>$this->fullSearchUrl</a>";
-			}
-
-			if ($this->isPrimarySearch) {
-				global $interface;
-				if ($interface) {
-					$interface->assign('solrLinkDebug', $solrQueryDebug);
-				}
-			}
-		}
-
+		// Set debug (if applicable)
+		$this->setDebugStatus($method, $queryString);
+		
 		// Send Request
 		$timer->logTime("Prepare to send request to solr");
 		$memoryWatcher->logMemory('Prepare to send request to solr');
-		$result = false;
-		if ($method == 'GET') {
-			$result = $this->client->curlGetPage($this->host . "/$queryHandler/?$queryString");
-		} elseif ($method == 'POST') {
-			require_once ROOT_DIR . '/sys/SystemVariables.php';
-			$systemVariables = SystemVariables::getSystemVariables();
-			if ($systemVariables && $systemVariables->solrConnectTimeout > 0) {
-				$this->client->setConnectTimeout($systemVariables->solrConnectTimeout);
-			}
-			if ($systemVariables && $systemVariables->solrQueryTimeout > 0) {
-				$this->client->setTimeout($systemVariables->solrQueryTimeout);
-			}
-			$result = $this->client->curlPostPage($this->host . "/$queryHandler/", $queryString);
-		}
+		$result = $this->sendSearchSuggestionRequest($method, $queryHandler, $queryString);
 
 		$timer->logTime("Send data to solr for select $queryString");
 		$memoryWatcher->logMemory("Send data to solr for select $queryString");
