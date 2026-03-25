@@ -372,10 +372,11 @@ class SearchObject_GaleSearcher extends SearchObject_BaseSearcher {
 		}
 		$facetSet = [];
 		$facetDefinitions = $this->getFacetDefinitions();
+		$settings = $this->getSettings();
 		foreach ($facetDefinitions as $facetKey => $facetDefinition) {
 			if ($facetKey === 'productCode') {
-				if ($this->getSettings() != null && !empty($this->getSettings()->getProductCodes())){
-					$productCodes = $this->getSettings()->getProductCodes();
+				if ($settings != null && !empty($settings->getProductCodes())){
+					$productCodes = $settings->getProductCodes();
 					foreach ($productCodes as $productCode) {
 						if (empty($productCode->productCode)) {
 							continue;
@@ -421,7 +422,7 @@ class SearchObject_GaleSearcher extends SearchObject_BaseSearcher {
 					'allowPastDates' => true,
 				];
 			} elseif ($facetKey === 'fullTextOnly') {
-				if (!$this->getSettings()->fullTextOnly) {
+				if ($settings != null && !$settings->fullTextOnly) {
 					$fullTextValue = 'fullTextOnly';
 					$isApplied = isset($this->filterList['fullTextOnly']) && in_array($fullTextValue, $this->filterList['fullTextOnly'], true);
 					$facetSet['fullTextOnly'] = [
@@ -452,9 +453,11 @@ class SearchObject_GaleSearcher extends SearchObject_BaseSearcher {
 		$facetDefinitions = $this->getFacetDefinitions();
 		$settings = $this->getSettings();
 		$productCodeLabels = [];
-		foreach ($settings->getProductCodes() as $productCode) {
-			if (!empty($productCode->productCode)) {
-				$productCodeLabels[$productCode->productCode] = $productCode->displayName ?: $productCode->productCode;
+		if ($settings != null) {
+			foreach ($settings->getProductCodes() as $productCode) {
+				if (!empty($productCode->productCode)) {
+					$productCodeLabels[$productCode->productCode] = $productCode->displayName ?: $productCode->productCode;
+				}
 			}
 		}
 
@@ -579,7 +582,7 @@ class SearchObject_GaleSearcher extends SearchObject_BaseSearcher {
 			}
 			return $galeSetting;
 		}
-		AspenError::raiseError(new AspenError('There are no Gale Settings set for this library system.'));
+		return null;
 	}	
 
 	private function getProductCode(): string {

@@ -155,7 +155,7 @@ class Admin_Libraries extends ObjectEditor {
 	}
 
 	function getInstructions(): string {
-		return 'https://help.aspendiscovery.org/help/admin/systemslocations';
+		return 'https://aspen-discovery.atlassian.net/wiki/spaces/Help/pages/334037001/Library+Systems';
 	}
 
 	function getInitializationJs(): string {

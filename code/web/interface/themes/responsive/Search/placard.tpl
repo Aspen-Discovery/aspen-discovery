@@ -12,14 +12,18 @@
 		<div class="row">
 			<div class="col-xs-12">
 				{* If body has no anchor tags, wrap entire placard content with link. *}
-				{if $placard->link && !$placard->bodyHasAnchor()}
+				{if $placard->link && !$placard->bodyHasAnchor() && $placard->sourceType != 'web_resource'}
 					<a href="{$placard->link}" target="_blank" class="placard-link" aria-label="{translate text=$placard->title inAttribute=true isAdminEnteredData=true isPublicFacing=true} ({translate text='opens in new window' isPublicFacing=true inAttribute=true})">
+				{elseif $placard->link && !$placard->bodyHasAnchor()}
+					<a href="javascript:;" onclick="AspenDiscovery.WebBuilder.getWebResource('{$placard->sourceId}', true)" class="placard-link" aria-label="{translate text=$placard->title inAttribute=true isAdminEnteredData=true isPublicFacing=true} ({translate text='opens in new window' isPublicFacing=true inAttribute=true})">
 				{/if}
 
 				{if !empty($placard->image)}
 					{* If body has anchor tags, only make the image clickable. *}
-					{if $placard->link && $placard->bodyHasAnchor()}
+					{if $placard->link && $placard->bodyHasAnchor() && $placard->sourceType != 'web_resource'}
 						<a href="{$placard->link}" target="_blank" class="placard-image-link" aria-label="{translate text=$placard->title inAttribute=true isAdminEnteredData=true isPublicFacing=true} ({translate text='opens in new window' isPublicFacing=true inAttribute=true})">
+					{elseif $placard->link && $placard->bodyHasAnchor()}
+						<a href="javascript:;" onclick="AspenDiscovery.WebBuilder.getWebResource('{$placard->sourceId}', true)" class="placard-link" aria-label="{translate text=$placard->title inAttribute=true isAdminEnteredData=true isPublicFacing=true} ({translate text='opens in new window' isPublicFacing=true inAttribute=true})">
 					{/if}
 					<img src="/files/original/{$placard->image}" class="placard-image" alt="{if (empty($placard->altText))}{translate text=$placard->title inAttribute=true isPublicFacing=true isAdminEnteredData=true}{else}{translate text=$placard->altText inAttribute=true isPublicFacing=true isAdminEnteredData=true}{/if}">
 					{if $placard->link && $placard->bodyHasAnchor()}

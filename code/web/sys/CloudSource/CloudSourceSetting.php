@@ -12,6 +12,7 @@ class CloudSourceSetting extends DataObject
 	public $accessToken;
 	public $profileKey;
 	public $showInExploreMore;
+	public $bypassAspenCloudSourcePage;
 
 
 	public $_libraries;
@@ -72,6 +73,11 @@ class CloudSourceSetting extends DataObject
 				'property' => 'showInExploreMore',
 				'type' => 'checkbox',
 				'label' => 'Show in Explore More',
+			],
+			'bypassAspenCloudSourcePage' => [
+				'property' => 'bypassAspenCloudSourcePage',
+				'type' => 'checkbox',
+				'label' => 'Bypass Aspen CloudSource Record Page',
 			],
 			'libraries' => [
 				'property' => 'libraries',

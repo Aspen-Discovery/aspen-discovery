@@ -233,10 +233,7 @@ class SearchSources {
 			}
 
 			if (array_key_exists('Events', $enabledModules)) {
-				require_once ROOT_DIR . '/sys/Events/LibraryEventsSetting.php';
-				$libraryEventsSetting = new LibraryEventsSetting();
-				$libraryEventsSetting->libraryId = $library->libraryId;
-				if ($libraryEventsSetting->find(true)) {
+				if (isset($library->aspenEventsToInclude) && $library->aspenEventsToInclude != 0) {
 					$searchOptions['events'] = [
 						'name' => 'Events',
 						'description' => 'Search events at the library',

@@ -121,6 +121,7 @@ class Admin_UsageDashboard extends Admin_Dashboard {
 		$usage->selectAdd('SUM(pageViews) as pageViews');
 		$usage->selectAdd('SUM(pageViewsByAuthenticatedUsers) as pageViewsByAuthenticatedUsers');
 		$usage->selectAdd('SUM(pageViewsInLibrary) as pageViewsInLibrary');
+		$usage->selectAdd('SUM(pageViewsFromPlacard) as pageViewsFromPlacard');
 
 		$usage->find(true);
 
@@ -130,6 +131,7 @@ class Admin_UsageDashboard extends Admin_Dashboard {
 			'totalViews' => $usage->pageViews ?? 0,
 			'totalPageViewsByAuthenticatedUsers' => $usage->pageViewsByAuthenticatedUsers ?? 0,
 			'totalPageViewsInLibrary' => $usage->pageViewsInLibrary ?? 0,
+			'totalPageViewsFromPlacard' => $usage->pageViewsFromPlacard ?? 0,
 		];
 	}
 

@@ -913,14 +913,28 @@ class ExploreMore {
 	public function loadCloudSourceOptions($activeSection, $exploreMoreOptions, $searchTerm, $appliedTheme) {
 		global $library;
 		global $enabledModules;
+		global $locationSingleton;
+		$activeLocation = $locationSingleton->getActiveLocation();
 		if (!empty($searchTerm) && array_key_exists('CloudSource', $enabledModules)) {
+			$hasSetting = false;
 			require_once ROOT_DIR . '/sys/CloudSource/LibraryCloudSourceSetting.php';
 			$libraryCloudSourceSetting = new LibraryCloudSourceSetting();
 			$libraryCloudSourceSetting->libraryId = $library->libraryId;
-			if ($libraryCloudSourceSetting->find(true)){
+			if ($libraryCloudSourceSetting->find(true)) {
+				$hasSetting = true;
+				$settingId = $libraryCloudSourceSetting->cloudsourceSettingId;
+			} else {
+				require_once ROOT_DIR . '/sys/CloudSource/LocationCloudSourceSetting.php';
+				$locationCloudSourceSetting = new LocationCloudSourceSetting();
+				$locationCloudSourceSetting->locationId = $activeLocation->locationId;
+				if ($libraryCloudSourceSetting->find(true)) {
+					$hasSetting = true;
+					$settingId = $locationCloudSourceSetting->cloudsourceSettingId;
+				}
+			} if ($hasSetting) {
 				require_once ROOT_DIR . '/sys/CloudSource/CloudSourceSetting.php';
 				$cloudSourceSetting = new CloudSourceSetting();
-				$cloudSourceSetting->id = $libraryCloudSourceSetting->cloudsourceSettingId;
+				$cloudSourceSetting->id = $settingId;
 				if ($cloudSourceSetting->find(true) && $cloudSourceSetting->showInExploreMore){
 					//Load Cloud Source Options
 					/** @var SearchObject_CloudSourceSearcher $cloudSourceSearcher */
@@ -934,7 +948,7 @@ class ExploreMore {
 						$numMatches = $cloudSourceSearcher->getresultsTotal();
 						if ($numMatches > 1) {
 							if ($appliedTheme != null && !empty($appliedTheme->articlesDBImage)) {
-								$image = '/files/origional/' . $appliedTheme->articlesDBImage;
+								$image = '/files/original/' . $appliedTheme->articlesDBImage;
 							} else {
 								$image = '/interface/themes/responsive/images/cloudsource.png';
 							}

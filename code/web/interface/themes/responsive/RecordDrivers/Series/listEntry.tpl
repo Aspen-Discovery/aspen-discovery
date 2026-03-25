@@ -9,7 +9,7 @@
         {if (!empty($showCovers) && $printInterface === false) || ($printInterface === true && $printEntryCovers === true)}
 			<div class="col-xs-3 col-sm-3 col-md-3 col-lg-2 text-center">
 				{if $disableCoverArt != 1}
-					<a href="/MyAccount/MyList/{$summShortId}" class="alignleft listResultImage">
+					<a href="/Series/{$summShortId}" class="alignleft listResultImage">
 						{if !empty($isNew)}<span class="list-cover-badge">{translate text="New!" isPublicFacing=true}</span> {/if}
 						<img src="{$bookCoverUrl}" class="listResultImage img-thumbnail{if $useOriginalCoverUrls} use-original-covers{/if} {$coverStyle}" alt="{translate text='Cover Image' inAttribute=true isPublicFacing=true}">
 					</a>
@@ -24,7 +24,7 @@
 			<div class="row">
 				<div class="col-xs-12">
 					<span class="result-index">{$resultIndex})</span>&nbsp;
-					<a href="/MyAccount/MyList/{$summShortId}" class="result-title notranslate">
+					<a href="/Series/{$summShortId}" class="result-title notranslate">
 						{if !$summTitle|removeTrailingPunctuation} {translate text='Title not available' isPublicFacing=true}{else}{$summTitle|removeTrailingPunctuation|highlight|truncate:180:"..."}{/if}
 					</a>
 					{if isset($summScore)}
@@ -64,7 +64,7 @@
 				</div>
 			{/if}
 
-            {if (!empty($listEntryNotes) && $printInterface === false) || (!empty($listEntryNotes) && $printInterface === true && $printEntryNotes === true)}
+			{if (!empty($listEntryNotes) && $printInterface === false) || (!empty($listEntryNotes) && $printInterface === true && $printEntryNotes === true)}
 				<div class="row">
 					<div class="result-label col-md-3">{translate text="Notes" isPublicFacing=true} </div>
 					<div class="user-list-entry-note result-value col-md-9">
@@ -74,14 +74,14 @@
 			{/if}
 
 			{* Description Section *}
-            {if !empty($summDescription) && $printInterface === false}
+			{if !empty($summDescription) && $printInterface === false}
 				<div class="row visible-xs">
 					<div class="result-label col-tn-3 col-xs-3">{translate text="Description" isPublicFacing=true}</div>
 					<div class="result-value col-tn-9 col-xs-9"><a id="descriptionLink{$summId|escape}" href="#" onclick="$('#descriptionValue{$summId|escape},#descriptionLink{$summId|escape}').toggleClass('hidden-xs');return false;">{translate text="Click to view" isPublicFacing=true}</a></div>
 				</div>
-            {/if}
+			{/if}
 
-            {if (!empty($summDescription) && $printInterface === false) || ($printInterface === true && $printEntryDescription === true)}
+			{if (!empty($summDescription) && $printInterface === false) || ($printInterface === true && $printEntryDescription === true)}
 				<div class="row">
 					{* Hide in mobile view *}
 					<div class="result-value hidden-xs col-sm-12" id="descriptionValue{$summId|escape}">
@@ -90,14 +90,14 @@
 				</div>
 			{/if}
 
-            {if $printInterface === false}
-			<div class="resultActions row">
-				{include file='Series/result-tools.tpl' id=$summId summShortId=$summShortId summTitle=$summTitle recordUrl=$summUrl}
-			</div>
+			{if $printInterface === false}
+				<div class="resultActions row">
+					{include file='Series/result-tools.tpl' id=$summId summShortId=$summShortId summTitle=$summTitle recordUrl=$summUrl}
+				</div>
 			{/if}
 		</div>
 
-        {if !empty($listEditAllowed) && $printInterface === false}
+		{if !empty($listEditAllowed) && $printInterface === false}
 			<div class="col-xs-2 col-sm-2 col-md-2 col-lg-2 text-right">
 				<div class="btn-group-vertical" role="group">
 					{if empty($listHasFiltersApplied)}

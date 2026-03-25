@@ -83,7 +83,7 @@ class Admin_TwoFactorAuth extends ObjectEditor {
 	}
 
 	function getInstructions() : string{
-		return 'https://help.aspendiscovery.org/help/users/account';
+		return 'https://aspen-discovery.atlassian.net/wiki/spaces/Help/pages/339116038/Account+Settings';
 	}
 
 	function getActiveAdminSection(): string {

@@ -7308,6 +7308,10 @@ td.hidden-inline-block-lg {
     display: none !important;
   }
 }
+html,
+body {
+  scrollbar-gutter: stable;
+}
 a,
 a:visited {
   color: #3174AF;
@@ -7642,6 +7646,12 @@ rapi-doc::part(textbox):focus {
   outline: 0;
   -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(102, 175, 233, 0.6);
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(102, 175, 233, 0.6);
+}
+.pagination {
+  margin: 20px 0 10px;
+}
+.jump-to-page {
+  margin-bottom: 15px !important;
 }
 .ui-rater > span {
   vertical-align: top;
@@ -11211,10 +11221,6 @@ td[data-entry-id]:has(.date-edit:focus)::after {
   display: flex;
   width: 100%;
 }
-.slider-button {
-  cursor: pointer;
-  z-index: 2;
-}
 .slider-wrapper {
   display: flex;
   overflow: hidden;
@@ -11234,7 +11240,6 @@ td[data-entry-id]:has(.date-edit:focus)::after {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: #fff !important;
   border: 2px solid #000 !important;
   display: flex;
   align-items: center;

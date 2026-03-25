@@ -57,7 +57,7 @@ class WebBuilder_StaffMembers extends ObjectEditor {
 	}
 
 	function getInstructions(): string {
-		return 'https://help.aspendiscovery.org/help/webbuilder/staff';
+		return 'https://aspen-discovery.atlassian.net/wiki/spaces/Help/pages/233111822/Staff+Directory';
 	}
 
 	function getBreadcrumbs(): array {

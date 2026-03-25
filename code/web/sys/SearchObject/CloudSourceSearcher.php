@@ -192,7 +192,7 @@ class SearchObject_CloudSourceSearcher extends SearchObject_BaseSearcher{
 			'term' => $searchTerm,
 			'start' => $start,
 			'pageSize' => 20,
-			'includeFields' => 'title,author{name},format{name},webUrl,publishDate,abstrakt,index',
+			'includeFields' => 'title,author{name},format{name},webUrl,publishDate,abstrakt,index,isbn,publication',
 			'includeFacets' => true,
 			'profileKey' => $settings->profileKey,
 			'facetSelections' => $facets

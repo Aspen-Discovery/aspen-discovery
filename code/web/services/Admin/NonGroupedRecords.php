@@ -47,7 +47,7 @@ class Admin_NonGroupedRecords extends ObjectEditor {
 	}
 
 	function getInstructions(): string {
-		return 'https://help.aspendiscovery.org/grouping';
+		return 'https://aspen-discovery.atlassian.net/wiki/spaces/Help/pages/420741126/Grouping+and+Ungrouping+Records';
 	}
 
 	function getBreadcrumbs(): array {

@@ -56,7 +56,7 @@ class Admin_LayoutSettings extends ObjectEditor {
 	}
 
 	function getInstructions(): string {
-		return 'https://help.aspendiscovery.org/help/admin/theme';
+		return 'https://aspen-discovery.atlassian.net/wiki/spaces/Help/pages/239206408/Layout+Settings';
 	}
 
 	function getInitializationJs(): string {

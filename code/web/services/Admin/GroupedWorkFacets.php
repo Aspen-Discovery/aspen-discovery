@@ -53,7 +53,7 @@ class Admin_GroupedWorkFacets extends ObjectEditor {
 	}
 
 	function getInstructions(): string {
-		return 'https://help.aspendiscovery.org/help/catalog/facets';
+		return 'https://aspen-discovery.atlassian.net/wiki/spaces/Help/pages/381648900/Facets';
 	}
 
 	function getBreadcrumbs(): array {

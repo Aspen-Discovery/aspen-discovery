@@ -55,7 +55,7 @@ class Translation_Languages extends ObjectEditor {
 	}
 
 	function getInstructions(): string {
-		return 'https://help.aspendiscovery.org/help/admin/translate';
+		return 'https://aspen-discovery.atlassian.net/wiki/spaces/Help/pages/279150593/Languages+and+Translations';
 	}
 
 	function getBreadcrumbs(): array {

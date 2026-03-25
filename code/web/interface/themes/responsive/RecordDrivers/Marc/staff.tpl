@@ -31,7 +31,7 @@
 				{/if}
 				<button onclick="return AspenDiscovery.GroupedWork.reloadEnrichment('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default" >{translate text="Reload Enrichment" isAdminFacing=true}</button>
 			{/if}
-			{if !empty($staffClientUrl)}
+			{if !empty($staffClientUrl) && $loggedIn && in_array('View ILS records in native Staff Client', $userPermissions)}
 				<a href="{$staffClientUrl}" class="btn btn-sm btn-info" target="_blank" aria-label="{translate text="View in Staff Client" isAdminFacing=true inAttribute=true} ({translate text='opens in new window' isPublicFacing=true inAttribute=true})"><i class="fas fa-external-link-alt" role="presentation"></i> {translate text="View in Staff Client" isAdminFacing=true}</a>
 			{/if}
 			{if !empty($classicUrl) && $loggedIn && in_array('View ILS records in native OPAC', $userPermissions)}

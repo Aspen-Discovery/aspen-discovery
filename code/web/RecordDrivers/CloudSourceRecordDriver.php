@@ -40,6 +40,13 @@ class CloudSourceRecordDriver extends RecordInterface {
 		}
 		$bookCoverUrl .= "/bookcover.php?id={$this->getUniqueID()}&size={$size}&type=cloudsource";
 
+		if (!empty($this->record->isbn[0])){
+			$bookCoverUrl .= "&isbn={$this->record->isbn[0]}";
+		}
+		if (!empty($this->record->publication->issnL)) {
+			$bookCoverUrl .= "&issn={$this->record->publication->issnL}";
+		}
+
 		return $bookCoverUrl;
 	}
 
@@ -49,6 +56,17 @@ class CloudSourceRecordDriver extends RecordInterface {
 	 */
 	public function getLinkUrl($unscoped = false)
 	{
+		global $library;
+		require_once ROOT_DIR . '/sys/CloudSource/CloudSourceSetting.php';
+		$libraryCloudSourceSetting = new CloudSourceSetting();
+		$libraryCloudSourceSetting->id = $library->getCloudSourceSettingId();
+		if ($libraryCloudSourceSetting->find(true)){
+			if ($libraryCloudSourceSetting->bypassAspenCloudSourcePage){
+				return $this->getRecordUrl();
+			} else {
+				return '/CloudSource/Record?id=' . $this->getId();
+			}
+		}
 		return '/CloudSource/Record?id=' . $this->getId();
 	}
 
@@ -98,6 +116,7 @@ class CloudSourceRecordDriver extends RecordInterface {
 		$interface->assign('module', $this->getModule());
 		$interface->assign('summFormats', $formats);
 		$interface->assign('summUrl', $this->getLinkUrl());
+		$interface->assign('externalUrl', $this->getRecordUrl());
 		$interface->assign('summTitle', $this->getTitle());
 		$interface->assign('summAuthor', $this->getAuthor());
 		$interface->assign('summPublicationDates', $this->getPublicationDate());

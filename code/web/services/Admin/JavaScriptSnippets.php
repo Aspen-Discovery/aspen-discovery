@@ -84,7 +84,7 @@ class Admin_JavaScriptSnippets extends ObjectEditor {
 	}
 
 	function getInstructions(): string {
-		return 'https://help.aspendiscovery.org/customizewithcode';
+		return 'https://aspen-discovery.atlassian.net/wiki/spaces/Help/pages/319815796/CSS+JavaScript+and+Regex';
 	}
 
 	function getBreadcrumbs(): array {

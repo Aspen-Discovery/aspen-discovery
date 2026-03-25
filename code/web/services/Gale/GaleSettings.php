@@ -55,7 +55,7 @@ class Gale_GaleSettings extends ObjectEditor {
 	}
 
 	function getInstructions(): string {
-		return 'https://help.aspendiscovery.org/gale';
+		return 'https://aspen-discovery.atlassian.net/wiki/spaces/Help/pages/534741003/Gale';
 	}
 
 	function getBreadcrumbs(): array {

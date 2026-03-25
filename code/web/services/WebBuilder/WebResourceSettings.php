@@ -53,7 +53,7 @@ class WebBuilder_WebResourceSettings extends ObjectEditor {
 	}
 
 	function getInstructions(): string {
-		return 'https://help.aspendiscovery.org/help/webbuilder/webresources';
+		return 'https://aspen-discovery.atlassian.net/wiki/spaces/Help/pages/252444692/Web+Resources';
 	}
 
 	function getBreadcrumbs(): array {

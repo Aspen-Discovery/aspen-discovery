@@ -54,7 +54,7 @@ class Admin_EmailTemplates extends ObjectEditor {
 	}
 
     function getInstructions() : string{
-        return 'https://help.aspendiscovery.org/email';
+        return 'https://aspen-discovery.atlassian.net/wiki/spaces/Help/pages/313065478/Email';
     }
 
 	function getDefaultSort(): string {

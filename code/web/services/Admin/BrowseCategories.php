@@ -54,7 +54,7 @@ class Admin_BrowseCategories extends ObjectEditor {
 	}
 
 	function getInstructions(): string {
-		return 'https://help.aspendiscovery.org/help/promote/browsecategories';
+		return 'https://aspen-discovery.atlassian.net/wiki/spaces/Help/pages/279642122/Browse+Categories';
 	}
 
 	function getInitializationJs(): string {

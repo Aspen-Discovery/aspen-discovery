@@ -75,7 +75,7 @@ class Admin_SystemMessages extends ObjectEditor {
 	}
 
 	function getInstructions(): string {
-		return 'https://help.aspendiscovery.org/help/admin/systemmessages';
+		return 'https://aspen-discovery.atlassian.net/wiki/spaces/Help/pages/275185665/System+Messages';
 	}
 
 	function getBreadcrumbs(): array {

@@ -7308,6 +7308,10 @@ td.hidden-inline-block-lg {
     display: none !important;
   }
 }
+html,
+body {
+  scrollbar-gutter: stable;
+}
 a,
 a:visited {
   color: #3174AF;

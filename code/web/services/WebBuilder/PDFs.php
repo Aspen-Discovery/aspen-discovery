@@ -91,7 +91,7 @@ class WebBuilder_PDFs extends ObjectEditor {
 	}
 
 	function getInstructions(): string {
-		return 'https://help.aspendiscovery.org/help/webbuilder/imagespdfs';
+		return 'https://aspen-discovery.atlassian.net/wiki/spaces/Help/pages/188579842/Images+and+PDFs';
 	}
 
 	function getBreadcrumbs(): array {

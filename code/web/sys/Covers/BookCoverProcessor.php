@@ -120,9 +120,12 @@ class BookCoverProcessor {
 			}
 		} elseif ($this->type == 'gale') {
 			if ($this->getGaleCover($this->id)) {
-        return true;
-      }
+				return true;
+			}
 		} elseif ($this->type == 'cloudsource') {
+			if ($this->getCoverFromProvider()) {
+				return true;
+			}
 			if ($this->getCloudSourceCover($this->id)) {
 				return true;
 			}

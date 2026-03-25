@@ -76,7 +76,7 @@ class Admin_Placards extends ObjectEditor {
 	}
 
 	function getInstructions(): string {
-		return 'https://help.aspendiscovery.org/help/promote/placards';
+		return 'https://aspen-discovery.atlassian.net/wiki/spaces/Help/pages/273350657/Placards';
 	}
 
 	function getBreadcrumbs(): array {

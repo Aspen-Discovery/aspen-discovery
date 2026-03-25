@@ -21,7 +21,7 @@ class Series_IndexingLog extends Admin_IndexingLog {
 	}
 
 	function applyMinProcessedFilter(DataObject $indexingObject, $minProcessed) {
-		if ($indexingObject instanceof ListIndexingLogEntry) {
+		if ($indexingObject instanceof SeriesIndexingLogEntry) {
 			$indexingObject->whereAdd('(numAdded + numDeleted + numUpdated) >= ' . $minProcessed);
 		}
 	}

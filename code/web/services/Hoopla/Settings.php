@@ -67,7 +67,7 @@ class Hoopla_Settings extends ObjectEditor {
 	}
 
 	function getInstructions(): string {
-		return 'https://help.aspendiscovery.org/help/integration/econtent';
+		return 'https://aspen-discovery.atlassian.net/wiki/spaces/Help/pages/308805680/Hoopla';
 	}
 
 	function getBreadcrumbs(): array {

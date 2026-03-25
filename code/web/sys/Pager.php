@@ -145,7 +145,9 @@ class Pager {
 						'text' => 'Go to page',
 						'isPublicFacing' => true,
 					]) . '&nbsp;</label>';
-				$linksText .= '<input type="text" min="1" max="' . $this->_totalPages . '" id="page" name="page" size="2" class="input input-sm">';
+				$linksText .= '<input type="text" min="1" max="' . $this->_totalPages . '" '
+							. 'id="page" name="page" size="2" class="input input-sm" '
+							. 'onkeypress="if(event.key === \'Enter\') { AspenDiscovery.changePage(); return false; }">';
 				$linksText .= '&nbsp;<button id="goToPageSubmit" name="goToPageSubmit" class="btn btn-sm btn-default" onclick="return AspenDiscovery.changePage();">' . translate([
 						'text' => 'Go',
 						'isPublicFacing' => true,

@@ -194,7 +194,7 @@ class ILS_TranslationMaps extends ObjectEditor {
 	}
 
     function getInstructions(): string {
-        return 'https://help.aspendiscovery.org/ilsintegration';
+        return 'https://aspen-discovery.atlassian.net/wiki/spaces/Help/pages/168230983/ILS+Integration';
     }
 
 	function getBreadcrumbs(): array {

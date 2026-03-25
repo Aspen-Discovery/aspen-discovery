@@ -58,7 +58,7 @@ class Admin_PTypes extends ObjectEditor {
 	}
 
     function getInstructions() : string{
-        return 'https://help.aspendiscovery.org/patrontypes';
+        return 'https://aspen-discovery.atlassian.net/wiki/spaces/Help/pages/168853698/Patron+Types';
     }
 
 	function getActiveAdminSection(): string {

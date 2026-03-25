@@ -131,6 +131,21 @@ class GaleSetting extends DataObject {
 		return $ret;
 	}
 
+	public function delete(bool $useWhere = false, bool $hardDelete = false) : bool|int {
+		$ret = parent::delete($useWhere, $hardDelete);
+		if ($ret && !empty($this->id)) {
+			$library = new Library();
+			$library->galeSettingsId = $this->id;
+			$library->find();
+			while ($library->fetch()) {
+				$library->galeSettingsId = -1;
+				$library->update();
+			}
+			$this->clearOneToManyOptions('GaleProductCode', 'settingId');
+		}
+		return $ret;
+	}
+
 	public function saveLibraries() : void {
 		if (isset ($this->_libraries) && is_array($this->_libraries)) {
 			$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Libraries'));

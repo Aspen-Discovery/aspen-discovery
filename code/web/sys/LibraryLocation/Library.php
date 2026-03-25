@@ -3741,10 +3741,11 @@ class Library extends DataObject {
 						'label' => 'Aspen Events to Include',
 						'description' => 'Which events to include when searching this library',
 						'values' => [
+							'0' => 'Do not show the option to search Events',
 							'1' => 'All events at all locations',
 							'2' => "Events that occur at one of this library's locations",
 						],
-						'default' => '2',
+						'default' => '0',
 					],
 					'eventsDefaultCalendarView' => [
 						'property' => 'eventsDefaultCalendarView',

@@ -11,6 +11,7 @@ class WebResourceUsage extends DataObject {
 	public $pageViews;
 	public $pageViewsByAuthenticatedUsers;
 	public $pageViewsInLibrary;
+	public $pageViewsFromPlacard;
 
 	public function getUniquenessFields(): array {
 		return [
@@ -25,6 +26,7 @@ class WebResourceUsage extends DataObject {
 			'pageViews',
 			'pageViewsByAuthenticatedUsers',
 			'pageViewsInLibrary',
+			'pageViewsFromPlacard'
 		];
 	}
 

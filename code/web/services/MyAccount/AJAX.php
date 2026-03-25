@@ -7067,7 +7067,7 @@ class MyAccount_AJAX extends JSON_Action {
 				$createInvoice = new StdClass();
 				$createInvoice->InvoiceNumber = $token;
 				$createInvoice->TypeID = intval($invoiceCloudSetting->invoiceTypeId);
-				$createInvoice->BalanceDue = $payment->totalPaid;
+				$createInvoice->BalanceDue = number_format((float)$payment->totalPaid, 2, '.', '');
 				$ccServiceFee = $invoiceCloudSetting->ccServiceFee;
 				if (isset($ccServiceFee) && str_contains($ccServiceFee, '%')) {
 					$percent = floatval(str_replace('%', '', $ccServiceFee));

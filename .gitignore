@@ -5,22 +5,11 @@
 #  - they can be easily downloaded or are machine specfic         #
 ###################################################################
 tmp
-sites/*/backup
-sites/*.localhost
-sites/*/conf/log4j.*.properties
-sites/*/conf/passkey
-!sites/default/conf/log4j.properties
-!sites/default/backup
-sites/default/solr5/docs/*
-sites/default/solr5/example/*
-sites/default/solr5/licenses/*
-sites/default/solr5/logs/*
-sites/default/solr5/tmp/*
-sites/default/solr5/server/logs/*
-sites/default/solr5/server/tmp/*
-sites/default/solr5/server/solr/configsets/*
-sites/default/solr-8.11.2/server/logs/*
-sites/default/solr-8.11.2/server/tmp/*
+sites/*
+!sites/.idea
+!sites/default
+!sites/template.*
+sites/default/solr*/server/logs/*
 code/aspen_app/.expo/**
 code/aspen_app/.expo-shared/**
 code/aspen_app/node_modules/**
@@ -51,10 +40,6 @@ hcl_solr_bib_export.properties
 horizon_export.properties
 *.pid
 *.port
-sites/default/solr/jetty/logs/*
-sites/default/solr-7.6.0/logs/*
-sites/default/solr-7.6.0/server/logs/*
-sites/default/solr-7.6.0/server/tmp/*
 install/templates/*
 .vscode
 
@@ -84,7 +69,6 @@ LexileTitles.txt
 
 # Logs and databases #
 ######################
-sites/default/solr/jetty/logs
 *.log
 *.log.1
 *.log.2
@@ -128,33 +112,6 @@ documentation/~*.tmp
 ########################
 *.min.min.js
 
-# Marmot Symbolic Links #
-#########################
-sites/*.marmot.org
-!sites/opac.marmot.org/
-#re-include the marmot production directory
-
-# Aspencat Symbolic Links #
-###########################
-sites/*catalog.aspencat.info
-
-# Flatirons Symbolic Links #
-############################
-sites/*.flatironslibrary.org
-sites/*.boulderlibrary.org
-sites/*.flatironsconsortium.org
-
-# Lion Symbolic Links #
-#######################
-sites/*.lionlibraries.org
-
-# Nashville Symbolic Links #
-############################
-sites/170.190.30.108
-sites/170.190.30.180
-sites/170.190.30.38
-sites/*.library.nashville.org
-
 # Nashville CarlX Tools #
 ########################
 code/web/services/CarlXTools
@@ -162,9 +119,6 @@ code/web/interface/themes/nashville_resp/CarlXTools
 
 # Other stuff #
 ###############
-sites/marmot.localhost/sql_backup/marmot_econtent.sql
-sites/marmot.localhost/sql_backup/marmot_vufind.sql
-sites/arlington.localhost/sql_backup/arlington_econtent.sql
 main.tmpcss
 
 code/web/fonts/HalisR-Regular.otf
@@ -173,11 +127,6 @@ code/web/migrations/importResults.txt
 .idea/aspen-discovery.iml
 .idea/*.xml
 .idea/dataSources/**
-sites/demo.localhost/conf/config.cron.ini
-sites/demo.localhost/conf/config.ini
-sites/demo.localhost/conf/crontab_settings.txt
-sites/demo.localhost/demo.localhost.sh
-sites/demo.localhost/httpd-demo.localhost.conf
 code/web/.idea/watcherTasks.xml
 code/web/.idea/workspace.xml
 code/web/.idea/workspace.xml
@@ -187,7 +136,6 @@ code/web/fonts/KleeOne-SemiBold.ttf
 code/aspen_app/package-lock.json
 data_dir_setup/update_solr_files.sh
 code/web/.idea/workspace.xml
-sites/demo.localhost/demo.localhost.bat
 code/aspen_app/.env
 code/aspen_app/.idea/aspen_app.iml
 code/aspen_app/.idea/workspace.xml
@@ -201,19 +149,7 @@ code/cron/.idea/*
 code/web/.idea/*
 code/aspen_app/.idea/*
 install/createSite.ini
-sites/morgan.localhost/conf/config.cron.ini
-sites/morgan.localhost/conf/config.ini
-sites/morgan.localhost/conf/config.pwd.ini.template
-sites/morgan.localhost/httpd-morgan.localhost.conf
-sites/morgan.localhost/morgan.localhost.bat
-sites/aspen.catsoup.dev/*
 .idea/scopes/_less_files.xml
-sites/kodidev.localhost/conf/config.cron.ini
-sites/kodidev.localhost/conf/config.ini
-sites/kodidev.localhost/httpd-kodidev.localhost.conf
-sites/kodidev.localhost/kodidev.localhost.bat
-sites/roundrock.localhost/conf/config.ini
-sites/roundrock.localhost/httpd-roundrock.localhost.conf
 code/aspen_app/.run/Update EAS.run.xml
 code/aspen_app/.run/Update Aspen LiDA Instance.run.xml
 code/aspen_app/.run/Start Aspen LiDA Instance.run.xml
@@ -236,8 +172,5 @@ phpstorm_project
 code/aspen_app/updaterInternal.sh
 code/aspen_app/%ProgramData%/Microsoft/Windows/UUS/State/_active.uusver
 data_dir_setup/.idea/workspace.xml
-sites/nashville.aspenlocal
-sites/nashville.production
 /code/web/images/mnps
 .htaccess
-sites/aspen-discovery.lndo.site/

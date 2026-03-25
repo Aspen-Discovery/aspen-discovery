@@ -6,4 +6,4 @@
 **After:**
 ![Cover Stype After](/optionalUpdates/images/FloatingCoversAfter.png)
 
-[More information on this setting](https://help.aspendiscovery.org/help/catalog/coverimages#Cell-934-PanelBody)
+[More information on this setting](https://aspen-discovery.atlassian.net/wiki/spaces/Help/pages/303923202/Cover+Images)

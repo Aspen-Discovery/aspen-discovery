@@ -55,7 +55,7 @@ class EBSCO_EDSSettings extends ObjectEditor {
 	}
 
 	function getInstructions(): string {
-		return 'https://help.aspendiscovery.org/ebsco';
+		return 'https://aspen-discovery.atlassian.net/wiki/spaces/Help/pages/344522765/Databases';
 	}
 
 	function getBreadcrumbs(): array {

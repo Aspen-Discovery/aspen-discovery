@@ -653,6 +653,13 @@
 										<td>{$resource.allTime.totalViews|number_format}</td>
 									</tr>
 									<tr>
+										<th scope="row">{translate text="Views from Placards" isAdminFacing=true}</th>
+										<td>{$resource.thisMonth.totalPageViewsFromPlacard|number_format}</td>
+										<td>{$resource.lastMonth.totalPageViewsFromPlacard|number_format}</td>
+										<td>{$resource.thisYear.totalPageViewsFromPlacard|number_format}</td>
+										<td>{$resource.allTime.totalPageViewsFromPlacard|number_format}</td>
+									</tr>
+									<tr>
 										<th scope="row">{translate text="Views by Authenticated Users" isAdminFacing=true}</th>
 										<td>{$resource.thisMonth.totalPageViewsByAuthenticatedUsers|number_format}</td>
 										<td>{$resource.lastMonth.totalPageViewsByAuthenticatedUsers|number_format}</td>

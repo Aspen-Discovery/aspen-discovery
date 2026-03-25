@@ -60,7 +60,7 @@ class WebBuilder_Categories extends ObjectEditor {
 	}
 
 	function getInstructions(): string {
-		return 'https://help.aspendiscovery.org/help/webbuilder/audiencecat';
+		return 'https://aspen-discovery.atlassian.net/wiki/spaces/Help/pages/232816697/Audiences+Categories';
 	}
 
 	function getBreadcrumbs(): array {
