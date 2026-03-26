@@ -2559,13 +2559,7 @@ class User extends DataObject {
 	function placeItemHold(string $recordId, string $itemId, string $pickupBranch, ?string $cancelDate = null, ?string  $pickupSublocation = null) : array {
 		$result = $this->getCatalogDriver()->placeItemHold($this, $recordId, $itemId, $pickupBranch, $cancelDate, $pickupSublocation);
 		$this->updateAltLocationForHold($pickupBranch);
-		$thisUser = translate([
-			'text' => 'You',
-			'isPublicFacing' => true,
-		]);
-		if (!empty($this->parentUser)) {
-			$thisUser = $this->displayName;
-		}
+
 		if ($result['success']) {
 			
 			if (!empty($result['api']['action'])) {
