@@ -11,6 +11,10 @@ class CurlWrapper {
 	public $responseHeaders = [];
 	public $cookies = [];
 
+	public $lastRequest = -1;
+	public $rateLimit = 200;//milliseconds
+	public $queue = [];
+
 	public function __construct($userAgent = "") {
 		global $interface;
 		if ($interface != null) {
@@ -131,6 +135,7 @@ class CurlWrapper {
 	 * @return bool|string   The response from the web page if any
 	 */
 	public function curlGetPage(string $url) : bool|string {
+		$this->rateLimited($url, "get", null);
 		$this->curl_connect($url);
 		curl_setopt($this->curl_connection, CURLOPT_CUSTOMREQUEST, null);
 		curl_setopt($this->curl_connection, CURLOPT_HTTPGET, true);
@@ -160,6 +165,7 @@ class CurlWrapper {
 	 * @return string|bool   The response from the web page if any
 	 */
 	public function curlPostPage(string $url, string|array $postParams, $curlOptions = null) : string|bool {
+		$this->rateLimited($url, "post", $postParams);
 		if (is_string($postParams)) {
 			$post_string = $postParams;
 		} else {
@@ -196,6 +202,7 @@ class CurlWrapper {
 	 * @return string   The response from the web page if any
 	 */
 	public function curlPostBodyData($url, $postParams, $jsonEncode = true) {
+		$this->rateLimited($url, "post", $postParams);
 		if ($jsonEncode) {
 			$post_string = json_encode($postParams);
 		} else {
@@ -216,7 +223,37 @@ class CurlWrapper {
 		return $return;
 	}
 
+	public function rateLimited(string $url, string $httpMethod, $body = null) : void {
+		//usleep and microtime are in microseconds
+		//we multipy by 1000 to get milliseconds
+		$MICRO_PER_MILLI = 1000;
+		$request_time = floor($MICRO_PER_MILLI * microtime(true));
+		$time_diff = $request_time - $this->lastRequest;
+		if(empty($this->queue) && $time_diff < $this->rateLimit)
+		{
+			$this->lastRequest = floor($MICRO_PER_MILLI * microtime(true));
+			return;
+		}
+		//adding request_time to the queue ensures we return results in the correct order.
+		$this->queue[] = ["url" => $url, 
+							"method" => $httpMethod, 
+							"body" => $body,
+							"request_time" => $request_time];
+		usleep($time_diff * $MICRO_PER_MILLI);
+		while($this->queue[0]["url"] != $utl 
+			|| $this->queue[0]["method"] != $httpMethod
+			|| $this->queue[0]["body"] != $body
+			|| $this->queue[0]["request_time"] != $request_time)
+		{
+				usleep($this->rateLimit * $MICRO_PER_MILLI);
+		}
+		//once our request is at the front of the queue reset
+		//our last request time and pop the value off the queue
+		array_shift($this->queue);
+	}
+
 	public function curlSendPage(string $url, string $httpMethod, $body = null) {
+		$this->rateLimited($url, $httpMethod, $body);
 		$this->curl_connect($url);
 		curl_setopt($this->curl_connection, CURLOPT_CUSTOMREQUEST, null);
 		if ($httpMethod == 'GET') {
