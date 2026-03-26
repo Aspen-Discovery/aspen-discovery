@@ -1274,6 +1274,7 @@ class Record_AJAX extends JSON_Action {
 					];
 					if (isset($return['viewHoldsAction'])) {
 						$results['viewHoldsAction'] = $return['viewHoldsAction'];
+						$results['modalButtons'] = $return['viewHoldsAction'];
 					}
 					if ($confirmationNeeded) {
 						$results['modalButtons'] = '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.confirmHold(\'Record\', \'' . $shortId . '\', ' . $return['confirmationId'] . ')">' . translate([
@@ -1291,6 +1292,7 @@ class Record_AJAX extends JSON_Action {
 						}
 						$results['autologout'] = true;
 						$alreadyLoggedOut = true;
+						$results['modalButtons'] = null;
 					}
 				}
 			}

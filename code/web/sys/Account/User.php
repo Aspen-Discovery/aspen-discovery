@@ -2472,7 +2472,8 @@ class User extends DataObject {
 	 * @access public
 	 */
 	function placeHold(string $recordId, string $pickupBranch, ?string $cancelDate = null, ?string  $pickupSublocation = null) : array {
-		$result = $this->getCatalogDriver()->placeHold($this, $recordId, $pickupBranch, $cancelDate, $pickupSublocation);
+		$catalogDriver = $this->getCatalogDriver();
+		$result = $catalogDriver->placeHold($this, $recordId, $pickupBranch, $cancelDate, $pickupSublocation);
 		$this->updateAltLocationForHold($pickupBranch);
 		$thisUser = translate([
 			'text' => 'You',
@@ -2488,8 +2489,10 @@ class User extends DataObject {
 				'isPublicFacing' => true,
 				'inAttribute' => true
 			]);
-
-			$result['viewHoldsAction'] = "<a id='onHoldAction$recordId' href='/MyAccount/Holds' class='btn btn-sm btn-info btn-wrap' title='$viewHoldsText'>$viewHoldsText</a>";
+			// Don't display a link when using Sierra
+			if (isset($catalogDriver->driver) && $catalogDriver->driver !== 'Sierra') {
+				$result['viewHoldsAction'] = "<a id='onHoldAction$recordId' href='/MyAccount/Holds' class='btn btn-primary btn-wrap' title='$viewHoldsText'>$viewHoldsText</a>";
+			}
 
 			//If we have a cached account summary, add one to the number of unavailable holds (no ILSs move a hold to active immediately)
 			$accountSummary = $this->getCachedAccountSummary('ils');
@@ -2500,7 +2503,8 @@ class User extends DataObject {
 	}
 
 	function placeVolumeHold($recordId, $volumeId, $pickupBranch, $pickupSublocation = null) : array {
-		$result = $this->getCatalogDriver()->placeVolumeHold($this, $recordId, $volumeId, $pickupBranch, $pickupSublocation);
+		$catalogDriver = $this->getCatalogDriver();
+		$result = $catalogDriver->placeVolumeHold($this, $recordId, $volumeId, $pickupBranch, $pickupSublocation);
 		$this->updateAltLocationForHold($pickupBranch);
 		$thisUser = translate([
 			'text' => 'You',
@@ -2516,8 +2520,10 @@ class User extends DataObject {
 				'isPublicFacing' => true,
 				'inAttribute' => true,
 			]);
-
-			$result['viewHoldsAction'] = "<a id='onHoldAction$recordId' href='/MyAccount/Holds' class='btn btn-sm btn-info btn-wrap' title='$viewHoldsText'>$viewHoldsText</a>";
+			// Don't display a link when using Sierra
+			if (isset($catalogDriver->driver) && $catalogDriver->driver !== 'Sierra') {
+				$result['viewHoldsAction'] = "<a id='onHoldAction$recordId' href='/MyAccount/Holds' class='btn btn-primary btn-wrap' title='$viewHoldsText'>$viewHoldsText</a>";
+			}
 
 			$accountSummary = $this->getCachedAccountSummary('ils');
 			$accountSummary->incrementNumberOfUnavailableHolds();

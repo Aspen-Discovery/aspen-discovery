@@ -18783,12 +18783,7 @@ AspenDiscovery.Record = (function () {
 					} else if (data.needsIllRequest) {
 						AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 					} else {
-						AspenDiscovery.showMessage(data.title, data.message, false, data.autologout);
-						var existingButton = $("#onHoldAction" + id);
-						if (existingButton.length === 0) {
-							$(data.viewHoldsAction).insertBefore('#actionButton' + id);
-							$(data.viewHoldsAction).insertBefore('#relatedRecordactionButton' + id);
-						}
+						AspenDiscovery.showMessageWithButtons(data.title, data.message, data.modalButtons, data.autologout);
 						if (!data.autologout) {
 							AspenDiscovery.Account.loadMenuData();
 						}
