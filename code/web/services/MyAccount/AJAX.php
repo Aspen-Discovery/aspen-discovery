@@ -8,7 +8,7 @@ class MyAccount_AJAX extends JSON_Action {
 	/** @noinspection PhpMissingClassConstantTypeInspection */
 	const SORT_LAST_ALPHA = 'zzzzz';
 
-	function launch($method = null) : void {
+	function launch($method = null): void {
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 		switch ($method) {
 			case 'renewItem':
@@ -28,7 +28,7 @@ class MyAccount_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function getAddBrowseCategoryFromListForm() : array {
+	function getAddBrowseCategoryFromListForm(): array {
 		global $interface;
 		$this->requireLoggedInUser();
 		$this->checkRequiredPermission(['Administer All Browse Categories', 'Administer Library Browse Categories','Administer Selected Browse Category Groups']);
@@ -94,7 +94,7 @@ class MyAccount_AJAX extends JSON_Action {
 							$result = $this->failureResult( 'Unable to link accounts', 'Sorry, this user does not allow account linking.');
 						}
 					}
-				}else{
+				} else {
 					$result = $this->failureResult( 'Unable to link accounts', 'Sorry, this user type cannot be linked to.');
 				}
 			} else {
@@ -514,7 +514,7 @@ class MyAccount_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function cancelHoldSelectedItems() : array {
+	function cancelHoldSelectedItems(): array {
 		$this->requireLoggedInUser(null, 'You must be logged in to cancel a hold.  Please close this dialog and login again.');
 		$tmpResult = $this->failureResult('Error', 'Error cancelling selected holds.');
 
@@ -1659,8 +1659,7 @@ class MyAccount_AJAX extends JSON_Action {
 	function getLoginForm() : array {
 		global $interface;
 		global $library;
-		/** @var Location $locationSingleton */
-		global $locationSingleton;
+		/** @var Location $locationSingleton */ global $locationSingleton;
 		global $configArray;
 
 		$isPrimaryAccountAuthenticationSSO = UserAccount::isPrimaryAccountAuthenticationSSO();
@@ -1901,7 +1900,7 @@ class MyAccount_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function getChangeHoldLocationForm() : array {
+	function getChangeHoldLocationForm(): array {
 		$this->requireLoggedInUser(null, "You must be logged in.  Please close this dialog and login before changing your hold's pick-up location.");
 		global $interface;
 		$user = UserAccount::getLoggedInUser();
@@ -1957,7 +1956,7 @@ class MyAccount_AJAX extends JSON_Action {
 				$getPickupLocationsFromILS = $catalogDriver->getValidPickupLocationsForRecordFromILS($marcRecord->getUniqueID(), $user);
 				if (!empty($getPickupLocationsFromILS['locationCodes']) && $getPickupLocationsFromILS['success']) {
 					$validLocationCodesFromILS = $getPickupLocationsFromILS['locationCodes'];
-					$pickupBranches = array_filter($pickupBranches, function($location) use ($validLocationCodesFromILS) {
+					$pickupBranches = array_filter($pickupBranches, function ($location) use ($validLocationCodesFromILS) {
 						if (!is_object($location)) {
 							return true;
 						}
@@ -2109,7 +2108,7 @@ class MyAccount_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function getCitationFormatsForm() : array {
+	function getCitationFormatsForm(): array {
 		global $interface;
 		$interface->assign('listId', $_REQUEST['listId']);
 		$interface->assign('selectedResourceTypes', $_REQUEST['selectedResourceTypes']);
@@ -2132,7 +2131,7 @@ class MyAccount_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function sendMyListEmail() : array {
+	function sendMyListEmail(): array {
 		global $interface;
 
 		// Get data from AJAX request
@@ -2150,14 +2149,14 @@ class MyAccount_AJAX extends JSON_Action {
 				// Load the User object for the owner of the list (if necessary):
 				if ($list->public || (UserAccount::isLoggedIn() && UserAccount::getActiveUserId() == $list->user_id)) {
 					$_GET['id'] = $list->id;
-					$selectedResourceTypes = empty($_REQUEST['selectedResourceTypes']) ? [] : explode('|',$_REQUEST['selectedResourceTypes']);
-					$activeFilters = empty($_REQUEST['activeFilters']) ? [] : explode('|',$_REQUEST['activeFilters']);
+					$selectedResourceTypes = empty($_REQUEST['selectedResourceTypes']) ? [] : explode('|', $_REQUEST['selectedResourceTypes']);
+					$activeFilters = empty($_REQUEST['activeFilters']) ? [] : explode('|', $_REQUEST['activeFilters']);
 
 					//The user can access the list
 					if (count($selectedResourceTypes) && in_array('GroupedWork', $selectedResourceTypes) && !empty($activeFilters)) {
 						$titleDetailInfo = $list->getListRecordsUsingSolr(0, -1, false, 'recordDrivers', null, null, $activeFilters);
 						$titleDetails = $titleDetailInfo['formattedRecords'];
-					}else{
+					} else {
 						$titleDetails = $list->getListRecords(0, -1, false, 'recordDrivers', null, null, false, 0, $selectedResourceTypes);
 					}
 					// get all titles for email list, not just a page's worth
@@ -2218,7 +2217,7 @@ class MyAccount_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function getEmailMyListForm() : array {
+	function getEmailMyListForm(): array {
 		global $interface;
 		if (isset($_REQUEST['listId']) && ctype_digit($_REQUEST['listId'])) {
 			$listId = $_REQUEST['listId'];
@@ -2241,7 +2240,7 @@ class MyAccount_AJAX extends JSON_Action {
 		}
 	}
 
-	function renewCheckout() : array {
+	function renewCheckout(): array {
 		$this->requireLoggedInUser();
 		$this->checkRequiredParameters(['patronId', 'recordId', 'renewIndicator']);
 		if (strpos($_REQUEST['renewIndicator'], '|') > 0) {
@@ -2364,7 +2363,7 @@ class MyAccount_AJAX extends JSON_Action {
 		];
 	}
 
-	function renewAll() : array {
+	function renewAll(): array {
 		$this->requireLoggedInUser(null, 'You must be logged in to renew titles');
 		$renewResults = [
 			'success' => false,
@@ -2546,7 +2545,7 @@ class MyAccount_AJAX extends JSON_Action {
 		$this->requireLoggedInUser(null, 'You must be logged in to get menu data');
 		global $timer;
 		$result = $this->failureResult(null, 'Unknown Error');
-		
+
 		$user = UserAccount::getActiveUserObj();
 		if ($user->isValidForEContentSource('cloud_library')) {
 			require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
@@ -2605,7 +2604,7 @@ class MyAccount_AJAX extends JSON_Action {
 		$this->requireLoggedInUser(null, 'You must be logged in to get menu data');
 		global $timer;
 		$result = $this->failureResult(null, 'Unknown Error');
-		
+
 		$user = UserAccount::getActiveUserObj();
 		if ($user->isValidForEContentSource('axis360')) {
 			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
@@ -2664,7 +2663,7 @@ class MyAccount_AJAX extends JSON_Action {
 		$this->requireLoggedInUser(null, 'You must be logged in to get menu data');
 		global $timer;
 		$result = $this->failureResult(null, 'Unknown Error');
-		
+
 		$user = UserAccount::getActiveUserObj();
 		if ($user->isValidForEContentSource('hoopla')) {
 			require_once ROOT_DIR . '/Drivers/HooplaDriver.php';
@@ -2709,7 +2708,7 @@ class MyAccount_AJAX extends JSON_Action {
 		$this->requireLoggedInUser(null, 'You must be logged in to get menu data');
 		global $timer;
 		$result = $this->failureResult(null, 'Unknown Error');
-		
+
 		$user = UserAccount::getActiveUserObj();
 		require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 		$driver = new OverDriveDriver();
@@ -2767,7 +2766,7 @@ class MyAccount_AJAX extends JSON_Action {
 		$this->requireLoggedInUser(null, 'You must be logged in to get menu data');
 		global $timer;
 		$result = $this->failureResult(null, 'Unknown Error');
-		
+
 		$user = UserAccount::getActiveUserObj();
 		if ($user->isValidForEContentSource('palace_project')) {
 			require_once ROOT_DIR . '/Drivers/PalaceProjectDriver.php';
@@ -2825,7 +2824,7 @@ class MyAccount_AJAX extends JSON_Action {
 		$this->requireLoggedInUser(null, 'You must be logged in to get menu data');
 		global $timer;
 		$result = $this->failureResult(null, 'Unknown Error');
-		
+
 		$user = UserAccount::getActiveUserObj();
 		if ($user->hasInterlibraryLoan()) {
 			require_once ROOT_DIR . '/Drivers/VdxDriver.php';
@@ -2864,14 +2863,14 @@ class MyAccount_AJAX extends JSON_Action {
 		$this->requireLoggedInUser();
 		global $interface;
 		$result = [];
-		
+
 		$user = UserAccount::getLoggedInUser();
 		$interface->assign('user', $user);
 
 		//Count of ratings
 		$result['ratings'] = $user->getNumRatings();
 		$result['notInterested'] = $user->getNumNotInterested();
-		
+
 		return $result;
 	}
 
@@ -2883,7 +2882,7 @@ class MyAccount_AJAX extends JSON_Action {
 		global $configArray;
 		global $memCache;
 		$result = [];
-		
+
 		//Load a list of lists
 		$userListData = $memCache->get('user_list_data_' . UserAccount::getActiveUserId());
 		if ($userListData == null || isset($_REQUEST['reload'])) {
@@ -2920,7 +2919,7 @@ class MyAccount_AJAX extends JSON_Action {
 	/** @noinspection PhpUnused */
 	public function exportCheckouts() : array {
 		$this->requireLoggedInUser();
-		
+
 		if (session_status() == PHP_SESSION_NONE) {
 			session_start();
 		}
@@ -3069,7 +3068,7 @@ class MyAccount_AJAX extends JSON_Action {
 	/** @noinspection PhpUnused */
 	public function exportHolds() : array {
 		$this->requireLoggedInUser();
-		
+
 		$source = $_REQUEST['source'];
 		$user = UserAccount::getActiveUserObj();
 
@@ -3086,9 +3085,9 @@ class MyAccount_AJAX extends JSON_Action {
 		$selectedHolds = isset($_REQUEST['selectedHolds']) ? json_decode($_REQUEST['selectedHolds'], true) : [];
 
 		if (!empty($selectedHolds)) {
-			$allHolds = $this->filterHoldsBySelected($user->getHolds(true, $selectedUnavailableSortOption, $selectedAvailableSortOption, $source),$selectedHolds);
+			$allHolds = $this->filterHoldsBySelected($user->getHolds(true, $selectedUnavailableSortOption, $selectedAvailableSortOption, $source), $selectedHolds);
 		} else {
-			$allHolds = $this->filterHolds($user->getHolds(true, $selectedUnavailableSortOption, $selectedAvailableSortOption, $source),$selectedUser);
+			$allHolds = $this->filterHolds($user->getHolds(true, $selectedUnavailableSortOption, $selectedAvailableSortOption, $source), $selectedUser);
 		}
 
 
@@ -3168,7 +3167,7 @@ class MyAccount_AJAX extends JSON_Action {
 					}
 					fputcsv($fp, $availFields);
 
-					/** @var Hold $row **/
+					/** @var Hold $row * */
 					foreach ($allHolds['available'] as $row) {
 						$title = preg_replace("~([/:])$~", "", $row->title);
 						if (isset ($row->title2)) {
@@ -3460,9 +3459,9 @@ class MyAccount_AJAX extends JSON_Action {
 	/** @noinspection PhpUnused */
 	public function exportReadingHistory(): void {
 		$this->requireLoggedInUser();
-		
+
 		$user = UserAccount::getActiveUserObj();
-		
+
 		$selectedSortOption = $this->setSort('sort', 'readingHistory');
 		if ($selectedSortOption == null) {
 			$selectedSortOption = 'checkedOut';
@@ -3510,7 +3509,7 @@ class MyAccount_AJAX extends JSON_Action {
 			global $logger;
 			$logger->log("Error exporting to csv " . $e->getMessage(), Logger::LOG_ERROR);
 		}
-		
+
 		exit;
 	}
 
@@ -3601,10 +3600,10 @@ class MyAccount_AJAX extends JSON_Action {
 			//Map LiDA Sort Options to Aspen
 			if ($selectedSortOption == null) {
 				$selectedSortOption = 'dueDate';
-			}elseif (!array_key_exists($selectedSortOption, $sortOptions)) {
+			} elseif (!array_key_exists($selectedSortOption, $sortOptions)) {
 				if (array_key_exists($selectedSortOption, User::$lidaToAspenCheckoutSortMapping)) {
 					$selectedSortOption = User::$lidaToAspenCheckoutSortMapping[$selectedSortOption];
-				}else{
+				} else {
 					$selectedSortOption = 'dueDate';
 				}
 			}
@@ -3821,7 +3820,7 @@ class MyAccount_AJAX extends JSON_Action {
 		return $filteredCheckouts;
 	}
 
-	public function setFilterLinkedUser() : string {
+	public function setFilterLinkedUser(): string {
 		$selectedUser = '';
 		if (isset($_REQUEST['selectedUser'])) {
 			$selectedUser = $_REQUEST['selectedUser'];
@@ -3837,7 +3836,7 @@ class MyAccount_AJAX extends JSON_Action {
 		return (string)$selectedUser;
 	}
 
-	public function setFilterLinkedUserCheckouts() : string {
+	public function setFilterLinkedUserCheckouts(): string {
 
 		$selectedUser = '';
 		if (isset($_REQUEST['selectedUserCheckouts'])) {
@@ -3964,22 +3963,22 @@ class MyAccount_AJAX extends JSON_Action {
 
 			if ($selectedAvailableSortOption == null) {
 				$selectedAvailableSortOption = 'expire';
-			}elseif (!array_key_exists($selectedAvailableSortOption, $availableHoldSortOptions)) {
+			} elseif (!array_key_exists($selectedAvailableSortOption, $availableHoldSortOptions)) {
 				if (array_key_exists($selectedAvailableSortOption, User::$lidaToAspenAvailableHoldSortMapping)) {
 					$selectedAvailableSortOption = User::$lidaToAspenAvailableHoldSortMapping[$selectedAvailableSortOption];
-				}else{
+				} else {
 					$selectedAvailableSortOption = 'expire';
 				}
 			}
 			if ($selectedUnavailableSortOption == null) {
 				$selectedAvailableSortOption = ($showPosition ? 'position' : 'title');
-			}elseif (!array_key_exists($selectedUnavailableSortOption, $unavailableHoldSortOptions)) {
+			} elseif (!array_key_exists($selectedUnavailableSortOption, $unavailableHoldSortOptions)) {
 				if (array_key_exists($selectedUnavailableSortOption, User::$lidaToAspenUnavailableHoldSortMapping)) {
 					$selectedUnavailableSortOption = User::$lidaToAspenUnavailableHoldSortMapping[$selectedUnavailableSortOption];
-				}else{
+				} else {
 					$selectedUnavailableSortOption = ($showPosition ? 'position' : 'title');
 				}
-			}
+							}
 
 			$user->updateSortPreferences();
 
@@ -4024,7 +4023,7 @@ class MyAccount_AJAX extends JSON_Action {
 			if ($source == 'ils') {
 				$showAvailableHoldsSection = $library->showHoldsReadyForPickupSection == 1 || ($allHolds != null && count($allHolds['available']) > 0);
 				$interface->assign('showAvailableHoldsSection', $showAvailableHoldsSection);
-			}else{
+			} else {
 				$interface->assign('showAvailableHoldsSection', true);
 			}
 			$interface->assign('showHoldHelpMessages', $user->showHoldHelpMessages);
@@ -4161,7 +4160,7 @@ class MyAccount_AJAX extends JSON_Action {
 
 	public function getReadingHistory() : array {
 		$this->requireLoggedInUser();
-		
+
 		global $interface;
 		$showCovers = $this->setShowCovers();
 
@@ -4169,7 +4168,7 @@ class MyAccount_AJAX extends JSON_Action {
 		$interface->assign('showDebuggingInformation', IPAddress::showDebuggingInformation());
 
 		$user = UserAccount::getActiveUserObj();
-		
+
 		$patronId = empty($_REQUEST['patronId']) ? $user->id : $_REQUEST['patronId'];
 		$interface->assign('selectedUser', $patronId);
 
@@ -4249,7 +4248,7 @@ class MyAccount_AJAX extends JSON_Action {
 		$interface->assign('library', $patronHomeLibrary);
 		$result['showCostSavings'] = $patronHomeLibrary->enableCostSavings && $patron->enableCostSavings;
 		$result['costSavingsMessage'] = $user->getTotalCostSavingsMessage(true);
-		
+
 		$result['success'] = true;
 		$result['message'] = "";
 		$result['readingHistory'] = $interface->fetch('MyAccount/readingHistoryList.tpl');
@@ -4305,16 +4304,16 @@ class MyAccount_AJAX extends JSON_Action {
 		return $sort;
 	}
 
-	function setSortByUserObj(string $requestParameter, string $sortType, User $user) : ?string {
+	function setSortByUserObj(string $requestParameter, string $sortType, User $user): ?string {
 		$sort = null;
 		if (isset($_REQUEST[$requestParameter])) {
 			$sort = $_REQUEST[$requestParameter];
 		} else {
 			if ($sortType == 'checkout') {
 				$sort = $user->checkoutSort;
-			}elseif ($sortType == 'availableHold') {
+			} elseif ($sortType == 'availableHold') {
 				$sort = $user->holdSortAvailable;
-			}elseif ($sortType == 'unavailableHold') {
+			} elseif ($sortType == 'unavailableHold') {
 				$sort = $user->holdSortUnavailable;
 			}
 		}
@@ -4359,7 +4358,7 @@ class MyAccount_AJAX extends JSON_Action {
 				$sortKey = str_pad($numRenewalsRemaining, 3, '0', STR_PAD_LEFT) . '-' . $sortTitle;
 			} elseif ($selectedSortOption == 'renewalsRemainingDesc') {
 				$numRenewalsRemaining = $curTitle->maxRenewals - $curTitle->renewCount;
-				$sortKey = str_pad(999-$numRenewalsRemaining, 3, '0', STR_PAD_LEFT) . '-' . $sortTitle;
+				$sortKey = str_pad(999 - $numRenewalsRemaining, 3, '0', STR_PAD_LEFT) . '-' . $sortTitle;
 			} elseif ($selectedSortOption == 'libraryAccount') {
 				$sortKey = $curTitle->getUserName() . '-' . $sortTitle;
 			}
@@ -4518,7 +4517,7 @@ class MyAccount_AJAX extends JSON_Action {
 		];
 
 		$user = UserAccount::getActiveUserObj();
-		
+
 		$patronId = $_REQUEST['patronId'];
 		$patron = $user->getUserReferredTo($patronId);
 		if ($patron == null) {
@@ -4589,7 +4588,7 @@ class MyAccount_AJAX extends JSON_Action {
 		];
 
 		$user = UserAccount::getActiveUserObj();
-		
+
 		$patronId = $_REQUEST['patronId'];
 		$patron = $user->getUserReferredTo($patronId);
 		if ($patron == null) {
@@ -4672,7 +4671,7 @@ class MyAccount_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function dismissMessage() : array {
+	function dismissMessage(): array {
 		$this->requireLoggedInUser();
 		require_once ROOT_DIR . '/sys/Account/UserMessage.php';
 		if (!isset($_REQUEST['messageId'])) {
@@ -4695,7 +4694,7 @@ class MyAccount_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function dismissSystemMessage() : array {
+	function dismissSystemMessage(): array {
 		$this->requireLoggedInUser();
 		require_once ROOT_DIR . '/sys/LocalEnrichment/SystemMessage.php';
 		if (!isset($_REQUEST['messageId'])) {
@@ -4721,9 +4720,9 @@ class MyAccount_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function dismissHoldHelpMessages() : array {
+	function dismissHoldHelpMessages(): array {
 		$this->requireLoggedInUser();
-		
+
 		$user = UserAccount::getLoggedInUser();
 		$user->showHoldHelpMessages = 0;
 		$user->update();
@@ -5025,7 +5024,7 @@ class MyAccount_AJAX extends JSON_Action {
 		$this->requireLoggedInUser(null, 'You must be signed in to pay fines, please sign in.');
 		$transactionDate = time();
 		$user = UserAccount::getLoggedInUser();
-		
+
 		$patronId = $_REQUEST['patronId'];
 
 		$patron = $user->getUserReferredTo($patronId);
@@ -5549,7 +5548,7 @@ class MyAccount_AJAX extends JSON_Action {
 			$paymentResponse = $payPalPaymentRequest->curlGetPage($paymentRequestUrl);
 			$decodedPaymentResponse = json_decode($paymentResponse);
 
-			ExternalRequestLogEntry::logRequest('fine_payment.completePayPalOrder', 'GET', $paymentRequestUrl, $payPalPaymentRequest->getHeaders(),'', $payPalPaymentRequest->getResponseCode(), $paymentResponse, []);
+			ExternalRequestLogEntry::logRequest('fine_payment.completePayPalOrder', 'GET', $paymentRequestUrl, $payPalPaymentRequest->getHeaders(), '', $payPalPaymentRequest->getResponseCode(), $paymentResponse, []);
 
 			$purchaseUnits = $decodedPaymentResponse->purchase_units;
 			if (!empty($purchaseUnits)) {
@@ -5854,7 +5853,7 @@ class MyAccount_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function completeStripeOrder() : array {
+	function completeStripeOrder(): array {
 		global $configArray;
 
 		$patronId = $_REQUEST['patronId'];
@@ -5888,21 +5887,30 @@ class MyAccount_AJAX extends JSON_Action {
 					if ($stripeSettings->find(true)) {
 						//header('Location: ' . $configArray['Site']['url'] . '/Donations/DonationCompleted?id=' . $payment->id);
 						$result = $stripeSettings->submitTransaction($payment, $paymentMethodId, $transactionType);
-						$result['submitPaymentText'] = translate(['text' => 'Submit Payment', 'isPublicFacing'=>true]);
+						$result['submitPaymentText'] = translate([
+							'text' => 'Submit Payment',
+							'isPublicFacing' => true
+						]);
 						return $result;
 					} else {
 						return [
 							'success' => false,
 							'message' => 'Could not complete donation. Stripe is not setup for this library.',
-							'submitPaymentText' => translate(['text' => 'Submit Payment', 'isPublicFacing'=>true])
+							'submitPaymentText' => translate([
+								'text' => 'Submit Payment',
+								'isPublicFacing' => true
+							])
 						];
 					}
 				}
-			}else{
+			} else {
 				return [
 					'success' => false,
 					'message' => 'Payment settings were not properly configured.',
-					'submitPaymentText' => translate(['text' => 'Submit Payment', 'isPublicFacing'=>true])
+					'submitPaymentText' => translate([
+						'text' => 'Submit Payment',
+						'isPublicFacing' => true
+					])
 				];
 			}
 		} else {
@@ -5926,20 +5934,29 @@ class MyAccount_AJAX extends JSON_Action {
 				$stripeSettings->id = $paymentLibrary->stripeSettingId;
 				if ($stripeSettings->find(true)) {
 					$result = $stripeSettings->submitTransaction($payment, $paymentMethodId, $transactionType);
-					$result['submitPaymentText'] = translate(['text' => 'Submit Payment', 'isPublicFacing'=>true]);
+					$result['submitPaymentText'] = translate([
+						'text' => 'Submit Payment',
+						'isPublicFacing' => true
+					]);
 					return $result;
 				} else {
 					return [
 						'success' => false,
 						'message' => 'Could not complete payment. Stripe is not setup for this library.',
-						'submitPaymentText' => translate(['text' => 'Submit Payment', 'isPublicFacing'=>true])
+						'submitPaymentText' => translate([
+							'text' => 'Submit Payment',
+							'isPublicFacing' => true
+						])
 					];
 				}
 			} else {
 				return [
 					'success' => false,
 					'message' => 'Unable to find payment in system to complete.',
-					'submitPaymentText' => translate(['text' => 'Submit Payment', 'isPublicFacing'=>true])
+					'submitPaymentText' => translate([
+						'text' => 'Submit Payment',
+						'isPublicFacing' => true
+					])
 				];
 			}
 		}
@@ -6322,10 +6339,16 @@ class MyAccount_AJAX extends JSON_Action {
 					$patron,
 				] = $result;
 			}
-		
+
 			// Log the WorldPay order creation request
 			require_once ROOT_DIR . '/sys/SystemLogging/ExternalRequestLogEntry.php';
-			ExternalRequestLogEntry::logRequest('fine_payment.createworldpayorder', 'GET', '/MyAccount/AJAX?method=createWorldPayOrder', [], json_encode($_REQUEST), '200', json_encode(['success' => true, 'paymentId' => $payment->id,'url' => $payment->url, 'transactionDate' => $payment->transactionDate, 'userId' => $payment->userId]), []);
+			ExternalRequestLogEntry::logRequest('fine_payment.createworldpayorder', 'GET', '/MyAccount/AJAX?method=createWorldPayOrder', [], json_encode($_REQUEST), '200', json_encode([
+				'success' => true,
+				'paymentId' => $payment->id,
+				'url' => $payment->url,
+				'transactionDate' => $payment->transactionDate,
+				'userId' => $payment->userId
+			]), []);
 
 			return [
 				'success' => true,
@@ -6700,7 +6723,8 @@ class MyAccount_AJAX extends JSON_Action {
 
 				$postParams = [
 					'udf1' => $payment->id,
-					'udf9' => $payment->id, // Aspen user payment id is duplicated in udf1 and udf9. As of 2025 05 23, Nashville's SnapPay configuration has udf9 associated with the SnapPay 'orderId' field, which is searchable via SnapPay GetTransaction API.
+					'udf9' => $payment->id,
+					// Aspen user payment id is duplicated in udf1 and udf9. As of 2025 05 23, Nashville's SnapPay configuration has udf9 associated with the SnapPay 'orderId' field, which is searchable via SnapPay GetTransaction API.
 					'udf8' => $sessionValue,
 					'accountid' => $snapPaySetting->accountId,
 					'customerid' => $patron->id,
@@ -7056,7 +7080,7 @@ class MyAccount_AJAX extends JSON_Action {
 				$authResponse = $authRequest->curlGetPage($url);
 				$decodedAuthResponse = json_decode($authResponse);
 
-				ExternalRequestLogEntry::logRequest('fine_payment.createInvoiceCloudOrder','GET', $url, $authRequest->getHeaders(),'', $authRequest->getResponseCode(), $authResponse, []);
+				ExternalRequestLogEntry::logRequest('fine_payment.createInvoiceCloudOrder', 'GET', $url, $authRequest->getHeaders(), '', $authRequest->getResponseCode(), $authResponse, []);
 
 				if (!$decodedAuthResponse->Active) {
 					return $this->failureResult(null, 'Unable to create your order in InvoiceCloud. Library has an inactive account.');
@@ -7108,7 +7132,7 @@ class MyAccount_AJAX extends JSON_Action {
 				$paymentResponse = $paymentRequest->curlPostBodyData($url, $postParams);
 				$decodedPaymentResponse = json_decode($paymentResponse);
 
-				ExternalRequestLogEntry::logRequest('fine_payment.createInvoiceCloudOrder','POST', $url, $paymentRequest->getHeaders(),json_encode($postParams), $paymentRequest->getResponseCode(), $paymentResponse, []);
+				ExternalRequestLogEntry::logRequest('fine_payment.createInvoiceCloudOrder', 'POST', $url, $paymentRequest->getHeaders(), json_encode($postParams), $paymentRequest->getResponseCode(), $paymentResponse, []);
 
 				if ($decodedPaymentResponse->Message != 'SUCCESS') {
 					return [
@@ -7176,80 +7200,83 @@ class MyAccount_AJAX extends JSON_Action {
 
 		$finesSelected = [];
 
-		foreach(explode(',', $payment->finesPaid) as $fineSelected) {
-			$finesSelected[] = ['id' => explode('|', $fineSelected)[0], 'amount' => explode('|', $fineSelected)[1]];
+		foreach (explode(',', $payment->finesPaid) as $fineSelected) {
+			$finesSelected[] = [
+				'id' => explode('|', $fineSelected)[0],
+				'amount' => explode('|', $fineSelected)[1]
+			];
 		}
 
 		$locationDetails = $patron->getCatalogDriver()->hasAdditionalFineFields() ? $patron->getCatalogDriver()->getAdditionalLocationDetails($patron->getHomeLocationCode()) : [];
 
 		// URL parameters
 		$paymentRequestUrl = $heyCentricSettings->baseUrl;
-		if($urlParameterSettings["client_includeInUrl"]) {
+		if ($urlParameterSettings["client_includeInUrl"]) {
 			$paymentRequestUrl .= "client=";
-			if(isset($urlParameterSettings['client_kohaAdditionalField']) && $urlParameterSettings['client_kohaAdditionalField'] != "none") {
+			if (isset($urlParameterSettings['client_kohaAdditionalField']) && $urlParameterSettings['client_kohaAdditionalField'] != "none") {
 				$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['client_kohaAdditionalField']));
 				$paymentRequestUrl .= urlencode(isset($locationDetails[$snakeCaseFieldName]) && $locationDetails[$snakeCaseFieldName] ? $locationDetails[$snakeCaseFieldName] : "none specified");
 			} else {
 				$paymentRequestUrl .= !empty($urlParameterSettings['client_value']) ? $urlParameterSettings['client_value'] : "";
 			}
 		}
-		if($urlParameterSettings["area_includeInUrl"]) {
+		if ($urlParameterSettings["area_includeInUrl"]) {
 			$paymentRequestUrl .= "&area=";
-			if(isset($urlParameterSettings['area_kohaAdditionalField']) && $urlParameterSettings['area_kohaAdditionalField'] != "none") {
+			if (isset($urlParameterSettings['area_kohaAdditionalField']) && $urlParameterSettings['area_kohaAdditionalField'] != "none") {
 				$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['area_kohaAdditionalField']));
 				$paymentRequestUrl .= urlencode(isset($locationDetails[$snakeCaseFieldName]) && $locationDetails[$snakeCaseFieldName] ? $locationDetails[$snakeCaseFieldName] : "none specified");
 			} else {
 				$paymentRequestUrl .= !empty($urlParameterSettings['area_value']) ? $urlParameterSettings['area_value'] : "";
 			}
 		}
-		if($urlParameterSettings["till_includeInUrl"]) {
+		if ($urlParameterSettings["till_includeInUrl"]) {
 			$paymentRequestUrl .= "&till=";
-			if(isset($urlParameterSettings['till_kohaAdditionalField']) && $urlParameterSettings['till_kohaAdditionalField'] != "none") {
+			if (isset($urlParameterSettings['till_kohaAdditionalField']) && $urlParameterSettings['till_kohaAdditionalField'] != "none") {
 				$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['till_kohaAdditionalField']));
 				$paymentRequestUrl .= urlencode(isset($locationDetails[$snakeCaseFieldName]) && $locationDetails[$snakeCaseFieldName] ? $locationDetails[$snakeCaseFieldName] : "none specified");
 			} else {
 				$paymentRequestUrl .= !empty($urlParameterSettings['till_value']) ? $urlParameterSettings['till_value'] : "";
 			}
 		}
-		if($urlParameterSettings["entity_includeInUrl"]) {
+		if ($urlParameterSettings["entity_includeInUrl"]) {
 			$paymentRequestUrl .= "&entity=";
-			if(isset($urlParameterSettings['entity_kohaAdditionalField']) && $urlParameterSettings['entity_kohaAdditionalField'] != "none") {
+			if (isset($urlParameterSettings['entity_kohaAdditionalField']) && $urlParameterSettings['entity_kohaAdditionalField'] != "none") {
 				$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['entity_kohaAdditionalField']));
 				$paymentRequestUrl .= urlencode(isset($locationDetails[$snakeCaseFieldName]) && $locationDetails[$snakeCaseFieldName] ? $locationDetails[$snakeCaseFieldName] : "none specified");
 			} else {
 				$paymentRequestUrl .= !empty($urlParameterSettings['entity_value']) ? $urlParameterSettings['entity_value'] : "";
 			}
 		}
-		if($urlParameterSettings["co_includeInUrl"]) {
+		if ($urlParameterSettings["co_includeInUrl"]) {
 			$paymentRequestUrl .= "&co=";
-			if(isset($urlParameterSettings['co_kohaAdditionalField']) && $urlParameterSettings['co_kohaAdditionalField'] != "none") {
+			if (isset($urlParameterSettings['co_kohaAdditionalField']) && $urlParameterSettings['co_kohaAdditionalField'] != "none") {
 				$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['co_kohaAdditionalField']));
 				$paymentRequestUrl .= urlencode(isset($locationDetails[$snakeCaseFieldName]) && $locationDetails[$snakeCaseFieldName] ? $locationDetails[$snakeCaseFieldName] : "none specified");
 			} else {
 				$paymentRequestUrl .= !empty($urlParameterSettings['co_value']) ? $urlParameterSettings['co_value'] : "";
 			}
 		}
-		if($urlParameterSettings["bu_includeInUrl"]) {
+		if ($urlParameterSettings["bu_includeInUrl"]) {
 			$paymentRequestUrl .= "&bu=";
-			if(isset($urlParameterSettings['bu_kohaAdditionalField']) && $urlParameterSettings['bu_kohaAdditionalField'] != "none") {
+			if (isset($urlParameterSettings['bu_kohaAdditionalField']) && $urlParameterSettings['bu_kohaAdditionalField'] != "none") {
 				$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['bu_kohaAdditionalField']));
 				$paymentRequestUrl .= urlencode(isset($locationDetails[$snakeCaseFieldName]) && $locationDetails[$snakeCaseFieldName] ? $locationDetails[$snakeCaseFieldName] : "none specified");
 			} else {
 				$paymentRequestUrl .= !empty($urlParameterSettings['bu_value']) ? $urlParameterSettings['bu_value'] : "";
 			}
 		}
-		if($urlParameterSettings["lang_includeInUrl"]) {
+		if ($urlParameterSettings["lang_includeInUrl"]) {
 			$paymentRequestUrl .= "&lang=";
-			if(isset($urlParameterSettings['lang_kohaAdditionalField']) && $urlParameterSettings['lang_kohaAdditionalField'] != "none") {
+			if (isset($urlParameterSettings['lang_kohaAdditionalField']) && $urlParameterSettings['lang_kohaAdditionalField'] != "none") {
 				$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['lang_kohaAdditionalField']));
 				$paymentRequestUrl .= urlencode(isset($locationDetails[$snakeCaseFieldName]) && $locationDetails[$snakeCaseFieldName] ? $locationDetails[$snakeCaseFieldName] : "none specified");
 			} else {
 				$paymentRequestUrl .= !empty($urlParameterSettings['lang_value']) ? $urlParameterSettings['lang_value'] : "";
 			}
 		}
-		if($urlParameterSettings["mode_includeInUrl"]) {
+		if ($urlParameterSettings["mode_includeInUrl"]) {
 			$paymentRequestUrl .= "&mode=";
-			if(isset($urlParameterSettings['mode_kohaAdditionalField']) && $urlParameterSettings['mode_kohaAdditionalField'] != "none") {
+			if (isset($urlParameterSettings['mode_kohaAdditionalField']) && $urlParameterSettings['mode_kohaAdditionalField'] != "none") {
 				$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['mode_kohaAdditionalField']));
 				$paymentRequestUrl .= urlencode(isset($locationDetails[$snakeCaseFieldName]) && $locationDetails[$snakeCaseFieldName] ? $locationDetails[$snakeCaseFieldName] : "none specified");
 			} else {
@@ -7259,72 +7286,72 @@ class MyAccount_AJAX extends JSON_Action {
 
 		// hash parameters
 		$hashParams = "";
-		if($urlParameterSettings["client_includeInHash"]) {
+		if ($urlParameterSettings["client_includeInHash"]) {
 			$hashParams .= "client=";
-			if(isset($urlParameterSettings['client_kohaAdditionalField']) && $urlParameterSettings['client_kohaAdditionalField'] != "none") {
+			if (isset($urlParameterSettings['client_kohaAdditionalField']) && $urlParameterSettings['client_kohaAdditionalField'] != "none") {
 				$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['client_kohaAdditionalField']));
 				$hashParams .= urlencode(isset($locationDetails[$snakeCaseFieldName]) && $locationDetails[$snakeCaseFieldName] ? $locationDetails[$snakeCaseFieldName] : "none specified");
 			} else {
 				$hashParams .= "client=" . $urlParameterSettings['client_value'] ? $urlParameterSettings['client_value'] : "";
 			}
 		}
-		if($urlParameterSettings["area_includeInHash"]) {
+		if ($urlParameterSettings["area_includeInHash"]) {
 			$hashParams .= "&area=";
-			if(isset($urlParameterSettings['area_kohaAdditionalField']) && $urlParameterSettings['area_kohaAdditionalField'] != "none") {
+			if (isset($urlParameterSettings['area_kohaAdditionalField']) && $urlParameterSettings['area_kohaAdditionalField'] != "none") {
 				$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['area_kohaAdditionalField']));
 				$hashParams .= urlencode(isset($locationDetails[$snakeCaseFieldName]) && $locationDetails[$snakeCaseFieldName] ? $locationDetails[$snakeCaseFieldName] : "none specified");
 			} else {
 				$hashParams .= "area=" . $urlParameterSettings['area_value'] ? $urlParameterSettings['area_value'] : "";
 			}
 		}
-		if($urlParameterSettings["till_includeInHash"]) {
+		if ($urlParameterSettings["till_includeInHash"]) {
 			$hashParams .= "&till=";
-			if(isset($urlParameterSettings['till_kohaAdditionalField']) && $urlParameterSettings['till_kohaAdditionalField'] != "none") {
+			if (isset($urlParameterSettings['till_kohaAdditionalField']) && $urlParameterSettings['till_kohaAdditionalField'] != "none") {
 				$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['till_kohaAdditionalField']));
 				$hashParams .= urlencode(isset($locationDetails[$snakeCaseFieldName]) && $locationDetails[$snakeCaseFieldName] ? $locationDetails[$snakeCaseFieldName] : "none specified");
 			} else {
 				$hashParams .= "till=" . $urlParameterSettings['till_value'] ? $urlParameterSettings['till_value'] : "";
 			}
 		}
-		if($urlParameterSettings["entity_includeInHash"]) {
+		if ($urlParameterSettings["entity_includeInHash"]) {
 			$hashParams .= "&entity=";
-			if(isset($urlParameterSettings['entity_kohaAdditionalField']) && $urlParameterSettings['entity_kohaAdditionalField'] != "none") {
+			if (isset($urlParameterSettings['entity_kohaAdditionalField']) && $urlParameterSettings['entity_kohaAdditionalField'] != "none") {
 				$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['entity_kohaAdditionalField']));
 				$hashParams .= urlencode(isset($locationDetails[$snakeCaseFieldName]) && $locationDetails[$snakeCaseFieldName] ? $locationDetails[$snakeCaseFieldName] : "none specified");
 			} else {
 				$hashParams .= "entity=" . $urlParameterSettings['entity_value'] ? $urlParameterSettings['entity_value'] : "";
 			}
 		}
-		if($urlParameterSettings["co_includeInHash"]) {
+		if ($urlParameterSettings["co_includeInHash"]) {
 			$hashParams .= "&co=";
-			if(isset($urlParameterSettings['co_kohaAdditionalField']) && $urlParameterSettings['co_kohaAdditionalField'] != "none") {
+			if (isset($urlParameterSettings['co_kohaAdditionalField']) && $urlParameterSettings['co_kohaAdditionalField'] != "none") {
 				$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['co_kohaAdditionalField']));
 				$hashParams .= urlencode(isset($locationDetails[$snakeCaseFieldName]) && $locationDetails[$snakeCaseFieldName] ? $locationDetails[$snakeCaseFieldName] : "none specified");
 			} else {
 				$hashParams .= "co=" . $urlParameterSettings['co_value'] ? $urlParameterSettings['co_value'] : "";
 			}
 		}
-		if($urlParameterSettings["bu_includeInHash"]) {
+		if ($urlParameterSettings["bu_includeInHash"]) {
 			$hashParams .= "&bu=";
-			if(isset($urlParameterSettings['bu_kohaAdditionalField']) && $urlParameterSettings['bu_kohaAdditionalField'] != "none") {
+			if (isset($urlParameterSettings['bu_kohaAdditionalField']) && $urlParameterSettings['bu_kohaAdditionalField'] != "none") {
 				$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['bu_kohaAdditionalField']));
 				$hashParams .= urlencode(isset($locationDetails[$snakeCaseFieldName]) && $locationDetails[$snakeCaseFieldName] ? $locationDetails[$snakeCaseFieldName] : "none specified");
 			} else {
 				$hashParams .= "bu=" . $urlParameterSettings['bu_value'] ? $urlParameterSettings['bu_value'] : "";
 			}
 		}
-		if($urlParameterSettings["lang_includeInHash"]) {
+		if ($urlParameterSettings["lang_includeInHash"]) {
 			$hashParams .= "&lang=";
-			if(isset($urlParameterSettings['lang_kohaAdditionalField']) && $urlParameterSettings['lang_kohaAdditionalField'] != "none") {
+			if (isset($urlParameterSettings['lang_kohaAdditionalField']) && $urlParameterSettings['lang_kohaAdditionalField'] != "none") {
 				$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['lang_kohaAdditionalField']));
 				$hashParams .= urlencode(isset($locationDetails[$snakeCaseFieldName]) && $locationDetails[$snakeCaseFieldName] ? $locationDetails[$snakeCaseFieldName] : "none specified");
 			} else {
 				$hashParams .= "lang=" . $urlParameterSettings['lang_value'] ? $urlParameterSettings['lang_value'] : "";
 			}
 		}
-		if($urlParameterSettings["mode_includeInHash"]) {
+		if ($urlParameterSettings["mode_includeInHash"]) {
 			$hashParams .= "&mode=";
-			if(isset($urlParameterSettings['mode_kohaAdditionalField']) && $urlParameterSettings['mode_kohaAdditionalField'] != "none") {
+			if (isset($urlParameterSettings['mode_kohaAdditionalField']) && $urlParameterSettings['mode_kohaAdditionalField'] != "none") {
 				$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['mode_kohaAdditionalField']));
 				$hashParams .= urlencode(isset($locationDetails[$snakeCaseFieldName]) && $locationDetails[$snakeCaseFieldName] ? $locationDetails[$snakeCaseFieldName] : "none specified");
 			} else {
@@ -7333,77 +7360,78 @@ class MyAccount_AJAX extends JSON_Action {
 		}
 
 		// multiline hash and URL parameters
-		foreach($finesSelected as $index => $fine) {
+		foreach ($finesSelected as $index => $fine) {
 			$fineDetails = $patron->getCatalogDriver()->hasAdditionalFineFields() ? $patron->getCatalogDriver()->getFineById($fine['id'], true) : [];
 			$multilineSuffix = $index > 0 ? "_$index=" : "=";
 
 			// URL parameters
-			if($urlParameterSettings["pmtTyp_includeInUrl"]) {
+			if ($urlParameterSettings["pmtTyp_includeInUrl"]) {
 				$paymentRequestUrl .= "&pmtTyp" . $multilineSuffix;
-				if(isset($urlParameterSettings['pmtTyp_kohaAdditionalField']) && $urlParameterSettings['pmtTyp_kohaAdditionalField'] != "none") {
+				if (isset($urlParameterSettings['pmtTyp_kohaAdditionalField']) && $urlParameterSettings['pmtTyp_kohaAdditionalField'] != "none") {
 					$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['pmtTyp_kohaAdditionalField']));
-					$paymentRequestUrl .= urlencode(isset($fineDetails[$snakeCaseFieldName]) && $fineDetails[$snakeCaseFieldName] ? $fineDetails[$snakeCaseFieldName]: "none specified");
+					$paymentRequestUrl .= urlencode(isset($fineDetails[$snakeCaseFieldName]) && $fineDetails[$snakeCaseFieldName] ? $fineDetails[$snakeCaseFieldName] : "none specified");
 				} else {
 					$paymentRequestUrl .= !empty($urlParameterSettings['pmtTyp_value']) ? $urlParameterSettings['pmtTyp_value'] : "";
 				}
 			}
-			if($urlParameterSettings["val1_includeInUrl"]) {
+			if ($urlParameterSettings["val1_includeInUrl"]) {
 				$paymentRequestUrl .= "&val1" . $multilineSuffix;
-				if(isset($urlParameterSettings['val1_kohaAdditionalField']) && $urlParameterSettings['val1_kohaAdditionalField'] != "none") {
+				if (isset($urlParameterSettings['val1_kohaAdditionalField']) && $urlParameterSettings['val1_kohaAdditionalField'] != "none") {
 					$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['val1_kohaAdditionalField']));
 					$paymentRequestUrl .= urlencode(isset($fineDetails[$snakeCaseFieldName]) && $fineDetails[$snakeCaseFieldName] ? $fineDetails[$snakeCaseFieldName] : "none specified");
 				} else {
 					$paymentRequestUrl .= !empty($urlParameterSettings['val1_value']) ? $urlParameterSettings['val1_value'] : urlencode($fineDetails['fineId']);
 				}
 			}
-			if($urlParameterSettings["val1Desc_includeInUrl"]) {
+			if ($urlParameterSettings["val1Desc_includeInUrl"]) {
 				$paymentRequestUrl .= "&val1Desc" . $multilineSuffix;
-				if(isset($urlParameterSettings['val1Desc_kohaAdditionalField']) && $urlParameterSettings['val1Desc_kohaAdditionalField'] != "none") {
+				if (isset($urlParameterSettings['val1Desc_kohaAdditionalField']) && $urlParameterSettings['val1Desc_kohaAdditionalField'] != "none") {
 					$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['val1Desc_kohaAdditionalField']));
 					$paymentRequestUrl .= urlencode(isset($fineDetails[$snakeCaseFieldName]) && $fineDetails[$snakeCaseFieldName] ? $fineDetails[$snakeCaseFieldName] : "none specified");
 				} else {
 					$paymentRequestUrl .= !empty($urlParameterSettings['val1Desc_value']) ? $urlParameterSettings['val1Desc_value'] : urlencode($fineDetails['message']);
 				}
 			}
-			if($urlParameterSettings["val2_includeInUrl"]) {
+			if ($urlParameterSettings["val2_includeInUrl"]) {
 				$paymentRequestUrl .= "&val2" . $multilineSuffix;
-				if(isset($urlParameterSettings['val2_kohaAdditionalField']) && $urlParameterSettings['val2_kohaAdditionalField'] != "none") {
+				if (isset($urlParameterSettings['val2_kohaAdditionalField']) && $urlParameterSettings['val2_kohaAdditionalField'] != "none") {
 					$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['val2_kohaAdditionalField']));
 					$paymentRequestUrl .= urlencode(isset($fineDetails[$snakeCaseFieldName]) && $fineDetails[$snakeCaseFieldName] ? $fineDetails[$snakeCaseFieldName] : "none specified");
 				} else {
 					$paymentRequestUrl .= !empty($urlParameterSettings['val2_value']) ? $urlParameterSettings['val2_value'] : "";
 				}
 			}
-			if($urlParameterSettings["val2Desc_includeInUrl"]) {
+			if ($urlParameterSettings["val2Desc_includeInUrl"]) {
 				$paymentRequestUrl .= "&val2Desc" . $multilineSuffix;
-				if(isset($urlParameterSettings['val2Desc_kohaAdditionalField']) && $urlParameterSettings['val2Desc_kohaAdditionalField'] != "none") {
+				if (isset($urlParameterSettings['val2Desc_kohaAdditionalField']) && $urlParameterSettings['val2Desc_kohaAdditionalField'] != "none") {
 					$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['val2Desc_kohaAdditionalField']));
 					$paymentRequestUrl .= urlencode(isset($fineDetails[$snakeCaseFieldName]) && $fineDetails[$snakeCaseFieldName] ? $fineDetails[$snakeCaseFieldName] : "none specified");
 				} else {
 					$paymentRequestUrl .= !empty($urlParameterSettings['val2Desc_value']) ? $urlParameterSettings['val2Desc_value'] : "";
-				}$paymentRequestUrl .= "&val2Desc" . $multilineSuffix . $urlParameterSettings['val2Desc_value'];
+				}
+				$paymentRequestUrl .= "&val2Desc" . $multilineSuffix . $urlParameterSettings['val2Desc_value'];
 			}
-			if($urlParameterSettings["am_includeInUrl"]) {
+			if ($urlParameterSettings["am_includeInUrl"]) {
 				$paymentRequestUrl .= "&am" . $multilineSuffix;
-				if(isset($urlParameterSettings['am_kohaAdditionalField']) && $urlParameterSettings['am_kohaAdditionalField'] != "none") {
+				if (isset($urlParameterSettings['am_kohaAdditionalField']) && $urlParameterSettings['am_kohaAdditionalField'] != "none") {
 					$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['am_kohaAdditionalField']));
 					$paymentRequestUrl .= urlencode(isset($fineDetails[$snakeCaseFieldName]) && $fineDetails[$snakeCaseFieldName] ? $fineDetails[$snakeCaseFieldName] : "none specified");
 				} else {
 					$paymentRequestUrl .= !empty($urlParameterSettings['am_value']) ? $urlParameterSettings['am_value'] : str_replace(SystemVariables::getSystemVariables()->getCurrencySymbol(), '', $fineDetails['amount']);
 				}
 			}
-			if($urlParameterSettings["cmt_includeInUrl"]) {
+			if ($urlParameterSettings["cmt_includeInUrl"]) {
 				$paymentRequestUrl .= "&cmt" . $multilineSuffix;
-				if(isset($urlParameterSettings['cmt_kohaAdditionalField']) && $urlParameterSettings['cmt_kohaAdditionalField'] != "none") {
+				if (isset($urlParameterSettings['cmt_kohaAdditionalField']) && $urlParameterSettings['cmt_kohaAdditionalField'] != "none") {
 					$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['cmt_kohaAdditionalField']));
 					$paymentRequestUrl .= urlencode(isset($fineDetails[$snakeCaseFieldName]) && $fineDetails[$snakeCaseFieldName] ? $fineDetails[$snakeCaseFieldName] : "none specified");
 				} else {
 					$paymentRequestUrl .= !empty($urlParameterSettings['cmt_value']) ? $urlParameterSettings['cmt_value'] : "";
 				}
 			}
-			if($urlParameterSettings["extRef_includeInUrl"]) {
+			if ($urlParameterSettings["extRef_includeInUrl"]) {
 				$paymentRequestUrl .= "&extRef" . $multilineSuffix;
-				if(isset($urlParameterSettings['extRef_kohaAdditionalField']) && $urlParameterSettings['extRef_kohaAdditionalField'] != "none") {
+				if (isset($urlParameterSettings['extRef_kohaAdditionalField']) && $urlParameterSettings['extRef_kohaAdditionalField'] != "none") {
 					$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['extRef_kohaAdditionalField']));
 					$paymentRequestUrl .= urlencode(isset($fineDetails[$snakeCaseFieldName]) && $fineDetails[$snakeCaseFieldName] ? $fineDetails[$snakeCaseFieldName] : "none specified");
 				} else {
@@ -7412,120 +7440,120 @@ class MyAccount_AJAX extends JSON_Action {
 			}
 
 			// hash parameters
-			if($urlParameterSettings["pmtTyp_includeInHash"]) {
+			if ($urlParameterSettings["pmtTyp_includeInHash"]) {
 				$hashParams .= "&pmtTyp" . $multilineSuffix;
-				if(isset($urlParameterSettings['pmtTyp_kohaAdditionalField']) && $urlParameterSettings['pmtTyp_kohaAdditionalField'] != "none") {
+				if (isset($urlParameterSettings['pmtTyp_kohaAdditionalField']) && $urlParameterSettings['pmtTyp_kohaAdditionalField'] != "none") {
 					$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['pmtTyp_kohaAdditionalField']));
 					$hashParams .= urlencode(isset($fineDetails[$snakeCaseFieldName]) && $fineDetails[$snakeCaseFieldName] ? $fineDetails[$snakeCaseFieldName] : "none specified");
 				} else {
-					$hashParams .= isset($urlParameterSettings['pmtTyp_value']) &&  $urlParameterSettings['pmtTyp_value'] ? $urlParameterSettings['pmtTyp_value'] : "";
+					$hashParams .= isset($urlParameterSettings['pmtTyp_value']) && $urlParameterSettings['pmtTyp_value'] ? $urlParameterSettings['pmtTyp_value'] : "";
 				}
 			}
-			if($urlParameterSettings["val1_includeInHash"]) {
+			if ($urlParameterSettings["val1_includeInHash"]) {
 				$hashParams .= "&val1" . $multilineSuffix;
-				if(isset($urlParameterSettings['val1_kohaAdditionalField']) && $urlParameterSettings['val1_kohaAdditionalField'] != "none") {
+				if (isset($urlParameterSettings['val1_kohaAdditionalField']) && $urlParameterSettings['val1_kohaAdditionalField'] != "none") {
 					$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['val1_kohaAdditionalField']));
 					$hashParams .= urlencode(isset($fineDetails[$snakeCaseFieldName]) && $fineDetails[$snakeCaseFieldName] ? $fineDetails[$snakeCaseFieldName] : "none specified");
 				} else {
-					$hashParams .= isset($urlParameterSettings['val1_value']) &&  $urlParameterSettings['val1_value'] ? $urlParameterSettings['val1_value'] : urlencode($fineDetails['fineId']);
+					$hashParams .= isset($urlParameterSettings['val1_value']) && $urlParameterSettings['val1_value'] ? $urlParameterSettings['val1_value'] : urlencode($fineDetails['fineId']);
 				}
 			}
-			if($urlParameterSettings["val1Desc_includeInHash"]) {
+			if ($urlParameterSettings["val1Desc_includeInHash"]) {
 				$hashParams .= "&val1Desc" . $multilineSuffix;
-				if(isset($urlParameterSettings['val1Desc_kohaAdditionalField']) && $urlParameterSettings['val1Desc_kohaAdditionalField'] != "none") {
+				if (isset($urlParameterSettings['val1Desc_kohaAdditionalField']) && $urlParameterSettings['val1Desc_kohaAdditionalField'] != "none") {
 					$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['val1Desc_kohaAdditionalField']));
 					$hashParams .= urlencode(isset($fineDetails[$snakeCaseFieldName]) && $fineDetails[$snakeCaseFieldName] ? $fineDetails[$snakeCaseFieldName] : "none specified");
 				} else {
-					$hashParams .= isset($urlParameterSettings['val1Desc_value']) &&  $urlParameterSettings['val1Desc_value'] ? $urlParameterSettings['val1Desc_value'] : urlencode($fineDetails['message']);
+					$hashParams .= isset($urlParameterSettings['val1Desc_value']) && $urlParameterSettings['val1Desc_value'] ? $urlParameterSettings['val1Desc_value'] : urlencode($fineDetails['message']);
 				}
 			}
-			if($urlParameterSettings["val2_includeInHash"]) {
+			if ($urlParameterSettings["val2_includeInHash"]) {
 				$hashParams .= "&val2" . $multilineSuffix;
-				if(isset($urlParameterSettings['val2_kohaAdditionalField']) && $urlParameterSettings['val2_kohaAdditionalField'] != "none") {
+				if (isset($urlParameterSettings['val2_kohaAdditionalField']) && $urlParameterSettings['val2_kohaAdditionalField'] != "none") {
 					$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['val2_kohaAdditionalField']));
 					$hashParams .= urlencode(isset($fineDetails[$snakeCaseFieldName]) && $fineDetails[$snakeCaseFieldName] ? $fineDetails[$snakeCaseFieldName] : "none specified");
 				} else {
-					$hashParams .= isset($urlParameterSettings['val2_value']) &&  $urlParameterSettings['val2_value'] ? $urlParameterSettings['val2_value'] : "";
+					$hashParams .= isset($urlParameterSettings['val2_value']) && $urlParameterSettings['val2_value'] ? $urlParameterSettings['val2_value'] : "";
 				}
 			}
-			if($urlParameterSettings["val2Desc_includeInHash"]) {
+			if ($urlParameterSettings["val2Desc_includeInHash"]) {
 				$hashParams .= "&val2Desc" . $multilineSuffix;
-				if(isset($urlParameterSettings['val2Desc_kohaAdditionalField']) && $urlParameterSettings['val2Desc_kohaAdditionalField'] != "none") {
+				if (isset($urlParameterSettings['val2Desc_kohaAdditionalField']) && $urlParameterSettings['val2Desc_kohaAdditionalField'] != "none") {
 					$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['val2Desc_kohaAdditionalField']));
 					$hashParams .= urlencode(isset($fineDetails[$snakeCaseFieldName]) && $fineDetails[$snakeCaseFieldName] ? $fineDetails[$snakeCaseFieldName] : "none specified");
 				} else {
-					$hashParams .= isset($urlParameterSettings['val2Desc_value']) &&  $urlParameterSettings['val2Desc_value'] ? $urlParameterSettings['val2Desc_value'] : "";
+					$hashParams .= isset($urlParameterSettings['val2Desc_value']) && $urlParameterSettings['val2Desc_value'] ? $urlParameterSettings['val2Desc_value'] : "";
 				}
 			}
-			if($urlParameterSettings["am_includeInHash"]) {
+			if ($urlParameterSettings["am_includeInHash"]) {
 				$hashParams .= "&am" . $multilineSuffix;
-				if(isset($urlParameterSettings['am_kohaAdditionalField']) && $urlParameterSettings['am_kohaAdditionalField'] != "none") {
+				if (isset($urlParameterSettings['am_kohaAdditionalField']) && $urlParameterSettings['am_kohaAdditionalField'] != "none") {
 					$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['am_kohaAdditionalField']));
 					$hashParams .= urlencode(isset($fineDetails[$snakeCaseFieldName]) && $fineDetails[$snakeCaseFieldName] ? $fineDetails[$snakeCaseFieldName] : "none specified");
 				} else {
-					$hashParams .= isset($urlParameterSettings['am_value']) &&  $urlParameterSettings['am_value'] ? $urlParameterSettings['am_value'] : str_replace(SystemVariables::getSystemVariables()->getCurrencySymbol(), '', $fineDetails['amount']);
+					$hashParams .= isset($urlParameterSettings['am_value']) && $urlParameterSettings['am_value'] ? $urlParameterSettings['am_value'] : str_replace(SystemVariables::getSystemVariables()->getCurrencySymbol(), '', $fineDetails['amount']);
 				}
 			}
-			if($urlParameterSettings["cmt_includeInHash"]) {
+			if ($urlParameterSettings["cmt_includeInHash"]) {
 				$hashParams .= "&cmt" . $multilineSuffix;
-				if(isset($urlParameterSettings['cmt_kohaAdditionalField']) && $urlParameterSettings['cmt_kohaAdditionalField'] != "none") {
+				if (isset($urlParameterSettings['cmt_kohaAdditionalField']) && $urlParameterSettings['cmt_kohaAdditionalField'] != "none") {
 					$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['cmt_kohaAdditionalField']));
 					$hashParams .= urlencode(isset($fineDetails[$snakeCaseFieldName]) && $fineDetails[$snakeCaseFieldName] ? $fineDetails[$snakeCaseFieldName] : "none specified");
 				} else {
-					$hashParams .= isset($urlParameterSettings['cmt_value']) &&  $urlParameterSettings['cmt_value'] ? $urlParameterSettings['cmt_value'] : "";
+					$hashParams .= isset($urlParameterSettings['cmt_value']) && $urlParameterSettings['cmt_value'] ? $urlParameterSettings['cmt_value'] : "";
 				}
 			}
-			if($urlParameterSettings["extRef_includeInHash"]) {
+			if ($urlParameterSettings["extRef_includeInHash"]) {
 				$hashParams .= "&extRef" . $multilineSuffix;
-				if(isset($urlParameterSettings['extRef_kohaAdditionalField']) && $urlParameterSettings['extRef_kohaAdditionalField'] != "none") {
+				if (isset($urlParameterSettings['extRef_kohaAdditionalField']) && $urlParameterSettings['extRef_kohaAdditionalField'] != "none") {
 					$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['extRef_kohaAdditionalField']));
 					$hashParams .= urlencode(isset($fineDetails[$snakeCaseFieldName]) && $fineDetails[$snakeCaseFieldName] ? $fineDetails[$snakeCaseFieldName] : "none specified");
 				} else {
-					$hashParams .= isset($urlParameterSettings['extRef_value']) &&  $urlParameterSettings['extRef_value'] ? $urlParameterSettings['extRef_value'] : "";
+					$hashParams .= isset($urlParameterSettings['extRef_value']) && $urlParameterSettings['extRef_value'] ? $urlParameterSettings['extRef_value'] : "";
 				}
 			}
 		}
 
 		// hash parameters
-		if($urlParameterSettings["rurl_includeInHash"]) {
+		if ($urlParameterSettings["rurl_includeInHash"]) {
 			$hashParams .= "&rurl=";
-			if(isset($urlParameterSettings['rurl_kohaAdditionalField']) && $urlParameterSettings['rurl_kohaAdditionalField'] != "none") {
+			if (isset($urlParameterSettings['rurl_kohaAdditionalField']) && $urlParameterSettings['rurl_kohaAdditionalField'] != "none") {
 				$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['rurl_kohaAdditionalField']));
 				$hashParams .= urlencode(isset($fineDetails[$snakeCaseFieldName]) && $fineDetails[$snakeCaseFieldName] ? $fineDetails[$snakeCaseFieldName] : "none specified");
 			} else {
 				$hashParams .= "rurl=" . $urlParameterSettings['rurl_value'] ? $urlParameterSettings['rurl_value'] : "";
 			}
 		}
-		if($urlParameterSettings["burl_includeInHash"]) {
+		if ($urlParameterSettings["burl_includeInHash"]) {
 			$hashParams .= "&burl=";
-			if(isset($urlParameterSettings['burl_kohaAdditionalField']) && $urlParameterSettings['burl_kohaAdditionalField'] != "none") {
+			if (isset($urlParameterSettings['burl_kohaAdditionalField']) && $urlParameterSettings['burl_kohaAdditionalField'] != "none") {
 				$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['burl_kohaAdditionalField']));
 				$hashParams .= urlencode(isset($fineDetails[$snakeCaseFieldName]) && $fineDetails[$snakeCaseFieldName] ? $fineDetails[$snakeCaseFieldName] : "none specified");
 			} else {
 				$hashParams .= "burl=" . $urlParameterSettings['burl_value'] ? $urlParameterSettings['burl_value'] : "";
 			}
 		}
-		if($urlParameterSettings["email_includeInHash"]) {
+		if ($urlParameterSettings["email_includeInHash"]) {
 			$hashParams .= "&email=";
-			if(isset($urlParameterSettings['email_kohaAdditionalField']) && $urlParameterSettings['email_kohaAdditionalField'] != "none") {
+			if (isset($urlParameterSettings['email_kohaAdditionalField']) && $urlParameterSettings['email_kohaAdditionalField'] != "none") {
 				$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['email_kohaAdditionalField']));
 				$hashParams .= urlencode(isset($fineDetails[$snakeCaseFieldName]) && $fineDetails[$snakeCaseFieldName] ? $fineDetails[$snakeCaseFieldName] : "none specified");
 			} else {
 				$hashParams .= "email=" . $urlParameterSettings['email_value'] ? $urlParameterSettings['email_value'] : $patron->email;
 			}
 		}
-		if($urlParameterSettings["ccemail_includeInHash"]) {
+		if ($urlParameterSettings["ccemail_includeInHash"]) {
 			$hashParams .= "&ccemail=";
-			if(isset($urlParameterSettings['ccemail_kohaAdditionalField']) && $urlParameterSettings['ccemail_kohaAdditionalField'] != "none") {
+			if (isset($urlParameterSettings['ccemail_kohaAdditionalField']) && $urlParameterSettings['ccemail_kohaAdditionalField'] != "none") {
 				$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['ccemail_kohaAdditionalField']));
 				$hashParams .= urlencode(isset($fineDetails[$snakeCaseFieldName]) && $fineDetails[$snakeCaseFieldName] ? $fineDetails[$snakeCaseFieldName] : "none specified");
 			} else {
 				$hashParams .= "ccemail=" . $urlParameterSettings['ccemail_value'] ? $urlParameterSettings['ccemail_value'] : "";
 			}
 		}
-		if($urlParameterSettings["sid_includeInHash"]) {
+		if ($urlParameterSettings["sid_includeInHash"]) {
 			$hashParams .= "&sid=";
-			if(isset($urlParameterSettings['sid_kohaAdditionalField']) && $urlParameterSettings['sid_kohaAdditionalField'] != "none") {
+			if (isset($urlParameterSettings['sid_kohaAdditionalField']) && $urlParameterSettings['sid_kohaAdditionalField'] != "none") {
 				$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['sid_kohaAdditionalField']));
 				$hashParams .= urlencode(isset($fineDetails[$snakeCaseFieldName]) && $fineDetails[$snakeCaseFieldName] ? $fineDetails[$snakeCaseFieldName] : "none specified");
 			} else {
@@ -7534,45 +7562,45 @@ class MyAccount_AJAX extends JSON_Action {
 		}
 
 		// URL parameters
-		if($urlParameterSettings["rurl_includeInUrl"]) {
+		if ($urlParameterSettings["rurl_includeInUrl"]) {
 			$paymentRequestUrl .= "&rurl=";
-			if(isset($urlParameterSettings['rurl_kohaAdditionalField']) && $urlParameterSettings['rurl_kohaAdditionalField'] != "none") {
+			if (isset($urlParameterSettings['rurl_kohaAdditionalField']) && $urlParameterSettings['rurl_kohaAdditionalField'] != "none") {
 				$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['rurl_kohaAdditionalField']));
 				$paymentRequestUrl .= urlencode(isset($fineDetails[$snakeCaseFieldName]) && $fineDetails[$snakeCaseFieldName] ? $fineDetails[$snakeCaseFieldName] : "none specified");
 			} else {
 				$paymentRequestUrl .= !empty($urlParameterSettings['rurl_value']) ? $urlParameterSettings['rurl_value'] . "/AJAX?method=completeHeyCentricOrder%26paymentId=" . $payment->id : $configArray['Site']['url'] . "/MyAccount/AJAX?method=completeHeyCentricOrder%26paymentId=" . $payment->id;
 			}
 		}
-		if($urlParameterSettings["burl_includeInUrl"]) {
+		if ($urlParameterSettings["burl_includeInUrl"]) {
 			$paymentRequestUrl .= "&burl=";
-			if(isset($urlParameterSettings['burl_kohaAdditionalField']) && $urlParameterSettings['burl_kohaAdditionalField'] != "none") {
+			if (isset($urlParameterSettings['burl_kohaAdditionalField']) && $urlParameterSettings['burl_kohaAdditionalField'] != "none") {
 				$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['burl_kohaAdditionalField']));
 				$paymentRequestUrl .= urlencode(isset($fineDetails[$snakeCaseFieldName]) && $fineDetails[$snakeCaseFieldName] ? $fineDetails[$snakeCaseFieldName] : "none specified");
 			} else {
 				$paymentRequestUrl .= !empty($urlParameterSettings['burl_value']) ? $urlParameterSettings['burl_value'] : "";
 			}
 		}
-		if($urlParameterSettings["email_includeInUrl"]) {
+		if ($urlParameterSettings["email_includeInUrl"]) {
 			$paymentRequestUrl .= "&email=";
-			if(isset($urlParameterSettings['email_kohaAdditionalField']) && $urlParameterSettings['email_kohaAdditionalField'] != "none") {
+			if (isset($urlParameterSettings['email_kohaAdditionalField']) && $urlParameterSettings['email_kohaAdditionalField'] != "none") {
 				$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['email_kohaAdditionalField']));
 				$paymentRequestUrl .= urlencode(isset($fineDetails[$snakeCaseFieldName]) && $fineDetails[$snakeCaseFieldName] ? $fineDetails[$snakeCaseFieldName] : "none specified");
 			} else {
 				$paymentRequestUrl .= !empty($urlParameterSettings['email_value']) ? $urlParameterSettings['email_value'] : $patron->email;
 			}
 		}
-		if($urlParameterSettings["ccemail_includeInUrl"]) {
+		if ($urlParameterSettings["ccemail_includeInUrl"]) {
 			$paymentRequestUrl .= "&ccemail=";
-			if(isset($urlParameterSettings['ccemail_kohaAdditionalField']) && $urlParameterSettings['ccemail_kohaAdditionalField'] != "none") {
+			if (isset($urlParameterSettings['ccemail_kohaAdditionalField']) && $urlParameterSettings['ccemail_kohaAdditionalField'] != "none") {
 				$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['ccemail_kohaAdditionalField']));
 				$paymentRequestUrl .= urlencode(isset($fineDetails[$snakeCaseFieldName]) && $fineDetails[$snakeCaseFieldName] ? $fineDetails[$snakeCaseFieldName] : "none specified");
 			} else {
 				$paymentRequestUrl .= !empty($urlParameterSettings['ccemail_value']) ? $urlParameterSettings['ccemail_value'] : "";
 			}
 		}
-		if($urlParameterSettings["sid_includeInUrl"]) {
+		if ($urlParameterSettings["sid_includeInUrl"]) {
 			$paymentRequestUrl .= "&sid=";
-			if(isset($urlParameterSettings['sid_kohaAdditionalField']) && $urlParameterSettings['sid_kohaAdditionalField'] != "none") {
+			if (isset($urlParameterSettings['sid_kohaAdditionalField']) && $urlParameterSettings['sid_kohaAdditionalField'] != "none") {
 				$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['sid_kohaAdditionalField']));
 				$paymentRequestUrl .= urlencode(isset($fineDetails[$snakeCaseFieldName]) && $fineDetails[$snakeCaseFieldName] ? $fineDetails[$snakeCaseFieldName] : "none specified");
 			} else {
@@ -7666,8 +7694,11 @@ class MyAccount_AJAX extends JSON_Action {
 
 		$selectedFines = [];
 
-		foreach(explode(',', $payment->finesPaid) as $selectedFine) {
-			$selectedFines[] = ['id' => explode('|', $selectedFine)[0], 'amount' => explode('|', $selectedFine)[1]];
+		foreach (explode(',', $payment->finesPaid) as $selectedFine) {
+			$selectedFines[] = [
+				'id' => explode('|', $selectedFine)[0],
+				'amount' => explode('|', $selectedFine)[1]
+			];
 		}
 
 		require_once ROOT_DIR . '/services/Pay360/Client.php';
@@ -7682,7 +7713,7 @@ class MyAccount_AJAX extends JSON_Action {
 		$result = [
 			'success' => true,
 			'message' => 'Redirecting to payment processor',
-			'paymentRequestUrl' => $client->invokeResponse->invokeResult->redirectUrl, 
+			'paymentRequestUrl' => $client->invokeResponse->invokeResult->redirectUrl,
 		];
 
 		if (!$client->isPay360PollingEnabled()) {
@@ -7706,13 +7737,8 @@ class MyAccount_AJAX extends JSON_Action {
 			header("Location: " . $configArray['Site']['url']);
 			return;
 		}
-		
-		if (
-			!isset($_REQUEST['paymentId']) ||
-			!isset($_REQUEST['settingsId']) ||
-			!is_numeric($_REQUEST['paymentId']) || 
-			!is_numeric($_REQUEST['settingsId'])
-		) {
+
+		if (!isset($_REQUEST['paymentId']) || !isset($_REQUEST['settingsId']) || !is_numeric($_REQUEST['paymentId']) || !is_numeric($_REQUEST['settingsId'])) {
 			header("Location: " . $configArray['Site']['url']);
 			return;
 		}
@@ -7736,19 +7762,14 @@ class MyAccount_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function handlePay360OrderNotAttempted():void {
+	function handlePay360OrderNotAttempted(): void {
 		global $configArray;
 		if (!UserAccount::isLoggedIn()) {
 			header("Location: " . $configArray['Site']['url']);
 			return;
 		}
 
-		if (
-			!isset($_REQUEST['settingsId']) ||
-			!isset($_REQUEST['paymentId']) ||
-			!is_numeric($_REQUEST['paymentId']) || 
-			!is_numeric($_REQUEST['settingsId'])
-		) {
+		if (!isset($_REQUEST['settingsId']) || !isset($_REQUEST['paymentId']) || !is_numeric($_REQUEST['paymentId']) || !is_numeric($_REQUEST['settingsId'])) {
 			header("Location: " . $configArray['Site']['url']);
 			return;
 		}
@@ -8680,7 +8701,7 @@ class MyAccount_AJAX extends JSON_Action {
 			}
 
 			return $this->successResult(null, 'Covers have been reloaded.  You may need to refresh the page to clear your local cache.');
-		}else{
+		} else {
 			return $this->failureResult(null, 'ID of the cover to reload was not supplied.');
 		}
 
@@ -8841,13 +8862,19 @@ class MyAccount_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function removeUploadedListCover() : array {
+	function removeUploadedListCover(): array {
 		$this->requireLoggedInUser();
 		$this->checkRequiredPermission(['Upload List Covers']);
 		$result = [
 			'success' => false,
-			'title' => translate(['text'=>'Removing custom list cover','isAdminFacing'=>true]),
-			'message' => translate(['text'=>'Sorry your cover could not be removed','isAdminFacing'=>true]),
+			'title' => translate([
+				'text' => 'Removing custom list cover',
+				'isAdminFacing' => true
+			]),
+			'message' => translate([
+				'text' => 'Sorry your cover could not be removed',
+				'isAdminFacing' => true
+			]),
 		];
 
 		$id = $_REQUEST['listId'] ?? null;
@@ -8904,15 +8931,17 @@ class MyAccount_AJAX extends JSON_Action {
 		if ($result['success']) {
 			$_GET['id'] = $_REQUEST['listId'];
 			$this->reloadCover();
-			$result['message'] = translate(['text'=>'The cover has been removed', 'isAdminFacing' => true]);
+			$result['message'] = translate([
+				'text' => 'The cover has been removed',
+				'isAdminFacing' => true
+			]);
 		}
 		return $result;
 	}
 
 	/** @noinspection PhpUnused */
-	function deleteListItems() : array {
+	function deleteListItems(): array {
 		$this->requireLoggedInUser();
-
 		$result = [
 			'success' => false,
 		];
@@ -9018,16 +9047,12 @@ class MyAccount_AJAX extends JSON_Action {
 			]);
 		} else {
 			$modalBody = translate([
-				'text' => 'Are you sure you want to delete this entire list? The list and all titles within it will be soft-deleted and can be restored by library staff within 30 days.',
-				'isPublicFacing' => true
-			]) . '<br/><br/>' .
-			'<div>' .
-			'<input type="checkbox" id="optOutSoftDeletion" style="margin-right: 5px;">' .
-			'<label class="form-check-label" for="optOutSoftDeletion">' . translate([
-				'text' => 'Opt Out of Soft Deletion',
-				'isPublicFacing' => true
-			]) . '</label>' .
-			'</div>';
+					'text' => 'Are you sure you want to delete this entire list? The list and all titles within it will be soft-deleted and can be restored by library staff within 30 days.',
+					'isPublicFacing' => true
+				]) . '<br/><br/>' . '<div>' . '<input type="checkbox" id="optOutSoftDeletion" style="margin-right: 5px;">' . '<label class="form-check-label" for="optOutSoftDeletion">' . translate([
+					'text' => 'Opt Out of Soft Deletion',
+					'isPublicFacing' => true
+				]) . '</label>' . '</div>';
 		}
 
 		$modalButtons = '<button id="confirmDeleteList" class="tool btn btn-danger" onclick="AspenDiscovery.Lists.doDeleteList()"><span class="fas fa-spinner fa-spin" style="display:none; margin-right: 4px;"></span>' . translate([
@@ -9069,14 +9094,10 @@ class MyAccount_AJAX extends JSON_Action {
 			$modalBody = translate([
 					'text' => 'Are you sure you want to delete the selected lists? The lists and all titles within them will be soft-deleted and can be restored by library staff within 30 days.',
 					'isPublicFacing' => true
-				]) . '<br/><br/>' .
-				'<div>' .
-				'<input type="checkbox" id="optOutSoftDeletionBulk" style="margin-right: 5px;">' .
-				'<label class="form-check-label" for="optOutSoftDeletionBulk">' . translate([
+				]) . '<br/><br/>' . '<div>' . '<input type="checkbox" id="optOutSoftDeletionBulk" style="margin-right: 5px;">' . '<label class="form-check-label" for="optOutSoftDeletionBulk">' . translate([
 					'text' => 'Opt Out of Soft Deletion',
 					'isPublicFacing' => true
-				]) . '</label>' .
-				'</div>';
+				]) . '</label>' . '</div>';
 		}
 
 		$modalButtons = '<button id="confirmDeleteSelectedLists" class="tool btn btn-danger" onclick="AspenDiscovery.Account.doDeleteSelectedLists()"><span class="fas fa-spinner fa-spin" style="display:none; margin-right: 4px;"></span>' . translate([
@@ -9679,8 +9700,8 @@ class MyAccount_AJAX extends JSON_Action {
 			if ($list->find(true)) {
 				if ($list->public || (UserAccount::isLoggedIn() && UserAccount::getActiveUserId() == $list->user_id)) {
 					// Get user's saved filters if logged in.
-					$selectedResourceTypes = empty($_REQUEST['selectedResourceTypes']) ? [] : explode('|',$_REQUEST['selectedResourceTypes']);
-					$activeFilters = empty($_REQUEST['activeFilters']) ? [] : explode('|',$_REQUEST['activeFilters']);
+					$selectedResourceTypes = empty($_REQUEST['selectedResourceTypes']) ? [] : explode('|', $_REQUEST['selectedResourceTypes']);
+					$activeFilters = empty($_REQUEST['activeFilters']) ? [] : explode('|', $_REQUEST['activeFilters']);
 
 					$list->buildCSV($selectedResourceTypes, $activeFilters);
 					// If buildCSV succeeds, it exits.
@@ -9724,8 +9745,8 @@ class MyAccount_AJAX extends JSON_Action {
 			if ($list->find(true)) {
 				if ($list->public || (UserAccount::isLoggedIn() && UserAccount::getActiveUserId() == $list->user_id)) {
 					// Get user's saved filters if logged in.
-					$selectedResourceTypes = empty($_REQUEST['selectedResourceTypes']) ? [] : explode('|',$_REQUEST['selectedResourceTypes']);
-					$activeFilters = empty($_REQUEST['activeFilters']) ? [] : explode('|',$_REQUEST['activeFilters']);
+					$selectedResourceTypes = empty($_REQUEST['selectedResourceTypes']) ? [] : explode('|', $_REQUEST['selectedResourceTypes']);
+					$activeFilters = empty($_REQUEST['activeFilters']) ? [] : explode('|', $_REQUEST['activeFilters']);
 					$list->buildRIS($selectedResourceTypes, $activeFilters);
 					// If buildRIS succeeds, it exits.
 				} else {
@@ -9904,7 +9925,6 @@ class MyAccount_AJAX extends JSON_Action {
 
 		$this->checkRequiredModule('Community Engagement');
 		$this->checkRequiredParameters(['campaignId', 'userId']);
-
 		$campaignId = $_GET['campaignId'] ?? null;
 		$userId = $_GET['userId'] ?? null;
 
@@ -10024,7 +10044,7 @@ class MyAccount_AJAX extends JSON_Action {
 		$review->userId = $userId;
 		if ($review->find()) {
 
-			while ($review->fetch()){
+			while ($review->fetch()) {
 
 				/** @noinspection PhpUndefinedFieldInspection */
 				$review->type = 'user_work_review';
@@ -10104,16 +10124,18 @@ class MyAccount_AJAX extends JSON_Action {
 
 		while (true) {
 
-			if( $debug ){
+			if ($debug) {
 				global $logger;
 				$logger->log("RUNNING SSE ", Logger::LOG_ERROR);
 			}
 			// Break the loop if the client aborted the connection (closed the page)
-			if (connection_status() != CONNECTION_NORMAL || connection_aborted()) exit();
+			if (connection_status() != CONNECTION_NORMAL || connection_aborted()) {
+					exit();
+				}
 
 			$campaignMilestoneProgressEntry = new CampaignMilestoneProgressEntry();
 			$campaignMilestoneProgressEntry->userId = $patron->id;
-			if(!$debug){
+			if (!$debug) {
 				$campaignMilestoneProgressEntry->whereAdd("timestamp >= DATE_SUB(NOW(), INTERVAL " . $interval . " SECOND)");
 			}
 
@@ -10143,9 +10165,9 @@ class MyAccount_AJAX extends JSON_Action {
 					$userCampaign->campaignId = $campaignMilestoneProgressEntry->ce_campaign_id;
 					$userCampaign->find(true);
 
-					$unwantedOverflowProgress = $campaignMilestoneUsersProgress->progress > $campaignMilestone->goal &&  !$milestone->progressBeyondOneHundredPercent;
-					$wantedOverflowProgress = $campaignMilestoneUsersProgress->progress > $campaignMilestone->goal &&  $milestone->progressBeyondOneHundredPercent;
-					if( $unwantedOverflowProgress ){
+					$unwantedOverflowProgress = $campaignMilestoneUsersProgress->progress > $campaignMilestone->goal && !$milestone->progressBeyondOneHundredPercent;
+					$wantedOverflowProgress = $campaignMilestoneUsersProgress->progress > $campaignMilestone->goal && $milestone->progressBeyondOneHundredPercent;
+					if ($unwantedOverflowProgress) {
 						exit();
 					}
 
@@ -10158,8 +10180,8 @@ class MyAccount_AJAX extends JSON_Action {
 									[
 										'text' => 'Milestone progress! Good job!',
 										'isPublicFacing' => true
-									]
-								),
+
+								]),
 							'body' => translate([
 								'text' => '%1% of %2% progressed!',
 								1=> $milestone->name,
@@ -10168,14 +10190,14 @@ class MyAccount_AJAX extends JSON_Action {
 							]),
 							$campaignMilestoneUsersProgress->progress.'/'.$campaignMilestone->goal.' ' .$milestone->name,
 							'icon' => "fa-chart-line",
-							'link' => ['href' => '/MyAccount/MyCampaigns', 'text' => translate(
-									[
+							'link' => ['href' => '/MyAccount/MyCampaigns', 'text' => translate([
+
 										'text' => 'View all campaigns',
 										'isPublicFacing' => true
-									]
-								)]
-							)
-						) . "\n\n";
+
+								])
+							]
+						)) . "\n\n";
 
 					# Handle milestone completion notification
 					if ($campaignMilestoneUsersProgress->progress >= $campaignMilestone->goal && !$wantedOverflowProgress) {
@@ -10187,8 +10209,8 @@ class MyAccount_AJAX extends JSON_Action {
 									[
 										'text' => 'Milestone completed! Well done!',
 										'isPublicFacing' => true
-									]
-								),
+
+								]),
 								'body' => translate([
 									'text' => '%1% of %2% complete.',
 									1 =>$milestone->name,
@@ -10196,14 +10218,14 @@ class MyAccount_AJAX extends JSON_Action {
 									'isPublicFacing' => true,
 								]),
 								'icon' => "fa-clipboard-check",
-								'link' => ['href' => '/MyAccount/MyCampaigns', 'text' => translate(
-									[
+								'link' => ['href' => '/MyAccount/MyCampaigns', 'text' => translate([
+
 										'text' => 'View all campaigns',
 										'isPublicFacing' => true
-									]
-								)]
-							)
-						) . "\n\n";
+
+								])
+							]
+						)) . "\n\n";
 					}
 
 					# Handle campaign completion notification
@@ -10216,22 +10238,22 @@ class MyAccount_AJAX extends JSON_Action {
 									[
 										'text' => 'Campaign completed! Awesome!',
 										'isPublicFacing' => true
-									]
-								),
+
+								]),
 								'body' => translate([
 									'text' => '%1% campaign complete!',
 									1 => $campaign->name,
 									'isPublicFacing' => true
 								]),
 								'icon' => "fa-medal",
-								'link' => ['href' => '/MyAccount/MyCampaigns', 'text' => translate(
-									[
+								'link' => ['href' => '/MyAccount/MyCampaigns', 'text' => translate([
+
 										'text' => 'View all campaigns',
 										'isPublicFacing' => true
-									]
-								)]
-							)
-						) . "\n\n";
+
+								])
+							]
+						)) . "\n\n";
 					}
 				}
 			}else{
@@ -10249,7 +10271,7 @@ class MyAccount_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function getYearInReviewSlide() : array {
+	function getYearInReviewSlide(): array {
 		$this->requireLoggedInUser(null, "You must be logged in.  Please close this dialog and login to view your Year in Review.");
 		$result = $this->failureResult('Error', 'Unknown error loading year in review slide.');
 
@@ -10312,7 +10334,7 @@ class MyAccount_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function getSublocationsSelect() : array {
+	function getSublocationsSelect(): array {
 		$this->requireLoggedInUser();
 		$html = '';
 		$success = false;
@@ -10374,7 +10396,7 @@ class MyAccount_AJAX extends JSON_Action {
 
 		$user = new User();
 		$user->id = $userId;
-		if (!$user->find(true)){
+		if (!$user->find(true)) {
 			return $this->failureResult(null, 'User not found');
 		}
 
@@ -10396,7 +10418,7 @@ class MyAccount_AJAX extends JSON_Action {
 
 		$user = new User();
 		$user->id = $userId;
-		if (!$user->find(true)){
+		if (!$user->find(true)) {
 			return $this->failureResult(null, 'User not found');
 		}
 
@@ -11155,7 +11177,7 @@ class MyAccount_AJAX extends JSON_Action {
 
 		if (!$campaignId) {
 			return [
-				'sucess' =>false,
+				'sucess' => false,
 				'title' => translate([
 					'text' => 'Error',
 					'isPublicFacing' => true,
@@ -11173,7 +11195,7 @@ class MyAccount_AJAX extends JSON_Action {
 		$campaign->id = $campaignId;
 		if (!$campaign->find(true)) {
 			return [
-				'sucess' =>false,
+				'sucess' => false,
 				'title' => translate([
 					'text' => 'Error',
 					'isPublicFacing' => true,
@@ -11193,7 +11215,7 @@ class MyAccount_AJAX extends JSON_Action {
 		/** @noinspection JSVoidFunctionReturnValueUsed */
 		/** @noinspection CommaExpressionJS */
 		return [
-			'success' =>true,
+			'success' => true,
 			'title' => translate([
 				'text' => 'Remove Campaign',
 				'isPublicFacing' => true,
@@ -11221,10 +11243,10 @@ class MyAccount_AJAX extends JSON_Action {
 		}
 
 		$isAdmin = UserAccount::userHasPermission('View Community Engagement Admin View');
-		$isSelf  = ($activeUser->id == $userId);
+		$isSelf = ($activeUser->id == $userId);
 
-		 if (!$isAdmin && !$isSelf) {
-			 return $this->failureResult('Error', 'You do not have permission to perform this action.');
+		if (!$isAdmin && !$isSelf) {
+			return $this->failureResult('Error', 'You do not have permission to perform this action.');
 		 }
 
 		require_once ROOT_DIR . '/sys/CommunityEngagement/UserRemovedCampaign.php';
@@ -11238,5 +11260,390 @@ class MyAccount_AJAX extends JSON_Action {
 		}
 
 		return $this->successResult('Success', 'Campaign removed from view');
+	}
+
+	/** @noinspection PhpUnused */
+	function getListTransferForm(): array {
+		global $interface;
+		$interface->assign('listId', strip_tags($_REQUEST['listId']));
+
+		if (isset($_REQUEST['validationFailed'])) {
+			$interface->assign('hasListValidationError', $_REQUEST['validationFailed']);
+		}
+
+		return [
+			'title' => translate([
+				'text' => 'List Transfer',
+				'isAdminFacing' => true,
+			]),
+			'modalBody' => $interface->fetch('MyAccount/listTransferPopup.tpl'),
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#transferListForm\").submit();'>" . translate([
+					'text' => 'Save',
+					'isAdminFacing' => 'true',
+				]) . "</button>",
+
+		];
+	}
+
+	/** @noinspection PhpUnused */
+	function listTransferValidation(): array {
+		global $interface;
+
+		$listId = $_REQUEST['listId'];
+		$newListOwner = $_REQUEST['newListOwner'];
+
+		$patron = new User();
+		$patron->whereAdd("ils_barcode = '$newListOwner' OR ils_username = '$newListOwner' OR username = '$newListOwner'");
+		$patron->find();
+		$numResults = $patron->count();
+		if ($numResults == 1 && $patron->find(true)) {
+			if ($patron->isStaff()) {
+				$interface->assign('listId', $listId);
+				$interface->assign('newListOwner', $patron);
+				return [
+					'success' => true,
+					'title' => translate([
+						'text' => 'List Transfer',
+						'isAdminFacing' => true,
+					]),
+					'modalBody' => $interface->fetch('MyAccount/listTransferConfirm.tpl'),
+					'modalButtons' => "<button id='listTransferProcesBtn' class='tool btn btn-primary' onclick='AspenDiscovery.Lists.listTransferProcess(\"$listId\", \"$patron->id\")'>" . translate([
+							'text' => 'Confirm',
+							'isAdminFacing' => 'true',
+						]) . "</button>",
+				];
+			}
+		}
+		return [
+			'success' => false
+		];
+	}
+
+	/** @noinspection PhpUnused */
+	function listTransferProcess(): array {
+		global $configArray;
+		$listId = $_REQUEST['listId'];
+		$newListOwner = $_REQUEST['userId'];
+
+		$results = [
+			'success' => false,
+			'title' => translate([
+				'text' => 'Unable to Transfer List',
+				'isAdminFacing' => true
+			]),
+			'message' => "",
+		];
+
+		$user = new User();
+		$user->id = $newListOwner;
+		if ($user->find(true)) {
+			require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+			$list = new UserList();
+			$list->id = $listId;
+			if ($list->find(true)) {
+				$list->user_id = $user->id;
+				if ($list->update()) {
+					require_once ROOT_DIR . '/sys/Email/Mailer.php';
+					$mailer = new Mailer();
+					$subject = translate([
+						'text' => 'An Aspen list has been transferred to you',
+						'isAdminFacing' => true,
+					]);
+					$body = translate([
+							'text' => 'The following list has been transferred to your account by an administrator:',
+							'isPublicFacing' => true,
+						]) . "\r\n" . $configArray['Site']['url'] . '/MyAccount/MyList/' . $list->id;
+					$htmlBody = '<p>' . translate([
+							'text' => 'The following list has been transferred to your account by an administrator:',
+							'isAdminFacing' => true,
+						]) . '</p>';
+					$htmlBody .= '<ul><li>' . translate([
+							'text' => '%1%' . $list->title . '%2%',
+							1 => '<a href="' . $configArray['Site']['url'] . '/MyAccount/MyList/' . $list->id . '">',
+							2 => '</a>',
+							'isPublicFacing' => true,
+						]) . '</li></ul>';
+					if ($mailer->send($user->email, $subject, $body, null, $htmlBody)) {
+						$results['success'] = true;
+					} else {
+						$results['title'] = translate([
+							'text' => 'Success',
+							'isAdminFacing' => true
+						]);
+						$results['message'] = "The list was transferred sucessfully but we were unable to send an email to the new list owner.";
+					}
+				} else {
+					$results['message'] = "There was an error updating the list owner: " . $list->getLastError();
+				}
+			} else {
+				$results['message'] = "Could not locate the list by id " . $listId;
+			}
+		} else {
+			$results['message'] = "Could not locate a user by id " . $newListOwner;
+		}
+
+		return $results;
+	}
+
+	/** @noinspection PhpUnused */
+	function getListGroupTransferForm(): array {
+		global $interface;
+		$interface->assign('listGroupId', strip_tags($_REQUEST['listGroupId']));
+
+		if (isset($_REQUEST['validationFailed'])) {
+			$interface->assign('hasListValidationError', $_REQUEST['validationFailed']);
+		}
+
+		return [
+			'title' => translate([
+				'text' => 'List Group Transfer',
+				'isAdminFacing' => true,
+			]),
+			'modalBody' => $interface->fetch('MyAccount/listGroupTransferPopup.tpl'),
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#transferListGroupForm\").submit();'>" . translate([
+					'text' => 'Save',
+					'isAdminFacing' => 'true',
+				]) . "</button>",
+
+		];
+	}
+
+	/** @noinspection PhpUnused */
+	function listGroupTransferValidation(): array {
+		global $interface;
+
+		$listGroupId = $_REQUEST['listGroupId'];
+		$newListOwner = $_REQUEST['newListGroupOwner'];
+
+		$patron = new User();
+		$patron->whereAdd("ils_barcode = '$newListOwner' OR ils_username = '$newListOwner' OR username = '$newListOwner'");
+		$patron->find();
+		$numResults = $patron->count();
+		if ($numResults == 1 && $patron->find(true)) {
+			if ($patron->isStaff()) {
+				$interface->assign('listGroupId', $listGroupId);
+				$interface->assign('newListGroupOwner', $patron);
+				return [
+					'success' => true,
+					'title' => translate([
+						'text' => 'List Group Transfer',
+						'isAdminFacing' => true,
+					]),
+					'modalBody' => $interface->fetch('MyAccount/listGroupTransferConfirm.tpl'),
+					'modalButtons' => "<button id='listTransferProcesBtn' class='tool btn btn-primary' onclick='AspenDiscovery.Lists.listGroupTransferProcess(\"$listGroupId\", \"$patron->id\")'>" . translate([
+							'text' => 'Confirm',
+							'isAdminFacing' => 'true',
+						]) . "</button>",
+				];
+			}
+		}
+		return [
+			'success' => false
+		];
+	}
+
+	/** @noinspection PhpUnused */
+	function listGroupTransferProcess(): array {
+		global $configArray;
+		$listGroupId = $_REQUEST['listGroupId'];
+		$newListOwner = $_REQUEST['userId'];
+
+		$results = [
+			'success' => false,
+			'title' => translate([
+				'text' => 'Unable to Transfer List Group',
+				'isAdminFacing' => true
+			]),
+			'message' => "",
+		];
+
+		$user = new User();
+		$user->id = $newListOwner;
+		if ($user->find(true)) {
+			require_once ROOT_DIR . '/sys/UserLists/UserListGroup.php';
+			$listGroup = new UserListGroup();
+			$listGroup->id = $listGroupId;
+			if ($listGroup->find(true)) {
+				require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+				$lists = new UserList();
+				$lists->listGroupId = $listGroup->id;
+				$lists->find();
+				while ($lists->fetch()) {
+					$lists->user_id = $user->id;
+					$lists->update();
+				}
+				// since we aren't transferring the parent, we should orphan it
+				if ($listGroup->parentGroupId != -1) {
+					$listGroup->parentGroupId = -1;
+				}
+				$listGroup->userId = $user->id;
+				if ($listGroup->update()) {
+					require_once ROOT_DIR . '/sys/Email/Mailer.php';
+					$mailer = new Mailer();
+					$subject = translate([
+						'text' => 'An Aspen list group has been transferred to you',
+						'isAdminFacing' => true,
+					]);
+					$body = translate([
+							'text' => 'The following list group has been transferred to your account by an administrator:',
+							'isPublicFacing' => true,
+						]) . "\r\n" . $configArray['Site']['url'] . '/MyAccount/Lists?groupId=' . $listGroup->id;
+					$htmlBody = '<p>' . translate([
+							'text' => 'The following list group has been transferred to your account by an administrator:',
+							'isAdminFacing' => true,
+						]) . '</p>';
+					$htmlBody .= '<ul><li><a href="' . $configArray['Site']['url'] . '/MyAccount/Lists?groupId' . $listGroup->id . '">' . $listGroup->title . '</a></li></ul>';
+					if ($mailer->send($user->email, $subject, $body, null, $htmlBody)) {
+						$results['success'] = true;
+					} else {
+						$results['title'] = translate([
+							'text' => 'Success',
+							'isAdminFacing' => true
+						]);
+						$results['message'] = "The list group was transferred successfully but we were unable to send an email to the new list group owner.";
+					}
+				} else {
+					$results['message'] = "There was an error updating the list group owner: " . $listGroup->getLastError();
+				}
+			} else {
+				$results['message'] = "Could not locate the list group by id " . $listGroupId;
+			}
+		} else {
+			$results['message'] = "Could not locate a user by id " . $newListOwner;
+		}
+
+		return $results;
+	}
+
+	/** @noinspection PhpUnused */
+	function getListsTransferForm(): array {
+		global $interface;
+		$interface->assign('prevListOwner', strip_tags($_REQUEST['prevListOwner']));
+
+		if (isset($_REQUEST['validationFailed'])) {
+			$interface->assign('hasListValidationError', $_REQUEST['validationFailed']);
+		}
+
+		return [
+			'title' => translate([
+				'text' => 'Transfer All Lists',
+				'isAdminFacing' => true,
+			]),
+			'modalBody' => $interface->fetch('MyAccount/listsTransferPopup.tpl'),
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#transferListsForm\").submit();'>" . translate([
+					'text' => 'Save',
+					'isAdminFacing' => 'true',
+				]) . "</button>",
+
+		];
+	}
+
+	/** @noinspection PhpUnused */
+	function listsTransferValidation(): array {
+		global $interface;
+
+		$newListOwner = $_REQUEST['newListOwner'];
+		$prevListOwner = $_REQUEST['prevListOwner'];
+
+		$patron = new User();
+		$patron->whereAdd("ils_barcode = '$newListOwner' OR ils_username = '$newListOwner' OR username = '$newListOwner'");
+		$patron->find();
+		$numResults = $patron->count();
+		if ($numResults == 1 && $patron->find(true)) {
+			if ($patron->isStaff()) {
+				$interface->assign('newListOwner', $patron);
+				return [
+					'success' => true,
+					'title' => translate([
+						'text' => 'Transfer All Lists',
+						'isAdminFacing' => true,
+					]),
+					'modalBody' => $interface->fetch('MyAccount/listsTransferConfirm.tpl'),
+					'modalButtons' => "<button id='listsTransferProcesBtn' class='tool btn btn-primary' onclick='AspenDiscovery.Lists.listsTransferProcess(\"$patron->id\", \"$prevListOwner\")'>" . translate([
+							'text' => 'Confirm',
+							'isAdminFacing' => 'true',
+						]) . "</button>",
+				];
+			}
+		}
+		return [
+			'success' => false
+		];
+	}
+
+	/** @noinspection PhpUnused */
+	function listsTransferProcess(): array {
+		global $configArray;
+		$prevListOwner = $_REQUEST['prevListOwner'];
+		$newListOwner = $_REQUEST['userId'];
+
+		$results = [
+			'success' => false,
+			'title' => translate([
+				'text' => 'Unable to Transfer Lists',
+				'isAdminFacing' => true
+			]),
+			'message' => "",
+		];
+
+		$user = new User();
+		$user->id = $newListOwner;
+		if ($user->find(true)) {
+			$lists = [];
+			require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+			$list = new UserList();
+			$list->user_id = $prevListOwner;
+			$list->find();
+			while ($list->fetch()) {
+				$lists[$list->id] = $list->title;
+				$list->user_id = $user->id;
+				$list->update();
+			}
+			require_once ROOT_DIR . '/sys/Email/Mailer.php';
+			$mailer = new Mailer();
+			$subject = translate([
+				'text' => 'An Aspen list has been transferred to you',
+				'isAdminFacing' => true,
+			]);
+
+			$topLists = array_slice($lists, 0, 20, true); // true preserves keys
+			$body = translate([
+				'text' => 'The following lists has been transferred to your account by an administrator:',
+				'isPublicFacing' => true,
+			]);
+			$htmlBody = '<p>' . translate([
+					'text' => 'The following lists has been transferred to your account by an administrator:',
+					'isAdminFacing' => true,
+				]) . '</p><ul>';
+			foreach ($topLists as $listId => $listTitle) {
+				$body .= "\r\n" . $configArray['Site']['url'] . '/MyAccount/MyList/' . $listId;
+				$htmlBody .= '<li><a href="' . $configArray['Site']['url'] . '/MyAccount/MyList/' . $listId . '">' . $listTitle . '</a></li>';
+			}
+
+			if (count($lists) > 20) {
+				$body .= "\r\n" . translate([
+						'text' => 'To see additional transferred lists, please log in to your account.',
+						'isAdminFacing' => true
+					]);
+				$htmlBody .= '</br>' . translate([
+						'text' => 'To see additional transferred lists, please log in to your account.',
+						'isAdminFacing' => true
+					]);
+			}
+
+			if ($mailer->send($user->email, $subject, $body, null, $htmlBody)) {
+				$results['success'] = true;
+			} else {
+				$results['title'] = translate([
+					'text' => 'Success',
+					'isAdminFacing' => true
+				]);
+				$results['message'] = "The lists were transferred successfully but we were unable to send an email to the new list owner.";
+			}
+		} else {
+			$results['message'] = "Could not locate a user by id " . $newListOwner;
+		}
+
+		return $results;
 	}
 }

@@ -111,6 +111,16 @@ class StringUtils {
 		return $bytes;
 	}
 
+	static function toCamelCase(string $string) : string {
+		$string = preg_replace('/[^a-zA-Z0-9 ]/', '', $string);
+		$words = explode(' ', $string);
+		$words[0] = strtolower($words[0]);
+		for ($i = 1; $i < count($words); $i++) {
+			$words[$i] = ucfirst(strtolower($words[$i]));
+		}
+		return implode('', $words);
+	}
+
 	static function endsWith($haystack, $needle) : bool {
 		$length = strlen($needle);
 		if (!$length) {

@@ -18,7 +18,18 @@ function getUpdates26_04_00(): array {
 		//mark n
 
 		//kirstien
-
+		'list_transfer_permission' => [
+			'title' => 'Add list transfer permission',
+			'description' => 'Create permission for allowing transfer of list ownership.',
+			'continueOnError' => false,
+			'sql' => [
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES
+					('User Lists', 'Transfer Lists', '', 6, 'Allows the user to transfer a list to another staff.')
+				",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Transfer Lists'))",
+			],
+		],
+		//list_transfer_permission
 
 		//kodi
 		'bypass_aspen_cloudsource_page' => [
@@ -44,6 +55,14 @@ function getUpdates26_04_00(): array {
 				"ALTER TABLE library MODIFY COLUMN aspenEventsToInclude INT DEFAULT 0",
 			],
 		], //update_aspenEventsToInclude_default
+		'migrate_event_field_select_values_to_codes' => [
+			'title' => 'Migrate Event Field Select Values to Codes',
+			'description' => 'Converts stored integers for select list event fields to codes (camelCase string values).',
+			'continueOnError' => false,
+			'sql' => [
+				'migrateEventFieldSelectValuesToCamelCase',
+			]
+		], //migrate_event_field_select_values_to_codes
 
 		//mark j
 		'add_pageViewsFromPlacard_to_web_builder_resource_usage' => [
@@ -65,4 +84,33 @@ function getUpdates26_04_00(): array {
 
 
 	];
+}
+
+function migrateEventFieldSelectValuesToCamelCase(): void {
+	require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
+	global $aspen_db;
+
+	$result = $aspen_db->query("
+		SELECT eef.id, eef.value, ef.allowableValues
+		FROM event_event_field eef
+		INNER JOIN event_field ef ON eef.eventFieldId = ef.id
+		WHERE ef.allowableValues IS NOT NULL
+		AND ef.allowableValues != ''
+		AND eef.value REGEXP '^[0-9]+$'
+	");
+
+	if (!$result) {
+		return;
+	}
+
+	$stmt = $aspen_db->prepare("UPDATE event_event_field SET value = :value WHERE id = :id");
+
+	while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+		$allowableValues = array_map('trim', explode("\n", $row['allowableValues']));
+		$index = (int)$row['value'];
+		if (isset($allowableValues[$index])) {
+			$camelCaseValue = StringUtils::toCamelCase($allowableValues[$index]);
+			$stmt->execute([':value' => $camelCaseValue, ':id' => $row['id']]);
+		}
+	}
 }

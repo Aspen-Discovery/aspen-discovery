@@ -9,8 +9,9 @@ abstract class DB_LibraryLinkedObject extends DataObject {
 	public function okToExport(array $selectedFilters): bool {
 		$okToExport = parent::okToExport($selectedFilters);
 		$selectedLibraries = $selectedFilters['libraries'];
+		$linkedLibraryIds = $this->getLinkedLibraryIds();
 		foreach ($selectedLibraries as $libraryId) {
-			if (array_key_exists($libraryId, $this->getLibraries())) {
+			if (in_array((string)$libraryId, $linkedLibraryIds, true)) {
 				$okToExport = true;
 				break;
 			}
@@ -21,15 +22,32 @@ abstract class DB_LibraryLinkedObject extends DataObject {
 	public function getLinksForJSON(): array {
 		$links = [];
 		$allLibraries = Library::getLibraryListAsObjects(false);
-		$libraries = $this->getLibraries();
 		$links['libraries'] = [];
-		foreach ($libraries as $libraryId) {
+		foreach ($this->getLinkedLibraryIds() as $libraryId) {
 			if (array_key_exists($libraryId, $allLibraries)) {
 				$library = $allLibraries[$libraryId];
 				$links['libraries'][$libraryId] = empty($library->subdomain) ? $library->ilsCode : $library->subdomain;
 			}
 		}
 		return $links;
+	}
+
+	protected function getLinkedLibraryIds(): array {
+		$libraries = $this->getLibraries();
+		if (empty($libraries) || !is_array($libraries)) {
+			return [];
+		}
+
+		$libraryIds = [];
+		foreach ($libraries as $key => $value) {
+			if (is_array($value)) {
+				// checkboxWithOptions format: libraryId => [options]
+				$libraryIds[] = (string)$key;
+			} else {
+				$libraryIds[] = (string)$value;
+			}
+		}
+		return $libraryIds;
 	}
 
 	public function loadRelatedLinksFromJSON($jsonData, $mappings, string $overrideExisting = 'keepExisting'): bool {
