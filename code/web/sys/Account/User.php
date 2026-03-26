@@ -2475,23 +2475,12 @@ class User extends DataObject {
 		$catalogDriver = $this->getCatalogDriver();
 		$result = $catalogDriver->placeHold($this, $recordId, $pickupBranch, $cancelDate, $pickupSublocation);
 		$this->updateAltLocationForHold($pickupBranch);
-		$thisUser = translate([
-			'text' => 'You',
-			'isPublicFacing' => true,
-		]);
-		if (!empty($this->parentUser)) {
-			$thisUser = $this->displayName;
-		}
+
 		if ($result['success']) {
-			$viewHoldsText = translate([
-				'text' => 'On Hold for %1%',
-				1 => $thisUser,
-				'isPublicFacing' => true,
-				'inAttribute' => true
-			]);
-			// Don't display a link when using Sierra
-			if (isset($catalogDriver->driver) && $catalogDriver->driver !== 'Sierra') {
-				$result['viewHoldsAction'] = "<a id='onHoldAction$recordId' href='/MyAccount/Holds' class='btn btn-primary btn-wrap' title='$viewHoldsText'>$viewHoldsText</a>";
+
+			if (!empty($result['api']['action'])) {
+				$text = $result['api']['text'] ?? "Go to Holds";
+				$result['viewHoldsAction'] = "<a id='onHoldAction$recordId' href='/MyAccount/Holds' class='btn btn-primary btn-wrap'>$text</a>";
 			}
 
 			//If we have a cached account summary, add one to the number of unavailable holds (no ILSs move a hold to active immediately)
@@ -2506,23 +2495,12 @@ class User extends DataObject {
 		$catalogDriver = $this->getCatalogDriver();
 		$result = $catalogDriver->placeVolumeHold($this, $recordId, $volumeId, $pickupBranch, $pickupSublocation);
 		$this->updateAltLocationForHold($pickupBranch);
-		$thisUser = translate([
-			'text' => 'You',
-			'isPublicFacing' => true,
-		]);
-		if (!empty($this->parentUser)) {
-			$thisUser = $this->displayName;
-		}
+
 		if ($result['success']) {
-			$viewHoldsText = translate([
-				'text' => 'On Hold for %1%',
-				1 => $thisUser,
-				'isPublicFacing' => true,
-				'inAttribute' => true,
-			]);
-			// Don't display a link when using Sierra
-			if (isset($catalogDriver->driver) && $catalogDriver->driver !== 'Sierra') {
-				$result['viewHoldsAction'] = "<a id='onHoldAction$recordId' href='/MyAccount/Holds' class='btn btn-primary btn-wrap' title='$viewHoldsText'>$viewHoldsText</a>";
+
+			if (!empty($result['api']['action'])) {
+				$text = $result['api']['text'] ?? "Go to Holds";
+				$result['viewHoldsAction'] = "<a id='onHoldAction$recordId' href='/MyAccount/Holds' class='btn btn-primary btn-wrap'>$text</a>";
 			}
 
 			$accountSummary = $this->getCachedAccountSummary('ils');
@@ -2589,14 +2567,11 @@ class User extends DataObject {
 			$thisUser = $this->displayName;
 		}
 		if ($result['success']) {
-			$viewHoldsText = translate([
-				'text' => 'On Hold for %1%',
-				1 => $thisUser,
-				'isPublicFacing' => true,
-				'inAttribute' => true,
-			]);
-
-			$result['viewHoldsAction'] = "<a id='onHoldAction$recordId' href='/MyAccount/Holds' class='btn btn-sm btn-info btn-wrap' title='{$viewHoldsText}'>{$viewHoldsText}</a>";
+			
+			if (!empty($result['api']['action'])) {
+				$text = $result['api']['text'] ?? "Go to Holds";
+				$result['viewHoldsAction'] = "<a id='onHoldAction$recordId' href='/MyAccount/Holds' class='btn btn-primary btn-wrap'>$text</a>";
+			}
 
 			//Update account summary and ensure holds reload
 			$accountSummary = $this->getCachedAccountSummary('ils');

@@ -540,12 +540,12 @@ AspenDiscovery.Record = (function () {
 						AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 					} else {
 						AspenDiscovery.Record.volumeHoldInProgress = false;
-						AspenDiscovery.showMessage(data.title, data.message, false, autoLogOut);
+						AspenDiscovery.showMessageWithButtons(data.title, data.message, data.modalButtons, autoLogOut);
 						AspenDiscovery.Account.loadMenuData();
 					}
 				} else {
 					AspenDiscovery.Record.volumeHoldInProgress = false;
-					AspenDiscovery.showMessage(data.title, data.message, false, autoLogOut);
+					AspenDiscovery.showMessageWithButtons(data.title, data.message, false, autoLogOut);
 				}
 			}).fail(function() {
 				AspenDiscovery.Record.volumeHoldInProgress = false;
