@@ -20,6 +20,8 @@ class Lists extends MyAccount {
 			$order = ' ASC';
 		}
 
+		$interface->assign('listOwnerId', $user->id);
+
 		$page = $_REQUEST['page'] ?? 1;
 		$interface->assign('page', $page);
 
@@ -48,6 +50,9 @@ class Lists extends MyAccount {
 		$pager = new Pager($options);
 
 		$interface->assign('pageLinks', $pager->getLinks());
+
+		$userCanTransfer = $user->isStaff() && UserAccount::userHasPermission('Transfer Lists');
+		$interface->assign('userCanTransfer', $userCanTransfer);
 
 		$lists = new UserList();
 		$lists->user_id = UserAccount::getActiveUserId();

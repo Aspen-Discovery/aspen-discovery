@@ -5192,6 +5192,7 @@ class Koha extends AbstractIlsDriver {
 
 	function getNewMaterialsRequestForm(User $user) {
 		$this->initDatabaseConnection();
+		$userLocation = $user->getHomeLocation();
 
 		/** @noinspection SqlResolve */
 		$sql = "SELECT * FROM systempreferences where variable like 'OpacSuggestion%';";
@@ -5219,7 +5220,14 @@ class Koha extends AbstractIlsDriver {
 
 
 		/** @noinspection SqlResolve */
-		$itemTypesSQL = "SELECT * FROM authorised_values where category = 'SUGGEST_FORMAT' order by lib_opac";
+		$userLocationCode = $userLocation->code;
+		$itemTypesSQL = "SELECT av.authorised_value, av.lib_opac
+						FROM authorised_values av
+						LEFT JOIN authorised_values_branches avb
+						ON av.id = avb.av_id
+						WHERE av.category = 'SUGGEST_FORMAT'
+						AND (avb.branchcode = '$userLocationCode' OR avb.branchcode IS NULL)
+						ORDER BY av.lib_opac;";
 		$itemTypesRS = mysqli_query($this->dbConnection, $itemTypesSQL);
 		$itemTypes = [];
 		$defaultItemType = '';
@@ -5251,7 +5259,6 @@ class Koha extends AbstractIlsDriver {
 				$pickupLocations[$locations->code] = $locations->displayName;
 			}
 		} else {
-			$userLocation = $user->getHomeLocation();
 			$pickupLocations[$userLocation->code] = $userLocation->displayName;
 		}
 

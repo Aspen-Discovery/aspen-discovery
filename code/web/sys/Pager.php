@@ -140,13 +140,15 @@ class Pager {
 			$linksText .= '</div>';
 
 			if ($this->options['canJumpToPage']) {
+				$totalPagesLength = strlen((string)$this->_totalPages);
+				$inputSize = max(2, $totalPagesLength);
 				$linksText .= '<br/><div class="form-group jump-to-page">';
 				$linksText .= '<label for="page" class="control-label">' . translate([
 						'text' => 'Go to page',
 						'isPublicFacing' => true,
 					]) . '&nbsp;</label>';
 				$linksText .= '<input type="text" min="1" max="' . $this->_totalPages . '" '
-							. 'id="page" name="page" size="2" class="input input-sm" '
+							. 'id="page" name="page" size="' . $inputSize . '" class="input input-sm" '
 							. 'onkeypress="if(event.key === \'Enter\') { AspenDiscovery.changePage(); return false; }">';
 				$linksText .= '&nbsp;<button id="goToPageSubmit" name="goToPageSubmit" class="btn btn-sm btn-default" onclick="return AspenDiscovery.changePage();">' . translate([
 						'text' => 'Go',

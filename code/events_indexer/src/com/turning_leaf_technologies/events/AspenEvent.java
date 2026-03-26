@@ -247,19 +247,35 @@ class AspenEvent {
 		}
 
 		public String getValue() {
-			if (allowableValues.length > 0 && StringUtils.isNumeric(value) && !value.isEmpty()) {
-				try {
-					return allowableValues[Integer.parseInt(value)].trim();
-				}catch (ArrayIndexOutOfBoundsException e) {
-					//MDN 2/6/25 do additional handling and logging if we don't get a good value.
-					if (type == 2) { // Checkbox/boolean field.
-						return "0"; // Default to false/unchecked.
-					}
-					return "Unknown";
-				}
-			} else {
+			if (allowableValues.length == 0 || value.isEmpty()) {
 				return value;
 			}
+			if (type == 3) {
+				for (String allowableValue : allowableValues) {
+					if (toCamelCase(allowableValue.trim()).equals(value)) {
+						return allowableValue.trim();
+					}
+				}
+			}
+			if (type == 2) { // Checkbox/boolean field.
+				return "0"; // Default to false/unchecked.
+			}
+			// if the option gets deleted from allowable values but still saved on Event, display the stored camelCase code.
+			return value;
+		}
+
+		private String toCamelCase(String string) {
+			string = string.replaceAll("[^a-zA-Z0-9 ]", "");
+			String[] words = string.split(" ");
+			StringBuilder result = new StringBuilder(words[0].toLowerCase());
+			for (int i = 1; i < words.length; i++) {
+				if (words[i].isEmpty()) {
+					continue;
+				}
+				result.append(Character.toUpperCase(words[i].charAt(0)));
+				result.append(words[i].substring(1).toLowerCase());
+			}
+			return result.toString();
 		}
 
 		public String[] getAllowableValues() {

@@ -826,6 +826,15 @@ AspenDiscovery.Record = (function () {
 				AspenDiscovery.showMessage(data.title, data.message);
 			}).fail(AspenDiscovery.ajaxFail);
 			return false;
+		},
+
+		getLargeCover: function (recordId){
+			var url = Globals.path + '/Record/' + recordId + '/AJAX?method=getLargeCover';
+			$.getJSON(url, function (data){
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+				}
+			);
+			return false;
 		}
 	};
 }(AspenDiscovery.Record || {}));

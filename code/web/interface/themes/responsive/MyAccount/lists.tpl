@@ -31,6 +31,10 @@
 	 	 	{/if}
 			<div class="col-xs-12">
 				<div style="padding-bottom:1em;">
+                    {if !empty($userCanTransfer) && $userCanTransfer}
+	                    <button class="btn btn-sm btn-default" onclick="return AspenDiscovery.Lists.listGroupTransferAction({$activeListGroupDetails->id})">{translate text='Transfer List Group' isPublicFacing=true}</button>
+	                    <button class="btn btn-sm btn-default" onclick="return AspenDiscovery.Lists.listsTransferAction()">{translate text='Transfer All Lists' isPublicFacing=true}</button>
+                    {/if}
 					<button class="btn btn-sm btn-default" onclick="return AspenDiscovery.Account.showCreateListForm(undefined, undefined, '{$activeListGroupDetails->id}')">{translate text="Create a New List" isPublicFacing=true}</button>
 					<button class="btn btn-default btn-sm" onclick="return AspenDiscovery.Account.showCreateListGroupForm('{$activeListGroupDetails->id}')">{translate text="Create a New List Group" isPublicFacing=true}</button>
 					{if !empty($showConvertListsFromClassic)}
@@ -89,6 +93,9 @@
 			<div class="row" style="margin-bottom: 20px;">
 				<div class="col-xs-12">
 					<div class="btn-toolbar">
+                        {if !empty($userCanTransfer) && $userCanTransfer}
+							<button class="btn btn-sm btn-default" onclick="return AspenDiscovery.Lists.listsTransferAction({$listOwnerId})">{translate text='Transfer All Lists' isPublicFacing=true}</button>
+                        {/if}
 						<button class="btn btn-sm btn-default" onclick="return AspenDiscovery.Account.showCreateListForm()">{translate text="Create a New List" isPublicFacing=true}</button>
  	 	 	 	 	 	{if count($lists) > 0}
 							<button id="deleteSelectedListsBtn" onclick="return AspenDiscovery.Account.deleteSelectedLists()" class="btn btn-sm btn-danger" disabled>{translate text="Delete Selected Lists" isPublicFacing=true}</button>

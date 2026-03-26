@@ -2473,4 +2473,21 @@ class Record_AJAX extends JSON_Action {
 		$user = UserAccount::getLoggedInUser();
 		return $user->submitLocalIllRequestEmail();
 	}
+
+	/** @noinspection PhpUnused */
+	function getLargeCover() : array {
+		global $interface;
+
+		$id = $_REQUEST['id'];
+		$interface->assign('id', $id);
+
+		return [
+			'title' => translate([
+				'text' => 'Cover Image',
+				'isPublicFacing' => true,
+			]),
+			'modalBody' => $interface->fetch("Record/largeCover.tpl"),
+			'modalButtons' => "",
+		];
+	}
 }

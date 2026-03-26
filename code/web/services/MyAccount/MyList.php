@@ -10,7 +10,7 @@ class MyAccount_MyList extends MyAccount {
 	}
 
 	/** @noinspection PhpUnused */
-	function reloadCover() : array {
+	function reloadCover(): array {
 		$listId = $_REQUEST['id'];
 		$listEntry = new UserListEntry();
 		$listEntry->listId = $listId;
@@ -33,7 +33,7 @@ class MyAccount_MyList extends MyAccount {
 		];
 	}
 
-	function launch() : void {
+	function launch(): void {
 		global $interface;
 
 		global $library;
@@ -105,6 +105,7 @@ class MyAccount_MyList extends MyAccount {
 			unset($_SESSION['listNotes']);
 		}
 
+		$userCanTransfer = false;
 		//Perform an action on the list, but verify that the user has permission to do so.
 		$userCanEdit = false;
 		//Only show list groups if the active user has the
@@ -112,17 +113,20 @@ class MyAccount_MyList extends MyAccount {
 		$userObj = UserAccount::getActiveUserObj();
 		if ($userObj !== false) {
 			$userCanEdit = $userObj->canEditList($list);
-			if ($userCanEdit && UserAccount::userHasPermission('Upload List Covers')){
+			if ($userCanEdit && UserAccount::userHasPermission('Upload List Covers')) {
 				global $configArray;
-				$customCoverPath =  $configArray['Site']['coverPath'] . '/original/lists/' . $list->id . '.png';
+				$customCoverPath = $configArray['Site']['coverPath'] . '/original/lists/' . $list->id . '.png';
 				$hasUploadedCover = file_exists($customCoverPath);
 				$interface->assign('hasUploadedCover', $hasUploadedCover);
 			}
 			if ($userObj->id == $list->user_id) {
 				$showListGroup = true;
 			}
+
+			$userCanTransfer = $userObj->isStaff() && UserAccount::userHasPermission('Transfer Lists');
 		}
 		$interface->assign('showListGroup', $showListGroup);
+		$interface->assign('userCanTransfer', $userCanTransfer);
 
 		if ($userCanEdit && (isset($_REQUEST['myListActionHead']) || isset($_REQUEST['myListActionItem']) || isset($_GET['delete']))) {
 			if (isset($_REQUEST['myListActionHead']) && strlen($_REQUEST['myListActionHead']) > 0) {
@@ -204,7 +208,7 @@ class MyAccount_MyList extends MyAccount {
 							$removalUrl .= (str_contains($removalUrl, '?') ? '&' : '?') . "resourceTypes[]=$listSource2";
 						}
 					}
-				}else{
+				} else {
 					$tmpRemovalUrl = str_replace([
 						"&resourceTypes[]=$listSource",
 						"?resourceTypes[]=$listSource"
@@ -214,14 +218,14 @@ class MyAccount_MyList extends MyAccount {
 					}
 					$removalUrl = $tmpRemovalUrl;
 				}
-			}else{
+			} else {
 				$url = $activeUrl . (str_contains($activeUrl, '?') ? '&' : '?') . "resourceTypes[]=$listSource";
 				$removalUrl = $activeUrl;
 			}
 			$sourceDisplayName = $listSource;
 			if ($listSource == 'GroupedWork') {
 				$sourceDisplayName = 'Library Materials';
-			}elseif ($listSource == 'OpenArchives') {
+			} elseif ($listSource == 'OpenArchives') {
 				$sourceDisplayName = 'History & Archives';
 			}
 			$listSources[] = [
@@ -309,7 +313,7 @@ class MyAccount_MyList extends MyAccount {
 			$listGroup->id = $list->listGroupId;
 			if ($listGroup->find(true)) {
 				$listGroupInfo = clone $listGroup;
-			}else{
+			} else {
 				//The list group was deleted
 				$inListGroup = false;
 			}
@@ -331,8 +335,8 @@ class MyAccount_MyList extends MyAccount {
 		$filterParams = [];
 		if (array_key_exists('filter', $_REQUEST)) {
 			$filterParams = $_REQUEST['filter'];
-		}elseif (array_key_exists('activeFilters', $_REQUEST)) {
-			$filterParams = explode('|',$_REQUEST['activeFilters']);
+		} elseif (array_key_exists('activeFilters', $_REQUEST)) {
+			$filterParams = explode('|', $_REQUEST['activeFilters']);
 		}
 		if (!empty($filterParams)) {
 			$listHasFiltersApplied = 1;
@@ -347,7 +351,7 @@ class MyAccount_MyList extends MyAccount {
 		$interface->assign('numValidListItems', $numValidListItems);
 		if ($numValidListItems > 0) {
 			$sidebar = 'MyAccount/list-sidebar.tpl';
-		}else{
+		} else {
 			$sidebar = '';
 		}
 
@@ -368,7 +372,7 @@ class MyAccount_MyList extends MyAccount {
 	 * @param array $selectedResourceTypes
 	 * @param array $filterParams
 	 */
-	private function buildListForDisplay(UserList $list, bool $allowEdit, string $sortName, int $pageSize, array $selectedResourceTypes, array $filterParams) : void {
+	private function buildListForDisplay(UserList $list, bool $allowEdit, string $sortName, int $pageSize, array $selectedResourceTypes, array $filterParams): void {
 		global $interface;
 
 		$printInterface = isset($_REQUEST['print']) && filter_var($_REQUEST['print'], FILTER_VALIDATE_BOOLEAN);
@@ -430,8 +434,8 @@ class MyAccount_MyList extends MyAccount {
 				$totalResults = $numFilteredResults;
 				$formattedRecords = $resourceList;
 			}
-		}else{
-			$resourceList = $list->getListRecords($startRecord, $pageSize, $allowEdit, 'html', null, $sortName, false, 0,$selectedResourceTypes);
+		} else {
+			$resourceList = $list->getListRecords($startRecord, $pageSize, $allowEdit, 'html', null, $sortName, false, 0, $selectedResourceTypes);
 			$numFilteredResults = $list->numValidListItems($selectedResourceTypes);
 			$totalResults = $numFilteredResults;
 			$formattedRecords = $resourceList;
@@ -468,7 +472,7 @@ class MyAccount_MyList extends MyAccount {
 
 	}
 
-	function bulkAddTitles(UserList $list) : array {
+	function bulkAddTitles(UserList $list): array {
 		$totalRecords = $list->numValidListItems();
 		$numAdded = 0;
 		$notes = [];
@@ -547,7 +551,7 @@ class MyAccount_MyList extends MyAccount {
 				'text' => "No Results Found",
 				"isPublicFacing" => true,
 			]);
-		}else{
+		} else {
 			$recordStart = number_format($interface->getVariable('recordStart'));
 			$recordEnd = number_format($interface->getVariable('recordEnd'));
 			$recordCount = number_format($interface->getVariable('recordCount'));
@@ -561,11 +565,11 @@ class MyAccount_MyList extends MyAccount {
 		}
 
 		$numValidListItems = $interface->getVariable('numValidListItems');
-		$resultCountText .= ' ('. translate([
-			'text' => "%1% total entries",
-			1 => $numValidListItems,
-			"isPublicFacing" => true,
-		]) .')';
+		$resultCountText .= ' (' . translate([
+				'text' => "%1% total entries",
+				1 => $numValidListItems,
+				"isPublicFacing" => true,
+			]) . ')';
 
 		$breadcrumbs[] = new Breadcrumb(null, $resultCountText, false);
 		return $breadcrumbs;
