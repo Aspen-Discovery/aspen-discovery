@@ -545,7 +545,7 @@ AspenDiscovery.Record = (function () {
 					}
 				} else {
 					AspenDiscovery.Record.volumeHoldInProgress = false;
-					AspenDiscovery.showMessageWithButtons(data.title, data.message, false, autoLogOut);
+					AspenDiscovery.showMessage(data.title, data.message, false, autoLogOut);
 				}
 			}).fail(function() {
 				AspenDiscovery.Record.volumeHoldInProgress = false;
