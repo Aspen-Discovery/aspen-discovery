@@ -94,6 +94,13 @@ abstract class AbstractAPI extends Action{
 		return [$username, $password];
 	}
 
+	function logPatronRequest($userId): void {
+		if ($this->context == 'lida') {
+			require_once ROOT_DIR . '/sys/SystemLogging/UserAppRequestLogEntry.php';
+			UserAppRequestLogEntry::logRequest($userId, $_GET['action'], $_GET['method'], json_encode($_REQUEST), $this->getLiDAVersion());
+		}
+	}
+
 	/**
 	 * @return bool|User
 	 */
@@ -118,6 +125,10 @@ abstract class AbstractAPI extends Action{
 					$translator = new Translator('lang', $userLanguage->code);
 				}
 			}
+		}
+
+		if ($user !== false && $user->allowAppRequestLogging) {
+			$this->logPatronRequest($user->id);
 		}
 
 		return $user;

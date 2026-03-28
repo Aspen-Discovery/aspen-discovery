@@ -99,8 +99,9 @@ class SideLoads_Scopes extends ObjectEditor {
 			$existingLibrariesSideLoadScopes = $sideLoadScope->getLibraries();
 			$library = new Library();
 			if (UserAccount::userHasPermission('Administer Side Load Scopes for Home Library') && !UserAccount::userHasPermission('Administer All Side Loads')) {
-				$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
-				$library->libraryId = $library == null ? -1 : $library->libraryId;
+				$validLibraries = Library::getLibraryList(true);
+				$libraryIds = empty($validLibraries) ? [-1] : array_keys($validLibraries);
+				$library->whereAddIn('libraryId', $libraryIds, false);
 			}
 			$library->find();
 			while ($library->fetch()) {
@@ -143,9 +144,9 @@ class SideLoads_Scopes extends ObjectEditor {
 			$existingLocationSideLoadScopes = $sideLoadScope->getLocations();
 			$location = new Location();
 			if (UserAccount::userHasPermission('Administer Side Load Scopes for Home Library') && !UserAccount::userHasPermission('Administer All Side Loads')) {
-				$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
-				$library->libraryId = $library == null ? -1 : $library->libraryId;
-				$location->libraryId = $library->libraryId;
+				$validLibraries = Library::getLibraryList(true);
+				$libraryIds = empty($validLibraries) ? [-1] : array_keys($validLibraries);
+				$location->whereAddIn('libraryId', $libraryIds, false);
 			}
 			$location->find();
 			while ($location->fetch()) {

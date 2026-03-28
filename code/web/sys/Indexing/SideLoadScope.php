@@ -328,9 +328,9 @@ class SideLoadScope extends DataObject {
 	public function clearLibraries($forceClearAll) : void {
 		if (!$forceClearAll && UserAccount::userHasPermission('Administer Side Load Scopes for Home Library') && !UserAccount::userHasPermission('Administer All Side Loads')) {
 			$librarySideLoadScopes = [];
-			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
+			$libraries = Library::getLibraryList(true);
 			$librarySideLoadScope = new LibrarySideLoadScope();
-			$librarySideLoadScope->libraryId = $library->libraryId;
+			$librarySideLoadScope->whereAddIn('libraryId', $libraries, false);
 			$librarySideLoadScope->sideLoadScopeId = $this->id;
 			$librarySideLoadScope->find();
 			while ($librarySideLoadScope->fetch()) {

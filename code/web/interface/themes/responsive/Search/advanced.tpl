@@ -181,14 +181,25 @@
 																</div>
 															</div>
 														{else}
-															<select name="filter[]" class="form-control" aria-label="{translate text=$facetInfo.facetLabel inAttribute=true isPublicFacing=true}">
+															{assign var="facetValueCount" value=$facetInfo.values|@count}
+															<select name="filter[]"
+																id="facet-select-{$facetInfo.facetName}"
+																class="form-control"
+																aria-label="{translate text=$facetInfo.facetLabel inAttribute=true isPublicFacing=true}"
+																onchange="AspenDiscovery.Searches.onAdvancedFacetSelectChange(this)"
+																{if $facetValueCount <= 1}disabled="disabled"{/if}>
+																{assign var="shownOptions" value=0}
 																{foreach from=$facetInfo.values item="value" key="display"}
-																	{if strlen($display) > 0}
+																	{if strlen($display) > 0 && $shownOptions < 5}
 																		<option value="{$value.filter|escape}"{if !empty($value.selected)} selected="selected"{/if}>{$value.display|truncate:80}</option>
+																		{assign var="shownOptions" value=$shownOptions+1}
 																	{/if}
 																{/foreach}
+																{if $facetValueCount > 5}
+																	<option value="__browse__">{translate text="More options..." isPublicFacing=true}</option>
+																{/if}
 															</select>
-														{/if}
+																					{/if}
 													</div>
 												</div>
 											{/foreach}

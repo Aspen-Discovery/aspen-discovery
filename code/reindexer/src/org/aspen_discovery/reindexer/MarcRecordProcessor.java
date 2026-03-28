@@ -490,7 +490,7 @@ abstract class MarcRecordProcessor {
 	}
 	private static boolean loggedCustomMarcError = false;
 
-	private static final Pattern lexileMatchingPattern = Pattern.compile("(AD|NC|HL|IG|GN|BR|NP)(\\d+)");
+
 	private void loadLexileScore(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record) {
 		List<DataField> targetAudiences = MarcUtil.getDataFields(record, 521);
 		for (DataField targetAudience : targetAudiences){
@@ -499,25 +499,7 @@ abstract class MarcRecordProcessor {
 			if (subfieldA != null && subfieldB != null){
 				if (subfieldB.getData().toLowerCase().startsWith("lexile")){
 					String lexileValue = subfieldA.getData();
-					if (lexileValue.endsWith("L")){
-						lexileValue = lexileValue.substring(0, lexileValue.length() - 1).trim();
-					}
-					if (AspenStringUtils.isNumeric(lexileValue)) {
-						AspenStringUtils.trimTrailingPunctuation(lexileValue);
-						if (lexileValue.contains(".")) {
-							//We expect the number to be an integer so trim anything that looks like a decimal
-							lexileValue = lexileValue.substring(0, lexileValue.indexOf('.')).trim();
-						}
-						groupedWork.setLexileScore(lexileValue);
-					}else{
-						Matcher lexileMatcher = lexileMatchingPattern.matcher(lexileValue);
-						if (lexileMatcher.find()){
-							String lexileCode = lexileMatcher.group(1);
-							String lexileScore = lexileMatcher.group(2);
-							groupedWork.setLexileScore(lexileScore);
-							groupedWork.setLexileCode(lexileCode);
-						}
-					}
+					groupedWork.setLexileScore(lexileValue);
 				}
 			}
 		}

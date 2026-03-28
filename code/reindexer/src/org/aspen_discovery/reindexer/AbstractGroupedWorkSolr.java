@@ -8,6 +8,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.solr.common.SolrInputDocument;
 
 import java.util.*;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public abstract class AbstractGroupedWorkSolr implements DebugLogger {
@@ -1298,8 +1299,27 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 		this.rating = rating;
 	}
 
+	private static final Pattern lexileMatchingPattern = Pattern.compile("(AD|NC|HL|IG|GN|BR|NP)(\\d+)");
 	void setLexileScore(String lexileScore) {
-		this.lexileScore = lexileScore;
+		if (lexileScore.endsWith("L")){
+			lexileScore = lexileScore.substring(0, lexileScore.length() - 1).trim();
+		}
+		if (AspenStringUtils.isNumeric(lexileScore)) {
+			lexileScore = AspenStringUtils.trimTrailingPunctuation(lexileScore);
+			if (lexileScore.contains(".")) {
+				//We expect the number to be an integer so trim anything that looks like a decimal
+				lexileScore = lexileScore.substring(0, lexileScore.indexOf('.')).trim();
+			}
+			this.lexileScore = lexileScore;
+		}else{
+			Matcher lexileMatcher = lexileMatchingPattern.matcher(lexileScore);
+			if (lexileMatcher.find()){
+				String lexileCode = lexileMatcher.group(1);
+				lexileScore = lexileMatcher.group(2);
+				this.setLexileCode(lexileCode);
+				this.lexileScore = lexileScore;
+			}
+		}
 	}
 
 	void setLexileCode(String lexileCode) {

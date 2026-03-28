@@ -78,14 +78,14 @@ class Browse_AJAX extends JSON_Action {
 
 				$browseCategories->whereAddIn('id', $activeBrowseCategories, false);
 			} else {
-				$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
-				$libraryId = $library == null ? -1 : $library->libraryId;
+				$validLibraries = Library::getLibraryList(true);
+				$libraryIds = empty($validLibraries) ? [-1] : array_keys($validLibraries);
 				$browseCategories->whereAdd("sharing = 'everyone'");
-				if ($libraryId == -1) {
+				if (empty($validLibraries)) {
 					//For Aspen admin, show all categories
 					$browseCategories->whereAdd("sharing = 'library'", 'OR');
 				} else {
-					$browseCategories->whereAdd("sharing = 'library' AND libraryId = " . $libraryId, 'OR');
+					$browseCategories->whereAdd("sharing = 'library' AND libraryId IN (" . implode(',', $libraryIds) . ')', 'OR');
 				}
 			}
 			$browseCategories->find();

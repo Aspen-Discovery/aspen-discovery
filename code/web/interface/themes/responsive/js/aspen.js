@@ -19549,7 +19549,8 @@ AspenDiscovery.Searches = (function(){
 			}
 		})
 	});
-	return{
+	return {
+		_advFacetCache: {},
 		searchGroups: [],
 		curPage: 1,
 		displayMode: 'list', // default display Mode for results
@@ -19947,6 +19948,88 @@ AspenDiscovery.Searches = (function(){
 					$("#facetSearchResults").html(data.message);
 				}
 			});
+		},
+
+		showAdvancedSearchFacetPopup: function (facetName) {
+			var cache = AspenDiscovery.Searches._advFacetCache;
+			if (cache[facetName]) {
+				var data = cache[facetName];
+				AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.buttons);
+				return false;
+			}
+			var url = Globals.path + '/Search/AJAX?method=getAdvancedSearchFacetPopup&facetName=' + encodeURIComponent(facetName);
+			$.getJSON(url, function (data) {
+				if (data.success === true) {
+					cache[facetName] = data;
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.buttons);
+				} else {
+					AspenDiscovery.showMessage(data.title, data.message);
+				}
+			});
+			return false;
+		},
+
+		onAdvancedFacetSelectChange: function (selectEl) {
+			var $select = aspenJQ(selectEl);
+			var val     = $select.val();
+			if (val === '__browse__') {
+				$select.val($select.data('prevVal') || '');
+				var facetName = selectEl.id.replace('facet-select-', '');
+				AspenDiscovery.Searches.showAdvancedSearchFacetPopup(facetName);
+			} else {
+				$select.data('prevVal', val);
+			}
+		},
+
+		searchAdvancedFacetValuesKeyDown: function (e) {
+			if (e.keyCode === 9) {
+				AspenDiscovery.Searches.searchAdvancedFacetValues();
+			} else if (e.keyCode === 10 || e.keyCode === 13) {
+				e.preventDefault();
+				AspenDiscovery.Searches.searchAdvancedFacetValues();
+			}
+			return false;
+		},
+
+		searchAdvancedFacetValues: function () {
+			$("#advFacetSearchResultsPopularHelp").hide();
+			$("#advFacetSearchResultsLoading").show();
+			$("#advFacetSearchResults").html("");
+			var facetName   = $("#advFacetName").val();
+			var searchTerm  = $("#advFacetSearchTerm").val();
+			var url = Globals.path + '/Search/AJAX';
+			var params = {
+				'method':     'searchAdvancedFacetTerms',
+				'facetName':  facetName,
+				'searchTerm': searchTerm
+			};
+			$.getJSON(url, params, function (data) {
+				$("#advFacetSearchResultsLoading").hide();
+				if (data.success === true) {
+					$("#advFacetSearchResults").html(data.facetResults);
+				} else {
+					$("#advFacetSearchResults").html(data.message);
+				}
+			});
+		},
+
+		setAdvancedSearchFacetValue: function (el) {
+			var $el         = aspenJQ(el);
+			var filterValue = $el.attr('data-filter');
+			var displayText = $el.attr('data-display');
+			var facetName   = $el.attr('data-facet');
+			var $select = aspenJQ('#facet-select-' + facetName);
+			if ($select.length === 0) {
+				aspenJQ('#modalDialog').modal('hide');
+				return;
+			}
+			$select.val(filterValue);
+			if ($select.val() !== filterValue) {
+				$select.append(aspenJQ('<option>', {value: filterValue, text: displayText}));
+				$select.val(filterValue);
+			}
+			$select.data('prevVal', filterValue);
+			aspenJQ('#modalDialog').modal('hide');
 		}
 	}
 }(AspenDiscovery.Searches || {}));
@@ -20465,6 +20548,28 @@ AspenDiscovery.WebBuilder = function () {
 	// noinspection JSUnusedGlobalSymbols
 	return {
 		editors: [],
+		// Track placard views (whenever shown to a user, regardless of whether they interact with it)
+		trackPlacardView: function(placardId) {
+			const url = Globals.path + '/WebBuilder/AJAX';
+			const params = {
+				method: 'trackPlacardUsage',
+				id: placardId,
+				operation: 'view'
+			};
+			$.getJSON(url, params);
+		},
+
+		// Track placard clicks
+		trackPlacardClick: function(placardId, authType) {
+			const url = Globals.path + '/WebBuilder/AJAX';
+			const params = {
+				method: 'trackPlacardUsage',
+				id: placardId,
+				operation: 'click',
+				authType: authType
+			};
+			$.getJSON(url, params);
+		},
 		saveLinkedObjCallback: function() {},
 
 		getPortalCellValuesForSource: function () {
@@ -20587,6 +20692,15 @@ AspenDiscovery.WebBuilder = function () {
 					AspenDiscovery.showMessage('Sorry', data.message);
 				}
 			});
+		},
+
+		// Call this whenever placards are rendered/shown.
+		renderPlacards: function(placardIds) {
+			if (Array.isArray(placardIds)) {
+				placardIds.forEach(function(id) {
+					AspenDiscovery.WebBuilder.trackPlacardView(id);
+				});
+			}
 		},
 
 		checkLinkedObject: function (submitForm) {
@@ -20946,6 +21060,16 @@ AspenDiscovery.WebBuilder = function () {
 			}).fail(AspenDiscovery.ajaxFail);
 
 			return false;
+		},
+
+		placardClickHandler: function(placardId) {
+			let authType = "none";
+			if (Globals.loggedIn) {
+				authType = "user";
+			} else if (Globals.inLibrary) {
+				authType = "library";
+			}
+			AspenDiscovery.WebBuilder.trackPlacardClick(placardId, authType);
 		},
 
 		getAddQuickPollOptionForm: function (pollId) {

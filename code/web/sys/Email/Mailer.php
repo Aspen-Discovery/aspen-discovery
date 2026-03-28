@@ -100,7 +100,7 @@ class Mailer {
 
 		$apiBody->content[] = $content;
 
-		$response = $curlWrapper->curlPostPage('https://api.sendgrid.com/v3/mail/send', json_encode($apiBody));
+		$response = $curlWrapper->curlPostPage(!empty($sendGridSettings->baseUrl) ? $sendGridSettings->baseUrl :'https://api.sendgrid.com/v3/mail/send', json_encode($apiBody));
 		if ($response != '') {
 			global $logger;
 			$logger->log('Error sending email via SendGrid ' . $curlWrapper->getResponseCode() . ' ' . $response, Logger::LOG_ERROR);

@@ -34,10 +34,10 @@ class BrowseCategoryGroupEntry extends DataObject {
 		$browseCategories->orderBy('label');
 		$browseCategoryList = [];
 		if (!UserAccount::userHasPermission('Administer All Browse Categories')) {
-			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
-			$libraryId = $library == null ? -1 : $library->libraryId;
+			$validLibraries = Library::getLibraryList(true);
+			$libraryIds = empty($validLibraries) ? [-1] : array_keys($validLibraries);
 			$browseCategories->whereAdd("sharing = 'everyone'");
-			$browseCategories->whereAdd("sharing = 'library' AND libraryId = " . $libraryId, 'OR');
+			$browseCategories->whereAdd("sharing = 'library' AND libraryId IN (" . implode(',' ,$libraryIds) . ')', 'OR');
 			$browseCategories->find();
 			while ($browseCategories->fetch()) {
 				$browseCategoryList[$browseCategories->id] = $browseCategories->label . " ($browseCategories->textId)". " - $browseCategories->id";
@@ -114,12 +114,12 @@ class BrowseCategoryGroupEntry extends DataObject {
 			//Always allow since the only way they can get here is by editing a group they have access to
 			return true;
 		} else {
-			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
-			$libraryId = $library == null ? -1 : $library->libraryId;
+			$validLibraries = Library::getLibraryList(true);
+			$libraryIds = empty($validLibraries) ? [-1] : array_keys($validLibraries);
 			$browseCatId = $this->getBrowseCategory()->libraryId;
 			if (($this->getBrowseCategory()->sharing == 'everyone') || (UserAccount::userHasPermission('Administer All Browse Categories'))) {
 				return true;
-			}else if ($browseCatId == $libraryId){
+			}else if (in_array($browseCatId, $libraryIds)){
 				return UserAccount::userHasPermission('Administer Library Browse Categories');
 			}
 		}
@@ -135,12 +135,12 @@ class BrowseCategoryGroupEntry extends DataObject {
 			//Always allow since the only way they can get here is by editing a group they have access to
 			return true;
 		} else {
-			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
-			$libraryId = $library == null ? -1 : $library->libraryId;
+			$validLibraries = Library::getLibraryList(true);
+			$libraryIds = empty($validLibraries) ? [-1] : array_keys($validLibraries);
 			$browseCatId = $this->getBrowseCategory()->libraryId;
 			if (($this->getBrowseCategory()->sharing == 'everyone') || (UserAccount::userHasPermission('Administer All Browse Categories'))) {
 				return true;
-			} elseif ($browseCatId == $libraryId) {
+			} elseif (in_array($browseCatId, $libraryIds)) {
 				return UserAccount::userHasPermission('Administer Library Browse Categories');
 			}
 		}

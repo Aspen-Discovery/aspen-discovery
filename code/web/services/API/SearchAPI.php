@@ -1310,6 +1310,9 @@ class SearchAPI extends AbstractAPI {
 		$isLiDA = $this->checkIfLiDA();
 		$textId = $this->getTextId($textId);
 		$user = $this->getUserForApiCall();
+		if (empty($user)) {
+			$user = UserAccount::getLoggedInUser();
+		}
 		$key = $isLiDA ? 'records' : 'initialResults';
 		$curCount = 1;
 		if (!empty($textId)) {
@@ -2012,11 +2015,8 @@ class SearchAPI extends AbstractAPI {
 		//based off of url, branch parameter, or IP address
 		$activeLocation = $locationSingleton->getActiveLocation();
 
-		[
-			$username,
-			$password,
-		] = $this->loadUsernameAndPassword();
-		$appUser = UserAccount::validateAccount($username, $password);
+		$appUser = $this->getUserForApiCall();
+
 
 		/** @var BrowseCategoryGroupEntry[] $browseCategories */
 		if ($activeLocation == null) {

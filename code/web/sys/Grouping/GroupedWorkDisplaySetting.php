@@ -47,6 +47,7 @@ class GroupedWorkDisplaySetting extends DataObject {
 
 	// Faceting
 	public $includeAllRecordsInShelvingFacets;
+	public $includeEContentInShelvingLocations;
 	public $includeAllRecordsInDateAddedFacets;
 	public $facetCountsToShow;
 	public $facetGroupId;
@@ -636,6 +637,15 @@ class GroupedWorkDisplaySetting extends DataObject {
 						'description' => 'Turn on to include all records (owned and included) in shelving related facets (detailed location, collection).',
 						'hideInLists' => true,
 						'default' => false,
+						'forcesReindex' => true,
+					],
+					'includeEContentInShelvingLocations' => [
+						'property' => 'includeEContentInShelvingLocations',
+						'label' => 'Include eContent in Shelf Locations Facet',
+						'description' => 'Define whether all or only physical materials are included in the Shelf Location facet.',
+						'type' => 'checkbox',
+						'hideInLists' => true,
+						'default' => 1,
 						'forcesReindex' => true,
 					],
 					'includeAllRecordsInDateAddedFacets' => [

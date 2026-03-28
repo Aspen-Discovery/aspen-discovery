@@ -2772,9 +2772,9 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		return null;
 	}
 
-	public function getAlternateTitles() {
+	public function getAlternateTitles() : ?array {
 		//Load alternate titles
-		if (UserAccount::userHasPermission('Set Grouped Work Display Information')) {
+		if (UserAccount::userHasPermission('Manually Group and Ungroup Works')) {
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWorkAlternateTitle.php';
 			$alternateTitle = new GroupedWorkAlternateTitle();
 			$permanentId = $this->getPermanentId();

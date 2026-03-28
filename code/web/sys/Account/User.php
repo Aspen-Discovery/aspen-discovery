@@ -165,6 +165,8 @@ class User extends DataObject {
 	public $holdSortUnavailable;
 	public $checkoutSort;
 
+	public $allowAppRequestLogging;
+
 	private static int $CIRCULATION_CACHE_TIMEOUT = 300; // 5 minutes
 
 	public static $lidaToAspenCheckoutSortMapping = [
@@ -1741,6 +1743,8 @@ class User extends DataObject {
 				$this->setRememberHoldPromptForEdition($_POST['rememberHoldPromptForEdition']);
 			}
 		}
+
+		$this->__set('allowAppRequestLogging', (isset($_POST['allowAppRequestLogging']) && $_POST['allowAppRequestLogging'] == 'on') ? 1 : 0);
 
 		$saveResult = $this->update();
 		if ($saveResult === false) {

@@ -549,7 +549,7 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 								detailedLocations.add(scopePrefix + curItem.getDetailedLocation());
 							}
 							String shelfLocation = curItem.getShelfLocation();
-							if (shelfLocation != null && !shelfLocation.isEmpty()) {
+							if (shelfLocation != null && !shelfLocation.isEmpty() && (scopeDisplaySettings.includeEContentInShelvingLocations() || !isEContent)) {
 								shelfLocations.add(scopePrefix + curItem.getShelfLocation());
 							}
 						}

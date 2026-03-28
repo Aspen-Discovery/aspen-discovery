@@ -23,7 +23,13 @@ class Admin_CollectionSpotlightLists extends ObjectEditor {
 		$object = new CollectionSpotlightList();
 		if (!UserAccount::userHasPermission('Administer All Collection Spotlights')) {
 			$homeLibrary = Library::getPatronHomeLibrary();
-			$object->whereAdd("collectionSpotlightId IN (SELECT id FROM collection_spotlights WHERE libraryId = $homeLibrary->libraryId OR libraryId = -1)");
+			$libraries = Library::getLibraryList(true);
+			if (empty($libraries)) {
+				$object->whereAdd("collectionSpotlightId IN (SELECT id FROM collection_spotlights WHERE libraryId = $homeLibrary->libraryId OR libraryId = -1)");
+			}else{
+				$object->whereAdd("collectionSpotlightId IN (SELECT id FROM collection_spotlights WHERE libraryId IN (" . implode(',', $libraries) . ") OR libraryId = -1)");
+			}
+
 		}
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);

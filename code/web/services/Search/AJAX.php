@@ -794,6 +794,110 @@ class AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
+	function getAdvancedSearchFacetPopup() : array {
+		global $interface;
+		$facetName = $_REQUEST['facetName'];
+		$interface->assign('facetName', $facetName);
+
+		$searchObject = SearchObjectFactory::initSearchObject();
+		$searchObject->initAdvancedFacets();
+		$searchObject->disableLogging();
+		$searchObject->processSearch(false, true);
+
+		$facetConfig = $searchObject->getFacetConfig();
+		if (array_key_exists($facetName, $facetConfig)) {
+			$config = $facetConfig[$facetName];
+			if (is_object($config)) {
+				$facetTitle = $config->displayName;
+				$facetTitlePlural = $config->displayNamePlural;
+			} else {
+				$facetTitle = $facetName;
+				$facetTitlePlural = $facetName;
+			}
+			$interface->assign('facetTitle', $facetTitle);
+			$interface->assign('facetTitlePlural', $facetTitlePlural);
+
+			$allFacets = $searchObject->getFacetList();
+			$topResults = [];
+			if (isset($allFacets[$facetName])) {
+				$rawList = $allFacets[$facetName]['list'];
+				ksort($rawList, SORT_NATURAL | SORT_FLAG_CASE);
+				foreach ($rawList as $item) {
+					$topResults[] = [
+						'filter'  => $facetName . ':"' . $item['value'] . '"',
+						'display' => $item['display'],
+						'value'   => $item['value'],
+					];
+				}
+			}
+			$interface->assign('topResults', $topResults);
+			$searchObject->close();
+
+			return [
+				'success'   => true,
+				'title'     => translate([
+					'text'               => 'Browse %1%',
+					'1'                  => $facetTitlePlural,
+					'isPublicFacing'     => true,
+					'translateParameters' => true,
+				]),
+				'modalBody' => $interface->fetch('Search/advancedSearchFacetPopup.tpl'),
+				'buttons'   => '',
+			];
+		} else {
+			$searchObject->close();
+			return [
+				'success' => false,
+				'title'   => translate(['text' => 'Error', 'isPublicFacing' => true]),
+				'message' => translate(['text' => 'That facet could not be found', 'isPublicFacing' => true]),
+			];
+		}
+	}
+
+	/** @noinspection PhpUnused */
+	function searchAdvancedFacetTerms() : array {
+		global $interface;
+		$facetName  = $_REQUEST['facetName'];
+		$searchTerm = $_REQUEST['searchTerm'];
+		$interface->assign('facetName', $facetName);
+
+		$searchObject = SearchObjectFactory::initSearchObject();
+		$searchObject->initAdvancedFacets();
+		$searchObject->disableLogging();
+		$searchObject->addFacetSearch($facetName, $searchTerm);
+		$searchObject->processSearch(false, true);
+
+		$allFacets = $searchObject->getFacetList();
+		$searchObject->close();
+
+		if (isset($allFacets[$facetName])) {
+			$rawList = $allFacets[$facetName]['list'];
+			ksort($rawList, SORT_NATURAL | SORT_FLAG_CASE);
+			$results = [];
+			foreach ($rawList as $item) {
+				$results[] = [
+					'filter'  => $facetName . ':"' . $item['value'] . '"',
+					'display' => $item['display'],
+					'value'   => $item['value'],
+				];
+			}
+			$interface->assign('facetSearchResults', $results);
+			return [
+				'success'      => true,
+				'facetResults' => $interface->fetch('Search/advancedSearchFacetResults.tpl'),
+			];
+		} else {
+			return [
+				'success' => false,
+				'message' => "<div class='alert alert-warning'>" . translate([
+					'text'           => 'No results match your search',
+					'isPublicFacing' => true,
+				]) . '</div>',
+			];
+		}
+	}
+
+	/** @noinspection PhpUnused */
 	function searchFacetTerms() : array {
 		global $interface;
 		$searchId = $_REQUEST['searchId'];
