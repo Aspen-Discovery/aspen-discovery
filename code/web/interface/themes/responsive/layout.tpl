@@ -61,6 +61,9 @@
 </head>
 <body class="module_{$module} action_{$action}{if !empty($masqueradeMode)} masqueradeMode{/if}{if !empty($loggedIn)} loggedIn{else} loggedOut{/if}" id="{$module}-{$action}{if $module=="WebBuilder" && $action=="BasicPage" || $action=="PortalPage" || $action=="GrapesPage"}-{$id}{/if}" dir="{if $userLang->isRTL()}rtl{else}auto{/if}">
 {strip}
+	<a class="screen-reader-text" href="#main" id="skip-to-main-content">
+		<span>{translate text="Skip to main content" isPublicFacing=true}</span>
+	</a>
 	{if !empty($showTopOfPageButton) && empty($minimalInterface)}
 	<a class="top-link hide" href="" id="js-top">
 		<i class="fas fa-arrow-up fa-2x fa-fw" role="presentation"></i>
@@ -139,7 +142,7 @@
 							{include file="breadcrumbs.tpl"}
 							</div>
 						{/if}
-						<div role="main">
+						<div id="main" role="main">
 							{if !empty($module)}
 								{include file="$module/$pageTemplate"}
 							{else}
@@ -154,7 +157,7 @@
 							{include file="breadcrumbs.tpl"}
 							</div>
 						{/if}
-						<div role="main">
+						<div id="main" role="main">
 							{if !empty($module)}
 								{include file="$module/$pageTemplate"}
 							{else}

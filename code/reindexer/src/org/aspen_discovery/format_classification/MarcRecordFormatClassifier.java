@@ -382,6 +382,9 @@ public class MarcRecordFormatClassifier {
 						}else if (subfieldData.contains("picture book")) {
 							if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Adding bib level format PictureBook based on 655 Genre", 2);}
 							result.add("PictureBook");
+						}else if (subfieldData.contains("big book")) {
+							if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Adding bib level format BigBook based on 655 Genre", 2);}
+							result.add("BigBook");
 						}else if (subfieldData.contains("pop-up")) {
 							if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Adding bib level format Pop-UpBook based on 655 Genre", 2);}
 							result.add("Pop-UpBook");
@@ -1491,6 +1494,9 @@ public class MarcRecordFormatClassifier {
 			printFormats.remove("Book");
 		}
 		if (printFormats.contains("PictureBook")){
+			printFormats.remove("Book");
+		}
+		if (printFormats.contains("BigBook")){
 			printFormats.remove("Book");
 		}
 		if (printFormats.contains("Journal")){

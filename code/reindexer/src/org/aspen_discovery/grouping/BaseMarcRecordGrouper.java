@@ -251,12 +251,25 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 		}
 		//Check to see if the language has a space in it.
 		if (activeLanguage == null){
+			String secondaryLanguageField = "041a";
+			languages = MarcUtil.getFieldList(marcRecord, secondaryLanguageField);
+			for (String language : languages){
+				language = language.replaceAll("^[^a-zA-Z]+|[^a-zA-Z]+$|\\p{Punct}", "");
+				if (activeLanguage == null){
+					activeLanguage = language;
+				}else{
+					if (!activeLanguage.equals(language)){
+						activeLanguage = "mul";
+						break;
+					}
+				}
+			}
 			if (!treatUnknownLanguageAs.isEmpty()){
 				activeLanguage = translateValue("language_to_three_letter_code", treatUnknownLanguageAs);
 				if (activeLanguage.length() != 3 || activeLanguage.contains(" ")){
 					activeLanguage = "unk";
 				}
-			}else {
+			}else if (activeLanguage == null){
 				activeLanguage = "unk";
 			}
 		}

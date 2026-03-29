@@ -147,9 +147,16 @@ function getUpdates26_04_00(): array {
 		//tomas
 
 		// stephen
+			'change_user_page_defaults.pageSize_to_varchar' => [
+			'title' => 'Change user_page_defaults.pageSize column to varchar',
+			'description' => 'Modifies the pageSize column to allow the value "all"',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE user_page_defaults CHANGE COLUMN pageSize pageSize VARCHAR(10) NULL',
+			],
+		], //change_user_page_defaults.pageSize_to_varchar
 
 		//other
-
 
 	];
 }

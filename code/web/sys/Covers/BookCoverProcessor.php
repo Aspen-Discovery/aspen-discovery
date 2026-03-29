@@ -697,6 +697,17 @@ class BookCoverProcessor {
 						}
 					}
 				}
+
+				if ($marcField->getIndicator(1) == '7' && $marcField->getSubfield('3')) {
+					$subfield3 = trim($marcField->getSubfield('3')->getData());
+					if (stripos($subfield3, 'cover art') !== false || strcasecmp($subfield3, 'View cover art') == 0) {
+						if ($marcField->getSubfield('u')) {
+							if ($this->processImageURL('marcRecord', trim($marcField->getSubfield('u')->getData()))) {
+								return true;
+							}
+						}
+					}
+				}
 			}
 		}
 
@@ -1206,7 +1217,7 @@ class BookCoverProcessor {
 		return false;
 	}
 
-	function omdb(OMDBSetting $omdbSettings, $title = null, $shortTitle = null, $year = '') : bool {
+	function omdb(OMDBSetting $omdbSettings, $title = null, $shortTitle = null): bool {
 		//Only load from OMDB if we are looking at a grouped work to be sure uploaded covers have a chance to load
 		if ($this->type != 'grouped_work' || $this->bookCoverInfo->getDisallowThirdPartyCover()) {
 			return false;
@@ -1217,15 +1228,107 @@ class BookCoverProcessor {
 		$title = StringUtils::removeTrailingPunctuation($title);
 		$title = str_replace('.', '', $title);
 		$encodedTitle = urlencode($title);
-		if (!is_array($year)) {
-			$year = [$year];
-		}
-		foreach ($year as $curYear) {
-			if (strpos($curYear, ',')) {
-				$years = explode(',', $curYear);
-				$year = array_merge($year, $years);
+		$years = [];
+		$directors = [];
+		if ($this->loadGroupedWork() && $this->groupedWork) {
+			$relatedRecords = $this->groupedWork->getRelatedRecords(true);
+			foreach ($relatedRecords as $relatedRecord) {
+				$driver = $relatedRecord->getDriver();
+				if ($driver && method_exists($driver, 'getMarcRecord')) {
+					$marcRecord = $driver->getMarcRecord();
+					if ($marcRecord) {
+						$field046 = $marcRecord->getFields('046');
+						if ($field046) {
+							foreach ($field046 as $field) {
+								if ($field->getSubfield('c')) {
+									$dateStr = $field->getSubfield('c')->getData();
+									$yearFromMarc = substr($dateStr, 0, 4);
+									if (!empty($yearFromMarc) && is_numeric($yearFromMarc) && $yearFromMarc !== '9999' && $yearFromMarc !== '0000') {
+										$years[] = $yearFromMarc;
+									}
+								}
+								if ($field->getSubfield('d')) {
+									$dateStr = $field->getSubfield('d')->getData();
+									$yearFromMarc = substr($dateStr, 0, 4);
+									if (!empty($yearFromMarc) && is_numeric($yearFromMarc) && $yearFromMarc !== '9999' && $yearFromMarc !== '0000') {
+										$years[] = $yearFromMarc;
+									}
+								}
+							}
+						}
+
+						if (empty($marcYears)) {
+							$field008 = $marcRecord->getField('008');
+							if ($field008) {
+								$data = $field008->getData();
+								if (strlen($data) >= 11) {
+									$yearFromMarc = substr($data, 7, 4);
+									if (!empty($yearFromMarc) && is_numeric($yearFromMarc) && $yearFromMarc !== '9999' && $yearFromMarc !== '0000') {
+										$years[] = $yearFromMarc;
+									}
+								}
+							}
+						}
+
+						$field508 = $marcRecord->getFields('508');
+						if ($field508) {
+							foreach ($field508 as $field) {
+								if ($field->getSubfield('a')) {
+									$credits = $field->getSubfield('a')->getData();
+									if (preg_match('/director\s*:?\s*([^;]+)/i', $credits, $matches)) {
+										$directorNames = trim($matches[1]);
+										$directorList = preg_split('/\s*(?:,|&|\s+and\s+)\s*/i', $directorNames);
+										foreach ($directorList as $directorName) {
+											$directorName = trim($directorName);
+											if (!empty($directorName) && strlen($directorName) < 100) {
+												$directors[] = $directorName;
+											}
+										}
+									}
+								}
+							}
+						}
+
+						$field245 = $marcRecord->getField('245');
+						if ($field245) {
+							if ($field245->getSubfield('c')) {
+								$titleStatement = $field245->getSubfield('c')->getData();
+								if (preg_match('/directed by\s+([^;.]+)/i', $titleStatement, $matches)) {
+									$directorNames = $matches[1];
+									$directorList = preg_split('/\s*(?:,|&|\s+and\s+)\s*/i', $directorNames);
+									foreach ($directorList as $directorName) {
+										$directorName = trim($directorName);
+										if (!empty($directorName) && strlen($directorName) < 100) {
+											$directors[] = $directorName;
+										}
+									}
+								}
+							}
+						}
+
+						$field700 = $marcRecord->getFields('700');
+						if ($field700) {
+							foreach ($field700 as $field) {
+								if ($field->getSubfield('e')) {
+									$role = strtolower(trim($field->getSubfield('e')->getData()));
+									if (stripos($role, 'director') !== false) {
+										if ($field->getSubfield('a')) {
+											$directorName = trim($field->getSubfield('a')->getData());
+											$directorName = rtrim($directorName, ',');
+											if (!empty($directorName) && strlen($directorName) < 100) {
+												$directors[] = $directorName;
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
 			}
 		}
+
+		$year = array_unique($years);
 
 		$foundTitle = $this->searchOmdbForCover($year, $encodedTitle, $omdbSettings, $source);
 		if ($foundTitle) {
@@ -1260,6 +1363,19 @@ class BookCoverProcessor {
 			if ($result !== false) {
 				if ($json = json_decode($result, true)) {
 					if (array_key_exists('Poster', $json)) {
+						if (!empty($directors) && isset($json['Director'])) {
+							$omdbDirectors = array_map('trim', explode(',', $json['Director']));
+							foreach ($directors as $marcDirector) {
+								$normalizedMarcName = iconv('UTF-8', 'ASCII//TRANSLIT', $marcDirector);
+								foreach ($omdbDirectors as $omdbDirector) {
+									$normalizedOMDBName = iconv('UTF-8', 'ASCII//TRANSLIT', $omdbDirector);
+									if (stripos($normalizedOMDBName, $normalizedMarcName) !== false || stripos($normalizedMarcName, $normalizedOMDBName) !== false) {
+										$source = 'omdb_title_director';
+										break 2;
+									}
+								}
+							}
+						}
 						if ($this->processImageURL($source, $json['Poster'])) {
 							return true;
 						}
@@ -1274,6 +1390,20 @@ class BookCoverProcessor {
 			if ($result !== false) {
 				if ($json = json_decode($result, true)) {
 					if (array_key_exists('Poster', $json)) {
+						if (!empty($directors) && isset($json['Director'])) {
+							$omdbDirectors = array_map('trim', explode(',', $json['Director']));
+							foreach ($directors as $marcDirector) {
+								$normalizedMarcName = iconv('UTF-8', 'ASCII//TRANSLIT', $marcDirector);
+								foreach ($omdbDirectors as $omdbDirector) {
+									$normalizedOMDBName = iconv('UTF-8', 'ASCII//TRANSLIT', $omdbDirector);
+									if (stripos($normalizedOMDBName, $normalizedMarcName) !== false || stripos($normalizedMarcName, $normalizedOMDBName) !== false) {
+										$source = 'omdb_title_director';
+										break 2;
+									}
+								}
+							}
+						}
+
 						if ($this->processImageURL($source, $json['Poster'])) {
 							return true;
 						}
@@ -1481,7 +1611,7 @@ class BookCoverProcessor {
 						require_once ROOT_DIR . '/sys/Enrichment/OMDBSetting.php';
 						$omdbSettings = new OMDBSetting();
 						if ($omdbSettings->find(true)) {
-							if ($this->omdb($omdbSettings, $groupedWorkDriver->getTitle(), $groupedWorkDriver->getShortTitle(), $groupedWorkDriver->getPublicationDates())) {
+							if ($this->omdb($omdbSettings, $groupedWorkDriver->getTitle(), $groupedWorkDriver->getShortTitle())) {
 								return true;
 							}
 						}
