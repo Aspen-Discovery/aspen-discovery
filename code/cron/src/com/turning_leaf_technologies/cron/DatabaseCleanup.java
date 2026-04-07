@@ -195,13 +195,13 @@ public class DatabaseCleanup implements IProcessHandler {
 
 	private void removeUserDataForDeletedUsers(Connection dbConn, Logger logger, CronProcessLogEntry processLog) {
 		try {
-			int numUpdates = dbConn.prepareStatement("DELETE FROM user_link where primaryAccountId NOT IN (select id from user)").executeUpdate();
+			int numUpdates = dbConn.prepareStatement("DELETE ul FROM user_link ul LEFT JOIN user u ON ul.primaryAccountId = u.id WHERE u.id IS NULL").executeUpdate();
 			if (numUpdates > 0){
 				processLog.incUpdated();
 				processLog.addNote("Deleted " + numUpdates + " user links where the primary account does not exist");
 			}
 
-			numUpdates = dbConn.prepareStatement("DELETE FROM user_link where linkedAccountId NOT IN (select id from user)").executeUpdate();
+			numUpdates = dbConn.prepareStatement("DELETE ul FROM user_link ul LEFT JOIN user u ON ul.linkedAccountId = u.id WHERE u.id IS NULL").executeUpdate();
 			if (numUpdates > 0){
 				processLog.incUpdated();
 				processLog.addNote("Deleted " + numUpdates + " user links where the linked account does not exist");
@@ -213,7 +213,7 @@ public class DatabaseCleanup implements IProcessHandler {
 				processLog.addNote("Deleted " + numUpdates + " user link blocks where the primary account does not exist");
 			}
 
-			numUpdates = dbConn.prepareStatement("DELETE ulb FROM user_link_blocks ulb LEFT JOIN user u ON ulb.blockedLinkAccountId = u.id WHERE u.id IS NULL").executeUpdate();
+			numUpdates = dbConn.prepareStatement("DELETE ulb FROM user_link_blocks ulb LEFT JOIN user u ON ulb.blockedLinkAccountId = u.id WHERE ulb.blockedLinkAccountId IS NOT NULL AND u.id IS NULL").executeUpdate();
 			if (numUpdates > 0){
 				processLog.incUpdated();
 				processLog.addNote("Deleted " + numUpdates + " user link blocks where the blocked account does not exist");
