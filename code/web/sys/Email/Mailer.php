@@ -23,9 +23,10 @@ class Mailer {
 		require_once ROOT_DIR . '/sys/Email/SMTPSetting.php';
 		require_once ROOT_DIR . '/sys/CurlWrapper.php';
 		global $logger;
-		//TODO: Do validation of the address
 		$amazonSesSettings = new AmazonSesSetting();
 		$smtpServerSettings = new SMTPSetting();
+
+		$to = $this->validateAndFilterEmails($to);
 
 		if($smtpServerSettings->find(true)) {
 			$result = $this->sendViaSMTP($smtpServerSettings, $to, $replyTo, $subject, $body, $htmlBody, $attachments);
@@ -50,6 +51,15 @@ class Mailer {
 		$ret = $aspenUsage->update();
 
 		return $result;
+	}
+
+	/**
+	 * @param string $emails
+	 */
+	private function validateAndFilterEmails(string $emails) : string {
+		$isValidEmail = fn($address) => filter_var(trim($address), FILTER_VALIDATE_EMAIL);
+		$validEmails = array_filter(explode(';', $emails), $isValidEmail);
+		return implode(';', $validEmails);
 	}
 
 	/**
