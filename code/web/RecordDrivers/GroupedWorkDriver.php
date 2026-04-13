@@ -2369,6 +2369,19 @@ class GroupedWorkDriver extends IndexRecordDriver {
 
 	private $seriesData;
 
+	/**
+	 * Fetch series data depending on the sources enabled
+	 * if 'Series Index' is enabled, primary and additionalSeries entries are from the index
+	 * else if 'Novelist' is enabled, primary series is from Novelist 
+	 *     and if showIndexedSeriesWithNoveList enabled, additionalSeries pulled from the MARC
+	 * else primary and additionalSeries from MARC
+	 *
+	 *
+	 * @access  public
+	 * @param boolean allowReload whether Novelist data can be fetched anew from Novelist
+	 * @param int $seriesId ID of the series that this work is contained on
+	 * @return  string              Name of Smarty template file to display.
+	 */
 	public function getSeries($allowReload = true, ?int $seriesId = null): ?array {
 		require_once ROOT_DIR . '/sys/Grouping/GroupedWorkDisplayInfo.php';
 
