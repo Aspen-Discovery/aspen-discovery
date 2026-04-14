@@ -93,14 +93,14 @@ class BookCoverProcessor {
 			if ($this->getAssabetCover($this->id)){
 				return true;
 			}
-		} elseif ($this->type == 'aspenEvent_event') {
-			if ($this->getAspenEventsDateCover($this->id)){
+		} elseif ($this->type == 'aspenEvent_event' || $this->type == 'aspenEvent_eventRecord') {
+			if ($this->getAspenEventsCover($this->id)){
 				return true;
 			}
-		} elseif ($this->type == 'aspenEvent_eventRecord') {
-			if ($this->getAspenEventsImageCover($this->id)){
-				return true;
-			}
+		// } elseif ($this->type == 'aspenEvent_eventRecord') {
+		// 	if ($this->getAspenEventsImageCover($this->id)){
+		// 		return true;
+		// 	}
 		} elseif ($this->type == 'webpage' || $this->type == 'WebPage' || $this->type == 'BasicPage' || $this->type == 'WebResource' || $this->type == 'PortalPage' || $this->type == 'GrapesPage'
 			|| $this->type == 'ResourceAudiencePage' || $this->type == 'ResourceCategoryPage' || $this->type == 'CustomResourcePage' || $this->type == 'WebResourcesAtoZ') {
 			if ($this->getWebPageCover($this->id)) {
@@ -2145,6 +2145,11 @@ class BookCoverProcessor {
 			}
 		}
 		return false;
+	}
+
+	private function getAspenEventsCover($id) {
+		$imageCover = $this->getAspenEventsImageCover($id);
+		return $imageCover ? $imageCover : $this->getAspenEventsDateCover($id);
 	}
 
 	private function getWebPageCover($id) : bool {
