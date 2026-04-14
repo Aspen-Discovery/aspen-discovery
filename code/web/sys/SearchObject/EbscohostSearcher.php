@@ -13,6 +13,7 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 	private $ebscohostBaseUrl = 'https://eit.ebscohost.com/Services/SearchService.asmx';
 	private $curl_connection;
 	private static $searchOptions;
+	private static string $lastConnectionError = '';
 
 	protected $queryStartTime = null;
 	protected $queryEndTime = null;
@@ -131,6 +132,10 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 
 	public function setSettings($ebscohostSettings) {
 		$this->ebscohostSettings = $ebscohostSettings;
+	}
+
+	public static function getLastConnectionError(): string {
+		return self::$lastConnectionError;
 	}
 
 	public function getCurlConnection() {
@@ -320,13 +325,36 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 				curl_setopt($curlConnection, CURLOPT_URL, $infoUrl);
 				$searchOptionsStr = curl_exec($curlConnection);
 
+				if ($searchOptionsStr === false) {
+					global $logger;
+					$curlError = curl_error($curlConnection);
+					$logger->log('EBSCOhost getSearchOptions: curl error — ' . $curlError, Logger::LOG_ERROR);
+					self::$lastConnectionError = 'Could not connect to EBSCOhost: ' . $curlError;
+					return null;
+				}
+
 				SearchObject_EbscohostSearcher::$searchOptions = simplexml_load_string($searchOptionsStr);
 				if (SearchObject_EbscohostSearcher::$searchOptions) {
+					if (!empty((string)SearchObject_EbscohostSearcher::$searchOptions->Message)) {
+						global $logger;
+						$ebscoMessage = (string)SearchObject_EbscohostSearcher::$searchOptions->Message;
+						$logger->log('EBSCOhost getSearchOptions: EBSCO error — ' . $ebscoMessage, Logger::LOG_ERROR);
+						self::$lastConnectionError = $ebscoMessage;
+						SearchObject_EbscohostSearcher::$searchOptions = null;
+						return null;
+					}
+					self::$lastConnectionError = '';
 					return SearchObject_EbscohostSearcher::$searchOptions;
 				} else {
+					global $logger;
+					$logger->log('EBSCOhost getSearchOptions: failed to parse XML response. Raw response: ' . $searchOptionsStr, Logger::LOG_ERROR);
+					self::$lastConnectionError = 'EBSCOhost returned an unexpected response.';
 					return null;
 				}
 			} else {
+				global $logger;
+				$logger->log('EBSCOhost getSearchOptions: no EBSCOhost settings configured for this library.', Logger::LOG_WARNING);
+				self::$lastConnectionError = 'No EBSCOhost settings configured for this library.';
 				return null;
 			}
 		} else {
@@ -605,15 +633,21 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 			$infoUrl .= "&query=$uniqueIdTag%20$uniqueId&db=$dbId";
 			curl_setopt($curlConnection, CURLOPT_URL, $infoUrl);
 			$recordInfoStr = curl_exec($curlConnection);
-			if ($recordInfoStr == false) {
+			if ($recordInfoStr === false) {
+				global $logger;
+				$logger->log('EBSCOhost retrieveRecord: curl error — ' . curl_error($curlConnection), Logger::LOG_ERROR);
 				return null;
+			}
+			$recordData = simplexml_load_string($recordInfoStr);
+			if ($recordData === false) {
+				global $logger;
+				$logger->log('EBSCOhost retrieveRecord: failed to parse XML. Raw response: ' . $recordInfoStr, Logger::LOG_ERROR);
+				return null;
+			}
+			if ($recordData->Hits > 0) {
+				return reset($recordData->SearchResults->records);
 			} else {
-				$recordData = simplexml_load_string($recordInfoStr);
-				if ($recordData->Hits > 0) {
-					return reset($recordData->SearchResults->records);
-				} else {
-					return null;
-				}
+				return null;
 			}
 		} else {
 			return null;
@@ -722,15 +756,25 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 			]);
 			curl_setopt($curlConnection, CURLOPT_URL, $searchUrl);
 			$result = curl_exec($curlConnection);
+
+			if ($result === false) {
+				global $logger;
+				$curlError = curl_error($curlConnection);
+				$logger->log('EBSCOhost processSearch: curl error — ' . $curlError, Logger::LOG_ERROR);
+				return new AspenError('EBSCOhost connection failed: ' . $curlError);
+			}
+
 			try {
 				$searchData = simplexml_load_string($result);
 				if ($searchData->Message) {
+					global $logger;
 					$message = (string)$searchData->Message;
 					if (strpos($message, 'name=')) {
 						if (preg_match('/name="(.*?)"/', $message, $matches)) {
 							$message = $matches[1];
 						}
 					}
+					$logger->log('EBSCOhost processSearch: EBSCO returned error message — ' . $message, Logger::LOG_ERROR);
 					return new AspenError("Error processing search in EBSCOhost: " . $message);
 				}
 				$this->stopQueryTimer();
@@ -740,12 +784,16 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 
 					return $searchData->SearchResults->records;
 				} elseif ($searchData && !empty($searchData->ErrorNumber)) {
-					return new AspenError("Error processing search in EBSCOhost: " . (string)$searchData->ErrorNumber);
+					global $logger;
+					$errorNumber = (string)$searchData->ErrorNumber;
+					$logger->log('EBSCOhost processSearch: EBSCO ErrorNumber ' . $errorNumber, Logger::LOG_ERROR);
+					return new AspenError("Error processing search in EBSCOhost: " . $errorNumber);
 				} else {
 					global $logger;
+					$logger->log('EBSCOhost processSearch: failed to parse XML. Raw response: ' . $result, Logger::LOG_ERROR);
 					if (IPAddress::showDebuggingInformation()) {
 						$curlInfo = curl_getinfo($curlConnection);
-						$logger->log(print_r($curlInfo(true)), Logger::LOG_WARNING);
+						$logger->log('EBSCOhost processSearch: curl info — ' . print_r($curlInfo, true), Logger::LOG_WARNING);
 					}
 					$this->lastSearchResults = false;
 					return new AspenError("Error processing search in EBSCOhost, unknown error returned.");
@@ -764,6 +812,18 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 	public function getDatabases(): array {
 		$databases = [];
 		$searchOptions = $this->getSearchOptions();
+		if ($searchOptions == null) {
+			global $logger;
+			$logger->log('EBSCOhost getDatabases: getSearchOptions() returned null — credentials may be invalid or the EBSCO API is unreachable', Logger::LOG_WARNING);
+			return $databases;
+		}
+		if (count($searchOptions->dbInfo->db) === 0) {
+			global $logger;
+			$rawXml = $searchOptions->asXML();
+			$logger->log('EBSCOhost getDatabases: response missing dbInfo. Raw response: ' . $rawXml, Logger::LOG_ERROR);
+			self::$lastConnectionError = 'EBSCOhost returned no database list. Communicate with the support team for details.';
+			return $databases;
+		}
 		/** @var SimpleXMLElement $dbInfo */
 		foreach ($searchOptions->dbInfo->db as $dbInfo) {
 			$shortName = (string)$dbInfo->attributes()['shortName'];

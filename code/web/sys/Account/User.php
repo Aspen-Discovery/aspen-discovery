@@ -2493,7 +2493,11 @@ class User extends DataObject {
 				'inAttribute' => true
 			]);
 
-			$result['viewHoldsAction'] = "<a id='onHoldAction$recordId' href='/MyAccount/Holds' class='btn btn-sm btn-info btn-wrap' title='$viewHoldsText'>$viewHoldsText</a>";
+			if (!$this->disableCirculationActions) {
+				$result['viewHoldsAction'] = "<a id='onHoldAction$recordId' href='/MyAccount/Holds' class='btn btn-sm btn-info btn-wrap' title='$viewHoldsText'>$viewHoldsText</a>";
+			}else{
+				$result['viewHoldsAction'] = '';
+			}
 			if (!empty($result['api']['action'])) {
 				$buttonText = $result['api']['text'] ?? "Go to Holds";
 				$result['modalButtons'] = "<a href='/MyAccount/Holds' class='btn btn-primary btn-wrap'>$buttonText</a>";
@@ -2525,7 +2529,11 @@ class User extends DataObject {
 				'inAttribute' => true,
 			]);
 
-			$result['viewHoldsAction'] = "<a id='onHoldAction$recordId' href='/MyAccount/Holds' class='btn btn-sm btn-info btn-wrap' title='$viewHoldsText'>$viewHoldsText</a>";
+			if (!$this->disableCirculationActions) {
+				$result['viewHoldsAction'] = "<a id='onHoldAction$recordId' href='/MyAccount/Holds' class='btn btn-sm btn-info btn-wrap' title='$viewHoldsText'>$viewHoldsText</a>";
+			}else{
+				$result['viewHoldsAction'] = '';
+			}
 
 			if (!empty($result['api']['action'])) {
 				$buttonText = $result['api']['text'] ?? "Go to Holds";
@@ -2603,7 +2611,11 @@ class User extends DataObject {
 				'inAttribute' => true,
 			]);
 
-			$result['viewHoldsAction'] = "<a id='onHoldAction$recordId' href='/MyAccount/Holds' class='btn btn-sm btn-info btn-wrap' title='{$viewHoldsText}'>{$viewHoldsText}</a>";
+			if (!$this->disableCirculationActions) {
+				$result['viewHoldsAction'] = "<a id='onHoldAction$recordId' href='/MyAccount/Holds' class='btn btn-sm btn-info btn-wrap' title='{$viewHoldsText}'>{$viewHoldsText}</a>";
+			}else{
+				$result['viewHoldsAction'] = '';
+			}
 			if (!empty($result['api']['action'])) {
 				$buttonText = $result['api']['text'] ?? "Go to Holds";
 				$result['modalButtons'] = "<a href='/MyAccount/Holds' class='btn btn-primary btn-wrap'>$buttonText</a>";
@@ -6373,7 +6385,11 @@ class User extends DataObject {
 							'inAttribute' => true
 						]);
 						$recordId = $_REQUEST['catalogKey'] ?? '';
-						$results['viewHoldsAction'] = "<a id='onHoldAction$recordId' href='/MyAccount/Holds' class='btn btn-sm btn-info btn-wrap' title='$viewHoldsText'>$viewHoldsText</a>";
+						if (!$this->disableCirculationActions) {
+							$results['viewHoldsAction'] = "<a id='onHoldAction$recordId' href='/MyAccount/Holds' class='btn btn-sm btn-info btn-wrap' title='$viewHoldsText'>$viewHoldsText</a>";
+						}else{
+							$results['viewHoldsAction'] = '';
+						}
 
 						//If we have a cached account summary, add one to the number of unavailable holds (no ILSs move a hold to active immediately)
 						$accountSummary = $this->getCachedAccountSummary('ils');

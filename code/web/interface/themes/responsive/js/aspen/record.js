@@ -34,6 +34,7 @@ AspenDiscovery.Record = (function () {
 								if (existingButton.length === 0) {
 									$(data.viewHoldsAction).insertBefore('#actionButton' + id);
 									$(data.viewHoldsAction).insertBefore('#relatedRecordactionButton' + id);
+									$(data.viewHoldsAction).insertBefore('#firstRecordactionButton' + id);
 								}
 								AspenDiscovery.showMessage(data.title, data.message, false, false);
 								AspenDiscovery.Account.loadMenuData();
@@ -45,6 +46,7 @@ AspenDiscovery.Record = (function () {
 							if (existingButton.length === 0) {
 								$(data.viewHoldsAction).insertBefore('#actionButton' + id);
 								$(data.viewHoldsAction).insertBefore('#relatedRecordactionButton' + id);
+								$(data.viewHoldsAction).insertBefore('#firstRecordactionButton' + id);
 							}
 							AspenDiscovery.showMessage(data.title, data.message, false, false);
 						}
@@ -189,6 +191,7 @@ AspenDiscovery.Record = (function () {
 						if (existingButton.length === 0) {
 							$(data.viewHoldsAction).insertBefore('#actionButton' + id);
 							$(data.viewHoldsAction).insertBefore('#relatedRecordactionButton' + id);
+							$(data.viewHoldsAction).insertBefore('#firstRecordactionButton' + id);
 						}
 						if (!data.autologout) {
 							AspenDiscovery.Account.loadMenuData();
@@ -387,6 +390,7 @@ AspenDiscovery.Record = (function () {
 						if (existingButton.length === 0) {
 							$(data.viewHoldsAction).insertBefore('#actionButton' + id);
 							$(data.viewHoldsAction).insertBefore('#relatedRecordactionButton' + id);
+							$(data.viewHoldsAction).insertBefore('#firstRecordactionButton' + id);
 						}
 						if (!data.autologout) {
 							AspenDiscovery.Account.loadMenuData();

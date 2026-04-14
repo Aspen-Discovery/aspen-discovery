@@ -11117,6 +11117,9 @@ class MyAccount_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function getListTransferForm(): array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredParameters(['listId']);
+
 		global $interface;
 		$interface->assign('listId', strip_tags($_REQUEST['listId']));
 
@@ -11140,13 +11143,17 @@ class MyAccount_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function listTransferValidation(): array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredParameters(['listId', 'newListOwner']);
+
 		global $interface;
 
 		$listId = $_REQUEST['listId'];
 		$newListOwner = $_REQUEST['newListOwner'];
 
 		$patron = new User();
-		$patron->whereAdd("ils_barcode = '$newListOwner' OR ils_username = '$newListOwner' OR username = '$newListOwner'");
+		$escapedNewOwner = $patron->escape($newListOwner);
+		$patron->whereAdd("ils_barcode = $escapedNewOwner OR ils_username = $escapedNewOwner OR username = $escapedNewOwner");
 		$patron->find();
 		$numResults = $patron->count();
 		if ($numResults == 1 && $patron->find(true)) {
@@ -11174,6 +11181,9 @@ class MyAccount_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function listTransferProcess(): array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredParameters(['listId', 'userId']);
+
 		global $configArray;
 		$listId = $_REQUEST['listId'];
 		$newListOwner = $_REQUEST['userId'];
@@ -11203,11 +11213,11 @@ class MyAccount_AJAX extends JSON_Action {
 						'isAdminFacing' => true,
 					]);
 					$body = translate([
-							'text' => 'The following list has been transferred to your account by an administrator:',
+							'text' => 'The following list(s) have been transferred to your account by an administrator:',
 							'isPublicFacing' => true,
 						]) . "\r\n" . $configArray['Site']['url'] . '/MyAccount/MyList/' . $list->id;
 					$htmlBody = '<p>' . translate([
-							'text' => 'The following list has been transferred to your account by an administrator:',
+							'text' => 'The following list(s) have been transferred to your account by an administrator:',
 							'isAdminFacing' => true,
 						]) . '</p>';
 					$htmlBody .= '<ul><li>' . translate([
@@ -11240,6 +11250,9 @@ class MyAccount_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function getListGroupTransferForm(): array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredParameters(['listGroupId']);
+
 		global $interface;
 		$interface->assign('listGroupId', strip_tags($_REQUEST['listGroupId']));
 
@@ -11263,13 +11276,17 @@ class MyAccount_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function listGroupTransferValidation(): array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredParameters(['listGroupId', 'newListGroupOwner']);
+
 		global $interface;
 
 		$listGroupId = $_REQUEST['listGroupId'];
 		$newListOwner = $_REQUEST['newListGroupOwner'];
 
 		$patron = new User();
-		$patron->whereAdd("ils_barcode = '$newListOwner' OR ils_username = '$newListOwner' OR username = '$newListOwner'");
+		$escapedNewOwner = $patron->escape($newListOwner);
+		$patron->whereAdd("ils_barcode = $escapedNewOwner OR ils_username = $escapedNewOwner OR username = $escapedNewOwner");
 		$patron->find();
 		$numResults = $patron->count();
 		if ($numResults == 1 && $patron->find(true)) {
@@ -11297,6 +11314,9 @@ class MyAccount_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function listGroupTransferProcess(): array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredParameters(['listGroupId', 'userId']);
+
 		global $configArray;
 		$listGroupId = $_REQUEST['listGroupId'];
 		$newListOwner = $_REQUEST['userId'];
@@ -11370,6 +11390,7 @@ class MyAccount_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function getListsTransferForm(): array {
+		$this->requireLoggedInUser();
 		global $interface;
 		$interface->assign('prevListOwner', strip_tags($_REQUEST['prevListOwner']));
 
@@ -11394,12 +11415,14 @@ class MyAccount_AJAX extends JSON_Action {
 	/** @noinspection PhpUnused */
 	function listsTransferValidation(): array {
 		global $interface;
+		$this->requireLoggedInUser();
+		$this->checkRequiredParameters(['newListOwner']);
 
 		$newListOwner = $_REQUEST['newListOwner'];
-		$prevListOwner = $_REQUEST['prevListOwner'];
 
 		$patron = new User();
-		$patron->whereAdd("ils_barcode = '$newListOwner' OR ils_username = '$newListOwner' OR username = '$newListOwner'");
+		$newListOwnerEscaped = $patron->escape($newListOwner);
+		$patron->whereAdd("ils_barcode = $newListOwnerEscaped OR ils_username = $newListOwnerEscaped OR username = $newListOwnerEscaped");
 		$patron->find();
 		$numResults = $patron->count();
 		if ($numResults == 1 && $patron->find(true)) {
@@ -11412,7 +11435,7 @@ class MyAccount_AJAX extends JSON_Action {
 						'isAdminFacing' => true,
 					]),
 					'modalBody' => $interface->fetch('MyAccount/listsTransferConfirm.tpl'),
-					'modalButtons' => "<button id='listsTransferProcesBtn' class='tool btn btn-primary' onclick='AspenDiscovery.Lists.listsTransferProcess(\"$patron->id\", \"$prevListOwner\")'>" . translate([
+					'modalButtons' => "<button id='listsTransferProcesBtn' class='tool btn btn-primary' onclick='AspenDiscovery.Lists.listsTransferProcess(\"$patron->id\")'>" . translate([
 							'text' => 'Confirm',
 							'isAdminFacing' => 'true',
 						]) . "</button>",
@@ -11426,8 +11449,9 @@ class MyAccount_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function listsTransferProcess(): array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredParameters(['userId']);
 		global $configArray;
-		$prevListOwner = $_REQUEST['prevListOwner'];
 		$newListOwner = $_REQUEST['userId'];
 
 		$results = [
@@ -11445,11 +11469,12 @@ class MyAccount_AJAX extends JSON_Action {
 			$lists = [];
 			require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 			$list = new UserList();
-			$list->user_id = $prevListOwner;
+			$list->user_id = UserAccount::getActiveUserId();
 			$list->find();
 			while ($list->fetch()) {
 				$lists[$list->id] = $list->title;
 				$list->user_id = $user->id;
+				$list->listGroupId = -1;
 				$list->update();
 			}
 			require_once ROOT_DIR . '/sys/Email/Mailer.php';
@@ -11461,11 +11486,11 @@ class MyAccount_AJAX extends JSON_Action {
 
 			$topLists = array_slice($lists, 0, 20, true); // true preserves keys
 			$body = translate([
-				'text' => 'The following lists has been transferred to your account by an administrator:',
+				'text' => 'The following list(s) have been transferred to your account by an administrator:',
 				'isPublicFacing' => true,
 			]);
 			$htmlBody = '<p>' . translate([
-					'text' => 'The following lists has been transferred to your account by an administrator:',
+					'text' => 'The following list(s) have been transferred to your account by an administrator:',
 					'isAdminFacing' => true,
 				]) . '</p><ul>';
 			foreach ($topLists as $listId => $listTitle) {

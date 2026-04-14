@@ -86,6 +86,14 @@ function getUpdates26_04_00(): array {
 				'ALTER TABLE website_index_log ADD COLUMN numSkipped TINYINT(1) NOT NULL DEFAULT 0',
 			]
 		], //add_num_skpped_to_website_index_log
+		'num_skipped_fix_data_type' => [
+			'title' => 'Fix Num Skipped data type in Website Index Log',
+			'description' => 'Fix Num Skipped data type in Website Index Log',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE website_index_log CHANGE COLUMN numSkipped numSkipped INT(11) NOT NULL DEFAULT 0',
+			]
+		], //num_skipped_fix_data_type
 
 		//kirstien
 		'add_user_app_request_logging_option' => [

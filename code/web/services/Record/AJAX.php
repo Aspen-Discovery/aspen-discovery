@@ -1063,8 +1063,9 @@ class Record_AJAX extends JSON_Action {
 					}else{
 						//Placing a hold on the suggested edition
 						$rememberUserEditionPreference = isset($_REQUEST['rememberUserEditionPreference']) ? filter_var($_REQUEST['rememberUserEditionPreference'], FILTER_VALIDATE_BOOLEAN) : false;
-						if ($rememberUserEditionPreference !== $user->rememberHoldPromptForEdition) {
-							$user->setRememberHoldPromptForEdition($rememberUserEditionPreference);
+						if ($rememberUserEditionPreference !== $patron->rememberHoldPromptForEdition) {
+							$patron->setRememberHoldPromptForEdition($rememberUserEditionPreference);
+							$patron->update();
 						}
 					}
 				}
@@ -1275,6 +1276,8 @@ class Record_AJAX extends JSON_Action {
 					if (isset($return['viewHoldsAction'])) {
 						$results['viewHoldsAction'] = $return['viewHoldsAction'];
 						$results['modalButtons'] = $return['modalButtons'];
+					}else{
+						$results['viewHoldsAction'] = '';
 					}
 					if ($confirmationNeeded) {
 						$results['modalButtons'] = '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.confirmHold(\'Record\', \'' . $shortId . '\', ' . $return['confirmationId'] . ')">' . translate([

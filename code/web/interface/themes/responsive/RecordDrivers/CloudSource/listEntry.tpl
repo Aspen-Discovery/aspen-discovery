@@ -26,47 +26,60 @@
 					</div>
 				</div>
 
-				{if !empty($summAuthor)}
-					<div class="row">
-						<div class="result-label col-sm-3"> {translate text='Author' isPublicFacing=true}</div>
-						<div class="col-sm-9 result-value">{$summAuthor|escape}</div>
+				<div class="row">
+					<div class="col-xs-8">
+						{if !empty($summAuthor)}
+							<div class="row">
+								<div class="result-label col-sm-3"> {translate text='Author' isPublicFacing=true}</div>
+								<div class="col-sm-9 result-value">{$summAuthor|escape}</div>
+							</div>
+						{/if}
+
+						{if !empty($summPublicationDates) || !empty($summPublishers) || !empty($summPublicationPlaces)}
+							<div class="row">
+
+								<div class="result-label col-sm-3">{translate text='Published' isPublicFacing=true}</div>
+								<div class="col-sm-9 result-value">
+									{if !empty($summPublicationPlaces)}{$summPublicationPlaces.0|escape}{/if} {if !empty($summPublishers)}{$summPublishers.0|escape}{/if} {if !empty($summPublicationDates)}{$summPublicationDates.0|escape}{/if}
+								</div>
+							</div>
+						{/if}
+
+						{if strlen($summFormats)}
+							<div class="row">
+								<div class="result-label col-sm-3">{translate text='Format' isPublicFacing=true}</div>
+								<div class="col-sm-9 result-value">
+									<span>{translate text=$summFormats isPublicFacing=true}</span>
+								</div>
+							</div>
+						{/if}
+
+						{if !empty($summPhysical)}
+							<div class="row hidden-phone">
+								<div class="result-label col-sm-3">{translate text='Physical Desc' isPublicFacing=true}</div>
+								<div class="col-sm-9 result-value">{$summPhysical|escape}</div>
+							</div>
+						{/if}
+
+						{if (!empty($listEntryNotes) && $printInterface === false) || (!empty($listEntryNotes) && $printInterface === true && $printEntryNotes === true)}
+							<div class="row">
+								<div class="result-label col-sm-3">{translate text="Notes" isPublicFacing=true} </div>
+								<div class="user-list-entry-note result-value col-sm-9">
+									{$listEntryNotes}
+								</div>
+							</div>
+						{/if}
 					</div>
-				{/if}
-
-				{if !empty($summPublicationDates) || !empty($summPublishers) || !empty($summPublicationPlaces)}
-					<div class="row">
-
-						<div class="result-label col-sm-3">{translate text='Published' isPublicFacing=true}</div>
-						<div class="col-sm-9 result-value">
-							{if !empty($summPublicationPlaces)}{$summPublicationPlaces.0|escape}{/if} {if !empty($summPublishers)}{$summPublishers.0|escape}{/if} {if !empty($summPublicationDates)}{$summPublicationDates.0|escape}{/if}
+					{if (!empty($externalUrl))}
+						<div class="col-sm-4" style="display:flex; justify-content:center;">
+							<div class="btn-toolbar">
+								<div class="btn-group btn-group-vertical btn-block">
+									<a href="{$externalUrl}" class="btn btn-sm btn-action btn-wrap" target="_blank" aria-label="{translate text="Access Online" isPublicFacing=true inAttribute=true} ({translate text="opens in a new window" isPublicFacing=true inAttribute=true})"><i class="fas fa-external-link-alt" role="presentation"></i> {translate text="Access Online" isPublicFacing=true}</a>
+								</div>
+							</div>
 						</div>
-					</div>
-				{/if}
-
-				{if strlen($summFormats)}
-					<div class="row">
-						<div class="result-label col-sm-3">{translate text='Format' isPublicFacing=true}</div>
-						<div class="col-sm-9 result-value">
-							<span>{translate text=$summFormats isPublicFacing=true}</span>
-						</div>
-					</div>
-				{/if}
-
-				{if !empty($summPhysical)}
-					<div class="row hidden-phone">
-						<div class="result-label col-sm-3">{translate text='Physical Desc' isPublicFacing=true}</div>
-						<div class="col-sm-9 result-value">{$summPhysical|escape}</div>
-					</div>
-				{/if}
-
-				{if (!empty($listEntryNotes) && $printInterface === false) || (!empty($listEntryNotes) && $printInterface === true && $printEntryNotes === true)}
-					<div class="row">
-						<div class="result-label col-sm-3">{translate text="Notes" isPublicFacing=true} </div>
-						<div class="user-list-entry-note result-value col-sm-9">
-							{$listEntryNotes}
-						</div>
-					</div>
-				{/if}
+					{/if}
+				</div>
 
 				{if !empty($summDescription) && $printInterface === false}
 					{* Standard Description *}
@@ -76,7 +89,7 @@
 					</div>
 				{/if}
 
-					{* Mobile Description *}
+				{* Mobile Description *}
 				{if (!empty($summDescription) && $printInterface === false) || ($printInterface === true && $printEntryDescription === true)}
 					<div class="row">
 						{* Hide in mobile view *}
