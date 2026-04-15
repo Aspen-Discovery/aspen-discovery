@@ -5199,6 +5199,44 @@ class Koha extends AbstractIlsDriver {
 		return $result;
 	}
 
+	public function supportsILSRegistrationMode(string $mode): bool {
+		return in_array($mode, [
+			AbstractIlsDriver::ILS_REG_MODE_PUBLIC_SELF,
+			AbstractIlsDriver::ILS_REG_MODE_MINIMAL_SELF,
+			AbstractIlsDriver::ILS_REG_MODE_STAFF,
+		], true);
+	}
+
+	public function getILSRegistrationFormStructure(string $mode): array {
+		if ($mode === AbstractIlsDriver::ILS_REG_MODE_STAFF) {
+			return $this->filterRegistrationFieldsBySysprefs(
+				$this->buildRegistrationFieldStructure('selfReg'),
+				'BorrowerMandatoryField',
+				'BorrowerUnwantedField'
+			);
+		}
+		return $this->getSelfRegistrationFields();
+	}
+
+	public function registerPatronToILS(string $mode, array $input): array {
+		if ($mode === AbstractIlsDriver::ILS_REG_MODE_STAFF) {
+			$postVariables = $this->buildPatronRegistrationPostVariables($input, $mode);
+			return $this->submitPatronRegistrationToKoha($postVariables, $this->registrationOptionsFor($mode));
+		}
+		if ($mode === AbstractIlsDriver::ILS_REG_MODE_PUBLIC_SELF || $mode === AbstractIlsDriver::ILS_REG_MODE_MINIMAL_SELF) {
+			return $this->selfRegister();
+		}
+		return parent::registerPatronToILS($mode, $input);
+	}
+
+	private function registrationOptionsFor(string $mode): array {
+		$options = [];
+		if ($mode === AbstractIlsDriver::ILS_REG_MODE_STAFF) {
+			$options['skipEmailVerification'] = true;
+		}
+		return $options;
+	}
+
 	function updatePin(User $patron, ?string $oldPin, string $newPin) {
 		if ($patron->cat_password != $oldPin) {
 			return [
