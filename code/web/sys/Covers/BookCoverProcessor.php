@@ -1841,7 +1841,6 @@ class BookCoverProcessor {
 	}
 
 	private function normalizeEventId(string $id) : string {
-		// This function could be used 13 more times in this file
 		if (str_contains($id, ':')) {
 			[
 				,
