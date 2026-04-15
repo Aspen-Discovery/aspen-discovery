@@ -175,7 +175,7 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 		return [];
 	}
 
-	public function supportsILSRegistrationMode(string $mode): bool {
+	public function hasIlsRegistrationModeSupport(string $mode): bool {
 		return $mode === self::ILS_REG_MODE_PUBLIC_SELF;
 	}
 

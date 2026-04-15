@@ -5199,7 +5199,7 @@ class Koha extends AbstractIlsDriver {
 		return $result;
 	}
 
-	public function supportsILSRegistrationMode(string $mode): bool {
+	public function hasIlsRegistrationModeSupport(string $mode): bool {
 		return in_array($mode, [
 			AbstractIlsDriver::ILS_REG_MODE_PUBLIC_SELF,
 			AbstractIlsDriver::ILS_REG_MODE_MINIMAL_SELF,
