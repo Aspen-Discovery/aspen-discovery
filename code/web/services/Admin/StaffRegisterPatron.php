@@ -38,6 +38,26 @@ class Admin_StaffRegisterPatron extends Admin_Admin {
 		$this->display('staffRegisterPatron.tpl', 'Register Patron');
 	}
 
+
+	private function sanitiseInput(array $raw, array $structure): array {
+		$allowedKeys = $this->extractFieldKeys($structure);
+		return array_intersect_key($raw, array_flip($allowedKeys));
+	}
+
+	private function extractFieldKeys(array $structure): array {
+		$keys = [];
+		foreach ($structure as $entryKey => $entry) {
+			if (isset($entry['type']) && $entry['type'] === 'section') {
+				foreach (array_keys($entry['properties'] ?? []) as $key) {
+					$keys[] = $key;
+				}
+				continue;
+			}
+			$keys[] = $entryKey;
+		}
+		return $keys;
+	}
+
 	private function displayError(string $error): void {
 		global $interface;
 		$interface->assign('error', translate(['text' => $error, 'isAdminFacing' => true]));
