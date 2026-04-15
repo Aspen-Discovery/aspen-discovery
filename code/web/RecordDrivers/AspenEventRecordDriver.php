@@ -482,6 +482,19 @@ class AspenEventRecordDriver extends IndexRecordDriver {
 		];
 	}
 
+	public function getUseEventImageInSearchResults() {
+		$eventInstance = $this->getEventObject();
+		if ($eventInstance) {
+			require_once ROOT_DIR . '/sys/Events/Event.php';
+			$event = new Event();
+			$event->id = $eventInstance->eventId;
+			if ($event->find(true)) {
+				return $event->useEventImageInSearchResults;
+			}
+		}
+		return false;
+	}
+
 	public function getDisplayBranchOnThumbnail() {
 		$eventInstance = $this->getEventObject();
 		if ($eventInstance) {

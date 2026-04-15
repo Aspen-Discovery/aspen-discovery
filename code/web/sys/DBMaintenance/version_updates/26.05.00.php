@@ -25,6 +25,15 @@ function getUpdates26_05_00(): array {
 
 		//imani
 
+		//jonah
+		'DIS-XXXX_custom_aspenEvent_covers' => [
+			'title' => 'AspenEvents Custom Covers',
+			'description' => 'Allow the use of uploaded covers in search results',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE event ADD COLUMN useEventImageInSearchResults TINYINT(1) DEFAULT 0'
+			]
+		], //DIS-XXXX_custom_aspenEvent_covers
 		//galen
 
 		//chloe
