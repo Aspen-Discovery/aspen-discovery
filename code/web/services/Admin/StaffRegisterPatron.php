@@ -43,6 +43,19 @@ class Admin_StaffRegisterPatron extends Admin_Admin {
 		$this->display('staffRegisterPatron.tpl', 'Register Patron');
 	}
 
+	private function applyPreviousInput(array $structure, array $previousInput): array {
+		foreach ($structure as $key => &$entry) {
+			if (isset($entry['type']) && $entry['type'] === 'section') {
+				$entry['properties'] = $this->applyPreviousInput($entry['properties'], $previousInput);
+				continue;
+			}
+			if (isset($previousInput[$key])) {
+				$entry['default'] = $previousInput[$key];
+			}
+		}
+		return $structure;
+	}
+
 	private function handleSubmit(): void {
 		$structure = $this->_catalogDriver->getILSRegistrationFormStructure(AbstractIlsDriver::ILS_REG_MODE_STAFF);
 		$input = $this->sanitiseInput($_POST, $structure);
