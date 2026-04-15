@@ -3966,6 +3966,32 @@ class Koha extends AbstractIlsDriver {
 	}
 
 	function getSelfRegistrationFields($type = 'selfReg') {
+		$fields = $this->buildRegistrationFieldStructure($type);
+
+		if ($type === 'selfReg') {
+			$mandatorySyspref = 'PatronSelfRegistrationBorrowerMandatoryField';
+			$unwantedSyspref = 'PatronSelfRegistrationBorrowerUnwantedField';
+			return $this->filterRegistrationFieldsBySysprefs($fields, $mandatorySyspref, $unwantedSyspref, [
+				'hideBothRequiredUnwanted' => $type === 'patronUpdate',
+			]);
+		}
+
+		$unwantedSyspref = 'PatronSelfModificationBorrowerUnwantedField';
+		$mandatorySyspref = 'PatronSelfRegistrationBorrowerMandatoryField';
+
+		if ($this->getKohaSystemPreference('PatronSelfModificationBorrowerMandatoryField', null) !== null) {
+			$mandatorySyspref = 'PatronSelfModificationBorrowerMandatoryField';
+		} elseif ($this->getKohaSystemPreference('PatronSelfModificationMandatoryField', null) !== null) {
+			$mandatorySyspref = 'PatronSelfModificationMandatoryField';
+		}
+	
+		return $this->filterRegistrationFieldsBySysprefs($fields, $mandatorySyspref, $unwantedSyspref, [
+			'hideBothRequiredUnwanted' => $type === 'patronUpdate',
+		]);
+	}
+
+
+	private function buildRegistrationFieldStructure(string $type): array {
 		global $library;
 
 		$this->initDatabaseConnection();
@@ -3979,17 +4005,6 @@ class Koha extends AbstractIlsDriver {
 		}
 		$results->close();
 
-		if ($type == 'selfReg') {
-			$unwantedFields = explode('|', $kohaPreferences['PatronSelfRegistrationBorrowerUnwantedField']);
-		} else {
-			$unwantedFields = explode('|', $kohaPreferences['PatronSelfModificationBorrowerUnwantedField']);
-		}
-		$requiredFields = explode('|', $kohaPreferences['PatronSelfRegistrationBorrowerMandatoryField']);
-		if ($type != 'selfReg' && array_key_exists('PatronSelfModificationBorrowerMandatoryField', $kohaPreferences)) {
-			$requiredFields = explode('|', $kohaPreferences['PatronSelfModificationBorrowerMandatoryField']);
-		}elseif ($type != 'selfReg' && array_key_exists('PatronSelfModificationMandatoryField', $kohaPreferences)) {
-			$requiredFields = explode('|', $kohaPreferences['PatronSelfModificationMandatoryField']);
-		}
 		if ($type !== 'selfReg' || strlen($kohaPreferences['PatronSelfRegistrationLibraryList']) == 0) {
 			$validLibraries = [];
 		} else {
@@ -4681,11 +4696,18 @@ class Koha extends AbstractIlsDriver {
 			];
 		}
 
-		$unwantedFields = array_flip($unwantedFields);
+		return $fields;
+	}
+
+	private function filterRegistrationFieldsBySysprefs(array $fields, string $mandatorySyspref, string $unwantedSyspref, array $options = []): array {
+		$hideBothRequiredUnwanted = !empty($options['hideBothRequiredUnwanted']);
+
+		$unwantedFields = array_flip(explode('|', $this->getKohaSystemPreference($unwantedSyspref)));
+		$requiredFields = array_flip(explode('|', $this->getKohaSystemPreference($mandatorySyspref)));
+
 		if (array_key_exists('password', $unwantedFields)) {
 			$unwantedFields['password2'] = true;
 		}
-		$requiredFields = array_flip($requiredFields);
 		if (array_key_exists('password', $requiredFields)) {
 			$requiredFields['password2'] = true;
 		}
@@ -4698,25 +4720,26 @@ class Koha extends AbstractIlsDriver {
 						//There is a case here where a field is marked as both unwanted and required.  If that is the case, do not unset it, just change the type to hidden.
 						if (array_key_exists($fieldName, $requiredFields)) {
 							$section['properties'][$fieldKey]['type'] = 'hidden';
-						} else {
-							unset($section['properties'][$fieldKey]);
+							continue;
 						}
-					} elseif ($type == 'patronUpdate') {
-						if ((array_key_exists($fieldName, $unwantedFields) && array_key_exists($fieldName, $requiredFields))) {
-							$section['properties'][$fieldKey]['type'] = 'hidden';
-							$section['properties'][$fieldKey]['required'] = false;
-						} else {
-							$field['required'] = array_key_exists($fieldName, $requiredFields);
-						}
-					} else {
-						$field['required'] = array_key_exists($fieldName, $requiredFields);
+						unset($section['properties'][$fieldKey]);
+						continue;
 					}
+
+					if ($hideBothRequiredUnwanted && array_key_exists($fieldName, $unwantedFields) && array_key_exists($fieldName, $requiredFields)) {
+						$section['properties'][$fieldKey]['type'] = 'hidden';
+						$section['properties'][$fieldKey]['required'] = false;
+						continue;
+					}
+
+					$field['required'] = array_key_exists($fieldName, $requiredFields);
+
 					if (array_key_exists($fieldKey, $section['properties']) && $section['properties'][$fieldKey]['type'] != 'hidden') {
 						$allFieldsHidden = false;
 					}
 				}
 				if (empty($section['properties'])) {
-					unset ($fields[$sectionKey]);
+					unset($fields[$sectionKey]);
 				} elseif ($allFieldsHidden) {
 					$section['label'] = '';
 				}
