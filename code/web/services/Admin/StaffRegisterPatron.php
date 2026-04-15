@@ -35,8 +35,15 @@ class Admin_StaffRegisterPatron extends Admin_Admin {
 	private function renderForm(?string $error = null, array $previousInput = []): void {
 		global $interface;
 		$structure = $this->_catalogDriver->getILSRegistrationFormStructure(AbstractIlsDriver::ILS_REG_MODE_STAFF);
-		$interface->assign('formStructure', $structure);
-		$interface->assign('previousInput', $previousInput);
+		$structure = $this->applyPreviousInput($structure, $previousInput);
+
+		$interface->assign('structure', $structure);
+		$interface->assign('submitUrl', '/Admin/StaffRegisterPatron');
+		$interface->assign('saveButtonText', 'Register Patron');
+		$interface->assign('formLabel', 'Register Patron');
+		$interface->assign('isSelfRegistration', false);
+		$interface->assign('staffRegForm', $interface->fetch('DataObjectUtil/objectEditForm.tpl'));
+
 		if ($error !== null) {
 			$interface->assign('error', translate(['text' => $error, 'isAdminFacing' => true]));
 		}
