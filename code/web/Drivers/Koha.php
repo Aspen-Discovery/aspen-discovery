@@ -6285,23 +6285,22 @@ class Koha extends AbstractIlsDriver {
 	 * @param array $validFieldsToUpdate
 	 * @return array
 	 */
-	private function setPostFieldWithDifferentName(array $postFields, string $postFieldName, string $requestFieldName, bool $convertToUpperCase = false, bool $stripNonNumericCharacters = false, $validFieldsToUpdate = []): array {
-		if (isset($_REQUEST[$requestFieldName])) {
-			if (!empty($validFieldsToUpdate) && !array_key_exists($requestFieldName, $validFieldsToUpdate)) {
-				return $postFields;
-			}
-			$field = $_REQUEST[$requestFieldName];
-			if ($stripNonNumericCharacters) {
-				$field = preg_replace('/[^0-9]/', '', $field);
-			}
-			$field = str_replace('’', "'", $field);
-			if ($convertToUpperCase) {
-				$postFields[$postFieldName] = strtoupper($field);
-			} else {
-				$postFields[$postFieldName] = $field;
-			}
-
+	private function setPostFieldWithDifferentName(array $postFields, string $postFieldName, string $requestFieldName, bool $convertToUpperCase = false, bool $stripNonNumericCharacters = false, $validFieldsToUpdate = [], ?array $inputSource = null): array {
+		$source = $inputSource ?? $_REQUEST;
+		if (!isset($source[$requestFieldName]) || (!empty($validFieldsToUpdate) && !array_key_exists($requestFieldName, $validFieldsToUpdate))) {
+			return $postFields;
 		}
+		$field = $source[$requestFieldName];
+		if ($stripNonNumericCharacters) {
+			$field = preg_replace('/[^0-9]/', '', $field);
+		}
+		$field = str_replace('’', "'", $field);
+		if ($convertToUpperCase) {
+			$postFields[$postFieldName] = strtoupper($field);
+		} else {
+			$postFields[$postFieldName] = $field;
+		}
+
 		return $postFields;
 	}
 
@@ -6312,19 +6311,20 @@ class Koha extends AbstractIlsDriver {
 	 * @param bool $stripNonNumericCharacters
 	 * @return array
 	 */
-	private function setPostField(array $postFields, string $variableName, $convertToUpperCase = false, $stripNonNumericCharacters = false): array {
-		if (isset($_REQUEST[$variableName])) {
-			$field = $_REQUEST[$variableName];
-			if ($stripNonNumericCharacters) {
-				$field = preg_replace('/[^0-9]/', '', $field);
-			}
-			$field = str_replace('’', "'", $field);
-			if ($convertToUpperCase) {
-				$postFields[$variableName] = strtoupper($field);
-			} else {
-				$postFields[$variableName] = $field;
-			}
-
+	private function setPostField(array $postFields, string $variableName, $convertToUpperCase = false, $stripNonNumericCharacters = false, ?array $inputSource = null): array {
+		$source = $inputSource ?? $_REQUEST;
+		if (!isset($source[$variableName])) {
+			return $postFields;
+		}
+		$field = $source[$variableName];
+		if ($stripNonNumericCharacters) {
+			$field = preg_replace('/[^0-9]/', '', $field);
+		}
+		$field = str_replace('’', "'", $field);
+		if ($convertToUpperCase) {
+			$postFields[$variableName] = strtoupper($field);
+		} else {
+			$postFields[$variableName] = $field;
 		}
 		return $postFields;
 	}
