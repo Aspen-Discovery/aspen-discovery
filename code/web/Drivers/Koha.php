@@ -5209,13 +5209,84 @@ class Koha extends AbstractIlsDriver {
 
 	public function getILSRegistrationFormStructure(string $mode): array {
 		if ($mode === AbstractIlsDriver::ILS_REG_MODE_STAFF) {
-			return $this->filterRegistrationFieldsBySysprefs(
-				$this->buildRegistrationFieldStructure('selfReg'),
-				'BorrowerMandatoryField',
-				'BorrowerUnwantedField'
-			);
+			return $this->buildStaffRegistrationFieldStructure();
 		}
 		return $this->getSelfRegistrationFields();
+	}
+
+	/**
+	 * Mirrors Koha's quick-add form: visible fields = BorrowerMandatoryField ∪ PatronQuickAddFields.
+	 * BorrowerMandatoryField entries are marked required.
+	 */
+	private function buildStaffRegistrationFieldStructure(): array {
+		$fields = $this->buildRegistrationFieldStructure('selfReg');
+
+		$mandatoryRaw = $this->getKohaSystemPreference('BorrowerMandatoryField');
+		$quickAddRaw = $this->getKohaSystemPreference('PatronQuickAddFields');
+
+		$mandatoryFields = array_flip(array_filter(explode('|', $mandatoryRaw)));
+		$quickAddFields = array_flip(array_filter(explode('|', $quickAddRaw)));
+		$allowedFields = array_replace($quickAddFields, $mandatoryFields);
+
+		// branchcode is always required for patron creation regardless of syspref config
+		$allowedFields['branchcode'] = true;
+		$mandatoryFields['branchcode'] = true;
+
+		if (isset($allowedFields['password'])) {
+			$allowedFields['password2'] = true;
+		}
+
+		foreach ($fields as $sectionKey => &$section) {
+			if (($section['type'] ?? '') !== 'section') {
+				continue;
+			}
+			foreach ($section['properties'] as $fieldKey => &$field) {
+				$fieldName = str_replace('borrower_', '', $fieldKey);
+				if (!array_key_exists($fieldName, $allowedFields)) {
+					unset($section['properties'][$fieldKey]);
+					continue;
+				}
+				$field['required'] = array_key_exists($fieldName, $mandatoryFields);
+			}
+			if (empty($section['properties'])) {
+				unset($fields[$sectionKey]);
+			}
+		}
+
+		// Patron category — always required for creation, not part of buildRegistrationFieldStructure
+		$categoryValues = $this->fetchPatronCategoryOptions();
+		$defaultCategory = $this->getKohaSystemPreference('PatronSelfRegistrationDefaultCategory');
+		$fields['categorySection'] = [
+			'property' => 'categorySection',
+			'type' => 'section',
+			'label' => 'Patron Category',
+			'hideInLists' => true,
+			'expandByDefault' => true,
+			'properties' => [
+				'category_id' => [
+					'property' => 'category_id',
+					'type' => 'enum',
+					'label' => 'Patron Category',
+					'values' => $categoryValues,
+					'default' => $defaultCategory,
+					'required' => true,
+				],
+			],
+		];
+
+		return $fields;
+	}
+
+	private function fetchPatronCategoryOptions(): array {
+		$response = $this->kohaApiUserAgent->get('/api/v1/patron_categories', 'koha.getPatronCategories');
+		if (!$response || $response['code'] !== 200 || !is_array($response['content'])) {
+			return [];
+		}
+		$options = [];
+		foreach ($response['content'] as $category) {
+			$options[$category['patron_category_id']] = $category['name'];
+		}
+		return $options;
 	}
 
 	public function registerPatronToILS(string $mode, array $input): array {
