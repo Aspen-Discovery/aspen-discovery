@@ -4992,7 +4992,7 @@ class Koha extends AbstractIlsDriver {
 			}
 		}
 
-		$result = $this->postSelfRegistrationToKoha($postVariables);
+		$result = $this->submitPatronRegistrationToKoha($postVariables);
 
 		if (!$library->ilsConsentEnabled) {
 			return $result;
@@ -5015,11 +5015,12 @@ class Koha extends AbstractIlsDriver {
 		return $result;
 	}
 
-	private function postSelfRegistrationToKoha($postVariables) : array {
+	private function submitPatronRegistrationToKoha(array $postVariables, array $options = []): array {
 		$result = ['success' => false,];
 
 		$autoBarcode = $this->getKohaSystemPreference('autoMemberNum');
-		$verificationRequired = $this->getKohaSystemPreference('PatronSelfRegistrationVerifyByEmail');
+		$skipEmailVerification = !empty($options['skipEmailVerification']);
+		$verificationRequired = $skipEmailVerification ? '0' : $this->getKohaSystemPreference('PatronSelfRegistrationVerifyByEmail');
 
 		$oauthToken = $this->getOAuthToken();
 		if ($oauthToken == false) {
@@ -8556,7 +8557,7 @@ class Koha extends AbstractIlsDriver {
 		}
 		$postVariables['library_id'] = $patronHomeLocation;
 
-		$result = $this->postSelfRegistrationToKoha($postVariables);
+		$result = $this->submitPatronRegistrationToKoha($postVariables);
 
 		return $result;
 	}
