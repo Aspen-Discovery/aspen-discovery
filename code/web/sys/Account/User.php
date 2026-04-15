@@ -4735,6 +4735,15 @@ class User extends DataObject {
 		]);
 		$sections['ils_integration']->addAction(new AdminAction('Test Self Check', 'Test Self Check functionality within Aspen and Aspen / LiDA.', '/ILS/SelfCheckTester'), 'Test Self Check');
 
+		if ($library != null && !empty($library->enablePatronIlsRegistrationByStaff)) {
+			$sections['patron_management'] = new AdminSection('Patron Management');
+			$sections['patron_management']->addAction(new AdminAction('Register Patron', 'Register a new ILS patron account.', '/Admin/StaffRegisterPatron'), [
+				'Register New ILS Patrons for any home library',
+				'Register New ILS Patrons for patrons with same home library',
+				'Register New ILS Patrons for patrons with same home location',
+			]);
+		}
+
 		$sections['ill_integration'] = new AdminSection('Interlibrary Loan');
 		$sections['ill_integration']->addAction(new AdminAction('Hold Groups', 'Modify Hold Groups for creating interlibrary loan holds.', '/InterLibraryLoan/HoldGroups'), 'Administer Hold Groups');
 		$sections['ill_integration']->addAction(new AdminAction('Local ILL Forms', 'Configure Forms for submitting Local ILL requests.', '/InterLibraryLoan/LocalIllForms'), [
