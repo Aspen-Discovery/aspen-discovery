@@ -24,6 +24,11 @@ class Admin_StaffRegisterPatron extends Admin_Admin {
 
 		$this->_catalogDriver = $catalog->driver;
 
+		if (isset($_POST['submit'])) {
+			$this->handleSubmit();
+			return;
+		}
+
 		$this->renderForm();
 	}
 
@@ -38,6 +43,32 @@ class Admin_StaffRegisterPatron extends Admin_Admin {
 		$this->display('staffRegisterPatron.tpl', 'Register Patron');
 	}
 
+	private function handleSubmit(): void {
+		$structure = $this->_catalogDriver->getILSRegistrationFormStructure(AbstractIlsDriver::ILS_REG_MODE_STAFF);
+		$input = $this->sanitiseInput($_POST, $structure);
+
+		$branchcode = $input['borrower_branchcode'] ?? null;
+		if (empty($branchcode)) {
+			$this->renderForm('Home library is required.', $input);
+			return;
+		}
+
+		if (!$this->canRegisterPatronForBranch($branchcode)) {
+			$this->renderForm('You do not have permission to register patrons for the selected home library.', $input);
+			return;
+		}
+
+		$result = $this->_catalogDriver->registerPatronToILS(AbstractIlsDriver::ILS_REG_MODE_STAFF, $input);
+		if (empty($result['success'])) {
+			$message = $result['message'] ?? 'Could not register the patron.';
+			$this->renderForm($message, $input);
+			return;
+		}
+
+		global $interface;
+		$interface->assign('result', $result);
+		$this->display('staffRegisterPatronResult.tpl', 'Patron Registered');
+	}
 
 	private function sanitiseInput(array $raw, array $structure): array {
 		$allowedKeys = $this->extractFieldKeys($structure);
