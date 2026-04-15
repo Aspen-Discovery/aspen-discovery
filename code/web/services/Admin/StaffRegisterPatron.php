@@ -58,6 +58,34 @@ class Admin_StaffRegisterPatron extends Admin_Admin {
 		return $keys;
 	}
 
+	private function canRegisterPatronForBranch(string $branchcode): bool {
+		$user = UserAccount::getActiveUserObj();
+		if ($user == null) {
+			return false;
+		}
+		if ($user->hasPermission('Register New ILS Patrons for any home library')) {
+			return true;
+		}
+
+		$location = new Location();
+		$location->code = $branchcode;
+		if (!$location->find(true)) {
+			return false;
+		}
+
+		if ($user->hasPermission('Register New ILS Patrons for patrons with same home location')
+			&& $location->locationId == $user->homeLocationId) {
+			return true;
+		}
+
+		if ($user->hasPermission('Register New ILS Patrons for patrons with same home library')) {
+			$homeLibrary = $user->getHomeLibrary();
+			return $homeLibrary != null && $location->libraryId == $homeLibrary->libraryId;
+		}
+
+		return false;
+	}
+
 	private function displayError(string $error): void {
 		global $interface;
 		$interface->assign('error', translate(['text' => $error, 'isAdminFacing' => true]));
