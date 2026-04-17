@@ -38,7 +38,7 @@ while [ ! -f "$confSiteFile" ]; do
 	sleep 5
 	((tries++))
 
-	if [ $tries -eq 10 ] ; then
+	if [ $tries -eq $MAX_TRIES ] ; then
 		log_error "Site configuration not initialized. Skipping cron startup and waiting..."
 		exit 1
 	fi
