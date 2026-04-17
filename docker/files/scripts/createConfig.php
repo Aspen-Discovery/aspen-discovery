@@ -42,7 +42,7 @@ $variables = [
 	'solrPort' => getenv('SOLR_PORT') ?? 8983,
 	'phpFpmHost' => getenv('PHP_FPM_HOST') ?? 'localhost',
 	'phpFpmPort' => getenv('PHP_FPM_PORT') ?? '9000',
-	'timezone' => getenv('TIMEZONE') ?? 'US/Central',
+	'timezone' => getenv('TZ') ?? 'US/Central',
 	'aspenAdminPassword' => getenv('ASPEN_ADMIN_PASSWORD'),
 	'databaseHost' => getenv('DATABASE_HOST') ?? 'localhost',
 	'databasePort' => getenv('DATABASE_PORT') ?? 3306,
@@ -139,11 +139,6 @@ try {
 	replaceVariables($siteDir . "/conf/php-fpm.conf", $variables);
 	replaceVariables($siteDir . "/conf/crontab", $variables);
 
-	DockerLogger::info("Setting system timezone: {$variables['timezone']}");
-	
-	// Set timezone
-	exec('sudo timedatectl set-timezone "' . $variables['timezone'] . '"');
-	
 	// Create temp directory
 	if (!file_exists('/tmp')) {
 		mkdir('/tmp');

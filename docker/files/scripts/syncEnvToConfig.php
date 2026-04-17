@@ -33,7 +33,7 @@ $envMapping = [
 	'DATABASE_PASSWORD' => ['config.pwd.ini', 'Database', 'database_password'],
 
 	// Site (config.ini)
-	'TIMEZONE'          => ['config.ini', 'Site', 'timezone'],
+	'TZ'                => ['config.ini', 'Site', 'timezone'],
 	'URL'               => ['config.ini', 'Site', 'url'],
 	'TITLE'             => ['config.ini', 'Site', 'title'],
 	'LIBRARY'           => ['config.ini', 'Site', 'libraryName'],

@@ -28,7 +28,7 @@ try {
 	//Create temp smarty directory
 	$tmpDir = "$aspenDir/tmp/smarty/compile";
 	if (!file_exists($tmpDir)) {
-		exec("mkdir -p $tmpDir");
+		mkdir($tmpDir, 0755, true);
 		DockerLogger::setPermissions($tmpDir, $newOwner, '755');
 		DockerLogger::info("Created temp smarty directory: {$tmpDir}");
 	}
@@ -36,7 +36,7 @@ try {
 	//Create data directory and sub-directories
 	$dataDir = "/data/aspen-discovery/$siteName";
 	if (!file_exists($dataDir)) {
-		exec("mkdir -p $dataDir");
+		mkdir($dataDir, 0755, true);
 		DockerLogger::setPermissions($dataDir, $newOwner, '755');
 		DockerLogger::info("Created data directory: {$dataDir}");
 	}
@@ -44,12 +44,12 @@ try {
 	$subdirectories = ['images', 'files', 'fonts'];
 	foreach ($subdirectories as $subdirectory) {
 		if (!file_exists("$dataDir/$subdirectory")) {
-			exec("mkdir -p $dataDir/$subdirectory");
+			mkdir("$dataDir/$subdirectory", 0755, true);
 		}
 	}
 
 	if (!file_exists("/data/aspen-discovery/accelerated_reader")) {
-		exec("mkdir -p /data/aspen-discovery/accelerated_reader");
+		mkdir('/data/aspen-discovery/accelerated_reader', 0755, true);
 	}
 	DockerLogger::setPermissions("/data/aspen-discovery/accelerated_reader", $newOwner, '755');
 
@@ -65,9 +65,9 @@ try {
 
 	foreach ($toDelete as $file) {
 		if (is_dir("$dataDir/$file")) {
-			exec("rm -Rf $dataDir/$file");
+			recursive_delete("$dataDir/$file");
 		} else {
-			exec("rm $dataDir/$file");
+			@unlink("$dataDir/$file");
 		}
 	}
 	
@@ -105,13 +105,13 @@ try {
 	//Logs directory
 	$logDir = "/var/log/aspen-discovery/$siteName";
 	if (!file_exists($logDir)) {
-		exec("mkdir -p $logDir");
+		mkdir($logDir, 0755, true);
 		DockerLogger::setPermissions($logDir, $newOwner, '755');
 	}
 
 	$logDir2 = "/var/log/aspen-discovery/$siteName/logs";
 	if (!file_exists($logDir2)) {
-		exec("mkdir -p $logDir2");
+		mkdir($logDir2, 0755, true);
 		DockerLogger::setPermissions($logDir2, $newOwner, '755');
 	}
 
@@ -145,6 +145,21 @@ try {
 
 } catch (Exception $e) {
 	DockerLogger::error("Error assigning permissions and ownership: " . $e->getMessage());
+}
+
+function recursive_delete(string $path): void {
+	if (is_dir($path)) {
+		$entries = scandir($path);
+		foreach ($entries as $entry) {
+			if ($entry === '.' || $entry === '..') {
+				continue;
+			}
+			recursive_delete($path . '/' . $entry);
+		}
+		rmdir($path);
+	} else {
+		unlink($path);
+	}
 }
 
 function recursive_copy($src, $dst): void {
