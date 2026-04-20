@@ -271,7 +271,7 @@ class SelfReg extends Action {
 		if ($library->enableSelfRegistration == 1) {
 			global $interface;
 			$result['success'] = true;
-			$selfRegFields = $catalog->getMandatorySelfRegistrationFormStructure();
+			$selfRegFields = $catalog->getILSRegistrationFormStructure(AbstractIlsDriver::ILS_REG_MODE_MINIMAL_SELF);
 			
 			if (empty($selfRegFields)) {
 				return $result;

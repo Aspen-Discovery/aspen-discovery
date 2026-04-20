@@ -3965,67 +3965,6 @@ class Koha extends AbstractIlsDriver {
 		return 'kohaEmailResetPinLink.tpl';
 	}
 
-	function getMandatorySelfRegistrationFormStructure(): array {
-		$mandatoryFields = $this->getKohaSystemPreference('PatronSelfRegistrationBorrowerMandatoryField');
-		if (empty($mandatoryFields)) {
-			return [];
-		}
-
-		$mandatoryFieldNames = array_flip(array_map( fn($val) => "borrower_$val", array_filter(explode('|', $mandatoryFields))));
-
-		if (array_key_exists('borrower_password', $mandatoryFieldNames)) {
-			$mandatoryFieldNames['borrower_password2'] = -1;
-		}	
-		
-		$unwantedFields = $this->getKohaSystemPreference('PatronSelfRegistrationBorrowerUnwantedField');
-		$unwantedFieldNames = [];
-
-		if (!empty($unwantedFields)) {
-			$unwantedFieldNames = array_flip(array_map( fn($val) => "borrower_$val", array_filter(explode('|', $unwantedFields))));
-		}
-		
-		$registrationFields = $this->getSelfRegistrationFields();
-		$structure = [
-			'minimalSelfRegistrationForm' => [
-				'property' => 'minimalSelfRegistrationForm',
-				'type' => 'section',
-				'label' => 'Library Quick Registration Form',
-				'expandByDefault' => true,
-				'properties' => []
-			]
-		];
-
-		foreach ($registrationFields as $sectionKey => $section) {
-			if ($section['type'] != 'section' || !is_array($section['properties'])) {
-				continue;
-			}
-
-			foreach ($section['properties'] as $fieldKey => $field) {
-				if (empty($field)) {
-					continue;
-				}
-
-				if (!isset($mandatoryFieldNames[$fieldKey])) {
-					continue;
-				}
-
-				$structure['minimalSelfRegistrationForm']['properties'][$fieldKey] = $field;
-				$structure['minimalSelfRegistrationForm']['properties'][$fieldKey]['required'] = true;
-
-				if (isset($unwantedFieldNames[$fieldKey])) {
-					$structure['minimalSelfRegistrationForm']['properties'][$fieldKey]['type'] = 'hidden';
-				}
-			}
-		}
-
-		// GDPR (or other international equivalent) compliance - independent of the PatronSelfRegistrationBorrowerMandatoryField Koha System Preference
-		if(Library::getActiveLibrary()->ilsConsentEnabled && $this->areAnyConsentPluginsEnabled()) {
-			$structure['privacySection'] = $this->getSelfRegistrationFormPrivacySection();
-		}
-
-		return $structure;
-	}
-
 	function getSelfRegistrationFields($type = 'selfReg') {
 		$fields = $this->buildSelfRegistrationFieldStructure($type);
 
@@ -5328,9 +5267,11 @@ class Koha extends AbstractIlsDriver {
 		if ($mode === AbstractIlsDriver::ILS_REG_MODE_STAFF) {
 			return $this->buildStaffRegistrationFieldStructure();
 		}
+		if ($mode === AbstractIlsDriver::ILS_REG_MODE_MINIMAL_SELF) {
+			return $this->buildMinimalSelfRegistrationFormStructure();
+		}
 		return $this->getSelfRegistrationFields();
 	}
-
 	/**
 	 * Mirrors Koha's quick-add form: visible fields = BorrowerMandatoryField ∪ PatronQuickAddFields.
 	 * BorrowerMandatoryField entries are marked required.
@@ -5443,6 +5384,54 @@ class Koha extends AbstractIlsDriver {
 			];
 		}
 		return $metadata;
+	}
+
+	private function buildMinimalSelfRegistrationFormStructure(): array {
+		$filtered = $this->filterRegistrationFieldsBySysprefs(
+			$this->buildRegistrationFieldStructure('selfReg'),
+			'PatronSelfRegistrationBorrowerMandatoryField',
+			'PatronSelfRegistrationBorrowerUnwantedField'
+		);
+
+		$mandatoryFields = $this->getKohaSystemPreference('PatronSelfRegistrationBorrowerMandatoryField');
+		if (empty($mandatoryFields)) {
+			return [];
+		}
+
+		$mandatoryFieldNames = array_flip(explode('|', $mandatoryFields));
+		if (array_key_exists('password', $mandatoryFieldNames)) {
+			$mandatoryFieldNames['password2'] = true;
+		}
+
+		$structure = [
+			'minimalSelfRegistrationForm' => [
+				'property' => 'minimalSelfRegistrationForm',
+				'type' => 'section',
+				'label' => 'Library Quick Registration Form',
+				'expandByDefault' => true,
+				'properties' => [],
+			],
+		];
+
+		foreach ($filtered as $section) {
+			if ($section['type'] !== 'section' || !is_array($section['properties'])) {
+				continue;
+			}
+			foreach ($section['properties'] as $fieldKey => $field) {
+				$fieldName = str_replace('borrower_', '', $fieldKey);
+				if (!isset($mandatoryFieldNames[$fieldName])) {
+					continue;
+				}
+				$field['required'] = true;
+				$structure['minimalSelfRegistrationForm']['properties'][$fieldKey] = $field;
+			}
+		}
+
+		if (Library::getActiveLibrary()->ilsConsentEnabled && $this->areAnyConsentPluginsEnabled()) {
+			$structure['privacySection'] = $this->getSelfRegistrationFormPrivacySection();
+		}
+
+		return $structure;
 	}
 
 	public function registerPatronToILS(string $mode, array $input): array {
