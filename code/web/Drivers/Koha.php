@@ -7412,6 +7412,9 @@ class Koha extends AbstractIlsDriver {
 	}
 
 	public function canUserRenewAccount(string $uniqueIlsId): bool {
+		if (!$uniqueIlsId) {
+			return false;
+		}
 		if (!UserAccount::isLoggedIn()) {
 			return false;
 		}
