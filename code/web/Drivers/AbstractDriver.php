@@ -2,6 +2,8 @@
 
 
 abstract class AbstractDriver {
+	protected bool $isNightlyUpdate = false;
+
 	public abstract function hasNativeReadingHistory(): bool;
 
 	public function canLoadReadingHistoryInMasqueradeMode() : bool {
@@ -245,5 +247,9 @@ abstract class AbstractDriver {
 
 		$accountSummary->clearCheckoutsStale();
 		return $activeCheckouts;
+	}
+
+	public function setNightlyUpdateStatus(bool $nightly): void {
+		$this->isNightlyUpdate = $nightly;
 	}
 }

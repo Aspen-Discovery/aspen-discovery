@@ -1250,7 +1250,7 @@ class CatalogConnection {
 			}
 		}
 
-		$checkouts = $patron->getCheckouts(false);
+		$checkouts = $patron->getCheckouts(false, isNightlyUpdate: $isNightlyUpdate);
 		foreach ($checkouts as $checkout) {
 			$source = $checkout->source;
 			$sourceId = $checkout->sourceId;
