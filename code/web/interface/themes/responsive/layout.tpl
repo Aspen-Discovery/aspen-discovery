@@ -143,8 +143,12 @@
 							</div>
 						{/if}
 						<div id="main" role="main">
-							{if !empty($module)}
-								{include file="$module/$pageTemplate"}
+							{if !file_exists($pageTemplate)}
+								{if !empty($module)}
+									{include file="$module/$pageTemplate"}
+								{else}
+									{include file="$pageTemplate"}
+								{/if}
 							{else}
 								{include file="$pageTemplate"}
 							{/if}
@@ -158,8 +162,12 @@
 							</div>
 						{/if}
 						<div id="main" role="main">
-							{if !empty($module)}
-								{include file="$module/$pageTemplate"}
+							{if !file_exists($pageTemplate)}
+								{if !empty($module)}
+									{include file="$module/$pageTemplate"}
+								{else}
+									{include file="$pageTemplate"}
+								{/if}
 							{else}
 								{include file="$pageTemplate"}
 							{/if}

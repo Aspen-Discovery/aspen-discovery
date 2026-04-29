@@ -4275,6 +4275,7 @@ class User extends DataObject {
 		}
 		$sections['system_admin'] = new AdminSection('System Administration');
 		$sections['system_admin']->addAction(new AdminAction('Modules', 'Enable and disable sections of Aspen Discovery.', '/Admin/Modules'), 'Administer Modules');
+		$sections['system_admin']->addAction(new AdminAction('Plugins', 'Enable and disable Aspen Discovery Plugins.', '/Admin/PluginManager'), 'Administer Plugins');
 		$sections['system_admin']->addAction(new AdminAction('Administrators', 'Define users from the ILS who should have administration privileges.', '/Admin/Administrators'), 'Administer Users');
 		$sections['system_admin']->addAction(new AdminAction('Local Administrators', 'Define local Aspen users who should have administration privileges.', '/Admin/LocalAdministrators'), 'Manage Local Administrators');
 		$permissionsAction = new AdminAction('Permissions', 'Define who what each role in the system can do.', '/Admin/Permissions');
@@ -5002,6 +5003,11 @@ class User extends DataObject {
 		$sections['support']->addAction(new AdminAction('Help Center', 'View the Help Center for Aspen Discovery.', 'https://aspen-discovery.atlassian.net/wiki/spaces/Help/overview'), true);
 		$sections['support']->addAction(new AdminAction('API Documentation', 'View available OpenAPI specifications for Aspen Discovery APIs.', '/API/Documentation'), true);
 		$sections['support']->addAction(new AdminAction('Release Notes', 'View release notes for Aspen Discovery which contain information about new functionality and fixes for each release.', '/Admin/ReleaseNotes'), true);
+
+		global $plugins;
+		foreach ($plugins as $plugin) {
+			$sections = array_merge($sections, $plugin->getAdminActions());
+		}
 
 		$sorter = function (AdminSection $a, AdminSection $b) {
 			return strcasecmp($a->getTranslatedLabel(), $b->getTranslatedLabel());

@@ -4,6 +4,9 @@ require_once ROOT_DIR . '/sys/BotChecker.php';
 if (file_exists('bootstrap_aspen.php')) {
 	require_once 'bootstrap_aspen.php';
 }
+global $plugins;
+require_once 'plugins.php';
+$plugins = loadPlugins();
 
 global $aspenUsage;
 global $usageByIPAddress;
@@ -198,7 +201,11 @@ $interface->assign('module', $module);
 $interface->assign('action', $action);
 
 //Check for maliciously formatted parameters
-checkForMaliciouslyFormattedParameters();
+//Check for maliciously formatted parameters unless this is a plugin which should do it's own validation
+global $isPluginAction;
+if (!$isPluginAction) {
+	checkForMaliciouslyFormattedParameters();
+}
 
 checkForTooManyFailedLogins();
 
@@ -888,6 +895,19 @@ $requestUrl = $_SERVER['REQUEST_URI'];
 if (preg_match('/.*(DBMS_PIPE\.RECEIVE_MESSAGE|PG_SLEEP|WAITFOR|UNION%20ALL|SLEEP%28\d+%29|%7CCHR|CONVERT%28INT|SELECT%20COUNT).*/', $requestUrl)) {
 	$isInvalidUrl = true;
 }
+global $plugins;
+global $isPluginAction;
+$isPluginAction = false;
+if (!empty($module) && !empty($action)) {
+	foreach ($plugins as $plugin) {
+		if ($plugin->handlesModuleAction($module, $action)) {
+			$plugin->handleAction($module, $action);
+			$isPluginAction = true;
+		}
+		$timer->logTime('Finish launch of action');
+	}
+}
+if (!$isPluginAction) {
 if ($isInvalidUrl || !is_dir(ROOT_DIR . "/services/$module")) {
 	$module = 'Error';
 	$action = 'Handle404';
@@ -907,14 +927,9 @@ if ($isInvalidUrl || !is_dir(ROOT_DIR . "/services/$module")) {
 		try {
 			$service->launch();
 		} catch (Error $e) {
-			$backtrace[] = [
-				'file' => $e->getFile(),
-				'line' => $e->getLine(),
-			];
-			$backtrace = array_merge($backtrace, $e->getTrace());
-			AspenError::raiseError(new AspenError($e->getMessage(), $backtrace));
+			AspenError::raiseError(new AspenError($e->getMessage(), $e->getTrace(), $e->getLine(), $e->getFile()));
 		} catch (Exception $e) {
-			AspenError::raiseError(new AspenError($e->getMessage(), $e->getTrace()));
+			AspenError::raiseError(new AspenError($e->getMessage(), $e->getTrace(), $e->getLine(), $e->getFile()));
 		}
 		$timer->logTime('Finish launch of action');
 	} elseif (class_exists($action, false)) {
@@ -941,6 +956,7 @@ if ($isInvalidUrl || !is_dir(ROOT_DIR . "/services/$module")) {
 	require_once ROOT_DIR . "/services/Error/Handle404.php";
 	$actionClass = new Error_Handle404();
 	$actionClass->launch();
+}
 }
 $timer->logTime('Finished Index');
 $timer->writeTimings();
@@ -1140,6 +1156,15 @@ function loadModuleActionId() {
 		}
 	} else {
 		$checkWebBuilderAliases = true;
+	}
+
+	global $plugins;
+	if (!empty($_REQUEST['module']) && !empty($_REQUEST['action'])) {
+		foreach ($plugins as $plugin) {
+			if ($plugin->handlesModuleAction($_REQUEST['module'], $_REQUEST['action'])) {
+				return;
+			}
+		}
 	}
 
 	global $enabledModules;

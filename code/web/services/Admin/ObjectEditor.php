@@ -360,7 +360,7 @@ abstract class ObjectEditor extends Admin_Admin {
 					$interface->assign('canCompare', false);
 				}
 				$interface->assign('showQuickFilterOnPropertiesList', $this->showQuickFilterOnPropertiesList());
-				$interface->setTemplate('../Admin/propertiesList.tpl');
+				$interface->setTemplate(ROOT_DIR . '/interface/themes/responsive/Admin/propertiesList.tpl');
 			}
 		}
 	}
@@ -388,15 +388,15 @@ abstract class ObjectEditor extends Admin_Admin {
 						$this->activeObject = $existingObject;
 						$interface->assign('sourceId', $id);
 					} else {
-						$interface->setTemplate('../Admin/noPermission.tpl');
+						$interface->setTemplate(ROOT_DIR . '/interface/themes/responsive/Admin/noPermission.tpl');
 						return;
 					}
 				} else {
-					$interface->setTemplate('../Admin/invalidObject.tpl');
+					$interface->setTemplate(ROOT_DIR . '/interface/themes/responsive/Admin/invalidObject.tpl');
 					return;
 				}
 			} else {
-				$interface->setTemplate('../Admin/invalidObject.tpl');
+				$interface->setTemplate(ROOT_DIR . '/interface/themes/responsive/Admin/invalidObject.tpl');
 				return;
 			}
 			$interface->assign('object', $existingObject);
@@ -406,9 +406,9 @@ abstract class ObjectEditor extends Admin_Admin {
 
 			$interface->assign('additionalObjectActions', $this->getAdditionalObjectActions($existingObject));
 			$interface->assign('returnToListUrl', $this->getReturnToListUrl());
-			$interface->setTemplate('../Admin/objectEditor.tpl');
+			$interface->setTemplate(ROOT_DIR . '/interface/themes/responsive/Admin/objectEditor.tpl');
 		}else {
-			$interface->setTemplate('../Admin/noPermission.tpl');
+			$interface->setTemplate(ROOT_DIR . '/interface/themes/responsive/Admin/noPermission.tpl');
 		}
 	}
 
@@ -458,7 +458,7 @@ abstract class ObjectEditor extends Admin_Admin {
 			die();
 
 		}else{
-			$interface->setTemplate('../Admin/noPermission.tpl');
+			$interface->setTemplate(ROOT_DIR . '/interface/themes/responsive/Admin/noPermission.tpl');
 		}
 	}
 
@@ -473,15 +473,15 @@ abstract class ObjectEditor extends Admin_Admin {
 					$interface->assign('objectName', $existingObject->__toString());
 					$interface->assign('id', $id);
 					$interface->assign('returnToListUrl', $this->getReturnToListUrl());
-					$interface->setTemplate('../Admin/shareForm.tpl');
+					$interface->setTemplate(ROOT_DIR . '/interface/themes/responsive/Admin/shareForm.tpl');
 				} else {
-					$interface->setTemplate('../Admin/noPermission.tpl');
+					$interface->setTemplate(ROOT_DIR . '/interface/themes/responsive/Admin/noPermission.tpl');
 				}
 			} else {
-				$interface->setTemplate('../Admin/invalidObject.tpl');
+				$interface->setTemplate(ROOT_DIR . '/interface/themes/responsive/Admin/invalidObject.tpl');
 			}
 		} else {
-			$interface->setTemplate('../Admin/invalidObject.tpl');
+			$interface->setTemplate(ROOT_DIR . '/interface/themes/responsive/Admin/invalidObject.tpl');
 		}
 	}
 
@@ -521,16 +521,16 @@ abstract class ObjectEditor extends Admin_Admin {
 						}
 
 					} else {
-						$interface->setTemplate('../Admin/noPermission.tpl');
+						$interface->setTemplate(ROOT_DIR . '/interface/themes/responsive/Admin/noPermission.tpl');
 					}
 				} else {
-					$interface->setTemplate('../Admin/invalidObject.tpl');
+					$interface->setTemplate(ROOT_DIR . '/interface/themes/responsive/Admin/invalidObject.tpl');
 				}
 			} else {
-				$interface->setTemplate('../Admin/invalidObject.tpl');
+				$interface->setTemplate(ROOT_DIR . '/interface/themes/responsive/Admin/invalidObject.tpl');
 			}
 		} else {
-			$interface->setTemplate('../Admin/noPermission.tpl');
+			$interface->setTemplate(ROOT_DIR . '/interface/themes/responsive/Admin/noPermission.tpl');
 		}
 	}
 
@@ -570,16 +570,16 @@ abstract class ObjectEditor extends Admin_Admin {
 
 						$interface->assign('additionalObjectActions', $this->getAdditionalObjectActions($newObject));
 						$interface->assign('returnToListUrl', $this->getReturnToListUrl());
-						$interface->setTemplate('../Admin/objectEditor.tpl');
+						$interface->setTemplate(ROOT_DIR . '/interface/themes/responsive/Admin/objectEditor.tpl');
 					} else {
-						$interface->setTemplate('../Admin/invalidObject.tpl');
+						$interface->setTemplate(ROOT_DIR . '/interface/themes/responsive/Admin/invalidObject.tpl');
 					}
 				}
 			} else {
-				$interface->setTemplate('../Admin/invalidObject.tpl');
+				$interface->setTemplate(ROOT_DIR . '/interface/themes/responsive/Admin/invalidObject.tpl');
 			}
 		} else {
-			$interface->setTemplate('../Admin/noPermission.tpl');
+			$interface->setTemplate(ROOT_DIR . '/interface/themes/responsive/Admin/noPermission.tpl');
 		}
 	}
 
@@ -632,11 +632,11 @@ abstract class ObjectEditor extends Admin_Admin {
 
 					$interface->assign('canDelete', $this->canDelete() && $existingObject->canActiveUserDelete());
 				} else {
-					$interface->setTemplate('../Admin/noPermission.tpl');
+					$interface->setTemplate(ROOT_DIR . '/interface/themes/responsive/Admin/noPermission.tpl');
 					return;
 				}
 			} else {
-				$interface->setTemplate('../Admin/invalidObject.tpl');
+				$interface->setTemplate(ROOT_DIR . '/interface/themes/responsive/Admin/invalidObject.tpl');
 				return;
 			}
 		} else {
@@ -686,7 +686,7 @@ abstract class ObjectEditor extends Admin_Admin {
 
 		$interface->assign('additionalObjectActions', $this->getAdditionalObjectActions($existingObject));
 		$interface->assign('returnToListUrl', $this->getReturnToListUrl());
-		$interface->setTemplate('../Admin/objectEditor.tpl');
+		$interface->setTemplate(ROOT_DIR . '/interface/themes/responsive/Admin/objectEditor.tpl');
 	}
 
 	#[NoReturn]
@@ -1025,7 +1025,7 @@ abstract class ObjectEditor extends Admin_Admin {
 		$interface->assign('module', $this->getModule());
 		$interface->assign('toolName', $this->getToolName());
 		$interface->assign('returnToListUrl', $this->getReturnToListUrl());
-		$interface->setTemplate('../Admin/compareObjects.tpl');
+		$interface->setTemplate(ROOT_DIR . '/interface/themes/responsive/Admin/compareObjects.tpl');
 	}
 
 	function getLinkedObjectNotifications() : ?string {
