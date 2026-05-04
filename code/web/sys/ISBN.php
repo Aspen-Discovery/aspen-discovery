@@ -117,10 +117,8 @@ class ISBN {
 	 * @return  string                  Normalized ISBN.
 	 */
 	public static function normalizeISBN(string $raw) : string {
-		if (strlen($raw) > 13 && str_starts_with($raw, '978')) {
-			$raw = substr($raw, 0, 13);
-		}
-		return preg_replace('/[^0-9X]/', '', strtoupper($raw));
+		$cleanIsbn = fn($isbn) => preg_replace('/[^0-9X]/', '', strtoupper($isbn));
+		return substr($cleanIsbn($raw), 0, 13);
 	}
 
 	/**

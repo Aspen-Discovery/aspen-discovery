@@ -991,8 +991,9 @@ abstract class Solr {
 						}
 					}
 
+					require_once ROOT_DIR . '/sys/Utils/GroupingUtils.php';
 					// Basic Search
-					if (isset($params['lookfor']) && $params['lookfor'] != '') {
+					if (issetNonEmpty($params, 'lookfor')) {
 						// Clean and validate input
 						$lookfor = $this->validateInput($params['lookfor']);
 
@@ -1002,8 +1003,10 @@ abstract class Solr {
 							$lookfor = SolrUtils::capitalizeBooleans($lookfor);
 						}
 
-						if (isset($params['field']) && ($params['field'] != '')) {
-							if ($this->isAdvanced($lookfor)) {
+						if (issetNonEmpty($params, "field")) {
+							if ($params["field"] === "ISN") {
+								$query .= $this->_buildQueryComponent("ISN", ISBN::normalizeISBN($lookfor));
+							} else if ($this->isAdvanced($lookfor)) {
 								$query .= $this->_buildAdvancedQuery($params['field'], $lookfor);
 							} else {
 								$query .= $this->_buildQueryComponent($params['field'], $lookfor);

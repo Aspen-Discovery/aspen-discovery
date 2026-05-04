@@ -263,3 +263,7 @@ function getSortableDate(?string $str) : ?DateTime {
 	$sortableDateCache[$str] = null;
 	return null;
 }
+
+function issetNonEmpty(array $array, string $key): bool {
+	return isset($array[$key]) && $array[$key] !== '';
+}
