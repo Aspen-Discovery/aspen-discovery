@@ -16,10 +16,16 @@
 			{/if}
 			<input type="date" name="reactivationDate" id="reactivationDate" min="{$smarty.now|date_format:"%Y-%m-%d"}" {if $allowMaxDaysToFreeze > -1}max="{$maxFreezeTimestamp|date_format:"%Y-%m-%d"}"{/if} class="form-control{if empty($reactivateDateNotRequired)} required{/if}">
 		</div>
-		{if !empty($reactivateDateNotRequired)}
+		{if !empty($reactivateDateNotRequired) && empty($maxFreezeTimestamp)}
 			<p class="alert alert-info">
 				{translate text="If a date is not selected, the hold will be frozen until you thaw it." isPublicFacing=true}
 			</p>
+		{/if}
+		{if !empty($maxFreezeTimestamp)}
+			<p class="alert alert-info">
+				{translate text="If a date is not selected, the hold will be frozen until {$maxFreezeTimestamp|date_format:"%Y-%m-%d"}." isPublicFacing=true}
+			</p>
+			<input type="hidden" id="maxFreezeFormattedDate" value="{$maxFreezeTimestamp|date_format:"%Y-%m-%d"}">
 		{/if}
 	</form>
 	<script	type="text/javascript">

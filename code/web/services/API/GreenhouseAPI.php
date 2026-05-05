@@ -5,7 +5,7 @@ require_once ROOT_DIR . '/sys/Greenhouse/AspenSiteCache.php';
 require_once ROOT_DIR . '/sys/Greenhouse/AspenSite.php';
 
 class GreenhouseAPI extends AbstractAPI {
-	function launch() {
+	function launch() : void {
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 
 		global $activeLanguage;

@@ -249,7 +249,7 @@
 								{/if}
 							{/if}
 							{if $record->locationUpdateable && $numPickupBranches > 1}
-								<button onclick="return AspenDiscovery.Account.changeHoldPickupLocation('{$record->userId}', '{$record->sourceId}', '{$record->cancelId}', '{$record->pickupLocationId}', '{$record->source}');"
+								<button onclick="return AspenDiscovery.Account.changeHoldPickupLocation('{$record->userId}', '{$record->sourceId}', '{$record->cancelId}', '{$record->pickupLocationId}', '{$record->pickupSublocationId}', '{$record->source}');"
 										class="btn btn-sm btn-default btn-wrap changePickupLocationButton"
 								">{translate text="Change Pickup Loc." isPublicFacing=true}</button>
 							{/if}
@@ -287,7 +287,7 @@
 									{/if}
 								{/if}
 								{if $record->locationUpdateable && $numPickupBranches > 1}
-									<button onclick="return AspenDiscovery.Account.changeHoldPickupLocation('{$record->userId}', '{$record->sourceId}', '{$record->cancelId}', '{$record->pickupLocationId}', '{$record->source}');"
+									<button onclick="return AspenDiscovery.Account.changeHoldPickupLocation('{$record->userId}', '{$record->sourceId}', '{$record->cancelId}', '{$record->pickupLocationId}', '{$record->pickupSublocationId}', '{$record->source}');"
 										class="btn btn-sm btn-default btn-wrap changePickupLocationButton">{translate text="Change Pickup Loc." isPublicFacing=true}</button>
 								{/if}
 							{/if}

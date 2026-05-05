@@ -130,7 +130,7 @@ class Series extends DataObject {
 				'label' => 'Number of Titles',
 				'description' => 'The number of titles in the series (unscoped, does not include excluded titles)',
 				'readOnly' => true,
-				'canFilter' => false,
+				'canFilter' => true
 			]
 		];
 

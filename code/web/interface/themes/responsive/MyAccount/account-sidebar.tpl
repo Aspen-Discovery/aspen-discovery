@@ -260,6 +260,7 @@
 						<div class="panel-body">
 							{if empty($offline)}
 								{if !empty($showUserPreferences)}<div class="myAccountLink"><a href="/MyAccount/MyPreferences">{translate text='Your Preferences' isPublicFacing=true}</a></div>{/if}
+								{if $AspenPWAEnabled }<div class="myAccountLink"><a href="/MyAccount/MyNotificationPreferences">{translate text="Your Notification Preferences" isPublicFacing=true}</a></div>{/if}
 								{if $privacyConsentEnabled}<div class="myAccountLink"><a href="/MyAccount/MyPrivacySettings">{translate text="Your Privacy Settings" isPublicFacing=true}</a></div>{/if}
 								{if !empty($showUserContactInformation) && $userHasCatalogConnection}<div class="myAccountLink"><a href="/MyAccount/ContactInformation">{translate text='Contact Information' isPublicFacing=true}</a></div>{/if}
 								{if $user->showHoldNotificationPreferences()}

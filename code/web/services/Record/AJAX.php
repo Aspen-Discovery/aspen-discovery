@@ -1359,12 +1359,14 @@ class Record_AJAX extends JSON_Action {
 			$interface->assign('whileYouWaitTitles', []);
 		}
 
+		$interface->assign('success', $return['success']);
 		$interface->assign('message', $return['message']);
 		$results = [
 			'success' => $return['success'],
 			'message' => $interface->fetch('Record/hold-success-popup.tpl'),
 			'title' => $return['title'] ?? '',
 			'confirmationNeeded' => $confirmationNeeded,
+			'modalButtons' => $return['modalButtons'] ?? '',
 		];
 		if ($confirmationNeeded) {
 			$results['modalButtons'] = '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.confirmHold(\'Record\', \'' . $shortId . '\', ' . $return['confirmationId'] . ')">' . translate([

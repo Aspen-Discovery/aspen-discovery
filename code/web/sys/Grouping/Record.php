@@ -17,6 +17,7 @@ class Grouping_Record {
 	private null|int|string $sortablePublicationDate = null;
 	public ?string $placeOfPublication;
 	public ?string $physical;
+	public ?int $duration;
 	public bool|string $closedCaptioned;
 	public string $variationFormat;
 	public string|int $variationId;
@@ -81,6 +82,7 @@ class Grouping_Record {
 			$this->publicationDate = $recordDetails['publicationDate'];
 			$this->placeOfPublication = $recordDetails['placeOfPublication'];
 			$this->physical = $recordDetails['physicalDescription'];
+			$this->duration = $recordDetails['duration'];
 			$this->language = $recordDetails['language'];
 			if (isset($recordDetails['isClosedCaptioned'])) {
 				$this->closedCaptioned = $recordDetails['isClosedCaptioned'];
@@ -114,10 +116,10 @@ class Grouping_Record {
 		$this->_statusInformation = new Grouping_StatusInformation();
 		$this->_statusInformation->setNumHolds($recordDriver->getNumHolds());
 		if ($recordDriver instanceof OverDriveRecordDriver) {
-			$statusSummary = $recordDriver->getStatusSummary();
-			$this->_statusInformation->addCopies($statusSummary['totalCopies']);
-			$this->_statusInformation->addAvailableCopies($statusSummary['availableCopies']);
-			$this->_statusInformation->setAvailableOnline($statusSummary['available']);
+//			$statusSummary = $recordDriver->getStatusSummary();
+//			$this->_statusInformation->addCopies($statusSummary['totalCopies']);
+//			$this->_statusInformation->addAvailableCopies($statusSummary['availableCopies']);
+//			$this->_statusInformation->setAvailableOnline($statusSummary['available']);
 			$this->_isOverDrive = true;
 		}
 		$this->_volumeHolds = $recordDriver->getVolumeHolds($volumeData);
@@ -153,15 +155,13 @@ class Grouping_Record {
 			$this->setIsEContent(true);
 			$this->_statusInformation->setIsEContent(true);
 		}
-		if (!$this->_isOverDrive) {
-			if ($item->available) {
-				if ($item->isEContent) {
-					$this->_statusInformation->setAvailableOnline(true);
-				} else {
-					$this->_statusInformation->setAvailable(true);
-				}
-				$this->_statusInformation->addAvailableCopies($item->numCopies);
+		if ($item->available) {
+			if ($item->isEContent) {
+				$this->_statusInformation->setAvailableOnline(true);
+			} else {
+				$this->_statusInformation->setAvailable(true);
 			}
+			$this->_statusInformation->addAvailableCopies($item->numCopies);
 		}
 
 		if (!$item->inLibraryUseOnly) {
@@ -176,41 +176,39 @@ class Grouping_Record {
 			$this->_statusInformation->addHoldableCopies($item->numCopies);
 		}
 
-		if (!$this->_isOverDrive) {
-			if ($item->isOrderItem) {
-				$this->addOnOrderCopies($item->numCopies);
-			} else {
-				if (!$item->isVirtual) {
-					$this->addCopies($item->numCopies);
-				}
+		if ($item->isOrderItem) {
+			$this->addOnOrderCopies($item->numCopies);
+		} else {
+			if (!$item->isVirtual) {
+				$this->addCopies($item->numCopies);
 			}
+		}
 
-			$searchLocation = Location::getSearchLocation();
-			if ($searchLocation != null) {
-				if ($item->locallyOwned) {
-					$this->_statusInformation->setIsLocallyOwned(true);
-					$this->_statusInformation->addLocalCopies($item->numCopies);
-					if ($item->available) {
-						$this->_statusInformation->setAvailableLocally(true);
-						if (!$item->isEContent) {
-							global $locationSingleton;
-							$physicalLocation = $locationSingleton->getPhysicalLocation();
-							if (!empty($physicalLocation)) {
-								$this->_statusInformation->setAvailableHere(true);
-							}
+		$searchLocation = Location::getSearchLocation();
+		if ($searchLocation != null) {
+			if ($item->locallyOwned) {
+				$this->_statusInformation->setIsLocallyOwned(true);
+				$this->_statusInformation->addLocalCopies($item->numCopies);
+				if ($item->available) {
+					$this->_statusInformation->setAvailableLocally(true);
+					if (!$item->isEContent) {
+						global $locationSingleton;
+						$physicalLocation = $locationSingleton->getPhysicalLocation();
+						if (!empty($physicalLocation)) {
+							$this->_statusInformation->setAvailableHere(true);
 						}
 					}
 				}
-				if ($item->libraryOwned) {
-					$this->_statusInformation->setIsLibraryOwned(true);
-				}
-			} else {
-				if ($item->libraryOwned) {
-					$this->_statusInformation->setIsLibraryOwned(true);
-					$this->_statusInformation->addLocalCopies($item->numCopies);
-					if ($item->available) {
-						$this->_statusInformation->setAvailableLocally(true);
-					}
+			}
+			if ($item->libraryOwned) {
+				$this->_statusInformation->setIsLibraryOwned(true);
+			}
+		} else {
+			if ($item->libraryOwned) {
+				$this->_statusInformation->setIsLibraryOwned(true);
+				$this->_statusInformation->addLocalCopies($item->numCopies);
+				if ($item->available) {
+					$this->_statusInformation->setAvailableLocally(true);
 				}
 			}
 		}

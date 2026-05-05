@@ -1,5 +1,9 @@
 <?php
 
+require_once ROOT_DIR . '/sys/ExploreMoreSourceEntry.php';
+require_once ROOT_DIR . '/sys/ExploreMoreSource.php';
+require_once ROOT_DIR . '/sys/ExploreMoreSourceLibrary.php';
+
 class ExploreMore {
 	private $relatedCollections;
 
@@ -171,6 +175,10 @@ class ExploreMore {
 		//Consolidate explore more options, we'd like to show the search links if possible and then pad with sample records
 		$exploreMoreDisplayOptions = [];
 
+		// Filter and sort configured sources in one pass for both search links and sample records.
+		$exploreMoreOptions['searchLinks'] = self::filterAndSortExploreMoreEntries($exploreMoreOptions['searchLinks']);
+		$exploreMoreOptions['sampleRecords'] = self::filterAndSortExploreMoreEntries($exploreMoreOptions['sampleRecords'], true);
+
 		$minSampleRecordsToAdd = 4 - count($exploreMoreOptions['searchLinks']);
 		if ($minSampleRecordsToAdd < 0) {
 			$minSampleRecordsToAdd = 0;
@@ -213,6 +221,35 @@ class ExploreMore {
 				$searchObjectSolr->setLimit($this->numEntriesToAdd + 1);
 				$results = $searchObjectSolr->processSearch(true, false);
 
+				// @todo: Adds a temporary check for libraries who may not have the show_in_explore_more field added to their Solr index yet.
+				// This can be removed once we're confident all libraries have the field.
+				// This code can, at that time, probably just be simplified to:
+				// $searchObjectSolr->addHiddenFilter('show_in_explore_more', 'true');
+				$hasShowInExploreMore = false;
+				if ($results && isset($results['response']['docs'])) {
+					foreach ($results['response']['docs'] as $doc) {
+						if (array_key_exists('show_in_explore_more', $doc)) {
+							$hasShowInExploreMore = true;
+							break;
+						}
+					}
+				}
+				// If field exists, re-run with filter.
+				if ($hasShowInExploreMore) {
+					$searchObjectSolr = SearchObjectFactory::initSearchObject('Websites');
+					$searchObjectSolr->init();
+					$searchObjectSolr->disableSpelling();
+					$searchObjectSolr->setSearchTerms([
+						'lookfor' => $searchTerm,
+						'index' => 'WebsiteKeyword',
+					]);
+					$searchObjectSolr->addHiddenFilter('show_in_explore_more', 'true');
+					$searchObjectSolr->setPage(1);
+					$searchObjectSolr->setLimit($this->numEntriesToAdd + 1);
+					$results = $searchObjectSolr->processSearch(true, false);
+				}
+				// End temporary check code.
+
 				if ($results && isset($results['response'])) {
 					$numCatalogResultsAdded = 0;
 					$numCatalogResults = $results['response']['numFound'];
@@ -240,6 +277,7 @@ class ExploreMore {
 							'link' => $searchObjectSolr->renderSearchUrl(),
 							'usageCount' => 1,
 							'openInNewWindow' => false,
+							'source' => 'Web Indexer',
 						];
 					}
 					foreach ($results['response']['docs'] as $doc) {
@@ -257,6 +295,7 @@ class ExploreMore {
 									'onclick' => "AspenDiscovery.WebBuilder.getWebResource('$id'); AspenDiscovery.Websites.trackUsage('{$driver->getId()}');",
 									'usageCount' => 1,
 									'openInNewWindow' => false,
+									'source' => 'Web Indexer',
 								];
 							}else{
 								//Add a link to the actual title
@@ -268,6 +307,7 @@ class ExploreMore {
 									'onclick' => 'AspenDiscovery.Websites.trackUsage(' . $driver->getId() . ')',
 									'usageCount' => 1,
 									'openInNewWindow' => false,
+									'source' => 'Web Indexer',
 								];
 							}
 						}
@@ -322,6 +362,7 @@ class ExploreMore {
 							'link' => $searchObjectSolr->renderSearchUrl(),
 							'usageCount' => 1,
 							'openInNewWindow' => false,
+							'source' => 'Events',
 						];
 					}
 					foreach ($results['response']['docs'] as $doc) {
@@ -336,6 +377,7 @@ class ExploreMore {
 								'link' => $driver->getLinkUrl(),
 								'usageCount' => 1,
 								'openInNewWindow' => true,
+								'source' => 'Events',
 							];
 						}
 
@@ -390,6 +432,7 @@ class ExploreMore {
 							'link' => $searchObjectSolr->renderSearchUrl(),
 							'usageCount' => 1,
 							'openInNewWindow' => false,
+							'source' => 'Lists',
 						];
 					}
 					foreach ($results['response']['docs'] as $doc) {
@@ -404,6 +447,7 @@ class ExploreMore {
 								'link' => $driver->getLinkUrl(),
 								'usageCount' => 1,
 								'openInNewWindow' => false,
+								'source' => 'Lists',
 							];
 						}
 
@@ -458,6 +502,7 @@ class ExploreMore {
 							'link' => $searchObjectSolr->renderSearchUrl(),
 							'usageCount' => 1,
 							'openInNewWindow' => false,
+							'source' => 'Series',
 						];
 					}
 					foreach ($results['response']['docs'] as $doc) {
@@ -472,6 +517,7 @@ class ExploreMore {
 								'link' => $driver->getLinkUrl(),
 								'usageCount' => 1,
 								'openInNewWindow' => false,
+								'source' => 'Series',
 							];
 						}
 
@@ -531,6 +577,7 @@ class ExploreMore {
 							'link' => $searchObjectSolr->renderSearchUrl(),
 							'usageCount' => 1,
 							'openInNewWindow' => false,
+							'source' => 'Open Archives',
 						];
 					}
 					foreach ($results['response']['docs'] as $doc) {
@@ -546,6 +593,7 @@ class ExploreMore {
 								'onclick' => "AspenDiscovery.OpenArchives.trackUsage('{$driver->getId()}')",
 								'usageCount' => 1,
 								'openInNewWindow' => true,
+								'source' => 'Open Archives',
 							];
 						}
 
@@ -635,6 +683,7 @@ class ExploreMore {
 								'link' => $searchObjectSolr->renderSearchUrl(),
 								'usageCount' => 1,
 								'openInNewWindow' => false,
+								'source' => 'Catalog',
 							];
 						} else {
 							//Add a link to the actual title
@@ -645,6 +694,7 @@ class ExploreMore {
 								'link' => $driver->getLinkUrl(),
 								'usageCount' => 1,
 								'openInNewWindow' => false,
+								'source' => 'Catalog',
 							];
 						}
 
@@ -699,6 +749,7 @@ class ExploreMore {
 								'link' => '/EBSCOhost/Results?lookfor=' . urlencode($searchTerm) . "&filter[]=db:$database->shortName",
 								'usageCount' => 1,
 								'openInNewWindow' => false,
+								'source' => 'EBSCOhost',
 							];
 							$hasMatches = true;
 						}
@@ -733,6 +784,7 @@ class ExploreMore {
 						'image' => $image,
 						'link' => '/EBSCOhost/Results?lookfor=' . urlencode($searchTerm),
 						'openInNewWindow' => false,
+						'source' => 'EBSCOhost',
 					];
 				}
 			}
@@ -783,6 +835,7 @@ class ExploreMore {
 											'image' => "/interface/themes/responsive/images/{$iconName}.png",
 											'link' => '/EBSCO/Results?lookfor=' . urlencode($searchTerm) . '&filter[]=' . $facetInfo->Id . ':' . $facetValueStr,
 											'openInNewWindow' => false,
+											'source' => 'EBSCO EDS',
 										];
 									}
 
@@ -811,6 +864,7 @@ class ExploreMore {
 								'image' => $image,
 								'link' => '/EBSCO/Results?lookfor=' . urlencode($searchTerm),
 								'openInNewWindow' => false,
+								'source' => 'EBSCO EDS',
 							];
 						}
 					}
@@ -861,6 +915,7 @@ class ExploreMore {
 						'image' => $image,
 						'link' => '/Summon/Results?lookfor=' . urlencode($searchTerm),
 						'openInNewWindow' => false,
+						'source' => 'Summon',
 					];
 				}
 			}
@@ -910,6 +965,7 @@ class ExploreMore {
 						'image' => $image,
 						'link' => '/Gale/Results?lookfor=' . urlencode($searchTerm),
 						'openInNewWindow' => false,
+						'source' => 'Gale',
 					];
 				}
 			}
@@ -979,6 +1035,7 @@ class ExploreMore {
 								'image' => $image,
 								'link' => '/CloudSource/Results?lookfor=' . urlencode($searchTerm),
 								'openInNewWindow' => false,
+								'source' => 'CloudSource',
 							];
 						}
 					}
@@ -1096,6 +1153,7 @@ class ExploreMore {
 							'link' => $searchObjectSolr->renderSearchUrl(),
 							'usageCount' => 1,
 							'openInNewWindow' => false,
+							'source' => 'Genealogy',
 						];
 					}
 					foreach ($results['response']['docs'] as $doc) {
@@ -1109,6 +1167,7 @@ class ExploreMore {
 								'link' => $driver->getLinkUrl(),
 								'usageCount' => 1,
 								'openInNewWindow' => false,
+								'source' => 'Genealogy',
 							];
 						}
 
@@ -1118,6 +1177,119 @@ class ExploreMore {
 			}
 		}
 		return $exploreMoreOptions;
+	}
+
+	private static function filterAndSortExploreMoreEntries(array $entries, bool $preserveKeys = false): array {
+		if (count($entries) <= 1) {
+			return $entries;
+		}
+
+		$sourceSettings = self::getConfiguredSearchLinkSettings();
+		if ($sourceSettings === null) {
+			return $entries;
+		}
+
+		$sortableEntries = [];
+		$originalOrder = 0;
+		foreach ($entries as $key => $entry) {
+			$source = self::getExploreMoreEntrySource($entry);
+			if ($source !== null && isset($sourceSettings[$source]) && !$sourceSettings[$source]['enabled']) {
+				continue;
+			}
+			$sortableEntries[$key] = [
+				'entry' => $entry,
+				'priority' => $sourceSettings[$source]['priority'] ?? (9999 + $originalOrder),
+				'originalOrder' => $originalOrder++,
+			];
+		}
+
+		uasort($sortableEntries, function ($a, $b) {
+			$priorityComparison = $a['priority'] <=> $b['priority'];
+			if ($priorityComparison !== 0) {
+				return $priorityComparison;
+			}
+			return $a['originalOrder'] <=> $b['originalOrder'];
+		});
+
+		$sortedEntries = [];
+		foreach ($sortableEntries as $key => $sortableEntry) {
+			if ($preserveKeys) {
+				$sortedEntries[$key] = $sortableEntry['entry'];
+			} else {
+				$sortedEntries[] = $sortableEntry['entry'];
+			}
+		}
+
+		return $sortedEntries;
+	}
+
+	private static function getExploreMoreEntrySource($entry): ?string {
+		if (!is_array($entry) || empty($entry)) {
+			return null;
+		}
+
+		if (isset($entry['source'])) {
+			return $entry['source'];
+		}
+
+		$firstEntry = reset($entry);
+		if (is_array($firstEntry) && isset($firstEntry['source'])) {
+			return $firstEntry['source'];
+		}
+
+		return null;
+	}
+
+	private static function getConfiguredSearchLinkSettings(): ?array {
+		static $sourceSettings = false;
+		if ($sourceSettings !== false) {
+			return $sourceSettings;
+		}
+
+		$librarySetting = new ExploreMoreSourceLibrary();
+		if (!$librarySetting->find()) {
+			$sourceSettings = null;
+			return $sourceSettings;
+		}
+
+		global $library;
+		global $locationSingleton;
+
+		$currentLibraryId = isset($library->libraryId) ? (string)$library->libraryId : null;
+		$activeLocation = $locationSingleton->getActiveLocation();
+		$currentLocationId = !empty($activeLocation->locationId) ? (string)$activeLocation->locationId : null;
+
+		$sourceSettings = [];
+		$order = 0;
+		$hasConfiguredEntries = false;
+		$entry = new ExploreMoreSourceEntry();
+		$entry->exploreMoreSourceGroupId = 1;
+		$entry->orderBy('weight ASC');
+		$entry->find();
+		while ($entry->fetch()) {
+			$hasConfiguredEntries = true;
+			$source = new ExploreMoreSource();
+			$source->id = $entry->exploreMoreSourceId;
+			if (!$source->find(true)) {
+				continue;
+			}
+
+			$libraries = $source->getLibraries();
+			$locations = $source->getLocations();
+			$libraryAllowed = empty($libraries) || ($currentLibraryId !== null && in_array($currentLibraryId, $libraries, true));
+			$locationAllowed = empty($locations) || $currentLocationId === null || in_array($currentLocationId, $locations, true);
+
+			$sourceSettings[$source->source] = [
+				'enabled' => !empty($source->showInExploreMore) && $libraryAllowed && $locationAllowed,
+				'priority' => $order++,
+			];
+		}
+
+		if (!$hasConfiguredEntries) {
+			$sourceSettings = null;
+		}
+
+		return $sourceSettings;
 	}
 }
 

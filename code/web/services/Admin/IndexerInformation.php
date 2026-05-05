@@ -126,6 +126,7 @@ class IndexerInformation extends Admin_Admin{
 	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#system_admin', 'System Administration');
 		$breadcrumbs[] = new Breadcrumb('', 'Indexer Information');
 
 		return $breadcrumbs;

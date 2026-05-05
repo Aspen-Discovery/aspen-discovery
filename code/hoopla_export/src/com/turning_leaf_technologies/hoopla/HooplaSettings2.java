@@ -8,15 +8,16 @@ class HooplaSettings2 {
 	private final String apiUrl;
 	private final String apiUsername;
 	private final String apiPassword;
+
+	// General Indexing Settings
 	private final int recordExtractionBatchSize;
 	private final int indexingTime;
 	private final String countryCode;
-
-	// Global metadata settings
 	private final boolean runFullUpdate;
 	private final long lastUpdateOfChangedRecords;
 	private final long lastUpdateOfAllRecords;
 	private final String lastRecordProcessed;
+	private final int hooplaFlexBatchSize;
 
 	// Token settings
 	private final String accessToken;
@@ -32,6 +33,7 @@ class HooplaSettings2 {
 		countryCode = settingsRS.getString("countryCode");
 
 		recordExtractionBatchSize = settingsRS.getInt("recordExtractionBatchSize");
+		hooplaFlexBatchSize = settingsRS.getInt("hooplaFlexBatchSize");
 		indexingTime = settingsRS.getInt("indexingTime");
 		runFullUpdate = settingsRS.getBoolean("runFullUpdate");
 		lastUpdateOfChangedRecords = settingsRS.getLong("lastUpdateOfChangedRecords");
@@ -98,6 +100,10 @@ class HooplaSettings2 {
 
 	public String getLastRecordProcessed() {
 		return lastRecordProcessed;
+	}
+
+	public int getHooplaFlexBatchSize() {
+		return hooplaFlexBatchSize;
 	}
 
 }

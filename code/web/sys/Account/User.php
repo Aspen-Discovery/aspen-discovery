@@ -108,6 +108,7 @@ class User extends DataObject {
 	/** @var User[] $linkedUsers */
 	private $linkedUsers;
 	private $viewers;
+	private $viewerIds;
 
 	//Data that we load, but don't store in the User table
 	public $_fullname;
@@ -1078,26 +1079,65 @@ class User extends DataObject {
 	 */
 	/** @noinspection PhpUnused */
 	function getViewers() {
-		if (is_null($this->viewers)) {
-			$this->viewers = [];
-			/* var Library $library */ global $library;
-			if ($this->id && $library->allowLinkedAccounts) {
-				require_once ROOT_DIR . '/sys/Account/UserLink.php';
-				$userLink = new UserLink();
-				$userLink->linkedAccountId = $this->id;
-				$userLink->find();
-				while ($userLink->fetch()) {
-					$linkedUser = new User();
-					$linkedUser->id = $userLink->primaryAccountId;
-					if ($linkedUser->find(true)) {
-						if (!$linkedUser->isBlockedAccount($this->id)) {
-							$this->viewers[] = clone($linkedUser);
-						}
-					}
-				}
+		if (!is_null($this->viewers)) {
+			return $this->viewers;
+		}
+		
+		$this->viewers = [];
+		$this->loadViewerIds();
+
+		foreach ($this->viewerIds as $viewerId) {
+			$viewer = new User();
+			$viewer->id = $viewerId;
+			if ($viewer->find(true)) {
+				$this->viewers[] = clone($viewer);
 			}
 		}
+
 		return $this->viewers;
+	}
+
+	/**
+	 * Fetches and sets the list of ids of users that can view this account
+	 */
+	/** @noinspection PhpUnused */
+	function loadViewerIds(): void {
+		if (!is_null($this->viewerIds)) {
+			return;
+		}
+
+		$this->viewerIds = [];
+
+		global $library;
+		if (!$this->id || !$library->allowLinkedAccounts) {
+			return;
+		}
+
+		require_once ROOT_DIR . '/sys/Account/UserLink.php';
+		$userLink = new UserLink();
+		$userLink->linkedAccountId = $this->id;
+		$userLink->find();
+
+		while ($userLink->fetch()) {
+			$viewerStub = new User();
+			$viewerStub->id = $userLink->primaryAccountId;
+			// we need to instantiate the stub so isBlockedAccount can be called, however there is no need to load the User data from the DB
+			if (!$viewerStub->isBlockedAccount($this->id)) {
+				$this->viewerIds[] = $userLink->primaryAccountId;
+			}
+		}
+		return;
+	}
+
+	/**
+	 * Returns a list of ids of users that can view this account
+	 */
+	/** @noinspection PhpUnused */
+	function getViewerIds(): array {
+		if (is_null($this->viewerIds)) {
+			$this->loadViewerIds();
+		}
+		return $this->viewerIds;
 	}
 
 	/**
@@ -2382,12 +2422,12 @@ class User extends DataObject {
 			} else {
 				$accountProfileSource = '';
 			}
-//			$accountProfileForSource = new AccountProfile();
-//			$accountProfileForSource->recordSource = $recordSource;
-//			$accountProfileSource = '';
-//			if ($accountProfileForSource->find(true)) {
-//				$accountProfileSource = $accountProfileForSource->name;
-//			}
+			//$accountProfileForSource = new AccountProfile();
+			//$accountProfileForSource->recordSource = $recordSource;
+			//$accountProfileSource = '';
+			//if ($accountProfileForSource->find(true)) {
+			//	$accountProfileSource = $accountProfileForSource->name;
+			//}
 			foreach ($linkedUsers as $linkedUser) {
 				if ($accountProfileSource == $linkedUser->source) {
 					$linkedUserLocation = new Location();
@@ -2554,6 +2594,11 @@ class User extends DataObject {
 			$accountSummary = $this->getCachedAccountSummary('ils');
 			$accountSummary->incrementNumberOfUnavailableHolds();
 			$accountSummary->markHoldsStale();
+
+			if (!empty($result['api']['action'])) {
+				$buttonText = $result['api']['text'] ?? "Go to Holds";
+				$result['modalButtons'] = "<a href='/MyAccount/Holds' class='btn btn-primary btn-wrap'>$buttonText</a>";
+			}
 		}
 		return $result;
 	}
@@ -2863,10 +2908,10 @@ class User extends DataObject {
 						}
 					} elseif ($holdType == 'cloud_library') {
 						//Cloud library holds cannot be frozen
-//						require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
-//						$driver = new CloudLibraryDriver();
-//						$tmpResult = $driver->thawHold($patron, $recordId);
-//						if($tmpResult['success']){$success++;}
+						// require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
+						// $driver = new CloudLibraryDriver();
+						// $tmpResult = $driver->thawHold($user, $recordId);
+						// if($tmpResult['success']){$success++;}
 					} else {
 						$failed++;
 						//$tmpResult['message'] = '<div class="alert alert-warning">Hold not available</div>';
@@ -3347,7 +3392,7 @@ class User extends DataObject {
 		return false;
 	}
 
-	public function canMasquerade() {
+	public function canMasquerade() : bool {
 		if (self::canClientIpUseMasquerade()) {
 			return $this->hasPermission([
 				'Masquerade as any user',
@@ -3794,21 +3839,14 @@ class User extends DataObject {
 					$appScheme = $systemVariables->appScheme;
 				}
 			}
-			$notificationToken = new UserNotificationToken();
-			$notificationToken->userId = $this->id;
-			$notificationToken->find();
-			while ($notificationToken->fetch()) {
-				$body = [
-					'to' => $notificationToken->pushToken,
-					'title' => 'New account link',
-					'body' => 'Your account at ' . $this->getHomeLocation()->displayName . ' was just linked to by ' . $initiatingUser->displayName . ' - ' . $initiatingUser->getHomeLocation()->displayName . '. Review all linked accounts and learn more about account linking at your library.',
-					'categoryId' => 'accountAlert',
-					'channelId' => 'accountAlert',
-					'data' => ['url' => urlencode($appScheme . '://user/linked_accounts')],
-				];
-				$expoNotification = new ExpoNotification();
-				$expoNotification->sendExpoPushNotification($body, $notificationToken->pushToken, $this->id, 'linked_account');
-			}
+			$body = [
+				'title' => 'New account link',
+				'body' => 'Your account at ' . $this->getHomeLocation()->displayName . ' was just linked to by ' . $initiatingUser->displayName . ' - ' . $initiatingUser->getHomeLocation()->displayName . '. Review all linked accounts and learn more about account linking at your library.',
+				'categoryId' => 'accountAlert',
+				'channelId' => 'accountAlert',
+				'data' => ['url' => urlencode($appScheme . '://user/linked_accounts')],
+			];
+			$this->sendPushNotification($body, 'linked_account');
 		}
 	}
 
@@ -3854,21 +3892,14 @@ class User extends DataObject {
 					$appScheme = $systemVariables->appScheme;
 				}
 			}
-			$notificationToken = new UserNotificationToken();
-			$notificationToken->userId = $this->id;
-			$notificationToken->find();
-			while ($notificationToken->fetch()) {
-				$body = [
-					'to' => $notificationToken->pushToken,
+			$body = [
 					'title' => 'Account link removed',
 					'body' => 'An account you were previously linked to, ' . $unlinkedUser->displayName . ', has removed the link to your account ' . $this->displayName . '. Learn more about account linking at your library.',
 					'categoryId' => 'accountAlert',
 					'channelId' => 'accountAlert',
 					'data' => ['url' => urlencode($appScheme . '://user/linked_accounts')],
 				];
-				$expoNotification = new ExpoNotification();
-				$expoNotification->sendExpoPushNotification($body, $notificationToken->pushToken, $this->id, 'linked_account');
-			}
+			$this->sendPushNotification($body, 'linked_account');
 		}
 	}
 
@@ -4268,6 +4299,7 @@ class User extends DataObject {
 		}
 		$sections['system_admin'] = new AdminSection('System Administration');
 		$sections['system_admin']->addAction(new AdminAction('Modules', 'Enable and disable sections of Aspen Discovery.', '/Admin/Modules'), 'Administer Modules');
+		$sections['system_admin']->addAction(new AdminAction('Plugins', 'Enable and disable Aspen Discovery Plugins.', '/Admin/PluginManager'), 'Administer Plugins');
 		$sections['system_admin']->addAction(new AdminAction('Administrators', 'Define users from the ILS who should have administration privileges.', '/Admin/Administrators'), 'Administer Users');
 		$sections['system_admin']->addAction(new AdminAction('Local Administrators', 'Define local Aspen users who should have administration privileges.', '/Admin/LocalAdministrators'), 'Manage Local Administrators');
 		$permissionsAction = new AdminAction('Permissions', 'Define who what each role in the system can do.', '/Admin/Permissions');
@@ -4497,6 +4529,11 @@ class User extends DataObject {
 		$collectionSpotlightsAction->addSubAction(new AdminAction('Collection Spotlight Lists', 'Define lists within each spotlight.', '/Admin/CollectionSpotlightLists'), [
 			'Administer All Collection Spotlights',
 			'Administer Library Collection Spotlights',
+		]);
+		$exploreMoreAction = new AdminAction('Explore More', 'Configure the Explore More feature.', '/Admin/ExploreMore');
+		$sections['local_enrichment']->addAction($exploreMoreAction, [
+			'Administer All Explore More',
+			'Administer Library Explore More',
 		]);
 		$heroSliderAction = new AdminAction('Hero Sliders', 'Define hero sliders that can be used on websites or digital signage.', '/Admin/HeroSliderLocations');
 		$sections['local_enrichment']->addAction($heroSliderAction, [
@@ -4882,6 +4919,7 @@ class User extends DataObject {
 					'View Event Reports for Home Library'
 				]);
 			}
+			$sections['events']->addAction(new AdminAction('Aspen Events Settings', 'Aspen Native Events Settings that will apply to all events for a given library, regardless of type.', '/Events/AspenEventSettings'), 'Administer Events for All Locations');
 			$sections['events']->addAction(new AdminAction('Assabet - Interactive Settings', 'Define collections to be loaded into Aspen Discovery.', '/Events/AssabetSettings'), 'Administer Assabet Settings');
 			$sections['events']->addAction(new AdminAction('Communico - Attend Settings', 'Define collections to be loaded into Aspen Discovery.', '/Events/CommunicoSettings'), 'Administer Communico Settings');
 			$sections['events']->addAction(new AdminAction('Library Market - Calendar Settings', 'Define collections to be loaded into Aspen Discovery.', '/Events/LMLibraryCalendarSettings'), 'Administer LibraryMarket LibraryCalendar Settings');
@@ -4995,6 +5033,23 @@ class User extends DataObject {
 		$sections['support']->addAction(new AdminAction('Help Center', 'View the Help Center for Aspen Discovery.', 'https://aspen-discovery.atlassian.net/wiki/spaces/Help/overview'), true);
 		$sections['support']->addAction(new AdminAction('API Documentation', 'View available OpenAPI specifications for Aspen Discovery APIs.', '/API/Documentation'), true);
 		$sections['support']->addAction(new AdminAction('Release Notes', 'View release notes for Aspen Discovery which contain information about new functionality and fixes for each release.', '/Admin/ReleaseNotes'), true);
+		
+		if (array_key_exists('Aspen Progressive Web Application(PWA)', $enabledModules)){
+			$sections['AspenPWA'] = new AdminSection('Aspen Progressive Web Application(PWA)');
+			$sections['AspenPWA']->addAction(new AdminAction('Notification Test Tool', 'Aspen Progressive Web Application(PWA) notification test tool', '/AspenPWA/NotificationTestingTool'), [
+				'Send Aspen Progressive Web Application(PWA) Notifications to All Libraries',
+				'Send Aspen Progressive Web Application(PWA) Notifications to All Locations',
+				'Send Aspen Progressive Web Application(PWA) Notifications to Home Library',
+				'Send Aspen Progressive Web Application(PWA) Notifications to Home Location',
+				'Send Aspen PWA Notifications to Home Library Locations',
+			]);
+			$sections['AspenPWA']->addAction(new AdminAction('Settings', 'Aspen Progressive Web Application(PWA) settings', '/AspenPWA/Settings'), 'Administer Aspen Progressive Web Application(PWA) Settings');
+		}
+
+		global $plugins;
+		foreach ($plugins as $plugin) {
+			$sections = array_merge($sections, $plugin->getAdminActions());
+		}
 
 		$sorter = function (AdminSection $a, AdminSection $b) {
 			return strcasecmp($a->getTranslatedLabel(), $b->getTranslatedLabel());
@@ -5826,13 +5881,14 @@ class User extends DataObject {
 		return false;
 	}
 
-	public function saveNotificationPushToken($token, $device): bool {
+	public function saveNotificationPushToken($token, $device, $tokenType="expo"): bool {
 		require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
 		$pushToken = new UserNotificationToken();
 		$pushToken->userId = $this->id;
 		$pushToken->pushToken = $token;
 		$pushToken->deviceModel = $device;
 		$pushToken->onboardAppNotifications = 0;
+		$pushToken->tokenType = $tokenType;
 		if ($pushToken->find(true)) {
 			return true;
 		} else {
@@ -5861,6 +5917,7 @@ class User extends DataObject {
 		$tokens = [];
 		$obj = new UserNotificationToken();
 		$obj->userId = $this->id;
+		$obj->tokenType = $_REQUEST['tokenType'] ?? "expo";
 		$obj->find();
 		while ($obj->fetch()) {
 			$tokens[$obj->deviceModel] = $obj->pushToken;
@@ -6164,9 +6221,15 @@ class User extends DataObject {
 			$selfCheckCompletionMessage->whereAdd("$escapedCheckoutLocationCode REGEXP checkoutLocations");
 			$result['completionMessage'] = '';
 			$result['mustConfirmCompletionMessage'] = false;
-			if ($selfCheckCompletionMessage->find(true)) {
-				$result['completionMessage'] = $selfCheckCompletionMessage->getTextBlockTranslation('completionMessage', $this->interfaceLanguage);
-				$result['mustConfirmCompletionMessage'] = $selfCheckCompletionMessage->requireConfirmation;
+			$selfCheckCompletionMessage->find();
+			while ($selfCheckCompletionMessage->fetch()) {
+				if (!empty($result['completionMessage'])) {
+					$result['completionMessage'] .= "\r\n";
+				}
+				$result['completionMessage'] .= $selfCheckCompletionMessage->getTextBlockTranslation('completionMessage', $this->interfaceLanguage);
+				if ($selfCheckCompletionMessage->requireConfirmation) {
+					$result['mustConfirmCompletionMessage'] = true;
+				}
 			}
 
 			$accountSummary = $this->getCachedAccountSummary('hoopla');
@@ -6689,6 +6752,53 @@ class User extends DataObject {
 		}
 
 		$this->update();
+	}
+
+	/**
+	 * send a notification to all tokens for the user
+	 * returns the # of notifications we attempted to send
+	 */
+	public function sendPushNotification($body, $notificationType, $notifySavedSearch=null)
+	{
+		require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
+		global $logger;
+		$count = 0;
+		$notificationToken = new UserNotificationToken();
+		$notificationToken->userId = $this->id;
+		if($notificationType == "saved_search")
+		{
+			$notificationToken->notifySavedSearch = 1;
+		}
+		if($notificationType == "custom_notification")
+		{
+			$notificationToken->notifyCustom = 1;
+		}
+		$notificationToken->find();
+		while ($notificationToken->fetch()) {
+			$logger->log("Found notification push token for user " . $this->id, Logger::LOG_ERROR);
+			$body['to'] = $notificationToken->pushToken;
+			if(strcasecmp($notificationToken->tokenType, "expo") == 0)
+			{
+				require_once ROOT_DIR . '/sys/Notifications/ExpoNotification.php';
+				$expoNotification = new ExpoNotification();
+				$expoNotification->sendExpoPushNotification($body, $notificationToken->pushToken, $this->id, $notificationType);
+				$expoNotification = null;
+				$count++;
+			} else if (strcasecmp($notificationToken->tokenType, "firebase") == 0)
+			{
+				require_once ROOT_DIR . '/sys/Notifications/FirebaseNotification.php';
+				$firebaseNotification = new FirebaseNotification();
+				$firebaseNotification->sendPushNotification($body, $notificationToken->pushToken, $this->id, $notificationType);
+				$firebaseNotification = null;
+				$count++;
+			} else 
+			{
+				$logger->log('Error sending unsupported notification type: ' . $notificationType, Logger::LOG_ERROR);
+			}
+		}
+		$notificationToken->__destruct();
+		$notificationToken = null;
+		return $count;
 	}
 
 	public function canSaveSearches(): bool {

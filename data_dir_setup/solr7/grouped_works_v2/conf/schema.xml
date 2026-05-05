@@ -7,6 +7,7 @@
 		<fieldType name="float" class="FloatPointField"/>
 		<fieldType name="date" class="DatePointField"/>
 		<fieldType name="random" class="RandomSortField"/>
+		<fieldType name="pints" class="solr.IntPointField" docValues="true" multiValued="true"/>
 		<fieldType name="text_general" class="solr.TextField" positionIncrementGap="100">
 			<analyzer type="index">
 				<tokenizer class="solr.StandardTokenizerFactory"/>
@@ -221,6 +222,7 @@
 		<field name="author" type="searchable_text_unstemmed" indexed="true" stored="false" />
 		<field name="author_display" type="unchanged_string" indexed="false" stored="true" multiValued="false"/> <!-- The author to display to the user -->
 		<field name="authorStr" type="unchanged_string" indexed="true" stored="true" termVectors="true"/>
+		<field name="author_sort" type="alphaOnlySort" indexed="true" stored="true"/> <!-- author for sorting -->
 		<field name="author_exact" type="text-exact" indexed="true" stored="true" />
 		<field name="author_left" type="text-left" indexed="true" stored="true" />
 		<field name="author-letter" type="unchanged_string" indexed="true" stored="true"/>
@@ -271,7 +273,8 @@
 		<field name="availability_toggle" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
 		<dynamicField name="available_copies_*" type="integer" indexed="true" docValues="true" stored="false" multiValued="true"/>
 
-		<!-- Language Related Fields -->
+		<!-- Language Related Fields -->\
+		<field name="all_languages" type="unchanged_string" indexed="true" stored="true" multiValued="true" omitNorms="true" docValues="true"/>
 		<field name="language" type="unchanged_string" indexed="true" stored="true" multiValued="true" omitNorms="true" docValues="true"/>
 		<field name="translation" type="unchanged_string" indexed="true" stored="true" multiValued="true" omitNorms="true" docValues="true"/>
 		<field name="language_boost" type="integer" indexed="true" stored="false" multiValued="false" omitNorms="true" default="1"/>
@@ -286,6 +289,7 @@
 
 		<!-- Facets -->
 		<field name="physical" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
+		<field name="duration" type="pints" indexed="true" stored="true" multiValued="true" default="0" docValues="true"/>
 		<field name="edition" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
 		<field name="dateSpan" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
 		<field name="econtent_source" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
@@ -320,7 +324,7 @@
 		<field name="barcode" type="unchanged_string" indexed="true" stored="false" multiValued="true"/>
 
 		<!-- awards and ratings -->
-		<field name="mpaa_rating" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true"/>
+		<field name="content_rating" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true"/>
 		<field name="awards_facet" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true" termVectors="true"/>
 		<field name="lexile_score" type="integer" indexed="true" stored="true" multiValued="false" default="-1" docValues="true"/>
 		<field name="lexile_code" type="unchanged_string" indexed="true" stored="true" multiValued="false" docValues="true"/>

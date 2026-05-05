@@ -18,8 +18,8 @@
 			<tr>
 				<td>{$row.rowName}</td>
 				<td>{if isset($row.activeCount)}{$row.activeCount|number_format}{else}n/a{/if}</td>
-				<td>{if isset($row.deletedCount)}{$row.activeCount|number_format}{else}n/a{/if}</td>
-				<td>{if isset($row.suppressedCount)}{$row.activeCount|number_format}{else}n/a{/if}</td>
+				<td>{if isset($row.deletedCount)}{$row.deletedCount|number_format}{else}n/a{/if}</td>
+				<td>{if isset($row.suppressedCount)}{$row.suppressedCount|number_format}{else}n/a{/if}</td>
 			</tr>
 		{/foreach}
 		</tbody>

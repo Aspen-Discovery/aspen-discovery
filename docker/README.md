@@ -3,9 +3,14 @@
 ## Quick Start
 
 ```bash
-git clone https://github.com/Aspen-Discovery/aspen-discovery.git
-cd aspen-discovery/docker
-cp files/env/default.env .env
+curl -O https://raw.githubusercontent.com/Aspen-Discovery/aspen-discovery/26.05.00/docker/docker-compose.yml
+curl -O https://raw.githubusercontent.com/Aspen-Discovery/aspen-discovery/26.05.00/docker/files/env/default.env
+cp default.env .env
+```
+
+Edit `.env` to set your site name, URL, and admin password, then start:
+
+```bash
 docker compose up -d
 ```
 
@@ -28,7 +33,8 @@ Access Aspen at http://localhost:85 (default credentials: `aspen_admin` / `secre
 | `TITLE` | `Aspen Discovery` | Library title |
 | `LIBRARY` | `Test Library` | Library name |
 | `TIMEZONE` | `America/Argentina/Cordoba` | PHP timezone |
-| `ASPEN_ADMIN_PASSWORD` | `secretPass123` | Admin password |
+| `ASPEN_ADMIN_PASSWORD` | `secretPass123` | Admin password — **change before going live** |
+| `ASPEN_HOME` | `./aspen` | Directory where instance files are stored (conf, data, logs) |
 | `SUPPORTING_COMPANY` | `ByWater Solutions` | Support company name |
 
 ### Database

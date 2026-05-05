@@ -555,21 +555,15 @@ class PalaceProjectRecordDriver extends GroupedWorkSubDriver {
 			$statusSummary['status'] = "Unavailable";
 			$statusSummary['available'] = false;
 			$statusSummary['class'] = 'unavailable';
-			$statusSummary['showPlaceHold'] = false;
-			$statusSummary['showCheckout'] = false;
 		} else {
 			if ($relatedRecord->getAvailableCopies() > 0) {
 				$statusSummary['status'] = "Available from Palace Project";
 				$statusSummary['available'] = true;
 				$statusSummary['class'] = 'available';
-				$statusSummary['showPlaceHold'] = false;
-				$statusSummary['showCheckout'] = true;
 			} else {
 				$statusSummary['status'] = 'Checked Out';
 				$statusSummary['class'] = 'checkedOut';
 				$statusSummary['available'] = false;
-				$statusSummary['showPlaceHold'] = true;
-				$statusSummary['showCheckout'] = false;
 			}
 		}
 		return $statusSummary;

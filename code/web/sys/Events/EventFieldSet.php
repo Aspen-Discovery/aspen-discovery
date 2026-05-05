@@ -164,6 +164,7 @@ class EventFieldSet extends DataObject {
 				];
 				if ($type == 'enum') {
 					$allowableValues = array_map('trim', explode("\n", $field->allowableValues));
+					require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 					$keys = array_map([StringUtils::class, 'toCamelCase'], $allowableValues);
 					$structure[$field->id]['values'] = array_combine($keys, $allowableValues);
 				}

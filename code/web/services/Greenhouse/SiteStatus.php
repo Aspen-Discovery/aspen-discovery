@@ -5,7 +5,7 @@ require_once ROOT_DIR . '/services/Admin/Admin.php';
 
 class Greenhouse_SiteStatus extends Admin_Admin {
 
-	function launch() {
+	function launch() : void {
 		global $interface;
 		$showErrorsOnly = false;
 		if (isset($_REQUEST['showErrorsOnly'])) {
@@ -53,7 +53,7 @@ class Greenhouse_SiteStatus extends Admin_Admin {
 		if (!empty($versionToShow)) {
 			$sites->whereAdd("version LIKE '$versionToShow%'");
 		}
-		$sites->monitored = 1;
+		$sites->setMonitored(1);
 
 		$sites->orderBy('name ASC');
 		$sites->find();
@@ -69,11 +69,11 @@ class Greenhouse_SiteStatus extends Admin_Admin {
 				$allChecks[$key] = $check['name'];
 				if ($check['status'] != 'okay') {
 					$checksWithErrors[$key] = $key;
-					$sitesWithErrors[$sites->name] = $sites->name;
+					$sitesWithErrors[$sites->getSiteName()] = $sites->getSiteName();
 				}
 			}
-			if (!$sites->isOnline){
-				$sitesWithErrors[$sites->name] = $sites->name;
+			if (!$sites->isOnline()){
+				$sitesWithErrors[$sites->getSiteName()] = $sites->getSiteName();
 			}
 		}
 		asort($allChecks);
@@ -91,8 +91,8 @@ class Greenhouse_SiteStatus extends Admin_Admin {
 	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Greenhouse/Home', 'Greenhouse Home');
-		$breadcrumbs[] = new Breadcrumb('/Greenhouse/Sites', 'Sites');
-		$breadcrumbs[] = new Breadcrumb('', 'Status');
+		$breadcrumbs[] = new Breadcrumb('/Greenhouse/Home#greenhouse-stats-reports', 'Partner Maintenance & Reports');
+		$breadcrumbs[] = new Breadcrumb('', 'Site Status');
 		return $breadcrumbs;
 	}
 

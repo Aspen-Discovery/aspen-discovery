@@ -1718,6 +1718,11 @@ class Admin_AJAX extends JSON_Action {
 			'Send Notifications to Home Library',
 			'Send Notifications to Home Location',
 			'Send Notifications to Home Library Locations',
+			'Send Aspen Progressive Web Application(PWA) Notifications to All Libraries',
+			'Send Aspen Progressive Web Application(PWA) Notifications to All Locations',
+			'Send Aspen Progressive Web Application(PWA) Notifications to Home Library',
+			'Send Aspen Progressive Web Application(PWA) Notifications to Home Location',
+			'Send Aspen PWA Notifications to Home Library Locations'
 		]);
 		$result = $this->failureResultAdmin(null, 'Unknown error getting devices');
 

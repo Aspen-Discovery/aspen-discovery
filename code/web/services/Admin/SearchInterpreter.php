@@ -50,6 +50,10 @@ class Admin_SearchInterpreter extends ObjectEditor {
 		return 'id';
 	}
 
+	function getInstructions(): string {
+		return 'https://aspen-discovery.atlassian.net/wiki/spaces/Help/pages/315359233/Search+Help#Search-Interpreter';
+	}
+
 	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');

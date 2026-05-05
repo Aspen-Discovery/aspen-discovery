@@ -435,122 +435,209 @@ public class HooplaExporter {
 
 	private static boolean getFlexAvailability(HooplaSettings settings) {
 		// Update all the flex titles availability
-		logEntry.addNote("Starting Flex availability update");
+		int batchSize = Math.max(1, settings.getHooplaFlexBatchSize());
+		logEntry.addNote("Starting Flex availability update using a batch size of " + batchSize);
 		logEntry.saveResults();
-		int numUpdates = 0;
-		boolean doFullReloadFlex = settings.isRunFullUpdate("Flex");
-		String hooplaAPIBaseURL = settings.getApiUrl();
+		int numProcessed = 0;
+
 		int hooplaLibraryId = settings.getLibraryId();
+		ArrayList<Long> flexTitleIds = loadFlexTitles();
+		if (flexTitleIds.isEmpty()) {
+			logEntry.incErrors("No Flex titles found, please run full update for Flex.");
+			return false;
+		}
+
+		int numFlexTitles = flexTitleIds.size();
+		int start = 0;
+		while (start < numFlexTitles) {
+			int end = Math.min(start + batchSize, numFlexTitles);
+			List<Long> batchIds = flexTitleIds.subList(start, end);
+
+			Set<Long> processedIds = new HashSet<>(getFlexAvailabilityFromAPI(settings, batchIds));
+			Set<Long> missingIds = new HashSet<>(batchIds);
+			missingIds.removeAll(processedIds);
+			if (!missingIds.isEmpty()){
+				Set<Long> retried = getFlexAvailabilityFromAPI(settings, new ArrayList<>(missingIds));
+				missingIds.removeAll(retried);
+				processedIds.addAll(retried);
+			}
+			numProcessed += processedIds.size();
+			start = end;
+		}
+		logEntry.addNote("Procesed Flex availability for " + numFlexTitles + " titles, missed " + (numFlexTitles - numProcessed) + " titles.");
+		logEntry.addNote("Completed Flex availability updates.");
+		logEntry.saveResults();
+		return true;
+	}
+
+	private static ArrayList<Long> loadFlexTitles () {
+		ArrayList<Long> flexTitleIds = new ArrayList<>();
+		try {
+			PreparedStatement getFlexTitlesStmt = aspenConn.prepareStatement("SELECT hooplaId FROM hoopla_export WHERE hooplaType = 'Flex' AND active = 1");
+			ResultSet flexTitlesRS = getFlexTitlesStmt.executeQuery();
+			while (flexTitlesRS.next()) {
+				flexTitleIds.add(flexTitlesRS.getLong("hooplaId"));
+			}
+		} catch (SQLException e) {
+			logEntry.incErrors("Error loading Flex titles.", e);
+		}
+		return flexTitleIds;
+
+	}
+
+	private static Set<Long> getFlexAvailabilityFromAPI (HooplaSettings settings, List<Long> contentIds) {
+		if (contentIds == null || contentIds.isEmpty()){
+			return Collections.emptySet();
+		}
+
+		String hooplaAPIBaseURL = settings.getApiUrl();
 		String accessToken = settings.getAccessToken();
 		long tokenExpirationTime = settings.getTokenExpirationTime();
-
+		int hooplaLibraryId = settings.getLibraryId();
+		boolean doFullReloadFlex = settings.isRunFullUpdate("Flex");
 		if (accessToken == null || tokenExpirationTime < (System.currentTimeMillis() / 1000)) {
 			accessToken = getAccessToken(settings);
 		}
-
 		if (accessToken == null) {
-			logEntry.incErrors("Could not load access token");
-			return true;
+			logEntry.incErrors("Could not load access token for Flex availability");
+			return Collections.emptySet();
 		}
-		try {
-			PreparedStatement getFlexTitlesStmt = aspenConn.prepareStatement("SELECT t.id, t.hooplaId, UNCOMPRESS(t.rawResponse) as rawResponse, fa.holdsQueueSize, fa.availableCopies, fa.totalCopies, fa.status, fa.hooplaId " +
-			"FROM hoopla_export t " +
-			"LEFT JOIN hoopla_flex_availability fa ON t.hooplaId = fa.hooplaId " +
-			"WHERE t.hooplaType = 'Flex' AND t.active = 1");
-			ResultSet flexTitlesRS = getFlexTitlesStmt.executeQuery();
-			PreparedStatement updateFlexAvailabilityStmt = aspenConn.prepareStatement("INSERT INTO hoopla_flex_availability (hooplaId, holdsQueueSize, availableCopies, totalCopies, status) " +
-			"VALUES (?, ?, ?, ?, ?) " +
-			"ON DUPLICATE KEY UPDATE " +
-			"holdsQueueSize = VALUES(holdsQueueSize), " +
-			"availableCopies = VALUES(availableCopies), " +
-			"totalCopies = VALUES(totalCopies), " +
-			"status = VALUES(status)"
-			);
 
-			while (flexTitlesRS.next()) {
-				long hooplaId = flexTitlesRS.getLong("hooplaId");
-				boolean existingInDB = flexTitlesRS.getString("status") != null;
-				int existingHoldsQueueSize = existingInDB ? flexTitlesRS.getInt("holdsQueueSize") : 0;
-				int existingAvailableCopies = existingInDB ? flexTitlesRS.getInt("availableCopies") : 0;
-				int existingTotalCopies = existingInDB ? flexTitlesRS.getInt("totalCopies") : 0;
-				String existingStatus = existingInDB ? flexTitlesRS.getString("status") : null;
+		StringBuilder contentIdsString = new StringBuilder();
+		for (Long hooplaId : contentIds) {
+			if (contentIdsString.length() > 0) {
+				contentIdsString.append(',');
+			}
+			contentIdsString.append(hooplaId);
+		}
 
-				if (!doFullReloadFlex && existingInDB){
-					logEntry.incNumProducts(1);
-				}
+		HashMap<String, String> headers = new HashMap<>();
+		headers.put("Authorization", "Bearer " + accessToken);
+		headers.put("Content-Type", "application/json");
+		headers.put("Accept", "application/json");
 
-				String url = hooplaAPIBaseURL + "/api/v1/libraries/" + hooplaLibraryId + "/content/info?contentIds=" + hooplaId;
-
-				@SuppressWarnings("DuplicatedCode")
-				HashMap<String, String> headers = new HashMap<>();
-				headers.put("Authorization", "Bearer " + accessToken);
-				headers.put("Content-Type", "application/json");
-				headers.put("Accept", "application/json");
-				WebServiceResponse response = NetworkUtils.getURL(url, logger, headers);
-				if (!response.isSuccess()){
-					logEntry.incErrors("Could not get availability for title " + hooplaId + " from " + url + " " + response.getMessage());
-					continue;
-				}
+		String url = hooplaAPIBaseURL + "/api/v1/libraries/" + hooplaLibraryId + "/content/info?contentIds=" + contentIdsString;
+		for (int numTries = 1; numTries <= 3; numTries++){
+			WebServiceResponse response = NetworkUtils.getURL(url, logger, headers);
+			if (response.isSuccess()) {
 				try {
 					JSONArray availabilityArray = new JSONArray(response.getMessage());
-					if (!availabilityArray.isEmpty()) {
-						JSONObject titleInfo = availabilityArray.getJSONObject(0);
-						long contentId = titleInfo.getLong("contentId");
-						if (hooplaId != contentId) {
-							logEntry.incErrors("Response content ID " + contentId + " mismatch for title " + hooplaId);
-							continue;
-						}
-						JSONObject availability = titleInfo.getJSONObject("availability");
-						if (!availability.isEmpty()) {
-							String newStatus = availability.getString("status");
-							int newHoldsQueueSize = newStatus.equals("BORROW") ? 0 :
-							availability.has("holdsQueueSize") ? availability.getInt("holdsQueueSize") : 0;
-							int newAvailableCopies = availability.has("availableCopies") ? availability.getInt("availableCopies") : 0;
-							int newTotalCopies = availability.has("totalCopies") ? availability.getInt("totalCopies") : 0;
+					return updateFlexAvailabilityInDB(availabilityArray, doFullReloadFlex);
+				} catch (JSONException e) {
+					logEntry.incErrors("Error parsing Flex availability response.", e);
+					return Collections.emptySet();
+				}
+			}
 
+			int responseCode = response.getResponseCode();
+			if (responseCode != 401 && responseCode != 503 && responseCode != 504) {
+				logEntry.incErrors("Error getting Flex availability " + responseCode + " " + response.getMessage());
+				logger.error("Error getting Flex availability from " + url + " + responseCode + " + response.getMessage());
+				return Collections.emptySet();
+			}
+			if (responseCode == 401) {
+				accessToken = getAccessToken(settings);
+				if (accessToken == null) {
+					logEntry.incErrors("Could not refresh access token for Flex availability");
+					return Collections.emptySet();
+				}
+				headers.put("Authorization", "Bearer " + accessToken);
+			}
 
-							boolean needsUpdate =  !existingInDB || existingHoldsQueueSize != newHoldsQueueSize || existingAvailableCopies != newAvailableCopies || existingTotalCopies != newTotalCopies || !Objects.equals(existingStatus, newStatus);
+			if (numTries < 3){
+				try {
+					Thread.sleep(1000 * 60); //Wait for 1 minute before trying again
+				} catch (InterruptedException e) {
+					logEntry.incErrors("Error sleeping for 1 minutes for Flex availability", e);
+				}
+			} else {
+				logEntry.incErrors("Error getting Flex availability " + responseCode + " " + response.getMessage());
+				logger.error("Error getting Flex availability from " + url + " + responseCode + " + response.getMessage());
+			}
+		}
+		return Collections.emptySet();
+	}
 
-							if (needsUpdate) {
-								try {
-									updateFlexAvailabilityStmt.setLong(1, hooplaId);
-									updateFlexAvailabilityStmt.setInt(2, newHoldsQueueSize);
-									updateFlexAvailabilityStmt.setInt(3, newAvailableCopies);
-									updateFlexAvailabilityStmt.setInt(4, newTotalCopies);
-									updateFlexAvailabilityStmt.setString(5, newStatus);
-									updateFlexAvailabilityStmt.executeUpdate();
-									numUpdates++;
-									logEntry.incAvailabilityChanges();
+	private static Set<Long> updateFlexAvailabilityInDB(JSONArray availabilityArray, boolean doFullReloadFlex) {
+		Set<Long> processedIds =  new HashSet<>();
+		PreparedStatement getFlexTitlesStmt = null;
+		PreparedStatement upsertFlexAvailabilityStmt = null;
+		try {
+			getFlexTitlesStmt = aspenConn.prepareStatement("SELECT t.id, t.hooplaId, UNCOMPRESS(t.rawResponse) as rawResponse, fa.holdsQueueSize, fa.availableCopies, fa.totalCopies, fa.status, fa.hooplaId FROM hoopla_export t LEFT JOIN hoopla_flex_availability fa ON t.hooplaId = fa.hooplaId WHERE t.hooplaType = 'Flex' AND t.active = 1 AND t.hooplaId = ?");
+			upsertFlexAvailabilityStmt = aspenConn.prepareStatement("INSERT INTO hoopla_flex_availability (hooplaId, holdsQueueSize, availableCopies, totalCopies, status) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE holdsQueueSize = VALUES(holdsQueueSize), availableCopies = VALUES(availableCopies), totalCopies = VALUES(totalCopies), status = VALUES(status)");
 
-									String rawResponse = flexTitlesRS.getString("rawResponse");
-									JSONObject curTitle = new JSONObject(rawResponse);
-									String groupedWorkId =  getRecordGroupingProcessor().groupHooplaRecord(curTitle, hooplaId);
-									indexRecord(groupedWorkId);
-								} catch (SQLException e) {
-									logEntry.incErrors("Error updating flex availability for title " + hooplaId, e);
+			for (int i = 0; i < availabilityArray.length(); i++) {
+				try {
+					JSONObject availabilityInfo = availabilityArray.getJSONObject(i);
+					if (!availabilityInfo.has("contentId")) {
+						logEntry.incErrors("Flex availability response missing contentId");
+						continue;
+					}
+					long hooplaId = availabilityInfo.getLong("contentId");
+					if (!availabilityInfo.has("availability")) {
+						continue;
+					}
+					JSONObject availability = availabilityInfo.getJSONObject("availability");
+					if (!availability.isEmpty()) {
+						String status = availability.getString("status");
+						int holdsQueueSize = status.equals("BORROW") ? 0 : (availability.has("holdsQueueSize")  ? availability.getInt("holdsQueueSize") : 0);
+						int availableCopies = availability.has("availableCopies")  ? availability.getInt("availableCopies") : 0;
+						int totalCopies = availability.has("totalCopies")  ? availability.getInt("totalCopies") : 0;
+
+						boolean availabilityChanged = false;
+						try {
+							getFlexTitlesStmt.setLong(1, hooplaId);
+							ResultSet flexTitlesRS = getFlexTitlesStmt.executeQuery();
+							if (flexTitlesRS.next()) {
+								boolean existingInDB = flexTitlesRS.getString("status") != null;
+								int existingholdsQueueSize = flexTitlesRS.getInt("holdsQueueSize");
+								int existingAvailableCopies = flexTitlesRS.getInt("availableCopies");
+								int existingTotalCopies = flexTitlesRS.getInt("totalCopies");
+								String existingStatus = flexTitlesRS.getString("status");
+								if (existingholdsQueueSize != holdsQueueSize || existingAvailableCopies != availableCopies || existingTotalCopies != totalCopies || !Objects.equals(existingStatus, status)) {
+									availabilityChanged = true;
+								}
+							} else {
+								availabilityChanged = true;
+							}
+
+							if (availabilityChanged) {
+								upsertFlexAvailabilityStmt.setLong(1, hooplaId);
+								upsertFlexAvailabilityStmt.setInt(2, holdsQueueSize);
+								upsertFlexAvailabilityStmt.setInt(3, availableCopies);
+								upsertFlexAvailabilityStmt.setInt(4, totalCopies);
+								upsertFlexAvailabilityStmt.setString(5, status);
+								upsertFlexAvailabilityStmt.executeUpdate();
+								String rawResponse = flexTitlesRS.getString("rawResponse");
+								JSONObject curTitle = new JSONObject(rawResponse);
+								String groupedWorkId =  getRecordGroupingProcessor().groupHooplaRecord(curTitle, hooplaId);
+								indexRecord(groupedWorkId);
+								logEntry.incAvailabilityChanges();
+								if (!doFullReloadFlex) {
+									logEntry.incNumProducts(1);
 								}
 							}
+							flexTitlesRS.close();
+							processedIds.add(hooplaId);
+						} catch (SQLException e) {
+							logEntry.incErrors("Error updating Flex availability for title " + hooplaId, e);
 						}
 					}
 				} catch (JSONException e) {
-					logEntry.incErrors("Error parsing availability JSON for title " + hooplaId + ". Response: " + response.getMessage(), e);
+					logEntry.incErrors("Error parsing Flex availability JSON", e);
 				}
 			}
-
-			if (numUpdates > 0) {
-				logEntry.addNote("Updated availability for " + numUpdates + " Flex titles");
-			} else {
-				logEntry.addNote("No availability changes found for Hoopla Flex titles");
-			}
-			return true;
-
-		}
-		catch (Exception e) {
-			logEntry.incErrors("Error getting flex availability", e);
-			return false;
+		}catch (SQLException e) {
+			logEntry.incErrors("Error preparing Flex availability statements", e);
 		} finally {
-			logEntry.saveResults();
+			try {
+				if (getFlexTitlesStmt != null) getFlexTitlesStmt.close();
+				if (upsertFlexAvailabilityStmt != null) upsertFlexAvailabilityStmt.close();
+			} catch (SQLException e) {
+				logEntry.incErrors("Error closing Flex availability statements", e);
+			}
 		}
+		return processedIds;
 	}
 
 	public static boolean exportSingleHooplaTitle(String singleWorkId, String singleWorkType) {

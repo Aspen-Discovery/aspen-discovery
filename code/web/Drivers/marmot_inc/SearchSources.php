@@ -116,14 +116,14 @@ class SearchSources {
 					'name' => $location->displayName,
 					'description' => "The $location->displayName catalog.",
 					'catalogType' => 'catalog',
-					'hasAdvancedSearch' => true,
+					'hasAdvancedSearch' => $library->showAdvancedSearchbox,
 				];
 			} else {
 				$searchOptions['local'] = [
 					'name' => 'Library Catalog',
 					'description' => "The $library->displayName catalog.",
 					'catalogType' => 'catalog',
-					'hasAdvancedSearch' => true,
+					'hasAdvancedSearch' => $library->showAdvancedSearchbox,
 				];
 			}
 
@@ -132,7 +132,7 @@ class SearchSources {
 					'name' => $library->displayName,
 					'description' => "The entire $library->displayName catalog not limited to a particular branch.",
 					'catalogType' => 'catalog',
-					'hasAdvancedSearch' => true,
+					'hasAdvancedSearch' => $library->showAdvancedSearchbox,
 				];
 			}
 
@@ -150,7 +150,7 @@ class SearchSources {
 								'name' => $repeatInLibrary->displayName,
 								'description' => '',
 								'catalogType' => 'catalog',
-								'hasAdvancedSearch' => true,
+								'hasAdvancedSearch' => $library->showAdvancedSearchbox,
 							];
 						} else {
 							//See if this is a repeat within a location
@@ -164,7 +164,7 @@ class SearchSources {
 									'name' => $repeatInLocation->displayName,
 									'description' => '',
 									'catalogType' => 'catalog',
-									'hasAdvancedSearch' => true,
+									'hasAdvancedSearch' => $library->showAdvancedSearchbox,
 								];
 							}
 						}
@@ -185,7 +185,7 @@ class SearchSources {
 					'name' => 'Online Collection',
 					'description' => 'Digital Media available for use online and with portable devices',
 					'catalogType' => 'catalog',
-					'hasAdvancedSearch' => true,
+					'hasAdvancedSearch' => $library->showAdvancedSearchbox,
 				];
 			}
 

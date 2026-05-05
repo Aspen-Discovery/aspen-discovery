@@ -16,6 +16,7 @@ class SierraSelfRegistrationMunicipalityValues extends DataObject {
 	public $sierraPCode4;
 	public $expirationLength;
 	public $expirationPeriod;
+	public $extendExpirationToMonthEnd;
 
 	public function getNumericColumnNames(): array {
 		return [
@@ -157,6 +158,13 @@ class SierraSelfRegistrationMunicipalityValues extends DataObject {
 				'description' => 'The type of municipality',
 				'default' => '0',
 			],
+			'extendExpirationToMonthEnd' => [
+				'property' => 'extendExpirationToMonthEnd',
+				'type' => 'checkbox',
+				'label' => 'Extend Expiration To Month End?',
+				'description' => 'Whether expiration dates will be extended to the end of the month automatically (based on calculated expiration)',
+				'default' => '0',
+			]
 		];
 
 		self::$_objectStructure[$context] = $structure;

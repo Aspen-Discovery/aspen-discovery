@@ -399,7 +399,7 @@ class MaterialsRequest_AJAX extends JSON_Action {
 	/** @noinspection PhpUnused */
 	function showSelectHoldCandidateForm() : array {
 		$this->requireLoggedInUser();
-		$this->checkRequiredPermission('Manage Materials Requests');
+		$this->checkRequiredPermission('Manage Library Materials Requests');
 
 		global $interface;
 
@@ -441,7 +441,7 @@ class MaterialsRequest_AJAX extends JSON_Action {
 	/** @noinspection PhpUnused */
 	function selectHoldCandidate() : array {
 		$this->requireLoggedInUser();
-		$this->checkRequiredPermission('Manage Materials Requests');
+		$this->checkRequiredPermission('Manage Library Materials Requests');
 
 		if (empty($_REQUEST['requestId']) || !is_numeric($_REQUEST['requestId'])) {
 			return [
@@ -506,7 +506,7 @@ class MaterialsRequest_AJAX extends JSON_Action {
 	/** @noinspection PhpUnused */
 	function checkForExistingRecord() : array {
 		$this->requireLoggedInUser();
-		$this->checkRequiredPermission('Manage Materials Requests');
+		$this->checkRequiredPermission('Manage Library Materials Requests');
 
 		$result = [
 			'success' => false,

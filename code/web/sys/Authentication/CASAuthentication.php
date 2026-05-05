@@ -3,12 +3,12 @@ require_once 'Authentication.php';
 require_once ROOT_DIR . '/CatalogConnection.php';
 
 class CASAuthentication implements Authentication {
-	static $clientInitialized = false;
+	static bool $clientInitialized = false;
 
 
 	public function __construct($additionalInfo) {}
 
-	public function authenticate($validatedViaSSO, $accountProfile) {
+	public function authenticate(bool $validatedViaSSO, ?AccountProfile $accountProfile) : mixed {
 		$this->initializeCASClient();
 
 		try {
@@ -18,19 +18,16 @@ class CASAuthentication implements Authentication {
 			if ($isValidated) {
 				$userAttributes = phpCAS::getAttributes();
 				//TODO: If we use other CAS systems we will need a configuration option to store which
-				//attribute the id is in
-				$userId = $userAttributes['flcid'];
-				return $userId;
+				return $userAttributes['flcid'];
 			} else {
 				return false;
 			}
 		} catch (CAS_AuthenticationException $e) {
 			global $logger;
 			$logger->log("Error authenticating in CAS $e", Logger::LOG_ERROR);
-			$isValidated = false;
 		}
 
-		return $isValidated;
+		return false;
 	}
 
 	/**

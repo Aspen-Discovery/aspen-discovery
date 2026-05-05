@@ -23,6 +23,7 @@ public class RecordInfo {
 	private String publicationDate;
 	private String placeOfPublication;
 	private String physicalDescription;
+	private Integer duration;
 	private boolean isClosedCaptioned;
 
 	private boolean hasParentRecord;
@@ -108,6 +109,10 @@ public class RecordInfo {
 
 	void setPhysicalDescription(String physicalDescription) {
 		this.physicalDescription = physicalDescription;
+	}
+
+	void setDuration(Integer duration) {
+		this.duration = duration;
 	}
 
 	ArrayList<ItemInfo> getRelatedItems() {
@@ -360,6 +365,7 @@ public class RecordInfo {
 		this.placeOfPublication = recordInfo.placeOfPublication;
 		this.publicationDate = recordInfo.publicationDate;
 		this.physicalDescription = recordInfo.physicalDescription;
+		this.duration = recordInfo.duration;
 		this.isClosedCaptioned = recordInfo.isClosedCaptioned;
 		for (ItemInfo itemInfo : recordInfo.relatedItems) {
 			ItemInfo clonedItem = new ItemInfo();
@@ -370,6 +376,13 @@ public class RecordInfo {
 
 	public String getPhysicalDescription() {
 		return physicalDescription;
+	}
+
+	public Integer getDuration() {
+		if (duration != null) {
+			return duration;
+		}
+		return 0;
 	}
 
 	public boolean isClosedCaptioned() {

@@ -1933,6 +1933,7 @@ class MyAccount_AJAX extends JSON_Action {
 		$sourceId = $_REQUEST['source'] . ":" . $_REQUEST['recordId'];
 
 		$currentLocation = $_REQUEST['currentLocation'];
+		$currentSublocationId = $_REQUEST['currentSublocation'];
 		if (!is_numeric($currentLocation)) {
 			$location = new Location();
 			$location->code = $currentLocation;
@@ -1943,6 +1944,7 @@ class MyAccount_AJAX extends JSON_Action {
 			}
 		}
 		$interface->assign('currentLocation', $currentLocation);
+		$interface->assign('currentSublocation', $currentSublocationId);
 
 		$location = new Location();
 		$pickupBranches = $location->getPickupBranches($patronOwningHold);
@@ -2262,24 +2264,31 @@ class MyAccount_AJAX extends JSON_Action {
 
 	function renewCheckout(): array {
 		$this->requireLoggedInUser();
-		$this->checkRequiredParameters(['patronId', 'recordId', 'renewIndicator']);
-		if (strpos($_REQUEST['renewIndicator'], '|') > 0) {
-			[
-				$itemId,
-				$itemIndex,
-			] = explode('|', $_REQUEST['renewIndicator']);
-		} else {
-			$itemId = $_REQUEST['renewIndicator'];
-			$itemIndex = null;
-		}
-
-
+		$this->checkRequiredParameters(['patronId', 'recordId']);
 		$user = UserAccount::getLoggedInUser();
 		$patronId = $_REQUEST['patronId'];
 		$recordId = $_REQUEST['recordId'];
-		$renewIndicator = $_REQUEST['renewIndicator'];
+		$renewIndicator = $_REQUEST['renewIndicator'] ?? '';
 		$patron = $user->getUserReferredTo($patronId);
+		$itemId = null;
+		$itemIndex = null;
+
 		if ($patron) {
+			$accountProfile = $patron->getAccountProfile();
+			// Evolve does not require a renew indicator
+			$requiresRenewIndicator = !($accountProfile && $accountProfile->driver === 'Evolve');
+			if ($requiresRenewIndicator) {
+				$this->checkRequiredParameters(['renewIndicator']);
+				if (strpos($renewIndicator, '|') > 0) {
+					[
+						$itemId,
+						$itemIndex,
+					] = explode('|', $renewIndicator);
+				} else {
+					$itemId = $renewIndicator;
+					$itemIndex = null;
+				}
+			}
 			$renewResults = $patron->renewCheckout($recordId, $itemId, $itemIndex);
 		} else {
 			$renewResults = $this->failureResult(null, 'Sorry, it looks like you don\'t have access to that patron.');
@@ -2389,6 +2398,13 @@ class MyAccount_AJAX extends JSON_Action {
 			'success' => false,
 			'message' => ['Unable to renew all titles'],
 		];
+		$user = UserAccount::getLoggedInUser();
+		if ($user){
+			// Renew linked accounts as well if applicable
+			$renewResults = $user->renewAll(true);
+		} else {
+			$renewResults = $this->failureResult(null, 'Sorry, it looks like you don\'t have access to that patron.');
+		}
 
 		global $interface;
 		$interface->assign('renew_message_data', $renewResults);
@@ -2414,7 +2430,7 @@ class MyAccount_AJAX extends JSON_Action {
 			]),
 			'modalBody' => $interface->fetch('Record/renew-results.tpl'),
 			'success' => $renewResults['success'],
-			'renewed' => $renewResults['Renewed'],
+			'renewed' => $renewResults['Renewed'] ?? 0,
 		];
 	}
 
@@ -4121,7 +4137,34 @@ class MyAccount_AJAX extends JSON_Action {
 		$eventRecords = $searchObject->getRecords(array_keys($eventIds));
 
 		foreach ($eventIds as $curEventId => $entry) {
-			$registration = UserAccount::getActiveUserObj()->isRegistered($entry->sourceId);
+			$nativeAspenEvent = strpos($entry->sourceId, 'aspenEvent') !== false;
+			$registration = null;
+			$numberOfSeats = null;
+			$availableSeats = null;
+			$eventFull = null;
+
+			// check aspen native events registration
+			if($nativeAspenEvent) {
+				$eventInstanceId = preg_replace("/aspenEvent_\d+_/", '', $entry->sourceId);
+
+				require_once ROOT_DIR . '/sys/Events/UserAspenEventInstanceRegistration.php';
+				$aspenEventRegistration = new UserAspenEventInstanceRegistration();
+				$aspenEventRegistration->userId = UserAccount::getActiveUserId();
+				$aspenEventRegistration->eventInstanceId = $eventInstanceId;
+				$registration = $aspenEventRegistration->isUserRegisteredForEvent();
+
+				require_once ROOT_DIR . '/sys/Events/EventInstance.php';
+				$eventInstance = new EventInstance();
+				$eventInstance->id = $eventInstanceId;
+				if ($eventInstance->find(true)) {
+					$numberOfSeats = $eventInstance->getEffectiveNumberOfSeats();
+					$availableSeats = $eventInstance->getAvailableSeats();
+					$eventFull = !$eventInstance->hasAvailableSeats();
+				}
+			} else {
+				$registration = UserAccount::getActiveUserObj()->isRegistered($entry->sourceId);
+			}
+
 			if (array_key_exists($curEventId, $eventRecords)) {
 				$eventRecordDriver = $eventRecords[$curEventId];
 				$events[$entry->sourceId] = [
@@ -4153,6 +4196,11 @@ class MyAccount_AJAX extends JSON_Action {
 					'vendor' => self::getVendor($entry->sourceId)
 				];
 			}
+			if($nativeAspenEvent) {
+				$events[$entry->sourceId]['numberOfSeats'] = $numberOfSeats;
+				$events[$entry->sourceId]['availableSeats'] = $availableSeats;
+				$events[$entry->sourceId]['isEventFull'] = $eventFull;
+			}
 		}
 
 		$filter = $_REQUEST['eventsFilter'] ?? '';
@@ -4170,6 +4218,27 @@ class MyAccount_AJAX extends JSON_Action {
 		$pager = new Pager($options);
 		$interface->assign('pageLinks', $pager->getLinks());
 		$interface->assign('events', $events);
+		$interface->assign('userId', $user->id);
+
+		$user = UserAccount::getLoggedInUser();
+		if ($user) {
+			$interface->assign('loggedIn', true);
+			$interface->assign('userId', $user->id);
+			$interface->assign('userDisplayName', $user->getDisplayName());
+			$interface->assign('userEmail', $user->email);
+			$interface->assign('userHomeLocation', $user->getHomeLocationName());
+			$linkedUsers = [];
+			global $library;
+			if ($library->allowLinkedAccounts) {
+				$linkedUsers = $user->getLinkedUsers();
+				foreach ($linkedUsers as $linkedUser) {
+					$linkedUser->loadContactInformation();
+				}
+			}
+			$interface->assign('allowEventRegistration', isset($library->allowEventRegistration) && $library->allowEventRegistration != 0);
+			$interface->assign('linkedUsers', $linkedUsers);
+		}
+
 
 		$result['success'] = true;
 		$result['message'] = "";
@@ -7128,6 +7197,14 @@ class MyAccount_AJAX extends JSON_Action {
 				$createCustomer->EmailAddress = $patron->email;
 				$createCustomer->Invoices = [$createInvoice];
 
+				$PageResultOptions = [
+					'AllowRegisterAccount' => true,
+					'InvoiceOptions' => [
+						'AllowViewRelated' => false,
+						'AllowRemindMe' => false,
+					]
+				];
+
 				$postParams = [
 					'CreateCustomerRecord' => true,
 					'Customers' => [
@@ -7140,6 +7217,7 @@ class MyAccount_AJAX extends JSON_Action {
 					'PostBackURL' => $configArray['Site']['url'] . "/InvoiceCloud/Process",
 					'BillerReference' => $payment->id,
 					'ViewMode' => 0,
+					'PageResultOptions' => $PageResultOptions,
 				];
 
 				$paymentRequest = new CurlWrapper();
@@ -7652,7 +7730,6 @@ class MyAccount_AJAX extends JSON_Action {
 		$updateDebtInIls = false;
 
 		if ($rc == 'A') {
-			$payment->completed = true;
 			if ($recNo) {
 				$payment->heyCentricPaymentReferenceNumber = $recNo;
 			}
@@ -7740,76 +7817,23 @@ class MyAccount_AJAX extends JSON_Action {
 			return $result;
 		}
 
-		// start the polling process for status updates (no webhooks available) 
-		global $configArray;
-		$serverName = $_SERVER['aspen_server'];
-		$logFilePath = '/var/log/' . $configArray['System']['applicationName'] . '/' . $serverName . '/messages.log';
-		$pollCommand = 'php ' . ROOT_DIR . "/scripts/pay360-poll.php $serverName " . escapeshellarg($pay360SettingsId) . ' ' . escapeshellarg($payment->id) . ' >> ' . escapeshellarg($logFilePath) . ' . 2>&1 &';
-		exec($pollCommand);
+		require_once ROOT_DIR . '/services/Pay360/PaymentHandler.php';
+		Pay360_PaymentHandler::spawnPoller($pay360SettingsId, $payment->id);
 
 		return $result;
 	}
 
 	/** @noinspection PhpUnused */
 	function completePay360Order(): void {
-		global $configArray;
-		if (!UserAccount::isLoggedIn()) {
-			header("Location: " . $configArray['Site']['url']);
-			return;
-		}
-
-		if (!isset($_REQUEST['paymentId']) || !isset($_REQUEST['settingsId']) || !is_numeric($_REQUEST['paymentId']) || !is_numeric($_REQUEST['settingsId'])) {
-			header("Location: " . $configArray['Site']['url']);
-			return;
-		}
-
-		$paymentId = intval($_REQUEST['paymentId']);
-		$pay360SettingsId = intval($_REQUEST['settingsId']);
-
-		$payment = new UserPayment();
-		$payment->id = $paymentId;
-		$payment->find(true);
-		if ($payment->userId !== UserAccount::getActiveUserId()) {
-			header("Location: " . $configArray['Site']['url']);
-			return;
-		}
-
-		require_once ROOT_DIR . '/services/Pay360/Client.php';
-		$client = new Pay360_Client($pay360SettingsId, $paymentId, [], null, false, $payment);
-		$client->getOrderStatus(true);
-		$client->handleOutcome();
-		header("Location: " . $configArray['Site']['url'] . "/MyAccount/PaymentDetails?paymentId=" . $paymentId);
+		$this->requireLoggedInUser();
+		require_once ROOT_DIR . '/services/Pay360/PaymentHandler.php';
+		Pay360_PaymentHandler::completeOrder();
 	}
 
-	/** @noinspection PhpUnused */
 	function handlePay360OrderNotAttempted(): void {
-		global $configArray;
-		if (!UserAccount::isLoggedIn()) {
-			header("Location: " . $configArray['Site']['url']);
-			return;
-		}
-
-		if (!isset($_REQUEST['settingsId']) || !isset($_REQUEST['paymentId']) || !is_numeric($_REQUEST['paymentId']) || !is_numeric($_REQUEST['settingsId'])) {
-			header("Location: " . $configArray['Site']['url']);
-			return;
-		}
-
-		$paymentId = intval($_REQUEST['paymentId']);
-		$pay360SettingsId = intval($_REQUEST['settingsId']);
-
-		$payment = new UserPayment();
-		$payment->id = $paymentId;
-		$payment->find(true);
-		if ($payment->userId !== UserAccount::getActiveUserId()) {
-			header("Location: " . $configArray['Site']['url']);
-			return;
-		}
-
-		require_once ROOT_DIR . '/services/Pay360/Client.php';
-		$client = new Pay360_Client($pay360SettingsId, $paymentId, [], null, false, $payment);
-		$client->getOrderStatus(true);
-		$client->handleOutcome([], false);
-		header("Location: " . $configArray['Site']['url'] . "/MyAccount/PaymentDetails?paymentId=" . $paymentId);
+		$this->requireLoggedInUser();
+		require_once ROOT_DIR . '/services/Pay360/PaymentHandler.php';
+		Pay360_PaymentHandler::handleNotAttempted();
 	}
 
 	/** @noinspection PhpUnused */
@@ -8104,87 +8128,205 @@ class MyAccount_AJAX extends JSON_Action {
 	/** @noinspection PhpUnused */
 	function eventRegistrationModal() : array {
 		$eventUrl = $_REQUEST['regLink'];
-		if (isset($_REQUEST['vendor'])) {
-			$vendor = $_REQUEST['vendor'];
-			$body = "";
-			global $library;
-			require_once ROOT_DIR . '/sys/Events/LibraryEventsSetting.php';
-			$libraryEventSettings = new LibraryEventsSetting();
-			$libraryEventSettings->settingSource = $vendor;
-			$libraryEventSettings->libraryId = $library->libraryId;
-			if ($libraryEventSettings->find(true)) {
-				if ($vendor == 'communico') {
-					require_once ROOT_DIR . '/sys/Events/CommunicoSetting.php';
-					$communicoSettings = new CommunicoSetting();
-					$communicoSettings->id = $libraryEventSettings->settingId;
-					if ($communicoSettings->find(true)) {
-						$body = $communicoSettings->registrationModalBody;
-					}
-				} else if ($vendor == 'springshare') {
-					require_once ROOT_DIR . '/sys/Events/SpringshareLibCalSetting.php';
-					$springshareSettings = new SpringshareLibCalSetting();
-					$springshareSettings->id = $libraryEventSettings->settingId;
-					if ($springshareSettings->find(true)) {
-						$body = $springshareSettings->registrationModalBody;
-					}
-				} else if ($vendor == 'library_market') {
-					require_once ROOT_DIR . '/sys/Events/LMLibraryCalendarSetting.php';
-					$libraryMarketSettings = new LMLibraryCalendarSetting();
-					$libraryMarketSettings->id = $libraryEventSettings->settingId;
-					if ($libraryMarketSettings->find(true)) {
-						$body = $libraryMarketSettings->registrationModalBody;
-					}
-				} else if ($vendor == 'assabet') {
-					require_once ROOT_DIR . '/sys/Events/AssabetSetting.php';
-					$assabetSettings = new AssabetSetting();
-					$assabetSettings->id = $libraryEventSettings->settingId;
-					if ($assabetSettings->find(true)) {
-						$body = $assabetSettings->registrationModalBody;
-					}
-				}
+		$result =  [
+			'success' => false,
+			'title' => translate([
+				'text' => 'Registration Information',
+				'isPublicFacing' => true,
+			]),
+			'buttons' => '<a href="' . $eventUrl . '" class="btn btn-primary" target="_blank" aria-label="' . translate([
+					'text' => 'Go to Registration',
+					'isPublicFacing' => true,
+					'inAttribute' => true
+				]) . ' (' . translate([
+					'text' => 'opens in a new window',
+					'isPublicFacing' => true,
+					'inAttribute' => true
+				]) . ')"><i class="fas fa-external-link-alt" role="presentation"></i> ' . translate([
+					'text' => 'Go to Registration',
+					'isPublicFacing' => true,
+				]) . '</a>',
+		];
+
+		if (!isset($_REQUEST['vendor'])) {
+			return $result;
+		}
+
+		$vendor = $_REQUEST['vendor'];
+		$body = "";
+
+		global $library;
+		require_once ROOT_DIR . '/sys/Events/LibraryEventsSetting.php';
+		$libraryEventSettings = new LibraryEventsSetting();
+		$libraryEventSettings->settingSource = $vendor;
+		$libraryEventSettings->libraryId = $library->libraryId;
+		if (!$libraryEventSettings->find(true)) {
+			return $result;
+		}
+		if ($vendor == 'communico') {
+			require_once ROOT_DIR . '/sys/Events/CommunicoSetting.php';
+			$communicoSettings = new CommunicoSetting();
+			$communicoSettings->id = $libraryEventSettings->settingId;
+			if ($communicoSettings->find(true)) {
+				$body = $communicoSettings->registrationModalBody;
+			}
+		} else if ($vendor == 'springshare') {
+			require_once ROOT_DIR . '/sys/Events/SpringshareLibCalSetting.php';
+			$springshareSettings = new SpringshareLibCalSetting();
+			$springshareSettings->id = $libraryEventSettings->settingId;
+			if ($springshareSettings->find(true)) {
+				$body = $springshareSettings->registrationModalBody;
+			}
+		} else if ($vendor == 'library_market') {
+			require_once ROOT_DIR . '/sys/Events/LMLibraryCalendarSetting.php';
+			$libraryMarketSettings = new LMLibraryCalendarSetting();
+			$libraryMarketSettings->id = $libraryEventSettings->settingId;
+			if ($libraryMarketSettings->find(true)) {
+				$body = $libraryMarketSettings->registrationModalBody;
+			}
+		} else if ($vendor == 'assabet') {
+			require_once ROOT_DIR . '/sys/Events/AssabetSetting.php';
+			$assabetSettings = new AssabetSetting();
+			$assabetSettings->id = $libraryEventSettings->settingId;
+			if ($assabetSettings->find(true)) {
+				$body = $assabetSettings->registrationModalBody;
+			}
+		} else if ($vendor == 'aspenEvents') {
+			require_once ROOT_DIR . '/sys/Events/AspenEventSetting.php';
+			$aspenEventSettings = new AspenEventSetting();
+			$aspenEventSettings->id = $libraryEventSettings->settingId;
+			if (!$aspenEventSettings->find(true)) {
+				unset($result['buttons']);
+				$result['message'] = translate([
+					'text' => 'Aspen Events are not configured for this library.',
+					'isPublicFacing' => true,
+				]);
+				return $result;
 			}
 
-			return [
-				'success' => true,
-				'title' => translate([
-					'text' => 'Registration Information',
+			$body = $aspenEventSettings->getRegistrationModalBody() ?? '';
+
+			require_once ROOT_DIR . '/RecordDrivers/AspenEventRecordDriver.php';
+			$sourceId = AspenEventRecordDriver::sanitizeSourceId($_REQUEST['sourceId'] ?? '');
+			if ($sourceId === null) {
+				return AspenEventRecordDriver::invalidSourceIdResult();
+			}
+			$eventInstanceId = AspenEventRecordDriver::extractEventInstanceId($sourceId);
+
+			require_once ROOT_DIR . '/sys/Events/EventInstance.php';
+			$eventInstance = new EventInstance();
+			$eventInstance->id = $eventInstanceId;
+			if (!$eventInstance->find(true)) {
+				unset($result['buttons']);
+				$result['message'] = translate([
+					'text' => 'Event not found.',
 					'isPublicFacing' => true,
-				]),
-				'body' => $body,
-				'buttons' => '<a href="' . $eventUrl . '" class="btn btn-primary" target="_blank" aria-label="' . translate([
-						'text' => 'Go to Registration',
-						'isPublicFacing' => true,
-						'inAttribute' => true
-					]) . ' (' . translate([
-						'text' => 'opens in a new window',
-						'isPublicFacing' => true,
-						'inAttribute' => true
-					]) . ')"><i class="fas fa-external-link-alt" role="presentation"></i> ' . translate([
-						'text' => 'Go to Registration',
-						'isPublicFacing' => true,
-					]) . '</a>',
-			];
-		} else {
-			return [
-				'success' => false,
-				'title' => translate([
-					'text' => 'Registration Information',
+				]);
+				return $result;
+			}
+
+			global $interface;
+			$numberOfSeats = $eventInstance->getEffectiveNumberOfSeats();
+			$available = $eventInstance->getAvailableSeats();
+			$interface->assign('numberOfSeats', $numberOfSeats);
+			$interface->assign('availableSeats', $available);
+			$interface->assign('isEventFull', !$eventInstance->hasAvailableSeats());
+
+			$user = UserAccount::getLoggedInUser();
+			if (empty($user)) {
+				// Marking this as 'success' as there is no server error, and we do want the user to access the login button
+				$result['success'] = true;
+				$result['buttons'] = $interface->fetch('AspenEvents/loginToRegisterButton.tpl');
+				$result['body'] = translate([
+					'text' => 'You must log in to register to events.',
 					'isPublicFacing' => true,
-				]),
-				'buttons' => '<a href="' . $eventUrl . '" class="btn btn-primary" target="_blank" aria-label="' . translate([
-						'text' => 'Go to Registration',
-						'isPublicFacing' => true,
-						'inAttribute' => true
-					]) . ' (' . translate([
-						'text' => 'opens in a new window',
-						'isPublicFacing' => true,
-						'inAttribute' => true
-					]) . ')"><i class="fas fa-external-link-alt" role="presentation"></i> ' . translate([
-						'text' => 'Go to Registration',
-						'isPublicFacing' => true,
-					]) . '</a>',
-			];
+				]);
+				return $result;
+			}
+
+			$interface->assign('eventSourceId', $sourceId);
+
+			$interface->assign('loggedIn', true);
+			$interface->assign('userId', $user->id);
+			$interface->assign('userDisplayName', $user->getDisplayName());
+			$interface->assign('userEmail', $user->email);
+			$interface->assign('userHomeLocation', $user->getHomeLocationName());
+
+			$linkedUsers = [];
+			if ($library->allowLinkedAccounts) {
+				$linkedUsers = $user->getLinkedUsers();
+				foreach ($linkedUsers as $linkedUser) {
+					$linkedUser->loadContactInformation();
+				}
+			}
+			$interface->assign('linkedUsers', $linkedUsers);
+			
+			require_once ROOT_DIR . '/RecordDrivers/AspenEventRecordDriver.php';
+			$sourceId = 'aspenEvent_' . $aspenEventSettings->id . '_' . $eventInstanceId;
+			$recordDriver = new AspenEventRecordDriver($sourceId);	
+			$interface->assign('isRegistered', $recordDriver->isUserRegisteredForEvent());
+
+			$body .= $interface->fetch('AspenEvents/registrationModalContents.tpl');
+			$result['buttons'] =  $interface->fetch('AspenEvents/registrationToggleButton.tpl');
 		}
+
+		$result['success'] = true;
+		$result['body'] = $body;
+
+		return $result;
+	}
+
+	/** @noinspection PhpUnused */
+	function isUserRegisteredForEvent(): array {
+		$result = [
+			'success' => false,
+		];
+		$this->requireLoggedInUser(null, 'You must be logged in to check event registration.');
+		$eventSourceId = $_REQUEST['eventSourceId'];
+		$eventInstanceId = preg_replace("/aspenEvent_\d+_/", '', $eventSourceId);
+		$userId = $_REQUEST['userId'];
+
+		if (!$userId || !$eventInstanceId) {
+			$result['message'] = translate([
+				'text' => 'Event or User information is missing.',
+				'isPublicFacing' => true,
+			]);
+			return $result;
+		}
+
+		$activeUserId = UserAccount::getActiveUserId();
+		if ($userId != $activeUserId) {
+			$isLinkedUser = false;
+			$activeUser = UserAccount::getActiveUserObj();
+			foreach ($activeUser->getLinkedUsers() as $linkedUser) {
+				if ($linkedUser->id == $userId) {
+					$isLinkedUser = true;
+					break;
+				}
+			}
+			if (!$isLinkedUser) {
+				$result['message'] = translate([
+					'text' => 'You do not have permission to view registration information for this user.',
+					'isPublicFacing' => true,
+				]);
+				return $result;
+			}
+		}
+
+		require_once ROOT_DIR . '/sys/Events/UserAspenEventInstanceRegistration.php';
+		$registration = new UserAspenEventInstanceRegistration();
+		$registration->userId = $userId;
+		$registration->eventInstanceId = $eventInstanceId;
+
+		$result['success'] = true;
+		$result['message'] = translate([
+			'text' => 'Registration information found',
+			'isPublicFacing' => true,
+		]);
+		$result['body'] = [
+			'isRegistered' => $registration->isUserRegisteredForEvent($userId),
+		];
+		return $result;
 	}
 
 	/** @noinspection PhpUnused */
@@ -8336,6 +8478,138 @@ class MyAccount_AJAX extends JSON_Action {
 			}
 		}
 
+		return $result;
+	}
+
+	function toggleUserRegistrationToEvent(): array {
+		require_once ROOT_DIR . '/RecordDrivers/AspenEventRecordDriver.php';
+		$sourceId = AspenEventRecordDriver::sanitizeSourceId($_REQUEST['eventSourceId'] ?? '');
+		if ($sourceId === null) {
+			return AspenEventRecordDriver::invalidSourceIdResult();
+		}
+		$eventInstanceId = AspenEventRecordDriver::extractEventInstanceId($sourceId);
+		$userId = (int)($_REQUEST['userId'] ?? 0);
+
+		$result = [
+			'success' => false,
+			'title' => translate([
+				'text' => 'Error',
+				'isPublicFacing' => true,
+			]),
+			'message' => translate([
+				'text' => 'Event or User information is missing.',
+				'isPublicFacing' => true
+			]),
+		];
+
+		if (!$eventInstanceId || !$userId) {
+			return $result;
+		}
+
+		$this->requireLoggedInUser(null, 'You must be logged in to register for events.');
+
+		$activeUserId = UserAccount::getActiveUserId();
+		if ($userId != $activeUserId) {
+			$isLinkedUser = false;
+			$activeUser = UserAccount::getActiveUserObj();
+			foreach ($activeUser->getLinkedUsers() as $linkedUser) {
+				if ($linkedUser->id == $userId) {
+					$isLinkedUser = true;
+					break;
+				}
+			}
+			if (!$isLinkedUser) {
+				$result['message'] = translate([
+					'text' => 'You do not have permission to manage registrations for this user.',
+					'isPublicFacing' => true,
+				]);
+				return $result;
+			}
+		}
+
+		require_once ROOT_DIR . '/sys/Account/User.php';
+		$user = new User();
+		$user->id = $userId;
+		if(!$user->find(true)) {
+			$result['message']['text'] = 'User not found';
+			return $result;
+		}
+
+		require_once ROOT_DIR . '/sys/Events/EventInstance.php';
+		$eventInstance = new EventInstance();
+		$eventInstance->id = $eventInstanceId;
+		if (!$eventInstance->find(true)) {
+			$result['message'] = translate([
+				'text' => 'Event not found.',
+				'isPublicFacing' => true
+			]);
+			return $result;
+		}
+
+		$recordDriver = new AspenEventRecordDriver($sourceId);
+		if (!$recordDriver->isValid()) {
+			$result['message'] = translate([
+				'text' => 'Event instance not found.',
+				'isPublicFacing' => true
+			]);
+			return $result;
+		}
+
+		// unregister the user if registered
+		require_once ROOT_DIR . '/sys/Events/UserAspenEventInstanceRegistration.php';
+		$registration = new UserAspenEventInstanceRegistration();
+		$registration->userId = $userId;
+		$registration->eventInstanceId = $eventInstanceId;
+
+		if ($registration->isUserRegisteredForEvent()) {
+			$registration->delete();
+
+			$result['success'] = true;
+			$result['title'] = translate([
+				'text' => 'Registration Information',
+				'isPublicFacing' => true,
+			]);
+			$result['message'] = translate([
+				'text' => 'Your registration to this event was cancelled successfully.',
+				'isPublicFacing' => true
+			]);
+			return $result;
+		}
+
+		// add the event to saved events if it has not yet been saved
+		$recordDriver->saveUserEventEntry($sourceId, $userId);
+
+		// so the registered may manage their registration, also add the event to the active user's saved events if the user this was added for is a linked user
+		$activeUserId = UserAccount::getActiveUserId();
+		if ($userId != $activeUserId) {
+			$recordDriver->saveUserEventEntry($sourceId, $activeUserId);	
+		}
+
+		// so the parent linked account display all events their linked user is registered to, save the event if the user registering have had their account linked.
+		foreach ($user->getViewerIds() as $viewerId) {
+			$recordDriver->saveUserEventEntry($sourceId, $viewerId);	
+		}
+
+		if (!$eventInstance->hasAvailableSeats(1)) {
+			$result['message'] = translate([
+				'text' => "This event is full — no seats are currently available. We've saved it to your events list so you can keep track of it.",
+				'isPublicFacing' => true
+			]);
+			return $result;
+		}
+
+		// register the user
+		$registration->insert();
+
+		$result['success'] = true;
+		$result['title'] = translate([
+			'text' => 'Registration Information',
+			'isPublicFacing' => true,
+		]);
+		$result['message'] = translate([
+			'text' => 'Registration successful.',
+			'isPublicFacing' => true
+		]);
 		return $result;
 	}
 
@@ -11157,7 +11431,9 @@ class MyAccount_AJAX extends JSON_Action {
 		$patron->find();
 		$numResults = $patron->count();
 		if ($numResults == 1 && $patron->find(true)) {
-			if ($patron->isStaff()) {
+			if ($patron->id == UserAccount::getActiveUserId()) {
+				return $this->failureResult(null, 'Cannot transfer a list to yourself.');
+			}else if ($patron->isStaff()) {
 				$interface->assign('listId', $listId);
 				$interface->assign('newListOwner', $patron);
 				return [
@@ -11172,11 +11448,12 @@ class MyAccount_AJAX extends JSON_Action {
 							'isAdminFacing' => 'true',
 						]) . "</button>",
 				];
+			}else{
+				return $this->failureResult(null, 'Cannot transfer a list to the specified user.');
 			}
+		}else{
+			return $this->failureResult(null, 'User not found.');
 		}
-		return [
-			'success' => false
-		];
 	}
 
 	/** @noinspection PhpUnused */
@@ -11205,6 +11482,7 @@ class MyAccount_AJAX extends JSON_Action {
 			$list->id = $listId;
 			if ($list->find(true)) {
 				$list->user_id = $user->id;
+				$list->listGroupId = -1;
 				if ($list->update()) {
 					require_once ROOT_DIR . '/sys/Email/Mailer.php';
 					$mailer = new Mailer();
@@ -11379,7 +11657,11 @@ class MyAccount_AJAX extends JSON_Action {
 					$results['message'] = "There was an error updating the list group owner: " . $listGroup->getLastError();
 				}
 			} else {
-				$results['message'] = "Could not locate the list group by id " . $listGroupId;
+				if ($listGroupId == -1) {
+					$results['message'] = "Cannot transfer the Unassigned List group.";
+				} else {
+					$results['message'] = "Could not locate the list group by id " . $listGroupId;
+				}
 			}
 		} else {
 			$results['message'] = "Could not locate a user by id " . $newListOwner;

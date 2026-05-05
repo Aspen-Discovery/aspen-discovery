@@ -10,19 +10,18 @@ class Mailer {
 	 * @param string $to Recipient email address
 	 * @param string $subject Subject line for message
 	 * @param string $body Message body
-	 * @param string $replyTo Someone to reply to
-	 * @param bool $htmlMessage True to send the email as html
-	 * @param string? $htmlBody Message body
+	 * @param ?string $replyTo Someone to reply to
+	 * @param ?string $htmlBody Message body
+	 * @param array $attachments an array of attachments to include
 	 *
 	 * @return  boolean
 	 */
-	public function send($to, $subject, $body, $replyTo = null, $htmlBody = null, $attachments = []) : bool {
+	public function send(string $to, string $subject, string $body, ?string $replyTo = null, ?string $htmlBody = null, array $attachments = []) : bool {
 
 		require_once ROOT_DIR . '/sys/Email/SendGridSetting.php';
 		require_once ROOT_DIR . '/sys/Email/AmazonSesSetting.php';
 		require_once ROOT_DIR . '/sys/Email/SMTPSetting.php';
 		require_once ROOT_DIR . '/sys/CurlWrapper.php';
-		global $logger;
 		$amazonSesSettings = new AmazonSesSetting();
 		$smtpServerSettings = new SMTPSetting();
 
@@ -48,7 +47,7 @@ class Mailer {
 		}else{
 			$aspenUsage->incEmailsFailed();
 		}
-		$ret = $aspenUsage->update();
+		$aspenUsage->update();
 
 		return $result;
 	}
@@ -67,11 +66,11 @@ class Mailer {
 	 * @param string $to
 	 * @param string|null $replyTo
 	 * @param string $subject
-	 * @param bool $htmlMessage
 	 * @param string|null $body
+	 * @param string|null $htmlBody
 	 * @return bool
 	 */
-	protected function sendViaSendGrid(SendGridSetting $sendGridSettings, string $to, ?string $replyTo, string $subject, ?string $body, ?string $htmlBody) {
+	protected function sendViaSendGrid(SendGridSetting $sendGridSettings, string $to, ?string $replyTo, string $subject, ?string $body, ?string $htmlBody) : bool {
 		//Send the email
 		$curlWrapper = new CurlWrapper();
 		$headers = [

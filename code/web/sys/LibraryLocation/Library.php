@@ -166,6 +166,7 @@ class Library extends DataObject {
 	public $ncrSettingId;
 	public $usernameField;
 	public $eventsDefaultCalendarView;
+	public $allowEventRegistration;
 
 	public /** @noinspection PhpUnused */
 		$repeatSearchOption;
@@ -543,6 +544,9 @@ class Library extends DataObject {
 
 	// Gale Settings
 	public $galeSettingsId;
+
+	// Aspen Progressive Web Application(PWA) Settings
+	public $AspenPWASettingId;
 
 	/** @var Holiday[] */
 	private $_holidays;
@@ -1064,6 +1068,16 @@ class Library extends DataObject {
 		$galeSettingsList[-1] = 'none';
 		while ($galeSettings->fetch()) {
 			$galeSettingsList[$galeSettings->id] = $galeSettings->name;
+		}
+
+		require_once ROOT_DIR . '/sys/AspenPWA/Setting.php';
+		$AspenPWASetting = new AspenPWASetting();
+		$AspenPWASetting->orderBy('name');
+		$AspenPWASettings = [];
+		$AspenPWASetting->find();
+		$AspenPWASettings[-1] = 'none';
+		while ($AspenPWASetting->fetch()) {
+			$AspenPWASettings[$AspenPWASetting->id] = $AspenPWASetting->name;
 		}
 
 		$barcodeTypes = [
@@ -3760,6 +3774,14 @@ class Library extends DataObject {
 						'description' => 'The default page your events calendar will load to',
 						'hideInLists' => true,
 					],
+					'allowEventRegistration' => [
+						'property' => 'allowEventRegistration',
+						'type' =>'checkbox',
+						'default' => '0',
+						'label' => 'Allow Event Registration',
+						'description' => 'Whether to allow staff with Event administration permissions to enable registration on a per event basis',
+						'hideInLists' => true,
+					],
 				]
 			],
 
@@ -4712,7 +4734,7 @@ class Library extends DataObject {
 				'label' => 'Talpa Search',
 				'hideInLists' => true,
 				'renderAsHeading' => true,
-//				'permissions' => ['Library Web Builder Options'],
+				//'permissions' => ['Library Web Builder Options'],
 				'properties' => [
 					'enableTalpaSearch' => [
 						'property' => 'enableTalpaSearch',
@@ -4956,6 +4978,26 @@ class Library extends DataObject {
 						'values' => $ssoSettings,
 						'label' => 'Single Sign-on (SSO) Settings',
 						'description' => 'The single sign-on settings to use for this library',
+						'hideInLists' => true,
+						'default' => -1,
+					],
+				],
+			],
+
+			'AspenPWASection' => [
+				'property' => 'AspenPWASection',
+				'type' => 'section',
+				'label' => 'Aspen Progressive Web Application(PWA)',
+				'hideInLists' => true,
+				'renderAsHeading' => true,
+				'permissions' => ['Administer Aspen Progressive Web Application(PWA) Settings'],
+				'properties' => [
+					'AspenPWASettingId' => [
+						'property' => 'AspenPWASettingId',
+						'type' => 'enum',
+						'values' => $AspenPWASettings,
+						'label' => 'Aspen Progressive Web Application(PWA) Settings',
+						'description' => 'The General Settings to use for Aspen Progressive Web Application(PWA)',
 						'hideInLists' => true,
 						'default' => -1,
 					],
@@ -6768,6 +6810,32 @@ class Library extends DataObject {
 		if (!empty($structure['ilsSection']['properties']['thirdPartyRegistrationSection']['properties']['thirdPartyRegistrationLocation'])) {
 			$structure['ilsSection']['properties']['thirdPartyRegistrationSection']['properties']['thirdPartyRegistrationLocation']['values'] = $thirdPartyRegistrationLocations;
 		}
+
+		//Update combined results
+		$combinedResultsSectionStructure = $structure['combinedResultsSection']['properties']['combinedResultSections']['structure'];
+		if ($this->ebscohostSearchSettingId == -1) {
+			unset($combinedResultsSectionStructure['source']['values']['ebscohost']);
+		}
+		if ($this->edsSettingsId == -1) {
+			unset($combinedResultsSectionStructure['source']['values']['ebsco_eds']);
+		}
+		if ($this->summonSettingsId == -1) {
+			unset($combinedResultsSectionStructure['source']['values']['summon']);
+		}
+		if ($this->galeSettingsId == -1) {
+			unset($combinedResultsSectionStructure['source']['values']['gale']);
+		}
+		if ($this->getCloudSourceSettingId() == -1) {
+			unset($combinedResultsSectionStructure['source']['values']['cloudsource']);
+		}
+		if (!$this->enableInnReachIntegration) {
+			unset($combinedResultsSectionStructure['source']['values']['innReach']);
+		}
+		if (!$this->ILLSystem != 3) {
+			unset($combinedResultsSectionStructure['source']['values']['shareIt']);
+		}
+		$structure['combinedResultsSection']['properties']['combinedResultSections']['structure'] = $combinedResultsSectionStructure;
+
 		return $structure;
 	}
 

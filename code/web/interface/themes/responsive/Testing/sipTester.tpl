@@ -24,6 +24,9 @@
 				<input type="text" id="sipPort" name="sipPort" class="form-control" value="{if !empty($sipPort)}{$sipPort}{/if}">
 			</div>
 			<div class="form-group">
+				<label for="useSSL" class="control-label"><input type="checkbox" id="useSSL" name="useSSL" {if !empty($useSSL)}checked{/if}> {translate text='Use SSL' isAdminFacing=true}</label>
+			</div>
+			<div class="form-group">
 				<label for="sipUser" class="control-label">{translate text='SIP User' isAdminFacing=true}</label>
 				<input type="text" id="sipUser" name="sipUser" class="form-control" value="{if !empty($sipUser)}{$sipUser}{/if}">
 			</div>

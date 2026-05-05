@@ -37,6 +37,7 @@ class SearchInterpreterSetting extends DataObject {
 
 		$termsToSkipStructure = SearchInterpreterTermsToSkip::getObjectStructure($context);
 		$specialTermsStructure = SearchInterpreterSpecialTerms::getObjectStructure($context);
+		unset($specialTermsStructure['weight']);
 
 		$structure = [
 			'id' => [
@@ -255,7 +256,7 @@ class SearchInterpreterSetting extends DataObject {
 				'keyOther' => 'settingId',
 				'subObjectType' => 'SearchInterpreterSpecialTerms',
 				'structure' => $specialTermsStructure,
-				'sortable' => false,
+				'sortable' => true,
 				'storeDb' => true,
 				'allowEdit' => false,
 				'canEdit' => false,
@@ -319,6 +320,7 @@ class SearchInterpreterSetting extends DataObject {
 			if ($this->id) {
 				$obj = new SearchInterpreterSpecialTerms();
 				$obj->settingId = $this->id;
+				$obj->orderBy('weight');
 				$obj->find();
 				while ($obj->fetch()) {
 					$this->_specialTerms[$obj->id] = clone $obj;

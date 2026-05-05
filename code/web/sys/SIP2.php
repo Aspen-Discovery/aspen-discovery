@@ -89,6 +89,8 @@ class sip2 {
 	/* Debug */
 	public $debug = false;
 
+	public $useSSL = false;
+
 	/* Private variables for building messages */
 	public $AO = 'WohlersSIP';
 	public $AN = 'SIPCHK';
@@ -688,7 +690,11 @@ class sip2 {
 		$this->_debugmsg('SIP2: Sending SIP2 request...');
 		$this->_debugmsg($message);
 		$this->lastMessageSent = $message;
-		socket_write($this->socket, $message, strlen($message));
+		if ($this->useSSL) {
+			fwrite($this->socket, $message);
+		} else {
+			socket_write($this->socket, $message, strlen($message));
+		}
 		$this->Sleep();
 
 		$this->_debugmsg('SIP2: Request Sent, Reading response');
@@ -697,11 +703,33 @@ class sip2 {
 		//Or until the connection receives an error ($nr === false).
 		$connectionTimeout = 10;
 		$curTime = time();
+		$readError = false;
 		while ($terminator != "\x0D" && $nr !== FALSE && (time() - $curTime < $connectionTimeout)) {
-			$nr = socket_recv($this->socket, $terminator, 1, 0);
+			if ($this->useSSL) {
+				$terminator = fread($this->socket, 1);
+				if ($terminator === false) {
+					$readError = true;
+					break;
+				}
+			} else {
+				$nr = socket_recv($this->socket, $terminator, 1, 0);
+				if ($nr === false) {
+					$readError = true;
+					break;
+				}
+			}
 			$result = $result . $terminator;
+			// stream_set_timeout doesn't throw a false on fread when it times out,
+			// so we check metadata if using SSL
+			if ($this->useSSL) {
+				$info = stream_get_meta_data($this->socket);
+				if ($info['timed_out']) {
+					$readError = true;
+					break;
+				}
+			}
 		}
-		if ($nr === false) {
+		if ($readError) {
 			//Whoops, we got an error
 			global $logger;
 			$lastError = socket_last_error($this->socket);
@@ -739,56 +767,95 @@ class sip2 {
 		/* Socket Communications  */
 		$this->_debugmsg("SIP2: --- BEGIN SIP communication ---");
 
-		/* Get the IP address for the target host. */
-		$address = gethostbyname($this->hostname);
+		if ($this->useSSL) {
+			// Construct the transport URI
+			// Use 'tls://' for the most secure/modern negotiation
+			$remote_socket = "tls://$this->hostname:$this->port";
 
-		/* Create a TCP/IP socket. */
-		$this->socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+			// Set up a stream context for SSL options (e.g., verifying certificates)
+			$context = stream_context_create([
+				'ssl' => [
+					'verify_peer' => true,
+					'verify_peer_name' => true,
+					'allow_self_signed' => false, // Set to true only for internal testing
+				]
+			]);
 
-		/* check for actual truly false result using ===*/
-		if ($this->socket === false) {
-			$logger->log("Unable to create socket to SIP server at $this->hostname", Logger::LOG_ERROR);
-			$this->_debugmsg("SIP2: socket_create() failed: reason: " . socket_strerror($this->socket));
-			return false;
-		} else {
-			$this->_debugmsg("SIP2: Socket Created");
-		}
-		$this->_debugmsg("SIP2: Attempting to connect to '$address' on port '{$this->port}'...");
+			$errno = null;
+			$errstr = null;
+			$connectionTimeout = 10;
 
-		//Set SIP timeouts
-		socket_set_option($this->socket, SOL_SOCKET, SO_RCVTIMEO, [
-			'sec' => 2,
-			'usec' => 500,
-		]);
-		socket_set_option($this->socket, SOL_SOCKET, SO_SNDTIMEO, [
-			'sec' => 2,
-			'usec' => 500,
-		]);
-		//Make the socket blocking so we can ensure we get responses without rewriting everything.
-		socket_set_block($this->socket);
+			/* open an SSL connection to the host */
+			$this->socket = @stream_socket_client(
+				$remote_socket,
+				$errno,
+				$errstr,
+				$connectionTimeout,
+				STREAM_CLIENT_CONNECT,
+				$context
+			);
 
-		/* open a connection to the host */
-		$connectionTimeout = 10;
-		$connectStart = time();
-		while (!@socket_connect($this->socket, $address, $this->port)) {
-			$error = socket_last_error($this->socket);
-			if ($error == 114 || $error == 115) {
-				if ((time() - $connectStart) >= $connectionTimeout) {
-					socket_close($this->socket);
-					$logger->log("Connection to $address $this->port timed out", Logger::LOG_ERROR);
-					return false;
-				}
-				$logger->log("Waiting for connection", Logger::LOG_DEBUG);
-				sleep(1);
-				continue;
-			} else {
-				$logger->log("Unable to connect to $address $this->port", Logger::LOG_ERROR);
-				$logger->log("SIP2: socket_connect() failed.\nReason: ($error) " . socket_strerror($error), Logger::LOG_ERROR);
-				$this->_debugmsg("SIP2: socket_connect() failed.\nReason: ($error) " . socket_strerror($error));
+			if (!$this->socket) {
+				$logger->log("Unable to connect to $remote_socket: ($errno) $errstr", Logger::LOG_ERROR);
 				return false;
 			}
-		}
 
+			// Set timeouts (equivalent to your socket_set_option)
+			stream_set_timeout($this->socket, 2, 500000); // 2 sec, 500k usec
+
+			// Ensure blocking mode
+			stream_set_blocking($this->socket, true);
+		}else{
+			/* Get the IP address for the target host. */
+			$address = gethostbyname($this->hostname);
+
+			/* Create a TCP/IP socket. */
+			$this->socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+
+			/* check for actual truly false result using ===*/
+			if ($this->socket === false) {
+				$logger->log("Unable to create socket to SIP server at $this->hostname", Logger::LOG_ERROR);
+				$this->_debugmsg("SIP2: socket_create() failed: reason: " . socket_strerror($this->socket));
+				return false;
+			} else {
+				$this->_debugmsg("SIP2: Socket Created");
+			}
+			$this->_debugmsg("SIP2: Attempting to connect to '$address' on port '{$this->port}'...");
+
+			//Set SIP timeouts
+			socket_set_option($this->socket, SOL_SOCKET, SO_RCVTIMEO, [
+				'sec' => 2,
+				'usec' => 500,
+			]);
+			socket_set_option($this->socket, SOL_SOCKET, SO_SNDTIMEO, [
+				'sec' => 2,
+				'usec' => 500,
+			]);
+			//Make the socket blocking so we can ensure we get responses without rewriting everything.
+			socket_set_block($this->socket);
+
+			/* open a connection to the host */
+			$connectionTimeout = 10;
+			$connectStart = time();
+			while (!@socket_connect($this->socket, $address, $this->port)) {
+				$error = socket_last_error($this->socket);
+				if ($error == 114 || $error == 115) {
+					if ((time() - $connectStart) >= $connectionTimeout) {
+						socket_close($this->socket);
+						$logger->log("Connection to $address $this->port timed out", Logger::LOG_ERROR);
+						return false;
+					}
+					$logger->log("Waiting for connection", Logger::LOG_DEBUG);
+					sleep(1);
+					continue;
+				} else {
+					$logger->log("Unable to connect to $address $this->port", Logger::LOG_ERROR);
+					$logger->log("SIP2: socket_connect() failed.\nReason: ($error) " . socket_strerror($error), Logger::LOG_ERROR);
+					$this->_debugmsg("SIP2: socket_connect() failed.\nReason: ($error) " . socket_strerror($error));
+					return false;
+				}
+			}
+		}
 		$this->_debugmsg("SIP2: --- SOCKET READY ---");
 
 		if (!empty($sipLogin) && !empty($sipPassword)) {
@@ -802,50 +869,6 @@ class sip2 {
 			} else {
 				return false;
 			}
-
-			//TODO: If a partner ever needs Telnet login, this may need to be reinstituted.
-//			$lineEnding = "\r\n";
-//
-//			//Send login
-//			//Read the login prompt
-//			$prompt = $this->getResponse();
-//			$logger->log("Login Prompt Received was " . $prompt, Logger::LOG_DEBUG);
-//			$login = $sipLogin;
-//            /** @noinspection PhpUnusedLocalVariableInspection */
-//			$ret = socket_write($this->socket, $login, strlen($login));
-//			$ret = socket_write($this->socket, $lineEnding, strlen($lineEnding));
-//			$logger->log("Wrote $ret bytes for login", Logger::LOG_DEBUG);
-//			$this->Sleep();
-//
-//			$prompt = $this->getResponse();
-//			$logger->log("Password Prompt Received was " . $prompt, Logger::LOG_DEBUG);
-//			$password = $sipPassword;
-//            /** @noinspection PhpUnusedLocalVariableInspection */
-//            $ret = socket_write($this->socket, $password, strlen($password));
-//			$ret = socket_write($this->socket, $lineEnding, strlen($lineEnding));
-//			$logger->log("Wrote $ret bytes for password", Logger::LOG_DEBUG);
-//
-//			if ($this->use_usleep){
-//				usleep($this->loginsleeptime);
-//			}else{
-//				sleep(1);
-//			}
-
-//			//Wait for a response
-//			$initialLoginResponse = $this->getResponse();
-//			$logger->log("Login response is " . $initialLoginResponse, Logger::LOG_DEBUG);
-//			$this->Sleep();
-//
-//			//$loginData = $this->parseLoginResponse($loginResponse);
-//			if (strpos($initialLoginResponse, 'Login OK.  Initiating SIP') === 0){
-//				$logger->log("Logged into SIP client with telnet credentials", Logger::LOG_DEBUG);
-//				$this->_debugmsg( "SIP2: --- LOGIN TO SIP SUCCEEDED ---" );
-//			}else{
-//				$logger->log("Unable to login to SIP server using telnet credentials", Logger::LOG_ERROR);
-//				$this->_debugmsg( "SIP2: --- LOGIN TO SIP FAILED ---" );
-//				$this->_debugmsg( $initialLoginResponse);
-//				return false;
-//			}
 		}
 		/* return the result from the socket connect */
 		return true;
@@ -860,8 +883,14 @@ class sip2 {
 	}
 
 	function disconnect() {
-		/*  Close the socket */
-		socket_close($this->socket);
+		/* Close the socket/stream */
+		if ($this->useSSL && is_resource($this->socket)) {
+			// SSL uses stream resources
+			fclose($this->socket);
+		} elseif (is_resource($this->socket)) {
+			// Standard TCP uses socket resources
+			socket_close($this->socket);
+		}
 	}
 
 	/* Core local utility functions */

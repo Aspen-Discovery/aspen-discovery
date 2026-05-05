@@ -4898,11 +4898,13 @@ class UserAPI extends AbstractAPI {
 		if ($user && !($user instanceof AspenError)) {
 			$newStatus = $_REQUEST['status'] ?? null;
 			$userToken = $_REQUEST['token'] ?? null;
+			$tokenType = $_REQUEST['type'] ?? 'expo';
 			if($newStatus && $userToken) {
 				require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
 				$token = new UserNotificationToken();
 				$token->pushToken = $userToken;
 				$token->userId = $user->id;
+				$token->tokenType = $tokenType;
 				if($token->find(true)) {
 					$token->onboardAppNotifications = 0;
 					$user->onboardAppNotifications = 0;
@@ -5565,7 +5567,8 @@ class UserAPI extends AbstractAPI {
 		if ($user && !($user instanceof AspenError)) {
 			if (isset($_POST['pushToken'])) {
 				$device = $_POST['deviceModel'] ?? "Unknown";
-				$result = $user->saveNotificationPushToken($_POST['pushToken'], $device);
+				$tokenType = $_POST['tokenType'] ?? "expo";
+				$result = $user->saveNotificationPushToken($_POST['pushToken'], $device, $tokenType);
 				if ($result === true) {
 					return [
 						'success' => true,
@@ -6118,10 +6121,11 @@ class UserAPI extends AbstractAPI {
 		}
 	}
 
-	function endMasquerade() {
+	function endMasquerade() : array {
 		if (UserAccount::isLoggedIn()) {
 			global $guidingUser;
 			global $masqueradeMode;
+			global $logger;
 			@session_start();  // (suppress notice if the session is already started)
 			unset($_SESSION['guidingUserId']);
 			$masqueradeMode = false;
@@ -6138,11 +6142,16 @@ class UserAPI extends AbstractAPI {
 						$_POST['username'] = $guidingUser->username;
 						$_POST['password'] = $guidingUser->password;
 					}
-					$user = UserAccount::login();
+					try {
+						$user = UserAccount::login();
+					} catch (UnknownAuthenticationMethodException $e) {
+						$logger->log("Unknown Authentication" . $e, Logger::LOG_ERROR);
+						$user = null;
+					}
 				}
 
 				if (!empty($user) && !($user instanceof AspenError)) {
-					$returnTo = isset($_SESSION['returnTo']) ? $_SESSION['returnTo'] : '/MyAccount/Home';
+					$returnTo = $_SESSION['returnTo'] ?? '/MyAccount/Home';
 					session_destroy();
 					session_name('aspen_session');
 					$newSessionId = session_create_id('');
@@ -6151,9 +6160,21 @@ class UserAPI extends AbstractAPI {
 					$session->init();
 					$_SESSION['activeUserId'] = $user->id;
 
-					if($user->isLoggedInViaSSO) {
+					if ($user->isLoggedInViaSSO) {
 						$_SESSION['rememberMe'] = false;
 						$_SESSION['loggedInViaSSO'] = true;
+					}
+
+					if ($user->is2FARequired()) {
+						//Don't force the user to go through 2-factor authentication again if we are ending masquerade
+						$authCodeForSession = new TwoFactorAuthCode();
+						$authCodeForSession->sessionId = $newSessionId;
+						$authCodeForSession->userId = $user->id;
+						if (!$authCodeForSession->find(true)) {
+							$authCodeForSession->status = 'used';
+							$authCodeForSession->code = 'endmasq';
+							$authCodeForSession->insert();
+						}
 					}
 
 					return [

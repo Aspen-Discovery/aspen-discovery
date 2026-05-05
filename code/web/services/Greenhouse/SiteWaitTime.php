@@ -60,7 +60,7 @@ class SiteWaitTime extends Admin_Admin {
 	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Greenhouse/Home', 'Greenhouse Home');
-		$breadcrumbs[] = new Breadcrumb('/Greenhouse/Sites', 'Sites');
+		$breadcrumbs[] = new Breadcrumb('/Greenhouse/Home#greenhouse-stats-reports', 'Partner Maintenance & Reports');
 		$breadcrumbs[] = new Breadcrumb('', 'Wait Time');
 		return $breadcrumbs;
 	}

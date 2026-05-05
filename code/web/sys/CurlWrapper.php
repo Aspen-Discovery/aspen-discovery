@@ -132,6 +132,7 @@ class CurlWrapper {
 	 */
 	public function curlGetPage(string $url) : bool|string {
 		$this->curl_connect($url);
+		curl_setopt($this->curl_connection, CURLOPT_CUSTOMREQUEST, null);
 		curl_setopt($this->curl_connection, CURLOPT_HTTPGET, true);
 		$this->responseHeaders = [];
 		$return = curl_exec($this->curl_connection);

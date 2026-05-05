@@ -1801,6 +1801,7 @@ abstract class SearchObject_BaseSearcher {
 			$dupSaved = false;
 			foreach ($searchHistory as $oldSearch) {
 				// Deminify the old search
+				SearchObjectFactory::initSearchObject($oldSearch->searchSource);
 				$minSO = unserialize($oldSearch->search_object);
 				$dupSearch = SearchObjectFactory::deminify($minSO);
 				// See if the classes and urls match
@@ -1903,6 +1904,7 @@ abstract class SearchObject_BaseSearcher {
 				//   rights to view this search
 				if ($forceReload || $search->session_id == session_id() || (UserAccount::isLoggedIn() && $search->user_id == UserAccount::getActiveUserId())) {
 					// They do, deminify it to a new object.
+					SearchObjectFactory::initSearchObject($search->searchSource);
 					$minSO = unserialize($search->search_object);
 					$savedSearch = SearchObjectFactory::deminify($minSO, $search);
 
@@ -2493,6 +2495,7 @@ abstract class SearchObject_BaseSearcher {
 			$s->find();
 			if ($s->getNumResults() > 0) {
 				$s->fetch();
+				SearchObjectFactory::initSearchObject($s->searchSource);
 				$minSO = unserialize($s->search_object);
 				/** @var SearchObject_BaseSearcher $searchObject */
 				$searchObject = SearchObjectFactory::deminify($minSO);

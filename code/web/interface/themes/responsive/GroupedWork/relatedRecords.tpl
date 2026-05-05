@@ -18,8 +18,14 @@
 					{if !empty($relatedRecord->edition)}
 						<div class="row"><div class="result-label col-lg-5 col-tn-12">{translate text="Edition" isPublicFacing=true}</div><div class="result-value col-lg-7 col-tn-12"> {$relatedRecord->edition}</div></div>
 					{/if}
-					{if !empty($relatedRecord->physical)}
+					{if !empty($relatedRecord->physical) && empty($relatedRecord->duration)}
 						<div class="row"><div class="result-label col-lg-5 col-tn-12">{translate text="Physical Description" isPublicFacing=true}</div><div class="result-value col-lg-7 col-tn-12"> <a href="{$relatedRecord->getUrl()}">{$relatedRecord->physical} {if $relatedRecord->closedCaptioned}<i class="fas fa-closed-captioning"></i> {/if}</a></div></div>
+					{/if}
+					{if !empty($relatedRecord->duration)}
+						{math equation="floor(x/60)" x=$relatedRecord->duration assign="hours"}
+						{math equation="x%60" x=$relatedRecord->duration assign="minutes"}
+
+						<div class="row"><div class="result-label col-lg-5 col-tn-12">{translate text="Duration" isPublicFacing=true}</div><div class="result-value col-lg-7 col-tn-12"> <a href="{$relatedRecord->getUrl()}">{$hours} hours {$minutes} minutes</a></div></div>
 					{/if}
 					{if !empty($relatedRecord->languageNote)}
 						<div class="row"><div class="result-label col-lg-5 col-tn-12">{translate text="Language" isPublicFacing=true}</div><div class="result-value col-lg-7 col-tn-12"> <a href="{$relatedRecord->getUrl()}">{$relatedRecord->physical}</a></div></div>

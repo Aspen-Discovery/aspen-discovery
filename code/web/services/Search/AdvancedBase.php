@@ -22,6 +22,7 @@ abstract class Search_AdvancedBase extends Action {
 				// Check permissions
 				if ($search->session_id == session_id() || $search->user_id == UserAccount::getActiveUserId()) {
 					// Retrieve the search details
+					SearchObjectFactory::initSearchObject($search->searchSource);
 					$minSO = unserialize($search->search_object);
 					$savedSearch = SearchObjectFactory::deminify($minSO);
 					// Make sure it's an advanced search or convert it to advanced

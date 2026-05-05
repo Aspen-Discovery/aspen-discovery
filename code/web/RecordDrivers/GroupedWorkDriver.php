@@ -1642,8 +1642,8 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		return $this->_moreInfoLink;
 	}
 
-	public function getMpaaRating() {
-		return $this->fields['mpaa_rating'] ?? null;
+	public function getContentRating() {
+		return $this->fields['content_rating'] ?? null;
 	}
 
 	private $numRelatedRecords = -1;
@@ -3169,7 +3169,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 					if ($mainLocation->isMainBranch) {
 						$scope = new Grouping_Scope();
 						$mainLibraryScopeName = str_replace('-', '', !empty($mainLocation->subdomain) ? $mainLocation->subdomain : $mainLocation->code);
-						$scope->name = $mainLibraryScopeName;
+						$scope->whereAdd('LOWER(name) = ' . $scope->escape(strtolower($mainLibraryScopeName)));
 						$scope->isLocationScope = 1;
 						if ($scope->find(true)) {
 							GroupedWorkDriver::$mainLocationScopeId = $scope->id;
@@ -3181,7 +3181,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 				if ($activeLocation != null) {
 					$scope = new Grouping_Scope();
 					$activeLocationScopeName = str_replace('-', '', !empty($activeLocation->subdomain) ? $activeLocation->subdomain : $activeLocation->code);
-					$scope->name = $activeLocationScopeName;
+					$scope->whereAdd('LOWER(name) = ' . $scope->escape(strtolower($activeLocationScopeName)));
 					$scope->isLocationScope = 1;
 					if ($scope->find(true)) {
 						GroupedWorkDriver::$activeLocationScopeId = $scope->id;
@@ -3193,7 +3193,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 						if ($altLocation1->find(true)) {
 							$scope = new Grouping_Scope();
 							$altLocation1ScopeName = str_replace('-', '', !empty($altLocation1->subdomain) ? $altLocation1->subdomain : $altLocation1->code);
-							$scope->name = $altLocation1ScopeName;
+							$scope->whereAdd('LOWER(name) = ' . $scope->escape(strtolower($altLocation1ScopeName)));
 							$scope->isLocationScope = 1;
 							if ($scope->find(true)) {
 								GroupedWorkDriver::$atNearbyLocation1 = $scope->id;
@@ -3202,11 +3202,11 @@ class GroupedWorkDriver extends IndexRecordDriver {
 					}
 					if ($activeLocation->nearbyLocation2 > 0) {
 						$altLocation2 = new Location();
-						$altLocation2->locationId = $activeLocation->nearbyLocation2;
+						$altLocation2->locationId = strtolower($activeLocation->nearbyLocation2);
 						if ($altLocation2->find(true)) {
 							$scope = new Grouping_Scope();
 							$altLocation2ScopeName = str_replace('-', '', !empty($altLocation2->subdomain) ? $altLocation2->subdomain : $altLocation2->code);
-							$scope->name = $altLocation2ScopeName;
+							$scope->whereAdd('LOWER(name) = ' . $scope->escape(strtolower($altLocation2ScopeName)));
 							$scope->isLocationScope = 1;
 							if ($scope->find(true)) {
 								GroupedWorkDriver::$atNearbyLocation2 = $scope->id;
@@ -3220,7 +3220,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 					if ($userHomeLocation != null) {
 						$scope = new Grouping_Scope();
 						$mainLibraryScopeName = str_replace('-', '', !empty($userHomeLocation->subdomain) ? $userHomeLocation->subdomain : $userHomeLocation->code);
-						$scope->name = $mainLibraryScopeName;
+						$scope->whereAdd('LOWER(name) = ' . $scope->escape(strtolower($mainLibraryScopeName)));
 						$scope->isLocationScope = 1;
 						if ($scope->find(true)) {
 							GroupedWorkDriver::$homeLocationScopeId = $scope->id;
@@ -3232,7 +3232,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 						if ($myLocation1->find(true)) {
 							$mainLibraryScopeName = str_replace('-', '', !empty($myLocation1->subdomain) ? $myLocation1->subdomain : $myLocation1->code);
 							$scope = new Grouping_Scope();
-							$scope->name = $mainLibraryScopeName;
+							$scope->whereAdd('LOWER(name) = ' . $scope->escape(strtolower($mainLibraryScopeName)));
 							$scope->isLocationScope = 1;
 							if ($scope->find(true)) {
 								GroupedWorkDriver::$userNearbyLocation1ScopeId = $scope->id;
@@ -3245,7 +3245,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 						if ($myLocation2->find(true)) {
 							$mainLibraryScopeName = str_replace('-', '', !empty($myLocation2->subdomain) ? $myLocation2->subdomain : $myLocation2->code);
 							$scope = new Grouping_Scope();
-							$scope->name = $mainLibraryScopeName;
+							$scope->whereAdd('LOWER(name) = ' . $scope->escape(strtolower($mainLibraryScopeName)));
 							$scope->isLocationScope = 1;
 							if ($scope->find(true)) {
 								GroupedWorkDriver::$userNearbyLocation2ScopeId = $scope->id;
@@ -3484,13 +3484,14 @@ class GroupedWorkDriver extends IndexRecordDriver {
 			$records = [];
 		} else {
 			$uniqueRecordIdsString = implode(',', $uniqueRecordIds);
-			$recordQuery = "SELECT grouped_work_records.id, recordIdentifier, isClosedCaptioned, indexed_record_source.source, indexed_record_source.subSource, indexed_edition.edition, indexed_publisher.publisher, indexed_publication_date.publicationDate, indexed_place_of_publication.placeOfPublication, indexed_physical_description.physicalDescription, indexed_format.format, indexed_format_category.formatCategory, indexed_language.language, indexed_audience.audience, hasParentRecord, hasChildRecord FROM grouped_work_records
+			$recordQuery = "SELECT grouped_work_records.id, recordIdentifier, isClosedCaptioned, indexed_record_source.source, indexed_record_source.subSource, indexed_edition.edition, indexed_publisher.publisher, indexed_publication_date.publicationDate, indexed_place_of_publication.placeOfPublication, indexed_physical_description.physicalDescription, indexed_format.format, indexed_format_category.formatCategory, indexed_language.language, indexed_audience.audience, indexed_duration.duration, hasParentRecord, hasChildRecord FROM grouped_work_records
 								  LEFT JOIN indexed_record_source ON sourceId = indexed_record_source.id
 								  LEFT JOIN indexed_edition ON editionId = indexed_edition.id
 								  LEFT JOIN indexed_publisher ON publisherId = indexed_publisher.id
 								  LEFT JOIN indexed_publication_date ON publicationDateId = indexed_publication_date.id
 								  LEFT JOIN indexed_place_of_publication ON placeOfPublicationId = indexed_place_of_publication.id
 								  LEFT JOIN indexed_physical_description ON physicalDescriptionId = indexed_physical_description.id
+								  LEFT JOIN indexed_duration ON durationId = indexed_duration.id
 								  LEFT JOIN indexed_format on formatId = indexed_format.id
 								  LEFT JOIN indexed_format_category on formatCategoryId = indexed_format_category.id
 								  LEFT JOIN indexed_language on languageId = indexed_language.id
@@ -3512,7 +3513,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 			$uniqueItemIdsString = implode(',', $uniqueItemIds);
 			$scopeQuery = "SELECT grouped_work_record_items.id as groupedWorkItemId, available, holdable, inLibraryUseOnly, locationOwnedScopes, libraryOwnedScopes, groupedStatusTbl.status as groupedStatus, statusTbl.status as status,
 								  grouped_work_record_items.groupedWorkRecordId, grouped_work_record_items.groupedWorkVariationId, grouped_work_record_items.itemId, indexed_call_number.callNumber, indexed_shelf_location.shelfLocation, numCopies, isOrderItem, dateAdded,
-       							  indexed_location_code.locationCode, indexed_sub_location_code.subLocationCode, lastCheckInDate, isVirtual
+       							  indexed_location_code.locationCode, indexed_sub_location_code.subLocationCode, lastCheckInDate, isVirtual, barcode, note, dueDate
 								  FROM grouped_work_record_items
 								  LEFT JOIN indexed_status as groupedStatusTbl on groupedStatusId = groupedStatusTbl.id
 								  LEFT JOIN indexed_status as statusTbl on statusId = statusTbl.id

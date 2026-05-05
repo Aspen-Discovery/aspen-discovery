@@ -649,6 +649,7 @@ class GroupedWork_AJAX extends JSON_Action {
 		]);
 
 		// button template
+		$interface->assign('summId', $recordDriver->getPermanentId());
 		$interface->assign('workId', $recordDriver->getPermanentId());
 		$interface->assign('escapeId', $escapedId);
 		$interface->assign('buttonLabel', $buttonLabel);
@@ -1692,6 +1693,8 @@ class GroupedWork_AJAX extends JSON_Action {
 	/** @noinspection PhpUnused */
 	function getCopyDetails() : array {
 		$this->checkRequiredParameters(['id']);
+		$this->checkRequiredParameters(['recordId']);
+		$this->checkRequiredParameters(['format']);
 
 		global $interface;
 		global $library;
@@ -1729,69 +1732,67 @@ class GroupedWork_AJAX extends JSON_Action {
 		$interface->assign('relatedManifestation', $relatedManifestation);
 		$interface->assign('isEContent', $relatedManifestation->isEContent());
 
-		$summary = null;
 		$infoToShow = [
 			'volume'   => false,
 			'note'     => false,
 			'dueDate' => false,
 			'barcode'  => false
 		];
-		if ($whereIsItDisplayStyle == 2) {
-			foreach ($relatedManifestation->getRelatedRecords() as $record) {
-				$recordDriver = new MarcRecordDriver($record->id);
-				if ($recordDriver->isValid()) {
-					$summary = $recordDriver->getSortedCopies();
-
-					foreach ($summary as $summaryItem) {
-						if (!empty($summaryItem['volume'])) {
-							$infoToShow['volume'] = true;
-						}
-						if (!empty($summaryItem['note'])) {
-							$infoToShow['note'] = true;
-						}
-						if (!empty($summaryItem['dueDate'])) {
-							$infoToShow['dueDate'] = true;
-						}
-						if (!empty($summaryItem['barcode'])) {
-							$infoToShow['barcode'] = true;
-						}
-
-						if (!in_array(false, $infoToShow, true)) {
-							break; // Exit when ALL four are true
-						}
-					}
+		if ($recordId != $id) {
+			$record = $recordDriver->getRelatedRecord($recordId);
+			if ($record != null) {
+				if (!empty($record->getUnsuppressedVolumeData())) {
+					$infoToShow['volume'] = true;
 				}
-			}
-		}
-		if ($summary == null) {
-			if ($recordId != $id) {
-				$record = $recordDriver->getRelatedRecord($recordId);
-				if ($record != null) {
-					if (!empty($record->getUnsuppressedVolumeData())) {
-						$infoToShow['volume'] = true;
-					}
-					foreach ($relatedManifestation->getVariations() as $variation) {
-						foreach ($variation->getRecords() as $recordWithVariation) {
-							if ($recordWithVariation->id == $recordId) {
+				foreach ($relatedManifestation->getVariations() as $variation) {
+					foreach ($variation->getRecords() as $recordWithVariation) {
+						if ($recordWithVariation->id == $recordId) {
+							if ($whereIsItDisplayStyle == 1) {
 								$summary = $recordWithVariation->getItemSummary();
-								break;
+							}else{
+								$summary = $recordWithVariation->getItemDetails();
 							}
-						}
-						if (!empty($summary)) {
 							break;
 						}
 					}
-				} else {
-					foreach ($relatedManifestation->getVariations() as $variation) {
-						if ($recordId == $id . '_' . $variation->label) {
-							$summary = $variation->getItemSummary();
-							break;
-						}
+					if (!empty($summary)) {
+						break;
 					}
 				}
 			} else {
+				foreach ($relatedManifestation->getVariations() as $variation) {
+					if ($recordId == $id . '_' . $variation->label) {
+						if ($whereIsItDisplayStyle == 1) {
+							$summary = $variation->getItemSummary();
+						}else{
+							$summary = $variation->getItemDetails();
+						}
+						break;
+					}
+				}
+			}
+		} else {
+			if ($whereIsItDisplayStyle == 1) {
 				$summary = $relatedManifestation->getItemSummary();
-				$infoToShow['volume'] = $relatedManifestation->hasVolumes();
+			}else{
+				$summary = $relatedManifestation->getItemDetails();
+			}
+			$infoToShow['volume'] = $relatedManifestation->hasVolumes();
+		}
+		if ($whereIsItDisplayStyle == 2) {
+			foreach ($summary as $item) {
+				if (!empty($item['volume'])) {
+					$infoToShow['volume'] = true;
+				}
+				if (!empty($item['note'])) {
+					$infoToShow['note'] = true;
+				}
+				if (!empty($item['dueDate'])) {
+					$infoToShow['dueDate'] = true;
+				}
+				if (!empty($item['barcode'])) {
+					$infoToShow['barcode'] = true;
+				}
 			}
 		}
 		$interface->assign('infoToShow', $infoToShow);

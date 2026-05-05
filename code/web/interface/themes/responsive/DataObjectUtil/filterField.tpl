@@ -45,9 +45,12 @@
 	{elseif $filterField.type == 'integer' || $filterField.type == 'calculatedInteger'}
 		<div class="col-xs-3">
 			{assign var=label value="Type of filtering for `$filterField.label`"}
-			<select name="filterType[{$filterField.property}]" id="filterType_{$filterField.property}" class="form-control form-control-sm filterType" aria-label="{translate text=$label inAttribute=true isAdminFacing=true}" onchange="AspenDiscovery.Admin.setDateFilterFieldVisibility('{$filterField.property}')">
+			<select name="filterType[{$filterField.property}]" id="filterType_{$filterField.property}" class="form-control form-control-sm filterType" aria-label="{translate text=$label inAttribute=true isAdminFacing=true}" onchange="AspenDiscovery.Admin.setIntegerFilterFieldVisibility('{$filterField.property}')">
+				<option value="equals" {if !empty($appliedFilter) && $appliedFilter.filterType == 'equals'}selected="selected"{/if}>{translate text="Equals" isAdminFacing=true}</option>
 				<option value="greaterThan" {if !empty($appliedFilter) && $appliedFilter.filterType == 'greaterThan'}selected="selected"{/if}>{translate text="Greater Than" isAdminFacing=true}</option>
+				<option value="greaterThanOrEqual" {if !empty($appliedFilter) && $appliedFilter.filterType == 'greaterThanOrEqual'}selected="selected"{/if}>{translate text="Greater Than or Equal to" isAdminFacing=true}</option>
 				<option value="lessThan" {if !empty($appliedFilter) && $appliedFilter.filterType == 'lessThan'}selected="selected"{/if}>{translate text="Less Than" isAdminFacing=true}</option>
+				<option value="lessThanOrEqual" {if !empty($appliedFilter) && $appliedFilter.filterType == 'lessThanOrEqual'}selected="selected"{/if}>{translate text="Less Than or Equal to" isAdminFacing=true}</option>
 				<option value="between" {if !empty($appliedFilter) && $appliedFilter.filterType == 'between'}selected="selected"{/if}>{translate text="Between" isAdminFacing=true}</option>
 			</select>
 		</div>

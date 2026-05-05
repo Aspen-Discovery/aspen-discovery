@@ -12,12 +12,14 @@ class Testing_SIPTester extends Admin_Admin {
 			$sipPassword = $_REQUEST['sipPassword'] ?? null;
 			$patronBarcode = $_REQUEST['patronBarcode'] ?? null;
 			$patronPin = $_REQUEST['patronPin'] ?? null;
+			$useSSL = !empty($_REQUEST['useSSL']) ?? false;
 			$interface->assign('sipHost', $sipHost);
 			$interface->assign('sipPort', $sipPort);
 			$interface->assign('sipUser', $sipUser);
 			$interface->assign('sipPassword', $sipPassword);
 			$interface->assign('patronBarcode', $patronBarcode);
 			$interface->assign('patronPin', $patronPin);
+			$interface->assign('useSSL', $useSSL);
 
 			$results = [
 				'success' => false,
@@ -28,6 +30,7 @@ class Testing_SIPTester extends Admin_Admin {
 				$mySip->port = $sipPort;
 
 				$mySip->debug = true;
+				$mySip->useSSL = $useSSL;
 
 				if ($mySip->connect($sipUser, $sipPassword)) {
 					$results['success'] = true;
@@ -89,6 +92,7 @@ class Testing_SIPTester extends Admin_Admin {
 	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Greenhouse/Home', 'Greenhouse Home');
+		$breadcrumbs[] = new Breadcrumb('/Greenhouse/Home#greenhouse-testing-tools', 'Testing Tools');
 		$breadcrumbs[] = new Breadcrumb('/Testing/SIPTester', 'SIP Tester', true);
 		return $breadcrumbs;
 	}

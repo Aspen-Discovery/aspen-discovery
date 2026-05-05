@@ -461,6 +461,8 @@ class BookCoverProcessor {
 		$this->id = $_GET['id'] ?? '';
 		//If this is external eContent, we don't care about that part, just use the remaining id
 		$this->id = str_replace('external_econtent:', '', $this->id);
+		//ampersands may cause the wrong cover to load. covering our bases here.
+		$this->id = urlencode($this->id);
 		if (isset($_GET['type'])) {
 			$this->type = $_GET['type'];
 		} else {

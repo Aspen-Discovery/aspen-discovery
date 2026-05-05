@@ -68,6 +68,7 @@ class Greenhouse_ExternalRequestLog extends ObjectEditor {
 	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Greenhouse/Home', 'Greenhouse Home');
+		$breadcrumbs[] = new Breadcrumb('/Greenhouse/Home#greenhouse-logging', 'Logging');
 		$breadcrumbs[] = new Breadcrumb('/Greenhouse/ExternalRequestLog', 'External Request Log');
 		return $breadcrumbs;
 	}

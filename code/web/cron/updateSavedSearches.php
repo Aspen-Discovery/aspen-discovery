@@ -31,12 +31,12 @@ global $solrScope;
 global $configArray;
 
 $defaultSolrScope = $solrScope;
+$usersWithUpdatesToEmail = [];
 if ($search->getNumResults() > 0) {
 	$searchUpdateLogEntry->numSearches = $search->getNumResults();
 	$searchUpdateLogEntry->update();
 	$allSearches = $search->fetchAll('id');
 	$numProcessed = 0;
-	$usersWithUpdatesToEmail = [];
 	foreach ($allSearches as $searchId) {
 		$searchEntry = new SearchEntry();
 		$searchEntry->id = $searchId;
@@ -58,15 +58,15 @@ if ($search->getNumResults() > 0) {
 
 			require_once ROOT_DIR . '/sys/SearchObject/minSO.php';
 
-			$searchObject = SearchObjectFactory::initSearchObject();
+			SearchObjectFactory::initSearchObject($searchEntry->searchSource);
 			$size = strlen($searchEntry->search_object);
 			$minSO = unserialize($searchEntry->search_object);
 			$searchObject = SearchObjectFactory::deminify($minSO);
 
 			$searchObject->removeFilterByPrefix('time_since_added');
 			$searchObject->addFilter('time_since_added:Week');
-			$searchObject->setFieldsToReturn('id');
-			$searchObject->setLimit(10);
+			$searchObject->setFieldsToReturn('id,title_display,author_display');
+			$searchObject->setLimit(3);
 
 			$searchResult = $searchObject->processSearch();
 			if (!$searchResult instanceof AspenError && empty($searchResult['error'])) {
@@ -81,12 +81,15 @@ if ($search->getNumResults() > 0) {
 					if ($oneWeekLater == $today) {
 						$searchEntry->lastUpdated = $today;
 					} else {
+						//Only send new result notifications once a week
 						$searchEntry->hasNewResults = 0;
 					}
 				} else {
 					$searchEntry->lastUpdated = date("Y-m-d");
 				}
 				if ($searchEntry->update() > 0) {
+					$newTitles = $searchResult['response']['docs'];
+
 					$searchUpdateLogEntry->numUpdated++;
 					if ($searchEntry->hasNewResults && $userForSearch->canReceiveNotifications('notifySavedSearch')) {
 						global $logger;
@@ -103,37 +106,47 @@ if ($search->getNumResults() > 0) {
 								$appScheme = $systemVariables->appScheme;
 							}
 						}
-						$notificationToken = new UserNotificationToken();
-						$notificationToken->userId = $userForSearch->id;
-						$notificationToken->notifySavedSearch = 1;
-						$notificationToken->find();
-						while ($notificationToken->fetch()) {
-							$logger->log("Found notification push token for user " . $userForSearch->id, Logger::LOG_ERROR);
-							$body = [
-								'to' => $notificationToken->pushToken,
-								'title' => 'New Titles',
-								'body' => 'New titles have been added to your saved search "' . $searchEntry->title . '" at the library. Check them out!',
-								'categoryId' => 'savedSearch',
-								'channelId' => 'savedSearch',
-								'data' => ['url' => urlencode($appScheme . '://user/saved_search?search=' . $searchEntry->id . "&name=" . $searchEntry->title)],
-							];
-							$expoNotification = new ExpoNotification();
-							$expoNotification->sendExpoPushNotification($body, $notificationToken->pushToken, $searchEntry->user_id, "saved_search");
-							$expoNotification = null;
-						}
-						$notificationToken->__destruct();
-						$notificationToken = null;
+						//define body
+						$body = [
+							'title' => 'New Titles',
+							'body' => 'New titles have been added to your saved search "' . $searchEntry->title . '" at the library. Check them out!',
+							'categoryId' => 'savedSearch',
+							'channelId' => 'savedSearch',
+							'data' => ['url' => urlencode($appScheme . '://user/saved_search?search=' . $searchEntry->id . "&name=" . $searchEntry->title)],
+						];
+						//send message
+						$userForSearch->sendPushNotification($body, "saved_search");
 					}
 					// If the user wishes to receive saved search emails, keep track of those here.
-					if ($userForSearch->notifySavedSearches == TRUE) {
+					if ($searchEntry->hasNewResults && $userForSearch->notifySavedSearches) {
 						$userLibrary = $userForSearch->getHomeLibrary();
 						$baseUrl = $userLibrary->getBaseUrl();
-						$key = $userForSearch->email . '|' . $baseUrl;
-						if (array_key_exists($key, $usersWithUpdatesToEmail)) {
-							$usersWithUpdatesToEmail[$key][] = $searchEntry->title;
+						$key = $userForSearch->id . '|' . $baseUrl;
+
+						$searchObject = SearchObjectFactory::deminify($minSO);
+						$searchUrl = $searchObject->renderSearchUrl(true);
+						if (!str_starts_with($searchUrl, 'http')) {
+							$searchUrl = $baseUrl . $searchUrl;
 						}
-						else {
-							$usersWithUpdatesToEmail[$key] = [$searchEntry->title];
+						if (!isset($usersWithUpdatesToEmail[$key])) {
+							$usersWithUpdatesToEmail[$key] = [
+								'user' => $userForSearch,
+								'library' => $userLibrary,
+								'baseUrl' => $baseUrl,
+								'updatedSearches' => [
+									[
+										'title' => $searchEntry->title,
+										'url' => $searchUrl,
+										'newTitles' => $newTitles
+									]
+								],
+							];
+						} else {
+							$usersWithUpdatesToEmail[$key]['updatedSearches'][] = [
+								'title' => $searchEntry->title,
+								'url' => $searchUrl,
+								'newTitles' => $newTitles
+							];
 						}
 					}
 				}
@@ -159,32 +172,62 @@ $searchUpdateLogEntry->addNote("Finished updating saved searches");
 $searchUpdateLogEntry->endTime = time();
 $searchUpdateLogEntry->update();
 
-// Now that we know all of the searches that have updates, let's send a single email to each distinct email address from that set.
-require_once ROOT_DIR . '/sys/Email/Mailer.php';
-$mailer = new Mailer();
-foreach ($usersWithUpdatesToEmail as $key => $searchTitles) {
-	$keySeparated = explode('|', $key);
-	$emailAddress = $keySeparated[0];
-	$baseUrl = $keySeparated[1];
-	$body = translate([
-		'text' => 'There are new results appearing in your saved searches!',
-		'isPublicFacing' => true,
-	]) . "\r\n" . $baseUrl . '/Search/History?require_login';
-	$htmlBody = '<p>' . translate([
-		'text' => 'There are new results appearing in %1%your saved searches%2%!',
-		1 => '<a href="' . $baseUrl . '/Search/History?require_login">',
-		2 => '</a>',
-		'isPublicFacing' => true,
-	]) . '</p><ul>';
-	foreach ($searchTitles as $searchTitle) {
-		$body .= "\r\n" . $searchTitle;
-		$htmlBody .= '<li>' . $searchTitle . '</li>';
+// Now that we know all the searches that have updates, let's send a single email to each distinct email address from that set.
+require_once ROOT_DIR . '/sys/Email/EmailTemplate.php';
+foreach ($usersWithUpdatesToEmail as $data) {
+	if (empty($data['user']) || empty($data['updatedSearches'])) {
+		continue;
 	}
-	$htmlBody .= '</ul>';
-	$result = $mailer->send($emailAddress, translate([
-		'text' => "New Results in Your Saved Searches",
-		'isPublicFacing' => true,
-	]), $body, null, $htmlBody);
+	/** @var User $activeUser */
+	$activeUser = $data['user'];
+
+	global $activeLanguage;
+	require_once ROOT_DIR . '/sys/Translation/Language.php';
+	$validLanguages = Language::getValidLanguages();
+	if (array_key_exists($activeUser->interfaceLanguage, $validLanguages)) {
+		$activeLanguage = $validLanguages[$activeUser->interfaceLanguage];
+	}else{
+		$activeLanguage = $validLanguages['en'];
+	}
+	$emailTemplate = EmailTemplate::getActiveTemplate('savedSearchAlert');
+	$emailTemplate->plainTextBody .= "\r\n%searchHistory.url%";
+	$emailTemplate->plainTextBody .= "\r\n%searchHistory.updatedSearchesWithSampleTitles%";
+
+	$emailAddress = $data['user']->email;
+
+	$updatedSearches = "";
+	$updatedSearchesHtml = '<li>';
+	$updatedSearchesWithSampleTitles = "";
+	$updatedSearchesWithSampleTitlesHtml = "";
+	foreach ($data['updatedSearches'] as $updatedSearch) {
+		$updatedSearches .= "{$updatedSearch['title']} ({$updatedSearch['url']})\r\n";
+		$updatedSearchesHtml .= "<ul><strong style='font-size: 125%;'><a href='{$updatedSearch['url']}'>{$updatedSearch['title']}</a></strong></ul>";
+		$updatedSearchesWithSampleTitles .= "{$updatedSearch['title']} ({$updatedSearch['url']})\r\n";
+		$updatedSearchesWithSampleTitlesHtml = "<strong style='font-size: 125%;'><a href='{$updatedSearch['url']}'>{$updatedSearch['title']}</a></strong>";
+		$updatedSearchesWithSampleTitlesHtml .= "<ul>";
+		foreach ($updatedSearch['newTitles'] as $newTitle) {
+			$titleUrl = $data['baseUrl'] . "/GroupedWork/" . $newTitle['id'];
+			$updatedSearchesWithSampleTitles .= "{$newTitle['title_display']} - {$newTitle['author_display']} ($titleUrl)\r\n";
+			$updatedSearchesWithSampleTitlesHtml .= "<li><a href='$titleUrl'>{$newTitle['title_display']}</a> {$newTitle['author_display']}</li>";
+		}
+		$updatedSearchesWithSampleTitles .= "\r\n";
+		$updatedSearchesWithSampleTitlesHtml .= "</ul><br/>";
+;	}
+	$updatedSearchesHtml .= '</li>';
+
+	$parameters = [
+		'user' => $activeUser,
+		'library' => $data['library'],
+		'searchHistory' => [
+			'updatedSearches' => $updatedSearches,
+			'updatedSearchesHtml' => $updatedSearchesHtml,
+			'updatedSearchesWithSampleTitles' => $updatedSearchesWithSampleTitles,
+			'updatedSearchesWithSampleTitlesHtml' => $updatedSearchesWithSampleTitlesHtml,
+			'url' => $data['baseUrl'] . '/Search/History?require_login'
+		]
+	];
+
+	$emailTemplate->sendEmail($emailAddress, $parameters);
 }
 
 $numUpdated = ($searchUpdateLogEntry->numUpdated > 0) ? $searchUpdateLogEntry->numUpdated : 0;

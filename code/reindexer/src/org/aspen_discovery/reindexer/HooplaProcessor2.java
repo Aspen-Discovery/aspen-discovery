@@ -18,6 +18,9 @@ import java.sql.SQLException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 class HooplaProcessor2 {
 	private final GroupedWorkIndexer indexer;
@@ -444,8 +447,12 @@ class HooplaProcessor2 {
 
 				groupedWork.addPublicationDate(releaseYear);
 				//physical description
-				if (rawResponse.has("duration")){
-					groupedWork.addPhysical(rawResponse.getString("duration"));
+				if (primaryFormat.equals("eAudiobook") && rawResponse.has("duration")) {
+					int duration = AspenStringUtils.extractTotalMinutes(rawResponse.getString("duration"));
+					hooplaRecord.setDuration(duration);
+					Set<Integer> durationSet = new HashSet<>();
+					durationSet.add(duration);
+					groupedWork.addDuration(durationSet);
 				}
 
 				//Description

@@ -783,10 +783,9 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 	protected function getBaseUrl() : string {
 		// Base URL is different for author searches:
 		if ($this->searchType == 'author') {
-			if ($this->searchSubType == 'home') {
-				return "/Author/Home?";
-			}
-			if ($this->searchSubType == 'search') {
+			if (is_null($this->searchSubType) || $this->searchSubType == 'home') {
+				return '/Author/Home?author=' . urlencode($this->query) . '&';
+			}elseif ($this->searchSubType == 'search') {
 				return "/Author/Search?";
 			}
 		} elseif ($this->searchType == 'favorites') {

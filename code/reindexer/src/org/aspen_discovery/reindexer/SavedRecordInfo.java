@@ -14,6 +14,7 @@ public class SavedRecordInfo {
 	public long publicationDateId;
 	public long placeOfPublicationId;
 	public long physicalDescriptionId;
+	public long durationId;
 	public long formatId;
 	public long formatCategoryId;
 	public long languageId;

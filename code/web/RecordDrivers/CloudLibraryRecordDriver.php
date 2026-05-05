@@ -345,14 +345,10 @@ class CloudLibraryRecordDriver extends MarcRecordDriver {
 			$statusSummary['status'] = "Available from cloudLibrary";
 			$statusSummary['available'] = true;
 			$statusSummary['class'] = 'available';
-			$statusSummary['showPlaceHold'] = false;
-			$statusSummary['showCheckout'] = true;
 		} else {
 			$statusSummary['status'] = 'Checked Out';
 			$statusSummary['class'] = 'checkedOut';
 			$statusSummary['available'] = false;
-			$statusSummary['showPlaceHold'] = true;
-			$statusSummary['showCheckout'] = false;
 		}
 		return $statusSummary;
 	}

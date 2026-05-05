@@ -94,6 +94,16 @@ function getUpdates26_04_00(): array {
 				'ALTER TABLE website_index_log CHANGE COLUMN numSkipped numSkipped INT(11) NOT NULL DEFAULT 0',
 			]
 		], //num_skipped_fix_data_type
+		'add_additional_item_information' => [
+			'title' => 'Add Additional Item Information',
+			'description' => 'Add additional item information to database',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE grouped_work_record_items ADD COLUMN barcode TINYTEXT',
+				'ALTER TABLE grouped_work_record_items ADD COLUMN note TEXT',
+				'ALTER TABLE grouped_work_record_items ADD COLUMN dueDate TINYTEXT',
+			]
+		], //add_additional_item_information
 
 		//kirstien
 		'add_user_app_request_logging_option' => [

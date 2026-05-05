@@ -22,7 +22,10 @@ class SystemAPI extends AbstractAPI {
 
 		if ($method === 'getLogoFile') {
 			$this->$method();
-		}else if ($method === 'getTranslation' || $method === 'getTranslationWithValues' || $method === 'getBulkTranslations') {
+		}else if ($method === 'getTranslation' 
+			|| $method === 'getTranslationWithValues' 
+			|| $method === 'getBulkTranslations'
+			|| $method === 'getFirebaseMessagingConfig') {// TODO determine if firebase methods need authentication
 			//These methods don't need additional authentication, just return the data.
 			$result = [
 				'result' => $this->$method(),
@@ -396,8 +399,23 @@ class SystemAPI extends AbstractAPI {
 		$pay360Updates = getPay360Updates();
 		require_once ROOT_DIR . '/sys/DBMaintenance/gale_updates.php';
 		$galeUpdates = getGaleUpdates();
+		require_once ROOT_DIR . '/sys/DBMaintenance/aspen_event_registration_updates.php';
+		$aspenEventRegistrationUpdates = getAspenEventRegistrationUpdates();
 
-		$baseUpdates = array_merge($library_location_updates, $summonUpdates, $cloudLibraryUpdates, $grapesWebBuilderUpdates, $communityEngagementUpdates, $talpaUpdates, $heycentricUpdates, $hooplaVersion2Updates, $pay360Updates, $galeUpdates);
+		//having these on separate lines should make merges easier to manage
+		$baseUpdates = array_merge(
+			$library_location_updates, 
+			$summonUpdates, 
+			$cloudLibraryUpdates, 
+			$grapesWebBuilderUpdates, 
+			$communityEngagementUpdates, 
+			$talpaUpdates, 
+			$heycentricUpdates,
+			$hooplaVersion2Updates,
+			$pay360Updates,
+			$galeUpdates,
+			$aspenEventRegistrationUpdates
+		);
 
 		//Get version updates
 		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
@@ -412,6 +430,12 @@ class SystemAPI extends AbstractAPI {
 					$baseUpdates = array_merge($baseUpdates, $updates);
 				}
 			}
+		}
+
+		//Get Plugin Updates
+		global $plugins;
+		foreach ($plugins as $plugin) {
+			$baseUpdates = array_merge($baseUpdates, $plugin->getDatabaseUpdates());
 		}
 
 		return $baseUpdates;
@@ -1217,6 +1241,26 @@ class SystemAPI extends AbstractAPI {
 		];
 	}
 
+	//only returns the portion of settings needed by
+	//the front end to get a token
+	function getFirebaseMessagingConfig() {
+		require_once ROOT_DIR . '/sys/AspenPWA/Setting.php';
+		$settings = AspenPWASetting::getSettingsForCurrentLibrary();
+		if($settings)
+		{
+			return [
+				'success' => true,
+				'settings' => $settings->getFirebaseSettings(),
+			];
+		}
+		
+		http_response_code(404);
+		return [
+			'success' => false,
+			'error' => 'no settings found'
+		];
+	}
+
 	/** @noinspection PhpUnused */
 	public function getHomeScreenLinks(): array {
 		if (isset($_REQUEST['locationId']) || isset($_REQUEST['libraryId'])) {
@@ -1438,7 +1482,6 @@ class SystemAPI extends AbstractAPI {
 			}
 		}
 	}
-
 	function getBreadcrumbs(): array {
 		return [];
 	}

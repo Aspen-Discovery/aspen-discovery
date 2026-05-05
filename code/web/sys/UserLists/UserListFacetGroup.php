@@ -162,10 +162,25 @@ class UserListFacetGroup extends DataObject {
 			$this->clearLibraries();
 
 			foreach ($this->_libraries as $libraryId) {
+				//Make sure the library is not linked to another facet group
 				$libraryUserListSetting = new LibraryUserListFacetSetting();
 				$libraryUserListSetting->libraryId = $libraryId;
-				$libraryUserListSetting->userListFacetGroupId = $this->id;
-				$libraryUserListSetting->update();
+				$libraryUserListSetting->find();
+				$foundExisting = false;
+				while ($libraryUserListSetting->fetch()) {
+					if ($libraryUserListSetting->userListFacetGroupId != $this->id) {
+						$libraryUserListSetting->delete();
+					}elseif ($libraryUserListSetting->userListFacetGroupId == $this->id) {
+						$foundExisting = true;
+					}
+				}
+
+				if (!$foundExisting) {
+					$libraryUserListSetting = new LibraryUserListFacetSetting();
+					$libraryUserListSetting->libraryId = $libraryId;
+					$libraryUserListSetting->userListFacetGroupId = $this->id;
+					$libraryUserListSetting->update();
+				}
 			}
 			unset($this->_libraries);
 		}

@@ -109,6 +109,34 @@ public class AspenStringUtils {
 		return subfield;
 	}
 
+	public static int extractTotalMinutes(String input) {
+		// Handle HH:mm:ss format (e.g., "06:02:00")
+		Pattern timeColonPattern = Pattern.compile("(\\d+):(\\d{2}):(\\d{2})");
+		Matcher timeColonMatcher = timeColonPattern.matcher(input);
+		if (timeColonMatcher.find()) {
+			int hours = Integer.parseInt(timeColonMatcher.group(1));
+			int minutes = Integer.parseInt(timeColonMatcher.group(2));
+			// group(3) is seconds — ignored, but matched to confirm HH:mm:ss format
+			return hours * 60 + minutes;
+		}
+
+		// Handle "6 hr. 2 min." / "6h 2m 0s" formats
+		Pattern hrPattern = Pattern.compile("(\\d+)\\s*(?:hr\\.|h\\b)");
+		Pattern minPattern = Pattern.compile("(\\d+)\\s*(?:min\\.|m(?!s))");
+
+		Matcher hrMatcher = hrPattern.matcher(input);
+		Matcher minMatcher = minPattern.matcher(input);
+
+		int hours = hrMatcher.find() ? Integer.parseInt(hrMatcher.group(1)) : 0;
+		int minutes = minMatcher.find() ? Integer.parseInt(minMatcher.group(1)) : 0;
+
+		if (hours == 0 && minutes == 0) {
+			return 0;
+		}
+
+		return hours * 60 + minutes;
+	}
+
 	public static String stripNonValidXMLCharacters(String in) {
 		StringBuilder out = new StringBuilder(); // Used to hold the output.
 		char current; // Used to reference the current character.

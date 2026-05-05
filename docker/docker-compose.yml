@@ -13,11 +13,12 @@ services:
       - net-aspen
     tty: true
     volumes:
-      - ${ASPEN_DATA_DIR}/conf:/usr/local/aspen-discovery/sites/${SITE_NAME}
-      - ${ASPEN_DATA_DIR}/data:/data/aspen-discovery/${SITE_NAME}
-      - ${ASPEN_DATA_DIR}/logs:/var/log/aspen-discovery/${SITE_NAME}
+      - ${ASPEN_HOME:-./aspen}/conf:/usr/local/aspen-discovery/sites/${SITE_NAME}
+      - ${ASPEN_HOME:-./aspen}/data:/data/aspen-discovery/${SITE_NAME}
+      - ${ASPEN_HOME:-./aspen}/logs:/var/log/aspen-discovery/${SITE_NAME}
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
   apache:
     image: ${BACKEND_IMAGE_TAG:-aspendiscovery/aspen}
@@ -28,9 +29,9 @@ services:
     networks:
       - net-aspen
     volumes:
-      - ${ASPEN_DATA_DIR}/conf:/usr/local/aspen-discovery/sites/${SITE_NAME}
-      - ${ASPEN_DATA_DIR}/data:/data/aspen-discovery/${SITE_NAME}
-      - ${ASPEN_DATA_DIR}/logs:/var/log/aspen-discovery/${SITE_NAME}
+      - ${ASPEN_HOME:-./aspen}/conf:/usr/local/aspen-discovery/sites/${SITE_NAME}
+      - ${ASPEN_HOME:-./aspen}/data:/data/aspen-discovery/${SITE_NAME}
+      - ${ASPEN_HOME:-./aspen}/logs:/var/log/aspen-discovery/${SITE_NAME}
     command:
       - apache
     depends_on:
@@ -47,9 +48,9 @@ services:
           - ${SITE_NAME}
     tty: true
     volumes:
-      - ${ASPEN_DATA_DIR}/conf:/usr/local/aspen-discovery/sites/${SITE_NAME}
-      - ${ASPEN_DATA_DIR}/data:/data/aspen-discovery/${SITE_NAME}
-      - ${ASPEN_DATA_DIR}/logs:/var/log/aspen-discovery/${SITE_NAME}
+      - ${ASPEN_HOME:-./aspen}/conf:/usr/local/aspen-discovery/sites/${SITE_NAME}
+      - ${ASPEN_HOME:-./aspen}/data:/data/aspen-discovery/${SITE_NAME}
+      - ${ASPEN_HOME:-./aspen}/logs:/var/log/aspen-discovery/${SITE_NAME}
     command:
       - cron
     depends_on:
@@ -68,10 +69,13 @@ services:
       - MARIADB_PASSWORD=${DATABASE_PASSWORD:-passwd}
       - MARIADB_DATABASE=${DATABASE_NAME:-aspen}
     volumes:
-      - ${ASPEN_DATA_DIR}/database:/var/lib/mysql
-      - ${ASPEN_DATA_DIR}/my.cnf:/etc/mysql/my.cnf
+      - ${ASPEN_HOME:-./aspen}/database:/var/lib/mysql
     networks:
       - net-aspen
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--su-mysql", "--connect", "--innodb_initialized"]
+      interval: 5s
+      retries: 10
 
   solr:
     image: ${SOLR_IMAGE_TAG:-aspendiscovery/solr}
@@ -85,8 +89,6 @@ services:
       - solr:/var/solr
     networks:
       - net-aspen
-    depends_on:
-      - backend
     entrypoint:
     - /bin/bash
     - '-c'

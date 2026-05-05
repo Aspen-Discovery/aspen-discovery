@@ -4,7 +4,7 @@ require_once 'Authentication.php';
 class DatabaseAuthentication implements Authentication {
 	public function __construct($additionalInfo) {}
 
-	public function authenticate($validatedViaSSO, $accountProfile) {
+	public function authenticate(bool $validatedViaSSO, ?AccountProfile $accountProfile) : AspenError|null|User {
 		if (!isset($_POST['username']) || !isset($_POST['password'])) {
 			return new AspenError('Login information cannot be blank authenticating user with Database Authentication.');
 		}

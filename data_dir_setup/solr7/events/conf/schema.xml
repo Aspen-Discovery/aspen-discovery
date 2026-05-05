@@ -118,6 +118,7 @@
 		<field name="registration_required" type="unchanged_string" indexed="true" stored="true" multiValued="false"/>
 		<field name="registration_start_date" type="date" indexed="false" stored="true" docValues="true"/>
 		<field name="registration_end_date" type="date" indexed="false" stored="true" docValues="true"/>
+		<field name="number_of_seats" type="integer" indexed="true" stored="true"/>
 
 		<field name="teaser" type="searchable_text" indexed="true" stored="true"/>
 		<field name="description" type="searchable_text" indexed="true" stored="true"/>

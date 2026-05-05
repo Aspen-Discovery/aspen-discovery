@@ -1342,7 +1342,7 @@ class SearchAPI extends AbstractAPI {
 								$pageToLoad = 1;
 								require_once ROOT_DIR . '/services/Search/History.php';
 								$savedSearch = History::getSavedSearchObject($temp->id);
-								SearchObjectFactory::initSearchObject();
+								SearchObjectFactory::initSearchObject($savedSearch['source']);
 								$minSO = unserialize($savedSearch['search_object']);
 								$searchObject = SearchObjectFactory::deminify($minSO);
 								$searchObject->getFilterList();
@@ -2819,7 +2819,7 @@ class SearchAPI extends AbstractAPI {
 									$eventSource = 'assabet';
 									$bypass = $assabetBypass;
 									$addToList = $assabetAddToList;
-								} else if (str_starts_with($record['id'], 'aspenEvent')) {
+								} else if (str_starts_with($record['id'], 'aspenEvents')) {
 									$eventSource = 'aspenEvents';
 									$bypass = $aspenEventsBypass;
 									$addToList = $aspenEventsAddToList;
@@ -3527,7 +3527,7 @@ class SearchAPI extends AbstractAPI {
 						$eventSource = 'assabet';
 						$bypass = $assabetBypass;
 						$addToList = $assabetAddToList;
-					} else if (str_starts_with($record['id'], 'aspenEvent')) {
+					} else if (str_starts_with($record['id'], 'aspenEvents')) {
 						$eventSource = 'aspenEvents';
 						$bypass = $aspenEventsBypass;
 						$addToList = $aspenEventsAddToList;
@@ -3649,10 +3649,10 @@ class SearchAPI extends AbstractAPI {
 								if (!is_null($obj->manifestation) && !array_key_exists($obj->manifestation->format, $items[$recordKey]['itemList'])) {
 									$format = $obj->manifestation->format;
 									$items[$recordKey]['itemList'][$format]['key'] = $i;
-									$items[$recordKey]['itemList'][$format]['name'] = translate([
+									$items[$recordKey]['itemList'][$format]['name'] = strip_tags(translate([
 										'text' => $format,
 										'isPublicFacing' => true
-									]);
+									]));
 									$i++;
 								}
 							}
@@ -3826,6 +3826,7 @@ class SearchAPI extends AbstractAPI {
 		$search = new SearchEntry();
 		$search->id = $id;
 		if ($search->find(true)) {
+			SearchObjectFactory::initSearchObject($search->searchSource);
 			$minSO = unserialize($search->search_object);
 			$storedSearch = SearchObjectFactory::deminify($minSO, $search);
 			$searchObj = $storedSearch->restoreSavedSearch($id, false, true);
@@ -3856,6 +3857,7 @@ class SearchAPI extends AbstractAPI {
 		$search = new SearchEntry();
 		$search->id = $id;
 		if ($search->find(true)) {
+			SearchObjectFactory::initSearchObject($search->searchSource);
 			$minSO = unserialize($search->search_object);
 			$searchObj = SearchObjectFactory::deminify($minSO, $search);
 			$sortList = $searchObj->getSortList();
@@ -4241,6 +4243,7 @@ class SearchAPI extends AbstractAPI {
 		$search = new SearchEntry();
 		$search->id = $id;
 		if ($search->find(true)) {
+			SearchObjectFactory::initSearchObject($search->searchSource);
 			$minSO = unserialize($search->search_object);
 			$searchObj = SearchObjectFactory::deminify($minSO, $search);
 			$filters = $searchObj->getFilterList();

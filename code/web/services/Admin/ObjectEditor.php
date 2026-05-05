@@ -360,7 +360,7 @@ abstract class ObjectEditor extends Admin_Admin {
 					$interface->assign('canCompare', false);
 				}
 				$interface->assign('showQuickFilterOnPropertiesList', $this->showQuickFilterOnPropertiesList());
-				$interface->setTemplate('../Admin/propertiesList.tpl');
+				$interface->setTemplate(ROOT_DIR . '/interface/themes/responsive/Admin/propertiesList.tpl');
 			}
 		}
 	}
@@ -388,15 +388,15 @@ abstract class ObjectEditor extends Admin_Admin {
 						$this->activeObject = $existingObject;
 						$interface->assign('sourceId', $id);
 					} else {
-						$interface->setTemplate('../Admin/noPermission.tpl');
+						$interface->setTemplate(ROOT_DIR . '/interface/themes/responsive/Admin/noPermission.tpl');
 						return;
 					}
 				} else {
-					$interface->setTemplate('../Admin/invalidObject.tpl');
+					$interface->setTemplate(ROOT_DIR . '/interface/themes/responsive/Admin/invalidObject.tpl');
 					return;
 				}
 			} else {
-				$interface->setTemplate('../Admin/invalidObject.tpl');
+				$interface->setTemplate(ROOT_DIR . '/interface/themes/responsive/Admin/invalidObject.tpl');
 				return;
 			}
 			$interface->assign('object', $existingObject);
@@ -406,9 +406,9 @@ abstract class ObjectEditor extends Admin_Admin {
 
 			$interface->assign('additionalObjectActions', $this->getAdditionalObjectActions($existingObject));
 			$interface->assign('returnToListUrl', $this->getReturnToListUrl());
-			$interface->setTemplate('../Admin/objectEditor.tpl');
+			$interface->setTemplate(ROOT_DIR . '/interface/themes/responsive/Admin/objectEditor.tpl');
 		}else {
-			$interface->setTemplate('../Admin/noPermission.tpl');
+			$interface->setTemplate(ROOT_DIR . '/interface/themes/responsive/Admin/noPermission.tpl');
 		}
 	}
 
@@ -458,7 +458,7 @@ abstract class ObjectEditor extends Admin_Admin {
 			die();
 
 		}else{
-			$interface->setTemplate('../Admin/noPermission.tpl');
+			$interface->setTemplate(ROOT_DIR . '/interface/themes/responsive/Admin/noPermission.tpl');
 		}
 	}
 
@@ -473,15 +473,15 @@ abstract class ObjectEditor extends Admin_Admin {
 					$interface->assign('objectName', $existingObject->__toString());
 					$interface->assign('id', $id);
 					$interface->assign('returnToListUrl', $this->getReturnToListUrl());
-					$interface->setTemplate('../Admin/shareForm.tpl');
+					$interface->setTemplate(ROOT_DIR . '/interface/themes/responsive/Admin/shareForm.tpl');
 				} else {
-					$interface->setTemplate('../Admin/noPermission.tpl');
+					$interface->setTemplate(ROOT_DIR . '/interface/themes/responsive/Admin/noPermission.tpl');
 				}
 			} else {
-				$interface->setTemplate('../Admin/invalidObject.tpl');
+				$interface->setTemplate(ROOT_DIR . '/interface/themes/responsive/Admin/invalidObject.tpl');
 			}
 		} else {
-			$interface->setTemplate('../Admin/invalidObject.tpl');
+			$interface->setTemplate(ROOT_DIR . '/interface/themes/responsive/Admin/invalidObject.tpl');
 		}
 	}
 
@@ -521,16 +521,16 @@ abstract class ObjectEditor extends Admin_Admin {
 						}
 
 					} else {
-						$interface->setTemplate('../Admin/noPermission.tpl');
+						$interface->setTemplate(ROOT_DIR . '/interface/themes/responsive/Admin/noPermission.tpl');
 					}
 				} else {
-					$interface->setTemplate('../Admin/invalidObject.tpl');
+					$interface->setTemplate(ROOT_DIR . '/interface/themes/responsive/Admin/invalidObject.tpl');
 				}
 			} else {
-				$interface->setTemplate('../Admin/invalidObject.tpl');
+				$interface->setTemplate(ROOT_DIR . '/interface/themes/responsive/Admin/invalidObject.tpl');
 			}
 		} else {
-			$interface->setTemplate('../Admin/noPermission.tpl');
+			$interface->setTemplate(ROOT_DIR . '/interface/themes/responsive/Admin/noPermission.tpl');
 		}
 	}
 
@@ -570,16 +570,16 @@ abstract class ObjectEditor extends Admin_Admin {
 
 						$interface->assign('additionalObjectActions', $this->getAdditionalObjectActions($newObject));
 						$interface->assign('returnToListUrl', $this->getReturnToListUrl());
-						$interface->setTemplate('../Admin/objectEditor.tpl');
+						$interface->setTemplate(ROOT_DIR . '/interface/themes/responsive/Admin/objectEditor.tpl');
 					} else {
-						$interface->setTemplate('../Admin/invalidObject.tpl');
+						$interface->setTemplate(ROOT_DIR . '/interface/themes/responsive/Admin/invalidObject.tpl');
 					}
 				}
 			} else {
-				$interface->setTemplate('../Admin/invalidObject.tpl');
+				$interface->setTemplate(ROOT_DIR . '/interface/themes/responsive/Admin/invalidObject.tpl');
 			}
 		} else {
-			$interface->setTemplate('../Admin/noPermission.tpl');
+			$interface->setTemplate(ROOT_DIR . '/interface/themes/responsive/Admin/noPermission.tpl');
 		}
 	}
 
@@ -632,11 +632,11 @@ abstract class ObjectEditor extends Admin_Admin {
 
 					$interface->assign('canDelete', $this->canDelete() && $existingObject->canActiveUserDelete());
 				} else {
-					$interface->setTemplate('../Admin/noPermission.tpl');
+					$interface->setTemplate(ROOT_DIR . '/interface/themes/responsive/Admin/noPermission.tpl');
 					return;
 				}
 			} else {
-				$interface->setTemplate('../Admin/invalidObject.tpl');
+				$interface->setTemplate(ROOT_DIR . '/interface/themes/responsive/Admin/invalidObject.tpl');
 				return;
 			}
 		} else {
@@ -686,7 +686,7 @@ abstract class ObjectEditor extends Admin_Admin {
 
 		$interface->assign('additionalObjectActions', $this->getAdditionalObjectActions($existingObject));
 		$interface->assign('returnToListUrl', $this->getReturnToListUrl());
-		$interface->setTemplate('../Admin/objectEditor.tpl');
+		$interface->setTemplate(ROOT_DIR . '/interface/themes/responsive/Admin/objectEditor.tpl');
 	}
 
 	#[NoReturn]
@@ -1025,7 +1025,7 @@ abstract class ObjectEditor extends Admin_Admin {
 		$interface->assign('module', $this->getModule());
 		$interface->assign('toolName', $this->getToolName());
 		$interface->assign('returnToListUrl', $this->getReturnToListUrl());
-		$interface->setTemplate('../Admin/compareObjects.tpl');
+		$interface->setTemplate(ROOT_DIR . '/interface/themes/responsive/Admin/compareObjects.tpl');
 	}
 
 	function getLinkedObjectNotifications() : ?string {
@@ -1304,6 +1304,7 @@ abstract class ObjectEditor extends Admin_Admin {
 					'currency',
 					'text',
 					'integer',
+					'calculatedInteger',
 					'email',
 					'url',
 				])) {
@@ -1354,39 +1355,118 @@ abstract class ObjectEditor extends Admin_Admin {
 	}
 
 	function applyFilter(DataObject $object, string $fieldName, array $filter) : void {
-		if ($filter['filterType'] == 'matches') {
-			if ($filter['field']['type'] == 'enum' && $filter['filterValue'] == 'all_values') {
-				//Skip this value
-				return;
-			}
-			if ($filter['filterValue'] == '') {
-				$object->whereAdd("$object->__table.$fieldName IS NULL OR $fieldName = ''");
-			} else {
-				$object->$fieldName = $filter['filterValue'];
-			}
-		} elseif ($filter['filterType'] == 'contains') {
-			$object->whereAdd("$object->__table.$fieldName like " . $object->escape('%' . $filter['filterValue'] . '%'));
-		} elseif ($filter['filterType'] == 'startsWith') {
-			$object->whereAdd("$object->__table.$fieldName like " . $object->escape($filter['filterValue'] . '%'));
-		} elseif ($filter['filterType'] == 'beforeTime') {
-			$fieldValue = strtotime($filter['filterValue2']);
-			if ($fieldValue !== false) {
-				$object->whereAdd("$object->__table.$fieldName" . ' < ' . $fieldValue);
-			}
-		} elseif ($filter['filterType'] == 'afterTime') {
-			$fieldValue = strtotime($filter['filterValue']);
-			if ($fieldValue !== false) {
-				$object->whereAdd("$object->__table.$fieldName" . ' > ' . $fieldValue);
-			}
-		} elseif ($filter['filterType'] == 'betweenTimes') {
-			$fieldValue = strtotime($filter['filterValue']);
-			if ($fieldValue !== false) {
-				$object->whereAdd("$object->__table.$fieldName" . ' > ' . $fieldValue);
-			}
-			$fieldValue2 = strtotime($filter['filterValue2']);
-			if ($fieldValue2 !== false) {
-				$object->whereAdd("$object->__table.$fieldName" . ' < ' . $fieldValue2);
-			}
+		$table = empty($filter['field']['filterOmitTablename']) ? "$object->__table." : '';
+		/** @noinspection PhpInArrayCanBeReplacedWithComparisonInspection */
+		$addAsHaving = in_array($filter['field']['type'], ['calculatedInteger']);
+		$fullFieldName = "$table$fieldName";
+		switch ($filter['filterType']) {
+			case 'matches':
+				if ($filter['field']['type'] == 'enum' && $filter['filterValue'] == 'all_values') {
+					//Skip this value
+					return;
+				}
+				if ($filter['filterValue'] == '') {
+					$object->whereAdd("$fullFieldName IS NULL OR $fullFieldName = ''");
+				} else {
+					$object->$fieldName = $filter['filterValue'];
+				}
+				break;
+			case 'contains':
+				$object->whereAdd("$fullFieldName like " . $object->escape('%' . $filter['filterValue'] . '%'));
+				break;
+			case 'startsWith':
+				$object->whereAdd("$fullFieldName like " . $object->escape($filter['filterValue'] . '%'));
+				break;
+			case 'beforeTime':
+				$fieldValue = strtotime($filter['filterValue2']);
+				if ($fieldValue !== false) {
+					$object->whereAdd("$fullFieldName" . ' < ' . $fieldValue);
+				}
+				break;
+			case 'afterTime':
+				$fieldValue = strtotime($filter['filterValue']);
+				if ($fieldValue !== false) {
+					$object->whereAdd("$fullFieldName" . ' > ' . $fieldValue);
+				}
+				break;
+			case 'betweenTimes':
+				$fieldValue = strtotime($filter['filterValue']);
+				if ($fieldValue !== false) {
+					$object->whereAdd("$fullFieldName" . ' > ' . $fieldValue);
+				}
+				$fieldValue2 = strtotime($filter['filterValue2']);
+				if ($fieldValue2 !== false) {
+					$object->whereAdd("$fullFieldName" . ' < ' . $fieldValue2);
+				}
+				break;
+			case 'lessThan':
+				$fieldValue = $filter['filterValue2'];
+				if ($fieldValue !== false) {
+					if ($addAsHaving) {
+						$object->havingAdd("$fieldName < $fieldValue");
+					} else {
+						$object->whereAdd("$fullFieldName < $fieldValue");
+					}
+				}
+				break;
+			case 'lessThanOrEqual':
+				$fieldValue = $filter['filterValue2'];
+				if ($fieldValue !== false) {
+					if ($addAsHaving) {
+						$object->havingAdd("$fieldName <= $fieldValue");
+					} else {
+						$object->whereAdd("$fullFieldName <= $fieldValue");
+					}
+				}
+				break;
+			case 'equals':
+				$fieldValue = $filter['filterValue'];
+				if ($fieldValue !== false) {
+					if ($addAsHaving) {
+						$object->havingAdd("$fieldName = $fieldValue");
+					} else {
+						$object->whereAdd("$fullFieldName = $fieldValue");
+					}
+				}
+				break;
+			case 'greaterThan':
+				$fieldValue = $filter['filterValue'];
+				if ($fieldValue !== false) {
+					if ($addAsHaving) {
+						$object->havingAdd("$fieldName > $fieldValue");
+					} else {
+						$object->whereAdd("$fullFieldName > $fieldValue");
+					}
+				}
+				break;
+			case 'greaterThanOrEqual':
+				$fieldValue = $filter['filterValue'];
+				if ($fieldValue !== false) {
+					if ($addAsHaving) {
+						$object->havingAdd("$fieldName  >= $fieldValue");
+					} else {
+						$object->whereAdd("$fullFieldName >= $fieldValue");
+					}
+				}
+				break;
+			case 'between':
+				$fieldValue = $filter['filterValue'];
+				if ($fieldValue !== false) {
+					if ($addAsHaving) {
+						$object->havingAdd("$fieldName  >= $fieldValue");
+					} else {
+						$object->whereAdd("$fullFieldName >= $fieldValue");
+					}
+				}
+				$fieldValue2 = strtotime($filter['filterValue2']);
+				if ($fieldValue2 !== false) {
+					if ($addAsHaving) {
+						$object->havingAdd("$fieldName <= $fieldValue2");
+					} else {
+						$object->whereAdd("$fullFieldName <= $fieldValue2");
+					}
+				}
+				break;
 		}
 	}
 

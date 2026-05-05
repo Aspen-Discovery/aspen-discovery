@@ -221,6 +221,18 @@ class OverDriveProcessor {
 							}
 							groupedWork.addAuthor2(authors);
 							groupedWork.addAuthor2Role(authorsWithRole);
+							//Get format durations
+							JSONArray formats = rawMetadataDecoded.getJSONArray("formats");
+							for (int i = 0; i < formats.length(); i++) {
+								JSONObject format = formats.getJSONObject(i);
+								if (mediaType.equals("Audiobook") && format.has("duration")) {
+									int duration = AspenStringUtils.extractTotalMinutes(format.getString("duration"));
+									overDriveRecord.setDuration(duration);
+									Set<Integer> durationSet = new HashSet<>();
+									durationSet.add(duration);
+									groupedWork.addDuration(durationSet);
+								}
+							}
 						}
 
 						Date dateAdded = new Date(productRS.getLong("dateAdded") * 1000);

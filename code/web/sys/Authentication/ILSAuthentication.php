@@ -24,9 +24,9 @@ class ILSAuthentication implements Authentication {
 
 	/**
 	 * @param bool $validatedViaSSO
-	 * @return AspenError|User|false
+	 * @return AspenError|false|User|null
 	 */
-	public function authenticate($validatedViaSSO, $accountProfile) {
+	public function authenticate(bool $validatedViaSSO, ?AccountProfile $accountProfile) : AspenError|null|false|User {
 		global $logger;
 		//Check to see if the username and password are provided
 		if (!array_key_exists('username', $_REQUEST) && !array_key_exists('password', $_REQUEST)) {

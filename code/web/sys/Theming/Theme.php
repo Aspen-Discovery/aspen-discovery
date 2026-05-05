@@ -1186,8 +1186,8 @@ class Theme extends DataObject {
 					'logoApp' => [
 						'property' => 'logoApp',
 						'type' => 'image',
-						'label' => 'Logo for Aspen LiDA (512x512 pixels)',
-						'description' => 'The logo for use in Aspen LiDA. If none provided, Aspen will use the favicon.',
+						'label' => 'Logo for Aspen LiDA & PWA (512x512 pixels)',
+						'description' => 'The logo for use in Aspen LiDA and Aspen PWA. If none provided, Aspen will use the favicon.',
 						'required' => false,
 						'thumbWidth' => 180,
 						'maxWidth' => 512,

@@ -63,6 +63,7 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 	protected HashSet<String> issns = new HashSet<>();
 	protected HashSet<String> keywords = new HashSet<>();
 	protected HashSet<String> languages = new HashSet<>();
+	protected String primaryLanguage;
 	protected HashSet<String> translations = new HashSet<>();
 	protected Long languageBoost = 1L;
 	protected Long languageBoostSpanish = 1L;
@@ -73,10 +74,11 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 	protected String fountasPinnell = "";
 	protected HashMap<String, Integer> literaryFormFull = new HashMap<>();
 	protected HashMap<String, Integer> literaryForm = new HashMap<>();
-	protected HashSet<String> mpaaRatings = new HashSet<>();
+	protected HashSet<String> contentRatings = new HashSet<>();
 	protected Long numHoldings = 0L;
 	protected HashSet<String> oclcs = new HashSet<>();
 	protected HashSet<String> physicals = new HashSet<>();
+	protected HashSet<Integer> durations = new HashSet<>();
 	protected double popularity;
 	protected long totalHolds;
 
@@ -200,7 +202,7 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 		// noinspection unchecked
 		clonedWork.literaryForm = (HashMap<String, Integer>) literaryForm.clone();
 		// noinspection unchecked
-		clonedWork.mpaaRatings = (HashSet<String>) mpaaRatings.clone();
+		clonedWork.contentRatings = (HashSet<String>) contentRatings.clone();
 		// noinspection unchecked
 		clonedWork.oclcs = (HashSet<String>) oclcs.clone();
 		// noinspection unchecked
@@ -991,6 +993,10 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 		this.physicals.addAll(fieldList);
 	}
 
+	void addDuration(Set<Integer> fieldList) {
+		this.durations.addAll(fieldList);
+	}
+
 	void addPhysical(String field) {
 		this.physicals.add(field);
 	}
@@ -1065,6 +1071,10 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 
 	void setLanguages(HashSet<String> languages) {
 		this.languages.addAll(languages);
+	}
+
+	void setPrimaryLanguage(String primaryLanguage) {
+		this.primaryLanguage = primaryLanguage;
 	}
 
 	void setTranslations(HashSet<String> translations) {
@@ -1283,8 +1293,8 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 		return ratingFacet;
 	}
 
-	void addMpaaRating(String mpaaRating) {
-		this.mpaaRatings.add(mpaaRating);
+	void addContentRating(String contentRating) {
+		this.contentRatings.add(contentRating);
 	}
 
 	void addBarcodes(Set<String> barcodeList) {

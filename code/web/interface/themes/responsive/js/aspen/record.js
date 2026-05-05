@@ -574,7 +574,7 @@ AspenDiscovery.Record = (function () {
 						AspenDiscovery.toggleButtonSpinner(requestTitleButton, false);
 						$('.modal-body').html(data.message);
 					} else {
-						AspenDiscovery.showMessage(data.title, data.message, false);
+						AspenDiscovery.showMessageWithButtons(data.title, data.message, data.modalButtons);
 						AspenDiscovery.Account.loadMenuData();
 					}
 				} else {

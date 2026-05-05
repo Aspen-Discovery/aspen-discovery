@@ -899,11 +899,12 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 		return $this->getAuthor();
 	}
 
-	private $author = null;
-	public function getAuthor() {
+	private null|string $author = null;
+	public function getAuthor() : ?string {
 		if ($this->author == null) {
 			$author = $this->getFirstFieldValue('100', [
 				'a',
+				'b',
 				'c',
 				'd',
 				'q'

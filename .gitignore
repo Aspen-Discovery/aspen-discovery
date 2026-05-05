@@ -27,6 +27,7 @@ code/web/getWorkIdUpdates.php
 code/web/sitemaps/*.xml
 code/web/sitemaps/*.txt
 code/web/node_modules
+code/debug
 tests/jmeter/results/*
 tests/conf/config.ini
 tests/e2e/selenium-ide/sites/**

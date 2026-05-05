@@ -1588,7 +1588,7 @@ class SearchObject_TalpaSearcher extends SearchObject_BaseSearcher{
 			$this->facetOptions["f.literary_form_full.facet.method"] = 'enum';
 			$this->facetOptions["f.literary_form.facet.method"] = 'enum';
 			$this->facetOptions["f.lexile_code.facet.method"] = 'enum';
-			$this->facetOptions["f.mpaa_rating.facet.method"] = 'enum';
+			$this->facetOptions["f.content_rating.facet.method"] = 'enum';
 			$this->facetOptions["f.rating_facet.facet.method"] = 'enum';
 			$this->facetOptions["f.format_category.facet.method"] = 'enum';
 			$this->facetOptions["f.format.facet.method"] = 'enum';
