@@ -117,13 +117,5 @@
 		</div>
 
 	</form>
-	{if $simplifiedSearchBox}
-		<style>
-			#home-search-box .input-group-addon.clear-search {
-				right: 90px;
-				z-index: 3;
-			}
-		</style>
-	{/if}
 </div>
 {/strip}

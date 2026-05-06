@@ -554,7 +554,8 @@ AspenDiscovery.Searches = (function(){
 			}
 			$select.data('prevVal', filterValue);
 		    aspenJQ('#modalDialog').modal('hide');
-		    
+		},
+
 		handleSimplifiedSourceChange: function(select) {
 			if (select.value === 'advanced') {
 				var searchIndexInput = document.querySelector('[name="searchIndex"]');
