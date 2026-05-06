@@ -3583,7 +3583,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 			$uniqueItemIdsString = implode(',', $uniqueItemIds);
 			$scopeQuery = "SELECT grouped_work_record_items.id as groupedWorkItemId, available, holdable, inLibraryUseOnly, locationOwnedScopes, libraryOwnedScopes, groupedStatusTbl.status as groupedStatus, statusTbl.status as status,
 								  grouped_work_record_items.groupedWorkRecordId, grouped_work_record_items.groupedWorkVariationId, grouped_work_record_items.itemId, indexed_call_number.callNumber, indexed_shelf_location.shelfLocation, numCopies, isOrderItem, dateAdded,
-       							  indexed_location_code.locationCode, indexed_sub_location_code.subLocationCode, lastCheckInDate, isVirtual, barcode, note, dueDate
+       							  indexed_location_code.locationCode, indexed_sub_location_code.subLocationCode, lastCheckInDate, isVirtual, barcode, note, dueDate, bookable
 								  FROM grouped_work_record_items
 								  LEFT JOIN indexed_status as groupedStatusTbl on groupedStatusId = groupedStatusTbl.id
 								  LEFT JOIN indexed_status as statusTbl on statusId = statusTbl.id

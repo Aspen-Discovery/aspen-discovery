@@ -2740,7 +2740,7 @@ class Record_AJAX extends JSON_Action {
 
 	function getBookingForm(): array {
 		$this->requireLoggedInUser(null, 'You must be logged in to place a booking. Please close this dialog and login.');
-		$this->checkRequiredParameters(['id', 'itemId']);
+		$this->checkRequiredParameters(['id']);
 
 		global $library;
 		global $interface;
@@ -2750,15 +2750,19 @@ class Record_AJAX extends JSON_Action {
 		}
 
 		$recordId = $_REQUEST['id'];
-		$itemId = $_REQUEST['itemId'];
+		$shortId = strpos($recordId, ':') > 0 ? explode(':', $recordId, 2)[1] : $recordId;
 
 		require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
-		$shortId = strpos($recordId, ':') > 0 ? explode(':', $recordId, 2)[1] : $recordId;
 		$marcRecord = new MarcRecordDriver($shortId);
 
 		$catalogDriver = $marcRecord->getCatalogDriver();
 		if (!$catalogDriver || !$catalogDriver->hasBookingsSupport()) {
 			return $this->failureResult('Unable to place booking', 'Bookings are not supported for this record.');
+		}
+
+		$bookableItems = array_filter($marcRecord->getCopies(), fn($item) => !empty($item['bookable']));
+		if (empty($bookableItems)) {
+			return $this->failureResult('Unable to place booking', 'No bookable items found for this record.');
 		}
 
 		$user = UserAccount::getLoggedInUser();
@@ -2767,14 +2771,15 @@ class Record_AJAX extends JSON_Action {
 		$pickupLocations = $location->getPickupBranches($user);
 
 		$interface->assign('recordId', $recordId);
-		$interface->assign('itemId', $itemId);
+		$interface->assign('bookableItems', $bookableItems);
 		$interface->assign('pickupLocations', $pickupLocations);
 		$interface->assign('user', $user);
 
 		return [
-			'success'   => true,
-			'title'     => translate(['text' => 'Place a Booking', 'isPublicFacing' => true]),
-			'modalBody' => $interface->fetch('Record/booking-popup.tpl'),
+			'success'      => true,
+			'title'        => translate(['text' => 'Place a Booking', 'isPublicFacing' => true]),
+			'modalBody'    => $interface->fetch('Record/booking-popup.tpl'),
+			'modalButtons' => '<button class="btn btn-primary" onclick="return AspenDiscovery.Record.submitBookingForm(this);">' . translate(['text' => 'Place Booking', 'isPublicFacing' => true]) . '</button>',
 		];
 	}
 

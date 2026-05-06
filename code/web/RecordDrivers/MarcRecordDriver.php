@@ -1457,6 +1457,12 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 				}
 			}
 
+			$catalogDriver = $this->getCatalogDriver();
+			if ($relatedRecord->isBookable() && $catalogDriver && $catalogDriver->hasBookingsSupport()) {
+				require_once ROOT_DIR . '/RecordDrivers/RecordActionGenerator.php';
+				$this->_actions[$variationId][] = getBookingAction($id);
+			}
+
 			//Check to see if a PDF has been uploaded for the record
 			$uploadedPDFs = $this->getUploadedPDFs();
 			if (count($uploadedPDFs) > 0) {
