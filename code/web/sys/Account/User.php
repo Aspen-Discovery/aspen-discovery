@@ -2720,6 +2720,14 @@ class User extends DataObject {
 		return $result;
 	}
 
+	public function getBookings(): array {
+		global $library;
+		if (empty($library) || !$library->enableBookings) {
+			return [];
+		}
+		return $this->getCatalogDriver()->getBookingsForUser($this);
+	}
+
 	/**
 	 * Get the user referred to by id. Will return false if the specified patron id is not
 	 * the id of this user or one of the users that is linked to this user.
