@@ -409,14 +409,15 @@ function getDownloadMultiSupplementalFileAction($id) : array {
 	];
 }
 
-function getBookingAction(string $id, string $itemId) : array {
+function getBookingAction(string $id) : array {
 	return [
 		'title' => translate([
 			'text' => 'Place Booking',
 			'isPublicFacing' => true,
 		]),
 		'url' => '',
-		'onclick' => "return AspenDiscovery.Record.showPlaceBooking('$id', '$itemId', this);",
+		'id' => "actionButton$id",
+		'onclick' => "return AspenDiscovery.Record.showPlaceBooking('$id', this);",
 		'requireLogin' => false,
 		'type' => 'ils_booking',
 	];
