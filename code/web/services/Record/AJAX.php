@@ -2737,4 +2737,36 @@ class Record_AJAX extends JSON_Action {
 
 		return $editions;
 	}
+
+	function getBookingForm(): array {
+		$this->requireLoggedInUser(null, 'You must be logged in to place a booking. Please close this dialog and login.');
+		$this->checkRequiredParameters(['id', 'itemId']);
+
+		global $library;
+		global $interface;
+
+		if (empty($library) || !$library->enableBookings) {
+			return $this->failureResult('Unable to place booking', 'Bookings are not enabled for your library.');
+		}
+
+		$recordId = $_REQUEST['id'];
+		$itemId = $_REQUEST['itemId'];
+
+		require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+		$shortId = strpos($recordId, ':') > 0 ? explode(':', $recordId, 2)[1] : $recordId;
+		$marcRecord = new MarcRecordDriver($shortId);
+
+		$catalogDriver = $marcRecord->getCatalogDriver();
+		if (!$catalogDriver || !$catalogDriver->hasBookingsSupport()) {
+			return $this->failureResult('Unable to place booking', 'Bookings are not supported for this record.');
+		}
+
+		$interface->assign('recordId', $recordId);
+		$interface->assign('itemId', $itemId);
+
+		return [
+			'success'   => true,
+			'title'     => translate(['text' => 'Place a Booking', 'isPublicFacing' => true]),
+		];
+	}
 }
