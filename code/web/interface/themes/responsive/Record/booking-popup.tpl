@@ -16,6 +16,8 @@
 				<input type="date" name="endDate" id="endDate" class="form-control required" min="{$smarty.now|date_format:"%Y-%m-%d"}">
 			</div>
 
+			{include file='Record/pickup-location-select.tpl'}
+
 			<div class="form-group">
 				<label class="control-label" for="notes">{translate text="Notes" isPublicFacing=true}</label>
 				<textarea name="notes" id="notes" class="form-control" rows="3"></textarea>

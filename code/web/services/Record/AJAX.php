@@ -2761,8 +2761,15 @@ class Record_AJAX extends JSON_Action {
 			return $this->failureResult('Unable to place booking', 'Bookings are not supported for this record.');
 		}
 
+		$user = UserAccount::getLoggedInUser();
+		require_once ROOT_DIR . '/sys/LibraryLocation/Location.php';
+		$location = new Location();
+		$pickupLocations = $location->getPickupBranches($user);
+
 		$interface->assign('recordId', $recordId);
 		$interface->assign('itemId', $itemId);
+		$interface->assign('pickupLocations', $pickupLocations);
+		$interface->assign('user', $user);
 
 		return [
 			'success'   => true,
