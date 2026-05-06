@@ -58,6 +58,20 @@ AspenDiscovery.Record = (function () {
 			return false;
 		},
 
+		submitBookingForm: function (button) {
+			const form = document.getElementById('placeBookingForm');
+			const data = $(form).serialize();
+			AspenDiscovery.toggleButtonSpinner(button, true);
+			$.getJSON(Globals.path + '/Record/AJAX?method=placeBooking&' + data, function (result) {
+				AspenDiscovery.toggleButtonSpinner(button, false);
+				AspenDiscovery.showMessage(result.title, result.message);
+			}).fail(function () {
+				AspenDiscovery.toggleButtonSpinner(button, false);
+				AspenDiscovery.ajaxFail.apply(this, arguments);
+			});
+			return false;
+		},
+
 		showLocalIllRequest: function (module, source, id, volume) {
 			if (Globals.loggedIn) {
 				document.body.style.cursor = "wait";

@@ -2769,4 +2769,22 @@ class Record_AJAX extends JSON_Action {
 			'title'     => translate(['text' => 'Place a Booking', 'isPublicFacing' => true]),
 		];
 	}
+
+	function placeBooking(): array {
+		$this->requireLoggedInUser(null, 'You must be logged in to place a booking. Please close this dialog and login.');
+		$this->checkRequiredParameters(['id', 'itemId', 'startDate', 'endDate']);
+
+		$user = UserAccount::getLoggedInUser();
+
+		$recordId     = $_REQUEST['id'];
+		$itemId       = $_REQUEST['itemId'];
+		$startDate    = $_REQUEST['startDate'];
+		$endDate      = $_REQUEST['endDate'];
+		$pickupBranch = $_REQUEST['pickupBranch'] ?? null;
+		$notes        = $_REQUEST['notes'] ?? null;
+
+		$shortId = strpos($recordId, ':') > 0 ? explode(':', $recordId, 2)[1] : $recordId;
+
+		return $user->placeBooking($itemId, $shortId, $startDate, $endDate, $pickupBranch ?: null, $notes ?: null);
+	}
 }
