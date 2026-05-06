@@ -2767,6 +2767,7 @@ class Record_AJAX extends JSON_Action {
 		return [
 			'success'   => true,
 			'title'     => translate(['text' => 'Place a Booking', 'isPublicFacing' => true]),
+			'modalBody' => $interface->fetch('Record/booking-popup.tpl'),
 		];
 	}
 
