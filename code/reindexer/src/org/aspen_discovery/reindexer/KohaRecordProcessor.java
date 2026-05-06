@@ -16,6 +16,7 @@ import java.util.regex.Pattern;
 class KohaRecordProcessor extends IlsRecordProcessor {
 	private final HashSet<String> inTransitItems = new HashSet<>();
 	private final HashSet<String> onHoldShelfItems = new HashSet<>();
+	private final HashSet<String> bookableItems = new HashSet<>();
 	private final HashMap<String, String> lostStatuses = new HashMap<>();
 	private final HashMap<String, String> damagedStatuses = new HashMap<>();
 	private final HashMap<String, String> notForLoanStatuses = new HashMap<>();
@@ -131,6 +132,16 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 					}
 					onHoldShelfItemsRS.close();
 					onHoldShelfItemsStmt.close();
+
+					if (getKohaVersion(kohaConnection) >= 23.11) {
+						PreparedStatement bookableItemsStmt = kohaConnection.prepareStatement("SELECT i.itemnumber FROM items i JOIN itemtypes it ON it.itemtype = i.itype WHERE COALESCE(i.bookable, it.bookable) = 1");
+						ResultSet bookableItemsRS = bookableItemsStmt.executeQuery();
+						while (bookableItemsRS.next()) {
+							bookableItems.add(bookableItemsRS.getString("itemnumber"));
+						}
+						bookableItemsRS.close();
+						bookableItemsStmt.close();
+					}
 				} catch (Exception e) {
 					logger.error("Error setting up koha statements ", e);
 					kohaConnection = null;
@@ -544,6 +555,10 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 			}
 		}
 		return super.isItemHoldableUnscoped(itemInfo);
+	}
+
+	protected boolean isItemBookableUnscoped(ItemInfo itemInfo){
+		return bookableItems.contains(itemInfo.getItemIdentifier());
 	}
 
 	/**

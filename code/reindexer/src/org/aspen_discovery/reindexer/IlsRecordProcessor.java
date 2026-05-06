@@ -1128,6 +1128,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 		boolean isHoldableUnscoped = isItemHoldableUnscoped(itemInfo);
 		itemInfo.setHoldable(isHoldableUnscoped);
+		itemInfo.setBookable(isItemBookableUnscoped(itemInfo));
 		String shelfLocation = itemInfo.getShelfLocation();
 		String collectionCode = itemInfo.getCollection();
 		String originalUrl = itemInfo.geteContentUrl();
@@ -1390,6 +1391,10 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}else{
 			return true;
 		}
+	}
+
+	protected boolean isItemBookableUnscoped(ItemInfo itemInfo){
+		return false;
 	}
 
 	String getShelfLocationForItem(DataField itemField, String identifier) {

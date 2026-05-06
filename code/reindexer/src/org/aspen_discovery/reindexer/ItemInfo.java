@@ -456,8 +456,12 @@ public class ItemInfo{
 		return holdable;
 	}
 
+	void setBookable(boolean bookable) {
+		this.bookable = bookable;
+	}
+
 	public boolean isBookable() {
-		return false;
+		return bookable;
 	}
 
 	void setInLibraryUseOnly(boolean inLibraryUseOnly) {
