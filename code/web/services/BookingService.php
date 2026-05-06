@@ -4,6 +4,21 @@ require_once ROOT_DIR . '/sys/User/Booking.php';
 
 class BookingService {
 
+	public static function storeBooking(User $patron, string $itemId, string $recordId, string $startDate, string $endDate, ?string $pickupBranch, ?string $notes, array $apiResponse): void {
+		$booking = new Booking();
+		$booking->userId                = $patron->id;
+		$booking->recordId              = $recordId;
+		$booking->itemId                = $itemId;
+		$booking->ils_booking_id        = $apiResponse['booking_id'];
+		$booking->ils_start_date        = $startDate;
+		$booking->ils_end_date          = $endDate;
+		$booking->ils_pickup_library_id = $pickupBranch;
+		$booking->ils_status            = $apiResponse['status'] ?? null;
+		$booking->ils_notes             = $notes;
+		$booking->createdAt             = time();
+		$booking->insert();
+	}
+
 	/**
 	 * Diff live ILS bookings against Aspen's stored copies, update any that changed,
 	 * delete rows for bookings that no longer exist in Koha, and return a mapped array
