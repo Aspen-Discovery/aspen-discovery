@@ -19,6 +19,7 @@ class GroupedWorkItem extends DataObject {
 	public $groupedStatusId;
 	public $available;
 	public $holdable;
+	public $bookable;
 	public $inLibraryUseOnly;
 	public $locationOwnedScopes;
 	public $libraryOwnedScopes;

@@ -17,6 +17,7 @@ class Grouping_Item {
 	public ?string $status;
 	public bool $locallyOwned;
 	public string $holdable;
+	public bool $bookable;
 	public string $inLibraryUseOnly;
 	public string $libraryOwned;
 	public ?string $locationCode;
@@ -90,6 +91,7 @@ class Grouping_Item {
 		}
 		$this->available = $itemDetails['available'] == "1";
 		$this->holdable = $itemDetails['holdable'] == "1" ? 1 : 0;
+		$this->bookable = (bool)($itemDetails['bookable'] ?? false);
 		$this->inLibraryUseOnly = $itemDetails['inLibraryUseOnly'] == "1";
 		$this->locationCode = $itemDetails['locationCode'];
 		$this->subLocation = $itemDetails['subLocationCode'];
@@ -263,6 +265,7 @@ class Grouping_Item {
 			'statusFull' => $this->status,
 			'available' => $this->available,
 			'holdable' => $this->holdable,
+			'bookable' => $this->bookable,
 			'numHolds' => $this->numHolds,
 			'sectionId' => $sectionId,
 			'section' => $section,
