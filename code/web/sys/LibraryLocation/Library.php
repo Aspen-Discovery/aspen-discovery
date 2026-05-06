@@ -206,6 +206,7 @@ class Library extends DataObject {
 	public $showHoldPosition;
 	public $showLogMeOutAfterPlacingHolds;
 	public $showHoldFeeMessage;
+	public $enableBookings;
 	public $displayItemBarcode;
 	public $displayHoldsOnCheckout;
 	public $showCheckoutRenewalFeeMessage;
@@ -2776,6 +2777,28 @@ class Library extends DataObject {
 								'label' => 'Show Debarment Notes',
 								'description' => 'Whether or not Debarment Messages from the ILS should be shown',
 								'note' => 'Applies to Koha Only',
+								'hideInLists' => true,
+								'default' => 0,
+								'relatedIls' => ['koha'],
+							],
+						],
+					],
+					'bookingsSection' => [
+						'property' => 'bookingsSection',
+						'type' => 'section',
+						'label' => 'Bookings',
+						'hideInLists' => true,
+						'helpLink' => '',
+						'permissions' => [
+							'Library ILS Connection',
+							'Library ILS Options',
+						],
+						'properties' => [
+							'enableBookings' => [
+								'property' => 'enableBookings',
+								'type' => 'checkbox',
+								'label' => 'Enable Bookings',
+								'description' => 'Whether or not patrons can place item-level bookings via Aspen. Requires the Koha Bookings module to be enabled in the ILS.',
 								'hideInLists' => true,
 								'default' => 0,
 								'relatedIls' => ['koha'],
