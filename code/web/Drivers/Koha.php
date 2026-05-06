@@ -9750,6 +9750,18 @@ class Koha extends AbstractIlsDriver {
 		return !empty($library) && $library->enableBookings;
 	}
 
+	public function getBookingsForUser(User $patron): array {
+		$extraHeaders = ['Accept-Encoding: gzip, deflate', 'x-koha-library: ' . $patron->getHomeLocationCode()];
+		$response = $this->kohaApiUserAgent->get('/api/v1/bookings?patron_id=' . urlencode($patron->unique_ils_id), 'koha.getBookingsForUser', [], $extraHeaders);
+
+		if (!$response || $response['code'] !== 200) {
+			return [];
+		}
+
+		require_once ROOT_DIR . '/services/BookingService.php';
+		return BookingService::syncAndMapBookings($patron, $response['content']);
+	}
+
 	private function isDisplayAddHoldGroupsEnabledInKoha(): bool {
 		global $logger;
 
