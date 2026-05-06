@@ -310,11 +310,11 @@ public class GroupedWorkIndexer implements AutoCloseable {
 			getIdForVariationStmt = dbConn.prepareStatement("SELECT id from grouped_work_variation where groupedWorkId = ? AND primaryLanguageId = ? AND eContentSourceId = ? AND formatId = ? AND formatCategoryId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			removeVariationStmt = dbConn.prepareStatement("DELETE FROM grouped_work_variation WHERE id = ?");
 			getExistingItemsForRecordStmt = dbConn.prepareStatement("SELECT * from grouped_work_record_items WHERE groupedWorkRecordId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-			addItemForRecordStmt = dbConn.prepareStatement("INSERT INTO grouped_work_record_items (groupedWorkRecordId, groupedWorkVariationId, itemId, shelfLocationId, callNumberId, sortableCallNumberId, numCopies, isOrderItem, statusId, dateAdded, locationCodeId, subLocationCodeId, lastCheckInDate, groupedStatusId, available, holdable, inLibraryUseOnly, locationOwnedScopes, libraryOwnedScopes, recordIncludedScopes, isVirtual, barcode, note, dueDate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)" +
+			addItemForRecordStmt = dbConn.prepareStatement("INSERT INTO grouped_work_record_items (groupedWorkRecordId, groupedWorkVariationId, itemId, shelfLocationId, callNumberId, sortableCallNumberId, numCopies, isOrderItem, statusId, dateAdded, locationCodeId, subLocationCodeId, lastCheckInDate, groupedStatusId, available, holdable, bookable, inLibraryUseOnly, locationOwnedScopes, libraryOwnedScopes, recordIncludedScopes, isVirtual, barcode, note, dueDate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)" +
 					" ON DUPLICATE KEY " +
-					"UPDATE shelfLocationId = VALUES(shelfLocationId), callNumberId = VALUES(callNumberId), sortableCallNumberId = VALUES(sortableCallNumberId), numCopies = VALUES(numCopies), isOrderItem = VALUES(isOrderItem), statusId = VALUES(statusId), locationCodeId = VALUES(locationCodeId), subLocationCodeId = VALUES(subLocationCodeId), lastCheckInDate = VALUES(lastCheckInDate), groupedStatusId = VALUES(groupedStatusId), available = VALUES(available), inLibraryUseOnly = VALUES(inLibraryUseOnly), holdable = VALUES(holdable), locationOwnedScopes = VALUES(locationOwnedScopes), libraryOwnedScopes = VALUES(libraryOwnedScopes), recordIncludedScopes = VALUES(recordIncludedScopes), isVirtual = VALUES(isVirtual), barcode = VALUES(barcode), note = VALUES(note), dueDate = VALUES(dueDate)", PreparedStatement.RETURN_GENERATED_KEYS);
+					"UPDATE shelfLocationId = VALUES(shelfLocationId), callNumberId = VALUES(callNumberId), sortableCallNumberId = VALUES(sortableCallNumberId), numCopies = VALUES(numCopies), isOrderItem = VALUES(isOrderItem), statusId = VALUES(statusId), locationCodeId = VALUES(locationCodeId), subLocationCodeId = VALUES(subLocationCodeId), lastCheckInDate = VALUES(lastCheckInDate), groupedStatusId = VALUES(groupedStatusId), available = VALUES(available), inLibraryUseOnly = VALUES(inLibraryUseOnly), holdable = VALUES(holdable), bookable = VALUES(bookable), locationOwnedScopes = VALUES(locationOwnedScopes), libraryOwnedScopes = VALUES(libraryOwnedScopes), recordIncludedScopes = VALUES(recordIncludedScopes), isVirtual = VALUES(isVirtual), barcode = VALUES(barcode), note = VALUES(note), dueDate = VALUES(dueDate)", PreparedStatement.RETURN_GENERATED_KEYS);
 			updateItemForRecordStmt = dbConn.prepareStatement("UPDATE grouped_work_record_items set groupedWorkVariationId = ?, shelfLocationId = ?, callNumberId = ?, sortableCallNumberId = ?, numCopies = ?, isOrderItem = ?, statusId = ?, dateAdded = ?, " +
-					"locationCodeId = ?, subLocationCodeId = ?, lastCheckInDate = ?, groupedStatusId = ?, available = ?, holdable = ?, inLibraryUseOnly = ?, locationOwnedScopes = ?, libraryOwnedScopes = ?, recordIncludedScopes = ?, isVirtual = ?, barcode = ?, note = ?, dueDate = ? WHERE id = ?");
+					"locationCodeId = ?, subLocationCodeId = ?, lastCheckInDate = ?, groupedStatusId = ?, available = ?, holdable = ?, bookable = ?, inLibraryUseOnly = ?, locationOwnedScopes = ?, libraryOwnedScopes = ?, recordIncludedScopes = ?, isVirtual = ?, barcode = ?, note = ?, dueDate = ? WHERE id = ?");
 			getIdForItemStmt = dbConn.prepareStatement("SELECT id from grouped_work_record_items where groupedWorkRecordId = ? and groupedWorkVariationId = ? and itemId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			removeItemStmt = dbConn.prepareStatement("DELETE FROM grouped_work_record_items WHERE id = ?");
 			addItemUrlStmt = dbConn.prepareStatement("INSERT INTO grouped_work_record_item_url (groupedWorkItemId, scopeId, url) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE url = VALUES(url) ");
@@ -3356,14 +3356,15 @@ public class GroupedWorkIndexer implements AutoCloseable {
 					addItemForRecordStmt.setLong(14, groupedStatusId);
 					addItemForRecordStmt.setBoolean(15, itemInfo.isAvailable());
 					addItemForRecordStmt.setBoolean(16, itemInfo.isHoldable());
-					addItemForRecordStmt.setBoolean(17, itemInfo.isInLibraryUseOnly());
-					addItemForRecordStmt.setString(18, itemInfo.getLocationOwnedScopes());
-					addItemForRecordStmt.setString(19, itemInfo.getLibraryOwnedScopes());
-					addItemForRecordStmt.setString(20, itemInfo.getRecordsIncludedScopes());
-					addItemForRecordStmt.setBoolean(21, itemInfo.isVirtual());
-					addItemForRecordStmt.setString(22, itemInfo.getBarcode());
-					addItemForRecordStmt.setString(23, itemInfo.getNote());
-					addItemForRecordStmt.setString(24, itemInfo.getDueDate());
+					addItemForRecordStmt.setBoolean(17, itemInfo.isBookable());
+					addItemForRecordStmt.setBoolean(18, itemInfo.isInLibraryUseOnly());
+					addItemForRecordStmt.setString(19, itemInfo.getLocationOwnedScopes());
+					addItemForRecordStmt.setString(20, itemInfo.getLibraryOwnedScopes());
+					addItemForRecordStmt.setString(21, itemInfo.getRecordsIncludedScopes());
+					addItemForRecordStmt.setBoolean(22, itemInfo.isVirtual());
+					addItemForRecordStmt.setString(23, itemInfo.getBarcode());
+					addItemForRecordStmt.setString(24, itemInfo.getNote());
+					addItemForRecordStmt.setString(25, itemInfo.getDueDate());
 					addItemForRecordStmt.executeUpdate();
 					ResultSet addItemForWorkRS = addItemForRecordStmt.getGeneratedKeys();
 					if (addItemForWorkRS.next()) {
@@ -3381,7 +3382,7 @@ public class GroupedWorkIndexer implements AutoCloseable {
 					addItemForWorkRS.close();
 					SavedItemInfo savedItemInfo = new SavedItemInfo(itemId, recordId, variationId, itemInfo.getItemIdentifier(), shelfLocationId, callNumberId, sortableCallNumberId, itemInfo.getNumCopies(),
 						itemInfo.isOrderItem(), statusId, itemInfo.getDateAdded(), locationCodeId, subLocationId, itemInfo.getLastCheckinDate(), groupedStatusId, itemInfo.isAvailable(),
-						itemInfo.isHoldable(), itemInfo.getBarcode(), itemInfo.getNote(), itemInfo.getDueDate(), itemInfo.isInLibraryUseOnly(),
+						itemInfo.isHoldable(), itemInfo.isBookable(), itemInfo.getBarcode(), itemInfo.getNote(), itemInfo.getDueDate(), itemInfo.isInLibraryUseOnly(),
 						itemInfo.getLocationOwnedScopes(), itemInfo.getLibraryOwnedScopes(), itemInfo.getRecordsIncludedScopes());
 
 					existingItems.put(itemInfo.getItemIdentifier().toLowerCase(), savedItemInfo);
@@ -3391,7 +3392,7 @@ public class GroupedWorkIndexer implements AutoCloseable {
 				}
 			}else if (savedItem.hasChanged(recordId, variationId, itemInfo.getItemIdentifier(), shelfLocationId, callNumberId, sortableCallNumberId, itemInfo.getNumCopies(),
 				itemInfo.isOrderItem(), statusId, itemInfo.getDateAdded(), locationCodeId, subLocationId, itemInfo.getLastCheckinDate(), groupedStatusId, itemInfo.isAvailable(),
-				itemInfo.isHoldable(), itemInfo.getBarcode(), itemInfo.getNote(), itemInfo.getDueDate(), itemInfo.isInLibraryUseOnly(),
+				itemInfo.isHoldable(), itemInfo.isBookable(), itemInfo.getBarcode(), itemInfo.getNote(), itemInfo.getDueDate(), itemInfo.isInLibraryUseOnly(),
 				itemInfo.getLocationOwnedScopes(), itemInfo.getLibraryOwnedScopes(), itemInfo.getRecordsIncludedScopes())){
 				try {
 					updateItemForRecordStmt.setLong(1, variationId);
@@ -3416,15 +3417,16 @@ public class GroupedWorkIndexer implements AutoCloseable {
 					updateItemForRecordStmt.setLong(12, groupedStatusId);
 					updateItemForRecordStmt.setBoolean(13, itemInfo.isAvailable());
 					updateItemForRecordStmt.setBoolean(14, itemInfo.isHoldable());
-					updateItemForRecordStmt.setBoolean(15, itemInfo.isInLibraryUseOnly());
-					updateItemForRecordStmt.setString(16, itemInfo.getLocationOwnedScopes());
-					updateItemForRecordStmt.setString(17, itemInfo.getLibraryOwnedScopes());
-					updateItemForRecordStmt.setString(18, itemInfo.getRecordsIncludedScopes());
-					updateItemForRecordStmt.setBoolean(19, itemInfo.isVirtual());
-					updateItemForRecordStmt.setString(20, itemInfo.getBarcode());
-					updateItemForRecordStmt.setString(21, itemInfo.getNote());
-					updateItemForRecordStmt.setString(22, itemInfo.getDueDate());
-					updateItemForRecordStmt.setLong(23, itemId);
+					updateItemForRecordStmt.setBoolean(15, itemInfo.isBookable());
+					updateItemForRecordStmt.setBoolean(16, itemInfo.isInLibraryUseOnly());
+					updateItemForRecordStmt.setString(17, itemInfo.getLocationOwnedScopes());
+					updateItemForRecordStmt.setString(18, itemInfo.getLibraryOwnedScopes());
+					updateItemForRecordStmt.setString(19, itemInfo.getRecordsIncludedScopes());
+					updateItemForRecordStmt.setBoolean(20, itemInfo.isVirtual());
+					updateItemForRecordStmt.setString(21, itemInfo.getBarcode());
+					updateItemForRecordStmt.setString(22, itemInfo.getNote());
+					updateItemForRecordStmt.setString(23, itemInfo.getDueDate());
+					updateItemForRecordStmt.setLong(24, itemId);
 					updateItemForRecordStmt.executeUpdate();
 				}catch (SQLException e){
 					logEntry.incErrors("Error updating item " + itemId + " record " + recordId, e);
