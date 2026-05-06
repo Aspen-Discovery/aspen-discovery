@@ -1103,4 +1103,8 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 	public function supportsMultiCopyHolds() : bool {
 		return false;
 	}
+
+	public function hasBookingsSupport(): bool {
+		return false;
+	}
 }

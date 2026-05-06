@@ -9393,6 +9393,11 @@ class Koha extends AbstractIlsDriver {
 		return $this->isDisplayAddHoldGroupsEnabledInKoha();
 	}
 
+	public function hasBookingsSupport(): bool {
+		global $library;
+		return !empty($library) && $library->enableBookings;
+	}
+
 	private function isDisplayAddHoldGroupsEnabledInKoha(): bool {
 		global $logger;
 
