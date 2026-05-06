@@ -2728,6 +2728,14 @@ class User extends DataObject {
 		return $this->getCatalogDriver()->getBookingsForUser($this);
 	}
 
+	public function placeBooking(string $itemId, string $recordId, string $startDate, string $endDate, ?string $pickupBranch, ?string $notes): array {
+		global $library;
+		if (empty($library) || !$library->enableBookings) {
+			return ['success' => false, 'message' => translate(['text' => 'Bookings are not enabled for your library.', 'isPublicFacing' => true])];
+		}
+		return $this->getCatalogDriver()->placeBooking($this, $itemId, $recordId, $startDate, $endDate, $pickupBranch, $notes);
+	}
+
 	/**
 	 * Get the user referred to by id. Will return false if the specified patron id is not
 	 * the id of this user or one of the users that is linked to this user.

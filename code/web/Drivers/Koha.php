@@ -9750,6 +9750,52 @@ class Koha extends AbstractIlsDriver {
 		return !empty($library) && $library->enableBookings;
 	}
 
+	public function placeBooking(User $patron, string $itemId, string $recordId, string $startDate, string $endDate, ?string $pickupBranch, ?string $notes): array {
+		$params = [
+			'patron_id'  => (int)$patron->unique_ils_id,
+			'item_id'    => (int)$itemId,
+			'biblio_id'  => (int)$recordId,
+			'start_date' => $startDate . 'T00:00:00Z',
+			'end_date'   => $endDate . 'T00:00:00Z',
+		];
+		if ($pickupBranch !== null) {
+			$params['pickup_library_id'] = $pickupBranch;
+		}
+		if ($notes !== null) {
+			$params['notes'] = $notes;
+		}
+
+		$extraHeaders = ['Accept-Encoding: gzip, deflate', 'x-koha-library: ' . $patron->getHomeLocationCode()];
+		$response = $this->kohaApiUserAgent->post('/api/v1/bookings', $params, 'koha.placeBooking', [], $extraHeaders);
+
+		if (!$response || $response['code'] !== 201) {
+			$message = translate([
+				'text' => 'Error (%1%) placing booking.',
+				1 => $response['code'] ?? 0,
+				'isPublicFacing' => true,
+			]);
+			if (!empty($response['content']['error'])) {
+				$message .= ' ' . $response['content']['error'];
+			}
+			return [
+				'success' => false,
+				'title'   => translate(['text' => 'Unable to place booking', 'isPublicFacing' => true]),
+				'message' => $message,
+			];
+		}
+
+		require_once ROOT_DIR . '/services/BookingService.php';
+		BookingService::storeBooking($patron, $itemId, $recordId, $startDate, $endDate, $pickupBranch, $notes, $response['content']);
+
+		return [
+			'success'    => true,
+			'booking_id' => $response['content']['booking_id'],
+			'title'      => translate(['text' => 'Booking placed', 'isPublicFacing' => true]),
+			'message'    => translate(['text' => 'Your booking was placed successfully.', 'isPublicFacing' => true]),
+		];
+	}
+
+
 	public function getBookingsForUser(User $patron): array {
 		$extraHeaders = ['Accept-Encoding: gzip, deflate', 'x-koha-library: ' . $patron->getHomeLocationCode()];
 		$response = $this->kohaApiUserAgent->get('/api/v1/bookings?patron_id=' . urlencode($patron->unique_ils_id), 'koha.getBookingsForUser', [], $extraHeaders);
