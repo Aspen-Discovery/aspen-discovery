@@ -72,6 +72,29 @@ AspenDiscovery.Record = (function () {
 			return false;
 		},
 
+		showPlaceBooking: function (id, button) {
+			if (Globals.loggedIn) {
+				AspenDiscovery.toggleButtonSpinner(button, true);
+				const url = Globals.path + '/Record/' + id + '/AJAX?method=getBookingForm&id=' + encodeURIComponent(id);
+				$.getJSON(url, function (data) {
+					AspenDiscovery.toggleButtonSpinner(button, false);
+					if (data.success) {
+						AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+					} else {
+						AspenDiscovery.showMessage(data.title, data.message);
+					}
+				}).fail(function () {
+					AspenDiscovery.toggleButtonSpinner(button, false);
+					AspenDiscovery.ajaxFail.apply(this, arguments);
+				});
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function () {
+					AspenDiscovery.Record.showPlaceBooking(id, button);
+				}, false);
+			}
+			return false;
+		},
+
 		showLocalIllRequest: function (module, source, id, volume) {
 			if (Globals.loggedIn) {
 				document.body.style.cursor = "wait";
