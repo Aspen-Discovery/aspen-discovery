@@ -9838,6 +9838,25 @@ class Koha extends AbstractIlsDriver {
 		];
 	}
 
+	private function getItemBookingBuffers(int $itemId, User $patron): array {
+		$this->initDatabaseConnection();
+		$row = mysqli_fetch_assoc(mysqli_query($this->dbConnection,
+			"SELECT homebranch, itype FROM items WHERE itemnumber = $itemId LIMIT 1"
+		));
+		if (!$row) {
+			return ['lead' => 0, 'trail' => 0];
+		}
+		$context = [
+			'itemTypeId'       => $row['itype'],
+			'locationId'       => $row['homebranch'],
+			'patronCategoryId' => $patron->patronType,
+		];
+		return [
+			'lead'  => (int)($this->getRawCirculationRule('bookings_lead_period',  $context) ?? 0),
+			'trail' => (int)($this->getRawCirculationRule('bookings_trail_period', $context) ?? 0),
+		];
+	}
+
 	public function getBookingsForItem(int $itemId, User $patron): array {
 		$extraHeaders = ['Accept-Encoding: gzip, deflate', 'x-koha-library: ' . $patron->getHomeLocationCode()];
 		$response = $this->kohaApiUserAgent->get('/api/v1/bookings?item_id=' . $itemId, 'koha.getBookingsForItem', [], $extraHeaders);
