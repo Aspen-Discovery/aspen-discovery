@@ -138,6 +138,11 @@
 								</ul>
 
 								{if empty($offline)}
+									{if !empty($showBookings)}
+										<div class="myAccountLink" title="Bookings">
+											<a href="/MyAccount/Bookings" id="bookings">{translate text='Bookings' isPublicFacing=true}</a>
+										</div>
+									{/if}
 									{if !empty($showCurbsidePickups)}
 										<div class="myAccountLink" title="Curbside Pickups">
 											<a href="/MyAccount/CurbsidePickups">{translate text='Curbside Pickups' isPublicFacing=true}</a>
