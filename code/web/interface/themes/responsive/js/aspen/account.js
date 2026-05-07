@@ -390,6 +390,20 @@ AspenDiscovery.Account = (function () {
 			return false;
 		},
 
+		loadBookings: function () {
+			const url = Globals.path + '/MyAccount/AJAX?method=loadBookings';
+			document.body.style.cursor = 'wait';
+			$.getJSON(url, function (data) {
+				document.body.style.cursor = 'default';
+				if (data.success) {
+					$('#bookingsPlaceholder').html(data.bookings);
+				} else {
+					$('#bookingsPlaceholder').html(data.message);
+				}
+			}).fail(AspenDiscovery.ajaxFail);
+			return false;
+		},
+
 		loadReadingHistory: function (selectedUser, sort, page, showCovers, filter) {
 			var url = Globals.path + "/MyAccount/AJAX?method=getReadingHistory&patronId=" + selectedUser;
 			if (sort !== undefined) {
