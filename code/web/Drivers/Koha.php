@@ -9815,6 +9815,29 @@ class Koha extends AbstractIlsDriver {
 		];
 	}
 
+	public function updateBooking(User $patron, int $bookingId, string $startDate, string $endDate, ?string $pickupBranch): array {
+		$params = ['start_date' => $startDate . 'T00:00:00Z', 'end_date' => $endDate . 'T00:00:00Z'];
+		if ($pickupBranch !== null) {
+			$params['pickup_library_id'] = $pickupBranch;
+		}
+		$extraHeaders = ['Accept-Encoding: gzip, deflate', 'x-koha-library: ' . $patron->getHomeLocationCode()];
+		$response = $this->kohaApiUserAgent->patch("/api/v1/bookings/$bookingId", $params, 'koha.updateBooking', [], $extraHeaders);
+
+		if ($response && $response['code'] === 200) {
+			require_once ROOT_DIR . '/services/BookingService.php';
+			BookingService::updateStoredBooking($patron, $bookingId, $startDate, $endDate, $pickupBranch);
+			return [
+				'success' => true,
+				'message' => translate(['text' => 'Your booking has been updated.', 'isPublicFacing' => true]),
+			];
+		}
+
+		return [
+			'success' => false,
+			'message' => translate(['text' => 'Unable to update your booking.', 'isPublicFacing' => true]),
+		];
+	}
+
 	public function getBookingsForUser(User $patron): array {
 		$extraHeaders = ['Accept-Encoding: gzip, deflate', 'x-koha-library: ' . $patron->getHomeLocationCode()];
 		$response = $this->kohaApiUserAgent->get('/api/v1/bookings?patron_id=' . urlencode($patron->unique_ils_id), 'koha.getBookingsForUser', [], $extraHeaders);
