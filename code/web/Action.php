@@ -63,6 +63,7 @@ abstract class Action
 
 	function loadAccountSidebarVariables(){
 		global $interface;
+		global $library;
 		$twoFactor = UserAccount::has2FAEnabledForPType();
 		$interface->assign('twoFactorEnabled', $twoFactor);
 
@@ -99,8 +100,11 @@ abstract class Action
 			$showAccountSettings = true;
 		}
 
+		$showBookings = !empty($library->enableBookings) && $user->getCatalogDriver() && $user->getCatalogDriver()->hasBookingsSupport();
+
 		$interface->assign('showMyAccount', $showMyAccount);
 		$interface->assign('showAccountSettings', $showAccountSettings);
+		$interface->assign('showBookings', $showBookings);
 	}
 
 	function setShowCovers() {
