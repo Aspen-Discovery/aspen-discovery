@@ -9857,16 +9857,34 @@ class Koha extends AbstractIlsDriver {
 		];
 	}
 
-	public function getBookingsForItem(int $itemId, User $patron): array {
+	public function getBookedRanges(int $itemId, User $patron): array {
+		['lead' => $lead, 'trail' => $trail] = $this->getItemBookingBuffers($itemId, $patron);
+		return $this->buildBookedRanges($this->getBookingsForItem($itemId, $patron), $lead, $trail);
+	}
+
+	private function getBookingsForItem(int $itemId, User $patron): array {
 		$extraHeaders = ['Accept-Encoding: gzip, deflate', 'x-koha-library: ' . $patron->getHomeLocationCode()];
 		$response = $this->kohaApiUserAgent->get('/api/v1/bookings?item_id=' . $itemId, 'koha.getBookingsForItem', [], $extraHeaders);
 		if (!$response || $response['code'] !== 200) {
 			return [];
 		}
-		return array_map(fn($b) => [
-			'start' => substr($b['start_date'], 0, 10),
-			'end'   => substr($b['end_date'], 0, 10),
-		], $response['content']);
+		return $response['content'];
+	}
+
+	private function buildBookedRanges(array $bookings, int $lead, int $trail): array {
+		$ranges = [];
+		foreach ($bookings as $booking) {
+			$start = new DateTime(substr($booking['start_date'], 0, 10));
+			$end   = new DateTime(substr($booking['end_date'], 0, 10));
+			if ($lead > 0) {
+				$start->modify("-{$lead} days");
+			}
+			if ($trail > 0) {
+				$end->modify("+{$trail} days");
+			}
+			$ranges[] = ['start' => $start->format('Y-m-d'), 'end' => $end->format('Y-m-d')];
+		}
+		return $ranges;
 	}
 
 	public function getBookingsForUser(User $patron): array {
