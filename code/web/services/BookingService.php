@@ -54,6 +54,15 @@ class BookingService {
 		return $bookings;
 	}
 
+	public static function deleteStoredBooking(User $patron, int $bookingId): void {
+		$booking = new Booking();
+		$booking->userId = $patron->id;
+		$booking->ils_booking_id = $bookingId;
+		if ($booking->find(true)) {
+			$booking->delete();
+		}
+	}
+
 	private static function loadStoredBookingsById(User $patron): array {
 		$stored = new Booking();
 		$stored->userId = $patron->id;
