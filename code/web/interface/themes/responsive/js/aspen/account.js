@@ -412,6 +412,20 @@ AspenDiscovery.Account = (function () {
 			return false;
 		},
 
+		submitUpdateBooking: function () {
+			const form = document.getElementById('updateBookingForm');
+			if (!form) return false;
+			const params = $(form).serialize();
+			AspenDiscovery.loadingMessage();
+			$.getJSON(Globals.path + '/MyAccount/AJAX?method=submitUpdateBooking&' + params, function (data) {
+				AspenDiscovery.showMessage(data.title, data.body, data.success);
+				if (data.success) {
+					AspenDiscovery.Account.loadBookings();
+				}
+			}).fail(AspenDiscovery.ajaxFail);
+			return false;
+		},
+
 		confirmCancelBooking: function (userId, bookingId) {
 			AspenDiscovery.loadingMessage();
 			$.getJSON(Globals.path + '/MyAccount/AJAX?method=confirmCancelBooking&userId=' + userId + '&bookingId=' + bookingId, function (data) {
