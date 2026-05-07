@@ -412,6 +412,23 @@ AspenDiscovery.Account = (function () {
 			return false;
 		},
 
+		cancelBooking: function (userId, bookingId) {
+			if (Globals.loggedIn) {
+				AspenDiscovery.loadingMessage();
+				$.getJSON(Globals.path + '/MyAccount/AJAX?method=cancelBooking&userId=' + userId + '&bookingId=' + bookingId, function (data) {
+					AspenDiscovery.showMessage(data.title, data.body, false, false);
+					if (data.success) {
+						AspenDiscovery.Account.loadBookings();
+					}
+				}).fail(AspenDiscovery.ajaxFail);
+			} else {
+				this.ajaxLogin(null, function () {
+					AspenDiscovery.Account.cancelBooking(userId, bookingId);
+				}, false);
+			}
+			return false;
+		},
+
 		loadReadingHistory: function (selectedUser, sort, page, showCovers, filter) {
 			var url = Globals.path + "/MyAccount/AJAX?method=getReadingHistory&patronId=" + selectedUser;
 			if (sort !== undefined) {
