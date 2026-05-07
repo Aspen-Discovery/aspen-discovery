@@ -2736,6 +2736,14 @@ class User extends DataObject {
 		return $this->getCatalogDriver()->placeBooking($this, $itemId, $recordId, $startDate, $endDate, $pickupBranch, $notes);
 	}
 
+	public function updateBooking(int $bookingId, string $startDate, string $endDate, ?string $pickupBranch): array {
+		global $library;
+		if (empty($library) || !$library->enableBookings) {
+			return ['success' => false, 'message' => translate(['text' => 'Bookings are not enabled for your library.', 'isPublicFacing' => true])];
+		}
+		return $this->getCatalogDriver()->updateBooking($this, $bookingId, $startDate, $endDate, $pickupBranch);
+	}
+
 	public function cancelBooking(int $bookingId): array {
 		global $library;
 		if (empty($library) || !$library->enableBookings) {

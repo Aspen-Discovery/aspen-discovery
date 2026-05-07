@@ -4565,6 +4565,35 @@ class MyAccount_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
+	function submitUpdateBooking(): array {
+		$this->requireLoggedInUser(null, 'You must be logged in to update a booking. Please close this dialog and login again.');
+		$this->checkRequiredParameters(['userId', 'bookingId', 'startDate', 'endDate']);
+
+		$bookingId    = (int)$_REQUEST['bookingId'];
+		$userId       = $_REQUEST['userId'];
+		$startDate    = $_REQUEST['startDate'];
+		$endDate      = $_REQUEST['endDate'];
+		$pickupBranch = $_REQUEST['pickupBranch'] ?? null;
+		$user         = UserAccount::getLoggedInUser();
+		$user       = $user->getUserReferredTo($userId);
+
+		if ($user === false) {
+			$result = $this->failureResult('Update Booking', translate(['text' => 'You do not have access to update bookings for the supplied user.', 'isPublicFacing' => true]));
+		} else {
+			$result = $user->updateBooking($bookingId, $startDate, $endDate, $pickupBranch ?: null);
+		}
+
+		global $interface;
+		$interface->assign('updateResults', $result);
+
+		return [
+			'title'   => translate(['text' => 'Update Booking', 'isPublicFacing' => true]),
+			'body'    => $interface->fetch('MyAccount/updateBooking.tpl'),
+			'success' => $result['success'],
+		];
+	}
+
+	/** @noinspection PhpUnused */
 	function confirmCancelBooking(): array {
 		$this->requireLoggedInUser(null, 'You must be logged in to cancel a booking. Please close this dialog and login again.');
 		$this->checkRequiredParameters(['userId', 'bookingId']);
