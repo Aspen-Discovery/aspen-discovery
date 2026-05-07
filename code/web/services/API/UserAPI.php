@@ -3728,6 +3728,89 @@ class UserAPI extends AbstractAPI {
 		}
 	}
 
+	/**
+	 * Get a list of bookings the patron has placed within the ILS along with details about each booking. Bookings reserve a specific item for a date range.
+	 *
+	 * Parameters:
+	 * <ul>
+	 * <li>username - The barcode of the user.</li>
+	 * <li>password - The pin number for the user.</li>
+	 * </ul>
+	 *
+	 * Returns:
+	 * <ul>
+	 * <li>success - true if the account is valid and bookings could be loaded, false if not.</li>
+	 * <li>bookings - an array containing all of the bookings for the user. Each booking has id, recordId, itemId, startDate, endDate, status, pickupLibraryId, and (when available) title, coverUrl, linkUrl.</li>
+	 * </ul>
+	 *
+	 * Sample Call:
+	 * <code>
+	 * https://aspenurl/API/UserAPI?method=getPatronBookings&username=23025003575917&password=1234
+	 * </code>
+	 *
+	 * @noinspection PhpUnused
+	 */
+	function getPatronBookings() : array {
+		$user = $this->getUserForApiCall();
+		if (!$user || $user instanceof AspenError) {
+			return [
+				'success' => false,
+				'message' => 'Login unsuccessful',
+			];
+		}
+
+		global $library;
+		if (empty($library) || !$library->enableBookings) {
+			return [
+				'success' => true,
+				'bookings' => [],
+			];
+		}
+
+		require_once ROOT_DIR . '/sys/User/Booking.php';
+		require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+
+		$storedBooking = new Booking();
+		$storedBooking->userId = $user->id;
+		$storedBooking->find();
+		$storedById = [];
+		while ($storedBooking->fetch()) {
+			$storedById[$storedBooking->ils_booking_id] = clone $storedBooking;
+		}
+
+		$liveBookings = $user->getBookings();
+		$today = date('Y-m-d');
+		$bookings = [];
+
+		foreach ($liveBookings as $booking) {
+			$booking['userId'] = $user->id;
+			$stored = $storedById[$booking['id']] ?? null;
+			$booking['notes'] = $stored->ils_notes ?? null;
+			$booking['createdAt'] = $stored->createdAt ?? null;
+			$booking['originalStartDate'] = $stored->ils_start_date ?? null;
+			$booking['originalEndDate'] = $stored->ils_end_date ?? null;
+			$booking['originalPickupLibraryId'] = $stored->ils_pickup_library_id ?? null;
+
+			$driver = new MarcRecordDriver($user->source . ':' . $booking['recordId']);
+			if ($driver->isValid()) {
+				$booking['title'] = $driver->getTitle();
+				$booking['author'] = $driver->getPrimaryAuthor();
+				$booking['coverUrl'] = $driver->getBookcoverUrl('medium', true);
+				$booking['linkUrl'] = $driver->getLinkUrl();
+			}
+
+			$booking['isPast'] = in_array($booking['status'], ['fulfilled', 'cancelled'], true)
+				|| (!empty($booking['endDate']) && $booking['endDate'] < $today);
+
+			$bookings[] = $booking;
+		}
+
+		return [
+			'success' => true,
+			'bookings' => $bookings,
+		];
+	}
+
 	/** @noinspection PhpUnused */
 	function submitVdxRequest() : array {
 		return [
