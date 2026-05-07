@@ -2794,7 +2794,7 @@ class Record_AJAX extends JSON_Action {
 
 		return [
 			'success'     => true,
-			'bookedDates' => $driver->getBookingsForItem((int)$_REQUEST['itemId'], $user),
+			'bookedDates' => $driver->getBookedRanges((int)$_REQUEST['itemId'], $user),
 		];
 	}
 
