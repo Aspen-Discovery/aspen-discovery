@@ -9838,6 +9838,18 @@ class Koha extends AbstractIlsDriver {
 		];
 	}
 
+	public function getBookingsForItem(int $itemId, User $patron): array {
+		$extraHeaders = ['Accept-Encoding: gzip, deflate', 'x-koha-library: ' . $patron->getHomeLocationCode()];
+		$response = $this->kohaApiUserAgent->get('/api/v1/bookings?item_id=' . $itemId, 'koha.getBookingsForItem', [], $extraHeaders);
+		if (!$response || $response['code'] !== 200) {
+			return [];
+		}
+		return array_map(fn($b) => [
+			'start' => substr($b['start_date'], 0, 10),
+			'end'   => substr($b['end_date'], 0, 10),
+		], $response['content']);
+	}
+
 	public function getBookingsForUser(User $patron): array {
 		$extraHeaders = ['Accept-Encoding: gzip, deflate', 'x-koha-library: ' . $patron->getHomeLocationCode()];
 		$response = $this->kohaApiUserAgent->get('/api/v1/bookings?patron_id=' . urlencode($patron->unique_ils_id), 'koha.getBookingsForUser', [], $extraHeaders);
