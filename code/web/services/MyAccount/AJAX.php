@@ -4509,6 +4509,62 @@ class MyAccount_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
+	function getUpdateBookingForm(): array {
+		$this->requireLoggedInUser(null, 'You must be logged in to update a booking. Please close this dialog and login again.');
+		$this->checkRequiredParameters(['userId', 'bookingId']);
+
+		$bookingId = (int)$_REQUEST['bookingId'];
+		$userId    = $_REQUEST['userId'];
+		$user      = UserAccount::getLoggedInUser();
+		$user    = $user->getUserReferredTo($userId);
+
+		if ($user === false) {
+			return $this->failureResult('Update Booking', translate(['text' => 'You do not have access to update bookings for the supplied user.', 'isPublicFacing' => true]));
+		}
+
+		require_once ROOT_DIR . '/sys/User/Booking.php';
+		$stored = new Booking();
+		$stored->userId = $user->id;
+		$stored->ils_booking_id = $bookingId;
+		if (!$stored->find(true)) {
+			return $this->failureResult('Update Booking', translate(['text' => 'Booking not found.', 'isPublicFacing' => true]));
+		}
+
+		require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+		$marcRecord = new MarcRecordDriver($user->source . ':' . $stored->recordId);
+		$itemLabel = $stored->itemId;
+		if ($marcRecord->isValid()) {
+			foreach ($marcRecord->getCopies() as $item) {
+				if ($item['itemId'] == $stored->itemId) {
+					$itemLabel = $item['shelfLocation'] . ' — ' . $item['callNumber'];
+					break;
+				}
+			}
+		}
+
+		require_once ROOT_DIR . '/sys/LibraryLocation/Location.php';
+		$location = new Location();
+		$pickupLocations = $location->getPickupBranches($user);
+
+		global $interface;
+		$interface->assign('userId', $user->id);
+		$interface->assign('bookingId', $bookingId);
+		$interface->assign('itemLabel', $itemLabel);
+		$interface->assign('startDate', $stored->ils_start_date);
+		$interface->assign('endDate', $stored->ils_end_date);
+		$interface->assign('notes', $stored->ils_notes);
+		$interface->assign('pickupLocations', $pickupLocations);
+		$interface->assign('preSelectedPickupBranch', $stored->ils_pickup_library_id);
+		$interface->assign('user', $user);
+
+		return [
+			'title'        => translate(['text' => 'Update Booking', 'isPublicFacing' => true]),
+			'modalBody'    => $interface->fetch('MyAccount/updateBooking.tpl'),
+			'modalButtons' => '<button class="btn btn-primary" onclick="return AspenDiscovery.Account.submitUpdateBooking();">' . translate(['text' => 'Update Booking', 'isPublicFacing' => true]) . '</button>',
+		];
+	}
+
+	/** @noinspection PhpUnused */
 	function confirmCancelBooking(): array {
 		$this->requireLoggedInUser(null, 'You must be logged in to cancel a booking. Please close this dialog and login again.');
 		$this->checkRequiredParameters(['userId', 'bookingId']);
