@@ -3984,6 +3984,93 @@ class UserAPI extends AbstractAPI {
 		return $user->updateBooking((int)$_REQUEST['bookingId'], $_REQUEST['startDate'], $_REQUEST['endDate'], $pickupBranch);
 	}
 
+	/**
+	 * Get the list of bookable items on a record. Used to populate booking item picker UIs in clients (e.g. LiDA). Also returns the eligible pickup locations for the calling user.
+	 *
+	 * Parameters:
+	 * <ul>
+	 * <li>username - The barcode of the user.</li>
+	 * <li>password - The pin number for the user.</li>
+	 * <li>recordId - The bibliographic record id (with or without source prefix).</li>
+	 * </ul>
+	 *
+	 * Returns:
+	 * <ul>
+	 * <li>success - true if the record was found and bookings are enabled.</li>
+	 * <li>items - array of bookable copies (itemId, callNumber, shelfLocation, etc.).</li>
+	 * <li>pickupLocations - array of valid pickup locations for the user.</li>
+	 * </ul>
+	 *
+	 * Sample Call:
+	 * <code>
+	 * https://aspenurl/API/UserAPI?method=getBookableItems&username=23025003575917&password=1234&recordId=12345
+	 * </code>
+	 *
+	 * @noinspection PhpUnused
+	 */
+	function getBookableItems() : array {
+		$user = $this->getUserForApiCall();
+		if (!$user || $user instanceof AspenError) {
+			return [
+				'success' => false,
+				'message' => 'Login unsuccessful',
+			];
+		}
+
+		global $library;
+		if (empty($library) || !$library->enableBookings) {
+			return [
+				'success' => false,
+				'message' => translate(['text' => 'Bookings are not enabled for your library.', 'isPublicFacing' => true]),
+			];
+		}
+
+		if (empty($_REQUEST['recordId'])) {
+			return [
+				'success' => false,
+				'message' => 'recordId must be provided',
+			];
+		}
+
+		$recordId = $_REQUEST['recordId'];
+		$shortId = strpos($recordId, ':') > 0 ? explode(':', $recordId, 2)[1] : $recordId;
+
+		require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+		$marcRecord = new MarcRecordDriver($shortId);
+		if (!$marcRecord->isValid()) {
+			return [
+				'success' => false,
+				'message' => translate(['text' => 'Record not found.', 'isPublicFacing' => true]),
+			];
+		}
+
+		$catalogDriver = $marcRecord->getCatalogDriver();
+		if (!$catalogDriver || !$catalogDriver->hasBookingsSupport()) {
+			return [
+				'success' => false,
+				'message' => translate(['text' => 'Bookings are not supported for this record.', 'isPublicFacing' => true]),
+			];
+		}
+
+		$bookableItems = array_values(array_filter($marcRecord->getCopies(), fn($item) => !empty($item['bookable'])));
+		require_once ROOT_DIR . '/sys/LibraryLocation/Location.php';
+		$location = new Location();
+		$pickupLocations = $location->getPickupBranches($user);
+
+		return [
+			'success' => true,
+			'items' => $bookableItems,
+			'pickupLocations' => array_map(static function ($pickup) {
+				$loc = is_object($pickup) && property_exists($pickup, 'location') ? $pickup->location : $pickup;
+				return [
+					'locationId' => $loc->locationId ?? null,
+					'code' => $loc->code ?? null,
+					'displayName' => $loc->displayName ?? null,
+				];
+			}, $pickupLocations),
+		];
+	}
+
 	/** @noinspection PhpUnused */
 	function submitVdxRequest() : array {
 		return [
