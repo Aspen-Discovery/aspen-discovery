@@ -894,5 +894,83 @@ AspenDiscovery.Record = (function () {
 				AspenDiscovery.ajaxFail(jqXHR, textStatus, errorThrown);
 			});
 		},
+
+		_bookingFlatpickr: null,
+
+		initBookingForm: function () {
+			const R          = AspenDiscovery.Record;
+			const itemSelect = document.getElementById('itemId');
+			const hiddenItem = document.getElementById('currentItemId');
+
+			if (itemSelect) {
+				itemSelect.addEventListener('change', function () {
+					const startInput = document.getElementById('startDate');
+					const endInput   = document.getElementById('endDate');
+					if (startInput) startInput.value = '';
+					if (endInput)   endInput.value   = '';
+					R.loadItemAvailability(this.value);
+				});
+			}
+
+			const itemId = itemSelect ? itemSelect.value : (hiddenItem ? hiddenItem.value : null);
+			if (itemId) R.loadItemAvailability(itemId);
+		},
+
+		loadItemAvailability: function (itemId) {
+			const R         = AspenDiscovery.Record;
+			const container = document.getElementById('bookingAvailability');
+			if (!container) return;
+
+			if (R._bookingFlatpickr) {
+				R._bookingFlatpickr.destroy();
+				R._bookingFlatpickr = null;
+			}
+			container.innerHTML = '<span class="text-muted"><em>Loading availability\u2026</em></span>';
+
+			$.getJSON(Globals.path + '/Record/AJAX?method=getItemBookedDates&itemId=' + encodeURIComponent(itemId), function (data) {
+				container.innerHTML = '';
+				R.initBookingCalendar(container, data.success ? data.bookedDates : []);
+			}).fail(function () {
+				container.innerHTML = '';
+				R.initBookingCalendar(container, []);
+			});
+		},
+
+		initBookingCalendar: function (container, bookedRanges) {
+			const R          = AspenDiscovery.Record;
+			const startInput = document.getElementById('startDate');
+			const endInput   = document.getElementById('endDate');
+
+			function padTwo(n) { return n < 10 ? '0' + n : '' + n; }
+			function fmtDate(d) { return d.getFullYear() + '-' + padTwo(d.getMonth() + 1) + '-' + padTwo(d.getDate()); }
+
+			const defaultDate = [];
+			if (startInput && startInput.value) defaultDate.push(startInput.value);
+			if (endInput   && endInput.value)   defaultDate.push(endInput.value);
+
+			const tomorrow = new Date();
+			tomorrow.setDate(tomorrow.getDate() + 1);
+			tomorrow.setHours(0, 0, 0, 0);
+
+			const anchor = document.createElement('input');
+			anchor.type  = 'hidden';
+			container.appendChild(anchor);
+
+			R._bookingFlatpickr = flatpickr(anchor, {
+				mode:        'range',
+				inline:      true,
+				dateFormat:  'Y-m-d',
+				minDate:     tomorrow,
+				defaultDate: defaultDate.length === 2 ? defaultDate : undefined,
+				disable: [function (date) {
+					const ds = fmtDate(date);
+					return bookedRanges.some(function (r) { return ds >= r.start && ds <= r.end; });
+				}],
+				onChange: function (selectedDates) {
+					if (startInput) startInput.value = selectedDates[0] ? fmtDate(selectedDates[0]) : '';
+					if (endInput)   endInput.value   = selectedDates[1] ? fmtDate(selectedDates[1]) : '';
+				},
+			});
+		},
 	};
 }(AspenDiscovery.Record || {}));

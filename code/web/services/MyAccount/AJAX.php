@@ -4550,6 +4550,7 @@ class MyAccount_AJAX extends JSON_Action {
 		$interface->assign('userId', $user->id);
 		$interface->assign('bookingId', $bookingId);
 		$interface->assign('itemLabel', $itemLabel);
+		$interface->assign('currentItemId', $stored->itemId);
 		$interface->assign('startDate', $stored->ils_start_date);
 		$interface->assign('endDate', $stored->ils_end_date);
 		$interface->assign('notes', $stored->ils_notes);
