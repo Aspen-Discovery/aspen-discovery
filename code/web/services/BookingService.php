@@ -63,6 +63,18 @@ class BookingService {
 		}
 	}
 
+	public static function updateStoredBooking(User $patron, int $bookingId, string $startDate, string $endDate, ?string $pickupBranch): void {
+		$booking = new Booking();
+		$booking->userId = $patron->id;
+		$booking->ils_booking_id = $bookingId;
+		if ($booking->find(true)) {
+			$booking->ils_start_date        = $startDate;
+			$booking->ils_end_date          = $endDate;
+			$booking->ils_pickup_library_id = $pickupBranch;
+			$booking->update();
+		}
+	}
+
 	private static function loadStoredBookingsById(User $patron): array {
 		$stored = new Booking();
 		$stored->userId = $patron->id;
