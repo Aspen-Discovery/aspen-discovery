@@ -4508,6 +4508,20 @@ class MyAccount_AJAX extends JSON_Action {
 		];
 	}
 
+	/** @noinspection PhpUnused */
+	function confirmCancelBooking(): array {
+		$this->requireLoggedInUser(null, 'You must be logged in to cancel a booking. Please close this dialog and login again.');
+		$this->checkRequiredParameters(['userId', 'bookingId']);
+		$userId    = $_REQUEST['userId'];
+		$bookingId = $_REQUEST['bookingId'];
+		$cancelButtonLabel = translate(['text' => 'Confirm Cancel Booking', 'isPublicFacing' => true]);
+		return [
+			'title'   => translate(['text' => 'Cancel Booking', 'isPublicFacing' => true]),
+			'body'    => translate(['text' => 'Are you sure you want to cancel this booking?', 'isPublicFacing' => true]),
+			'buttons' => "<button type='button' class='tool btn btn-primary confirmCancelButton' onclick='AspenDiscovery.Account.cancelBooking(\"$userId\", \"$bookingId\")'>$cancelButtonLabel</button>",
+		];
+	}
+
 	private function getVendor($sourceId) : string {
 		if (str_starts_with($sourceId, 'communico')) {
 			return "communico";
