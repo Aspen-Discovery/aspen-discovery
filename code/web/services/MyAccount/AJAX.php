@@ -4522,6 +4522,31 @@ class MyAccount_AJAX extends JSON_Action {
 		];
 	}
 
+	/** @noinspection PhpUnused */
+	function cancelBooking(): array {
+		$this->requireLoggedInUser(null, 'You must be logged in to cancel a booking. Please close this dialog and login again.');
+		$this->checkRequiredParameters(['bookingId', 'userId']);
+		$bookingId = (int)$_REQUEST['bookingId'];
+		$userId  = $_REQUEST['userId'];
+		$activeUser = UserAccount::getLoggedInUser();
+		$user    = $activeUser->getUserReferredTo($userId);
+
+		if ($user === false) {
+			$result = $this->failureResult('Cancel Booking', translate(['text' => 'You do not have access to cancel bookings for the supplied user.', 'isPublicFacing' => true]));
+		} else {
+			$result = $user->cancelBooking($bookingId);
+		}
+
+		global $interface;
+		$interface->assign('cancelResults', $result);
+
+		return [
+			'title'   => translate(['text' => 'Cancel Booking', 'isPublicFacing' => true]),
+			'body'    => $interface->fetch('MyAccount/cancelBooking.tpl'),
+			'success' => $result['success'],
+		];
+	}
+
 	private function getVendor($sourceId) : string {
 		if (str_starts_with($sourceId, 'communico')) {
 			return "communico";
