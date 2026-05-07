@@ -3811,6 +3811,73 @@ class UserAPI extends AbstractAPI {
 		];
 	}
 
+	/**
+	 * Place a booking for a specific item over a date range. Bookings are different from holds: they reserve an item for a defined start/end window.
+	 *
+	 * Parameters:
+	 * <ul>
+	 * <li>username - The barcode of the user.</li>
+	 * <li>password - The pin number for the user.</li>
+	 * <li>recordId - The id of the bibliographic record (with or without source prefix).</li>
+	 * <li>itemId - The id of the specific item to book.</li>
+	 * <li>startDate - Start date of the booking in YYYY-MM-DD format.</li>
+	 * <li>endDate - End date of the booking in YYYY-MM-DD format.</li>
+	 * <li>pickupBranch - Optional pickup library code.</li>
+	 * <li>notes - Optional patron notes.</li>
+	 * </ul>
+	 *
+	 * Returns:
+	 * <ul>
+	 * <li>success - true if the booking was placed.</li>
+	 * <li>title - Result title (e.g. "Booking placed").</li>
+	 * <li>message - Human-readable status message.</li>
+	 * <li>booking_id - The new booking id when successful.</li>
+	 * </ul>
+	 *
+	 * Sample Call:
+	 * <code>
+	 * https://aspenurl/API/UserAPI?method=placeBooking&username=23025003575917&password=1234&recordId=12345&itemId=67890&startDate=2026-06-01&endDate=2026-06-08&pickupBranch=MAIN
+	 * </code>
+	 *
+	 * @noinspection PhpUnused
+	 */
+	function placeBooking() : array {
+		$user = $this->getUserForApiCall();
+		if (!$user || $user instanceof AspenError) {
+			return [
+				'success' => false,
+				'message' => 'Login unsuccessful',
+			];
+		}
+
+		global $library;
+		if (empty($library) || !$library->enableBookings) {
+			return [
+				'success' => false,
+				'message' => translate(['text' => 'Bookings are not enabled for your library.', 'isPublicFacing' => true]),
+			];
+		}
+
+		foreach (['recordId', 'itemId', 'startDate', 'endDate'] as $required) {
+			if (empty($_REQUEST[$required])) {
+				return [
+					'success' => false,
+					'message' => "$required must be provided",
+				];
+			}
+		}
+
+		$recordId = $_REQUEST['recordId'];
+		$shortId = strpos($recordId, ':') > 0 ? explode(':', $recordId, 2)[1] : $recordId;
+		$itemId = $_REQUEST['itemId'];
+		$startDate = $_REQUEST['startDate'];
+		$endDate = $_REQUEST['endDate'];
+		$pickupBranch = !empty($_REQUEST['pickupBranch']) ? $_REQUEST['pickupBranch'] : null;
+		$notes = !empty($_REQUEST['notes']) ? $_REQUEST['notes'] : null;
+
+		return $user->placeBooking($itemId, $shortId, $startDate, $endDate, $pickupBranch, $notes);
+	}
+
 	/** @noinspection PhpUnused */
 	function submitVdxRequest() : array {
 		return [
