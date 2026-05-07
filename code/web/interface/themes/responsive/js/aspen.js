@@ -2789,6 +2789,67 @@ AspenDiscovery.Account = (function () {
 			return false;
 		},
 
+		loadBookings: function () {
+			const url = Globals.path + '/MyAccount/AJAX?method=loadBookings';
+			document.body.style.cursor = 'wait';
+			$.getJSON(url, function (data) {
+				document.body.style.cursor = 'default';
+				if (data.success) {
+					$('#bookingsPlaceholder').html(data.bookings);
+				} else {
+					$('#bookingsPlaceholder').html(data.message);
+				}
+			}).fail(AspenDiscovery.ajaxFail);
+			return false;
+		},
+
+		updateBookingForm: function (userId, bookingId) {
+			AspenDiscovery.loadingMessage();
+			$.getJSON(Globals.path + '/MyAccount/AJAX?method=getUpdateBookingForm&userId=' + userId + '&bookingId=' + bookingId, function (data) {
+				AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+			}).fail(AspenDiscovery.ajaxFail);
+			return false;
+		},
+
+		submitUpdateBooking: function () {
+			const form = document.getElementById('updateBookingForm');
+			if (!form) return false;
+			const params = $(form).serialize();
+			AspenDiscovery.loadingMessage();
+			$.getJSON(Globals.path + '/MyAccount/AJAX?method=submitUpdateBooking&' + params, function (data) {
+				AspenDiscovery.showMessage(data.title, data.body, data.success);
+				if (data.success) {
+					AspenDiscovery.Account.loadBookings();
+				}
+			}).fail(AspenDiscovery.ajaxFail);
+			return false;
+		},
+
+		confirmCancelBooking: function (userId, bookingId) {
+			AspenDiscovery.loadingMessage();
+			$.getJSON(Globals.path + '/MyAccount/AJAX?method=confirmCancelBooking&userId=' + userId + '&bookingId=' + bookingId, function (data) {
+				AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons);
+			}).fail(AspenDiscovery.ajaxFail);
+			return false;
+		},
+
+		cancelBooking: function (userId, bookingId) {
+			if (Globals.loggedIn) {
+				AspenDiscovery.loadingMessage();
+				$.getJSON(Globals.path + '/MyAccount/AJAX?method=cancelBooking&userId=' + userId + '&bookingId=' + bookingId, function (data) {
+					AspenDiscovery.showMessage(data.title, data.body, false, false);
+					if (data.success) {
+						AspenDiscovery.Account.loadBookings();
+					}
+				}).fail(AspenDiscovery.ajaxFail);
+			} else {
+				this.ajaxLogin(null, function () {
+					AspenDiscovery.Account.cancelBooking(userId, bookingId);
+				}, false);
+			}
+			return false;
+		},
+
 		loadReadingHistory: function (selectedUser, sort, page, showCovers, filter) {
 			var url = Globals.path + "/MyAccount/AJAX?method=getReadingHistory&patronId=" + selectedUser;
 			if (sort !== undefined) {
