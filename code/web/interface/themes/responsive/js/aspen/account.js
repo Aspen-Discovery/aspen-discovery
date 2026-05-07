@@ -404,6 +404,14 @@ AspenDiscovery.Account = (function () {
 			return false;
 		},
 
+		updateBookingForm: function (userId, bookingId) {
+			AspenDiscovery.loadingMessage();
+			$.getJSON(Globals.path + '/MyAccount/AJAX?method=getUpdateBookingForm&userId=' + userId + '&bookingId=' + bookingId, function (data) {
+				AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+			}).fail(AspenDiscovery.ajaxFail);
+			return false;
+		},
+
 		confirmCancelBooking: function (userId, bookingId) {
 			AspenDiscovery.loadingMessage();
 			$.getJSON(Globals.path + '/MyAccount/AJAX?method=confirmCancelBooking&userId=' + userId + '&bookingId=' + bookingId, function (data) {

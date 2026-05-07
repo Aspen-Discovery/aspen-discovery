@@ -6,7 +6,7 @@
 				{if is_string($location)}
 					<option value="undefined">{$location}</option>
 				{else}
-					<option value="{$location->code}" {if $location->code == $user->getPickupLocationCode()}selected{/if}>{$location->displayName|escape}</option>
+					<option value="{$location->code}" {if !empty($preSelectedPickupBranch)}{if $location->code == $preSelectedPickupBranch}selected{/if}{else}{if $location->code == $user->getPickupLocationCode()}selected{/if}{/if}>{$location->displayName|escape}</option>
 				{/if}
 			{/foreach}
 		</select>
