@@ -3878,6 +3878,56 @@ class UserAPI extends AbstractAPI {
 		return $user->placeBooking($itemId, $shortId, $startDate, $endDate, $pickupBranch, $notes);
 	}
 
+	/**
+	 * Cancel a booking the patron has placed within the ILS.
+	 *
+	 * Parameters:
+	 * <ul>
+	 * <li>username - The barcode of the user.</li>
+	 * <li>password - The pin number for the user.</li>
+	 * <li>bookingId - The ILS booking id to cancel.</li>
+	 * </ul>
+	 *
+	 * Returns:
+	 * <ul>
+	 * <li>success - true if the booking was cancelled.</li>
+	 * <li>message - Human-readable status message.</li>
+	 * </ul>
+	 *
+	 * Sample Call:
+	 * <code>
+	 * https://aspenurl/API/UserAPI?method=cancelBooking&username=23025003575917&password=1234&bookingId=42
+	 * </code>
+	 *
+	 * @noinspection PhpUnused
+	 */
+	function cancelBooking() : array {
+		$user = $this->getUserForApiCall();
+		if (!$user || $user instanceof AspenError) {
+			return [
+				'success' => false,
+				'message' => 'Login unsuccessful',
+			];
+		}
+
+		global $library;
+		if (empty($library) || !$library->enableBookings) {
+			return [
+				'success' => false,
+				'message' => translate(['text' => 'Bookings are not enabled for your library.', 'isPublicFacing' => true]),
+			];
+		}
+
+		if (empty($_REQUEST['bookingId'])) {
+			return [
+				'success' => false,
+				'message' => 'bookingId must be provided',
+			];
+		}
+
+		return $user->cancelBooking((int)$_REQUEST['bookingId']);
+	}
+
 	/** @noinspection PhpUnused */
 	function submitVdxRequest() : array {
 		return [
