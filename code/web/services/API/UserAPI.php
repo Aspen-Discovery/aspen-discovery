@@ -3928,6 +3928,62 @@ class UserAPI extends AbstractAPI {
 		return $user->cancelBooking((int)$_REQUEST['bookingId']);
 	}
 
+	/**
+	 * Update an existing booking. Allows changing the start/end dates and pickup library.
+	 *
+	 * Parameters:
+	 * <ul>
+	 * <li>username - The barcode of the user.</li>
+	 * <li>password - The pin number for the user.</li>
+	 * <li>bookingId - The ILS booking id to update.</li>
+	 * <li>startDate - New start date in YYYY-MM-DD format.</li>
+	 * <li>endDate - New end date in YYYY-MM-DD format.</li>
+	 * <li>pickupBranch - Optional new pickup library code.</li>
+	 * </ul>
+	 *
+	 * Returns:
+	 * <ul>
+	 * <li>success - true if the booking was updated.</li>
+	 * <li>message - Human-readable status message.</li>
+	 * </ul>
+	 *
+	 * Sample Call:
+	 * <code>
+	 * https://aspenurl/API/UserAPI?method=updateBooking&username=23025003575917&password=1234&bookingId=42&startDate=2026-06-02&endDate=2026-06-09
+	 * </code>
+	 *
+	 * @noinspection PhpUnused
+	 */
+	function updateBooking() : array {
+		$user = $this->getUserForApiCall();
+		if (!$user || $user instanceof AspenError) {
+			return [
+				'success' => false,
+				'message' => 'Login unsuccessful',
+			];
+		}
+
+		global $library;
+		if (empty($library) || !$library->enableBookings) {
+			return [
+				'success' => false,
+				'message' => translate(['text' => 'Bookings are not enabled for your library.', 'isPublicFacing' => true]),
+			];
+		}
+
+		foreach (['bookingId', 'startDate', 'endDate'] as $required) {
+			if (empty($_REQUEST[$required])) {
+				return [
+					'success' => false,
+					'message' => "$required must be provided",
+				];
+			}
+		}
+
+		$pickupBranch = !empty($_REQUEST['pickupBranch']) ? $_REQUEST['pickupBranch'] : null;
+		return $user->updateBooking((int)$_REQUEST['bookingId'], $_REQUEST['startDate'], $_REQUEST['endDate'], $pickupBranch);
+	}
+
 	/** @noinspection PhpUnused */
 	function submitVdxRequest() : array {
 		return [
