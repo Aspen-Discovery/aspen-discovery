@@ -9796,6 +9796,25 @@ class Koha extends AbstractIlsDriver {
 	}
 
 
+	public function cancelBooking(User $patron, int $bookingId): array {
+		$extraHeaders = ['Accept-Encoding: gzip, deflate', 'x-koha-library: ' . $patron->getHomeLocationCode()];
+		$response = $this->kohaApiUserAgent->delete("/api/v1/bookings/$bookingId", 'koha.cancelBooking', [], $extraHeaders);
+
+		if ($response && $response['code'] === 204) {
+			require_once ROOT_DIR . '/services/BookingService.php';
+			BookingService::deleteStoredBooking($patron, $bookingId);
+			return [
+				'success' => true,
+				'message' => translate(['text' => 'Your booking has been cancelled.', 'isPublicFacing' => true]),
+			];
+		}
+
+		return [
+			'success' => false,
+			'message' => translate(['text' => 'Unable to cancel your booking.', 'isPublicFacing' => true]),
+		];
+	}
+
 	public function getBookingsForUser(User $patron): array {
 		$extraHeaders = ['Accept-Encoding: gzip, deflate', 'x-koha-library: ' . $patron->getHomeLocationCode()];
 		$response = $this->kohaApiUserAgent->get('/api/v1/bookings?patron_id=' . urlencode($patron->unique_ils_id), 'koha.getBookingsForUser', [], $extraHeaders);
