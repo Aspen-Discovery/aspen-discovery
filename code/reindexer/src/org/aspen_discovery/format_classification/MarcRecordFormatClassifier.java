@@ -130,6 +130,9 @@ public class MarcRecordFormatClassifier {
 			}else if (Character.toUpperCase(leaderBit) == 'O') {
 				if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Adding bib level format Kit based on leader", 2);}
 				printFormats.add("Kit");
+			}else if (Character.toUpperCase(leaderBit) == 'P') {
+				if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Adding bib level format Mixed Materials based on leader", 2);}
+				printFormats.add("MixedMaterials");
 			}
 		}
 		//Check for braille
@@ -1345,6 +1348,11 @@ public class MarcRecordFormatClassifier {
 	}
 
 	public void filterPrintFormats(Set<String> printFormats) {
+		if (printFormats.contains("MixedMaterials")){
+			printFormats.clear();
+			printFormats.add("MixedMaterials");
+			return;
+		}
 		if (printFormats.contains("Archival Materials")){
 			printFormats.clear();
 			printFormats.add("Archival Materials");

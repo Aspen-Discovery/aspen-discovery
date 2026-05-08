@@ -65,6 +65,7 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 		$adminStickyFilter->userId = $user->id;
 		$adminStickyFilter->filterFor = "MaterialsRequest_Status";
 		if ($adminStickyFilter->find()) {
+			$statusesToShow = [];
 			while ($adminStickyFilter->fetch()) {
 				$statusesToShow[] = $adminStickyFilter->filterValue;
 			}

@@ -18,15 +18,21 @@ class ExploreMoreSourceGroup extends DataObject {
 
 	public function getExploreMoreSources() : ?array {
 		if (!isset($this->_exploreMoreSources) && !empty($this->id)) {
+			global $enabledModules;
 			$this->_exploreMoreSources = [];
 			$entry = new ExploreMoreSourceEntry();
 			$entry->exploreMoreSourceGroupId = $this->id;
 			$entry->orderBy('weight ASC');
-			$entry->find();
-			while ($entry->fetch()) {
-				$clonedEntry = clone($entry);
-				$clonedEntry->sourceName = $clonedEntry->getSourceName();
-				$this->_exploreMoreSources[$entry->id] = $clonedEntry;
+			$allEntries = $entry->fetchAll();
+			foreach ($allEntries as $entry) {
+				$sourceName = $entry->getSourceName();
+				$okToInclude = match ($sourceName) {
+					'CloudSource', 'EBSCO EDS', 'EBSCOhost', 'Events', 'Gale', 'Genealogy', 'Open Archives', 'Series', 'Summon', 'Web Indexer' => array_key_exists($sourceName, $enabledModules),
+					default => true,
+				};
+				if ($okToInclude) {
+					$this->_exploreMoreSources[$entry->id] = $entry;
+				}
 			}
 		}
 		return $this->_exploreMoreSources;
@@ -55,7 +61,7 @@ class ExploreMoreSourceGroup extends DataObject {
 			$entries[$entry->id] = clone($entry);
 			$hasEntries = true;
 		}
-		// If no entries exist, auto-populate with all sources
+		// If no entries exist, autopopulate with all sources
 		if (!$hasEntries) {
 			$source = new ExploreMoreSource();
 			$source->find();
@@ -74,6 +80,10 @@ class ExploreMoreSourceGroup extends DataObject {
 
 	static $_objectStructure = [];
 	static function getObjectStructure(string $context = ''): array {
+		if (isset(self::$_objectStructure[$context]) && self::$_objectStructure[$context] !== null) {
+			return self::$_objectStructure[$context];
+		}
+
 		require_once ROOT_DIR . '/sys/ExploreMoreSourceEntry.php';
 		$entryStructure = ExploreMoreSourceEntry::getObjectStructure($context);
 		unset($entryStructure['exploreMoreSourceGroupId']);

@@ -6,7 +6,7 @@ require_once ROOT_DIR . '/sys/SearchEntry.php';
 require_once ROOT_DIR . '/sys/Pager.php';
 
 class Series_Results extends ResultsAction {
-	function launch() {
+	function launch() : void {
 		global $interface;
 
 		// If redirected from a grouped work search, pass the original search URL to the template.
@@ -31,7 +31,7 @@ class Series_Results extends ResultsAction {
 			}
 		}
 
-		// Initialise from the current search globals
+		// Initialize from the current search globals
 		/** @var SearchObject_SeriesSearcher $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject('Series');
 		$searchObject->init();
@@ -92,7 +92,7 @@ class Series_Results extends ResultsAction {
 
 					$mailer->send($systemVariables->searchErrorEmail, "$serverName Error processing series search", $emailErrorDetails);
 				}
-			} catch (Exception $e) {
+			} catch (Exception) {
 				//This happens when the table has not been created
 			}
 
@@ -116,7 +116,7 @@ class Series_Results extends ResultsAction {
 		$interface->assign('spellingSuggestions', $spellingSuggestions['suggestions']);
 
 		// We'll need recommendations no matter how many results we found:
-		$interface->assign('topRecommendations', $searchObject->getRecommendationsTemplates('top'));
+		$interface->assign('topRecommendations', $searchObject->getRecommendationsTemplates());
 		$interface->assign('sideRecommendations', $searchObject->getRecommendationsTemplates('side'));
 
 		// 'Finish' the search... complete timers and log search history.
@@ -124,7 +124,7 @@ class Series_Results extends ResultsAction {
 		$interface->assign('time', round($searchObject->getTotalSpeed(), 2));
 		$interface->assign('savedSearch', $searchObject->isSavedSearch());
 		$interface->assign('searchId', $searchObject->getSearchId());
-		$currentPage = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
+		$currentPage = $_REQUEST['page'] ?? 1;
 		$interface->assign('page', $currentPage);
 
 		if ($searchObject->getResultTotal() == 0) {
@@ -143,7 +143,7 @@ class Series_Results extends ResultsAction {
 				} else {
 					$errorMessage = $error;
 				}
-				if (stristr($errorMessage, 'org.apache.lucene.queryParser.ParseException') || preg_match('/^undefined field/', $errorMessage)) {
+				if (stristr($errorMessage, 'org.apache.lucene.queryParser.ParseException') || str_starts_with($errorMessage, 'undefined field')) {
 					$interface->assign('parseError', true);
 
 					// Unexpected error -- let's treat this as a fatal condition.
@@ -175,27 +175,19 @@ class Series_Results extends ResultsAction {
 			if ($displayMode == 'covers') {
 				$displayTemplate = 'Series/covers-series.tpl'; // structure for bookcover tiles
 				// Use a pager for now since otherwise the wrong results get loaded
-				$link = $searchObject->renderLinkPageTemplate();
-				$options = [
-					'totalItems' => $summary['resultTotal'],
-					'fileName' => $link,
-					'perPage' => $summary['perPage'],
-				];
-				$pager = new Pager($options);
-				$interface->assign('pageLinks', $pager->getLinks());
 			} else {
 				$displayTemplate = 'Series/series-list.tpl'; // structure for regular results
 				$displayMode = 'list'; // In case the view is not explicitly set, do so now for display & clients-side functions
 				// Process Paging
-				$link = $searchObject->renderLinkPageTemplate();
-				$options = [
-					'totalItems' => $summary['resultTotal'],
-					'fileName' => $link,
-					'perPage' => $summary['perPage'],
-				];
-				$pager = new Pager($options);
-				$interface->assign('pageLinks', $pager->getLinks());
 			}
+			$link = $searchObject->renderLinkPageTemplate();
+			$options = [
+				'totalItems' => $summary['resultTotal'],
+				'fileName' => $link,
+				'perPage' => $summary['perPage'],
+			];
+			$pager = new Pager($options);
+			$interface->assign('pageLinks', $pager->getLinks());
 
 			$timer->logTime('finish hits processing');
 			$interface->assign('subpage', $displayTemplate);
@@ -227,13 +219,14 @@ class Series_Results extends ResultsAction {
 	} // End launch()
 
 	/**
-	 * @param SearchObject_Seriesearcher $searchObject
+	 * @param SearchObject_SeriesSearcher $searchObject
 	 * @param UInterface $interface
 	 */
 	private function getKeywordSearchResults(SearchObject_SeriesSearcher $searchObject, UInterface $interface): void {
 		//Check to see if we are not using a Keyword search and the Keyword search would provide results
 		if (!$searchObject->isAdvanced()) {
 			$searchTerms = $searchObject->getSearchTerms();
+			/** @var SearchObject_SeriesSearcher $keywordSearchObject */
 			$keywordSearchObject = SearchObjectFactory::initSearchObject();
 			$keywordSearchObject->setPrimarySearch(false);
 			$keywordSearchObject->setSearchTerms([
@@ -242,7 +235,7 @@ class Series_Results extends ResultsAction {
 			]);
 			$keywordSearchObject->disableSpelling();
 			$keywordSearchObject->clearFacets();
-			$keywordSearchObject->processSearch(false, false, false);
+			$keywordSearchObject->processSearch();
 			if ($keywordSearchObject->getResultTotal() > 0) {
 				$interface->assign('keywordResultsLink', $keywordSearchObject->renderSearchUrl());
 				$interface->assign('keywordResultsCount', $keywordSearchObject->getResultTotal());

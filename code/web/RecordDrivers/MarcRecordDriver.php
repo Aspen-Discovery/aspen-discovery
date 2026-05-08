@@ -1444,7 +1444,15 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 							$this->_actions[$variationId][] = getLocalIllRequestAction($this->getModule(), $source, $id);
 						}
 					} else {
-						$this->_actions[$variationId][] = getHoldRequestAction($this->getModule(), $source, $id, $variationId);
+						$format = 'Unknown';
+
+						foreach ($relatedRecord->recordVariations as $variation) {
+							if ($variation->databaseId == $variationId && $variation->manifestation != null) {
+								$format = $variation->manifestation->format;
+								break;
+							}
+						}
+						$this->_actions[$variationId][] = getHoldRequestAction($this->getModule(), $source, $id, $variationId, $format);
 					}
 				}
 			}

@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpMissingFieldTypeInspection */
 
 require_once ROOT_DIR . '/sys/ExploreMoreSourceLibrary.php';
 require_once ROOT_DIR . '/sys/ExploreMoreSourceLocation.php';
@@ -23,7 +23,7 @@ class ExploreMoreSource extends DataObject {
 		$normalizedValues = [];
 		foreach ($values as $key => $value) {
 			$selectedId = $value;
-			if (($selectedId === null || $selectedId === '') && $key !== null && $key !== '') {
+			if (($selectedId === null || $selectedId === '') && !empty($key)) {
 				$selectedId = $key;
 			}
 			if ($selectedId === null || $selectedId === '') {
@@ -35,18 +35,18 @@ class ExploreMoreSource extends DataObject {
 		return $normalizedValues;
 	}
 
-	public function setLibraries($libraries) {
+	public function setLibraries($libraries): void {
 		$this->libraries = $this->normalizeSelectedIds($libraries);
 	}
 
-	public function setLocations($locations) {
+	public function setLocations($locations): void {
 		$this->locations = $this->normalizeSelectedIds($locations);
 	}
 
 	/** @var ExploreMoreSource[] */
 	protected $_sources;
 
-	public function getSources() {
+	public function getSources() : ?array {
 		if (!isset($this->_sources) && $this->id) {
 			$this->_sources = [];
 			$sourceObj = new ExploreMoreSource();
@@ -59,7 +59,7 @@ class ExploreMoreSource extends DataObject {
 		return $this->_sources;
 	}
 
-	public function getLibraries() {
+	public function getLibraries() : array {
 		if (!is_array($this->libraries) || empty($this->libraries)) {
 			$this->libraries = [];
 			if ($this->id) {
@@ -76,7 +76,7 @@ class ExploreMoreSource extends DataObject {
 		return $this->libraries;
 	}
 
-	public function getLocations() {
+	public function getLocations() : array {
 		if (!is_array($this->locations) || empty($this->locations)) {
 			$this->locations = [];
 			if ($this->id) {
@@ -107,7 +107,7 @@ class ExploreMoreSource extends DataObject {
 		return $result;
 	}
 
-	private function saveLibraries() {
+	private function saveLibraries(): void {
 		if ($this->id !== null) {
 			$obj = new ExploreMoreSourceLibrary();
 			$obj->exploreMoreSourceId = $this->id;
@@ -123,7 +123,7 @@ class ExploreMoreSource extends DataObject {
 		}
 	}
 
-	private function saveLocations() {
+	private function saveLocations(): void {
 		if ($this->id !== null) {
 			$obj = new ExploreMoreSourceLocation();
 			$obj->exploreMoreSourceId = $this->id;
@@ -150,7 +150,6 @@ class ExploreMoreSource extends DataObject {
 
 	public function __set($name, $value) {
 		if ($name === 'libraries') {
-			$debug = true;
 			$this->setLibraries($value);
 		} elseif ($name === 'locations') {
 			$this->setLocations($value);
@@ -159,7 +158,12 @@ class ExploreMoreSource extends DataObject {
 		}
 	}
 
+	static $_objectStructure = [];
 	static function getObjectStructure($context = ''): array {
+		if (isset(self::$_objectStructure[$context]) && self::$_objectStructure[$context] !== null) {
+			return self::$_objectStructure[$context];
+		}
+
 		require_once ROOT_DIR . '/sys/ExploreMoreSourceEntry.php';
 		$entryStructure = ExploreMoreSourceEntry::getObjectStructure($context);
 		unset($entryStructure['exploreMoreSourceGroupId']);
@@ -214,7 +218,7 @@ class ExploreMoreSource extends DataObject {
 			'libraries' => [
 				'property' => 'libraries',
 				'type' => 'multiSelect',
-				'label' => 'Libraries',
+				'label' => 'Libraries (selecting none activates for all)',
 				'description' => 'Libraries where this source is visible',
 				'listStyle' => 'checkboxSimple',
 				'values' => $libraryListStringKeys,
@@ -223,13 +227,14 @@ class ExploreMoreSource extends DataObject {
 			'locations' => [
 				'property' => 'locations',
 				'type' => 'multiSelect',
-				'label' => 'Locations',
+				'label' => 'Locations (selecting none activates for all)',
 				'description' => 'Locations where this source is visible',
 				'listStyle' => 'checkboxSimple',
 				'values' => $locationListStringKeys,
 				'uiOnly' => true,
 			],
 		];
+		self::$_objectStructure[$context] = $structure;
 		return $structure;
 	}
 }

@@ -135,6 +135,7 @@ class Location extends DataObject {
 
 	/** @noinspection PhpUnused */
 	public $allowUpdatingHoursFromILS;
+	public $showInHolidayHoursTable;
 	/** @noinspection PhpUnused */
 	public $allowUpdatingContactInfoFromILS;
 
@@ -172,6 +173,7 @@ class Location extends DataObject {
 			'statGroup',
 			'isMainBranch',
 			'showInLocationsAndHoursList',
+			'showInHolidayHoursTable',
 			'validHoldPickupBranch',
 			'useScope',
 			'restrictSearchByLocation',
@@ -465,6 +467,16 @@ class Location extends DataObject {
 				'default' => true,
 				'editPermissions' => ['Location Address and Hours Settings'],
 				'affectsLiDA' => true,
+			],
+			'showInHolidayHoursTable' => [
+				'property' => 'showInHolidayHoursTable',
+				'type' => 'checkbox',
+				'label' => 'Show in Holidays & Special Hours table',
+				'description' => 'Whether or not this location shows in the holiday & special hours table',
+				'note' => 'Turning it off deletes all holiday rows for this location',
+				'hideInLists' => true,
+				'default' => true,
+				'editPermissions' => ['Location Address and Hours Settings'],
 			],
 			'allowUpdatingContactInfoFromILS' => [
 				'property' => 'allowUpdatingContactInfoFromILS',
@@ -2155,6 +2167,9 @@ class Location extends DataObject {
 			$this->saveThemes();
 			$this->saveEventMapping();
 			$this->saveSublocations();
+			if (empty($this->showInHolidayHoursTable)) {
+				$this->clearLocationHolidays();
+			}
 		}
 		return $ret;
 	}
@@ -2178,16 +2193,21 @@ class Location extends DataObject {
 			$this->saveThemes();
 			$this->saveEventMapping();
 			$this->saveSublocations();
+			if (empty($this->showInHolidayHoursTable)) {
+				$this->clearLocationHolidays();
+			}
 		}
 		return $ret;
 	}
 
 	public function delete(bool $useWhere = false, bool $hardDelete = false) : bool|int {
 		$ret = parent::delete($useWhere, $hardDelete);
-		if ($ret && !empty($this->id)) {
+		if ($ret && !empty($this->locationId)) {
 			$locationMap = new EventsBranchMapping();
 			$locationMap->locationId = $this->locationId;
 			$locationMap->delete(true);
+
+			$this->clearLocationHolidays();
 		}
 		return $ret;
 	}
@@ -2247,6 +2267,13 @@ class Location extends DataObject {
 			$this->saveOneToManyOptions($this->_hours, 'locationId');
 			unset($this->_hours);
 		}
+	}
+
+	private function clearLocationHolidays(): void {
+		require_once ROOT_DIR . '/sys/LibraryLocation/Holiday.php';
+		$holidayLocation = new Holiday();
+		$holidayLocation->locationId = $this->locationId;
+		$holidayLocation->delete(true);
 	}
 
 	public function getCloudLibraryScope(): int {
@@ -2313,16 +2340,38 @@ class Location extends DataObject {
 			// format $timeToCheck according to MySQL default date format
 			$todayFormatted = date('Y-m-d', $timeToCheck);
 
-			// check to see if today is a holiday
-			require_once ROOT_DIR . '/sys/LibraryLocation/Holiday.php';
-			$holiday = new Holiday();
-			$holiday->date = $todayFormatted;
-			$holiday->libraryId = $location->libraryId;
-			if ($holiday->find(true)) {
-				return [
-					'closed' => true,
-					'closureReason' => $holiday->name,
-				];
+			// check to see if today is a holiday or special hours
+			if (!empty($location->showInHolidayHoursTable)) {
+				require_once ROOT_DIR . '/sys/LibraryLocation/Holiday.php';
+				$holiday = new Holiday();
+				$holiday->date = $todayFormatted;
+				$holiday->locationId = $locationId;
+				if ($holiday->find(true)) {
+					if (!empty($holiday->closed)) {
+						return [
+							'closed' => true,
+							'closureReason' => $holiday->name,
+						];
+					}
+					$specialOpen = !empty($holiday->open) ? ltrim($holiday->open, '0') : null;
+					$specialClose = !empty($holiday->close) ? ltrim($holiday->close, '0') : null;
+
+					if ($specialOpen !== null && $specialClose !== null) {
+						if ($specialOpen == $specialClose) {
+							return [
+								'closed' => true,
+								'closureReason' => $holiday->name,
+							];
+						}
+						return [[
+							'open' => $specialOpen,
+							'close' => $specialClose,
+							'closed' => false,
+							'openFormatted' => ($holiday->open == '12:00' ? 'Noon' : date("g:i A", strtotime($holiday->open))),
+							'closeFormatted' => ($holiday->close == '12:00' ? 'Noon' : date("g:i A", strtotime($holiday->close))),
+						]];
+					}
+				}
 			}
 
 			// get the day of the week (0=Sunday to 6=Saturday)

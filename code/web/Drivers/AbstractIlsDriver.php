@@ -1058,4 +1058,11 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 	public function isPatronAccountLocked(User $patron, $fine): bool {
 		return false;
 	}
+
+	/**
+	 * Check if this driver supports hyperholds grouping
+	*/
+	public function supportsHyperholdsGrouping() {
+		return false;
+	}
 }

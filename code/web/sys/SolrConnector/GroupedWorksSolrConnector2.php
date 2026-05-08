@@ -2,13 +2,34 @@
 
 require_once 'Solr.php';
 require_once ROOT_DIR . '/sys/SearchObject/GroupedWorkSearcher2.php';
+require_once ROOT_DIR . '/sys/SystemVariables.php';
 
 class GroupedWorksSolrConnector2 extends Solr {
 	function __construct($host, $index = '') {
 		parent::__construct($host, 'grouped_works_v2');
 	}
 
+	function getSearchSpecs()
+	{
+		$systemVariables = SystemVariables::getSystemVariables();
+		$useCustomSearchSpecs = $systemVariables && !empty($systemVariables->customGroupedWorkSearchSpecs);
+		if(!$useCustomSearchSpecs)
+		{
+			// Fall back to default grouped work search specs
+			return $this->getSearchSpecsFile();
+		}
+		$specs = $systemVariables->customGroupedWorkSearchSpecs;
+		if (!file_exists($specs) ||!is_readable($specs))
+		{
+			// Log warning if file doesn't exist or isn't readable
+			global $logger;
+			$logger->log("Custom grouped work search specs is not an accessible file. Interpreting as yaml text instead of a path for system variables", Logger::LOG_WARNING);
+		}
+		return $specs;			
+	}
+
 	/**
+	 * Get the search specs file for grouped work searches
 	 * @return string
 	 */
 	function getSearchSpecsFile() {

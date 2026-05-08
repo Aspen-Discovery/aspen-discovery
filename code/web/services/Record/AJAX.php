@@ -353,6 +353,47 @@ class Record_AJAX extends JSON_Action {
 
 			$marcRecord = new MarcRecordDriver($id);
 
+			$allowEditionSelection = (isset($_REQUEST['allowEditionSelection']) && $_REQUEST['allowEditionSelection'] == '1');
+			$interface->assign('allowEditionSelection', $allowEditionSelection);
+
+			$currentFormat = null;
+			$catalogDriver = $marcRecord->getCatalogDriver();
+			$allowHoldsToBeGrouped = $catalogDriver && $catalogDriver->supportsHyperholdsGrouping()
+				? User::resolveAllowHoldsToBeGrouped($user, $library)
+				: false;
+
+			if (isset($_REQUEST['format']) && !empty($_REQUEST['format'])) {
+				$currentFormat = $_REQUEST['format'];
+			} elseif ($selectedVariationId !== -1) {
+				$groupedWorkDriver = $marcRecord->getGroupedWorkDriver();
+				if ($groupedWorkDriver) {
+					$relatedRecord = $groupedWorkDriver->getRelatedRecord($marcRecord->getIdWithSource());
+					if ($relatedRecord && !empty($relatedRecord->recordVariations)) {
+						foreach ($relatedRecord->recordVariations as $variation) {
+							if ((string)$variation->databaseId === (string)$selectedVariationId) {
+								$currentFormat = $variation->manifestation->format ?? null;
+								break;
+							}
+						}
+					}
+				}
+			}
+
+			if ($currentFormat === null) {
+				$currentFormat = $marcRecord->getPrimaryFormat();
+			}
+
+			$interface->assign('currentFormat', $currentFormat);
+			$interface->assign('allowHoldsToBeGrouped', $allowHoldsToBeGrouped);
+
+			if ($allowEditionSelection) {
+				$groupedWorkDriver = $marcRecord->getGroupedWorkDriver();
+				if ($groupedWorkDriver) {
+					$editions = $this->getHoldableEditionsForFormat($groupedWorkDriver, $recordSource, $currentFormat);
+					$interface->assign('editions', $editions);
+				}
+			}
+ 
 			require_once ROOT_DIR . '/sys/Account/User.php';
 			$isOnHold = $user->isRecordOnHold($recordSource, $id);
 			$interface->assign('isOnHold', $isOnHold);
@@ -624,16 +665,41 @@ class Record_AJAX extends JSON_Action {
 					'success' => true,
 				];
 				if ($holdType != 'none') {
+					$groupedWorkId = '';
+					$catalogDriver = $marcRecord->getCatalogDriver();
+					$allowHoldsToBeGrouped = $catalogDriver && $catalogDriver->supportsHyperholdsGrouping()
+						? User::resolveAllowHoldsToBeGrouped($user, $library)
+						: false;
+					if ($allowEditionSelection && $allowHoldsToBeGrouped) {
+						$groupedWorkDriver = $marcRecord->getGroupedWorkDriver();
+						if ($groupedWorkDriver) {
+							$groupedWorkId = $groupedWorkDriver->getPermanentId();
+						}
+					}
 					if ($isOnHold) {
-						$results['modalButtons'] = "<button type='submit' name='submit' id='requestTitleButton' class='btn btn-primary' onclick='return AspenDiscovery.Record.submitHoldForm();'><i class='fas fa-spinner fa-spin hidden' role='status' aria-hidden='true'></i>&nbsp;" . translate([
+						if ($allowEditionSelection) {
+							$results['modalButtons'] = "buttin type='submit' name='submit' id=requestTitleButton' class='btn btn-primary' onclick='return AspenDiscovery.Record.submitHyperhold(\"$groupedWorkId\");'><i class='fas fa-spinner fa-spin hidden' role='status' aria-hidden='true'></i>&nbsp;" . translate([
+								'text' => "Yes, Place Hold",
+								'isPublicFacing' => true,
+							]) . "</button";
+						} else {
+								$results['modalButtons'] = "<button type='submit' name='submit' id='requestTitleButton' class='btn btn-primary' onclick='return AspenDiscovery.Record.submitHoldForm();'><i class='fas fa-spinner fa-spin hidden' role='status' aria-hidden='true'></i>&nbsp;" . translate([
 								'text' => "Yes, Place Hold",
 								'isPublicFacing' => true,
 							]) . "</button>";
+						}
 					} else {
-						$results['modalButtons'] = "<button type='submit' name='submit' id='requestTitleButton' class='btn btn-primary' onclick='return AspenDiscovery.Record.submitHoldForm();'><i class='fas fa-spinner fa-spin hidden' role='status' aria-hidden='true'></i>&nbsp;" . translate([
+						if ($allowEditionSelection && $allowHoldsToBeGrouped) {
+							$results['modalButtons'] = "<button type='submit' name='submit' id=requestTitleButton' class='btn btn-primary' onclick='return AspenDiscovery.Record.submitHyperhold(\"$groupedWorkId\");'><i class='fas fa-spinner hidden' role='status' aria-hidden='true'></i>&nbsp;" . translate([
 								'text' => "Submit Hold Request",
 								'isPublicFacing' => true,
 							]) . "</button>";
+						} else {
+							$results['modalButtons'] = "<button type='submit' name='submit' id='requestTitleButton' class='btn btn-primary' onclick='return AspenDiscovery.Record.submitHoldForm();'><i class='fas fa-spinner fa-spin hidden' role='status' aria-hidden='true'></i>&nbsp;" . translate([
+								'text' => "Submit Hold Request",
+								'isPublicFacing' => true,
+							]) . "</button>";
+						}
 					}
 				}
 			}
@@ -2494,5 +2560,279 @@ class Record_AJAX extends JSON_Action {
 			'modalBody' => $interface->fetch("Record/largeCover.tpl"),
 			'modalButtons' => "",
 		];
+	}
+
+	public function requestHyperholdConfirmation() {
+		global $interface;
+
+		$groupedWorkId = $_REQUEST['groupedWorkId'] ?? null;
+		$variationId = $_REQUEST['variationId'] ?? null;
+
+		$user = UserAccount::getLoggedInUser();
+		if (empty($user)) {
+			return [
+				'success' => false,
+				'title' => translate(['text' => 'Error', 'isPublicFacing' => true]),
+				'message' => translate(['text' => 'Please log in to place holds', 'isPublicFacing' => true])
+			];
+		}
+
+		if (empty($user->unique_ils_id)) {
+			return [
+				'success' => false,
+				'title' => translate(['text' => 'Unable to place hold', 'isPublicFacing' => true]),
+				'message' => '<p>' . translate([
+					'text' => 'This account is not associated with a library, please contact your library.',
+					'isPublicFacing' => true,
+				]) . '</p>',
+			];
+		}
+
+		if (empty($groupedWorkId)) {
+			return [
+				'success' => false,
+				'title' => translate(['text' => 'Error', 'isPublicFacing' => true]),
+				'message' => translate(['text' => 'No Grouped Work Selected', 'isPublicFacing' => true])
+			];
+		}
+		
+		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+		$groupedWorkDriver = new GroupedWorkDriver($groupedWorkId);
+
+		if (!$groupedWorkDriver->isValid()) {
+			return [
+				'success' => false,
+				'title' => translate(['text' => 'Error', 'isPublicFacing' => true]),
+				'message' => translate(['text' => 'Invalid Grouped Work', 'isPublicFacing' => true])
+			];
+		}
+
+		require_once ROOT_DIR . '/sys/LibraryLocation/Location.php';
+		$location = new Location();
+		$pickupBranches = $location->getPickupBranches($user);
+
+		$relatedManifestations = $groupedWorkDriver->getRelatedManifestations();
+		
+		$formats = [];
+		foreach ($relatedManifestations as $formatName => $manifestation) {
+			
+			$relatedRecords = $manifestation->getRelatedRecords();
+			
+			$records = [];
+			foreach ($relatedRecords as $record) {
+				$driver = $record->getDriver();
+				$items = $record->getItems();
+				
+				$copies = [];
+				foreach ($items as $item) {
+					$copies[] = [
+						'itemId' => $item->itemId,
+						'location' => $item->shelfLocation,
+						'callNumber' => $item->callNumber,
+						'status' => $item->status,
+					];
+				}
+				
+				$records[] = [
+					'id' => $record->id,
+					'title' => $driver->getTitle(),
+					'author' => $driver->getPrimaryAuthor(),
+					'copies' => $copies,
+					'copyCount' => count($copies),
+				];
+			}
+						
+			$formats[] = [
+				'name' => $formatName,
+				'recordCount' => count($records),
+				'records' => $records
+			];
+		}
+		
+		$interface->assign('groupedWorkId', $groupedWorkId);
+		$interface->assign('formats', $formats);
+		$interface->assign('pickupLocations', $pickupBranches);
+		$interface->assign('user', $user);
+
+		return [
+			'success' => true,
+			'title' => translate(['text' => 'Confirm Hyperhold', 'isPublicFacing' => true]),
+			'modalBody' => $interface->fetch('Record/hyperholds-hold-popup.tpl'),
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.Record.submitHyperhold(\"{$groupedWorkId}\"); return false;'>" . 
+				translate(['text' => "Confirm Hold", 'isPublicFacing' => true]) . "</button>",
+		];
+	}
+
+	public function submitHyperhold() {
+		$groupedWorkId = $_REQUEST['groupedWorkId'] ?? null;
+		$recordsJson = $_REQUEST['records'] ?? '[]';
+		$records = json_decode($recordsJson, true);
+		$pickupBranch = $_REQUEST['pickupBranch'] ?? null;
+
+		$user = UserAccount::getLoggedInUser();
+		if (!$user) {
+			return [
+				'success' => false,
+				'title' => translate(['text' => 'Error', 'isPublicFacing' => true]),
+				'message' => translate(['text' => 'Please log in to place holds', 'isPublicFacing' => true])
+			];
+		}
+
+		if (empty($groupedWorkId) || empty($records)) {
+			return [
+				'success' => false,
+				'title' => translate(['text' => 'Error', 'isPublicFacing' => true]),
+				'message' => translate(['text' => 'No records selected for Hyperhold', 'isPublicFacing' => true])
+			];
+		}
+
+		if (empty($pickupBranch)) {
+			$pickupBranch = $user->getPickupLocationCode();
+		}
+
+		$catalogDriver = $user->getCatalogDriver();
+		$patronId = $user->unique_ils_id;
+
+		$successCount = 0;
+		$failedRecords = [];
+		$realHoldIds = [];
+		$successfulRecords = [];
+
+		foreach ($records as $recordId) {
+			$holdResult = $catalogDriver->placeHold($user, $recordId, $pickupBranch, null);
+
+			if (!empty($holdResult['success'])) {
+				$successCount++;
+				$successfulRecords[] = $recordId;
+				if (!empty($holdResult['hold_id'])) {
+					$realHoldIds[] = (int)$holdResult['hold_id'];
+				}
+			} else {
+				$failedRecords[] = $recordId;
+			}
+		}
+
+		$viewHoldsActions = [];
+		if ($successCount > 0) {
+			$thisUser = translate([
+				'text' => 'You',
+				'isPublicFacing' => true,
+			]);
+			if (!empty($user->parentUser)) {
+				$thisUser = $user->displayName;
+			}
+
+			$viewHoldsText = translate([
+				'text' => 'On Hold for %1%',
+				1 => $thisUser,
+				'isPublicFacing' => true,
+				'inAttribute' => true
+			]);
+
+			foreach ($successfulRecords as $recordId) {
+				$viewHoldsActions[$recordId] = "<a id='onHoldAction{$recordId}' href='/MyAccount/Holds' class='btn btn-sm btn-info btn-wrap' title='{$viewHoldsText}'>{$viewHoldsText}</a>";
+			}
+		}
+
+		$realHoldIds = array_unique(array_filter($realHoldIds));
+
+		if (count($realHoldIds) > 1) {
+			$groupResult = $catalogDriver->groupHolds($patronId, $realHoldIds);
+
+			if (!empty($groupResult['success'])) {
+				return [
+					'success' => true,
+					'title' => translate(['text' => 'Hyperhold Placed', 'isPublicFacing' => true]),
+					'message' => translate([
+						'text' => "Successfully placed and grouped holds on %1% editions.",
+						1 => $successCount,
+						'isPublicFacing' => true
+					]),
+					'viewHoldsActions' => $viewHoldsActions
+				];
+			}
+			return [
+				'success' => true,
+				'title' => translate(['text' => 'Holds Placed', 'isPublicFacing' => true]),
+				'message' => translate([
+					'text' => "Placed holds on %1% editions, but could not group them: " . ($groupResult['message'] ?? 'unknown error'),
+					1 => $successCount,
+					'isPublicFacing' => true
+				]),
+				'viewHoldsActions' => $viewHoldsActions
+			];
+		}
+
+		// Single hold success
+		if ($successCount > 0) {
+			return [
+				'success' => true,
+				'title' => translate(['text' => 'Hold Placed', 'isPublicFacing' => true]),
+				'message' => translate([
+					'text' => "Successfully placed hold on %1% edition.",
+					1 => $successCount,
+					'isPublicFacing' => true
+				]),
+				'viewHoldsActions' => $viewHoldsActions
+			];
+		}
+
+		// No holds placed
+		return [
+			'success' => false,
+			'title' => translate(['text' => 'Error', 'isPublicFacing' => true]),
+			'message' => translate(['text' => 'Failed to place holds', 'isPublicFacing' => true])
+		];
+	}
+
+	private function getHoldableEditionsForFormat($groupedWorkDriver, $recordSource, $targetFormat): array {
+		$editions = [];
+
+		if (!$groupedWorkDriver || !$groupedWorkDriver->isValid()) {
+			return $editions;
+		}
+
+		$relatedRecords = $groupedWorkDriver->getRelatedRecords();
+
+		foreach ($relatedRecords as $relatedRecord) {
+			if ($relatedRecord->source != $recordSource) {
+				continue;
+			}
+
+			$recordFormat = null;
+			if (!empty($relatedRecord->recordVariations)) {
+				foreach ($relatedRecord->recordVariations as $variation) {
+					if ($variation->manifestation) {
+						$recordFormat = $variation->manifestation->format;
+						break;
+					}
+				}
+			}
+			
+			// Skip if format doesn't match
+			if ($recordFormat !== $targetFormat) {
+				continue;
+			}
+
+			$actions = $relatedRecord->getActions();
+			$isHoldable = false;
+			foreach ($actions as $action) {
+				if (isset($action['type']) && $action['type'] === 'ils_hold') {
+					$isHoldable = true;
+					break;
+				}
+			}
+
+			if ($isHoldable) {
+				$recordDriver = RecordDriverFactory::initRecordDriverById($relatedRecord->id);
+				$editions[] = [
+					'id' => $relatedRecord->id,
+					'title' => $recordDriver ? $recordDriver->getTitle() : '',
+					'author' => $recordDriver ? $recordDriver->getPrimaryAuthor() : '',
+				];
+			}
+		}
+
+		return $editions;
 	}
 }

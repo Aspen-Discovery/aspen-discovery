@@ -263,6 +263,7 @@ class EmailTemplate extends DataObject {
 			$librariesForTemplate = $emailTemplate->getLibraries();
 			if (in_array($library->libraryId, $librariesForTemplate)) {
 				$templateFound = true;
+				break;
 			}
 		}
 		//If we didn't find a template for the active language, check english
@@ -275,6 +276,7 @@ class EmailTemplate extends DataObject {
 				$librariesForTemplate = $emailTemplate->getLibraries();
 				if (in_array($library->libraryId, $librariesForTemplate)) {
 					$templateFound = true;
+					break;
 				}
 			}
 		}

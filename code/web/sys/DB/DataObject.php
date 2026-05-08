@@ -857,7 +857,7 @@ abstract class DataObject implements JsonSerializable {
 		} else {
 			$selectClause = '';
 			foreach ($properties as $name => $value) {
-				if ($name[0] != '_') {
+				if ($name[0] != '_' && !is_array($value)) {
 					if (!empty($selectClause)) {
 						$selectClause .= ', ';
 					}
@@ -885,7 +885,7 @@ abstract class DataObject implements JsonSerializable {
 
 		$where = '';
 		foreach ($properties as $name => $value) {
-			if ($value !== null && $name[0] != '_') {
+			if ($value !== null && !is_array($value) && $name[0] != '_') {
 				if (strlen($where) != 0) {
 					$where .= ' AND ';
 				}
@@ -939,7 +939,7 @@ abstract class DataObject implements JsonSerializable {
 		$properties = get_object_vars($this);
 		$where = '';
 		foreach ($properties as $name => $value) {
-			if ($value !== null && $name[0] != '_') {
+			if ($value !== null && !is_array($value) && $name[0] != '_') {
 				if (strlen($where) != 0) {
 					$where .= ' AND ';
 				}

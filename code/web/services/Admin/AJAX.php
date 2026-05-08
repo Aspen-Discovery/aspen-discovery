@@ -1933,11 +1933,16 @@ class Admin_AJAX extends JSON_Action {
 		while ($library->fetch()){
 			$libraryCodes[$library->libraryId] = $library->ilsCode;
 		}
+		$holidayLocationsByLibrary = [];
 		$locationCodes = [];
 		$location = new Location();
 		$location->find();
 		while ($location->fetch()){
 			$locationCodes[$location->locationId] = $location->code;
+
+			if (!empty($location->showInHolidayHoursTable)) {
+				$holidayLocationsByLibrary[$location->libraryId][] = $location->locationId;
+			}
 		}
 
 
@@ -1952,31 +1957,17 @@ class Admin_AJAX extends JSON_Action {
 			} else {
 				$holidayDates = $this->getDatesForDayOfWeek($holidayDate);
 			}
+			$datesToAdd = !empty($holidayDates) ? $holidayDates : [$holidayDate];
 
 			if ($libraryLocationCode == "?????") { //update all libraries
 				if ($scope == 'library' || $scope == 'all') {
 					foreach ($libraryCodes as $libId => $libraryCode) {
 						if (empty($libraryList) || array_key_exists($libId, $libraryList)) {
-							require_once ROOT_DIR . '/sys/LibraryLocation/Holiday.php';
-							$holiday = new Holiday();
-							$holiday->libraryId = $libId;
-							$holiday->name = '';
-							if (!empty($holidayDates)) {
-								foreach ($holidayDates as $holidayDate) {
-									$holiday->date = $holidayDate;
-									if ($holiday->insert()) {
-										$holidaysAdded++;
-									}
-								}
-							} else {
-								$holiday->date = $holidayDate;
-								if ($holiday->insert()) {
-									$holidaysAdded++;
-								}
-							}
+							$holidaysAdded += $this->addHolidayRowsForLibrary($libId, $datesToAdd, $holidayLocationsByLibrary);
 						}
 					}
-				} if (($scope == 'location' || $scope == 'all') && strlen($holidayDate) == 3) {
+				}
+				if (($scope == 'location' || $scope == 'all') && strlen($holidayDate) == 3) {
 					foreach ($locationCodes as $locId => $locationCode) {
 						if (empty($locationList) || array_key_exists($locId, $locationList)) {
 							require_once ROOT_DIR . '/sys/LibraryLocation/LocationHours.php';
@@ -1997,29 +1988,15 @@ class Admin_AJAX extends JSON_Action {
 			} else {
 				$libraryLocationCode = strtr($libraryLocationCode, ['?' => '.', '*' => '.*']);
 				if ($scope == 'library' || $scope == 'all') {
-					$libraries = preg_grep("/^". $libraryLocationCode . "/", $libraryCodes);
+					$libraries = preg_grep("/^" . $libraryLocationCode . "/", $libraryCodes);
 					foreach ($libraries as $libId => $lib) {
 						if (empty($libraryList) || array_key_exists($libId, $libraryList)) {
-							require_once ROOT_DIR . '/sys/LibraryLocation/Holiday.php';
-							$holiday = new Holiday();
-							$holiday->libraryId = $libId;
-							$holiday->name = '';
-							if (!empty($holidayDates)) {
-								foreach ($holidayDates as $holidayDate) {
-									$holiday->date = $holidayDate;
-									if ($holiday->insert()) {
-										$holidaysAdded++;
-									}
-								}
-							} else {
-								$holiday->date = $holidayDate;
-								if ($holiday->insert()) {
-									$holidaysAdded++;
-								}
-							}
+							$holidaysAdded += $this->addHolidayRowsForLibrary($libId, $datesToAdd, $holidayLocationsByLibrary);
 						}
 					}
-				} if ((($scope == 'location' || $scope == 'all')) && strlen($holidayDate) == 3) {
+				}
+ 
+				if ((($scope == 'location' || $scope == 'all')) && strlen($holidayDate) == 3) {
 					$locations = preg_grep("/^" . $libraryLocationCode . "/", $locationCodes);
 					foreach ($locations as $locId => $loc){
 						if (empty($locationList) || array_key_exists($locId, $locationList)) {
@@ -2081,6 +2058,32 @@ class Admin_AJAX extends JSON_Action {
 			]),
 		];
 	}
+
+	private function addHolidayRowsForLibrary(int $libraryId, array $datesToAdd, array $holidayLocationsByLibrary): int {
+		require_once ROOT_DIR . '/sys/LibraryLocation/Holiday.php';
+
+		$holidaysAdded = 0;
+		$locationIds = $holidayLocationsByLibrary[$libraryId] ?? [];
+		foreach ($datesToAdd as $dateToAdd) {
+			foreach ($locationIds as $locationId) {
+				$holiday = new Holiday();
+				$holiday->locationId = $locationId;
+				$holiday->date = $dateToAdd;
+				if (!$holiday->find(true)) {
+					$holiday->libraryId = $libraryId;
+					$holiday->name = '';
+					$holiday->closed = 1;
+					$holiday->open = null;
+					$holiday->close = null;
+					if ($holiday->insert()) {
+						$holidaysAdded++;
+					}
+				}
+			}
+		}
+		return $holidaysAdded;
+	}
+
 
 	private function parseSierraHolidayData($holidayInformation): array {
 		//parse text into an array of rows that are an array of columns

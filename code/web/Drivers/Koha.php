@@ -1845,6 +1845,12 @@ class Koha extends AbstractIlsDriver {
 		}
 		//Get a specific item number to place a hold on even though we are placing a title level hold.
 		//because.... Koha
+		if (str_contains($recordId, ':')) {
+			[
+				$source,
+				$recordId,
+			] = explode(':', $recordId);
+		}
 		require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 		$recordDriver = new MarcRecordDriver($recordId);
 		if (!$recordDriver->isValid()) {
@@ -1874,12 +1880,6 @@ class Koha extends AbstractIlsDriver {
 		}
 		//Just a regular bib level hold
 		$hold_result['title'] = $recordDriver->getTitle();
-		if (str_contains($recordId, ':')) {
-			[
-				$source,
-				$recordId,
-			] = explode(':', $recordId);
-		}
 		$holdParams = [
 			'patron_id' => (int)$patron->unique_ils_id,
 			'pickup_library_id' => $pickupBranch,
@@ -1938,6 +1938,7 @@ class Koha extends AbstractIlsDriver {
 					'isPublicFacing' => true,
 				]);
 				$hold_result['success'] = true;
+				$hold_result['hold_id'] = $response['content']['hold_id'] ?? null;
 				// Result for API or app use
 				$hold_result['api']['title'] = translate([
 					'text' => 'Hold placed successfully',
@@ -9335,5 +9336,156 @@ class Koha extends AbstractIlsDriver {
 			return array_key_exists($accountline['credit_type_code'], Koha::$accoundlineCodeToDescriptionMap) ? Koha::$accoundlineCodeToDescriptionMap[$accountline['credit_type_code']] : $accountline['credit_type_code'];
 		}
 		return'No description available';
+	}
+
+	public function getPatronHoldGroups($patronId): ?array {
+		$endpoint = "/api/v1/patrons/{$patronId}/hold_groups";
+		$extraHeaders = ['x-koha-embed: holds'];
+
+		$response = $this->kohaApiUserAgent->get($endpoint, 'koha.getPatronHoldGroups', [], $extraHeaders);
+
+		if ($this->kohaApiUserAgent->getLastResponseCode() === 200) {
+			if (is_array($response)) {
+				return $response;
+			}
+			$decoded = json_decode($response, true);
+
+			if (json_last_error() === JSON_ERROR_NONE) {
+				return $decoded;
+			}
+		}
+		return null;
+	}
+
+	public function groupHolds($patronId, $holdIds, $forceGrouped = false) {
+		$endpoint = "/api/v1/patrons/{$patronId}/hold_groups";
+				$extraHeaders = ['x-koha-embed: holds'];
+
+		$result = [
+			'success' => false,
+			'message' => 'Unknown error occurred'
+		];
+
+		try {
+			if (!$patronId) {
+				$result['message'] = translate([
+					'text' => 'No patron id',
+					'isPublicFacing' => true,
+				]);
+				return $result;
+			}
+
+			if (empty($holdIds)) {
+				$result['message'] = translate([
+					'text' => 'No holds to group',
+					'isPublicFacing' => true,
+				]);
+				return $result;
+			}
+
+			$requestData = [
+				'hold_ids' => array_map('intval', $holdIds),
+				'force_grouped' => $forceGrouped
+			];
+
+
+			$apiResult = $this->kohaApiUserAgent->post($endpoint, $requestData, 'koha.addPatronHoldGroups', [], $extraHeaders);
+
+			$httpCode = $apiResult['code'] ?? 0;
+			$responseData = $apiResult['content'] ?? null;
+			$success = $httpCode == 201 ? true : false;
+
+			if (!$success) {
+				$curlError = $apiResult['curl_error'] ?? null;
+				if ($curlError) {
+					$result['message'] = "Network or connection error: $curlError";
+					return $result;
+				}
+				if ($httpCode === 0) {
+					$result['message'] = "No response from server, possible network error";
+					return $result;
+				}
+			}
+
+			switch ($httpCode) {
+				case 201:
+					$result['success'] = true;
+					$result['message'] = translate(['text' => 'Holds grouped successfully', 'isPublicFacing' => true]);
+					$result['hold_group'] = $responseData;
+					break;
+				case 400:
+					if (isset($responseData['error_code']) && $responseData['error_code'] === 'HoldAlreadyBelongsToHoldGroup') {
+						$responseData['success'] = false;
+						return $responseData;
+					}
+					$result['message'] = translate(['text' => 'Invalid request data', 'isPublicFacing' => true]);
+					if (isset($responseData['error'])) {
+						$result['message'] .= ': ' . $responseData['error'];
+					}
+					break;
+				default:
+					$result['message'] = translate(['text' => 'Unexpected error occurred', 'isPublicFacing' => true]) . " (HTTP $httpCode)";
+					break;
+			}
+
+			if (!$result['success']) {
+				global $logger;
+				$logger->log("Hold Grouping Error: " . print_r($result, true), Logger::LOG_ERROR);
+			}
+		} catch (Exception $e) {
+			global $logger;
+			$logger->log('Exception in groupHolds: ' . $e->getMessage(), Logger::LOG_ERROR);
+			$result['message'] = translate([
+				'text' => 'An unexpected error occurred while grouping holds',
+				'isPublicFacing' => true,
+			]);
+		}
+
+		return $result;
+	}
+
+	public function deletePatronHoldGroup($patronId, $holdGroupId): bool {
+		$endpoint = "/api/v1/patrons/{$patronId}/hold_groups/{$holdGroupId}";
+
+		$this->kohaApiUserAgent->delete($endpoint, 'koha.deletePatronHoldGroups');
+
+		if ($this->kohaApiUserAgent->getLastResponseCode() === 204) {
+			return true;
+		}
+
+		return false;
+	}	
+
+	public function supportsHyperholdsGrouping(): bool {
+		return $this->isDisplayAddHoldGroupsEnabledInKoha();
+	}
+
+	private function isDisplayAddHoldGroupsEnabledInKoha(): bool {
+		global $logger;
+
+		try {
+			$this->initDatabaseConnection();
+
+			$sql = "SELECT value FROM systempreferences WHERE variable = 'displayAddHoldGroups'";
+			$result = mysqli_query($this->dbConnection, $sql);
+
+			if (!$result) {
+				return false;
+			}
+			
+			$row = $result->fetch_assoc();
+			$result->close();
+
+			if (!$row || !isset($row['value'])) {
+				return false;
+			}
+
+			$value = $row['value'];
+			return ($value === '1' || strtolower($value) === 'on');
+
+		} catch (Exception $e) {
+			$logger->log("Error checking Koha displayAddHoldGroups setting: " . $e->getMessage(), Logger::LOG_ERROR);
+			return false;
+		}
 	}
 }

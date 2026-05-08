@@ -3,9 +3,9 @@
 	<div class="result row ilsHold_{$record->sourceId|escapeCSS}_{$record->cancelId|escapeCSS}">
 		{if $section != 'available'}
 			<div class="selectTitle col-xs-12 col-sm-1">
-				{if ($record->cancelable || $record->canFreeze) && !$record->cancelled}
+				{if ($record->cancelable || $record->canFreeze || !empty($record->holdGroupId)) && !$record->cancelled}
 					<input type="checkbox" name="selected[{$record->userId}|{$record->sourceId}|{$record->cancelId}]"
-						   class="titleSelect" id="selected{$record->cancelId}">
+						   class="titleSelect" id="selected{$record->cancelId}" value="{$record->id}" data-hold-id="{$record->id}">
 				{/if}
 			</div>
 		{/if}

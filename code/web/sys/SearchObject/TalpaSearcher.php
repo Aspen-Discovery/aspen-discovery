@@ -450,11 +450,10 @@ class SearchObject_TalpaSearcher extends SearchObject_BaseSearcher{
 	 * @access  public
 	 * @return  string   URL of a new search
 	 */
-	public function renderLinkPageTemplate() {
+	public function renderLinkPageTemplate() : string {
 		// Stash our old data for a minute
 		$oldPage = $this->page;
 		// Add the page template
-		$this->page = '%d';
 		$this->page = '%d';
 		// Get the new url
 		$url = $this->renderSearchUrl();

@@ -197,6 +197,89 @@ class MaterialsRequest_Submit extends Action {
 									$materialsRequest->createdBy = UserAccount::getActiveUserId();
 									$materialsRequest->dateUpdated = time();
 
+									//check materials_request_title table and add a new row if there are no other requests
+									require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestTitle.php';
+									$materialsRequestTitle = new MaterialsRequestTitle();
+									$hasMatch = false;
+									//try isbn, upc, and issn first
+									if (!empty($materialsRequest->isbn)) {
+										$materialsRequestTitle->isbn = $materialsRequest->isbn;
+										$hasMatch = true;
+									} elseif (!empty($materialsRequest->upc)) {
+										$materialsRequestTitle->upc = $materialsRequest->upc;
+										$hasMatch = true;
+									} elseif (!empty($materialsRequest->issn)) {
+										$materialsRequestTitle->issn = $materialsRequest->issn;
+										$hasMatch = true;
+									}
+									if (!$hasMatch) {
+										$titlePattern = "";
+										$authorPattern = "";
+										//get normalized title & title pattern for matching
+										if (!empty($materialsRequest->title)) {
+											$normalizedMaterialsRequestTitle = preg_replace('/[^\w\s]/', '', $materialsRequest->title);
+											$normalizedMaterialsRequestTitle = trim(preg_replace('/\s+/', ' ', $normalizedMaterialsRequestTitle));
+
+											$titlePattern = '(?i)' . str_replace(' ', '[^a-zA-Z]*', $normalizedMaterialsRequestTitle);
+										}
+										//get normalized author & author pattern for matching
+										if (!empty($materialsRequest->author)) {
+											$normalizedMaterialsRequestAuthor = preg_replace('/[^\w\s]/', '', $materialsRequest->author);
+											$normalizedMaterialsRequestAuthor = trim(preg_replace('/\s+/', ' ', $normalizedMaterialsRequestAuthor));
+
+											//this is where it gets weird because we want to try to handle cases like S.A. Barnes vs SA Barnes
+											$words = explode(' ', $normalizedMaterialsRequestAuthor);
+											$parts = [];
+											foreach ($words as $word) {
+												$chars = str_split($word);
+												$part = implode('[^a-zA-Z]*', $chars);
+												// If the word is short (like initials), require a word boundary after it
+												if (strlen($word) <= 2) {
+													$part = $part . '([^a-zA-Z]|$)';
+												}
+												$parts[] = $part;
+											}
+											$authorPattern = '(?i)' . implode('[^a-zA-Z]*', $parts);
+
+										}
+										//try title & author & format
+										if (!empty($materialsRequest->title) && !empty($materialsRequest->author) && !empty($materialsRequest->format)) {
+											$materialsRequestTitle->whereAdd("REGEXP_REPLACE(title, '[^a-zA-Z ]', '') REGEXP '" . $titlePattern . "'");
+											$materialsRequestTitle->whereAdd("REGEXP_REPLACE(author, '[^a-zA-Z ]', '') REGEXP '" . $authorPattern . "'");
+											$materialsRequestTitle->format = $materialsRequest->format;
+										}
+										//try title & author if no match
+										elseif (!empty($materialsRequest->title) && !empty($materialsRequest->author)) {
+											$materialsRequestTitle->whereAdd("REGEXP_REPLACE(title, '[^a-zA-Z ]', '') REGEXP '" . $titlePattern . "'");
+											$materialsRequestTitle->whereAdd("REGEXP_REPLACE(author, '[^a-zA-Z ]', '') REGEXP '" . $authorPattern . "'");
+										}
+										//try only title if still no match
+										elseif (!empty($materialsRequest->title)) {
+											$materialsRequestTitle->whereAdd("REGEXP_REPLACE(title, '[^a-zA-Z ]', '') REGEXP '" . $titlePattern . "'");
+										}
+									}
+
+									if ($materialsRequestTitle->find(true)) {
+										//if found, update existing materials_request_title row
+										$materialsRequestTitle->dateLastRequested = $materialsRequest->dateUpdated;
+										foreach (['isbn', 'upc', 'issn', 'title', 'author', 'format'] as $field) {
+											if (!empty($materialsRequest->$field) && empty($materialsRequestTitle->$field)) {
+												$materialsRequestTitle->$field = $materialsRequest->$field;
+											}
+										}
+										$materialsRequestTitle->update();
+									} else {
+										//else insert new materials_request_title row
+										foreach (['isbn', 'upc', 'issn', 'title', 'author', 'format', 'formatId'] as $field) {
+											$materialsRequestTitle->$field = $materialsRequest->$field ?: null;
+										}
+										$materialsRequestTitle->dateFirstRequested = $materialsRequest->dateUpdated;
+										$materialsRequestTitle->dateLastRequested = $materialsRequest->dateUpdated;
+										$materialsRequestTitle->insert();
+									}
+
+									$materialsRequest->materialsRequestTitleId = $materialsRequestTitle->id;
+
 									if ($materialsRequest->insert()) {
 										$user->updateMessage = translate([
 											'text' => 'Your request for %1% by %2% was submitted successfully.',

@@ -106,6 +106,7 @@ class Library extends DataObject {
 	public $allowCancellingAvailableHolds;
 	public $allowCancellingInTransitHolds;
 	public $allowFreezeHolds;   //tinyint(4)
+	public $allowHoldsToBeGrouped;
 	public $maxDaysToFreeze;
 	public $offerImmediateHoldFreeze;
 	public $showHoldButton;
@@ -1292,7 +1293,7 @@ class Library extends DataObject {
 						'values' => $layoutSettings,
 						'label' => 'Layout Settings',
 						'description' => 'Layout Settings to apply to this interface',
-						'permissions' => ['Library Theme Configuration'],
+						'permissions' => ['Administer Library Layout Settings','Administer All Layout Settings'],
 					],
 					'homeLink' => [
 						'property' => 'homeLink',
@@ -3785,6 +3786,44 @@ class Library extends DataObject {
 				]
 			],
 
+			// Holidays and Special Hours Display //
+			'holidaysSection' => [
+				'property' => 'holidaysSection',
+				'type' => 'section',
+				'label' => 'Holidays and Special Hours',
+				'hideInLists' => true,
+				'helpLink' => '',
+				'renderAsHeading' => false,
+				'permissions' => ['Library ILS Connection', 'Library Holidays'],
+				'properties' => [
+					'allowUpdatingHolidaysFromILS' => [
+						'property' => 'allowUpdatingHolidaysFromILS',
+						'type' => 'checkbox',
+						'label' => 'Automatically Update Holidays from the ILS',
+						'description' => 'Whether holidays should be automatically updated from the ILS.',
+						'hideInLists' => true,
+						'default' => 1,
+						'permissions' => ['Library ILS Connection'],
+					],
+					'holidays' => [
+						'property' => 'holidays',
+						'type' => 'oneToMany',
+						'label' => 'Holidays and Special Hours',
+						'renderAsHeading' => false,
+						'description' => 'Holidays (automatically loaded from Koha)',
+						'keyThis' => 'libraryId',
+						'keyOther' => 'libraryId',
+						'subObjectType' => 'Holiday',
+						'structure' => $holidaysStructure,
+						'sortable' => false,
+						'storeDb' => true,
+						'permissions' => ['Library Holidays'],
+						'canAddNew' => true,
+						'canDelete' => true,
+					],
+				],
+			],
+
 			// Full Record Display //
 			'fullRecordSection' => [
 				'property' => 'fullRecordSection',
@@ -4824,43 +4863,6 @@ class Library extends DataObject {
 				],
 			],
 
-			'holidaysSection' => [
-				'property' => 'holidaysSection',
-				'type' => 'section',
-				'label' => 'Holidays',
-				'hideInLists' => true,
-				'helpLink' => '',
-				'renderAsHeading' => false,
-				'permissions' => ['Library ILS Connection', 'Library Holidays'],
-				'properties' => [
-					'allowUpdatingHolidaysFromILS' => [
-						'property' => 'allowUpdatingHolidaysFromILS',
-						'type' => 'checkbox',
-						'label' => 'Automatically Update Holidays from the ILS',
-						'description' => 'Whether holidays should be automatically updated from the ILS.',
-						'hideInLists' => true,
-						'default' => 1,
-						'permissions' => ['Library ILS Connection'],
-					],
-					'holidays' => [
-						'property' => 'holidays',
-						'type' => 'oneToMany',
-						'label' => 'Holidays',
-						'renderAsHeading' => false,
-						'description' => 'Holidays (automatically loaded from Koha)',
-						'keyThis' => 'libraryId',
-						'keyOther' => 'libraryId',
-						'subObjectType' => 'Holiday',
-						'structure' => $holidaysStructure,
-						'sortable' => false,
-						'storeDb' => true,
-						'permissions' => ['Library Holidays'],
-						'canAddNew' => true,
-						'canDelete' => true,
-					],
-				],
-			],
-
 			'libraryLinks' => [
 				'property' => 'libraryLinks',
 				'type' => 'oneToMany',
@@ -5004,6 +5006,32 @@ class Library extends DataObject {
 				],
 			],
 		];
+
+		$catalogDriver = CatalogFactory::getCatalogConnectionInstance();
+		if ($catalogDriver && $catalogDriver->supportsHyperholdsGrouping()) {
+			$newField = [
+				'property' => 'allowHoldsToBeGrouped',
+				'type' => 'checkbox',
+				'label' => 'Allow Grouping Holds',
+				'description' => 'Whether or not the user can group their holds.',
+				'hideInLists' => true,
+				'default' => 0,
+				'permissions' => ['Library ILS Connection'],
+				'note' => 'Applies to Koha Only'
+			];
+
+			$holdsProps = $structure['ilsSection']['properties']['holdsSection']['properties'] ?? [];
+			$insertAfter = 'maxDaysToFreeze';
+			$newHoldsProps = [];
+
+			foreach ($holdsProps as $key => $value) {
+				$newHoldsProps[$key] = $value;
+				if ($key === $insertAfter) {
+					$newHoldsProps['allowHoldsToBeGrouped'] = $newField;
+				}
+			}
+			$structure['ilsSection']['properties']['holdsSection']['properties'] = $newHoldsProps;
+		}
 
 		//Update settings based on what we have access to
 		$hasCourseReserves = false;
@@ -5867,12 +5895,44 @@ class Library extends DataObject {
 		if (!isset($this->_holidays)) {
 			$this->_holidays = [];
 			if (!empty($this->libraryId)) {
+				$allLocationIds = array_map('intval', array_keys(Holiday::getHolidayLocationsList($this->libraryId)));
 				$holiday = new Holiday();
 				$holiday->libraryId = $this->libraryId;
-				$holiday->orderBy('date');
+				$holiday->orderBy('date, closed');
 				$holiday->find();
+				$groupedHolidays = [];
+				$index = -1;
 				while ($holiday->fetch()) {
-					$this->_holidays[$holiday->id] = clone($holiday);
+					$groupKey = implode('|', [
+						$holiday->date ?? '',
+						$holiday->name ?? '',
+						$holiday->closed ?? 0,
+						$holiday->open ?? '',
+						$holiday->close ?? '',
+					]);
+					if (!isset($groupedHolidays[$groupKey])) {
+						$groupedHoliday = new Holiday();
+						$groupedHoliday->id = $index;
+						$groupedHoliday->libraryId = $this->libraryId;
+						$groupedHoliday->date = $holiday->date;
+						$groupedHoliday->name = $holiday->name;
+						$groupedHoliday->closed = $holiday->closed;
+						$groupedHoliday->open = $holiday->open;
+						$groupedHoliday->close = $holiday->close;
+						$groupedHoliday->locationIds = [];
+						$groupedHolidays[$groupKey] = $groupedHoliday;
+						$index--;
+					}
+					$locationId = $holiday->locationId;
+					if (in_array($locationId, $allLocationIds)) {
+						$groupedHolidays[$groupKey]->locationIds[$locationId] = $locationId;
+					}
+				}
+				// Ignore holidays with invalid locationIds
+				foreach ($groupedHolidays as $groupedHoliday) {
+					if (!empty($groupedHoliday->locationIds)) {
+						$this->_holidays[$groupedHoliday->id] = $groupedHoliday;
+					}
 				}
 			}
 		}
@@ -5881,7 +5941,28 @@ class Library extends DataObject {
 
 	public function saveHolidays() : void {
 		if (isset ($this->_holidays) && is_array($this->_holidays)) {
-			$this->saveOneToManyOptions($this->_holidays, 'libraryId');
+			// We can delete and reinsert holiday rows on library save because library updates are infrequent
+			$existingHoliday = new Holiday();
+			$existingHoliday->libraryId = $this->libraryId;
+			$existingHoliday->delete(true);
+
+			foreach ($this->_holidays as $groupedHoliday) {
+				if (!empty($groupedHoliday->_deleteOnSave)) {
+					continue;
+				}
+				$locationIds = $groupedHoliday->locationIds ?? [];
+				foreach ($locationIds as $locationId) {
+					$holiday = new Holiday();
+					$holiday->libraryId = $this->libraryId;
+					$holiday->locationId = $locationId;
+					$holiday->date = $groupedHoliday->date;
+					$holiday->name = $groupedHoliday->name;
+					$holiday->closed = $groupedHoliday->closed ?? 0;
+					$holiday->open = $groupedHoliday->open ?? null;
+					$holiday->close = $groupedHoliday->close ?? null;
+					$holiday->insert();
+				}
+			}
 			unset($this->_holidays);
 		}
 	}

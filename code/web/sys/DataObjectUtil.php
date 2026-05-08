@@ -661,7 +661,8 @@ class DataObjectUtil {
 									'storedPassword'
 								])) {
 									$oldValue = $subObject->$subPropertyName;
-									$changed = $subObject->setProperty($subPropertyName, $_REQUEST[$requestKey][$id], $subProperty);
+									$newValue = $_REQUEST[$requestKey][$id] ?? ($subProperty['type'] == 'multiSelect' ? [] : null);
+									$changed = $subObject->setProperty($subPropertyName, $newValue, $subProperty);
 									if ($changed && !empty($object->{$object->__primaryKey}) && $object->objectHistoryEnabled()) {
 										require_once ROOT_DIR . '/sys/DB/DataObjectHistory.php';
 										$history = new DataObjectHistory();

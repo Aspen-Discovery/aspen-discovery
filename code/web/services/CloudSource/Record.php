@@ -31,6 +31,10 @@ class CloudSource_Record extends Action {
 
 		$interface->assign('record', $record);
 
+		$patronUrl = (new CloudSourceRecordDriver($id))->getPatronURL(true);
+
+		$interface->assign('patronUrl', $patronUrl);
+
 		$interface->assign('recordDriver', $this->recordDriver);
 
 		$interface->assign('isStaff', UserAccount::isStaff());

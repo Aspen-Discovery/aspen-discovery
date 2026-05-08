@@ -626,6 +626,7 @@ class SearchAPI extends AbstractAPI {
 		//Check cron to be sure it doesn't have errors either
 		require_once ROOT_DIR . '/sys/CronLogEntry.php';
 		$cronLogEntry = new CronLogEntry();
+		$cronLogEntry->name = 'Primary Cron';
 		$cronLogEntry->orderBy("id DESC");
 		$cronLogEntry->limit(0, 1);
 		if ($cronLogEntry->find(true)) {

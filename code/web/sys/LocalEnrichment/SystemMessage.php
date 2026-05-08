@@ -238,6 +238,7 @@ class SystemMessage extends DB_LibraryLocationLinkedObject {
 	public function saveLibraries() : void {
 		if (isset ($this->_libraries) && is_array($this->_libraries)) {
 			$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All System Messages'));
+			$this->_libraries = empty($this->_libraries) ? array_keys($libraryList) : $this->_libraries;
 			foreach ($libraryList as $libraryId => $displayName) {
 				$obj = new SystemMessageLibrary();
 				$obj->systemMessageId = $this->id;
@@ -258,6 +259,7 @@ class SystemMessage extends DB_LibraryLocationLinkedObject {
 	public function saveLocations() : void {
 		if (isset ($this->_locations) && is_array($this->_locations)) {
 			$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All System Messages'));
+			$this->_locations = empty($this->_locations) ? array_keys($locationList) : $this->_locations;
 			foreach ($locationList as $locationId => $displayName) {
 				$obj = new SystemMessageLocation();
 				$obj->systemMessageId = $this->id;

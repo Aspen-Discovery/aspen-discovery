@@ -1834,6 +1834,18 @@ class User extends DataObject {
 		}
 	}
 
+	static function resolveAllowHoldsToBeGrouped(?User $user, Library $library): bool {
+		if ($user == null) {
+			return false;
+		}
+
+		if ($user->getHomeLibrary() != null) {
+			return (bool)$user->getHomeLibrary()->allowHoldsToBeGrouped;
+		}
+
+		return (bool)$library->allowHoldsToBeGrouped;
+	}
+
 	/** @noinspection PhpUnused */
 	public function getNumHoldsAvailableTotal($includeLinkedUsers = true) {
 		$this->updateRuntimeInformation();
@@ -4391,6 +4403,7 @@ class User extends DataObject {
 			if ($library->enableMaterialsRequest == 1) {
 				$sections['materials_request'] = new AdminSection('Materials Requests');
 				$sections['materials_request']->addAction(new AdminAction('Manage Requests', 'Manage Materials Requests from users.', '/MaterialsRequest/ManageRequests'), 'Manage Library Materials Requests');
+				$sections['materials_request']->addAction(new AdminAction('Manage Requests by Title', 'Manage Materials Requests from users grouped by title.', '/MaterialsRequest/ManageTitleRequests'), 'Manage Library Materials Requests');
 				$sections['materials_request']->addAction(new AdminAction('Requests Needing Holds', 'Review and generate holds for requests that have hold candidates.', '/MaterialsRequest/RequestsNeedingHolds'), 'Place Holds For Materials Requests');
 				$sections['materials_request']->addAction(new AdminAction('Usage Dashboard', 'View the usage dashboard for Materials Requests.', '/MaterialsRequest/Dashboard'), 'View Materials Requests Reports');
 				$sections['materials_request']->addAction(new AdminAction('Summary Report', 'A Summary Report of all requests that have been submitted.', '/MaterialsRequest/SummaryReport'), 'View Materials Requests Reports');

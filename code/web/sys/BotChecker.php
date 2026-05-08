@@ -2,19 +2,19 @@
 
 class BotChecker {
 
-	static $isBot = null;
+	static ?bool $isBot = null;
 
 	/**
 	 * Determines if the current request appears to be from a bot
 	 */
-	public static function isRequestFromBot() {
+	public static function isRequestFromBot() : bool {
 		if (BotChecker::$isBot == null) {
 			global $logger;
 			global $timer;
 			global $memCache;
 			global $configArray;
 			global $userAgent;
-			if ($userAgent instanceof UserAgent && $userAgent?->isBot !== null) {
+			if ($userAgent instanceof UserAgent && $userAgent->isBot !== null) {
 				return $userAgent->isBot;
 			}
 			if (isset($_SERVER['HTTP_USER_AGENT'])) {

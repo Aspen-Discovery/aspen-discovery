@@ -2,7 +2,7 @@ AspenDiscovery.Record = (function () {
 	// noinspection JSUnusedGlobalSymbols
 	return {
 		volumeHoldInProgress: false,
-		showPlaceHold: function (module, source, id, volume, variationId, button) {
+		showPlaceHold: function (module, source, id, volume, variationId, button, allowEditionSelection, format) {
 			if (Globals.loggedIn) {
 				document.body.style.cursor = "wait";
 				var buttonClicked = $(button);
@@ -18,6 +18,14 @@ AspenDiscovery.Record = (function () {
 				}
 				if (variationId !== undefined) {
 					url += "&variationId=" + variationId;
+				}
+
+				if (allowEditionSelection !== undefined && allowEditionSelection === true) {
+					url += "&allowEditionSelection=1";
+				}
+
+				if (format !== undefined && format !== '') {
+					url += "&format=" + encodeURIComponent(format);
 				}
 
 				AspenDiscovery.toggleButtonSpinner(button, true);
@@ -64,7 +72,7 @@ AspenDiscovery.Record = (function () {
 				});
 			} else {
 				AspenDiscovery.Account.ajaxLogin(null, function () {
-					AspenDiscovery.Record.showPlaceHold(module, source, id, volume, variationId, button);
+					AspenDiscovery.Record.showPlaceHold(module, source, id, volume, variationId, button, allowFormatSelection);
 				}, false);
 			}
 			return false;
@@ -844,6 +852,80 @@ AspenDiscovery.Record = (function () {
 				}
 			);
 			return false;
-		}
+		},
+		placeHyperhold: function(groupedWorkId, variationId) {
+			$.getJSON(Globals.path + '/Record/AJAX?method=requestHyperholdConfirmation', {
+				groupedWorkId: groupedWorkId,
+				variationId: variationId
+			}, function(data){
+				if (data.success) {
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+				} else {
+					AspenDiscovery.showMessage(data.title, data.message);
+				}
+			}).fail(function(jqXHR, textStatus, errorThrown) {
+				AspenDiscovery.ajaxFail(jqXHR, textStatus, errorThrown);
+			});
+		},
+		submitHyperhold: function(groupedWorkId) {
+			const selected = [];
+			$('input[name="hyperholdRecord[]"]:checked').each(function () {
+				selected.push($(this).val());
+			});
+
+			console.log("SELECTED RECORDS:", selected);
+			
+			const pickupBranch = $('#hyperholdPickupBranch').val();
+
+			const params = {
+				groupedWorkId: groupedWorkId,
+				records: JSON.stringify(selected),
+				pickupBranch: pickupBranch
+			}
+
+			$.getJSON(Globals.path + '/Record/AJAX?method=submitHyperhold', params, function (data) {
+				if (data.success) {
+					AspenDiscovery.showMessage(data.title, data.message);
+
+					if (data.viewHoldsActions) {
+						$.each(data.viewHoldsActions, function(recordId, buttonHtml) {
+							let existingButton = $("#onHoldAction" + recordId);
+
+							 if (existingButton.length === 0) {
+								let cleanId = recordId.replace(/^ils:/, '');
+								let actionButton = $('#actionButton' + cleanId);
+								let relatedActionButton = $('#relatedRecordactionButton' + cleanId);
+
+								let formatLabel = '';
+								let container = actionButton.closest('.formatType, .resultItemFormat, .btn-toolbar'); // adjust selector to your DOM
+								if (container.length) {
+									formatLabel = container.find('.formatCategory, .formatType').text().trim().replace(/\s+/g, '');
+								}
+
+								let uniqueKey = recordId + (formatLabel ? '_' + formatLabel : '');
+								let safeId = uniqueKey.replace(/[^A-Za-z0-9_-]/g, '_');
+
+								// Avoid duplicate insertions
+								if ($("#onHoldAction" + safeId).length === 0) {
+									let modifiedButton = $(buttonHtml).clone();
+									modifiedButton.attr('id', 'onHoldAction' + safeId);
+
+									if (actionButton.length > 0) {
+										modifiedButton.insertBefore(actionButton);
+									} else if (relatedActionButton.length > 0){
+										modifiedButton.insertBefore(relatedActionButton);
+									}
+								}
+							}
+						})
+					}
+					AspenDiscovery.Account.loadMenuData();
+				} else {
+					AspenDiscovery.showMessage(data.title, data.message);
+				}
+			}).fail(function(jqXHR, textStatus, errorThrown) {
+				AspenDiscovery.ajaxFail(jqXHR, textStatus, errorThrown);
+			});
+		},
 	};
 }(AspenDiscovery.Record || {}));

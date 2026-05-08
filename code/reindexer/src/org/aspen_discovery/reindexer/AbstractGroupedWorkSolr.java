@@ -1386,7 +1386,7 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 		this.keywords.add(keywords);
 	}
 
-	void addKeywords(HashSet<String> keywords) {
+	void addKeywords(Set<String> keywords) {
 		this.keywords.addAll(keywords);
 	}
 

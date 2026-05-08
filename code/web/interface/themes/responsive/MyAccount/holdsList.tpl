@@ -97,4 +97,18 @@
 		{include file="./holdsListActions.tpl" sectionKey=$sectionKey source=$source showCovers=$showCovers}
 	{/if}
 {/foreach}
+{* HyperHolds Section *}
+{if $hasHyperHolds && !empty($hyperHolds) && $source == 'ils'}
+	<h2>{translate text="Hyperholds" isPublicFacing=true}</h2>
+	<p class="alert alert-info">
+		{translate text="Multiple records are on hold for you. The library will fulfill whichever record becomes available first. Once a record is available, it will appear in the 'Ready for Pickup' section." isPublicFacing=true}
+	</p>
+	
+	<div class="striped">
+		{foreach from=$hyperHolds item=hyperHold name="hyperHoldLoop"}
+			{include file="MyAccount/hyperHold.tpl" record=$hyperHold resultIndex=$smarty.foreach.hyperHoldLoop.iteration}
+		{/foreach}
+	</div>
+	<hr>
+{/if}
 <a href="#" onclick="return AspenDiscovery.Account.exportHolds('{$source}', $('#availableHoldSort_{$source} option:selected').val(), $('#interlibrary_loanHoldSort_{$source} option:selected').val(), $('#unavailableHoldSort_{$source} option:selected').val());" class="btn btn-sm btn-default" aria-description="{translate text="Click here to export all holds from all sections to CSV"}">{translate text="Export All Holds to CSV" isPublicFacing=true}</a>

@@ -53,6 +53,7 @@ class MaterialsRequest extends DataObject {
 	public $hasExistingRecord;
 	public $lastCheckForExistingRecord;
 	public $existingRecordUrl;
+	public $materialsRequestTitleId;
 
 	protected $_holdCandidateRecords;
 	protected $_selectedHoldCandidate;
@@ -924,5 +925,117 @@ class MaterialsRequest extends DataObject {
 			$this->sendStaffNewMaterialsRequestEmail();
 		}
 		return $ret;
+	}
+
+	public function update(string $context = '') : bool {
+		$original = new MaterialsRequest();
+		$original->id = $this->id;
+		$original->find(true);
+		$originalTitleId = $original->materialsRequestTitleId;
+
+		$changed = (
+			$original->title  !== $this->title  ||
+			$original->author !== $this->author ||
+			$original->format !== $this->format ||
+			$original->isbn   !== $this->isbn   ||
+			$original->upc    !== $this->upc    ||
+			$original->issn   !== $this->issn
+		);
+
+		if ($changed) {
+			//check materials_request_title table and add a new row if there are no other requests
+			require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestTitle.php';
+			$materialsRequestTitle = new MaterialsRequestTitle();
+			$hasMatch = false;
+			//try isbn, upc, and issn first
+			if (!empty($this->isbn)) {
+				$materialsRequestTitle->isbn = $this->isbn;
+				$hasMatch = true;
+			} elseif (!empty($this->upc)) {
+				$materialsRequestTitle->upc = $this->upc;
+				$hasMatch = true;
+			} elseif (!empty($this->issn)) {
+				$materialsRequestTitle->issn = $this->issn;
+				$hasMatch = true;
+			}
+			if (!$hasMatch) {
+				$titlePattern = "";
+				$authorPattern = "";
+				//get normalized title & title pattern for matching
+				if (!empty($this->title)) {
+					$normalizedMaterialsRequestTitle = preg_replace('/[^\w\s]/', '', $this->title);
+					$normalizedMaterialsRequestTitle = trim(preg_replace('/\s+/', ' ', $normalizedMaterialsRequestTitle));
+
+					$titlePattern = '(?i)' . str_replace(' ', '[^a-zA-Z]*', $normalizedMaterialsRequestTitle);
+				}
+				//get normalized author & author pattern for matching
+				if (!empty($this->author)) {
+					$normalizedMaterialsRequestAuthor = preg_replace('/[^\w\s]/', '', $this->author);
+					$normalizedMaterialsRequestAuthor = trim(preg_replace('/\s+/', ' ', $normalizedMaterialsRequestAuthor));
+
+					//this is where it gets weird because we want to try to handle cases like S.A. Barnes vs SA Barnes
+					$words = explode(' ', $normalizedMaterialsRequestAuthor);
+					$parts = [];
+					foreach ($words as $word) {
+						$chars = str_split($word);
+						$part = implode('[^a-zA-Z]*', $chars);
+						// If the word is short (like initials), require a word boundary after it
+						if (strlen($word) <= 2) {
+							$part = $part . '([^a-zA-Z]|$)';
+						}
+						$parts[] = $part;
+					}
+					$authorPattern = '(?i)' . implode('[^a-zA-Z]*', $parts);
+
+				}
+				//try title & author & format
+				if (!empty($this->title) && !empty($this->author) && !empty($this->format)) {
+					$materialsRequestTitle->whereAdd("REGEXP_REPLACE(title, '[^a-zA-Z ]', '') REGEXP '" . $titlePattern . "'");
+					$materialsRequestTitle->whereAdd("REGEXP_REPLACE(author, '[^a-zA-Z ]', '') REGEXP '" . $authorPattern . "'");
+					$materialsRequestTitle->format = $this->format;
+				}
+				//try title & author if no match
+				elseif (!empty($this->title) && !empty($this->author)) {
+					$materialsRequestTitle->whereAdd("REGEXP_REPLACE(title, '[^a-zA-Z ]', '') REGEXP '" . $titlePattern . "'");
+					$materialsRequestTitle->whereAdd("REGEXP_REPLACE(author, '[^a-zA-Z ]', '') REGEXP '" . $authorPattern . "'");
+				}
+				//try only title if still no match
+				elseif (!empty($this->title)) {
+					$materialsRequestTitle->whereAdd("REGEXP_REPLACE(title, '[^a-zA-Z ]', '') REGEXP '" . $titlePattern . "'");
+				}
+			}
+
+			if ($materialsRequestTitle->find(true)) {
+				//if found, update materialsRequestTitleId
+				$this->materialsRequestTitleId = $materialsRequestTitle->id;
+			} else {
+				//else insert new materials_request_title row
+				$materialsRequestTitle->isbn = $this->isbn ?: null;
+				$materialsRequestTitle->upc = $this->upc ?: null;
+				$materialsRequestTitle->issn = $this->issn ?: null;
+				$materialsRequestTitle->title = $this->title  ?: null;
+				$materialsRequestTitle->author = $this->author  ?: null;
+				$materialsRequestTitle->format = $this->format  ?: null;
+				$materialsRequestTitle->formatId = $this->formatId ?: null;
+				$materialsRequestTitle->dateFirstRequested = $this->dateCreated;
+				$materialsRequestTitle->dateLastRequested = $this->dateCreated;
+				$materialsRequestTitle->insert();
+
+				$this->materialsRequestTitleId = $materialsRequestTitle->id;
+
+				//check for other materials requests that belonged to a group, remove the grouping info if no others exist
+				$titleIdCheck = new MaterialsRequest();
+				$titleIdCheck->materialsRequestTitleId = $originalTitleId;
+				$titleIdCheck->whereAdd("id != {$this->id}");
+				if (!$titleIdCheck->find(true)) {
+					$materialsRequestTitleToRemove = new MaterialsRequestTitle();
+					$materialsRequestTitleToRemove->id = $originalTitleId;
+					if ($materialsRequestTitleToRemove->find(true)) {
+						$materialsRequestTitleToRemove->delete();
+					}
+				}
+			}
+		}
+		return parent::update($context);
 	}
 }

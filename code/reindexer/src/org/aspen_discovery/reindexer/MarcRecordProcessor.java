@@ -481,6 +481,7 @@ abstract class MarcRecordProcessor {
 		loadLexileScore(groupedWork, record);
 		groupedWork.addContentRating(getContentRating(record));
 		groupedWork.addKeywords(MarcUtil.getAllSearchableFields(record, 100, 900));
+		groupedWork.addKeywords(MarcUtil.getAllSubfields(record, "010:028", ""));
 		//Settings are nullable for eContent that is in MARC format (i.e. cloudLibrary)
 		if (settings != null && settings.getCustomMarcFieldsToIndexAsKeyword() != null && !settings.getCustomMarcFieldsToIndexAsKeyword().isEmpty()) {
 			try {

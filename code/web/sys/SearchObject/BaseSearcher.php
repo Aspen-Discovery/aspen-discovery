@@ -538,7 +538,9 @@ abstract class SearchObject_BaseSearcher {
 					$this->searchType == 'basic' ||
 					$this->searchType == 'ebsco_eds' ||
 					$this->searchType == 'summon' ||
-					$this->searchType == 'gale'
+					$this->searchType == 'gale' ||
+					$this->searchType == 'series' ||
+					$this->searchType == 'author'
 				) {
 					$params[] = "searchIndex=" . urlencode($this->searchTerms[0]['index']);
 				} else {
@@ -1255,11 +1257,11 @@ abstract class SearchObject_BaseSearcher {
 	 * @access  public
 	 * @return  string   URL of a new search
 	 */
-	public function renderLinkPageTemplate() {
+	public function renderLinkPageTemplate() : string {
 		// Stash our old data for a minute
 		$oldPage = $this->page;
-		// Add the page template
-		$this->page = '%d';
+		// Clear the page so it can be added later
+		$this->page = '';
 		// Get the new url
 		$url = $this->renderSearchUrl();
 		// Restore the old data

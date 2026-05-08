@@ -153,6 +153,7 @@ try {
 				$logger->log($userAgentToInsert->getLastError(), Logger::LOG_ERROR);
 			}
 			$userAgentId = $userAgentToInsert->id;
+			$userAgent = $userAgentToInsert;
 		}
 		require_once ROOT_DIR . '/sys/SystemLogging/UsageByUserAgent.php';
 		$usageByUserAgent = new UsageByUserAgent();

@@ -480,9 +480,9 @@ class OverDriveProcessor {
 			}
 			productRS.close();
 		} catch (JSONException e) {
-			logEntry.incErrors("Error loading information from JSON for overdrive title", e);
+			logEntry.incErrors("Error loading information from JSON for overdrive title " + identifier, e);
 		} catch (SQLException e) {
-			logEntry.incErrors("Error loading information from Database for overdrive title", e);
+			logEntry.incErrors("Error loading information from Database for overdrive title " + identifier, e);
 		}
 
 	}

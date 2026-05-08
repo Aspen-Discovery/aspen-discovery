@@ -128,11 +128,10 @@
 							{if $subProperty.listStyle == 'checkboxList'}
 								<td>
 									<div class="checkbox">
-										{*this assumes a simple array, eg list *}
 										{assign var=subPropName value=$subProperty.property}
 										{assign var=subPropValue value=$subObject->$subPropName}
-										{foreach from=$subProperty.values item=propertyName}
-											<input name='{$propName}_{$subPropName}[{$subObject->id}][]' type="checkbox" value='{$propertyName}' {if is_array($subPropValue) && in_array($propertyName, $subPropValue)}checked='checked'{/if}{if !empty($subProperty.readOnly) || !empty($property.readOnly) || $instanceReadOnly} readonly disabled{/if}>
+										{foreach from=$subProperty.values item=propertyName key=propertyValue}
+											<input name='{$propName}_{$subPropName}[{$subObject->id}][]' type="checkbox" value='{$propertyValue}' {if is_array($subPropValue) && (array_key_exists($propertyValue, $subPropValue) || in_array($propertyValue, $subPropValue))}checked='checked'{/if}{if !empty($subProperty.readOnly) || !empty($property.readOnly) || $instanceReadOnly} readonly disabled{/if}>
 											{$propertyName|escape}
 											<br>
 										{/foreach}
@@ -221,7 +220,17 @@
 					autoGrowTextarea(textarea);
 				});
 			});
-			{literal}});{/literal}
+			{literal}
+			let lowestExistingId = 0;
+			document.querySelectorAll('#{/literal}{$propName}{literal} tbody tr[data-id]').forEach(row => {
+				const rowId = Number(row.dataset.id);
+				if (!Number.isNaN(rowId) && rowId < lowestExistingId) {
+					lowestExistingId = rowId;
+				}
+			});
+			numAdditional{/literal}{$propName}{literal} = lowestExistingId;
+		});
+		{/literal}
 		let numAdditional{$propName} = 0;
 
 		function deleteOneToManyRow_{$propName}(id) {
@@ -296,10 +305,9 @@
 						{if $subProperty.listStyle == 'checkboxList'}
 							newRow += "<td class='oneToManyCell' {if !empty($subProperty.relatedIls)}data-related-ils='~{implode subject=$subProperty.relatedIls glue='~'}~'{/if}>";
 							newRow += '<div class="checkbox">';
-							{*this assumes a simple array, eg list *}
 							{assign var=subPropName value=$subProperty.property}
-							{foreach from=$subProperty.values item=propertyName}
-								newRow += '<input name="{$propName}_{$subPropName}[' + numAdditional{$propName} + '][]" type="checkbox" value="{$propertyName}"> {$propertyName}<br>';
+							{foreach from=$subProperty.values item=propertyName key=propertyValue}
+								newRow += '<input name="{$propName}_{$subPropName}[' + numAdditional{$propName} + '][]" type="checkbox" value="{$propertyValue}" {if is_array($subProperty.default) && (array_key_exists($propertyValue, $subProperty.default) || in_array($propertyValue, $subProperty.default))}checked="checked"{/if}> {$propertyName|escape:javascript}<br>';
 							{/foreach}
 							newRow += '</div>';
 							newRow += '</td>';

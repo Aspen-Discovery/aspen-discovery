@@ -1,7 +1,6 @@
-<?php
+<?php /** @noinspection PhpMissingFieldTypeInspection */
 
 class ExploreMoreSourceEntry extends DataObject {
-	public $sourceName;
 	public function __get($name) {
 		if ($name === 'sourceName') {
 			return $this->getSourceName();
@@ -9,16 +8,19 @@ class ExploreMoreSourceEntry extends DataObject {
 		return parent::__get($name);
 	}
 
-	public function getSourceName() {
-		require_once ROOT_DIR . '/sys/ExploreMoreSource.php';
-		$source = new ExploreMoreSource();
-		$source->id = $this->exploreMoreSourceId;
-		if ($source->find(true)) {
-			$this->sourceName = $source->source;
-			return $this->sourceName;
+	private $_sourceName = null;
+
+	public function getSourceName() : string {
+		if (empty($this->_sourceName)) {
+			$this->_sourceName = '';
+			require_once ROOT_DIR . '/sys/ExploreMoreSource.php';
+			$source = new ExploreMoreSource();
+			$source->id = $this->exploreMoreSourceId;
+			if ($source->find(true)) {
+				$this->_sourceName = $source->source;
+			}
 		}
-		$this->sourceName = '';
-		return '';
+		return $this->_sourceName;
 	}
 	public $__table = 'explore_more_source_entry';
 	public $id;

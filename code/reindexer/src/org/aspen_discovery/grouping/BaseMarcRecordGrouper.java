@@ -301,6 +301,10 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 			languages = MarcUtil.getFieldList(marcRecord, secondaryLanguageField);
 			for (String language : languages){
 				language = language.replaceAll("^[^a-zA-Z]+|[^a-zA-Z]+$|\\p{Punct}", "");
+				language = translateValue("language_to_three_letter_code", language);
+				if (language == null || language.length() != 3 || language.contains(" ")) {
+					continue;
+				}
 				if (activeLanguage == null){
 					activeLanguage = language;
 				}else{

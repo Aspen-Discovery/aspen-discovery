@@ -2069,6 +2069,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		global $interface;
 		global $timer;
 		global $memoryWatcher;
+		global $library;
 
 		$interface->assign('displayingSearchResults', true);
 
@@ -2245,6 +2246,15 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		$interface->assign('recordDriver', $this);
 
 		$timer->logTime("Assigned all information to show search results");
+
+		$user = UserAccount::getActiveUserObj();
+		$catalogDriver = $user ? $user->getCatalogDriver() : null;
+		$allowHoldsToBeGrouped = $catalogDriver && $catalogDriver->supportsHyperholdsGrouping()
+			? User::resolveAllowHoldsToBeGrouped($user, $library)
+			: false;
+
+		$interface->assign('allowHoldsToBeGrouped', $allowHoldsToBeGrouped);
+
 		return 'RecordDrivers/GroupedWork/result.tpl';
 	}
 

@@ -23,17 +23,13 @@ class Admin_ExploreMoreSourceGroups extends ObjectEditor {
 		$group->orderBy('id ASC');
 		$group->limit(0, 1);
 		$group->find();
-		if ($group->fetch()) {
-			// Ensure sources are populated for the UI
-			$group->getExploreMoreSources();
-			return [$group->id => clone $group];
-		} else {
+		if (!$group->fetch()) {
 			// Create default group if missing
 			$group->name = 'Explore More Sources';
 			$group->insert();
-			$group->getExploreMoreSources();
-			return [$group->id => clone $group];
 		}
+		$group->getExploreMoreSources();
+		return [$group->id => clone $group];
 	}
 
 	function getDefaultSort(): string {
