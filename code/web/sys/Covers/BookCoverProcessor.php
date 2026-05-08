@@ -229,7 +229,7 @@ class BookCoverProcessor {
 	}
 
 	private function getHooplaCover($id) : bool {
-		$id = $this->normalizeEventId($id);
+		$id = $this->parseId($id);
 		require_once ROOT_DIR . '/RecordDrivers/HooplaRecordDriver.php';
 		$driver = new HooplaRecordDriver($id);
 		if ($driver->isValid()) {
@@ -292,7 +292,7 @@ class BookCoverProcessor {
 	 * @return bool
 	 */
 	private function getEbraryCover(string $id) : bool {
-		$id = $this->normalizeEventId($id);
+		$id = $this->parseId($id);
 		$coverId = preg_replace('/^[a-zA-Z]+/', '', $id);
 		/** @noinspection HttpUrlsUsage */
 		$coverUrl = "http://ebookcentral.proquest.com/covers/$coverId-l.jpg";
@@ -304,7 +304,7 @@ class BookCoverProcessor {
 	}
 
 	private function getClassroomVideoOnDemandCover(string $id) : bool {
-		$id = $this->normalizeEventId($id);
+		$id = $this->parseId($id);
 		$coverId = preg_replace('/^10+/', '', $id);
 		/** @noinspection HttpUrlsUsage */
 		$coverUrl = "http://cvod.infobase.com/image/$coverId";
@@ -316,7 +316,7 @@ class BookCoverProcessor {
 	}
 
 	private function getFilmsOnDemandCover(string $id) : bool {
-		$id = $this->normalizeEventId($id);
+		$id = $this->parseId($id);
 		$coverId = preg_replace('/^10+/', '', $id);
 		/** @noinspection HttpUrlsUsage */
 		$coverUrl = "http://fod.infobase.com/image/$coverId";
@@ -332,7 +332,7 @@ class BookCoverProcessor {
 		require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProductMetaData.php';
 		$overDriveProduct = new OverDriveAPIProduct();
 		if ($id != null) {
-			$id = $this->normalizeEventId($id);
+			$id = $this->parseId($id);
 		}
 		$overDriveProduct->overdriveId = $id == null ? $this->id : $id;
 		if ($overDriveProduct->find(true)) {
@@ -393,7 +393,7 @@ class BookCoverProcessor {
 	}
 
 	private function getCloudLibraryCover($id, $createDefaultIfNotFound = false) : bool {
-		$id = $this->normalizeEventId($id);
+		$id = $this->parseId($id);
 		require_once ROOT_DIR . '/RecordDrivers/CloudLibraryRecordDriver.php';
 		$driver = new CloudLibraryRecordDriver($id);
 		if ($driver->isValid()) {
@@ -1842,7 +1842,7 @@ class BookCoverProcessor {
 		}
 	}
 
-	private function normalizeEventId(string $id) : string {
+	private function parseId(string $id) : string {
 		if (str_contains($id, ':')) {
 			[
 				,
@@ -1853,7 +1853,7 @@ class BookCoverProcessor {
 	}
 
 	private function getCourseReservesCover(string $id) : bool {
-		$id = $this->normalizeEventId($id);
+		$id = $this->parseId($id);
 		require_once ROOT_DIR . '/RecordDrivers/CourseReservesRecordDriver.php';
 		$driver = new CourseReservesRecordDriver($id);
 		if ($driver->isValid()) {
@@ -1867,7 +1867,7 @@ class BookCoverProcessor {
 
 
 	private function getLibraryCalendarCover(string $id) : bool {
-		$id = $this->normalizeEventId($id);
+		$id = $this->parseId($id);
 		require_once ROOT_DIR . '/RecordDrivers/LibraryCalendarEventRecordDriver.php';
 		$driver = new LibraryCalendarEventRecordDriver($id);
 		require_once ROOT_DIR . '/sys/Covers/EventCoverBuilder.php';
@@ -1909,7 +1909,7 @@ class BookCoverProcessor {
 	}
 
 	private function getSpringshareLibCalCover($id) : bool {
-		$id = $this->normalizeEventId($id);
+		$id = $this->parseId($id);
 		require_once ROOT_DIR . '/RecordDrivers/SpringshareLibCalEventRecordDriver.php';
 		$driver = new SpringshareLibCalEventRecordDriver($id);
 		require_once ROOT_DIR . '/sys/Covers/EventCoverBuilder.php';
@@ -1951,7 +1951,7 @@ class BookCoverProcessor {
 	}
 
 	private function getCommunicoCover($id) : bool {
-		$id = $this->normalizeEventId($id);
+		$id = $this->parseId($id);
 		require_once ROOT_DIR . '/RecordDrivers/CommunicoEventRecordDriver.php';
 		$driver = new CommunicoEventRecordDriver($id);
 		require_once ROOT_DIR . '/sys/Covers/EventCoverBuilder.php';
@@ -1993,7 +1993,7 @@ class BookCoverProcessor {
 	}
 
 	private function getAssabetCover($id) : bool {
-		$id = $this->normalizeEventId($id);
+		$id = $this->parseId($id);
 		require_once ROOT_DIR . '/RecordDrivers/AssabetEventRecordDriver.php';
 		$driver = new AssabetEventRecordDriver($id);
 		require_once ROOT_DIR . '/sys/Covers/EventCoverBuilder.php';
@@ -2035,7 +2035,7 @@ class BookCoverProcessor {
 	}
 
 	private function getAspenEventsDateCover($id) : bool {
-		$id = $this->normalizeEventId($id);
+		$id = $this->parseId($id);
 		require_once ROOT_DIR . '/RecordDrivers/AspenEventRecordDriver.php';
 		$driver = new AspenEventRecordDriver($id);
 		require_once ROOT_DIR . '/sys/Covers/EventCoverBuilder.php';
@@ -2084,7 +2084,7 @@ class BookCoverProcessor {
 	}
 
 	private function getAspenEventsImageCover($id) : bool {
-		$id = $this->normalizeEventId($id);
+		$id = $this->parseId($id);
 		require_once ROOT_DIR . '/RecordDrivers/AspenEventRecordDriver.php';
 		$driver = new AspenEventRecordDriver($id);
 		if ($driver->isValid() && $driver->getCoverImagePath()) {
@@ -2097,7 +2097,7 @@ class BookCoverProcessor {
 	}
 
 	private function getAspenEventsCover($id) {
-		$id = $this->normalizeEventId($id);
+		$id = $this->parseId($id);
 		require_once ROOT_DIR . '/RecordDrivers/AspenEventRecordDriver.php';
 		$driver = new AspenEventRecordDriver($id);
 		if ($driver->isValid() && $driver->getUseEventImageInSearchResults()) {
