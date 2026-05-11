@@ -12,7 +12,6 @@ class CurlWrapper {
 	public $cookies = [];
 
 	public $lastRequest = -1;
-	public $rateLimit = 200;//milliseconds
 	public $queue = [];
 
 	public function __construct($userAgent = "") {
@@ -224,12 +223,28 @@ class CurlWrapper {
 	}
 
 	public function rateLimited(string $url, string $httpMethod, $body = null) : void {
+		global $configArray;
+		//skip limiting if not turned on in config
+		if(empty($configArray['CurlWrapper']) || empty($configArray['CurlWrapper']['rateLimit']))
+		{
+			return;
+		}
+		$rateLimit = $configArray['CurlWrapper']['rateLimit'];
+		if(is_numeric($rateLimit))
+		{
+			$rateLimit = floatval($rateLimit);
+		}
+		else {
+			global $logger;
+			$logger->log("rate limiting skipped because of poorly configured rate limit: ".$rateLimit, Logger::LOG_WARN);
+			return;//skip limiting if not configured properly
+		}
 		//usleep and microtime are in microseconds
 		//we multipy by 1000 to get milliseconds
 		$MICRO_PER_MILLI = 1000;
 		$request_time = floor($MICRO_PER_MILLI * microtime(true));
 		$time_diff = $request_time - $this->lastRequest;
-		if(empty($this->queue) && $time_diff < $this->rateLimit)
+		if(empty($this->queue) && $time_diff < $rateLimit)
 		{
 			$this->lastRequest = floor($MICRO_PER_MILLI * microtime(true));
 			return;
@@ -240,7 +255,7 @@ class CurlWrapper {
 							"body" => $body,
 							"request_time" => $request_time];
 		usleep($time_diff * $MICRO_PER_MILLI);
-		while($this->queue[0]["url"] != $utl 
+		while($this->queue[0]["url"] != $url 
 			|| $this->queue[0]["method"] != $httpMethod
 			|| $this->queue[0]["body"] != $body
 			|| $this->queue[0]["request_time"] != $request_time)
