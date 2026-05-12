@@ -91,8 +91,32 @@ class Admin_StaffRegisterPatron extends Admin_Admin {
 	}
 
 	private function sanitiseInput(array $raw, array $structure): array {
-		$allowedKeys = $this->extractFieldKeys($structure);
-		return array_intersect_key($raw, array_flip($allowedKeys));
+		$allowed = array_intersect_key($raw, array_flip($this->extractFieldKeys($structure)));
+		return $this->coerceInputTypes($allowed, $structure);
+	}
+
+	private function coerceInputTypes(array $input, array $structure): array {
+		foreach ($structure as $key => $field) {
+			if (($field['type'] ?? '') === 'section') {
+				$input = $this->coerceInputTypes($input, $field['properties'] ?? []);
+				continue;
+			}
+			if (array_key_exists($key, $input)) {
+				$input[$key] = $this->coerceField($input[$key], $field);
+			}
+		}
+		return $input;
+	}
+
+	private function coerceField(mixed $value, array $field): mixed {
+		if (($field['type'] ?? '') === 'checkbox') {
+			return empty($value) ? 0 : 1;
+		}
+		$value = trim((string)$value);
+		if (isset($field['maxLength'])) {
+			$value = mb_substr($value, 0, (int)$field['maxLength']);
+		}
+		return $value;
 	}
 
 	private function extractFieldKeys(array $structure): array {
