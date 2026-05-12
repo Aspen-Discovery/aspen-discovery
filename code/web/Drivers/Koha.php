@@ -5104,6 +5104,9 @@ class Koha extends AbstractIlsDriver {
 				}
 			}
 		}
+		if (!empty($input['guarantorPatronId'])) {
+			$postVariables['guarantors'] = [['patron_id' => (int)$input['guarantorPatronId']]];
+		}
 		return $postVariables;
 	}
 
@@ -5255,39 +5258,78 @@ class Koha extends AbstractIlsDriver {
 		}
 
 		// Patron category — always required for creation, not part of buildRegistrationFieldStructure
-		$categoryValues = $this->fetchPatronCategoryOptions();
+		$categoriesData = $this->fetchPatronCategoriesData();
+		$categoryValues = [];
+		foreach ($categoriesData as $category) {
+			$categoryValues[$category['patron_category_id']] = $category['name'];
+		}
 		$defaultCategory = $this->getKohaSystemPreference('PatronSelfRegistrationDefaultCategory');
-		$fields['categorySection'] = [
-			'property' => 'categorySection',
-			'type' => 'section',
-			'label' => 'Patron Category',
-			'hideInLists' => true,
-			'expandByDefault' => true,
-			'properties' => [
-				'category_id' => [
-					'property' => 'category_id',
-					'type' => 'enum',
-					'label' => 'Patron Category',
-					'values' => $categoryValues,
-					'default' => $defaultCategory,
-					'required' => true,
+
+		$categorySection = [
+			'categorySection' => [
+				'property' => 'categorySection',
+				'type' => 'section',
+				'label' => 'Patron Category',
+				'hideInLists' => true,
+				'expandByDefault' => true,
+				'properties' => [
+					'category_id' => [
+						'property' => 'category_id',
+						'type' => 'enum',
+						'label' => 'Patron Category',
+						'values' => $categoryValues,
+						'default' => $defaultCategory,
+						'required' => true,
+						'onchange' => 'AspenDiscovery.Admin.updateStaffRegFormForCategory()',
+					],
 				],
-			],
+			]
 		];
 
-		return $fields;
+		$guarantorSection = [
+			'guarantorSection' => [
+				'property' => 'guarantorSection',
+				'type' => 'section',
+				'label' => 'Guarantor',
+				'hideInLists' => true,
+				'expandByDefault' => true,
+				'properties' => [
+					'guarantorPatronId' => [
+						'property' => 'guarantorPatronId',
+						'type' => 'text',
+						'label' => 'Guarantor Patron ID',
+						'description' => 'Patron ID of the guarantor for this patron',
+						'required' => false,
+						'autocomplete' => false,
+					],
+				],
+			]
+		];
+
+		return array_merge($categorySection, $guarantorSection, $fields);
 	}
 
-	private function fetchPatronCategoryOptions(): array {
+	private function fetchPatronCategoriesData(): array {
 		$response = $this->kohaApiUserAgent->get('/api/v1/patron_categories', 'koha.getPatronCategories');
 		if (!$response || $response['code'] !== 200 || !is_array($response['content'])) {
 			return [];
 		}
-		$options = [];
-		foreach ($response['content'] as $category) {
-			$options[$category['patron_category_id']] = $category['name'];
+		return $response['content'];
+	}
+
+	public function getChildNeedsGuarantor(): bool {
+		return $this->getKohaSystemPreference('ChildNeedsGuarantor') === '1';
+	}
+
+	public function getPatronCategoryMetadata(): array {
+		$metadata = [];
+		foreach ($this->fetchPatronCategoriesData() as $category) {
+			$metadata[$category['patron_category_id']] = [
+				'category_type'    => $category['category_type'] ?? 'A',
+				'can_be_guarantee' => !empty($category['can_be_guarantee']),
+			];
 		}
-		return $options;
+		return $metadata;
 	}
 
 	public function registerPatronToILS(string $mode, array $input): array {

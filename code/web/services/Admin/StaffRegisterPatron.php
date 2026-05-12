@@ -42,7 +42,10 @@ class Admin_StaffRegisterPatron extends Admin_Admin {
 		$interface->assign('saveButtonText', 'Register Patron');
 		$interface->assign('formLabel', 'Register Patron');
 		$interface->assign('isSelfRegistration', false);
+		$interface->assign('initializationJs', $this->getInitializationJs());
 		$interface->assign('staffRegForm', $interface->fetch('DataObjectUtil/objectEditForm.tpl'));
+		$interface->assign('categoryMeta', $this->_catalogDriver->getPatronCategoryMetadata());
+		$interface->assign('childNeedsGuarantor', $this->_catalogDriver->getChildNeedsGuarantor());
 
 		if ($error !== null) {
 			$interface->assign('error', translate(['text' => $error, 'isAdminFacing' => true]));
@@ -165,6 +168,10 @@ class Admin_StaffRegisterPatron extends Admin_Admin {
 		global $interface;
 		$interface->assign('error', translate(['text' => $error, 'isAdminFacing' => true]));
 		$this->display('../Admin/noPermission.tpl', 'Register Patron');
+	}
+
+	public function getInitializationJs(): string {
+		return 'AspenDiscovery.Admin.updateStaffRegFormForCategory();';
 	}
 
 	public function getActiveAdminSection(): string {
