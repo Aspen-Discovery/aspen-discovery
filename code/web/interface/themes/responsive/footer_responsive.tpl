@@ -32,6 +32,14 @@
 						{/if}
 					{/if}
 				{/if}
+				{if empty($loggedIn) && $vendorLoginEnabled}
+					{if $vendorSSOService == 'oauth'}
+						<br><small id="ssoStaffLogin"><a href="/init_oauth.php?vendor" id="ssoStaffLoginLink">{translate text='Vendor Login' isPublicFacing=true}</a></small>
+					{/if}
+					{if $vendorSSOService == 'saml'}
+						<br><small id="ssoStaffLogin"><a href="/Authentication/SAML2?init&vendor" id="ssoStaffLoginLink">{translate text='Vendor Login' isPublicFacing=true}</a></small>
+					{/if}
+				{/if}
 			</div>
 			<div class="col-tn-12 col-sm-3 col-md-4 text-center" id="footer-branding">
 				{if !empty($footerText)}

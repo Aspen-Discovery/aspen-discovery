@@ -32,7 +32,15 @@ class SAMLAuthentication{
 		global $logger;
 
 		$ssoSettings = new SSOSetting();
-		$ssoSettings->id = $library->ssoSettingId;
+		if(isset($_GET['vendor'])
+			&& isset($configArray['Vendor'])
+			&& isset($configArray['Vendor']['SSOSettingId']))
+		{
+			$ssoSettings-> id = $configArray['Vendor']['SSOSettingId'];
+		}
+		else {
+			$ssoSettings->id = $library->ssoSettingId;
+		}
 		$ssoSettings->service = "saml";
 		if($ssoSettings->find(true)) {
 			$this->matchpoints = $ssoSettings->getMatchpoints(); //we will use the previous matchpoint system

@@ -18,7 +18,16 @@ if (!empty($_GET['error'])) {
 } elseif (empty($_GET['code'])) {
 	// If we don't have an authorization code then get one
 	$SSOSetting = new SSOSetting();
-	$SSOSetting->id = $library->ssoSettingId;
+	global $configArray;
+	if(isset($_GET['vendor'])
+		&& isset($configArray['Vendor'])
+		&& isset($configArray['Vendor']['SSOSettingId']))
+	{
+		$SSOSetting-> id = $configArray['Vendor']['SSOSettingId'];
+	}
+	else {
+		$SSOSetting->id = $library->ssoSettingId;
+	}
 	if ($SSOSetting->find(true)) {
 		$authUrl = $auth->getAuthorizationRequestUrl($SSOSetting);
 		$logger->log($authUrl, Logger::LOG_ERROR);
