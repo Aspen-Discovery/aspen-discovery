@@ -928,9 +928,8 @@ class UInterface extends Smarty {
 
 			global $enabledModules;
 			global $configArray;
-			if (array_key_exists('Single sign-on', $enabledModules) 
-				&& isset($configArray['Vendor'])
-				&& isset($configArray['Vendor']['SSOSettingId']))
+			$this->assign('vendorLoginEnabled', 0);
+			if (IPAddress::allowVendorSSOAccessForClientIP())
 			{
 				require_once ROOT_DIR . '/sys/Authentication/SSOSetting.php';
 				$vendorSSOSettings = new SSOSetting();

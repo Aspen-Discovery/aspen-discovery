@@ -32,11 +32,18 @@ class SAMLAuthentication{
 		global $logger;
 
 		$ssoSettings = new SSOSetting();
-		if(isset($_GET['vendor'])
-			&& isset($configArray['Vendor'])
-			&& isset($configArray['Vendor']['SSOSettingId']))
+		if(isset($_GET['vendor']))
 		{
-			$ssoSettings-> id = $configArray['Vendor']['SSOSettingId'];
+			if(IPAddress::allowVendorSSOAccessForClientIP())
+			{
+				$ssoSettings-> id = $configArray['Vendor']['SSOSettingId'];
+			} else {
+				$message = "Vendor login attempted from invalid ip: " . IPAddress::getClientIP();
+				$logger->log($message, Logger::LOG_ERROR);
+				echo($message);
+				header('Location: ' . '/Search/Home');
+				die();
+			}
 		}
 		else {
 			$ssoSettings->id = $library->ssoSettingId;

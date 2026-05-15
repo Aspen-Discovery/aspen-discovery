@@ -24,7 +24,14 @@ function getUpdates26_06_00(): array {
 		//yanjun
 
 		//imani
-
+		'vendor_sso_login' => [
+			'title' => 'Add Vendor SSO Login field to IP Address',
+			'description' => 'Add a flag for if an IP address is allowed to use vendor sso credentials',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE ip_lookup ADD COLUMN vendorSSOLogin TINYINT(1) DEFAULT 0',
+			]
+		],
 		//galen
 
 		//chloe

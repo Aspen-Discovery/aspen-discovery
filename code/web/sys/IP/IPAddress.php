@@ -21,6 +21,7 @@ class IPAddress extends DataObject {
 	public $authenticatedForEBSCOhost;
 	public $masqueradeMode;
 	public $ssoLogin;
+	public $vendorSSOLogin;
 
 	function getNumericColumnNames(): array {
 		return [
@@ -35,7 +36,8 @@ class IPAddress extends DataObject {
 			'logAllQueries',
 			'authenticatedForEBSCOhost',
 			'masqueradeMode',
-			'ssoLogin'
+			'ssoLogin',
+			'vendorSSOLogin'
 		];
 	}
 
@@ -171,6 +173,13 @@ class IPAddress extends DataObject {
 				'type' => 'checkbox',
 				'label' => 'Allow Single Sign-on (SSO)',
 				'description' => 'Traffic from this IP will be allowed to use single sign-on.',
+				'default' => false,
+			],
+			'vendorSSOLogin' => [
+				'property' => 'vendorSSOLogin',
+				'type' => 'checkbox',
+				'label' => 'Allow Vendor Single Sign-on (SSO)',
+				'description' => 'Traffic from this IP will be allowed to use vendor settings for single sign-on.',
 				'default' => false,
 			]
 		];
@@ -599,6 +608,50 @@ class IPAddress extends DataObject {
 			} else {
 				return false;
 			}
+		}
+	}
+
+	public static function allowVendorSSOAccessForClientIP() : bool {
+		// return false if we don't have config setup
+		global $configArray;
+		if(!isset($configArray['Vendor']))
+		{
+			return false;
+		}
+		if(!isset($configArray['Vendor']['SSOSettingId']))
+		{
+			return false;
+		}
+		
+		//we don't allow this if the module isn't on
+		global $enabledModules;
+		if(!array_key_exists('Single sign-on', $enabledModules))
+		{
+				return false;
+		}
+
+		//check $ipInfo to see if we are allowed to use vendor SSO
+		$clientIP = IPAddress::getClientIP();
+		$ipInfo = IPAddress::getIPAddressForIP($clientIP);
+		//if we don't have an IP don't allow access
+		if(empty($ipInfo))
+		{
+			return false;
+		}
+		else if(!$ipInfo->vendorSSOLogin)
+		{
+			return false;
+		}
+
+		require_once ROOT_DIR . '/sys/Authentication/SSOSetting.php';
+		//if we do know the IP determine if that IP is allowed
+		$vendorSSOSettings = new SSOSetting();
+		$vendorSSOSettings->id = $configArray['Vendor']['SSOSettingId'];
+
+		if($vendorSSOSettings->find(true)){
+			return true;
+		} else {
+			return false;
 		}
 	}
 
