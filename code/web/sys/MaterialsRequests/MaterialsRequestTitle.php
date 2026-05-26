@@ -25,6 +25,8 @@ class MaterialsRequestTitle extends DataObject
 
 	static $_objectStructure = [];
 
+	private ?int $_numRequests = null;
+
 	static function getObjectStructure(string $context = ''): array {
 		if (isset(self::$_objectStructure[$context]) && self::$_objectStructure[$context] !== null) {
 			return self::$_objectStructure[$context];
@@ -73,6 +75,22 @@ class MaterialsRequestTitle extends DataObject
 				'description' => 'The number of requests for the title',
 				'readOnly' => true,
 				'canFilter' => true
+			],
+			'numOpenRequests' => [
+				'property' => 'numOpenRequests',
+				'type' => 'calculatedInteger',
+				'label' => 'Number of Open Requests',
+				'description' => 'The number of requests for the title that are still open',
+				'readOnly' => true,
+				'canFilter' => true
+			],
+			'assignedToMe' => [
+				'property' => 'assignedToMe',
+				'type' => 'calculatedBoolean',
+				'label' => 'Assigned To Me?',
+				'description' => 'If one or more of the requests for this title are assigned to the current user',
+				'readOnly' => true,
+				'canFilter' => true
 			]
 		];
 
@@ -87,16 +105,20 @@ class MaterialsRequestTitle extends DataObject
 
 	public function __get($name)
 	{
+		if ($name == 'numRequests') {
+			return $this->getNumRequests();
+		}
 		return parent::__get($name);
 	}
 
 	public function getNumRequests() : ?array {
-		if (!isset($this->_numRequests) && $this->id) {
-			$materialsRequestCount = 0;
-			$materialsRequest = new MaterialsRequest();
-			$materialsRequest->materialsRequestTitleId = $this->id;
-			while ($materialsRequest->fetch()){
-				$this->_numRequests[] = $materialsRequestCount++;
+		if (!isset($this->_numRequests)) {
+			if ($this->id) {
+				$materialsRequest = new MaterialsRequest();
+				$materialsRequest->materialsRequestTitleId = $this->id;
+				$this->_numRequests = $materialsRequest->count();
+			}else{
+				$this->_numRequests = 0;
 			}
 		}
 		return $this->_numRequests;
@@ -116,5 +138,17 @@ class MaterialsRequestTitle extends DataObject
 	{
 		//Automatically check for existing records if it has been an hour and an existing record with the same format has not been found.
 		return ((time() - $this->lastCheckForExistingRecord) > 60 * 60) && !$this->hasExistingRecord;
+	}
+
+	function getAdditionalListJavascriptActions(): array {
+		$objectActions[] = [
+			'text' => 'Manage Requests',
+			'onClick' => "return AspenDiscovery.MaterialsRequest.manageMaterialsTitleRequest('$this->id');"
+		];
+		return $objectActions;
+	}
+
+	function canActiveUserEdit(): bool {
+		return false;
 	}
 }

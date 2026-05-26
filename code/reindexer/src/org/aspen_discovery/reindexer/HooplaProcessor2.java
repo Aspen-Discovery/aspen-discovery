@@ -19,8 +19,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 class HooplaProcessor2 {
 	private final GroupedWorkIndexer indexer;
@@ -259,7 +257,6 @@ class HooplaProcessor2 {
 
 					if (!foundAudience && rawResponse.has("ratings")) {
 						String rating = productRS.getString("rating");
-						//noinspection SpellCheckingInspection
 						if (rating.equals("TVMA") || rating.equals("M") || rating.equals("NC17")) {
 							isAdult = true;
 							groupedWork.addTargetAudience("Adult");
@@ -281,7 +278,6 @@ class HooplaProcessor2 {
 									case "PG-13":
 									case "PG13":
 									case "PG":
-										//noinspection SpellCheckingInspection
 									case "TVPG":
 									case "TV14":
 									case "NRT":
@@ -610,16 +606,11 @@ class HooplaProcessor2 {
 	private HashMap<Long, String> loadEntitlementsForTitle(long hooplaId) throws SQLException {
 		HashMap<Long, String> entitlementsByScope = new HashMap<>();
 		getEntitlementsByHooplaIdStmt.setLong(1, hooplaId);
-		ResultSet entitlementsByHooplaIdRS = getEntitlementsByHooplaIdStmt.executeQuery();
-		try {
+		try (ResultSet entitlementsByHooplaIdRS = getEntitlementsByHooplaIdStmt.executeQuery()) {
 			while (entitlementsByHooplaIdRS.next()) {
 				long scopeLibraryId = entitlementsByHooplaIdRS.getLong("scopeLibraryId");
 				String hooplaType = entitlementsByHooplaIdRS.getString("hooplaType");
 				entitlementsByScope.put(scopeLibraryId, hooplaType);
-			}
-		}finally {
-			if (entitlementsByHooplaIdRS != null) {
-				entitlementsByHooplaIdRS.close();
 			}
 		}
 		return entitlementsByScope;

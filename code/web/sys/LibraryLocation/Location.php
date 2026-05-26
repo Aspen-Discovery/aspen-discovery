@@ -386,6 +386,7 @@ class Location extends DataObject {
 				'maxHeight' => 400,
 				'hideInLists' => true,
 				'affectsLiDA' => true,
+				'editPermissions' => ['Location Address and Hours Settings'],
 			],
 			'createSearchInterface' => [
 				'property' => 'createSearchInterface',
@@ -393,7 +394,7 @@ class Location extends DataObject {
 				'label' => 'Create Search Interface',
 				'description' => 'Whether or not a search interface is created.  Things like lockers and drive through windows do not need search interfaces.',
 				'forcesReindex' => true,
-				'editPermissions' => ['Location Domain Settings'],
+				'permissions' => ['Location Domain Settings'],
 				'default' => true,
 			],
 			'showInSelectInterface' => [
@@ -402,7 +403,7 @@ class Location extends DataObject {
 				'label' => 'Show In Select Interface (requires Create Search Interface)',
 				'description' => 'Whether or not this Location will show in the Select Interface Page.',
 				'forcesReindex' => false,
-				'editPermissions' => ['Location Domain Settings'],
+				'permissions' => ['Location Domain Settings'],
 				'default' => true,
 			],
 			'showOnDonationsPage' => [
@@ -411,7 +412,7 @@ class Location extends DataObject {
 				'label' => 'Show Location on Donations page',
 				'description' => 'Whether or not this Location will show on the Donation page.',
 				'forcesReindex' => false,
-				'editPermissions' => ['Location Domain Settings'],
+				'permissions' => ['Location Domain Settings'],
 				'default' => true,
 			],
 			'useLibraryThemes' => [
@@ -420,7 +421,7 @@ class Location extends DataObject {
 				'label' => 'Use Library Themes',
 				'description' => "Whether or not this location will use it's own themes or use themes from the parent library.",
 				'forcesReindex' => false,
-				'editPermissions' => ['Location Theme Configuration'],
+				'permissions' => ['Location Theme Configuration'],
 				'default' => true,
 				'onchange' => 'return AspenDiscovery.Admin.updateLocationFields()'
 			],
@@ -439,7 +440,7 @@ class Location extends DataObject {
 				'canEdit' => true,
 				'canAddNew' => true,
 				'canDelete' => true,
-				'editPermissions' => ['Location Theme Configuration'],
+				'permissions' => ['Location Theme Configuration'],
 			],
 			'libraryId' => [
 				'property' => 'libraryId',
@@ -544,12 +545,13 @@ class Location extends DataObject {
 				'editPermissions' => ['Location Address and Hours Settings'],
 				'affectsLiDA' => true,
 			],
-				'useLocationNameForMaps' => [
+			'useLocationNameForMaps' => [
 				'property' => 'useLocationNameForMaps',
 				'type' => 'checkbox',
 				'label' => 'Use Library Name for Google Maps',
 				'description' => 'Use the library name for the map displayed on the "Library Hours & Locations" popup instead of the longitude and latitude',
 				'hideInLists' => true,
+				'editPermissions' => ['Location Address and Hours Settings'],
 				'default' => 0,
 			],
 			'unit' => [
@@ -642,14 +644,14 @@ class Location extends DataObject {
 						'default' => true,
 						'permissions' => ['Location Theme Configuration'],
 					],
-					[
+					'homeLink' => [
 						'property' => 'homeLink',
 						'type' => 'text',
 						'label' => 'Home Link',
 						'description' => 'The location to send the user when they click on the home button or logo.  Use default or blank to go back to the aspen home location.',
 						'hideInLists' => true,
 						'size' => '40',
-						'editPermissions' => ['Location Domain Settings'],
+						'permissions' => ['Location Domain Settings'],
 						'affectsLiDA' => true,
 					],
 					[
@@ -806,7 +808,7 @@ class Location extends DataObject {
 						'description' => 'Library Hours',
 						'sortable' => false,
 						'storeDb' => true,
-						'permissions' => ['Location Address and Hours Settings'],
+						'editPermissions' => ['Location Address and Hours Settings'],
 						'canAddNew' => true,
 						'canDelete' => true,
 					],
@@ -1058,6 +1060,7 @@ class Location extends DataObject {
 				'type' => 'section',
 				'label' => 'Explore More Bar Section',
 				'hideInLists' => true,
+				'permissions' => ['Location Catalog Options'],
 				'properties' => [
 					'displayExploreMoreBarInCatalogSearch' => [
 						'property' => 'displayExploreMoreBarInCatalogSearch',
@@ -1546,6 +1549,7 @@ class Location extends DataObject {
 			'label' => 'Sublocations',
 			'hideInLists' => true,
 			'renderAsHeading' => true,
+			'permissions' => ['Location Catalog Options', 'Location ILS Options'],
 			'properties' => [
 				'sublocations' => [
 					'property' => 'sublocations',
@@ -3179,11 +3183,34 @@ class Location extends DataObject {
 		} else {
 			$apiInfo['email'] = $this->contactEmail;
 		}
+
+		require_once ROOT_DIR . '/sys/LibraryLocation/Holiday.php';
+
+		$today = (int)date('w');
+		$specialHours = new Holiday();
+		$specialHours->locationId = $this->locationId;
+		$specialHours->date = date('Y-m-d');
+		$isHoliday = $specialHours->find(true);
+		if ($isHoliday){
+			$apiInfo['hours'][] = [
+				'day' => $today,
+				'dayName' => $specialHours->name,
+				'isClosed' => (bool)$specialHours->closed,
+				'open' => $specialHours->open ?? '',
+				'close' => $specialHours->close ?? '',
+				'notes' => '',
+			];
+		}
+
 		unset($this->_hours);
 		$hours = $this->getHours();
 		foreach ($hours as $hour) {
+			$dayOfWeek = (int)$hour->day;
+			if ($isHoliday && $today === $dayOfWeek) {
+				continue;
+			}
 			$apiInfo['hours'][] = [
-				'day' => (int)$hour->day,
+				'day' => $dayOfWeek,
 				'dayName' => LocationHours::$dayNames[$hour->day],
 				'isClosed' => (bool)$hour->closed,
 				'open' => $hour->open,

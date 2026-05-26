@@ -415,6 +415,7 @@ class MaterialsRequest_AJAX extends JSON_Action {
 				$materialsRequests = [];
 				$materialsRequest = new MaterialsRequest();
 				$materialsRequest->materialsRequestTitleId = $id;
+				$materialsRequest->libraryId = $staffLibrary->libraryId;
 
 				if ($materialsRequest->find()) {
 					while ($materialsRequest->fetch()) {
@@ -564,12 +565,14 @@ class MaterialsRequest_AJAX extends JSON_Action {
 	}
 	/** @noinspection PhpUnused */
 	function updateSelectedTitleRequests(): array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission(['Manage Library Materials Requests']);
 		$selectedRequests = $_REQUEST['selectedRequests'];
 		$newStatus = $_REQUEST['newStatus'] === 'unselected' ? null : $_REQUEST['newStatus'];
 		$newAssignee = $_REQUEST['newAssignee'] === 'unselected' ? null : $_REQUEST['newAssignee'];
 
 		if (!empty($selectedRequests)) {
-			preg_match_all('/select\[(\d+)\]/', $selectedRequests, $matches);
+			preg_match_all('/select(?:edObject)?\[(\d+)]/', $selectedRequests, $matches);
 			$titleRequestIds = $matches[1];
 
 			$numAssigneeUpdates = 0;
@@ -594,8 +597,14 @@ class MaterialsRequest_AJAX extends JSON_Action {
 					}
 					if (!empty($newStatus)) {
 						if ($materialsRequest->status != $newStatus) {
-							$materialsRequest->status = $newStatus;
-							$sameStatus = false;
+							require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestStatus.php';
+							$status = new MaterialsRequestStatus();
+							$status->id = $materialsRequest->status;
+							$status->find(true);
+							if (!$status->isPatronCancel) {
+								$materialsRequest->status = $newStatus;
+								$sameStatus = false;
+							}
 						}
 					}
 					if ($materialsRequest->update()){
@@ -616,6 +625,15 @@ class MaterialsRequest_AJAX extends JSON_Action {
 						'isPublicFacing' => true,
 					]),
 					'modalBody' => "Successfully updated " . $numAssigneeUpdates . " assignees and " . $numStatusUpdates . " statuses of " . $numRequestsToUpdate . " requests.",
+				];
+			} else {
+				return [
+					'success' => true,
+					'title' => translate([
+						'text' => 'No Changes Made',
+						'isPublicFacing' => true,
+					]),
+					'modalBody' => 'No requests required updating.'
 				];
 			}
 		}

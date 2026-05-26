@@ -894,6 +894,8 @@ class ExploreMore {
 					$cloudSourceSearcher->setSearchTerms([
 						'lookfor' => $searchTerm,
 					]);
+					$cloudSourceSearcher->setPage(1);
+					$cloudSourceSearcher->setLimit($this->numEntriesToAdd);
 					$cloudSourceResults = $cloudSourceSearcher->processSearch();
 					if ($cloudSourceResults != null) {
 						$exploreMoreOptions['sampleRecords']['cloudsource'] = [];
@@ -920,6 +922,26 @@ class ExploreMore {
 								'openInNewWindow' => false,
 								'source' => 'CloudSource',
 							];
+							$numCloudSourceResultsAdded = 0;
+							foreach ($cloudSourceResults as $doc) {
+								require_once ROOT_DIR . '/RecordDrivers/CloudSourceRecordDriver.php';
+								$driver = new CloudSourceRecordDriver($doc);
+								if ($numCloudSourceResultsAdded < $this->numEntriesToAdd) {
+									//Add a link to the actual title
+									$exploreMoreOptions['sampleRecords']['cloudsource'][] = [
+										'label' => $driver->getTitle(),
+										'description' => $driver->getTitle(),
+										'image' => $driver->getBookcoverUrl('medium'),
+										'link' => $driver->getPatronUrl(),
+										'onclick' => "AspenDiscovery.CloudSource.trackCloudSourceUsage('{$driver->getId()}')",
+										'usageCount' => 1,
+										'openInNewWindow' => false,
+										'source' => 'CloudSource',
+									];
+								}
+
+								$numCloudSourceResultsAdded++;
+							}
 						}
 					}
 				}

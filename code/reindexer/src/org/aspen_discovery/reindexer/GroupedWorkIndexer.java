@@ -31,7 +31,8 @@ import org.marc4j.marc.DataField;
 import org.marc4j.marc.MarcFactory;
 import org.marc4j.marc.Record;
 
-public class GroupedWorkIndexer {
+public class GroupedWorkIndexer implements AutoCloseable {
+	private final int indexerInstanceId = (int)(Math.random() * 1000) ;
 	private final String serverName;
 	private final BaseIndexingLogEntry logEntry;
 	private final Logger logger;
@@ -41,6 +42,7 @@ public class GroupedWorkIndexer {
 	private boolean waitAfterDeleteCommit = false;
 	private boolean removeTheWordSeriesFromEndOfSeries;
 	private int totalRecordsHandled = 0;
+	private Http2SolrClient http2Client;
 	private ConcurrentUpdateHttp2SolrClient updateServer;
 	private RecordGroupingProcessor recordGroupingProcessor;
 	private final HashMap<String, MarcRecordProcessor> ilsRecordProcessors = new HashMap<>();
@@ -147,7 +149,6 @@ public class GroupedWorkIndexer {
 	private PreparedStatement addEContentSourceStmt;
 	private PreparedStatement getShelfLocationStmt;
 	private PreparedStatement addShelfLocationStmt;
-	private PreparedStatement getCallNumberStmt;
 	private PreparedStatement addCallNumberStmt;
 	private PreparedStatement getStatusStmt;
 	private PreparedStatement addStatusStmt;
@@ -206,6 +207,7 @@ public class GroupedWorkIndexer {
 		this.serverName = serverName;
 		this.logEntry = logEntry;
 		this.logger = logger;
+		logger.info("Initializing GroupedWorkIndexer {}", indexerInstanceId);
 		this.dbConn = dbConn;
 		this.fullReindex = fullReindex;
 		this.clearIndex = clearIndex;
@@ -227,40 +229,36 @@ public class GroupedWorkIndexer {
 		}
 
 		//Load the last Index time
-		try{
-			PreparedStatement loadLastGroupingTime = dbConn.prepareStatement("SELECT * from variables WHERE name = 'last_reindex_time'");
-			ResultSet lastGroupingTimeRS = loadLastGroupingTime.executeQuery();
-			if (lastGroupingTimeRS.next()){
-				lastReindexTime = lastGroupingTimeRS.getLong("value");
-				lastReindexTimeVariableId = lastGroupingTimeRS.getLong("id");
+		try (PreparedStatement loadLastGroupingTime = dbConn.prepareStatement("SELECT * from variables WHERE name = 'last_reindex_time'")) {
+			try (ResultSet lastGroupingTimeRS = loadLastGroupingTime.executeQuery()) {
+				if (lastGroupingTimeRS.next()) {
+					lastReindexTime = lastGroupingTimeRS.getLong("value");
+					lastReindexTimeVariableId = lastGroupingTimeRS.getLong("id");
+				}
 			}
-			lastGroupingTimeRS.close();
-			loadLastGroupingTime.close();
 		} catch (Exception e){
 			logEntry.incErrors("Could not load last index time from variables table ", e);
 		}
 
 		//Check to see if we should store record details in Solr
-		try{
-			PreparedStatement systemVariablesStmt = dbConn.prepareStatement("SELECT storeRecordDetailsInSolr, storeRecordDetailsInDatabase, indexVersion, searchVersion, processEmptyGroupedWorks, enableNovelistSeriesIntegration, deletionCommitInterval, waitAfterDeleteCommit, removeTheWordSeriesFromEndOfSeries, hooplaVersion, indexCommitInterval from system_variables");
-			ResultSet systemVariablesRS = systemVariablesStmt.executeQuery();
-			if (systemVariablesRS.next()){
-				this.storeRecordDetailsInSolr = systemVariablesRS.getBoolean("storeRecordDetailsInSolr");
-				this.storeRecordDetailsInDatabase = systemVariablesRS.getBoolean("storeRecordDetailsInDatabase");
-				this.indexVersion = systemVariablesRS.getInt("indexVersion");
-				this.searchVersion = systemVariablesRS.getInt("searchVersion");
-				this.enableNovelistSeriesIntegration = systemVariablesRS.getBoolean("enableNovelistSeriesIntegration");
-				this.deletionCommitInterval = systemVariablesRS.getInt("deletionCommitInterval");
-				this.indexCommitInterval = systemVariablesRS.getInt("indexCommitInterval");
-				this.waitAfterDeleteCommit = systemVariablesRS.getBoolean("waitAfterDeleteCommit");
-				if (fullReindex) {
-					this.processEmptyGroupedWorks = systemVariablesRS.getBoolean("processEmptyGroupedWorks");
+		try (PreparedStatement systemVariablesStmt = dbConn.prepareStatement("SELECT storeRecordDetailsInSolr, storeRecordDetailsInDatabase, indexVersion, searchVersion, processEmptyGroupedWorks, enableNovelistSeriesIntegration, deletionCommitInterval, waitAfterDeleteCommit, removeTheWordSeriesFromEndOfSeries, hooplaVersion, indexCommitInterval from system_variables")){
+			try (ResultSet systemVariablesRS = systemVariablesStmt.executeQuery()) {
+				if (systemVariablesRS.next()) {
+					this.storeRecordDetailsInSolr = systemVariablesRS.getBoolean("storeRecordDetailsInSolr");
+					this.storeRecordDetailsInDatabase = systemVariablesRS.getBoolean("storeRecordDetailsInDatabase");
+					this.indexVersion = systemVariablesRS.getInt("indexVersion");
+					this.searchVersion = systemVariablesRS.getInt("searchVersion");
+					this.enableNovelistSeriesIntegration = systemVariablesRS.getBoolean("enableNovelistSeriesIntegration");
+					this.deletionCommitInterval = systemVariablesRS.getInt("deletionCommitInterval");
+					this.indexCommitInterval = systemVariablesRS.getInt("indexCommitInterval");
+					this.waitAfterDeleteCommit = systemVariablesRS.getBoolean("waitAfterDeleteCommit");
+					if (fullReindex) {
+						this.processEmptyGroupedWorks = systemVariablesRS.getBoolean("processEmptyGroupedWorks");
+					}
+					this.removeTheWordSeriesFromEndOfSeries = systemVariablesRS.getBoolean("removeTheWordSeriesFromEndOfSeries");
+					this.hooplaVersion = systemVariablesRS.getInt("hooplaVersion");
 				}
-				this.removeTheWordSeriesFromEndOfSeries = systemVariablesRS.getBoolean("removeTheWordSeriesFromEndOfSeries");
-				this.hooplaVersion = systemVariablesRS.getInt("hooplaVersion");
 			}
-			systemVariablesRS.close();
-			systemVariablesStmt.close();
 		} catch (Exception e){
 			logEntry.incErrors("Could not load last index time from variables table ", e);
 		}
@@ -274,7 +272,7 @@ public class GroupedWorkIndexer {
 			getArBookIdForIsbnStmt = dbConn.prepareStatement("SELECT arBookId from accelerated_reading_isbn where isbn = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			getArBookInfoStmt = dbConn.prepareStatement("SELECT * from accelerated_reading_titles where arBookId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			getNumScheduledWorksStmt = dbConn.prepareStatement("SELECT COUNT(DISTINCT permanent_id) as numScheduledWorks FROM grouped_work_scheduled_index where processed = 0 and indexAfter <= ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-			getScheduledWorksStmt = dbConn.prepareStatement("SELECT id, permanent_id FROM grouped_work_scheduled_index where processed = 0 and indexAfter <= ? ORDER BY indexAfter ASC LIMIT 0, 1", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			getScheduledWorksStmt = dbConn.prepareStatement("SELECT id, permanent_id FROM grouped_work_scheduled_index where processed = 0 and indexAfter <= ? ORDER BY indexAfter LIMIT 0, 1", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			getScheduledWorkStmt = dbConn.prepareStatement("SELECT * FROM grouped_work_scheduled_index where processed = 0 and permanent_id = ? and indexAfter = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			markScheduledWorkProcessedStmt = dbConn.prepareStatement("UPDATE grouped_work_scheduled_index set processed = 1 where permanent_id = ? and indexAfter <= ?");
 			addScheduledWorkStmt = dbConn.prepareStatement("INSERT INTO grouped_work_scheduled_index (permanent_id, indexAfter) VALUES (?, ?)");
@@ -336,7 +334,6 @@ public class GroupedWorkIndexer {
 			addEContentSourceStmt = dbConn.prepareStatement("INSERT INTO indexed_econtent_source (eContentSource) VALUES (?)", Statement.RETURN_GENERATED_KEYS);
 			getShelfLocationStmt = dbConn.prepareStatement("SELECT id from indexed_shelf_location where shelfLocation = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			addShelfLocationStmt = dbConn.prepareStatement("INSERT INTO indexed_shelf_location (shelfLocation) VALUES (?)", Statement.RETURN_GENERATED_KEYS);
-			getCallNumberStmt = dbConn.prepareStatement("SELECT id from indexed_call_number where callNumber = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			addCallNumberStmt = dbConn.prepareStatement("INSERT INTO indexed_call_number (callNumber) VALUES (?)", Statement.RETURN_GENERATED_KEYS);
 			getStatusStmt = dbConn.prepareStatement("SELECT id from indexed_status where status = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			addStatusStmt = dbConn.prepareStatement("INSERT INTO indexed_status (status) VALUES (?)", Statement.RETURN_GENERATED_KEYS);
@@ -375,14 +372,12 @@ public class GroupedWorkIndexer {
 		}
 
 		// Check if the series module is enabled
-		try {
-			PreparedStatement seriesModuleEnabledStmt = dbConn.prepareStatement("SELECT enabled FROM modules WHERE name = 'series'");
-			ResultSet enabledRS = seriesModuleEnabledStmt.executeQuery();
-			if (enabledRS.next()) {
-				seriesModuleEnabled = enabledRS.getBoolean("enabled");
+		try (PreparedStatement seriesModuleEnabledStmt = dbConn.prepareStatement("SELECT enabled FROM modules WHERE name = 'series'")) {
+			try (ResultSet enabledRS = seriesModuleEnabledStmt.executeQuery()) {
+				if (enabledRS.next()) {
+					seriesModuleEnabled = enabledRS.getBoolean("enabled");
+				}
 			}
-			enabledRS.close();
-			seriesModuleEnabledStmt.close();
 		} catch (Exception e) {
 			logEntry.incErrors("Could not check if series module enabled ", e);
 		}
@@ -394,11 +389,13 @@ public class GroupedWorkIndexer {
 
 		String solrUrl;
 		if (indexVersion == 1) {
+			//noinspection HttpUrlsUsage
 			solrUrl = "http://" + solrHost + ":" + solrPort + "/solr/grouped_works";
 		}else{
+			//noinspection HttpUrlsUsage
 			solrUrl = "http://" + solrHost + ":" + solrPort + "/solr/grouped_works_v2";
 		}
-		Http2SolrClient http2Client = new Http2SolrClient.Builder().build();
+		http2Client = new Http2SolrClient.Builder().build();
 		try {
 			updateServer = new ConcurrentUpdateHttp2SolrClient.Builder(solrUrl, http2Client)
 				.withThreadCount(1)
@@ -416,7 +413,7 @@ public class GroupedWorkIndexer {
 				this.okToIndex = false;
 				return;
 			}else{
-				logger.info("Loaded " + scopes.size() + " scopes");
+				logger.info("Loaded {} scopes", scopes.size());
 			}
 			loadLocationLabels();
 
@@ -585,13 +582,26 @@ public class GroupedWorkIndexer {
 		if (clearIndex){
 			clearIndex();
 		}
+
+		logger.info("Finished initializing GroupedWorkIndexer {}", indexerInstanceId);
 	}
 
 	public void close(){
-		updateServer = null;
+		logger.info("Closing GroupedWorkIndexer {}", indexerInstanceId);
+		if (updateServer != null) {
+			logger.info("Closing updateServer {}", indexerInstanceId);
+			updateServer.shutdownNow();
+			updateServer.close();
+			updateServer = null;
+			http2Client.close();
+			http2Client = null;
+		}
 		ilsRecordProcessors.clear();
 		sideLoadProcessors.clear();
-		overDriveProcessor = null;
+		if (overDriveProcessor != null) {
+			overDriveProcessor.close();
+			overDriveProcessor = null;
+		}
 		cloudLibraryProcessor = null;
 		axis360Processor = null;
 		hooplaProcessor = null;
@@ -606,10 +616,18 @@ public class GroupedWorkIndexer {
 			getRatingStmt.close();
 			getNovelistStmt.close();
 			getDisplayInfoStmt.close();
+			getUserReadingHistoryLinkStmt.close();
+			getListLinkStmt.close();
+			getUserRatingLinkStmt.close();
 			getGroupedWorkPrimaryIdentifiers.close();
+			getUserNotInterestedLinkStmt.close();
+			for (PreparedStatement getCallNumbersStmt : getCallNumbersStmts.values()) {
+				getCallNumbersStmt.close();
+			}
 		} catch (Exception e) {
 			logEntry.incErrors("Error closing prepared statements in grouped work indexer", e);
 		}
+		logger.info("Finished Closing GroupedWorkIndexer {}", indexerInstanceId);
 	}
 
 	public boolean isOkToIndex(){
@@ -650,7 +668,7 @@ public class GroupedWorkIndexer {
 				curLine++;
 			}
 			lexileReader.close();
-			logger.info("Read " + lexileInformation.size() + " lines of lexile data");
+			logger.info("Read {} lines of lexile data", lexileInformation.size());
 		}catch (FileNotFoundException fne){
 			//This is normal
 			//logEntry.addNote("Error loading lexile data, the file was not found at " + lexileExportPath);
@@ -661,7 +679,7 @@ public class GroupedWorkIndexer {
 
 	private void clearIndex() {
 		//Check to see if we should clear the existing index
-		logger.info("Clearing existing marc records from index");
+		logger.info("Clearing existing MARC records from index");
 		try {
 			updateServer.deleteByQuery("recordtype:grouped_work");
 			//3-19-2019 Don't commit so the index does not get cleared during run (but will clear at the end).
@@ -674,7 +692,7 @@ public class GroupedWorkIndexer {
 	}
 
 	public synchronized void deleteRecord(String permanentId, Long groupedWorkId) {
-		logger.info("Clearing existing work " + permanentId + " from index");
+		logger.info("Clearing existing work {} from index", permanentId);
 		//noinspection CommentedOutCode
 		try {
 			if (permanentId.length() < 40) {
@@ -759,7 +777,11 @@ public class GroupedWorkIndexer {
 			System.exit(-4);
 		}
 		try {
+			updateServer.shutdownNow();
 			updateServer.close();
+			updateServer = null;
+			http2Client.close();
+			http2Client = null;
 		}catch (Exception e) {
 			logEntry.incErrors("Error closing update server ", e);
 			logEntry.setFinished();
@@ -879,7 +901,7 @@ public class GroupedWorkIndexer {
 				//Update the search version to version 2
 				try {
 					logEntry.addNote("Updating search version to version 2");
-					dbConn.prepareStatement("UPDATE system_variables set searchVersion = 2").executeUpdate();
+					dbConn.prepareStatement("UPDATE system_variables set searchVersion = 2 WHERE true").executeUpdate();
 				} catch (Exception e) {
 					logEntry.incErrors("Error updating search version", e);
 				}
@@ -887,7 +909,7 @@ public class GroupedWorkIndexer {
 			if (regroupAllRecords){
 				try {
 					logEntry.addNote("Turning off regroupAllRecords");
-					dbConn.prepareStatement("UPDATE system_variables set regroupAllRecordsDuringNightlyIndex = 0").executeUpdate();
+					dbConn.prepareStatement("UPDATE system_variables set regroupAllRecordsDuringNightlyIndex = 0 WHERE true").executeUpdate();
 				} catch (Exception e) {
 					logEntry.incErrors("Error turning off regroupAllRecords", e);
 				}
@@ -895,7 +917,7 @@ public class GroupedWorkIndexer {
 			if (processEmptyGroupedWorks){
 				try {
 					logEntry.addNote("Turning off processEmptyGroupedWorks");
-					dbConn.prepareStatement("UPDATE system_variables set processEmptyGroupedWorks = 0").executeUpdate();
+					dbConn.prepareStatement("UPDATE system_variables set processEmptyGroupedWorks = 0 WHERE true").executeUpdate();
 				} catch (Exception e) {
 					logEntry.incErrors("Error turning off processEmptyGroupedWorks", e);
 				}
@@ -908,7 +930,11 @@ public class GroupedWorkIndexer {
 				updateServer.commit(false, false, true);
 				logEntry.addNote("Shutting down the update server");
 				updateServer.blockUntilFinished();
+				updateServer.shutdownNow();
 				updateServer.close();
+				updateServer = null;
+				http2Client.close();
+				http2Client = null;
 			} catch (Exception e) {
 				logEntry.incErrors("Error shutting down update server", e);
 			}
@@ -987,7 +1013,7 @@ public class GroupedWorkIndexer {
 						}
 					}
 					//Change to a debug statement to avoid filling up the notes.
-					logger.debug("Processed " + numWorksProcessed + " grouped works processed.");
+					logger.debug("Processed {} grouped works processed.", numWorksProcessed);
 				}
 				if (lastUpdated == null){
 					setLastUpdatedTime.setLong(1, indexStartTime - 1); //Set just before the index started, so we don't index multiple times
@@ -1009,7 +1035,7 @@ public class GroupedWorkIndexer {
 		} catch (SQLException e) {
 			logEntry.incErrors("Unexpected SQL error", e);
 		}
-		logger.info("Finished processing grouped works.  Processed a total of " + numWorksProcessed + " grouped works");
+		logger.info("Finished processing grouped works.  Processed a total of {} grouped works", numWorksProcessed);
 	}
 
 	protected void processEmptyGroupedWorks() throws SQLException {
@@ -1236,7 +1262,7 @@ public class GroupedWorkIndexer {
 		}
 
 		if (numPrimaryIdentifiers > 0) {
-			//Strip out any hoopla records that have the same format as another econtent record with apis
+			//Strip out any hoopla records that have the same format as another econtent record with APIs
 			groupedWork.removeRedundantHooplaRecords();
 
 			//Load local enrichment for the work
@@ -1766,7 +1792,7 @@ public class GroupedWorkIndexer {
 					sideLoadProcessors.get(type).processRecord(groupedWork, identifier, logEntry);
 				}else{
 					//This happens if a side load processor is deleted and all the related record don't get cleaned up.
-					logger.debug("Could not find a record processor for type " + type);
+					logger.debug("Could not find a record processor for type {}", type);
 				}
 				break;
 		}
@@ -1847,7 +1873,7 @@ public class GroupedWorkIndexer {
 					String concatenatedValue = mapName + ":" + value;
 					if (!unableToTranslateWarnings.contains(concatenatedValue)){
 						if (fullReindex) {
-							logger.warn("Could not translate '" + concatenatedValue + "' sample record " + identifier);
+							logger.warn("Could not translate '{}' sample record {}", concatenatedValue, identifier);
 						}
 						unableToTranslateWarnings.add(concatenatedValue);
 					}
@@ -2550,53 +2576,106 @@ public class GroupedWorkIndexer {
 		return id;
 	}
 
-	private long lastRecordId = -1;
-	private final HashMap<String, Long> callNumberIds = new HashMap<>();
-	private long getCallNumberId(long recordId, String callNumber, int numTries) {
-		if (callNumber == null){
-			return -1;
-		}
-		if (lastRecordId != recordId) {
-			callNumberIds.clear();
-		}
-		lastRecordId = recordId;
-		if (callNumber.length() > 255){
-			callNumber = callNumber.substring(0, 255);
-		}
-		Long id = callNumberIds.get(callNumber);
-		if (id == null){
-			try {
-				getCallNumberStmt.setString(1, callNumber);
-				ResultSet getCallNumberRS = getCallNumberStmt.executeQuery();
-				if (getCallNumberRS.next()){
-					id = getCallNumberRS.getLong("id");
-				}else {
-					addCallNumberStmt.setString(1, callNumber);
-					addCallNumberStmt.executeUpdate();
-					ResultSet addCallNumberRS = addCallNumberStmt.getGeneratedKeys();
-					if (addCallNumberRS.next()) {
-						id = addCallNumberRS.getLong(1);
-					} else {
-						logEntry.incErrors("Could not add callNumber");
-						id = -1L;
-					}
-					addCallNumberRS.close();
-				}
-				getCallNumberRS.close();
-			} catch (SQLException e) {
-				//Another thread already created it, call it again
-				if (numTries == 1) {
-					return getCallNumberId(recordId, callNumber, numTries + 1);
-				}else {
-					logEntry.incErrors("Error getting callNumber id", e);
-					id = -1L;
+	private long addCallNumberToDatabase(String callNumber) {
+		long id = -1L;
+		try {
+			addCallNumberStmt.setString(1, callNumber);
+			addCallNumberStmt.executeUpdate();
+			try (ResultSet addCallNumberRS = addCallNumberStmt.getGeneratedKeys()) {
+				if (addCallNumberRS.next()) {
+					id = addCallNumberRS.getLong(1);
+				} else {
+					logEntry.incErrors("Could not add callNumber" + callNumber);
 				}
 			}
-			callNumberIds.put(callNumber, id);
-		}else{
-			logger.debug("Found cached call number");
+		}catch (SQLException e) {
+			logEntry.incErrors("Error adding callNumber " + callNumber, e);
 		}
 		return id;
+	}
+
+	/**
+	 * Some call numbers are used very frequently, but the majority are only used once. We'll preload anything that
+	 * has 50 or more usages
+	 */
+	private HashMap<String, Long> frequentlyUsedCallNumbers = null;
+	private HashMap<String, Long> getFrequentlyUsedCallNumbers() {
+		if (frequentlyUsedCallNumbers == null) {
+			frequentlyUsedCallNumbers = new HashMap<>();
+			try (PreparedStatement frequentlyUsedCallNumbersStmt = dbConn.prepareStatement("select id, callNumber from indexed_call_number where id IN (SELECT highUsageCallNumbers.callNumberId FROM (SELECT callNumberId, count(*) as numUsages from grouped_work_record_items group by callNumberId having numUsages > 50) as highUsageCallNumbers);", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)) {
+				try (ResultSet frequentlyUsedCallNumbersRS = frequentlyUsedCallNumbersStmt.executeQuery()) {
+					while (frequentlyUsedCallNumbersRS.next()) {
+						frequentlyUsedCallNumbers.put(frequentlyUsedCallNumbersRS.getString("callNumber"), frequentlyUsedCallNumbersRS.getLong("id"));
+					}
+				}
+			}catch (SQLException e) {
+				logEntry.incErrors("Could not load frequentlyUsedCallNumbers", e);
+			}
+		}
+		return frequentlyUsedCallNumbers;
+	}
+
+	private final HashMap<Integer, PreparedStatement> getCallNumbersStmts = new HashMap<>();
+	/**
+	 * Loads call numbers for all items for a grouped work. Accepts a list of unique call numbers
+	 */
+	public HashMap<String, Long> getCallNumberIds(HashSet<String> callNumbers) {
+		HashMap<String, Long> callNumberIds = new HashMap<>();
+		if (callNumbers == null || callNumbers.isEmpty()) {
+			return callNumberIds;
+		}
+
+		//Look for frequently used call numbers so we don't have to query the database
+		HashMap<String, Long> frequentCallNumbers = getFrequentlyUsedCallNumbers();
+		Iterator<String> iterator = callNumbers.iterator();
+		while (iterator.hasNext()) {
+			String currentCallNumber = iterator.next();
+			Long frequentId = frequentCallNumbers.get(currentCallNumber);
+			if (frequentId != null) {
+				callNumberIds.put(currentCallNumber, frequentId);
+				iterator.remove();
+			}
+		}
+
+		//All the call numbers were frequently used.
+		if (callNumbers.isEmpty()) {
+			return callNumberIds;
+		}
+
+		int numPlaceholders = callNumbers.size();
+		PreparedStatement getCallNumbersStmt = getCallNumbersStmts.get(numPlaceholders);
+		if (getCallNumbersStmt == null) {
+			String placeholders = String.join(",", Collections.nCopies(callNumbers.size(), "?"));
+			try {
+				getCallNumbersStmt = dbConn.prepareStatement("SELECT id, callNumber from indexed_call_number where callNumber IN (" + placeholders + ")", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+				getCallNumbersStmts.put(numPlaceholders, getCallNumbersStmt);
+			} catch (SQLException e) {
+				logEntry.incErrors("Could not create prepared statement to get call numbers");
+			}
+		}
+		try {
+			int index = 1;
+			for (String callNumber : callNumbers) {
+				//noinspection DataFlowIssue
+				getCallNumbersStmt.setString(index++, callNumber);
+			}
+			assert getCallNumbersStmt != null;
+			try (ResultSet getCallNumbersRS = getCallNumbersStmt.executeQuery()) {
+				while (getCallNumbersRS.next()) {
+					callNumberIds.put(getCallNumbersRS.getString("callNumber"), getCallNumbersRS.getLong("id"));
+				}
+			}
+		} catch (SQLException e) {
+			logEntry.incErrors("Error batch loading call numbers", e);
+		}
+		//Now check for anything that doesn't exist and add it
+		for (String callNumber : callNumbers) {
+			if (!callNumberIds.containsKey(callNumber)) {
+				callNumberIds.put(callNumber, addCallNumberToDatabase(callNumber));
+			}
+		}
+
+		return callNumberIds;
 	}
 
 	private final HashMap<String, Long> statusIds = new HashMap<>();
@@ -2868,7 +2947,7 @@ public class GroupedWorkIndexer {
 		}
 	}
 
-	long saveItemForRecord(long recordId, long variationId, ItemInfo itemInfo, HashMap<String, SavedItemInfo> existingItems) {
+	long saveItemForRecord(long recordId, long variationId, ItemInfo itemInfo, HashMap<String, SavedItemInfo> existingItems, HashMap<String, Long> callNumberIds) {
 		SavedItemInfo savedItem = existingItems.get(itemInfo.getItemIdentifier().toLowerCase());
 		long itemId = -1;
 		if (savedItem != null){
@@ -2876,12 +2955,34 @@ public class GroupedWorkIndexer {
 		}
 		try {
 			long shelfLocationId = this.getShelfLocationId(itemInfo.getDetailedLocation(), 1);
-			long callNumberId = this.getCallNumberId(recordId, itemInfo.getCallNumber(), 1);
-			long sortableCallNumberId;
+			Long callNumberId;
+			if (itemInfo.getCallNumber() == null || itemInfo.getCallNumber().isEmpty()) {
+				callNumberId = -1L;
+			}else{
+				String callNumber = itemInfo.getCallNumber();
+
+				if (callNumber.length() > 255) {
+					callNumber = callNumber.substring(0, 255);
+				}
+				if (callNumberIds.containsKey(callNumber)) {
+					callNumberId = callNumberIds.get(callNumber);
+				}else{
+					logEntry.incErrors("Call Number not loaded properly " + callNumber);
+					callNumberId = -1L;
+				}
+
+			}
+			Long sortableCallNumberId;
 			if (AspenStringUtils.compareStrings(itemInfo.getCallNumber(), itemInfo.getSortableCallNumber())){
 				sortableCallNumberId = callNumberId;
-			}else{
-				sortableCallNumberId = this.getCallNumberId(recordId, itemInfo.getSortableCallNumber(), 1);
+			}else if (itemInfo.getSortableCallNumber() == null) {
+				sortableCallNumberId = -1L;
+			}else {
+				String callNumber = itemInfo.getSortableCallNumber();
+				if (callNumber.length() > 255) {
+					callNumber = callNumber.substring(0, 255);
+				}
+				sortableCallNumberId = callNumberIds.get(callNumber);
 			}
 			long statusId = this.getStatusId(itemInfo.getDetailedStatus(), 1);
 			long locationCodeId = this.getLocationCodeId(itemInfo.getLocationCode(), 1);
@@ -2997,7 +3098,7 @@ public class GroupedWorkIndexer {
 					addItemUrlStmt.setString(3, itemInfo.geteContentUrl());
 					addItemUrlStmt.executeUpdate();
 
-					//Check to see if we need to save local urls
+					//Check to see if we need to save local URLs
 					for (ScopingInfo scopingInfo : itemInfo.getScopingInfo().values()) {
 						String localUrl = scopingInfo.getLocalUrl();
 						if (localUrl != null && !localUrl.isEmpty() && !localUrl.equals(itemInfo.geteContentUrl())) {
@@ -3201,8 +3302,8 @@ public class GroupedWorkIndexer {
 	 *
 	 * @param indexingProfile - the indexing profile for the record
 	 * @param ilsId - The id of the record to save
-	 * @param marcRecord - The contents of the marc record
-	 * @return int 0 if the marc has not changed, 1 if the marc is new, and 2 if the marc has changes
+	 * @param marcRecord - The contents of the MARC record
+	 * @return int 0 if the MARC has not changed, 1 if the MARC is new, and 2 if the MARC has changes
 	 */
 	public synchronized MarcStatus saveMarcRecordToDatabase(BaseIndexingSettings indexingProfile, String ilsId, Record marcRecord) {
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -3300,6 +3401,7 @@ public class GroupedWorkIndexer {
 		}
 	}
 
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean hasSeriesModuleEnabled() {
 		return seriesModuleEnabled;
 	}

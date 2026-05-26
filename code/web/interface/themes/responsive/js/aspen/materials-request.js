@@ -54,8 +54,11 @@ AspenDiscovery.MaterialsRequest = (function(){
 			return false;
 		},
 
-		getSelectedRequests: function(promptToSelectAll){
-			var selectedRequests = $("input.select:checked").map(function() {
+		getSelectedRequests: function(promptToSelectAll, selectName){
+			if (selectName === undefined) {
+				selectName = 'select';
+			}
+			var selectedRequests = $("input." + selectName + ":checked").map(function() {
 				return $(this).attr('name') + "=" + $(this).val();
 			}).get().join("&");
 			console.log(selectedRequests);
@@ -328,7 +331,7 @@ AspenDiscovery.MaterialsRequest = (function(){
 				alert("Please select a new assignee and/or status to update.");
 				return false;
 			}
-			var selectedRequests = this.getSelectedRequests(false);
+			var selectedRequests = this.getSelectedRequests(false, 'selectedObject');
 			var url = Globals.path + "/MaterialsRequest/AJAX";
 			var params = {
 				method:  'updateSelectedTitleRequests',

@@ -1,110 +1,22 @@
 <?php
 
-require_once ROOT_DIR . '/Action.php';
-require_once(ROOT_DIR . '/services/Admin/Admin.php');
+require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once(ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequest.php');
 require_once(ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestTitle.php');
 require_once(ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestStatus.php');
 require_once(ROOT_DIR . '/sys/Administration/StickyFilter.php');
 require_once ROOT_DIR . '/sys/User/PageDefaults.php';
 
-class MaterialsRequest_ManageTitleRequests extends Admin_Admin {
-
-	function launch() : void {
+class MaterialsRequest_ManageTitleRequests extends ObjectEditor {
+	public function launch(): void {
 		global $interface;
-		global $aspen_db;
 		$homeLibrary = Library::getPatronHomeLibrary();
-		$user = UserAccount::getLoggedInUser();
-
-		$interface->assign('showExistingTitleInformation', $homeLibrary->checkRequestsForExistingTitles);
-
-		//Get a list of all material requests for the user
-		$allRequests = [];
-		if ($user) {
-
-			$materialsRequestTitles = new MaterialsRequestTitle();
-
-			if (isset($_REQUEST['pageSize']) && (is_numeric($_REQUEST['pageSize']) || $_REQUEST['pageSize'] == 'all')) {
-				$materialsRequestTitlesPerPage =  $_REQUEST['pageSize'];
-				PageDefaults::updatePageDefaultsForUser($user->id, 'MaterialsRequest', 'ManageTitleRequests',null, $materialsRequestTitlesPerPage, null);
-			} else {
-				$pageDefaults = PageDefaults::getPageDefaultsForUser($user->id, 'MaterialsRequest', 'ManageTitleRequests',null);
-				if ($pageDefaults !== null && !empty($pageDefaults->pageSize)) {
-					$materialsRequestTitlesPerPage =  $pageDefaults->pageSize;
-				}else{
-					$materialsRequestTitlesPerPage = 30;
-				}
-			}
-			if($materialsRequestTitlesPerPage == 'all') {
-				$materialsRequestTitlesPerPage = $materialsRequestTitles->count();
-				$interface->assign('showingAllRequests', true);
-			} else {
-				$interface->assign('showingAllRequests', false);
-			}
-			$interface->assign('materialsRequestsPerPage', $materialsRequestTitlesPerPage);
-			$page = $_REQUEST['page'] ?? 1;
-			if (isset($_REQUEST['sort']) && in_array($_REQUEST['sort'], ['title', 'author', 'format', 'dateFirstRequested', 'dateLastRequested desc', 'numRequests desc'])) {
-				$materialsRequestSort =  $_REQUEST['sort'];
-				PageDefaults::updatePageDefaultsForUser($user->id, 'MaterialsRequest', 'ManageTitleRequests',null, null, $materialsRequestSort);
-			} else {
-				$pageDefaults = PageDefaults::getPageDefaultsForUser($user->id, 'MaterialsRequest', 'ManageTitleRequests',null);
-				if ($pageDefaults !== null && !empty($pageDefaults->pageSize)) {
-					$materialsRequestSort =  $pageDefaults->pageSort;
-				}else{
-					$materialsRequestSort = 'dateLastRequested';
-				}
-			}
-			$interface->assign('materialsRequestSort', $materialsRequestSort);
-			if (!isset($_REQUEST['exportAll'])) {
-				$materialsRequestTitles->limit(((int)$page - 1) * (int)$materialsRequestTitlesPerPage,(int)$materialsRequestTitlesPerPage);
-			}
-			$materialsRequestTitleCount = $materialsRequestTitles->count();
-
-			if ($materialsRequestTitles->find()) {
-				$stmt = $aspen_db->query("SELECT mrt.*, COUNT(mr.id) as numRequests 
-							FROM materials_request_title mrt
-							LEFT JOIN materials_request mr ON mrt.id = mr.materialsRequestTitleId
-							GROUP BY mrt.id
-							ORDER BY $materialsRequestSort
-							");
-				$allRequests = $stmt->fetchAll(PDO::FETCH_CLASS, 'MaterialsRequestTitle');
-			}
-
-			$options = [
-				'totalItems' => $materialsRequestTitleCount,
-				'perPage' => $materialsRequestTitlesPerPage,
-			];
-
-			$pager = new Pager($options);
-
-			$interface->assign('pageLinks', $pager->getLinks());
-
-			$columnsToDisplay = [
-				'id' => 'Id',
-				'title' => 'Title',
-				'author' => 'Author',
-				'format' => 'Format',
-				'dateFirstRequested' => 'First Requested',
-				'dateLastRequested' => 'Last Requested',
-				'numRequests' => 'Number of Requests',
-			];
-			$interface->assign('columnsToDisplay', $columnsToDisplay);
-
-			// Find Date Columns for JavaScript Table sorter
-			$dateColumns = [];
-			foreach (array_keys($columnsToDisplay) as $index => $column) {
-				if (in_array($column, [
-					'dateFirstRequested',
-					'dateLastRequested',
-				])) {
-					$dateColumns[] = $index;
-				}
-			}
-			$interface->assign('dateColumns', $dateColumns); //data gets added within template
-
-		} else {
-			$interface->assign('error', "You must be logged in to manage requests.");
+		if (is_null($homeLibrary)) {
+			//User does not have a home library, this is likely an admin account.  Use the active library
+			global $library;
+			$homeLibrary = $library;
 		}
+
 		// Get Statuses
 		$materialsRequestStatus = new MaterialsRequestStatus();
 		$materialsRequestStatus->orderBy('isDefault DESC, isOpen DESC, description ASC');
@@ -116,11 +28,6 @@ class MaterialsRequest_ManageTitleRequests extends Admin_Admin {
 		}
 		$interface->assign('availableStatuses', $availableStatuses);
 		// Get Assignees
-		if (is_null($homeLibrary)) {
-			//User does not have a home library, this is likely an admin account.  Use the active library
-			global $library;
-			$homeLibrary = $library;
-		}
 		$locations = new Location();
 		$locations->libraryId = $homeLibrary->libraryId;
 		$locations->find();
@@ -154,11 +61,8 @@ class MaterialsRequest_ManageTitleRequests extends Admin_Admin {
 			}
 			$interface->assign('assignees', $assignees);
 		}
-		$interface->assign('allRequests', $allRequests);
 
-
-		$this->display('manageTitleRequests.tpl', 'Manage Materials Requests');
-
+		parent::launch();
 	}
 
 	function getBreadcrumbs(): array {
@@ -171,7 +75,142 @@ class MaterialsRequest_ManageTitleRequests extends Admin_Admin {
 		return 'materials_request';
 	}
 
-	function canView(): bool {
-		return UserAccount::userHasPermission('Manage Library Materials Requests');
+	function getObjectType(): string {
+		return 'MaterialsRequestTitle';
+	}
+
+	function getToolName(): string {
+		return 'ManageTitleRequests';
+	}
+
+	function getPageTitle(): string {
+		return 'Manage Materials Requests By Title';
+	}
+
+	function getNumObjects(): int {
+		if ($this->_numObjects === null) {
+			$object = $this->getAllObjectQueryObj();
+
+			$this->_numObjects = $object->count();
+		}
+		return $this->_numObjects;
+	}
+
+	function getAllObjects(int $page, int $recordsPerPage): array {
+		$list = [];
+
+		$object = $this->getAllObjectQueryObj();
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+		$object->find();
+		while ($object->fetch()) {
+			$list[$object->id] = clone $object;
+		}
+
+		return $list;
+	}
+
+	function getAllObjectQueryObj(): MaterialsRequestTitle {
+		$homeLibrary = Library::getPatronHomeLibrary();
+		if (is_null($homeLibrary)) {
+			//User does not have a home library, this is likely an admin account.  Use the active library
+			global $library;
+			$homeLibrary = $library;
+		}
+		$userId = UserAccount::getActiveUserId();
+
+		$object = new MaterialsRequestTitle();
+		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
+
+		//Join materials requests so we can sort by and show the number of requests
+		$materialsRequest = new MaterialsRequest();
+		$materialsRequest->libraryId = $homeLibrary->libraryId;
+		$object->joinAdd($materialsRequest, 'INNER', 'mr', 'id', 'materialsRequestTitleId');
+
+		$materialsRequestStatus = new MaterialsRequestStatus();
+		$object->joinAdd($materialsRequestStatus, 'INNER', 'mrs', 'mr.status', 'id');
+		$object->selectAdd();
+		$object->selectAdd("materials_request_title.*");
+		$object->selectAdd('count(mr.id) as numRequests');
+		$object->selectAdd('SUM(CASE when (mrs.isOpen = 1 and mrs.isActive = 1) THEN 1 ELSE 0 END) as numOpenRequests');
+		$object->selectAdd("CASE when SUM(CASE WHEN mr.assignedTo = $userId THEN 1 ELSE 0 END) > 0 THEN 1 ELSE 0 END as assignedToMe");
+		$object->groupBy('materials_request_title.id');
+
+		return $object;
+	}
+
+	public function getCustomListPanel() : string {
+		if ($this->getNumObjects() > 0) {
+			global $interface;
+			//Load status information
+			$materialsRequestStatus = new MaterialsRequestStatus();
+			$materialsRequestStatus->orderBy('holdNotNeeded DESC, holdFailed DESC, holdPlacedSuccessfully DESC, description ASC');
+			$homeLibrary = Library::getPatronHomeLibrary();
+			if (is_null($homeLibrary)) {
+				//User does not have a home library, this is likely an admin account.  Use the active library
+				global $library;
+				$homeLibrary = $library;
+			}
+
+			$materialsRequestStatus->libraryId = $homeLibrary->libraryId;
+			$materialsRequestStatus->find();
+
+			$availableStatuses = [];
+			while ($materialsRequestStatus->fetch()) {
+				$availableStatuses[$materialsRequestStatus->id] = $materialsRequestStatus->description;
+			}
+			$interface->assign('availableStatuses', $availableStatuses);
+			return 'MaterialsRequest/manageTitleRequestPanel.tpl';
+		}else{
+			return '';
+		}
+	}
+
+	function getObjectStructure($context = ''): array {
+		return MaterialsRequestTitle::getObjectStructure($context);
+	}
+
+	function getPrimaryKeyColumn(): string {
+		return 'id';
+	}
+
+	function getIdKeyColumn(): string {
+		return 'id';
+	}
+
+	function getDefaultSort(): string {
+		return 'title';
+	}
+
+	function getViewPermissions(): array {
+		return ['Manage Library Materials Requests'];
+	}
+
+	function canAddNew(): bool {
+		return false;
+	}
+
+	function canEdit(): bool {
+		return false;
+	}
+
+	function canDelete(): bool {
+		return false;
+	}
+
+	public function canCompare(): bool {
+		return false;
+	}
+
+	function canBatchEdit(): bool {
+		return false;
+	}
+
+	function canBatchDelete(): bool {
+		return false;
+	}
+
+	protected function showHistoryLinks() : bool {
+		return false;
 	}
 }

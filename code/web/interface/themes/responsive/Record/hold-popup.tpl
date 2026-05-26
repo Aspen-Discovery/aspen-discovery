@@ -137,36 +137,6 @@
 								</div>
 							</div>
 						{/if}
-						<div id="pickupLocationOptions" class="form-group">
-							<label class="control-label" for="pickupBranch">{translate text="I want to pick this up at" isPublicFacing=true} </label>
-							<div class="controls">
-								<select name="pickupBranch" id="pickupBranch hyperholdPickupBranch" class="form-control" onchange="AspenDiscovery.Record.generateSublocationSelect();">
-									{if count($pickupLocations) > 0}
-										{foreach from=$pickupLocations item=location}
-											{if is_string($location)}
-												<option value="undefined">{$location}</option>
-											{else}
-												<option value="{$location->code}" data-users="[{implode subject=$location->getPickupUsers() glue=','}]" {if $location->code == $user->getPickupLocationCode() || ($location->code == $onlyValidPickupLocation && $preferredPickupLocationIsValid)}selected{/if}>{$location->displayName|escape}</option>
-											{/if}
-										{/foreach}
-									{else}
-										<option>placeholder</option>
-									{/if}
-								</select>
-
-								<div id="pickupSublocationOptions" style="margin-top:15px">
-									<div id="sublocationSelectPlaceHolder"></div>
-								</div>
-
-								{if empty($multipleUsers) && $allowRememberPickupLocation}
-									<div class="form-group">
-										<label for="rememberHoldPickupLocation" class="checkbox"><input type="checkbox" name="rememberHoldPickupLocation" id="rememberHoldPickupLocation"> {translate text="Always use this pickup location" isPublicFacing=true}</label>
-									</div>
-								{else}
-									<input type="hidden" name="rememberHoldPickupLocation"  id="rememberHoldPickupLocation" value="off">
-								{/if}
-							</div>
-						</div>
 						<div id="userOption" class="form-group"{if empty($multipleUsers)} style="display: none"{/if}>{* display if there are multiple accounts *}
 							<label for="user" class="control-label">
 								{if $hidePickupLocationPrompt}

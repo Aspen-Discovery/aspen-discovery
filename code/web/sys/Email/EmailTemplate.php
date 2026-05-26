@@ -250,24 +250,27 @@ class EmailTemplate extends DataObject {
 		}
 	}
 
-	public static function getActiveTemplate(string $templateType) : ?EmailTemplate{
+	public static function getActiveTemplate(string $templateType, ?User $user) : ?EmailTemplate{
 		global $library;
 		global $activeLanguage;
+		$libraryId = $user == null ? $library->libraryId : ($user->getHomeLibrary() == null ? $library->libraryId : $user->getHomeLibrary()->libraryId);
+		$activeLanguageCode = $user == null ? $activeLanguage->code : $user->interfaceLanguage;
 		$templateFound = false;
 		//First look for a template based on the active language
-		$emailTemplate = new EmailTemplate();
-		$emailTemplate->templateType = $templateType;
-		$emailTemplate->languageCode = $activeLanguage->code;
-		$emailTemplate->find();
-		while ($emailTemplate->fetch()) {
+		$tmpEmailTemplate = new EmailTemplate();
+		$tmpEmailTemplate->templateType = $templateType;
+		$tmpEmailTemplate->languageCode = $activeLanguageCode;
+		$tmpEmailTemplate->find();
+		$matchingTemplates = $tmpEmailTemplate->fetchAll();
+		foreach ($matchingTemplates as $emailTemplate) {
 			$librariesForTemplate = $emailTemplate->getLibraries();
-			if (in_array($library->libraryId, $librariesForTemplate)) {
+			if (in_array($libraryId, $librariesForTemplate)) {
 				$templateFound = true;
 				break;
 			}
 		}
 		//If we didn't find a template for the active language, check english
-		if (!$templateFound) {
+		if (!$templateFound && $activeLanguage != 'en') {
 			$emailTemplate = new EmailTemplate();
 			$emailTemplate->templateType = $templateType;
 			$emailTemplate->languageCode = 'en';

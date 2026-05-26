@@ -1343,7 +1343,7 @@ class SearchAPI extends AbstractAPI {
 								$pageToLoad = 1;
 								require_once ROOT_DIR . '/services/Search/History.php';
 								$savedSearch = History::getSavedSearchObject($temp->id);
-								SearchObjectFactory::initSearchObject($savedSearch['source']);
+								SearchObjectFactory::initSearchObject($savedSearch['source'] ?? 'GroupedWork');
 								$minSO = unserialize($savedSearch['search_object']);
 								$searchObject = SearchObjectFactory::deminify($minSO);
 								$searchObject->getFilterList();

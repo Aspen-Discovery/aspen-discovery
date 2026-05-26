@@ -18,7 +18,7 @@
 					{if !empty($relatedRecord->edition)}
 						<div class="row"><div class="result-label col-lg-5 col-tn-12">{translate text="Edition" isPublicFacing=true}</div><div class="result-value col-lg-7 col-tn-12"> {$relatedRecord->edition}</div></div>
 					{/if}
-					{if !empty($relatedRecord->physical) && empty($relatedRecord->duration)}
+					{if !empty($relatedRecord->physical)}
 						<div class="row"><div class="result-label col-lg-5 col-tn-12">{translate text="Physical Description" isPublicFacing=true}</div><div class="result-value col-lg-7 col-tn-12"> <a href="{$relatedRecord->getUrl()}">{$relatedRecord->physical} {if $relatedRecord->closedCaptioned}<i class="fas fa-closed-captioning"></i> {/if}</a></div></div>
 					{/if}
 					{if !empty($relatedRecord->duration)}

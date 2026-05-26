@@ -27,6 +27,17 @@
 				<label for="useSSL" class="control-label"><input type="checkbox" id="useSSL" name="useSSL" {if !empty($useSSL)}checked{/if}> {translate text='Use SSL' isAdminFacing=true}</label>
 			</div>
 			<div class="form-group">
+				<label for="msgTerminator" class="control-label">{translate text='Message Terminator' isAdminFacing=true}</label>
+				<select class="form-control">
+					<option value="crlf" {if !empty($msgTerminator) && $msgTerminator == 'crlf'}selected{/if}>Carriage Return Linefeed</option>
+					<option value="cr" {if !empty($msgTerminator) && $msgTerminator == 'cr'}selected{/if}>Carriage Return</option>
+				</select>
+			</div>
+			<div class="form-group">
+				<label for="location" class="control-label">{translate text='Self Check Location' isAdminFacing=true}</label>
+				<input type="text" id="location" name="location" class="form-control" value="{if !empty($location)}{$location}{/if}">
+			</div>
+			<div class="form-group">
 				<label for="sipUser" class="control-label">{translate text='SIP User' isAdminFacing=true}</label>
 				<input type="text" id="sipUser" name="sipUser" class="form-control" value="{if !empty($sipUser)}{$sipUser}{/if}">
 			</div>

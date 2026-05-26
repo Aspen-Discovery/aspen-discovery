@@ -2649,7 +2649,7 @@ AspenDiscovery.Account = (function () {
 						} else {
 							$(".ils-overdue-placeholder").html("0");
 						}
-						$(".ils-holds-placeholder").html(summary.numHolds);
+						$(".ils-holds-placeholder").html(Math.max(0, summary.numHolds));
 						totalHolds += parseInt(summary.numHolds);
 						$(".holds-placeholder").html(totalHolds);
 						if (summary.numAvailableHolds > 0) {
@@ -13463,8 +13463,11 @@ AspenDiscovery.MaterialsRequest = (function(){
 			return false;
 		},
 
-		getSelectedRequests: function(promptToSelectAll){
-			var selectedRequests = $("input.select:checked").map(function() {
+		getSelectedRequests: function(promptToSelectAll, selectName){
+			if (selectName === undefined) {
+				selectName = 'select';
+			}
+			var selectedRequests = $("input." + selectName + ":checked").map(function() {
 				return $(this).attr('name') + "=" + $(this).val();
 			}).get().join("&");
 			console.log(selectedRequests);
@@ -13737,7 +13740,7 @@ AspenDiscovery.MaterialsRequest = (function(){
 				alert("Please select a new assignee and/or status to update.");
 				return false;
 			}
-			var selectedRequests = this.getSelectedRequests(false);
+			var selectedRequests = this.getSelectedRequests(false, 'selectedObject');
 			var url = Globals.path + "/MaterialsRequest/AJAX";
 			var params = {
 				method:  'updateSelectedTitleRequests',
@@ -15096,7 +15099,7 @@ AspenDiscovery.Record = (function () {
 				});
 			} else {
 				AspenDiscovery.Account.ajaxLogin(null, function () {
-					AspenDiscovery.Record.showPlaceHold(module, source, id, volume, variationId, button, allowFormatSelection);
+					AspenDiscovery.Record.showPlaceHold(module, source, id, volume, variationId, button, allowEditionSelection, format);
 				}, false);
 			}
 			return false;

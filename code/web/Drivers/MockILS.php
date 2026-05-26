@@ -8,7 +8,7 @@ class MockILS extends AbstractIlsDriver{
 		return false;
 	}
 
-	public function getCheckouts(User $patron): array {
+	public function getCheckouts(User $patron, array $options = []): array {
 		return [];
 	}
 

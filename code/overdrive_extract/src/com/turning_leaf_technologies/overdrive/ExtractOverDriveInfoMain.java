@@ -8,6 +8,8 @@ import java.util.HashSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.file.JarUtil;
@@ -19,7 +21,6 @@ import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
 
 public class ExtractOverDriveInfoMain {
-	private static Connection dbConn;
 	private static Logger logger;
 	private static String serverName;
 
@@ -63,7 +64,7 @@ public class ExtractOverDriveInfoMain {
 		while (true) {
 
 			Date startTime = new Date();
-			logger.info(startTime + ": Starting OverDrive Extract");
+			logger.info("{}: Starting OverDrive Extract", startTime);
 
 			// Read the base INI file to get information about the server (current directory/cron/config.ini)
 			Ini configIni = ConfigUtil.loadConfigFile("config.ini", serverName, logger);
@@ -71,176 +72,165 @@ public class ExtractOverDriveInfoMain {
 			String databaseConnectionInfo = ConfigUtil.cleanIniValue(configIni.get("Database", "database_aspen_jdbc"));
 			if (databaseConnectionInfo == null || databaseConnectionInfo.isEmpty()) {
 				logger.error("Database connection information not found in Database Section.  Please specify connection information in database_aspen_jdbc.");
-				System.exit(1);
-			}
-			try {
-				dbConn = DriverManager.getConnection(databaseConnectionInfo);
-			} catch (SQLException e) {
-				logger.error("Could not connect to database", e);
-				System.exit(1);
+				break;
 			}
 
-			//Remove log entries older than 45 days
-			long earliestLogToKeep = (startTime.getTime() / 1000) - (60 * 60 * 24 * 45);
-			try {
-				int numDeletions = dbConn.prepareStatement("DELETE from overdrive_extract_log WHERE startTime < " + earliestLogToKeep).executeUpdate();
-				logger.info("Deleted " + numDeletions + " old log entries");
-			} catch (SQLException e) {
-				logger.error("Error deleting old log entries", e);
-			}
+			HashSet<OverDriveSetting> settings;
+			try (Connection dbConn = DriverManager.getConnection(databaseConnectionInfo)) {
+				//Remove log entries older than 45 days
+				long earliestLogToKeep = (startTime.getTime() / 1000) - (60 * 60 * 24 * 45);
+				try (PreparedStatement deleteOldLogEntries = dbConn.prepareStatement("DELETE from overdrive_extract_log WHERE startTime < " + earliestLogToKeep)) {
+					int numDeletions = deleteOldLogEntries.executeUpdate();
+					logger.info("Deleted {} old log entries", numDeletions);
+				} catch (SQLException e) {
+					logger.error("Error deleting old log entries", e);
+				}
 
-			HashSet<OverDriveSetting> settings = loadSettings(extractSingleWork);
-			final int[] numChanges = {0};
+				settings = loadSettings(dbConn, extractSingleWork);
 
-			try {
-				if (dbConn.isClosed()) {
-					dbConn = DriverManager.getConnection(databaseConnectionInfo);
+				//Check to see if the jar has changes before processing records, and if so quit
+				if (checkForUpdatedJars(myChecksumAtStart, processName, dbConn, reindexerChecksumAtStart)) {
+					break;
 				}
 			} catch (SQLException e) {
-				logger.error("Could not connect to database", e);
-				System.exit(1);
-			}
+				logger.error("Error with database connection", e);
+				break;
+			} // End connecting to database
 
-			//Check to see if the jar has changes before processing records, and if so quit
-			if (myChecksumAtStart != JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar")){
-				IndexingUtils.markNightlyIndexNeeded(dbConn, logger);
-				return;
-			}
-			if (reindexerChecksumAtStart != JarUtil.getChecksumForJar(logger, "reindexer", "../reindexer/reindexer.jar")){
-				IndexingUtils.markNightlyIndexNeeded(dbConn, logger);
-				return;
-			}
-
+			//noinspection resource in Java 17 The cached thread pool does not have an auto close
 			ExecutorService es = Executors.newCachedThreadPool();
+			AtomicInteger numChanges = new AtomicInteger(0);
+			AtomicBoolean errorOccurred = new AtomicBoolean();
 			for(OverDriveSetting setting : settings) {
 				boolean finalExtractSingleWork = extractSingleWork;
 				String finalSingleWorkId = singleWorkId;
 				es.execute(() -> {
-					Connection localDBConnection;
-					try {
-						//Get a local database connection, so we don't have issues with conflicts between the different threads
-						localDBConnection = DriverManager.getConnection(databaseConnectionInfo);
+					//Get a local database connection, so we don't have issues with conflicts between the different threads
+					try (Connection localDBConnection = DriverManager.getConnection(databaseConnectionInfo)) {
+						try (OverDriveExtractLogEntry logEntry = new OverDriveExtractLogEntry(localDBConnection, setting, logger)) {
+							if (!logEntry.saveResults()) {
+								logger.error("Could not save log entry to database, quitting");
+								return;
+							}
 
-						OverDriveExtractLogEntry logEntry = new OverDriveExtractLogEntry(localDBConnection, setting, logger);
-						if (!logEntry.saveResults()) {
-							logger.error("Could not save log entry to database, quitting");
-							return;
+							try (ExtractOverDriveInfo extractor = new ExtractOverDriveInfo(setting)) {
+								if (finalExtractSingleWork) {
+									numChanges.addAndGet(extractor.processSingleWork(finalSingleWorkId, configIni, serverName, localDBConnection, logEntry));
+								} else {
+									numChanges.addAndGet(extractor.extractOverDriveInfo(configIni, serverName, localDBConnection, logEntry));
+								}
+
+								logEntry.setFinished();
+								logger.info("Finished OverDrive extraction");
+								Date endTime = new Date();
+								long elapsedTime = (endTime.getTime() - startTime.getTime()) / 1000;
+								logger.info("Elapsed time {} minutes", String.format("%f2", ((float) elapsedTime / 60f)));
+							}
+						} catch (Exception e) {
+							logger.error("Could not setup OverDrive log entry", e);
+							errorOccurred.set(true);
 						}
-
-						ExtractOverDriveInfo extractor = new ExtractOverDriveInfo(setting);
-						if (finalExtractSingleWork) {
-							numChanges[0] += extractor.processSingleWork(finalSingleWorkId, configIni, serverName, localDBConnection, logEntry);
-						} else {
-							numChanges[0] += extractor.extractOverDriveInfo(configIni, serverName, localDBConnection, logEntry);
-						}
-
-						logEntry.setFinished();
-						logger.info("Finished OverDrive extraction");
-						Date endTime = new Date();
-						long elapsedTime = (endTime.getTime() - startTime.getTime()) / 1000;
-						logger.info("Elapsed time " + String.format("%f2", ((float) elapsedTime / 60f)) + " minutes");
-
-						extractor.close();
-
-						localDBConnection.close();
 					} catch (SQLException e) {
-						logger.error("Could not connect to database", e);
-						System.exit(1);
+						logger.error("Could not connect to database while setting up local OverDrive indexer", e);
+						errorOccurred.set(true);
 					}
 				});
 			}
 			es.shutdown();
-			while (true) {
-				try {
-					boolean terminated = es.awaitTermination(1, TimeUnit.MINUTES);
-					if (terminated){
-						break;
-					}
-				} catch (InterruptedException e) {
-					logger.error("Error waiting for all extracts to finish");
-				}
-			}
-
-			//Check to see if the jar has changes, and if so quit
-			if (myChecksumAtStart != JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar")){
-				IndexingUtils.markNightlyIndexNeeded(dbConn, logger);
-				break;
-			}
-			if (reindexerChecksumAtStart != JarUtil.getChecksumForJar(logger, "reindexer", "../reindexer/reindexer.jar")){
-				IndexingUtils.markNightlyIndexNeeded(dbConn, logger);
-				break;
-			}
-			//Check to see if it's between midnight and 1 am and the jar has been running more than 15 hours.  If so, restart just to clean up memory.
-			GregorianCalendar nowAsCalendar = new GregorianCalendar();
-			Date now = new Date();
-			nowAsCalendar.setTime(now);
-			if (nowAsCalendar.get(Calendar.HOUR_OF_DAY) <=1 && (now.getTime() - timeAtStart) > 15 * 60 * 60 * 1000 ){
-				logger.info("Ending because we have been running for more than 15 hours and it's between midnight and one AM");
-				break;
-			}
-			//Check memory to see if we should close
-			if (SystemUtils.hasLowMemory(configIni, logger)){
-				logger.info("Ending because we have low memory available");
-				break;
-			}
-
-			if (extractSingleWork) {
-				break;
-			}
 
 			try {
-				dbConn.close();
-			} catch (SQLException e) {
-				logger.error("Error closing database connection", e);
-			}
-
-			//Check to see if nightly indexing is running and if so, wait until it is done.
-			if (IndexingUtils.isNightlyIndexRunning(configIni, serverName, logger)) {
-				//Quit and we will restart after if finishes
-				System.exit(0);
-			}else {
-				//Based on number of changes, pause for a little while and then continue such that we are running continuously
-				try {
-					System.gc();
-					int maxChanges = 0;
-					for (int numChange : numChanges) {
-						if (numChange > maxChanges) {
-							maxChanges = numChange;
-						}
-					}
-					if (maxChanges == 0) {
-						Thread.sleep(1000 * 60 * 5);
-					} else {
-						Thread.sleep(1000 * 60);
-					}
-				} catch (InterruptedException e) {
-					logger.info("Thread was interrupted");
+				if (!es.awaitTermination(48, TimeUnit.HOURS)){
+					logger.error("Took more than 2 days to run OverDrive extract, halting");
+					es.shutdownNow();
 				}
+			} catch (InterruptedException e) {
+				logger.error("Error waiting for all extracts to finish");
+				es.shutdownNow();
+				Thread.currentThread().interrupt();
 			}
-		}
-		try {
-			if (dbConn != null && !dbConn.isClosed()){
-				dbConn.close();
-			}
-		} catch (SQLException e) {
-			logger.error("Error closing database connection", e);
-		}
 
-		System.exit(0);
+			if (errorOccurred.get()) {
+				//Something happened during execution, return
+				break;
+			}
+
+			//Reconnect to the db after the main extract runs just for updating if nightly indexing is needed
+			try (Connection dbConn = DriverManager.getConnection(databaseConnectionInfo)) {
+				//Check to see if the jar has changes, and if so quit
+				if (checkForUpdatedJars(myChecksumAtStart, processName, dbConn, reindexerChecksumAtStart)) {
+					break;
+				}
+				//Check to see if it's between midnight and 1 am and the jar has been running more than 15 hours.  If so, restart just to clean up memory.
+				GregorianCalendar nowAsCalendar = new GregorianCalendar();
+				Date now = new Date();
+				nowAsCalendar.setTime(now);
+				if (nowAsCalendar.get(Calendar.HOUR_OF_DAY) <=1 && (now.getTime() - timeAtStart) > 15 * 60 * 60 * 1000 ){
+					logger.info("Ending because we have been running for more than 15 hours and it's between midnight and one AM");
+					break;
+				}
+				//Check memory to see if we should close
+				if (SystemUtils.hasLowMemory(configIni, logger)){
+					logger.info("Ending because we have low memory available");
+					break;
+				}
+
+				if (extractSingleWork) {
+					break;
+				}
+
+				//Check to see if nightly indexing is running and if so, wait until it is done.
+				if (IndexingUtils.isNightlyIndexRunning(configIni, serverName, logger)) {
+					//Quit and we will restart after if finishes
+					break;
+				}else {
+					//Based on number of changes, pause for a little while and then continue such that we are running continuously
+					try {
+						System.gc();
+						if (numChanges.get() == 0) {
+							Thread.sleep(1000 * 60 * 5);
+						} else {
+							Thread.sleep(1000 * 60);
+						}
+					} catch (InterruptedException e) {
+						logger.info("Thread was interrupted");
+					}
+				}
+			} catch (SQLException e) {
+				logger.error("Error with database connection", e);
+			} // End connecting to database
+		} //end infinite loop for near real-time indexing
+		logger = null;
+		//System.exit(0);
 	}
 
-	private static HashSet<OverDriveSetting> loadSettings(boolean extractSingleWork) {
+	private static boolean checkForUpdatedJars(long myChecksumAtStart, String processName, Connection dbConn, long reindexerChecksumAtStart) {
+		if (myChecksumAtStart != JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar")){
+			IndexingUtils.markNightlyIndexNeeded(dbConn, logger);
+			return true;
+		}
+		if (reindexerChecksumAtStart != JarUtil.getChecksumForJar(logger, "reindexer", "../reindexer/reindexer.jar")){
+			IndexingUtils.markNightlyIndexNeeded(dbConn, logger);
+			return true;
+		}
+		return false;
+	}
+
+	private static HashSet<OverDriveSetting> loadSettings(Connection dbConn, boolean extractSingleWork) {
 		HashSet<OverDriveSetting> settings = new HashSet<>();
 		try {
-			PreparedStatement getSettingsStmt = dbConn.prepareStatement("SELECT * from overdrive_settings");
-			ResultSet getSettingsRS = getSettingsStmt.executeQuery();
-			while (getSettingsRS.next()) {
-				OverDriveSetting setting = new OverDriveSetting(getSettingsRS, serverName);
-				settings.add(setting);
+			try (PreparedStatement getSettingsStmt = dbConn.prepareStatement("SELECT * from overdrive_settings")) {
+				try (ResultSet getSettingsRS = getSettingsStmt.executeQuery()) {
+					while (getSettingsRS.next()) {
+						OverDriveSetting setting = new OverDriveSetting(getSettingsRS, serverName);
+						settings.add(setting);
+					}
+				}
 			}
 			//Clear works to update
 			if (!extractSingleWork) {
-				dbConn.prepareStatement("UPDATE overdrive_settings SET productsToUpdate = ''").executeUpdate();
+				try (PreparedStatement clearProductsToUpdateStmt = dbConn.prepareStatement("UPDATE overdrive_settings SET productsToUpdate = ''")) {
+					clearProductsToUpdateStmt.executeUpdate();
+				}
 			}
 		} catch (SQLException e) {
 			logger.error("Error loading settings from the database", e);
@@ -250,6 +240,4 @@ public class ExtractOverDriveInfoMain {
 		}
 		return settings;
 	}
-
-
 }

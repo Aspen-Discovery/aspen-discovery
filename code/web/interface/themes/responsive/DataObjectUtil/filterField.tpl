@@ -64,7 +64,7 @@
 				{rdelim});
 			</script>
 		</div>
-	{elseif $filterField.type == 'checkbox'}
+	{elseif $filterField.type == 'checkbox' || $filterField.type == 'calculatedBoolean'}
 		<div class="col-xs-8">
 			{assign var=label value="Type of filtering for `$filterField.label`"}
 			<input type="hidden" name="filterType[{$filterField.property}]" id="filterType_{$filterField.property}" value="matches"/>

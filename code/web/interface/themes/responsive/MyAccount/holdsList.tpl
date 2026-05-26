@@ -84,7 +84,9 @@
 	{else} {* Check to see if records are available *}
 		{if $sectionKey == 'available'}
 			{translate text='You do not have any holds that are ready to be picked up.' isPublicFacing=true}
-		{elseif $sectionKey != 'available' && $sectionKey != 'cancelled'}
+		{elseif $sectionKey == 'cancelled'}
+			{translate text='You do not have any cancelled holds.' isPublicFacing=true}
+		{elseif $sectionKey != 'available'}
 			{if $source == 'interlibrary_loan'}
 				{translate text='You do not have any pending requests.' isPublicFacing=true}
 			{else}
@@ -103,7 +105,7 @@
 	<p class="alert alert-info">
 		{translate text="Multiple records are on hold for you. The library will fulfill whichever record becomes available first. Once a record is available, it will appear in the 'Ready for Pickup' section." isPublicFacing=true}
 	</p>
-	
+
 	<div class="striped">
 		{foreach from=$hyperHolds item=hyperHold name="hyperHoldLoop"}
 			{include file="MyAccount/hyperHold.tpl" record=$hyperHold resultIndex=$smarty.foreach.hyperHoldLoop.iteration}

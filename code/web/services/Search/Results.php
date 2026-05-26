@@ -181,8 +181,8 @@ class Search_Results extends ResultsAction {
 				$to = (isset($_REQUEST[$filter . 'to']) && preg_match('/^\d+(\.\d*)?$/', $_REQUEST[$filter . 'to'])) ? $_REQUEST[$filter . 'to'] : '*';
 
 				if ($filter = 'duration') {
-					$from = $from === '*' ? '*' : $from * 60;
-					$to = $to === '*' ? '*' : $to * 60;
+					$from = $from === '*' ? '*' : intval($from * 60);
+					$to = $to === '*' ? '*' : intval($to * 60);
 				}
 
 				if ($to != '*' && $from != '*' && $to < $from) {

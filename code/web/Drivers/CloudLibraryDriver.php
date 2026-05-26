@@ -22,11 +22,12 @@ class CloudLibraryDriver extends AbstractEContentDriver {
 	 * This is responsible for retrieving all checkouts (i.e. checked out items)
 	 * by a specific patron.
 	 *
-	 * @param User $patron The user to load transactions for
+	 * @param User $patron       The user to load transactions for
+	 * @param array $options     Additional options
 	 * @return Checkout[]        Array of the patron's transactions on success
 	 * @access public
 	 */
-	public function getCheckouts(User $patron): array {
+	public function getCheckouts(User $patron, array $options = []): array {
 		$accountSummary = $patron->getCachedAccountSummary('cloud_library');
 		$cachedCheckouts = $patron->getCachedCheckoutsForSource('cloud_library');
 		if ($accountSummary->areCheckoutsStale() || isset($_REQUEST['reload']) || isset($_REQUEST['refreshCheckouts'])) {
@@ -515,7 +516,7 @@ class CloudLibraryDriver extends AbstractEContentDriver {
 				'isPublicFacing' => true,
 			]);
 
-			$this->updateCachesForCancelledHold($patron, $holdToCancel);
+			$this->updateCachesForCancelledHold($patron, $holdToCancel, 'cloud_library');
 		} elseif ($responseCode == '400') {
 			$result['message'] = translate([
 				'text' => "Bad Request cancelling hold.",

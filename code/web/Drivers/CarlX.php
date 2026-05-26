@@ -629,7 +629,7 @@ class CarlX extends AbstractIlsDriver {
 		return $this->placeHoldViaSIP($patron, $holdId, $newPickupLocation, null, 'update', $queuePosition, $freeze, $freezeReactivationDate);
 	}
 
-	public function getCheckouts(User $patron): array {
+	public function getCheckouts(User $patron, array $options = []): array {
 		require_once ROOT_DIR . '/sys/User/Checkout.php';
 		$checkedOutTitles = [];
 

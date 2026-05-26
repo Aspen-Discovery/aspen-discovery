@@ -666,7 +666,7 @@ class Browse_AJAX extends JSON_Action {
 						$id = str_replace('system_saved_searches_', '', $this->textId);
 						require_once ROOT_DIR . '/services/Search/History.php';
 						$savedSearch = History::getSavedSearchObject($id);
-						SearchObjectFactory::initSearchObject($savedSearch['source']);
+						SearchObjectFactory::initSearchObject($savedSearch['source'] ?? 'GroupedWork');
 						$minSO = unserialize($savedSearch['search_object']);
 						$searchObject = SearchObjectFactory::deminify($minSO);
 						$searchObject->getFilterList();

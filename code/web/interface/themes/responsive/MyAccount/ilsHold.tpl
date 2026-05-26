@@ -207,15 +207,6 @@
 								</div>
 							</div>
 						{/if}
-						{if $record->expirationDate && $record->cancelled}
-							<div class="row">
-								<div class="result-label col-tn-4">{translate text='Cancelled On' isPublicFacing=true}</div>
-								<div class="col-tn-8 result-value">
-									<strong>{$record->expirationDate|date_format:"%b %d, %Y"}</strong>
-								</div>
-							</div>
-						{/if}
-
 						{if !empty($record->automaticCancellationDate) && $showHoldCancelDate}
 							<div class="row">
 								<div class="result-label col-tn-4">{translate text='Cancels on' isPublicFacing=true}</div>

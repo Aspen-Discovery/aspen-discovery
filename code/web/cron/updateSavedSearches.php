@@ -189,7 +189,7 @@ foreach ($usersWithUpdatesToEmail as $data) {
 	}else{
 		$activeLanguage = $validLanguages['en'];
 	}
-	$emailTemplate = EmailTemplate::getActiveTemplate('savedSearchAlert');
+	$emailTemplate = EmailTemplate::getActiveTemplate('savedSearchAlert', $activeUser);
 	$emailTemplate->plainTextBody .= "\r\n%searchHistory.url%";
 	$emailTemplate->plainTextBody .= "\r\n%searchHistory.updatedSearchesWithSampleTitles%";
 

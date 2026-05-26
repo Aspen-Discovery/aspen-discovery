@@ -77,10 +77,17 @@ class SideFacets implements RecommendationInterface {
 		$lockedFacetsChanged = false;
 		$unscopedFieldCache = [];
 		$lockedValuesIndexByFacet = [];
-		foreach ($filterList as $facet) {
-			foreach ($facet as $filter) {
+		foreach ($filterList as &$facet) {
+			foreach ($facet as $filterKey => &$filter) {
 				if (!empty($filter['field']) && array_key_exists('value', $filter)) {
 					$field = $filter['field'];
+					if ($field == 'duration') {
+						//Update the Display valye to be in hours rather than minutes
+						preg_match('/\[([*\d]+) TO ([*\d]+)]/', $filter['display'], $rangeValues);
+						$startValue = $rangeValues[1] == '*' ? '*' : $rangeValues[1] / 60;
+						$endValue = $rangeValues[2] == '*' ? '*' : $rangeValues[2] / 60;
+						$filter['display'] = "[$startValue TO $endValue]";
+					}
 					if (!isset($unscopedFieldCache[$field])) {
 						$unscopedFieldCache[$field] = $this->searchObject->getUnscopedFieldName($field);
 					}

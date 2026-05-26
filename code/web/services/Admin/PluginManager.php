@@ -29,8 +29,8 @@ class Admin_PluginManager extends ObjectEditor {
 	}
 
 	function getAllObjects(int $page, int $recordsPerPage): array {
+		global $configArray;
 		$list = [];
-
 		if (!empty($configArray['Plugins']) && !empty($configArray['Plugins']['enabled'])) {
 			$object = new Plugin();
 			$object->orderBy($this->getSort());

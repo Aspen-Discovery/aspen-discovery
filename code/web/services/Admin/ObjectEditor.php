@@ -1270,6 +1270,7 @@ abstract class ObjectEditor extends Admin_Admin {
 					'text',
 					'integer',
 					'calculatedInteger',
+					'calculatedBoolean',
 					'email',
 					'url'
 				])) {
@@ -1305,6 +1306,7 @@ abstract class ObjectEditor extends Admin_Admin {
 					'text',
 					'integer',
 					'calculatedInteger',
+					'calculatedBoolean',
 					'email',
 					'url',
 				])) {
@@ -1350,14 +1352,15 @@ abstract class ObjectEditor extends Admin_Admin {
 		$filterFields = $this->getFilterFields($object::getObjectStructure($this->getContext()));
 		$appliedFilters = $this->getAppliedFilters($filterFields);
 		foreach ($appliedFilters as $fieldName => $filter) {
-			$this->applyFilter($object, $fieldName, $filter);
+			if ($filter['field']['type'] != "calculatedInteger" || !empty($filter->filterValue)) {
+				$this->applyFilter($object, $fieldName, $filter);
+			}
 		}
 	}
 
 	function applyFilter(DataObject $object, string $fieldName, array $filter) : void {
 		$table = empty($filter['field']['filterOmitTablename']) ? "$object->__table." : '';
-		/** @noinspection PhpInArrayCanBeReplacedWithComparisonInspection */
-		$addAsHaving = in_array($filter['field']['type'], ['calculatedInteger']);
+		$addAsHaving = in_array($filter['field']['type'], ['calculatedInteger', 'calculatedBoolean']);
 		$fullFieldName = "$table$fieldName";
 		switch ($filter['filterType']) {
 			case 'matches':
@@ -1368,7 +1371,11 @@ abstract class ObjectEditor extends Admin_Admin {
 				if ($filter['filterValue'] == '') {
 					$object->whereAdd("$fullFieldName IS NULL OR $fullFieldName = ''");
 				} else {
-					$object->$fieldName = $filter['filterValue'];
+					if ($addAsHaving) {
+						$object->havingAdd("$fieldName = {$filter['filterValue']}");
+					} else {
+						$object->$fieldName = $filter['filterValue'];
+					}
 				}
 				break;
 			case 'contains':
@@ -1458,7 +1465,7 @@ abstract class ObjectEditor extends Admin_Admin {
 						$object->whereAdd("$fullFieldName >= $fieldValue");
 					}
 				}
-				$fieldValue2 = strtotime($filter['filterValue2']);
+				$fieldValue2 = $filter['filterValue2'];
 				if ($fieldValue2 !== false) {
 					if ($addAsHaving) {
 						$object->havingAdd("$fieldName <= $fieldValue2");

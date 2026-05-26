@@ -109,11 +109,11 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 	protected final Logger logger;
 	protected final GroupedWorkIndexer groupedWorkIndexer;
 	protected HashSet<String> systemLists = new HashSet<>();
-	protected final HashSet<Long> userReadingHistoryLink = new HashSet<>();
-	protected final HashSet<Long> userRatingLink = new HashSet<>();
-	protected final HashSet<Long> userNotInterestedLink = new HashSet<>();
+	protected final ArrayList<Long> userReadingHistoryLink = new ArrayList<>();
+	protected final ArrayList<Long> userRatingLink = new ArrayList<>();
+	protected final ArrayList<Long> userNotInterestedLink = new ArrayList<>();
 
-	protected final HashSet<Long> listLink = new HashSet<>();
+	protected final ArrayList<Long> listLink = new ArrayList<>();
 	protected final HashMap<Long, Long> listEntryWeights = new HashMap<>();
 	protected final HashMap<Long, Long> listEntryDatesAdded = new HashMap<>();
 
@@ -328,16 +328,16 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 				}
 				if (numFictionIndicators.equals(numNonFictionIndicators)) {
 					//Houston we have a problem.
-					//logger.warn("Found inconsistent literary forms for grouped work " + id + " both fiction and non fiction had the same amount of usage.  Defaulting to neither.");
+					//logger.warn("Found inconsistent literary forms for grouped work " + id + " both fiction and non-fiction had the same amount of usage.  Defaulting to neither.");
 					literaryForm.clear();
 					literaryForm.put("Unknown", 1);
 					if (this.debugEnabled) {this.addDebugMessage("Fiction and non fiction score are the same - literary form is unknown ", 2);}
 				} else if (numFictionIndicators.compareTo(numNonFictionIndicators) > 0) {
-					logger.debug("Popularity dictates that Fiction is the correct literary form for grouped work " + id);
+					logger.debug("Popularity dictates that Fiction is the correct literary form for grouped work {}", id);
 					literaryForm.remove("Non Fiction");
 					if (this.debugEnabled) {this.addDebugMessage("Fiction has the highest literary form score", 2);}
 				} else if (numFictionIndicators.compareTo(numNonFictionIndicators) < 0) {
-					logger.debug("Popularity dictates that Non Fiction is the correct literary form for grouped work " + id);
+					logger.debug("Popularity dictates that Non Fiction is the correct literary form for grouped work {}", id);
 					literaryForm.remove("Fiction");
 					if (this.debugEnabled) {this.addDebugMessage("Non fiction has the highest literary form score", 2);}
 				}
@@ -386,7 +386,7 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 			changeMade = false;
 			for (String curLiteraryForm : literaryFormFull.keySet()) {
 				if (firstLiteraryFormIsNonFiction != nonFictionFullLiteraryForms.contains(curLiteraryForm)) {
-					logger.debug(curLiteraryForm + " got voted off the island for grouped work " + id + " because it was inconsistent with other full literary forms.");
+					logger.debug("{} got voted off the island for grouped work {} because it was inconsistent with other full literary forms.", curLiteraryForm, id);
 					if (this.debugEnabled) {this.addDebugMessage(curLiteraryForm + " got voted off the island for grouped work " + id + " because it was inconsistent with other full literary forms.", 2);}
 					literaryFormFull.remove(curLiteraryForm);
 					changeMade = true;
@@ -445,10 +445,6 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 	//private final static Pattern removeBracketsPattern = Pattern.compile("\\[.*?]");
 	private final static Pattern commonSubtitlePattern = Pattern.compile("(?i)([(]?(?:\\s?a\\s?|\\s?the\\s?)?audio cd|book club kit|large print[)]?)$");
 	private final static Pattern punctuationPattern = Pattern.compile("[.\\\\/()\\[\\]:;]");
-
-	void setTitle(String shortTitle, String subTitle, String sortableTitle, String formatCategory) {
-		this.setTitle(shortTitle, subTitle, sortableTitle, formatCategory, false, null, null);
-	}
 
 	void setTitle(String shortTitle, String subTitle, String sortableTitle, String formatCategory, boolean isDisplayInfo, RecordInfo recordInfo) {
 		this.setTitle(shortTitle, subTitle, sortableTitle, formatCategory, isDisplayInfo, recordInfo, null);
@@ -578,12 +574,6 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 	private void setSubTitle(String subTitle) {
 		if (subTitle != null) {
 			subTitle = AspenStringUtils.trimTrailingPunctuation(subTitle);
-			//TODO: determine if the subtitle should be changed?
-			//Strip out anything in brackets unless that would cause us to show nothing
-//			String tmpTitle = removeBracketsPattern.matcher(subTitle).replaceAll("").trim();
-//			if (!tmpTitle.isEmpty()) {
-//				subTitle = tmpTitle;
-//			}
 			this.subTitle = subTitle;
 			keywords.add(subTitle);
 		}
@@ -803,12 +793,6 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 		this.subjects.addAll(AspenStringUtils.normalizeSubjects(fieldList));
 	}
 
-	void addSeries(Set<String> fieldList) {
-		for (String curField : fieldList) {
-			this.addSeries(curField);
-		}
-	}
-
 	void addSeries(String series) {
 		addSeriesInfoToField(series, this.series);
 	}
@@ -861,11 +845,11 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 					// When this occurs, the more specific series (longer or with a volume) will be preserved.
 					// This logic only applies if the series module is NOT active.
 					// First Check the traced series
-					okToAdd = isSeriesOkToAdd(volume, this.seriesWithVolume, seriesInfoLower, volumeLower, okToAdd);
+					okToAdd = isSeriesOkToAdd(volume, this.seriesWithVolume, seriesInfoLower, volumeLower, true);
 
 					// Next, check the untraced series
 					if (okToAdd && untraced) {
-						okToAdd = isSeriesOkToAdd(volume, this.seriesWithVolumeUntraced, seriesInfoLower, volumeLower, okToAdd);
+						okToAdd = isSeriesOkToAdd(volume, this.seriesWithVolumeUntraced, seriesInfoLower, volumeLower, true);
 					}
 				}
 
@@ -874,9 +858,7 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 						seriesMapToCheck.put(normalizedSeriesInfoWithVolume, seriesInfoWithVolume);
 					}else {
 						seriesMapToCheck.put(normalizedSeriesInfoWithVolume, seriesInfoWithVolume);
-						if (this.seriesWithVolumeUntraced.containsKey(normalizedSeriesInfoWithVolume)) {
-							this.seriesWithVolumeUntraced.remove(normalizedSeriesInfoWithVolume);
-						}
+						this.seriesWithVolumeUntraced.remove(normalizedSeriesInfoWithVolume);
 					}
 				}
 			}
@@ -958,16 +940,16 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 		volume = AspenStringUtils.trimTrailingPunctuation(volume);
 		volume = volume.replaceAll("(bk\\.?|book)", "");
 		volume = volume.replaceAll("(volume|vol\\.|v\\.)", "");
-		volume = volume.replaceAll("libro", "");
-		volume = volume.replaceAll("one", "1");
-		volume = volume.replaceAll("two", "2");
-		volume = volume.replaceAll("three", "3");
-		volume = volume.replaceAll("four", "4");
-		volume = volume.replaceAll("five", "5");
-		volume = volume.replaceAll("six", "6");
-		volume = volume.replaceAll("seven", "7");
-		volume = volume.replaceAll("eight", "8");
-		volume = volume.replaceAll("nine", "9");
+		volume = volume.replace("libro", "");
+		volume = volume.replace("one", "1");
+		volume = volume.replace("two", "2");
+		volume = volume.replace("three", "3");
+		volume = volume.replace("four", "4");
+		volume = volume.replace("five", "5");
+		volume = volume.replace("six", "6");
+		volume = volume.replace("seven", "7");
+		volume = volume.replace("eight", "8");
+		volume = volume.replace("nine", "9");
 		volume = volume.replaceAll("[\\[\\]#]", "");
 		volume = AspenStringUtils.trimTrailingPunctuation(volume.trim());
 		return volume;
@@ -976,8 +958,8 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 	private String getNormalizedSeries(String series) {
 		series = AspenStringUtils.trimTrailingPunctuation(series);
 		series = series.replaceAll("[#|]\\s*\\d+$", "");
-		series = series.replaceAll(" & ", " and ");
-		series = series.replaceAll("--", " ");
+		series = series.replace(" & ", " and ");
+		series = series.replace("--", " ");
 		series = series.replaceAll(",\\s+(the|an)$", "");
 		series = series.replaceAll("[:,]\\s", " ");
 		//Remove the word series at the end since this gets cataloged inconsistently
@@ -1148,6 +1130,7 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 		literaryForm = literaryForm.trim();
 		if (this.literaryForm.containsKey(literaryForm)) {
 			Integer numMatches = this.literaryForm.get(literaryForm);
+			//noinspection Java8MapApi
 			this.literaryForm.put(literaryForm, numMatches + count);
 		} else {
 			this.literaryForm.put(literaryForm, count);
@@ -1188,6 +1171,7 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 		}
 		if (this.literaryFormFull.containsKey(literaryForm)) {
 			Integer numMatches = this.literaryFormFull.get(literaryForm);
+			//noinspection Java8MapApi
 			this.literaryFormFull.put(literaryForm, numMatches + count);
 		} else {
 			this.literaryFormFull.put(literaryForm, count);
@@ -1556,7 +1540,7 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 			if (otherRecordsAsArray.isEmpty() || hooplaRecordsAsArray.isEmpty()){
 				return;
 			}
-			// record 1 is a hoopla record
+			// record 1 is a hoopla record.
 			// record 2 is not a hoopla record.
 
 			for (RecordInfo record1 : hooplaRecordsAsArray) {
@@ -1669,6 +1653,30 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 		HashMap<String, SavedRecordInfo> existingRecords = groupedWorkIndexer.getExistingRecordsForGroupedWork(groupedWorkId);
 		HashMap<VariationInfo, Long> existingVariations = groupedWorkIndexer.getExistingVariationsForGroupedWork(groupedWorkId);
 		HashSet<Long> foundVariations = new HashSet<>();
+
+		//Collect all unique call numbers and look them up in the database rather than doing them one at a tim
+		HashSet<String> uniqueCallNumbers = new HashSet<>();
+		for (RecordInfo recordInfo : relatedRecords.values()){
+			for (ItemInfo itemInfo : recordInfo.getRelatedItems()){
+				String tmpCallNumber = itemInfo.getCallNumber();
+				if (tmpCallNumber == null || tmpCallNumber.isEmpty()){
+					continue;
+				} else if (tmpCallNumber.length() > 255){
+					tmpCallNumber = tmpCallNumber.substring(0, 255);
+				}
+				uniqueCallNumbers.add(tmpCallNumber);
+				String tmpSortableCallNumber = itemInfo.getSortableCallNumber();
+				if (tmpSortableCallNumber == null || tmpSortableCallNumber.isEmpty()){
+					continue;
+				} else if (tmpSortableCallNumber.length() > 255){
+					tmpSortableCallNumber = tmpSortableCallNumber.substring(0, 255);
+				}
+				uniqueCallNumbers.add(tmpSortableCallNumber);
+			}
+		}
+		HashMap<String, Long> callNumberIds = groupedWorkIndexer.getCallNumberIds(uniqueCallNumbers);
+
+
 		//Save all the records
 		for (RecordInfo recordInfo : relatedRecords.values()){
 			//Don't look at format since that is causing records to be deleted incorrectly
@@ -1692,7 +1700,7 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 					long variationId = groupedWorkIndexer.saveGroupedWorkVariation(existingVariations, groupedWorkId, recordInfo, itemInfo);
 					foundVariations.add(variationId);
 
-					long itemId = groupedWorkIndexer.saveItemForRecord(recordId, variationId, itemInfo, existingItems);
+					long itemId = groupedWorkIndexer.saveItemForRecord(recordId, variationId, itemInfo, existingItems, callNumberIds);
 					if (itemId != -1) {
 						foundItems.add(itemId);
 					}

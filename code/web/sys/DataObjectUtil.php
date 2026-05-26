@@ -661,7 +661,8 @@ class DataObjectUtil {
 									'storedPassword'
 								])) {
 									$oldValue = $subObject->$subPropertyName;
-									$newValue = $_REQUEST[$requestKey][$id] ?? ($subProperty['type'] == 'multiSelect' ? [] : null);
+									$isCheckboxList = $subProperty['type'] == 'multiSelect' && ($subProperty['listStyle'] ?? '') == 'checkboxList';
+									$newValue = $_REQUEST[$requestKey][$id] ?? ($isCheckboxList ? [] : null);
 									$changed = $subObject->setProperty($subPropertyName, $newValue, $subProperty);
 									if ($changed && !empty($object->{$object->__primaryKey}) && $object->objectHistoryEnabled()) {
 										require_once ROOT_DIR . '/sys/DB/DataObjectHistory.php';

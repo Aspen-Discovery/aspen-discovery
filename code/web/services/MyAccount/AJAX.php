@@ -3284,10 +3284,6 @@ class MyAccount_AJAX extends JSON_Action {
 					}
 				} elseif ($exportType == "cancelled") {
 					// Col names
-					$cancelledCol = translate([
-						'text' => 'Cancellation Date',
-						'isPublicFacing' => true,
-					]);
 					$pickupCol = translate([
 						'text' => 'Pickup',
 						'isPublicFacing' => true,
@@ -3305,7 +3301,6 @@ class MyAccount_AJAX extends JSON_Action {
 						$titleCol,
 						$authorCol,
 						$formatCol,
-						$cancelledCol,
 						$pickupCol
 					];
 					$cancelledFields[] = $statusCol;
@@ -3339,18 +3334,6 @@ class MyAccount_AJAX extends JSON_Action {
 						} else {
 							$format = '';
 						}
-						if (empty($row->expirationDate)) {
-							$cancelDate = '';
-						} else {
-							if (is_array($row->expirationDate)) {
-								$cancelDate = new DateTime();
-								$cancelDate->setDate($row->expirationDate['year'], $row->expirationDate['month'], $row->expirationDate['day']);
-								$cancelDate = $cancelDate->format('M d, Y');
-							} else {
-								$cancelDate = $this->isValidTimeStamp($row->expirationDate) ? $row->expirationDate : strtotime($row->expirationDate);
-								$cancelDate = date('M d, Y', $cancelDate);
-							}
-						}
 
 						$pickup = $row->pickupLocationName ?? '';
 
@@ -3367,7 +3350,6 @@ class MyAccount_AJAX extends JSON_Action {
 							$title,
 							$author,
 							$format,
-							$cancelDate,
 							$pickup
 						];
 						$cancelledValues[] = $status;

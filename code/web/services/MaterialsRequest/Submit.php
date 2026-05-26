@@ -253,6 +253,11 @@ class MaterialsRequest_Submit extends Action {
 											$materialsRequestTitle->whereAdd("REGEXP_REPLACE(title, '[^a-zA-Z ]', '') REGEXP '" . $titlePattern . "'");
 											$materialsRequestTitle->whereAdd("REGEXP_REPLACE(author, '[^a-zA-Z ]', '') REGEXP '" . $authorPattern . "'");
 										}
+										//try title & format if no match
+										elseif (!empty($this->title) && !empty($this->format)) {
+											$materialsRequestTitle->whereAdd("REGEXP_REPLACE(title, '[^a-zA-Z ]', '') REGEXP '" . $titlePattern . "'");
+											$materialsRequestTitle->format = $this->format;
+										}
 										//try only title if still no match
 										elseif (!empty($materialsRequest->title)) {
 											$materialsRequestTitle->whereAdd("REGEXP_REPLACE(title, '[^a-zA-Z ]', '') REGEXP '" . $titlePattern . "'");
