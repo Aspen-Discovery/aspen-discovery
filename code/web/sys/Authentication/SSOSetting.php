@@ -947,6 +947,75 @@ class SSOSetting extends DataObject {
 		return self::$_objectStructure[$context];
 	}
 
+	/**
+	 * getVendorSSOSettingsId 
+	 */
+	static function getVendorSSOSettingsId() : string|int|bool
+	{
+		global $configArray;
+		if(!isset($configArray['Vendor']))
+		{
+			return false;
+		}
+		if(!isset($configArray['Vendor']['SSOSettingId']))
+		{
+			return false;
+		}
+		return $configArray['Vendor']['SSOSettingId'];
+	}
+
+	static function getVendorSSOSettings($redirectOnFailure=false) : SSOSetting|bool
+	{
+		$ipAllowed = IPAddress::allowVendorSSOAccessForClientIP();
+		if(!$ipAllowed && $redirectOnFailure)
+		{
+			global $logger;
+			$message = "Vendor login attempted from invalid ip: " . IPAddress::getClientIP();
+			$logger->log($message, Logger::LOG_ERROR);
+			echo($message);
+			header('Location: ' . '/Search/Home');
+			die();
+		}
+		else if (!$ipAllowed)
+		{
+			return false;
+		}
+		global $enabledModules;
+		if(!array_key_exists('Single sign-on', $enabledModules))
+		{
+				return false;
+		}
+		$settingsId = SSOSetting::getVendorSSOSettingsId();
+		if(empty($settingsId))
+		{
+			return false;
+		}
+		$SSOSetting = new SSOSetting();
+		$SSOSetting-> id = $settingsId;
+		if($SSOSetting->find(true))
+		{
+			return $SSOSetting;
+		}
+		return false;
+	}
+
+	static function getSSOSettings($vendor, $service) : SSOSetting|bool
+	{
+		if($vendor)
+		{
+			return SSOSetting::getVendorSSOSettings(true);
+		}
+		else {
+			// reducing repeat code between oauth.php
+			// and SAMLAuthentication.php 
+			global $library; 
+			$SSOSetting = new SSOSetting();
+			$SSOSetting->id = $library->ssoSettingId;
+			$SSOSetting->service = $service;
+			return $SSOSetting->find(true);
+		}
+	}
+
 	public function __get($name) {
 		global $configArray;
 		if ($name == "libraries") {

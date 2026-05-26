@@ -31,25 +31,8 @@ class SAMLAuthentication{
 		global $library;
 		global $logger;
 
-		$ssoSettings = new SSOSetting();
-		if(isset($_GET['vendor']))
-		{
-			if(IPAddress::allowVendorSSOAccessForClientIP())
-			{
-				$ssoSettings-> id = $configArray['Vendor']['SSOSettingId'];
-			} else {
-				$message = "Vendor login attempted from invalid ip: " . IPAddress::getClientIP();
-				$logger->log($message, Logger::LOG_ERROR);
-				echo($message);
-				header('Location: ' . '/Search/Home');
-				die();
-			}
-		}
-		else {
-			$ssoSettings->id = $library->ssoSettingId;
-		}
-		$ssoSettings->service = "saml";
-		if($ssoSettings->find(true)) {
+		$ssoSettings = SSOSetting::getSSOSettings(isset($_GET['vendor']), "saml");
+		if($ssoSettings) {
 			$this->matchpoints = $ssoSettings->getMatchpoints(); //we will use the previous matchpoint system
 			$this->config = clone $ssoSettings;
 

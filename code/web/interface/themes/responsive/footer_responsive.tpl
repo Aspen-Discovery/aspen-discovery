@@ -32,13 +32,18 @@
 						{/if}
 					{/if}
 				{/if}
-				{if empty($loggedIn) && $vendorLoginEnabled}
-					{if $vendorSSOService == 'oauth'}
-						<br><small id="ssoStaffLogin"><a href="/init_oauth.php?vendor" id="ssoStaffLoginLink">{translate text='Vendor Login' isPublicFacing=true}</a></small>
-					{/if}
-					{if $vendorSSOService == 'saml'}
-						<br><small id="ssoStaffLogin"><a href="/Authentication/SAML2?init&vendor" id="ssoStaffLoginLink">{translate text='Vendor Login' isPublicFacing=true}</a></small>
-					{/if}
+				{if $vendorSSOService == 'oauth'}
+					{assign "vendorLoginLink" "/init_oauth.php?vendor"}
+				{elseif $vendorSSOService == 'saml'}
+					{assign "vendorLoginLink" "/Authentication/SAML2?init&vendor"}
+				{/if}
+				{if empty($loggedIn) && $vendorLoginEnabled && !empty($vendorLoginLink)}
+					<br>
+					<small id="ssoStaffLogin">
+						<a data-sso-service="{$vendorSSOService}" href="{$vendorLoginLink}" id="ssoStaffLoginLink">
+							{translate text='Vendor Login' isPublicFacing=true}
+						</a>
+					</small>
 				{/if}
 			</div>
 			<div class="col-tn-12 col-sm-3 col-md-4 text-center" id="footer-branding">

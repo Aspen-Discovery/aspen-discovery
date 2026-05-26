@@ -612,24 +612,6 @@ class IPAddress extends DataObject {
 	}
 
 	public static function allowVendorSSOAccessForClientIP() : bool {
-		// return false if we don't have config setup
-		global $configArray;
-		if(!isset($configArray['Vendor']))
-		{
-			return false;
-		}
-		if(!isset($configArray['Vendor']['SSOSettingId']))
-		{
-			return false;
-		}
-		
-		//we don't allow this if the module isn't on
-		global $enabledModules;
-		if(!array_key_exists('Single sign-on', $enabledModules))
-		{
-				return false;
-		}
-
 		//check $ipInfo to see if we are allowed to use vendor SSO
 		$clientIP = IPAddress::getClientIP();
 		$ipInfo = IPAddress::getIPAddressForIP($clientIP);
@@ -637,20 +619,9 @@ class IPAddress extends DataObject {
 		if(empty($ipInfo))
 		{
 			return false;
-		}
+		}//if we do know the IP determine if that IP is allowed
 		else if(!$ipInfo->vendorSSOLogin)
 		{
-			return false;
-		}
-
-		require_once ROOT_DIR . '/sys/Authentication/SSOSetting.php';
-		//if we do know the IP determine if that IP is allowed
-		$vendorSSOSettings = new SSOSetting();
-		$vendorSSOSettings->id = $configArray['Vendor']['SSOSettingId'];
-
-		if($vendorSSOSettings->find(true)){
-			return true;
-		} else {
 			return false;
 		}
 	}
