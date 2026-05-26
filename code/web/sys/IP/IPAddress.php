@@ -624,6 +624,7 @@ class IPAddress extends DataObject {
 		{
 			return false;
 		}
+		return true;
 	}
 
 	static $_showDebuggingInformation = null;
