@@ -948,7 +948,8 @@ class SSOSetting extends DataObject {
 	}
 
 	/**
-	 * getVendorSSOSettingsId 
+	 * getVendorSSOSettingsId check for valid configuration
+	 * and return our SSOSettingId
 	 */
 	static function getVendorSSOSettingsId() : string|int|bool
 	{
@@ -964,6 +965,13 @@ class SSOSetting extends DataObject {
 		return $configArray['Vendor']['SSOSettingId'];
 	}
 
+	/**
+	 * grab the settings associated with Vendor SSO if available
+	 * if $redirectOnFailure is true we will log the failure in messages.log
+	 * and redirect to /Search/Home
+	 * otherwise if config, ip, and settings are valid we return those settings
+	 * returns false on failure if $redirectOnFailure is false.
+	 */
 	static function getVendorSSOSettings($redirectOnFailure=false) : SSOSetting|bool
 	{
 		$ipAllowed = IPAddress::allowVendorSSOAccessForClientIP();
@@ -999,6 +1007,11 @@ class SSOSetting extends DataObject {
 		return false;
 	}
 
+	/**
+	 * get the current SSO settings for the system.
+	 * $vendor determines if we grab vendor settings or current library
+	 * $service is currently oauth or saml but could be more values in the future
+	 */
 	static function getSSOSettings($vendor, $service) : SSOSetting|bool
 	{
 		if($vendor)

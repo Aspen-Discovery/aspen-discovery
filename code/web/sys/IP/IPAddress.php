@@ -619,12 +619,9 @@ class IPAddress extends DataObject {
 		if(empty($ipInfo))
 		{
 			return false;
-		}//if we do know the IP determine if that IP is allowed
-		else if(!$ipInfo->vendorSSOLogin)
-		{
-			return false;
 		}
-		return true;
+		//if we do know the IP determine if that IP is allowed
+		return $ipInfo->vendorSSOLogin;
 	}
 
 	static $_showDebuggingInformation = null;
