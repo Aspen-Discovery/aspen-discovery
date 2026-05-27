@@ -2881,7 +2881,7 @@ class SearchAPI extends AbstractAPI {
 								$items[$recordKey]['title'] = $record['title_display'];
 								$items[$recordKey]['author'] = $record['author_display'];
 								$items[$recordKey]['image'] = $configArray['Site']['url'] . '/bookcover.php?id=' . $record['id'] . '&size=medium&type=grouped_work';
-								$items[$recordKey]['language'] = $record['language'][0];
+								$items[$recordKey]['language'] = array_key_exists('language',$record) ? $record['language'][0] : '';
 								$items[$recordKey]['summary'] = null;
 								$items[$recordKey]['type'] = 'grouped_work';
 								$formats = [];

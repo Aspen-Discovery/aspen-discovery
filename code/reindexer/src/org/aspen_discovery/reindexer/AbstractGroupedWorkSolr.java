@@ -1053,6 +1053,9 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 
 	void setLanguages(HashSet<String> languages) {
 		this.languages.addAll(languages);
+		if (this.primaryLanguage == null) {
+			this.primaryLanguage = languages.iterator().next();
+		}
 	}
 
 	void setPrimaryLanguage(String primaryLanguage) {
@@ -1517,6 +1520,9 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 
 	void addLanguage(String language) {
 		this.languages.add(language);
+		if (this.primaryLanguage == null) {
+			this.setPrimaryLanguage(language);
+		}
 	}
 
 	/**
