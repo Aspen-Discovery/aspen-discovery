@@ -39,8 +39,8 @@
 				{/if}
 				{if empty($loggedIn) && $vendorLoginEnabled && !empty($vendorLoginLink)}
 					<br>
-					<small id="ssoStaffLogin">
-						<a data-sso-service="{$vendorSSOService}" href="{$vendorLoginLink}" id="ssoStaffLoginLink">
+					<small id="ssoVendorLogin">
+						<a data-sso-service="{$vendorSSOService}" href="{$vendorLoginLink}" id="ssoVendorLoginLink">
 							{translate text='Vendor Login' isPublicFacing=true}
 						</a>
 					</small>

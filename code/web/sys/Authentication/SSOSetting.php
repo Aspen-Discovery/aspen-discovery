@@ -1025,7 +1025,11 @@ class SSOSetting extends DataObject {
 			$SSOSetting = new SSOSetting();
 			$SSOSetting->id = $library->ssoSettingId;
 			$SSOSetting->service = $service;
-			return $SSOSetting->find(true);
+			if($SSOSetting->find(true))
+			{
+				return $SSOSetting;
+			}
+			return false;
 		}
 	}
 
