@@ -240,21 +240,21 @@ class CurlWrapper {
 			return;//skip limiting if not configured properly
 		}
 		
-		//usleep and microtime are in microseconds
-		//we multipy by 1000 to get milliseconds
-		$MICRO_PER_MILLI = 1000;
+		//constants for shifting between microseconds and milliseconds for utime
+		// and between seconds and milliseconds for microtime
+		$MICRO_PER_MILLI = $MILLI_PER_SEC = 1000;
 		//if we don't have any previous requests for this url
 		//go ahead and send it after recording the last request
 		if(empty($this->lastRequest[$url]))
 		{
-			$this->lastRequest[$url] = floor($MICRO_PER_MILLI * microtime(true));
+			$this->lastRequest[$url] = floor($MILLI_PER_SEC * microtime(true));
 			return;
 		}
-		$request_time = floor($MICRO_PER_MILLI * microtime(true));
+		$request_time = floor($MILLI_PER_SEC * microtime(true));
 		$time_diff = $request_time - $this->lastRequest[$url];
 		if(empty($this->queue[$url]) && $time_diff >= $rateLimit)
 		{
-			$this->lastRequest[$url] = floor($MICRO_PER_MILLI * microtime(true));
+			$this->lastRequest[$url] = floor($MILLI_PER_SEC * microtime(true));
 			return;
 		}
 		//adding request_time to the queue ensures we return results in the correct order.
@@ -267,13 +267,13 @@ class CurlWrapper {
 			|| $time_diff < $rateLimit)
 		{
 			usleep($rateLimit * $MICRO_PER_MILLI);
-			$current_time = floor($MICRO_PER_MILLI * microtime(true));
+			$current_time = floor($MILLI_PER_SEC * microtime(true));
 			$time_diff = $current_time - $this->lastRequest[$url];
 		}
 		//once our request is at the front of the queue reset
 		//our last request time and pop the value off the queue
-		$this->lastRequest = floor($MICRO_PER_MILLI * microtime(true));
-		array_shift($this->queue);
+		$this->lastRequest[$url] = floor($MILLI_PER_SEC * microtime(true));
+		array_shift($this->queue[$url]);
 	}
 
 	public function curlSendPage(string $url, string $httpMethod, $body = null) {
