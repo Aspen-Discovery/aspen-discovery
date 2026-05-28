@@ -11,7 +11,7 @@ class CurlWrapper {
 	public $responseHeaders = [];
 	public $cookies = [];
 
-	public $lastRequest = -1;
+	public $lastRequest = [];
 	public $queue = [];
 
 	public function __construct($userAgent = "") {
@@ -239,30 +239,36 @@ class CurlWrapper {
 			$logger->log("rate limiting skipped because of poorly configured rate limit: ".$rateLimit, Logger::LOG_WARN);
 			return;//skip limiting if not configured properly
 		}
+		
 		//usleep and microtime are in microseconds
 		//we multipy by 1000 to get milliseconds
 		$MICRO_PER_MILLI = 1000;
-		$request_time = floor($MICRO_PER_MILLI * microtime(true));
-		$time_diff = $request_time - $this->lastRequest;
-		if(empty($this->queue) && $time_diff < $rateLimit)
+		//if we don't have any previous requests for this url
+		//go ahead and send it after recording the last request
+		if(empty($this->lastRequest[$url]))
 		{
-			$this->lastRequest = floor($MICRO_PER_MILLI * microtime(true));
+			$this->lastRequest[$url] = floor($MICRO_PER_MILLI * microtime(true));
+			return;
+		}
+		$request_time = floor($MICRO_PER_MILLI * microtime(true));
+		$time_diff = $request_time - $this->lastRequest[$url];
+		if(empty($this->queue[$url]) && $time_diff >= $rateLimit)
+		{
+			$this->lastRequest[$url] = floor($MICRO_PER_MILLI * microtime(true));
 			return;
 		}
 		//adding request_time to the queue ensures we return results in the correct order.
-		$this->queue[] = ["url" => $url, 
-							"method" => $httpMethod, 
+		$this->queue[$url][] = ["method" => $httpMethod, 
 							"body" => $body,
 							"request_time" => $request_time];
-		while($this->queue[0]["url"] != $url 
-			|| $this->queue[0]["method"] != $httpMethod
-			|| $this->queue[0]["body"] != $body
-			|| $this->queue[0]["request_time"] != $request_time
+		while($this->queue[$url][0]["method"] != $httpMethod
+			|| $this->queue[$url][0]["body"] != $body
+			|| $this->queue[$url][0]["request_time"] != $request_time
 			|| $time_diff < $rateLimit)
 		{
 			usleep($rateLimit * $MICRO_PER_MILLI);
-			$request_time = floor($MICRO_PER_MILLI * microtime(true));
-			$time_diff = $request_time - $this->lastRequest;
+			$current_time = floor($MICRO_PER_MILLI * microtime(true));
+			$time_diff = $current_time - $this->lastRequest[$url];
 		}
 		//once our request is at the front of the queue reset
 		//our last request time and pop the value off the queue
