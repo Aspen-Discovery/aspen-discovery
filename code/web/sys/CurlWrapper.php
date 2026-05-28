@@ -254,16 +254,19 @@ class CurlWrapper {
 							"method" => $httpMethod, 
 							"body" => $body,
 							"request_time" => $request_time];
-		usleep($time_diff * $MICRO_PER_MILLI);
 		while($this->queue[0]["url"] != $url 
 			|| $this->queue[0]["method"] != $httpMethod
 			|| $this->queue[0]["body"] != $body
-			|| $this->queue[0]["request_time"] != $request_time)
+			|| $this->queue[0]["request_time"] != $request_time
+			|| $time_diff < $rateLimit)
 		{
-				usleep($this->rateLimit * $MICRO_PER_MILLI);
+			usleep($rateLimit * $MICRO_PER_MILLI);
+			$request_time = floor($MICRO_PER_MILLI * microtime(true));
+			$time_diff = $request_time - $this->lastRequest;
 		}
 		//once our request is at the front of the queue reset
 		//our last request time and pop the value off the queue
+		$this->lastRequest = floor($MICRO_PER_MILLI * microtime(true));
 		array_shift($this->queue);
 	}
 
