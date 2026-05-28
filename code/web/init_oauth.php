@@ -17,9 +17,8 @@ if (!empty($_GET['error'])) {
 	exit;
 } elseif (empty($_GET['code'])) {
 	// If we don't have an authorization code then get one
-	$SSOSetting = new SSOSetting();
-	$SSOSetting->id = $library->ssoSettingId;
-	if ($SSOSetting->find(true)) {
+	$SSOSetting = SSOSetting::getSSOSettings(isset($_GET['vendor']), "oauth");
+	if ($SSOSetting) {
 		$authUrl = $auth->getAuthorizationRequestUrl($SSOSetting);
 		$logger->log($authUrl, Logger::LOG_ERROR);
 		header('Location: ' . $authUrl);

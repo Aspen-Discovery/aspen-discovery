@@ -21,6 +21,7 @@ class IPAddress extends DataObject {
 	public $authenticatedForEBSCOhost;
 	public $masqueradeMode;
 	public $ssoLogin;
+	public $vendorSSOLogin;
 
 	function getNumericColumnNames(): array {
 		return [
@@ -35,7 +36,8 @@ class IPAddress extends DataObject {
 			'logAllQueries',
 			'authenticatedForEBSCOhost',
 			'masqueradeMode',
-			'ssoLogin'
+			'ssoLogin',
+			'vendorSSOLogin'
 		];
 	}
 
@@ -171,6 +173,13 @@ class IPAddress extends DataObject {
 				'type' => 'checkbox',
 				'label' => 'Allow Single Sign-on (SSO)',
 				'description' => 'Traffic from this IP will be allowed to use single sign-on.',
+				'default' => false,
+			],
+			'vendorSSOLogin' => [
+				'property' => 'vendorSSOLogin',
+				'type' => 'checkbox',
+				'label' => 'Allow Vendor Single Sign-on (SSO)',
+				'description' => 'Traffic from this IP will be allowed to use vendor settings for single sign-on.',
 				'default' => false,
 			]
 		];
@@ -600,6 +609,19 @@ class IPAddress extends DataObject {
 				return false;
 			}
 		}
+	}
+
+	public static function allowVendorSSOAccessForClientIP() : bool {
+		//check $ipInfo to see if we are allowed to use vendor SSO
+		$clientIP = IPAddress::getClientIP();
+		$ipInfo = IPAddress::getIPAddressForIP($clientIP);
+		//if we don't have an IP don't allow access
+		if(empty($ipInfo))
+		{
+			return false;
+		}
+		//if we do know the IP determine if that IP is allowed
+		return $ipInfo->vendorSSOLogin;
 	}
 
 	static $_showDebuggingInformation = null;

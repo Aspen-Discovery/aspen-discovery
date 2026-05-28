@@ -31,10 +31,8 @@ class SAMLAuthentication{
 		global $library;
 		global $logger;
 
-		$ssoSettings = new SSOSetting();
-		$ssoSettings->id = $library->ssoSettingId;
-		$ssoSettings->service = "saml";
-		if($ssoSettings->find(true)) {
+		$ssoSettings = SSOSetting::getSSOSettings(isset($_GET['vendor']), "saml");
+		if($ssoSettings) {
 			$this->matchpoints = $ssoSettings->getMatchpoints(); //we will use the previous matchpoint system
 			$this->config = clone $ssoSettings;
 

@@ -32,6 +32,19 @@
 						{/if}
 					{/if}
 				{/if}
+				{if $vendorSSOService == 'oauth'}
+					{assign "vendorLoginLink" "/init_oauth.php?vendor"}
+				{elseif $vendorSSOService == 'saml'}
+					{assign "vendorLoginLink" "/Authentication/SAML2?init&vendor"}
+				{/if}
+				{if empty($loggedIn) && $vendorLoginEnabled && !empty($vendorLoginLink)}
+					<br>
+					<small id="ssoVendorLogin">
+						<a data-sso-service="{$vendorSSOService}" href="{$vendorLoginLink}" id="ssoVendorLoginLink">
+							{translate text='Vendor Login' isPublicFacing=true}
+						</a>
+					</small>
+				{/if}
 			</div>
 			<div class="col-tn-12 col-sm-3 col-md-4 text-center" id="footer-branding">
 				{if !empty($footerText)}
