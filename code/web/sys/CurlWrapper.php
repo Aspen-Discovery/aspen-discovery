@@ -13,7 +13,6 @@ class CurlWrapper {
 
 	private $requestInterval = -1;
 	public $lastRequest = [];
-	public $queue = [];
 
 	public function __construct($userAgent = "", $requestInterval = -1) {
 		global $interface;
