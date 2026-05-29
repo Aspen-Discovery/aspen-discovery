@@ -592,6 +592,8 @@ abstract class Solr {
 			return "$function=$valStr";
 		};
 
+		$parseStringVal = fn($function, $val) => "$function=" . urlencode($val);
+
 		$filterFunc = fn($value, $function) => !($function === '' || ($function === 'facet.field' && empty($value)));
 
 		$paramsToParse = array_filter($params, $filterFunc, mode: 1);
@@ -1274,16 +1276,15 @@ abstract class Solr {
 		if (!$this->isAdvanced($query)) {
 			//Remove extraneous colons to make sure that the query isn't treated as a field spec.
 			$ss = is_null($handler) ? null : $this->_getSearchSpecs($handler);
-			$options['defType'] = 'edismax';
-
 			// Is this a Dismax search?
 			if (isset($ss['DismaxFields'])) {
 				// Specify the fields to do a Dismax search on:
-				//$options['qf'] = implode(' ', $ss['DismaxFields']);
+				$options['qf'] = implode(' ', $ss['DismaxFields']);
+
 				// Specify the default dismax search handler so we can use any
 				// global settings defined by the user:
-				//$options['qt'] = 'dismax';
-				$options['qf'] = implode(' ', $ss['DismaxFields']);
+				$options['qt'] = 'dismax';
+
 				// Load any custom Dismax parameters from the YAML search spec file:
 				if (isset($ss['DismaxParams']) && is_array($ss['DismaxParams'])) {
 					foreach ($ss['DismaxParams'] as $current) {
@@ -1303,18 +1304,11 @@ abstract class Solr {
 				// Not DisMax... but do we need to format the query based on
 				// a setting in the YAML search specs?	If $ss is an array
 				// at this point, it indicates that we found YAML details.
-
-				//Updates to allow use of edismax
-				// if (is_array($ss) && empty($ss['DismaxFields'])) {
-				// 	// Only use buildQueryComponent if NOT using edismax
-				// 	$options['q'] = $this->_buildQueryComponent($handler, $query);
-				// } elseif (!empty($handler) && empty($ss['DismaxFields'])) {
-				// 	$options['q'] = "({$handler}:{$query})";
-				// } else {
-				// 	// edismax path: keep query clean
-				// }
-				$options['q'] = $query;
-
+				if (is_array($ss)) {
+					$options['q'] = $this->_buildQueryComponent($handler, $query);
+				} elseif (!empty($handler)) {
+					$options['q'] = "({$handler}:{$query})";
+				}
 			}
 		} else {
 			// Force boolean operators to uppercase if we are in a case-insensitive
@@ -1329,19 +1323,6 @@ abstract class Solr {
 				$options['q'] = $this->_buildAdvancedQuery($handler, $query);
 			}
 		}
-
-		$options['qf'] = implode(' ', [
-			'title_exact^6000',
-			'title_left^2500',
-			'title_proper^800',
-			'title^200',
-			'author^250',
-			'subject^800',
-			'topic^125',
-			'series^50',
-			'description^15',
-			'keywords^1'
-		]);
 		$timer->logTime("build query in Solr");
 
 		// Limit Fields
@@ -1359,37 +1340,32 @@ abstract class Solr {
 		$searchLibrary = Library::getSearchLibrary($this->searchSource);
 		//Boost items owned at our location
 		$searchLocation = Location::getSearchLocation($this->searchSource);
-		$timer->logTime("load search scope context");
 
 		//Apply automatic boosting for queries
 		$boostFactors = $this->getBoostFactors($searchLibrary, $searchLocation, $query, $handler);
-		$timer->logTime("calculate boost factors");
 		if (!empty($boostFactors)) {
-			// if (isset($options['qt']) && $options['qt'] == 'dismax') {
-			// 	$options['bf'] = "sum(" . implode(',', $boostFactors) . ")";
-			// } else {
-			// 	$baseQuery = $options['q'];
-			// 	//Boost items in our system
-			// 	if (count($boostFactors) > 0) {
-			// 		$boost = "sum(" . implode(',', $boostFactors) . ")";
-			// 	} else {
-			// 		$boost = '';
-			// 	}
-			// 	if (empty($boost)) {
-			// 		$options['q'] = $baseQuery;
-			// 	} else {
-			// 		$options['q'] = "{!boost b=$boost} $baseQuery";
-			// 	}
-			// 	//echo ("Advanced Query " . $options['q']);
-			// }
-
-			$options['boost'] = "sum(" . implode(',', $boostFactors) . ")";
+			if (isset($options['qt']) && $options['qt'] == 'dismax') {
+				$options['bf'] = "sum(" . implode(',', $boostFactors) . ")";
+			} else {
+				$baseQuery = $options['q'];
+				//Boost items in our system
+				if (count($boostFactors) > 0) {
+					$boost = "sum(" . implode(',', $boostFactors) . ")";
+				} else {
+					$boost = '';
+				}
+				if (empty($boost)) {
+					$options['q'] = $baseQuery;
+				} else {
+					$options['q'] = "{!boost b=$boost} $baseQuery";
+				}
+				//echo ("Advanced Query " . $options['q']);
+			}
 
 			$timer->logTime("apply boosting");
 
 		}
 		$scopingFilters = $this->getScopingFilters($searchLibrary, $searchLocation);
-		$timer->logTime("calculate scoping filters");
 
 		if ($filter != null && $scopingFilters != null) {
 			if (!is_array($filter)) {
@@ -1463,7 +1439,6 @@ abstract class Solr {
 		if (is_array($filters) && count($filters)) {
 			$options['fq'] = $filters;
 		}
-		$timer->logTime("build filter queries");
 
 		// Enable Spell Checking
 		if ($spell != '') {
@@ -1489,13 +1464,11 @@ abstract class Solr {
 			$options['spellcheck.maxCollationTries'] = $maxCollationTries;
 			$options['spellcheck.accuracy'] = .5;
 		}
-		$timer->logTime("build spellcheck options");
 
 		// Enable highlighting
 		if ($this->_highlight) {
 			$this->getHighlightOptions($fields, $options);
 		}
-		$timer->logTime("build highlight options");
 
 		$solrSearchDebug = print_r($options, true) . "\n";
 		if ($this->debugSolrQuery) {
@@ -1529,7 +1502,6 @@ abstract class Solr {
 
 		return $result;
 	}
-
 
 	/**
 	 * Get filters based on scoping for the search
