@@ -12,7 +12,7 @@ class CurlWrapper {
 	public $cookies = [];
 
 	private $requestInterval = -1;
-	public $lastRequest = [];
+	private $lastRequest = [];
 
 	public function __construct($userAgent = "", $requestInterval = -1) {
 		global $interface;
@@ -225,6 +225,12 @@ class CurlWrapper {
 
 	public function configureRequestInterval(int $requestInterval = -1) : void
 	{
+		//any negative value doesn't make sense
+		//just turning off requests at this point
+		if($requestInterval < 0)
+		{
+			$requestInterval = -1;
+		}
 		//if we were passed an interval just use that
 		if($requestInterval != -1)
 		{
@@ -232,11 +238,15 @@ class CurlWrapper {
 			return;
 		}
 
-		//if we weren't passed an interval check the config for one
+		//if we weren't passed an interval check the config for one'
+		//config values of 0 will be ignored but skipping checking
+		//will be identical to a 0ms interval anyway
 		global $configArray;
 		if(empty($configArray['CurlWrapper']) 
 			|| empty($configArray['CurlWrapper']['requestInterval']))
 		{
+			//no log here because if they haven't configured this
+			//we don't want to bother them about it.
 			return;
 		}
 		$rawInterval = $configArray['CurlWrapper']['requestInterval'];
@@ -246,9 +256,13 @@ class CurlWrapper {
 			$logger->log("rate limiting skipped because of poorly configured requestInterval: ".$rawInterval, Logger::LOG_WARNING);
 			return;//skip limiting if not configured properly
 		}
+		if($rawInterval < -1)
+		{
+			global $logger;
+			$logger->log("Negative request interval set: ".$rawInterval. " ignoring.", Logger::LOG_WARNING);
+			$rawInterval = -1;
+		}
 		$this->requestInterval = intval($rawInterval);
-		
-
 	}
 	/**
 	 * if rate limiting is turned on for this wrapper 
@@ -263,6 +277,14 @@ class CurlWrapper {
 			return;
 		}
 		$endpoint = parse_url($url, PHP_URL_HOST);
+		if(empty($endpoint))
+		{
+			//looks like we have a malformed $url
+			//let this get handled upstream
+			global $logger;
+			$logger->log("Failed to determine endpoint for: ".$url, Logger::LOG_WARNING);
+			return;
+		}
 		
 		//constants for shifting between microseconds and milliseconds for utime
 		// and between seconds and milliseconds for microtime
@@ -289,7 +311,7 @@ class CurlWrapper {
 			. $endpoint . 
 			" slowing requests down to "
 			. $this->requestInterval . 
-			"milliseconds between requests", Logger::LOG_WARNING);
+			" milliseconds between requests", Logger::LOG_WARNING);
 
 		//loop until we have waited long enough
 		//we should only need to wait once since
@@ -297,7 +319,7 @@ class CurlWrapper {
 		//CurlWrapper object but being cautious.
 		while($time_diff < $this->requestInterval)
 		{
-			usleep($this->requestInterval * $MICRO_PER_MILLI);
+			usleep(($this->requestInterval - $time_diff) * $MICRO_PER_MILLI);
 			$current_time = floor($MILLI_PER_SEC * microtime(true));
 			$time_diff = $current_time - $this->lastRequest[$endpoint];
 		}
