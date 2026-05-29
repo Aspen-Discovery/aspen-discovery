@@ -11,10 +11,11 @@ class CurlWrapper {
 	public $responseHeaders = [];
 	public $cookies = [];
 
+	private $requestInterval = -1;
 	public $lastRequest = [];
 	public $queue = [];
 
-	public function __construct($userAgent = "") {
+	public function __construct($userAgent = "", $requestInterval = -1) {
 		global $interface;
 		if ($interface != null) {
 			$aspenVersion = $interface->getVariable('aspenVersion');
@@ -50,6 +51,7 @@ class CurlWrapper {
 			CURLOPT_ENCODING => '',
 		];
 		$this->options = $default_options;
+		$this->configureRequestInterval($requestInterval);
 	}
 
 	public function __destruct() {
@@ -222,58 +224,85 @@ class CurlWrapper {
 		return $return;
 	}
 
-	public function rateLimited(string $url, string $httpMethod, $body = null) : void {
+	public function configureRequestInterval(int $requestInterval = -1) : void
+	{
+		//if we were passed an interval just use that
+		if($requestInterval != -1)
+		{
+			$this->requestInterval = $requestInterval;
+			return;
+		}
+
+		//if we weren't passed an interval check the config for one
 		global $configArray;
-		//skip limiting if not turned on in config
-		if(empty($configArray['CurlWrapper']) || empty($configArray['CurlWrapper']['rateLimit']))
+		if(empty($configArray['CurlWrapper']) 
+			|| empty($configArray['CurlWrapper']['requestInterval']))
 		{
 			return;
 		}
-		$rateLimit = $configArray['CurlWrapper']['rateLimit'];
-		if(is_numeric($rateLimit))
+		$rawInterval = $configArray['CurlWrapper']['requestInterval'];
+		if(!is_numeric($rawInterval))
 		{
-			$rateLimit = floatval($rateLimit);
-		}
-		else {
 			global $logger;
-			$logger->log("rate limiting skipped because of poorly configured rate limit: ".$rateLimit, Logger::LOG_WARN);
+			$logger->log("rate limiting skipped because of poorly configured requestInterval: ".$rawInterval, Logger::LOG_WARNING);
 			return;//skip limiting if not configured properly
 		}
+		$this->requestInterval = intval($rawInterval);
+		
+
+	}
+	/**
+	 * if rate limiting is turned on for this wrapper 
+	 * we will check if this endpoint has been hit recently
+	 * and if so wait before returning.
+	 * @param string $url the url we are checking. 
+	 */
+	public function throttle(string $url, string $httpMethod, $body = null) : void {
+		//skip limiting if not turned on in config or explicitly set
+		if($this->requestInterval === -1)
+		{
+			return;
+		}
+		$endpoint = parse_url($url, PHP_URL_HOST);
 		
 		//constants for shifting between microseconds and milliseconds for utime
 		// and between seconds and milliseconds for microtime
 		$MICRO_PER_MILLI = $MILLI_PER_SEC = 1000;
 		//if we don't have any previous requests for this url
 		//go ahead and send it after recording the last request
-		if(empty($this->lastRequest[$url]))
+		if(empty($this->lastRequest[$endpoint]))
 		{
-			$this->lastRequest[$url] = floor($MILLI_PER_SEC * microtime(true));
+			$this->lastRequest[$endpoint] = floor($MILLI_PER_SEC * microtime(true));
 			return;
 		}
 		$request_time = floor($MILLI_PER_SEC * microtime(true));
-		$time_diff = $request_time - $this->lastRequest[$url];
-		if(empty($this->queue[$url]) && $time_diff >= $rateLimit)
+		$time_diff = $request_time - $this->lastRequest[$endpoint];
+		if($time_diff >= $requestInterval)
 		{
-			$this->lastRequest[$url] = floor($MILLI_PER_SEC * microtime(true));
+			$this->lastRequest[$endpoint] = floor($MILLI_PER_SEC * microtime(true));
 			return;
 		}
-		//adding request_time to the queue ensures we return results in the correct order.
-		$this->queue[$url][] = ["method" => $httpMethod, 
-							"body" => $body,
-							"request_time" => $request_time];
-		while($this->queue[$url][0]["method"] != $httpMethod
-			|| $this->queue[$url][0]["body"] != $body
-			|| $this->queue[$url][0]["request_time"] != $request_time
-			|| $time_diff < $rateLimit)
+		//log too frequent requests so they can be corrected upstream
+		global $logger;
+		$logger->log(
+			"Attempting to send too many requests to "
+			. $endpoint . 
+			" slowing requests down to "
+			. $this->requestInterval . 
+			"milliseconds between requests", Logger::LOG_WARNING);
+
+		//loop until we have waited long enough
+		//we should only need to wait once since
+		//a separate thread would have a separate
+		//CurlWrapper object but being cautious.
+		while($time_diff < $requestInterval)
 		{
-			usleep($rateLimit * $MICRO_PER_MILLI);
+			usleep($requestInterval * $MICRO_PER_MILLI);
 			$current_time = floor($MILLI_PER_SEC * microtime(true));
-			$time_diff = $current_time - $this->lastRequest[$url];
+			$time_diff = $current_time - $this->lastRequest[$endpoint];
 		}
-		//once our request is at the front of the queue reset
-		//our last request time and pop the value off the queue
-		$this->lastRequest[$url] = floor($MILLI_PER_SEC * microtime(true));
-		array_shift($this->queue[$url]);
+		//update last request time in case and return control
+		$this->lastRequest[$endpoint] = floor($MILLI_PER_SEC * microtime(true));
 	}
 
 	public function curlSendPage(string $url, string $httpMethod, $body = null) {
