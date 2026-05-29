@@ -256,7 +256,7 @@ class CurlWrapper {
 			$logger->log("rate limiting skipped because of poorly configured requestInterval: ".$rawInterval, Logger::LOG_WARNING);
 			return;//skip limiting if not configured properly
 		}
-		if($rawInterval < -1)
+		if($rawInterval < 0)
 		{
 			global $logger;
 			$logger->log("Negative request interval set: ".$rawInterval. " ignoring.", Logger::LOG_WARNING);
