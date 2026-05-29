@@ -20,20 +20,27 @@ AspenDiscovery.Account = (function () {
 		 * @returns {boolean}
 		 */
 		addList: function () {
-			var form = $("#addListForm");
-			var source = form.find("input[name=source]").val();
-			var sourceId = form.find("input[name=sourceId]").val();
-			var isPublic = form.find("#public").prop("checked");
-			var isSearchable = false;
-			var searchableControl = $("#searchable");
+			let form = $("#addListForm");
+			let source = form.find("input[name=source]").val();
+			let sourceId = form.find("input[name=sourceId]").val();
+			let isPublic = form.find("#public").prop("checked");
+			let isSearchable = false;
+			let searchableControl = $("#searchable");
+			let isDisplayListAuthor = false;
+			let customAuthorName = '';
 			if (searchableControl) {
 				isSearchable = searchableControl.prop("checked");
+				if (isSearchable) {
+					let displayListAuthorControl = $("#displayListAuthor");
+					if (displayListAuthorControl) {
+						isDisplayListAuthor = displayListAuthorControl.prop("checked");
+						if (isDisplayListAuthor) {
+							customAuthorName = form.find("input[name=customAuthorName]").val();
+						}
+					}
+				}
 			}
-			var isDisplayListAuthor = false;
-			var displayListAuthorControl = $("#displayListAuthor");
-			if (displayListAuthorControl) {
-				isDisplayListAuthor = displayListAuthorControl.prop("checked");
-			}
+
 			var titleInput = form.find("input[name=title]");
 			var title;
 			if (titleInput.length > 0) {
@@ -54,6 +61,7 @@ AspenDiscovery.Account = (function () {
 				public: isPublic,
 				searchable: isSearchable,
 				displayListAuthor: isDisplayListAuthor,
+				customAuthorName: customAuthorName,
 				desc: desc,
 				source: source,
 				sourceId: sourceId,
@@ -467,7 +475,7 @@ AspenDiscovery.Account = (function () {
 						} else {
 							$(".ils-overdue-placeholder").html("0");
 						}
-						$(".ils-holds-placeholder").html(summary.numHolds);
+						$(".ils-holds-placeholder").html(Math.max(0, summary.numHolds));
 						totalHolds += parseInt(summary.numHolds);
 						$(".holds-placeholder").html(totalHolds);
 						if (summary.numAvailableHolds > 0) {
@@ -1148,15 +1156,15 @@ AspenDiscovery.Account = (function () {
 			location.replace(location.pathname + paramString)
 		},
 
-		changeHoldPickupLocation: function (patronId, recordId, holdId, currentLocation, source) {
+		changeHoldPickupLocation: function (patronId, recordId, holdId, currentLocation, currentSublocation, source) {
 			if (Globals.loggedIn) {
 				AspenDiscovery.loadingMessage();
-				$.getJSON(Globals.path + "/MyAccount/AJAX?method=getChangeHoldLocationForm&patronId=" + patronId + "&recordId=" + recordId + "&holdId=" + holdId + "&currentLocation=" + currentLocation + "&source=" + source, function (data) {
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=getChangeHoldLocationForm&patronId=" + patronId + "&recordId=" + recordId + "&holdId=" + holdId + "&currentLocation=" + currentLocation + "&currentSublocation=" + currentSublocation + "&source=" + source, function (data) {
 					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons)
 				});
 			} else {
 				AspenDiscovery.Account.ajaxLogin(null, function () {
-					return AspenDiscovery.Account.changeHoldPickupLocation(patronId, recordId, holdId, currentLocation);
+					return AspenDiscovery.Account.changeHoldPickupLocation(patronId, recordId, holdId, currentLocation, currentSublocation, source);
 				}, false);
 			}
 			return false;
@@ -1204,13 +1212,14 @@ AspenDiscovery.Account = (function () {
 			}).fail(AspenDiscovery.ajaxFail);
 		},
 
-		freezeHold: function (patronId, recordId, holdId, promptForReactivationDate, caller) {
+		freezeHold: function (patronId, recordId, holdId, promptForReactivationDate, isAlreadyFrozen, caller) {
 			AspenDiscovery.loadingMessage();
 			var url = Globals.path + '/MyAccount/AJAX';
 			var params = {
 				patronId: patronId
 				, recordId: recordId
 				, holdId: holdId
+				, isAlreadyFrozen:isAlreadyFrozen
 			};
 			if (promptForReactivationDate) {
 				//Prompt the user for the date they want to reactivate the hold
@@ -1239,12 +1248,17 @@ AspenDiscovery.Account = (function () {
 		// called by ReactivationDateForm when fn freezeHold above has promptForReactivationDate is set
 		doFreezeHoldWithReactivationDate: function (caller) {
 			var popUpBoxTitle = $(caller).text() || "Freezing Hold"; // freezing terminology can be customized, so grab text from click button: caller
+			var reactivateDate = $("#reactivationDate").val();
+			if (!reactivateDate) {
+				reactivateDate = $("#maxFreezeFormattedDate").val();
+			}
 			var params = {
 				'method': 'freezeHold'
 				, patronId: $('#patronId').val()
 				, recordId: $('#recordId').val()
 				, holdId: $("#holdId").val()
-				, reactivationDate: $("#reactivationDate").val()
+				, reactivationDate: reactivateDate
+				, isAlreadyFrozen: $("#isAlreadyFrozen").val()
 			};
 			var url = Globals.path + '/MyAccount/AJAX';
 			AspenDiscovery.showMessage(popUpBoxTitle, "Updating your hold.  This may take a minute.");
@@ -2358,6 +2372,73 @@ AspenDiscovery.Account = (function () {
 			return false;
 		},
 
+		toggleManageEvent: function (eventSourceId) {
+			let savedEventDetailsModalWrapper = document.getElementById(`aspen-events-registration-button-${eventSourceId}-wrapper`)
+			savedEventDetailsModalWrapper.hidden = !savedEventDetailsModalWrapper.hidden;
+		},
+
+		toggleUserEventRegistration: function (eventSourceId) {
+			if (!Globals.loggedIn) {
+				return;
+			}
+
+			const userSelector = document.getElementById(`eventUserSelector-${eventSourceId}`);
+			const userIdField = document.getElementById(`eventRegistrationUserId-${eventSourceId}`);
+			const userId = userSelector ? userSelector.value : (userIdField ? userIdField.value : null);
+
+			const url = Globals.path + "/MyAccount/AJAX";
+			const params = {
+				method: 'toggleUserRegistrationToEvent',
+				eventSourceId,
+				userId
+			};
+
+			$.getJSON(url, params, function (data) {
+				AspenDiscovery.showMessage(data.title, data.message, false, data.success);
+			}).fail(AspenDiscovery.ajaxFail);
+		},
+
+		updateEventRegistrationUser: function (selector, eventSourceId) {
+			const selectedOption = selector.options[selector.selectedIndex];
+			const email = selectedOption.dataset.email || '';
+			const location = selectedOption.dataset.location || '';
+
+			const userIdField = document.getElementById(`eventRegistrationUserId-${eventSourceId}`);
+			const userId = selector ? selector.value : (userIdField ? userIdField.value : null);
+
+			AspenDiscovery.Account.isUserRegisteredForEvent(eventSourceId, userId).then((data) => AspenDiscovery.Account.updateEventButtonTextContent(data, eventSourceId));
+			document.getElementById(`eventRegistrationUserId-${eventSourceId}`).value = selector.value;
+			document.getElementById(`eventUserEmail-${eventSourceId}`).textContent = email;
+			document.getElementById(`eventUserLocation-${eventSourceId}`).textContent = location;
+
+			const changeLink = document.getElementById(`eventUserEmailChangeLink-${eventSourceId}`);
+			if (changeLink) {
+				const primaryUserId = selector.options[0].value;
+				changeLink.style.display = (selector.value === primaryUserId) ? '' : 'none';
+			}
+		},
+
+		updateEventButtonTextContent: function (userRegistrationData, eventSourceId) {
+			if (!userRegistrationData.success) {
+				document.getElementById(`aspen-events-toggle-registration-button-${eventSourceId}`).textContent = 'Unavailable';
+				document.getElementById(`aspen-events-toggle-registration-button-${eventSourceId}`).setAttribute('disabled', true);
+				return;
+			}
+			document.getElementById(`aspen-events-toggle-registration-button-${eventSourceId}`).textContent = userRegistrationData.body.isRegistered ? 'Unregister' : 'Register';
+			document.getElementById(`aspen-events-toggle-registration-button-${eventSourceId}`).removeAttribute('disabled');
+		},
+
+		isUserRegisteredForEvent: function (eventSourceId, userId) {
+			const url = Globals.path + "/MyAccount/AJAX";
+			const params = {
+				method: 'isUserRegisteredForEvent',
+				eventSourceId,
+				userId
+			};
+
+			return $.getJSON(url, params).fail(AspenDiscovery.ajaxFail);
+		},
+
 		deleteSavedEvent: function (id, page, filter) {
 			if (confirm("Are you sure you want to remove this event?")) {
 				var url = Globals.path + '/MyAccount/AJAX?method=deleteSavedEvent&id=' + id;
@@ -2954,7 +3035,7 @@ AspenDiscovery.Account = (function () {
 			});
 			return false;
 		},
-		generateChangeSublocationSelect: function () {
+		generateChangeSublocationSelect: function (currentSublocation) {
 			var locationCode = $('#newPickupLocation').val();
 			var selectPlaceholder = document.getElementById("sublocationSelectPlaceHolder");
 			var url = Globals.path + '/MyAccount/AJAX';
@@ -2966,7 +3047,10 @@ AspenDiscovery.Account = (function () {
 			selectPlaceholder.innerHTML = '';
 			$.getJSON(url, params, function (data) {
 				if (data.success) {
-					selectPlaceholder.innerHTML = data.selectHtml;
+					selectPlaceholder.innerHTML = data.selectHtml
+					if (currentSublocation !== undefined) {
+						document.getElementById('pickupSublocation').value = currentSublocation;
+					}
 				}
 			});
 			return false;
@@ -3208,6 +3292,168 @@ AspenDiscovery.Account = (function () {
 			}).fail(function(jqXHR, textStatus, errorThrown) {
 				console.error('AJAX Error: ', textStatus, errorThrown);
 			})
+		},
+		groupSelectedPendingHolds:  function (source, availableSort, interlibrarySort, unavailableSort) {
+			let selectedHolds = [];
+			let userIds = [];
+
+			$("input[name*='select']:checked").each(function() {
+				const nameAttr = $(this).attr('name');
+				if (nameAttr) {
+					const idMatches = nameAttr.match(/\d+/g);
+					if (idMatches && idMatches.length >= 3) {
+						const holdId = idMatches[2];
+						const userId = idMatches[0];
+
+						if (holdId && !selectedHolds.includes(holdId)) {
+							selectedHolds.push(holdId);
+						}
+
+						if (userId && !userIds.includes(userId)) {
+							userIds.push(userId);
+						}
+					}
+				}
+			});
+
+			const url = Globals.path + "/MyAccount/AJAX?method=groupPatronHolds";
+			const params = {
+				source: source,
+				holdIds: selectedHolds,
+				availableSort: availableSort,
+				interlibrarySort: interlibrarySort,
+				unavailableSort: unavailableSort,
+				userIds: userIds
+			};
+
+			$.getJSON(url, params, function(data) {
+				if (data.success) {
+					AspenDiscovery.showMessage(data.title, data.message, false, true, false, false);
+					setTimeout(function() {
+						window.location.reload();
+					}, 1500);
+				} else {
+					AspenDiscovery.showMessage(data.title, data.message);
+				}
+			}).fail(function(jqXHR, textStatus, errorThrown) {
+				AspenDiscovery.ajaxFail(jqXHR, textStatus, errorThrown);
+			});
+		},
+		controlGroupedHolds: function () {
+			const url = Globals.path + '/MyAccount/AJAX?method=getHoldGroupsModal';
+
+			$.getJSON(url, function(response) {
+				if(response) {
+					AspenDiscovery.showMessageWithButtons(response.title, response.modalBody, response.modalButtons);
+				} else {
+					AspenDiscovery.showMessage(data.title, data.message);
+				}
+			}).fail(function(jqXHR, textStatus, errorThrown) {
+				AspenDiscovery.ajaxFail(jqXHR, textStatus, errorThrown);
+			})
+		},
+		deleteHoldsGroup: function(holdGroupId, visualHoldId, userId) {
+
+			const url = Globals.path + '/MyAccount/AJAX?method=requestDeleteHoldGroupConfirmation';
+			const params = {
+				holdGroupId: holdGroupId,
+				visualHoldId: visualHoldId,
+				userId: userId
+			};
+
+			$.getJSON(url, params, function(data) {
+				if (data.success) {
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+				} else {
+					AspenDiscovery.showMessage(data.title, data.message);
+				}
+			}).fail(function(jqXHR, textStatus, errorThrown) {
+				AspenDiscovery.ajaxFail(jqXHR, textStatus, errorThrown);
+			})
+		},
+		requestGroupConfirmation: function() {
+			const selectedHolds = [];
+			const userIds = [];
+			
+			$("input.titleSelect:checked").each(function() {
+				const nameAttr = $(this).attr('name');
+				if (nameAttr) {
+					const idMatches = nameAttr.match(/\d+/g);
+					if (idMatches && idMatches.length >= 3) {
+						const holdId = idMatches[2];
+						const userId = idMatches[0];
+
+						if (holdId && !selectedHolds.includes(holdId)) {
+							selectedHolds.push(holdId);
+						}
+
+						if (userId && !userIds.includes(userId)) {
+							userIds.push(userId);
+						}
+					}
+				}
+			});
+
+			if (selectedHolds.length === 0) {
+				AspenDiscovery.showMessage('No Holds Selected', 'Please select at least one hold to group.');
+				return;
+			}
+
+			$.getJSON(Globals.path + "/MyAccount/AJAX?method=groupPatronHolds", {
+				source: 'ils',
+				holdIds: selectedHolds,
+				forceGrouped: false,
+				userIds: userIds
+			}, function(data) {
+				if (data.success) {
+					AspenDiscovery.showMessage(data.title, data.message, false, true, false, false);
+					setTimeout(function() { window.location.reload(); }, 1500);
+				} else if (data.specialError === 'holdAlreadyGrouped') {
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+				} else {
+					AspenDiscovery.showMessage(data.title, data.message);
+				}
+			}).fail(function(jqXHR, textStatus, errorThrown) {
+				AspenDiscovery.ajaxFail(jqXHR, textStatus, errorThrown);
+			});
+		},
+		forceGroupHolds: function(holdIds, userIds) {
+			$.getJSON(Globals.path + "/MyAccount/AJAX?method=groupPatronHolds", {
+				source: 'ils',
+				holdIds: holdIds,
+				forceGrouped: true, 
+				userIds: userIds
+			}, function(data) {
+				if (data.success) {
+					AspenDiscovery.showMessage(data.title, data.message, false, true, false, false);
+					setTimeout(function() { window.location.reload(); }, 1500);
+				} else {
+					AspenDiscovery.showMessage(data.title, data.message);
+				}
+			}).fail(function(jqXHR, textStatus, errorThrown) {
+				AspenDiscovery.ajaxFail(jqXHR, textStatus, errorThrown);
+			});
+		},
+		confirmDeleteHoldGroup: function(holdGroupId, visualHoldId, userId) {
+			const url = Globals.path + '/MyAccount/AJAX?method=deleteHoldGroup';
+			const params = {
+				holdGroupId: holdGroupId,
+				visualHoldId: visualHoldId,
+				userId: userId
+			};
+
+			$.getJSON(url, params, function(data) {
+				if (data.success) {
+					AspenDiscovery.showMessage(data.title, data.message);
+					setTimeout(function() {
+						location.reload();
+					}, 1500);
+				} else {
+					AspenDiscovery.showMessage(data.title, data.message);
+				}
+			}).fail(function(jqXHR, textStatus, errorThrown) {
+				AspenDiscovery.ajaxFail(jqXHR, textStatus, errorThrown);
+			});
 		}
 	};
 }(AspenDiscovery.Account || {}));

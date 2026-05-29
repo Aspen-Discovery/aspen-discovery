@@ -23,11 +23,12 @@ class PalaceProjectDriver extends AbstractEContentDriver {
 	 * This is responsible for retrieving all checkouts (i.e. checked out items)
 	 * by a specific patron.
 	 *
-	 * @param User $patron The user to load transactions for
+	 * @param User $patron       The user to load transactions for
+	 * @param array $options     Additional options
 	 * @return Checkout[]        Array of the patron's transactions on success
 	 * @access public
 	 */
-	public function getCheckouts(User $patron): array {
+	public function getCheckouts(User $patron, array $options = []): array {
 		$this->loadCirculationInformation($patron);
 
 		return $this->checkouts[$patron->id];
@@ -386,31 +387,80 @@ class PalaceProjectDriver extends AbstractEContentDriver {
 			if ($response !== false) {
 				$jsonResponse = json_decode($response);
 				if ($this->curlWrapper->getResponseCode() == '200' || $this->curlWrapper->getResponseCode() == '201') {
+					//Check to see if the title was held or borrowed
+					$wasCheckedOut = false;
+					foreach ($jsonResponse->links as $link) {
+						if (str_starts_with($link->rel, 'http://opds-spec.org/acquisition')) {
+							$state = $link->properties->availability->state;
+							$wasCheckedOut = $state == 'ready';
+						}
+					}
+
 					$result['success'] = true;
-					$result['message'] = translate([
-						'text' => 'Your Palace Project hold was placed successfully.',
-						'isPublicFacing' => true,
-					]);
+					if ($wasCheckedOut) {
+						$result['title'] = translate([
+							'text' => "Title Checked Out",
+							'isPublicFacing' => true,
+						]);
+						$result['message'] = translate([
+							'text' => 'Your Palace Project title was available already. You may now download the title from your Account.',
+							'isPublicFacing' => true,
+						]);
+						$result['api']['message'] = translate([
+							'text' => 'Your Palace Project title was available already. Use the Palace Project app to read/listen to the title.',
+							'isPublicFacing' => true,
+						]);
+						$result['api']['title'] = translate([
+							'text' => 'Checked out title',
+							'isPublicFacing' => true,
+						]);
+						$result['api']['action'] = translate([
+							'text' => 'Go to Checkouts',
+							'isPublicFacing' => true,
+						]);
+						$result['checkedOut'] = true;
+						$this->incrementStat('numCheckouts');
+						$this->trackRecordCheckout($recordId);
+					}else{
+						$result['title'] = translate([
+							'text' => "Hold Placed",
+							'isPublicFacing' => true,
+						]);
+						$result['message'] = translate([
+							'text' => 'Your Palace Project hold was placed successfully.',
+							'isPublicFacing' => true,
+						]);
 
-					// Result for API or app use
-					$result['api']['title'] = translate([
-						'text' => 'Hold Placed Successfully',
-						'isPublicFacing' => true,
-					]);
-					$result['api']['message'] = translate([
-						'text' => 'Your Palace Project hold was placed successfully.',
-						'isPublicFacing' => true,
-					]);
+						// Result for API or app use
+						$result['api']['title'] = translate([
+							'text' => 'Hold Placed Successfully',
+							'isPublicFacing' => true,
+						]);
+						$result['api']['message'] = translate([
+							'text' => 'Your Palace Project hold was placed successfully.',
+							'isPublicFacing' => true,
+						]);
+						$result['api']['action'] = translate([
+							'text' => 'Go to Holds',
+							'isPublicFacing' => true,
+						]);
+						$result['checkedOut'] = false;
+						$this->incrementStat('numHoldsPlaced');
+						$this->trackRecordHold($recordId);
+					}
 
-					$this->incrementStat('numHoldsPlaced');
 					$this->trackUserUsageOfPalaceProject($patron);
-					$this->trackRecordHold($recordId);
 					$patron->lastReadingHistoryUpdate = 0;
 					$patron->update();
 
 					$accountSummary = $patron->getCachedAccountSummary('palace_project');
-					$accountSummary->incrementNumberOfUnavailableHolds();
-					$accountSummary->markHoldsStale();
+					if ($wasCheckedOut) {
+						$accountSummary->incrementNumberOfCheckouts();
+						$accountSummary->markCheckoutsStale();
+					}else{
+						$accountSummary->incrementNumberOfUnavailableHolds();
+						$accountSummary->markHoldsStale();
+					}
 				}else{
 					$result['message'] = translate([
 						'text' => 'Sorry, we could not place this hold.',
@@ -494,7 +544,7 @@ class PalaceProjectDriver extends AbstractEContentDriver {
 					]);
 
 					$this->incrementStat('numHoldsCancelled');
-					$this->updateCachesForCancelledHold($patron, $hold);
+					$this->updateCachesForCancelledHold($patron, $hold, 'palace_project');
 					$cancelWorked = true;
 				}
 			}
@@ -583,35 +633,78 @@ class PalaceProjectDriver extends AbstractEContentDriver {
 			if ($response !== false) {
 				$jsonResponse = json_decode($response);
 				if ($this->curlWrapper->getResponseCode() == '200' || $this->curlWrapper->getResponseCode() == '201') {
+					//Verify the title was borrowed. A hold may have been placed if the availability was inaccurate
+					$wasCheckedOut = false;
+					foreach ($jsonResponse->links as $link) {
+						if (str_starts_with($link->rel, 'http://opds-spec.org/acquisition')) {
+							$state = $link->properties->availability->state;
+							$wasCheckedOut = $state == 'ready';
+						}
+					}
 					$result['success'] = true;
-					$result['message'] = translate([
-						'text' => 'Your Palace Project title was checked out successfully. You may now download the title from your Account.',
-						'isPublicFacing' => true,
-					]);
+					if ($wasCheckedOut) {
+						$result['title'] = translate([
+							'text' => "Title Checked Out Successfully",
+							'isPublicFacing' => true,
+						]);
+						$result['message'] = translate([
+							'text' => 'Your Palace Project title was checked out successfully. You may now download the title from your Account.',
+							'isPublicFacing' => true,
+						]);
+						$result['api']['message'] = translate([
+							'text' => 'Your Palace Project title was checked out successfully. Use the Palace Project app to read/listen to the title.',
+							'isPublicFacing' => true,
+						]);
+						$result['api']['title'] = translate([
+							'text' => 'Checked out title',
+							'isPublicFacing' => true,
+						]);
+						$result['api']['action'] = translate([
+							'text' => 'Go to Checkouts',
+							'isPublicFacing' => true,
+						]);
+						$result['checkedOut'] = true;
+						$this->incrementStat('numCheckouts');
+						$this->trackRecordCheckout($titleId);
+					}else{
+						$result['title'] = translate([
+							'text' => "Hold Placed",
+							'isPublicFacing' => true,
+						]);
+						$result['message'] = translate([
+							'text' => 'Your Palace Project title is not currently available. A hold was placed for you.',
+							'isPublicFacing' => true,
+						]);
+						$result['api']['message'] = translate([
+							'text' => 'Your Palace Project title is not currently available. A hold was placed for you.',
+							'isPublicFacing' => true,
+						]);
+						$result['api']['title'] = translate([
+							'text' => 'Hold Placed',
+							'isPublicFacing' => true,
+						]);
+						$result['api']['action'] = translate([
+							'text' => 'Go to Holds',
+							'isPublicFacing' => true,
+						]);
+						$result['checkedOut'] = false;
+						$this->incrementStat('numHolds');
+						$this->trackRecordHold($titleId);
+					}
 
-					// Result for API or app use
-					$result['api']['title'] = translate([
-						'text' => 'Checked out title',
-						'isPublicFacing' => true,
-					]);
-					$result['api']['message'] = translate([
-						'text' => 'Your Palace Project title was checked out successfully. Use the Palace Project app to read/listen to the title.',
-						'isPublicFacing' => true,
-					]);
-					$result['api']['action'] = translate([
-						'text' => 'Go to Checkouts',
-						'isPublicFacing' => true,
-					]);
-
-					$this->incrementStat('numCheckouts');
 					$this->trackUserUsageOfPalaceProject($patron);
-					$this->trackRecordCheckout($titleId);
+
 					$patron->lastReadingHistoryUpdate = 0;
 					$patron->update();
 
 					$accountSummary = $patron->getCachedAccountSummary('palace_project');
-					$accountSummary->incrementNumberOfCheckouts();
-					$accountSummary->markCheckoutsStale();
+					if ($wasCheckedOut) {
+						$accountSummary->incrementNumberOfCheckouts();
+						$accountSummary->markCheckoutsStale();
+					}else{
+						$accountSummary->incrementNumberOfUnavailableHolds();
+						$accountSummary->markHoldsStale();
+					}
 				}else{
 					$result['message'] = translate([
 						'text' => 'Sorry, we could not checkout this Palace Project title to you.',

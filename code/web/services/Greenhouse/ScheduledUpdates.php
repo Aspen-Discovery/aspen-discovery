@@ -60,6 +60,7 @@ class Greenhouse_ScheduledUpdates extends ObjectEditor {
 	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Greenhouse/Home', 'Greenhouse Home');
+		$breadcrumbs[] = new Breadcrumb('/Greenhouse/Home#greenhouse-maintenance-tools', 'Maintenance Tools');
 		$breadcrumbs[] = new Breadcrumb('/Greenhouse/ScheduledUpdates', 'Scheduled Updates');
 		return $breadcrumbs;
 	}

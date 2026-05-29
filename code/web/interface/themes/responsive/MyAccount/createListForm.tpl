@@ -1,5 +1,7 @@
 {strip}
-	{if !empty($listError)}<p class="error">{translate text=$listError isPublicFacing=true}</p>{/if}
+	{if !empty($listError)}
+		<p class="error">{translate text=$listError isPublicFacing=true}</p>
+	{/if}
 	<form method="post" action="" name="listForm" class="form form-horizontal" id="addListForm">
 		<div class="form-group">
 			<label for="listTitle" class="col-sm-3 control-label">{translate text="List" isPublicFacing=true}</label>
@@ -26,7 +28,7 @@
 		<div class="form-group">
 			<label for="public" class="col-sm-3 control-label">{translate text="Access" isPublicFacing=true}</label>
 			<div class="col-sm-9">
-				<input type='checkbox' name='public' id='public' data-on-text="{translate text="Public" isPublicFacing=true}" data-off-text="{translate text="Private" isPublicFacing=true}" {if in_array('Include Lists In Search Results', $userPermissions)}onchange="if($(this).prop('checked') === true){ldelim}$('#searchableRow').show();$('#displayListAuthorRow').show(){rdelim}else{ldelim}$('#searchableRow').hide();$('#displayListAuthorRow').hide(){rdelim}"{/if}/>
+				<input type='checkbox' name='public' id='public' data-on-text="{translate text="Public" isPublicFacing=true}" data-off-text="{translate text="Private" isPublicFacing=true}" {if in_array('Include Lists In Search Results', $userPermissions)}onchange="AspenDiscovery.Lists.updateListEditFields();"{/if}/>
 				<div class="form-text text-muted">
 					<small>{translate text="Public lists can be shared with other people by copying the URL of the list or using the Email List button when viewing the list." isPublicFacing=true}</small>
 				</div>
@@ -37,26 +39,31 @@
 				<div class="form-group" id="searchableRow" style="display: none">
 					<label for="searchable" class="col-sm-3 control-label">{translate text="Show in search results" isPublicFacing=true}</label>
 					<div class="col-sm-9">
-						<input type='checkbox' name='searchable' id='searchable' data-on-text="{translate text="Yes" isPublicFacing=true}" data-off-text="{translate text="No" isPublicFacing=true}" checked/>
+						<input type='checkbox' name='searchable' id='searchable' data-on-text="{translate text="Yes" isPublicFacing=true}" data-off-text="{translate text="No" isPublicFacing=true}" checked onchange="AspenDiscovery.Lists.updateListEditFields();"/>
 						<div class="form-text text-muted">
 							<small>{translate text="If enabled, this list can be found by searching user lists. It must have at least 3 titles to be shown." isPublicFacing=true}</small>
 						</div>
 					</div>
 				</div>
-			{/if}
-		{/if}
-		{if !empty($userPermissions)}
-		{if in_array('Include Lists In Search Results', $userPermissions)}
-			<div class="form-group" id="displayListAuthorRow" style="display: none">
-				<label for="displayListAuthor" class="col-sm-3 control-label">{translate text="Show list author in search results" isPublicFacing=true}</label>
-				<div class="col-sm-9">
-					<input type='checkbox' name='displayListAuthor' id='displayListAuthor' data-on-text="{translate text="Yes" isPublicFacing=true}" data-off-text="{translate text="No" isPublicFacing=true}" checked/>
-					<div class="form-text text-muted">
-						<small>{translate text="If enabled, your name will be displayed as the author of this public list." isPublicFacing=true}</small>
+				<div class="form-group" id="displayListAuthorRow" style="display: none">
+					<label for="displayListAuthor" class="col-sm-3 control-label">{translate text="Show list author in search results" isPublicFacing=true}</label>
+					<div class="col-sm-9">
+						<input type='checkbox' name='displayListAuthor' id='displayListAuthor' data-on-text="{translate text="Yes" isPublicFacing=true}" data-off-text="{translate text="No" isPublicFacing=true}" checked onchange="AspenDiscovery.Lists.updateListEditFields();"/>
+						<div class="form-text text-muted">
+							<small>{translate text="If enabled, your name (or the custom name) will be displayed as the author of this public list. If disabled, will show &quot;Library Staff&quot;." isPublicFacing=true}</small>
+						</div>
 					</div>
 				</div>
-			</div>
-		{/if}
+				<div class="form-group" id="customAuthorNameRow" style="display: none">
+					<label for="customAuthorName" class="col-sm-3 control-label">{translate text="List Author Name" isPublicFacing=true}</label>
+					<div class="col-sm-9">
+						<input type='text' name='customAuthorName' id='customAuthorName' maxlength="256" class="form-control"/>
+						<div class="form-text text-muted">
+							<small>{translate text="Leave blank to use your user display name." isPublicFacing=true}</small>
+						</div>
+					</div>
+				</div>
+			{/if}
 		{/if}
 
 		{*Options for adding to a list group*}
@@ -71,7 +78,7 @@
 				<script>
 					$(document).ready(function(){ldelim}
 						$('#addToListGroup-Options').change(function(){ldelim}
-							var selectedOption = $(this).val();
+							let selectedOption = $(this).val();
 							if (selectedOption === 'new') {ldelim}
 								$('#addToListGroup-New').show();
 								$('#addToListGroup-Existing').hide();
@@ -97,10 +104,10 @@
 					<script>
 						$(document).ready(function() {ldelim}
 							$('#addListForm').submit(function(e) {ldelim}
-								var newGroupName = $('#addToListGroup-NewName').val().trim().toLowerCase();
-								var exists = false;
+								let newGroupName = $('#addToListGroup-NewName').val().trim().toLowerCase();
+								let exists = false;
 								{foreach from=$userListGroups item="listGroup"}
-								if (newGroupName === "{$listGroup->title|escape:'js'}".toLowerCase()) {ldelim}
+								if (newGroupName === "{$listGroup->title|escape:'javascript'}".toLowerCase()) {ldelim}
 									exists = true;
 								{rdelim}
 								{/foreach}
@@ -147,7 +154,7 @@
 				</div>
 			</div>
 		{/if}
-	<input type="hidden" name="source" value="{if !empty($source)}{$source}{/if}">
+		<input type="hidden" name="source" value="{if !empty($source)}{$source}{/if}">
 		<input type="hidden" name="sourceId" value="{if !empty($sourceId)}{$sourceId}{/if}">
 	</form>
 	<br/>
@@ -155,8 +162,8 @@
 <script type="text/javascript">
 {literal}
 	$(document).ready(function(){
-		var publicSwitch = $('#public').bootstrapSwitch();
-		var searchableSwitch = $('#searchable').bootstrapSwitch();
-		var displayListAuthorSwitch = $('#displayListAuthor').bootstrapSwitch();
+		$('#public').bootstrapSwitch();
+		$('#searchable').bootstrapSwitch();
+		$('#displayListAuthor').bootstrapSwitch();
 	});
 {/literal}</script>

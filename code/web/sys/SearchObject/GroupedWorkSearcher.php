@@ -5,7 +5,7 @@ require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
 
 class SearchObject_GroupedWorkSearcher extends SearchObject_AbstractGroupedWorkSearcher {
 	// Field List
-	public static string $fields_to_return = 'auth_author2,author2-role,id,mpaa_rating,title_display,title_full,title_short,subtitle_display,author,author_display,isbn,upc,issn,series,series_with_volume,recordtype,display_description,literary_form,literary_form_full,num_titles,publisherStr,publishDate,publishDateSort,placeOfPublication,subject_facet,topic_facet,primary_isbn,primary_upc,accelerated_reader_point_value,accelerated_reader_reading_level,accelerated_reader_interest_level,lexile_code,lexile_score,display_description,fountas_pinnell,last_indexed,lc_subject,bisac_subject';
+	public static string $fields_to_return = 'auth_author2,author2-role,id,content_rating,title_display,title_full,title_short,subtitle_display,author,author_display,isbn,upc,issn,series,series_with_volume,recordtype,display_description,literary_form,literary_form_full,num_titles,publisherStr,publishDate,publishDateSort,placeOfPublication,subject_facet,topic_facet,primary_isbn,primary_upc,accelerated_reader_point_value,accelerated_reader_reading_level,accelerated_reader_interest_level,lexile_code,lexile_score,display_description,fountas_pinnell,last_indexed,lc_subject,bisac_subject';
 
 	// Display Modes //
 	public array $viewOptions = [
@@ -366,7 +366,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_AbstractGroupedWorkS
 			$this->facetOptions["f.literary_form_full.facet.method"] = 'enum';
 			$this->facetOptions["f.literary_form.facet.method"] = 'enum';
 			$this->facetOptions["f.lexile_code.facet.method"] = 'enum';
-			$this->facetOptions["f.mpaa_rating.facet.method"] = 'enum';
+			$this->facetOptions["f.content_rating.facet.method"] = 'enum';
 			$this->facetOptions["f.rating_facet.facet.method"] = 'enum';
 			$this->facetOptions["f.format_category_$solrScope.facet.method"] = 'enum';
 			$this->facetOptions["f.format_$solrScope.facet.method"] = 'enum';

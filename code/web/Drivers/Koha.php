@@ -454,7 +454,18 @@ class Koha extends AbstractIlsDriver {
 		return $result;
 	}
 
-	public function getCheckouts(User $patron): array {
+	/**
+	 * Get Patron Checkouts
+	 *
+	 * This is responsible for retrieving all checkouts (i.e. checked out items)
+	 * by a specific patron.
+	 *
+	 * @param User $patron       The user to load transactions for
+	 * @param array $options     Additional options
+	 * @return Checkout[]        Array of the patron's transactions on success
+	 * @access public
+	 */
+	public function getCheckouts(User $patron, array $options = []): array {
 		require_once ROOT_DIR . '/sys/User/Checkout.php';
 		global $timer;
 
@@ -567,6 +578,13 @@ class Koha extends AbstractIlsDriver {
 			}
 			$curCheckout->dueDate = $dueTime;
 			$curCheckout->itemId = $itemNumber;
+
+			if( !$options['isNightlyUpdate'] ) {
+				$checkouts[$curCheckout->source . $curCheckout->sourceId . $curCheckout->userId] = $curCheckout;
+				continue;
+			}
+
+
 			$curCheckout->renewIndicator = $curRow['itemnumber'];
 			if ($kohaVersion >= 22.11) {
 				$curCheckout->renewCount = $curRow['renewals_count'];
@@ -1484,6 +1502,7 @@ class Koha extends AbstractIlsDriver {
 			$user->_state = $userFromDb['state'];
 			$user->_zip = $userFromDb['zipcode'];
 			$user->phone = $userFromDb['phone'];
+			$user->email = $userFromDb['email'];
 			$user->_dateOfBirth = $userFromDb['dateofbirth'];
 		}
 	}
@@ -1663,7 +1682,7 @@ class Koha extends AbstractIlsDriver {
 			$hasMorePages = true;
 			while ($hasMorePages) {
 				$checkedInParam = $checkedIn ? 'true' : 'false';
-				$endpoint = "/api/v1/checkouts?patron_id=" . $patron->unique_ils_id . "&checked_in=" . $checkedInParam . "&_page=" . $page . "&_per_page=" . $perPage;
+				$endpoint = "/api/v1/checkouts?patron_id=" . $patron->unique_ils_id . "&checked_in=" . $checkedInParam . "&_page=" . $page . "&_per_page=" . $perPage . "&_match=exact";
 				$extraHeaders = [
 					'Accept-Encoding: gzip, deflate',
 					'Content-Type: application/json',
@@ -1844,6 +1863,12 @@ class Koha extends AbstractIlsDriver {
 		}
 		//Get a specific item number to place a hold on even though we are placing a title level hold.
 		//because.... Koha
+		if (str_contains($recordId, ':')) {
+			[
+				$source,
+				$recordId,
+			] = explode(':', $recordId);
+		}
 		require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 		$recordDriver = new MarcRecordDriver($recordId);
 		if (!$recordDriver->isValid()) {
@@ -1873,12 +1898,6 @@ class Koha extends AbstractIlsDriver {
 		}
 		//Just a regular bib level hold
 		$hold_result['title'] = $recordDriver->getTitle();
-		if (str_contains($recordId, ':')) {
-			[
-				$source,
-				$recordId,
-			] = explode(':', $recordId);
-		}
 		$holdParams = [
 			'patron_id' => (int)$patron->unique_ils_id,
 			'pickup_library_id' => $pickupBranch,
@@ -1937,6 +1956,7 @@ class Koha extends AbstractIlsDriver {
 					'isPublicFacing' => true,
 				]);
 				$hold_result['success'] = true;
+				$hold_result['hold_id'] = $response['content']['hold_id'] ?? null;
 				// Result for API or app use
 				$hold_result['api']['title'] = translate([
 					'text' => 'Hold placed successfully',
@@ -3483,7 +3503,7 @@ class Koha extends AbstractIlsDriver {
 
 		if ($response) {
 			$holdResponse = $response['content'];
-			if ($response['code'] != 201) {
+			if ($response['code'] != 201 && $response['code'] != 204) {
 				if (isset($holdResponse['error'])){
 					$result['title'] = translate([
 						'text' => 'Hold frozen',
@@ -5192,6 +5212,7 @@ class Koha extends AbstractIlsDriver {
 
 	function getNewMaterialsRequestForm(User $user) {
 		$this->initDatabaseConnection();
+		$userLocation = $user->getHomeLocation();
 
 		/** @noinspection SqlResolve */
 		$sql = "SELECT * FROM systempreferences where variable like 'OpacSuggestion%';";
@@ -5219,7 +5240,14 @@ class Koha extends AbstractIlsDriver {
 
 
 		/** @noinspection SqlResolve */
-		$itemTypesSQL = "SELECT * FROM authorised_values where category = 'SUGGEST_FORMAT' order by lib_opac";
+		$userLocationCode = $userLocation->code;
+		$itemTypesSQL = "SELECT av.authorised_value, av.lib_opac
+						FROM authorised_values av
+						LEFT JOIN authorised_values_branches avb
+						ON av.id = avb.av_id
+						WHERE av.category = 'SUGGEST_FORMAT'
+						AND (avb.branchcode = '$userLocationCode' OR avb.branchcode IS NULL)
+						ORDER BY av.lib_opac;";
 		$itemTypesRS = mysqli_query($this->dbConnection, $itemTypesSQL);
 		$itemTypes = [];
 		$defaultItemType = '';
@@ -5251,7 +5279,6 @@ class Koha extends AbstractIlsDriver {
 				$pickupLocations[$locations->code] = $locations->displayName;
 			}
 		} else {
-			$userLocation = $user->getHomeLocation();
 			$pickupLocations[$userLocation->code] = $userLocation->displayName;
 		}
 
@@ -7309,14 +7336,14 @@ class Koha extends AbstractIlsDriver {
 			} else {
 				$oauthToken = $this->getOAuthToken();
 				if ($oauthToken == false) {
-					$result['message'] = translate([
+					$error = translate([
 						'text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.',
 						'isPublicFacing' => true,
 					]);
 				} else {
 					$result = $this->resetPinInKoha($borrowerNumber, $_REQUEST['pin1'], $oauthToken);
 					if ($result['success'] == false) {
-						$error = $result['errors'];
+						$error = $result['message'];
 					} else {
 						$interface->assign('result', $result);
 					}
@@ -8717,6 +8744,7 @@ class Koha extends AbstractIlsDriver {
 						'text' => 'There was an error checking out this title.',
 						'isPublicFacing' => true,
 					]),
+					'itemNotFound' => false,
 				],
 				'itemData' => []
 			];
@@ -8870,6 +8898,7 @@ class Koha extends AbstractIlsDriver {
 						1 => $barcode,
 						'isPublicFacing' => true,
 					]);
+					$result['api']['itemNotFound'] = true;
 				}
 
 				$lookupItemResult->close();
@@ -9325,5 +9354,156 @@ class Koha extends AbstractIlsDriver {
 			return array_key_exists($accountline['credit_type_code'], Koha::$accoundlineCodeToDescriptionMap) ? Koha::$accoundlineCodeToDescriptionMap[$accountline['credit_type_code']] : $accountline['credit_type_code'];
 		}
 		return'No description available';
+	}
+
+	public function getPatronHoldGroups($patronId): ?array {
+		$endpoint = "/api/v1/patrons/{$patronId}/hold_groups";
+		$extraHeaders = ['x-koha-embed: holds'];
+
+		$response = $this->kohaApiUserAgent->get($endpoint, 'koha.getPatronHoldGroups', [], $extraHeaders);
+
+		if ($this->kohaApiUserAgent->getLastResponseCode() === 200) {
+			if (is_array($response)) {
+				return $response;
+			}
+			$decoded = json_decode($response, true);
+
+			if (json_last_error() === JSON_ERROR_NONE) {
+				return $decoded;
+			}
+		}
+		return null;
+	}
+
+	public function groupHolds($patronId, $holdIds, $forceGrouped = false) {
+		$endpoint = "/api/v1/patrons/{$patronId}/hold_groups";
+				$extraHeaders = ['x-koha-embed: holds'];
+
+		$result = [
+			'success' => false,
+			'message' => 'Unknown error occurred'
+		];
+
+		try {
+			if (!$patronId) {
+				$result['message'] = translate([
+					'text' => 'No patron id',
+					'isPublicFacing' => true,
+				]);
+				return $result;
+			}
+
+			if (empty($holdIds)) {
+				$result['message'] = translate([
+					'text' => 'No holds to group',
+					'isPublicFacing' => true,
+				]);
+				return $result;
+			}
+
+			$requestData = [
+				'hold_ids' => array_map('intval', $holdIds),
+				'force_grouped' => $forceGrouped
+			];
+
+
+			$apiResult = $this->kohaApiUserAgent->post($endpoint, $requestData, 'koha.addPatronHoldGroups', [], $extraHeaders);
+
+			$httpCode = $apiResult['code'] ?? 0;
+			$responseData = $apiResult['content'] ?? null;
+			$success = $httpCode == 201 ? true : false;
+
+			if (!$success) {
+				$curlError = $apiResult['curl_error'] ?? null;
+				if ($curlError) {
+					$result['message'] = "Network or connection error: $curlError";
+					return $result;
+				}
+				if ($httpCode === 0) {
+					$result['message'] = "No response from server, possible network error";
+					return $result;
+				}
+			}
+
+			switch ($httpCode) {
+				case 201:
+					$result['success'] = true;
+					$result['message'] = translate(['text' => 'Holds grouped successfully', 'isPublicFacing' => true]);
+					$result['hold_group'] = $responseData;
+					break;
+				case 400:
+					if (isset($responseData['error_code']) && $responseData['error_code'] === 'HoldAlreadyBelongsToHoldGroup') {
+						$responseData['success'] = false;
+						return $responseData;
+					}
+					$result['message'] = translate(['text' => 'Invalid request data', 'isPublicFacing' => true]);
+					if (isset($responseData['error'])) {
+						$result['message'] .= ': ' . $responseData['error'];
+					}
+					break;
+				default:
+					$result['message'] = translate(['text' => 'Unexpected error occurred', 'isPublicFacing' => true]) . " (HTTP $httpCode)";
+					break;
+			}
+
+			if (!$result['success']) {
+				global $logger;
+				$logger->log("Hold Grouping Error: " . print_r($result, true), Logger::LOG_ERROR);
+			}
+		} catch (Exception $e) {
+			global $logger;
+			$logger->log('Exception in groupHolds: ' . $e->getMessage(), Logger::LOG_ERROR);
+			$result['message'] = translate([
+				'text' => 'An unexpected error occurred while grouping holds',
+				'isPublicFacing' => true,
+			]);
+		}
+
+		return $result;
+	}
+
+	public function deletePatronHoldGroup($patronId, $holdGroupId): bool {
+		$endpoint = "/api/v1/patrons/{$patronId}/hold_groups/{$holdGroupId}";
+
+		$this->kohaApiUserAgent->delete($endpoint, 'koha.deletePatronHoldGroups');
+
+		if ($this->kohaApiUserAgent->getLastResponseCode() === 204) {
+			return true;
+		}
+
+		return false;
+	}	
+
+	public function supportsHyperholdsGrouping(): bool {
+		return $this->isDisplayAddHoldGroupsEnabledInKoha();
+	}
+
+	private function isDisplayAddHoldGroupsEnabledInKoha(): bool {
+		global $logger;
+
+		try {
+			$this->initDatabaseConnection();
+
+			$sql = "SELECT value FROM systempreferences WHERE variable = 'displayAddHoldGroups'";
+			$result = mysqli_query($this->dbConnection, $sql);
+
+			if (!$result) {
+				return false;
+			}
+			
+			$row = $result->fetch_assoc();
+			$result->close();
+
+			if (!$row || !isset($row['value'])) {
+				return false;
+			}
+
+			$value = $row['value'];
+			return ($value === '1' || strtolower($value) === 'on');
+
+		} catch (Exception $e) {
+			$logger->log("Error checking Koha displayAddHoldGroups setting: " . $e->getMessage(), Logger::LOG_ERROR);
+			return false;
+		}
 	}
 }

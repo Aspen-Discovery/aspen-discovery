@@ -209,9 +209,11 @@ public class GroupedWork implements Cloneable {
 		return groupingTitle;
 	}
 
-	private static final Pattern commonSubtitlesSimplePattern = Pattern.compile("\\b(a novel of .*|stories|an autobiography|a biography|a memoir in books|poems|the movie|large print|magazine|audio cd|book club kit|with illustrations|book \\d+|the original classic edition|classic edition|a novel|large type edition|(?<!graphic )novel)$");
-	private static final Pattern commonSubtitlesComplexPattern = Pattern.compile("\\b((a|una|an)\\s(.*)(?<!graphic )novel(a|la)?|a(.*)memoir|a(.*)mystery|a(.*)thriller|an? .* story|a .*\\s?book|[\\w\\s]+series book \\d+|[\\w\\s]+serie libro \\d+|the[\\w\\s]+chronicles book \\d+|[\\w\\s]+trilogy book \\d+|^novel|[\\w\\s]+series|.+\\sbook\\s\\d+)$");
-	private String removeCommonSubtitles(String groupingTitle) {
+	private static final Pattern commonSubtitlesSimplePattern = Pattern.compile("\\b(a novel of .*|stories|an autobiography|a biography|a memoir in books|poems|the movie|large print|magazine|audio cd|book club kit|with illustrations|book \\d+|the original classic edition|classic edition|a novel|large type edition|(?<!graphic )novel)$",Pattern.CASE_INSENSITIVE);
+	private static String commonSubtitlesComplexString = "\\b((a|una|an)\\s(.*)(?<!graphic )novel(a|la)?|a(.*)memoir|a(.*)mystery|a(.*)thriller|an? .* story|a .*\\s?book|[\\w\\s]+series book \\d+|[\\w\\s]+serie libro \\d+|the[\\w\\s]+chronicles book \\d+|[\\w\\s]+trilogy book \\d+|^novel|[\\w\\s]+series|.+\\sbook\\s\\d+|[\\w\\s']+book club(\\spick|\\s2.0)?(\\sdigital edition)?|a read with jenna pick)";
+	private static final Pattern commonSubtitlesComplexPattern = Pattern.compile(commonSubtitlesComplexString + "$", Pattern.CASE_INSENSITIVE);
+	private static final Pattern commonSubtitlesInTitleComplexPattern = Pattern.compile("[:(]\\s?" + commonSubtitlesComplexString + "\\)?$", Pattern.CASE_INSENSITIVE);
+	public static String removeCommonSubtitles(String groupingTitle) {
 		boolean changeMade = true;
 		while (changeMade){
 			changeMade = false;
@@ -295,8 +297,6 @@ public class GroupedWork implements Cloneable {
 				newSubtitle = removeComplexSubtitles(newSubtitle);
 				if (!newSubtitle.isEmpty()) {
 					title += " " + newSubtitle;
-				//} else {
-				//	logger.debug("Removed subtitle " + subtitle);
 				}
 			}
 		}else{
@@ -305,8 +305,13 @@ public class GroupedWork implements Cloneable {
 		return title;
 	}
 
-	private String removeComplexSubtitles(String newSubtitle) {
+	public static String removeComplexSubtitles(String newSubtitle) {
 		newSubtitle = commonSubtitlesComplexPattern.matcher(newSubtitle).replaceAll("");
+		return newSubtitle;
+	}
+
+	public static String removeComplexSubtitlesFromTitle(String newSubtitle) {
+		newSubtitle = commonSubtitlesInTitleComplexPattern.matcher(newSubtitle).replaceAll("");
 		return newSubtitle;
 	}
 

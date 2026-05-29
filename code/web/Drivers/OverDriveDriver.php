@@ -597,13 +597,25 @@ class OverDriveDriver extends AbstractEContentDriver {
 	}
 
 	/**
+	 * Get Patron Checkouts
+	 *
 	 * Loads information about items that the user has checked out in OverDrive.
 	 * If multiple OverDrive collections are connected, all checkouts for all collections will be loaded.
+	 *
+	 * Additional option 'forSummary' can be passed to skip some call - not currently used
+	 *
+	 * @param User $patron       The user to load transactions for
+	 * @param array $options     Additional options
+	 * @return Checkout[]        Array of the patron's transactions on success
+	 * @access public
 	 */
-	public function getCheckouts(User $patron, bool $forSummary = false): array {
+	public function getCheckouts(User $patron, array $options = [ "forSummary" => false]): array {
 		$accountSummary = $patron->getCachedAccountSummary('overdrive');
 		$cachedCheckouts = $patron->getCachedCheckoutsForSource('overdrive');
 		if ($accountSummary->dataIsStale || $accountSummary->areCheckoutsStale() || isset($_REQUEST['reload']) || isset($_REQUEST['refreshCheckouts'])) {
+			$userEligibleForPalaceProject = $patron->isValidForEContentSource('palace_project');
+			$showPalaceProjectLink = $userEligibleForPalaceProject && $patron->getHomeLibrary()->getPalaceProjectSettings()->showPalaceProjectLinks;
+
 			require_once ROOT_DIR . '/sys/User/Checkout.php';
 			global $logger;
 
@@ -695,7 +707,7 @@ class OverDriveDriver extends AbstractEContentDriver {
 								$checkout->formatSelected = false;
 							}
 							$checkout->formats = [];
-							if (!$forSummary) {
+							if (!$options['forSummary']) {
 								$checkout = $this->loadCheckoutFormatInformation($curTitle, $checkout);
 
 								if (isset($curTitle->actions->earlyReturn)) {
@@ -740,6 +752,8 @@ class OverDriveDriver extends AbstractEContentDriver {
 									}
 								}
 							}
+
+							$checkout->showPalaceProjectLink = $showPalaceProjectLink;
 
 							$key = $checkout->source . $checkout->sourceId . $checkout->userId;
 							$checkouts[$key] = $checkout;
@@ -845,7 +859,8 @@ class OverDriveDriver extends AbstractEContentDriver {
 
 		if ($summary->dataIsStale || isset($_REQUEST['reload'])) {
 			//Get account information from api
-			$checkedOutItems = $this->getCheckouts($user, true);
+			$options = ["forSummary" => true];
+			$checkedOutItems = $this->getCheckouts($user, $options);
 			$summary->numCheckedOut = count($checkedOutItems);
 
 			$holds = $this->getHolds($user, true);
@@ -1177,7 +1192,7 @@ class OverDriveDriver extends AbstractEContentDriver {
 			]);
 
 			$this->incrementStat('numHoldsCancelled');
-			$this->updateCachesForCancelledHold($patron, $holdToCancel);
+			$this->updateCachesForCancelledHold($patron, $holdToCancel, 'overdrive');
 		} else {
 			$cancelHoldResult['message'] = translate([
 				'text' => 'There was an error cancelling your hold.',

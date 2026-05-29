@@ -538,7 +538,9 @@ abstract class SearchObject_BaseSearcher {
 					$this->searchType == 'basic' ||
 					$this->searchType == 'ebsco_eds' ||
 					$this->searchType == 'summon' ||
-					$this->searchType == 'gale'
+					$this->searchType == 'gale' ||
+					$this->searchType == 'series' ||
+					$this->searchType == 'author'
 				) {
 					$params[] = "searchIndex=" . urlencode($this->searchTerms[0]['index']);
 				} else {
@@ -1255,11 +1257,11 @@ abstract class SearchObject_BaseSearcher {
 	 * @access  public
 	 * @return  string   URL of a new search
 	 */
-	public function renderLinkPageTemplate() {
+	public function renderLinkPageTemplate() : string {
 		// Stash our old data for a minute
 		$oldPage = $this->page;
-		// Add the page template
-		$this->page = '%d';
+		// Clear the page so it can be added later
+		$this->page = '';
 		// Get the new url
 		$url = $this->renderSearchUrl();
 		// Restore the old data
@@ -1801,6 +1803,7 @@ abstract class SearchObject_BaseSearcher {
 			$dupSaved = false;
 			foreach ($searchHistory as $oldSearch) {
 				// Deminify the old search
+				SearchObjectFactory::initSearchObject($oldSearch->searchSource);
 				$minSO = unserialize($oldSearch->search_object);
 				$dupSearch = SearchObjectFactory::deminify($minSO);
 				// See if the classes and urls match
@@ -1865,6 +1868,8 @@ abstract class SearchObject_BaseSearcher {
 			$currentSessionId = session_id();
 			if ($search->session_id == $currentSessionId || $search->user_id == UserAccount::getActiveUserId()) {
 				// They do, deminify it to a new object.
+				//Init a search object to be sure dependencies (facets) are loaded
+				SearchObjectFactory::initSearchObject($search->searchSource);
 				$minSO = unserialize($search->search_object);
 				return SearchObjectFactory::deminify($minSO, $search);
 			} else {
@@ -1901,6 +1906,7 @@ abstract class SearchObject_BaseSearcher {
 				//   rights to view this search
 				if ($forceReload || $search->session_id == session_id() || (UserAccount::isLoggedIn() && $search->user_id == UserAccount::getActiveUserId())) {
 					// They do, deminify it to a new object.
+					SearchObjectFactory::initSearchObject($search->searchSource);
 					$minSO = unserialize($search->search_object);
 					$savedSearch = SearchObjectFactory::deminify($minSO, $search);
 
@@ -2491,6 +2497,7 @@ abstract class SearchObject_BaseSearcher {
 			$s->find();
 			if ($s->getNumResults() > 0) {
 				$s->fetch();
+				SearchObjectFactory::initSearchObject($s->searchSource);
 				$minSO = unserialize($s->search_object);
 				/** @var SearchObject_BaseSearcher $searchObject */
 				$searchObject = SearchObjectFactory::deminify($minSO);

@@ -1,40 +1,21 @@
 <?php /** @noinspection SqlResolve */
 function getPay360Updates() {
 	return [
-		'create_pay360_url_paramaters_table' => [
-			'title' => 'Create Pay360 URL Parameters Table',
-			'description' => 'Add a list of existing current Pay360 URL parameters',
-			'sql' => [
-				"CREATE TABLE pay360_request_parameter (
-					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-		 			pay360SettingId INT(11) DEFAULT -1,
-		 			value VARCHAR(255) DEFAULT '',
-					name VARCHAR(50) NOT NULL UNIQUE,
-					multiline TINYINT(1) DEFAULT 0,
-					optional TINYINT(1) DEFAULT 0,
-		 			includeInUrl TINYINT(1) DEFAULT 0,
-		 			includeInHash TINYINT(1) DEFAULT 0,
-		 			kohaAdditionalField VARCHAR(255) DEFAULT NULL
-				)"
-			],
-		], // create_pay360_url_paramaters_table
 		'add_pay360_setting_table' => [
 			'title' => 'Pay360 Settings Are Stored',
 			'description' => 'Pay360 settings are stored so they can be administered and assigned to libraries',
 			'continueOnError' => false,
 			'sql' => [
-				// TODO: check data types
 				"CREATE TABLE pay360_setting (
-				id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
-				name VARCHAR(50) NOT NULL UNIQUE,		
-				wsldUrl VARCHAR(255),
+				id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+				name VARCHAR(50) NOT NULL UNIQUE,
+				wsdlUrl VARCHAR(255),
 				privateKey VARCHAR(255) NOT NULL,
 				scpId VARCHAR(50),
 				hmacKeyId VARCHAR(50),
 				algorithm VARCHAR(50),
 				siteId VARCHAR(50),
 				subjectType VARCHAR(50),
-				identifier VARCHAR(50),
 				systemCode VARCHAR(50),
 				pollingEnabled tinyint(1) DEFAULT 1
 				)"

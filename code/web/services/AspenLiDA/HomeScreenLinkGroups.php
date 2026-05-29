@@ -47,15 +47,17 @@ class AspenLiDA_HomeScreenLinkGroups extends ObjectEditor {
 				$object = new $objectType();
 				$this->applyFilters($object);
 				if (empty($allowedGroups)) {
-					return 0;
+					return [];
 				}
 				$object->whereAddIn('id', $allowedGroups, false);
 				$this->_numObjects = $object->count();
 			} else {
 				$homeScreenLinkGroups = [];
-				$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
-				if ($library && $library->lidaHomeScreenLinkGroupId > 0) {
-					$homeScreenLinkGroups[] = $library->lidaHomeScreenLinkGroupId;
+				$homeLibraries = Library::getLibraryListAsObjects(true);
+				foreach ($homeLibraries as $library) {
+					if ($library->lidaHomeScreenLinkGroupId > 0) {
+						$homeScreenLinkGroups[] = $library->lidaHomeScreenLinkGroupId;
+					}
 				}
 				require_once ROOT_DIR . '/sys/LibraryLocation/Location.php';
 				$locations = Location::getLocationListAsObjects(true);
@@ -138,10 +140,13 @@ class AspenLiDA_HomeScreenLinkGroups extends ObjectEditor {
 			if (!UserAccount::userHasPermission('Administer All Aspen LiDA Home Screen Links')) {
 				// Administer Library Aspen LiDA Home Screen Links: Include home library and location groups.
 				$homeScreenLinkGroups = [];
-				$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
-				if ($library && $library->lidaHomeScreenLinkGroupId > 0) {
-					$homeScreenLinkGroups[] = $library->lidaHomeScreenLinkGroupId;
+				$libraries = Library::getLibraryListAsObjects(true);
+				foreach ($libraries as $library) {
+					if ($library->lidaHomeScreenLinkGroupId > 0) {
+						$homeScreenLinkGroups[] = $library->lidaHomeScreenLinkGroupId;
+					}
 				}
+
 				require_once ROOT_DIR . '/sys/LibraryLocation/Location.php';
 				$locations = Location::getLocationListAsObjects(true);
 				foreach ($locations as $tmpLocation) {

@@ -25,6 +25,9 @@ public class SavedItemInfo {
 	public boolean available;
 	public boolean holdable;
 	public boolean inLibraryUseOnly;
+	public String barcode;
+	public String note;
+	public String dueDate;
 	public String locationOwnedScopes;
 	public String libraryOwnedScopes;
 	public String recordIncludedScopes;
@@ -48,6 +51,9 @@ public class SavedItemInfo {
 		this.groupedStatusId = getExistingItemsForRecordRS.getLong("groupedStatusId");
 		this.available = getExistingItemsForRecordRS.getBoolean("available");
 		this.holdable = getExistingItemsForRecordRS.getBoolean("holdable");
+		this.barcode = getExistingItemsForRecordRS.getString("barcode");
+		this.note = getExistingItemsForRecordRS.getString("note");
+		this.dueDate = getExistingItemsForRecordRS.getString("dueDate");
 		this.inLibraryUseOnly = getExistingItemsForRecordRS.getBoolean("inLibraryUseOnly");
 		this.locationOwnedScopes = getExistingItemsForRecordRS.getString("locationOwnedScopes");
 		this.libraryOwnedScopes = getExistingItemsForRecordRS.getString("libraryOwnedScopes");
@@ -56,8 +62,8 @@ public class SavedItemInfo {
 
 	public SavedItemInfo(long id, long recordId, long variationId, String itemId, long shelfLocationId, long callNumberId, long sortableCallNumberId,
 	                     int numCopies, boolean isOrderItem, long statusId, Date dateAdded, long locationId, long subLocationId, Date lastCheckInDate,
-	                     long groupedStatusId, boolean available, boolean holdable, boolean inLibraryUseOnly, String locationOwnedScopes,
-	                     String libraryOwnedScopes, String recordIncludedScopes){
+	                     long groupedStatusId, boolean available, boolean holdable, String barcode, String note, String dueDate, boolean inLibraryUseOnly,
+	                     String locationOwnedScopes, String libraryOwnedScopes, String recordIncludedScopes){
 		this.id = id;
 		this.recordId = recordId;
 		this.variationId = variationId;
@@ -87,12 +93,15 @@ public class SavedItemInfo {
 		this.locationOwnedScopes = locationOwnedScopes;
 		this.libraryOwnedScopes = libraryOwnedScopes;
 		this.recordIncludedScopes = recordIncludedScopes;
+		this.barcode = barcode;
+		this.note = note;
+		this.dueDate = dueDate;
 	}
 
 	boolean hasChanged(long recordId, long variationId, String itemId, long shelfLocationId, long callNumberId, long sortableCallNumberId,
 	                   int numCopies, boolean isOrderItem, long statusId, Date dateAdded, long locationId, long subLocationId, Date lastCheckInDate,
-	                   long groupedStatusId, boolean available, boolean holdable, boolean inLibraryUseOnly, String locationOwnedScopes,
-	                   String libraryOwnedScopes, String recordIncludedScopes) {
+	                   long groupedStatusId, boolean available, boolean holdable, String barcode, String note, String dueDate, boolean inLibraryUseOnly,
+	                   String locationOwnedScopes, String libraryOwnedScopes, String recordIncludedScopes) {
 		if (this.recordId != recordId) {
 			return true;
 		}
@@ -154,6 +163,15 @@ public class SavedItemInfo {
 			return true;
 		}
 		if (this.inLibraryUseOnly != inLibraryUseOnly){
+			return true;
+		}
+		if (!AspenStringUtils.compareStrings(barcode, this.barcode)){
+			return true;
+		}
+		if (!AspenStringUtils.compareStrings(note, this.note)){
+			return true;
+		}
+		if (!AspenStringUtils.compareStrings(dueDate, this.dueDate)){
 			return true;
 		}
 		if (!AspenStringUtils.compareStrings(locationOwnedScopes, this.locationOwnedScopes)){

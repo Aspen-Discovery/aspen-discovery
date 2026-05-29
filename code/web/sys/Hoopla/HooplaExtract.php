@@ -74,20 +74,22 @@ class HooplaExtract extends DataObject {
 
 	// Override the find method to only select the columns that exist
 	// TODO: Remove this block once v1 is retired
-	public function find($fetchFirst = false, $requireOneMatchToReturn = false): bool {
-		$actualColumns = $this->table();
+	public function find($fetchFirst = false, $requireOneMatchToReturn = false, $hasPredefinedSelects = false): bool {
+		if (!$hasPredefinedSelects) {
+			$actualColumns = $this->table();
 
-		$selectParts = [];
-		foreach ($actualColumns as $columnName => $columnInfo) {
-			if ($columnName === 'rawResponse') {
-				$selectParts[] = 'UNCOMPRESS(' . $this->__table . '.rawResponse) as rawResponse';
-			} else {
-				$selectParts[] = $this->__table . '.' . $columnName;
+			$selectParts = [];
+			foreach ($actualColumns as $columnName => $columnInfo) {
+				if ($columnName === 'rawResponse') {
+					$selectParts[] = 'UNCOMPRESS(' . $this->__table . '.rawResponse) as rawResponse';
+				} else {
+					$selectParts[] = $this->__table . '.' . $columnName;
+				}
 			}
-		}
 
-		$this->selectAdd();
-		$this->selectAdd(implode(', ', $selectParts));
+			$this->selectAdd();
+			$this->selectAdd(implode(', ', $selectParts));
+		}
 
 		return parent::find($fetchFirst, $requireOneMatchToReturn);
 	}

@@ -6,8 +6,9 @@ class CampaignMilestoneProgressEntry extends DataObject
 	public $__table = 'ce_campaign_milestone_progress_entries';
 	public $id;
 	public $userId;
-	public $ce_campaign_id;
-	public $ce_milestone_id;
+	// REMOVE: public $ce_campaign_id;
+    // REMOVE: public $ce_milestone_id;
+    public $ce_campaign_milestone_id; // NEW
 	public $ce_campaign_milestone_users_progress_id;
 	public $tableName;
 	public $processed;
@@ -31,8 +32,9 @@ class CampaignMilestoneProgressEntry extends DataObject
 	public function initialize(CampaignMilestone $campaignMilestone, $args = null) : void
 	{
 
-		$this->ce_milestone_id = $campaignMilestone->milestoneId;
-		$this->ce_campaign_id = $campaignMilestone->campaignId;
+		// $this->ce_milestone_id = $campaignMilestone->milestoneId;
+		// $this->ce_campaign_id = $campaignMilestone->campaignId;
+		$this->ce_campaign_milestone_id = $campaignMilestone->id;
 
 		if (!$args)
 			return;
@@ -47,11 +49,11 @@ class CampaignMilestoneProgressEntry extends DataObject
 		$this->insert();
 	}
 
-	public static function getUserProgressDataByMilestoneId($userId, $milestoneId, $campaignId) {
+	//TODO: Update all instances of getUserProgressDataByMilestoneId($userId, $milestoneId, $campaignId) to this
+	public static function getUserProgressDataByCampaignMilestoneId($userId, $campaignMilestoneId) {
 		$campaignMilestoneProgressEntry = new self();
 		$campaignMilestoneProgressEntry->whereAdd("userId = " . $userId);
-		$campaignMilestoneProgressEntry->whereAdd("ce_milestone_id = " . $milestoneId);
-		$campaignMilestoneProgressEntry->whereAdd("ce_campaign_id = " . $campaignId);
+		$campaignMilestoneProgressEntry->whereAdd("ce_campaign_milestone_id = " . $campaignMilestoneId);
 
 
 		$results = [];

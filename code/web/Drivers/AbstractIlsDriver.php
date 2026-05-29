@@ -846,6 +846,7 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 				'text' => 'Unable to checkout title',
 				'isPublicFacing' => true,
 			]),
+			'itemNotFound' => false,
 		];
 
 		require_once ROOT_DIR . '/sys/AspenLiDA/SelfCheckSetting.php';
@@ -908,8 +909,14 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 							$dueDate = date_format($dueDate, 'm/d/Y');
 							$item['due'] = $dueDate;
 						} else {
-							$message .= ' ' . $checkoutResponse['variable']['AF'][0];
 							$item['due'] = null;
+							if (isset($checkoutResponse['variable']['AF'][0])) {
+								$alertMessage = $checkoutResponse['variable']['AF'][0];
+								$message .= ': ' . $alertMessage;
+								if (stripos($alertMessage, 'not found') !== false || stripos($alertMessage, 'item not found') !== false || stripos($alertMessage, 'unknown item') !== false) {
+									$apiResult['itemNotFound'] = true;
+								}
+							}
 						}
 						$item['title'] = $checkoutResponse['variable']['AJ'][0] ?? 'Unknown title';
 						$item['barcode'] = $barcode;
@@ -1049,6 +1056,13 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 	}
 
 	public function isPatronAccountLocked(User $patron, $fine): bool {
+		return false;
+	}
+
+	/**
+	 * Check if this driver supports hyperholds grouping
+	*/
+	public function supportsHyperholdsGrouping() {
 		return false;
 	}
 }

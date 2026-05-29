@@ -175,14 +175,18 @@ class PalaceProject_AJAX extends JSON_Action {
 			//$logger->log("Checkout result = $result", Logger::LOG_NOTICE);
 			if ($result['success']) {
 				/** @noinspection HtmlUnknownTarget */
-				$result['title'] = translate([
-					'text' => "Title Checked Out Successfully",
-					'isPublicFacing' => true,
-				]);
-				$result['buttons'] = '<a class="btn btn-primary" href="/MyAccount/CheckedOut" role="button">' . translate([
-						'text' => 'View My Check Outs',
-						'isPublicFacing' => true,
-					]) . '</a>';
+				if ($result['checkedOut']) {
+					$result['buttons'] = '<a class="btn btn-primary" href="/MyAccount/CheckedOut" role="button">' . translate([
+							'text' => 'View My Check Outs',
+							'isPublicFacing' => true,
+						]) . '</a>';
+				}else{
+					$result['buttons'] = '<a class="btn btn-primary" href="/MyAccount/Holds" role="button">' . translate([
+							'text' => 'View My Holds',
+							'isPublicFacing' => true,
+						]) . '</a>';
+				}
+
 			} else {
 				$result['title'] = translate([
 					'text' => "Error Checking Out Title",
@@ -300,14 +304,17 @@ class PalaceProject_AJAX extends JSON_Action {
 			//$logger->log("Checkout result = $result", Logger::LOG_NOTICE);
 			if ($result['success']) {
 				/** @noinspection HtmlUnknownTarget */
-				$result['title'] = translate([
-					'text' => "Hold Placed Successfully",
-					'isPublicFacing' => true,
-				]);
-				$result['buttons'] = '<a class="btn btn-primary" href="/MyAccount/CheckedOut" role="button">' . translate([
-						'text' => 'View My Check Outs',
-						'isPublicFacing' => true,
-					]) . '</a>';
+				if ($result['checkedOut']) {
+					$result['buttons'] = '<a class="btn btn-primary" href="/MyAccount/CheckedOut" role="button">' . translate([
+							'text' => 'View My Check Outs',
+							'isPublicFacing' => true,
+						]) . '</a>';
+				}else{
+					$result['buttons'] = '<a class="btn btn-primary" href="/MyAccount/Holds" role="button">' . translate([
+							'text' => 'View My Holds',
+							'isPublicFacing' => true,
+						]) . '</a>';
+				}
 			} else {
 				$result['title'] = translate([
 					'text' => "Error Checking Out Title",

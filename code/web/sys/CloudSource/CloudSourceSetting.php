@@ -8,7 +8,8 @@ class CloudSourceSetting extends DataObject
 	public $__table = 'cloudsource_setting';
 	public $id;
 	public $name;
-	public $baseUrl;
+	public $apiUrl;
+	public $patronUrl;
 	public $accessToken;
 	public $profileKey;
 	public $showInExploreMore;
@@ -48,11 +49,18 @@ class CloudSourceSetting extends DataObject
 				'description' => 'A name to identify the open archives collection in the system',
 				'size' => '100',
 			],
-			'baseURL' => [
-				'property' => 'baseUrl',
+			'apiUrl' => [
+				'property' => 'apiUrl',
 				'type' => 'url',
-				'label' => 'Base URL',
-				'description' => 'The base url for CloudSource OA',
+				'label' => 'API URL',
+				'description' => 'Typically: https://na3.bc.sirsidynix.net/bcws',
+				'size' => '255',
+			],
+			'patronUrl' => [
+				'property' => 'patronUrl',
+				'type' => 'url',
+				'label' => 'Patron URL',
+				'description' => 'i.e. https://{host}/client/en_US/{profile}',
 				'size' => '255',
 			],
 			'accessToken' => [

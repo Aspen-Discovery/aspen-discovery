@@ -23,6 +23,8 @@ class Event extends DataObject {
 	public $startTime;
 	public $eventLength;
 	public $recurrenceOption;
+	public $registrationRequired;
+	public $numberOfSeats;
 	/** @noinspection PhpUnused */
 	public $recurrenceInterval;
 	public $recurrenceFrequency;
@@ -169,6 +171,7 @@ class Event extends DataObject {
 				'label' => 'Start Date',
 				'readOnly' => true,
 				'hiddenByDefault' => true,
+				'canSort' => false
 			],
 			'scheduleSection' => [
 				'property' => 'scheduleSection',
@@ -197,6 +200,27 @@ class Event extends DataObject {
 				'hideInLists' => true,
 			]
 		];
+
+		global $library;
+		if (isset($library->allowEventRegistration) && $library->allowEventRegistration != '0') {
+			$structure['infoSection']['properties']['registrationRequired'] = [
+				'property' => 'registrationRequired',
+				'type' => 'checkbox',
+				'label' => 'Enable Registration ?',
+				'default' => false,
+				'description' => 'Enable registration for this event and mark is as required',
+				'onchange' => 'AspenDiscovery.Events.handleRegistrationEnabledToggle()',
+			];
+			$structure['infoSection']['properties']['numberOfSeats'] = [
+				'property' => 'numberOfSeats',
+				'type' => 'integer',
+				'label' => 'Number of Seats',
+				'description' => 'Maximum number of available seats for this event. Leave blank or 0 for unlimited.',
+				'min' => 0,
+				'max' => 1000,
+			];
+		}
+
 		// Add empty, hidden, readonly copies of all potential fields so that data can be added if they exist for any selected event type
 		$eventFieldList = EventField::getEventFieldList();
 		foreach ($eventFieldList as $fieldId => $field) {
@@ -599,7 +623,8 @@ class Event extends DataObject {
 			'dateUpdated',
 			'sublocationId',
 			'weekNumber',
-			'deleted'
+			'deleted',
+			'numberOfSeats'
 		];
 	}
 

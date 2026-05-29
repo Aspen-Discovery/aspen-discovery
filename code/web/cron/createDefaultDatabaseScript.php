@@ -39,7 +39,6 @@ foreach ($allTables as $table) {
 
 	if ($exportData) {
 		$dumpCommand = "mysqldump -u$dbUser -p$dbPassword -h$dbHost -P$dbPort --skip-comments $dbName $table >> $exportFile";
-		/** @noinspection PhpConditionAlreadyCheckedInspection */
 		exec_advanced($dumpCommand, $debug);
 	}else{
 		$createTableStmt = $aspen_db->query("SHOW CREATE TABLE " . $table);
@@ -70,7 +69,87 @@ fwrite($fhnd, "INSERT INTO grouped_work_display_settings(id, name, facetGroupId,
 fwrite($fhnd, "INSERT INTO grouped_work_display_settings(id, name, facetGroupId, showSearchTools) VALUES (4, 'school_upper', 3, 0);\n");
 fwrite($fhnd, "INSERT INTO grouped_work_display_settings(id, name, facetGroupId, baseAvailabilityToggleOnLocalHoldingsOnly, includeAllRecordsInShelvingFacets, includeAllRecordsInDateAddedFacets, includeOutOfSystemExternalLinks) VALUES (5, 'consortium', 4, 0, 1, 1, 1);\n");
 /** @noinspection SpellCheckingInspection */
-fwrite($fhnd, "INSERT INTO grouped_work_facet VALUES (1,1,'Format Category','format_category',1,0,0,'num_results',1,1,1,1,1,0,0,0,'Format Categories'),(2,1,'Search Within','availability_toggle',2,0,0,'num_results',1,1,1,1,1,0,0,0,'Available?'),(3,1,'Fiction / Non-Fiction','literary_form',3,5,0,'num_results',0,1,1,1,1,0,1,1,'Fiction / Non-Fiction'),(4,1,'Reading Level','target_audience',4,8,0,'num_results',0,1,1,1,1,0,1,1,'Reading Levels'),(5,1,'Available Now At','available_at',5,5,0,'num_results',0,1,1,1,1,0,0,0,'Available Now At'),(6,1,'eContent Collection','econtent_source',6,5,0,'num_results',0,1,1,1,1,0,1,0,'eContent Collections'),(7,1,'Format','format',7,5,0,'num_results',0,1,1,1,1,0,1,1,'Formats'),(8,1,'Author','authorStr',8,5,0,'num_results',0,1,1,1,1,0,0,0,'Authors'),(9,1,'Series','series_facet',9,5,0,'num_results',0,1,1,1,1,0,1,0,'Series'),(10,1,'AR Interest Level','accelerated_reader_interest_level',10,5,0,'num_results',0,1,1,1,1,0,0,0,'AR Interest Levels'),(11,1,'AR Reading Level','accelerated_reader_reading_level',11,5,0,'num_results',0,1,1,1,1,0,0,0,'AR Reading Levels'),(12,1,'AR Point Value','accelerated_reader_point_value',12,5,0,'num_results',0,1,1,1,1,0,0,0,'AR Point Values'),(13,1,'Subject','subject_facet',13,5,0,'num_results',0,1,1,1,1,0,1,0,'Subjects'),(14,1,'Added in the Last','time_since_added',14,5,0,'num_results',0,1,1,1,1,0,0,0,'Added in the Last'),(15,1,'Awards','awards_facet',15,5,0,'num_results',0,0,1,1,1,0,0,0,'Awards'),(16,1,'Item Type','itype',16,5,0,'num_results',0,0,1,1,1,0,0,0,'Item Types'),(17,1,'Language','language',17,5,0,'num_results',0,1,1,1,1,0,1,1,'Languages'),(18,1,'Movie Rating','mpaa_rating',18,5,0,'num_results',0,0,1,1,1,0,1,0,'Movie Ratings'),(19,1,'Publication Date','publishDateSort',19,5,0,'num_results',0,1,1,1,1,0,0,0,'Publication Dates'),(20,1,'User Rating','rating_facet',20,5,0,'num_results',0,1,1,1,1,0,0,0,'User Ratings'),(21,2,'Format Category','format_category',1,0,0,'num_results',1,1,1,1,1,0,0,0,'Format Categories'),(22,2,'Available?','availability_toggle',2,0,0,'num_results',1,1,1,1,1,0,0,0,'Available?'),(23,2,'Literary Form','literary_form',3,5,0,'num_results',0,1,1,1,1,0,0,1,'Literary Forms'),(24,2,'Reading Level','target_audience',4,8,0,'num_results',0,1,1,1,1,0,1,1,'Readling Levels'),(25,2,'Available Now At','available_at',5,5,0,'num_results',0,1,1,1,1,0,0,0,'Available Now At'),(26,2,'eContent Collection','econtent_source',6,5,0,'num_results',0,1,1,1,1,0,1,0,'eContent Collections'),(27,2,'Format','format',7,5,0,'num_results',0,1,1,1,1,0,1,1,'Formats'),(28,2,'Author','authorStr',8,5,0,'num_results',0,1,1,1,1,0,0,0,'Authors'),(29,2,'Series','series_facet',9,5,0,'num_results',0,1,1,1,1,0,1,0,'Series'),(30,2,'Subject','topic_facet',10,5,0,'num_results',0,1,1,1,1,0,1,0,'Subjects'),(31,2,'Region','geographic_facet',11,5,0,'num_results',0,0,1,1,1,0,0,0,'Regions'),(32,2,'Era','era',12,5,0,'num_results',0,0,1,1,1,0,0,0,'Eras'),(33,2,'Genre','genre_facet',13,5,0,'num_results',0,1,1,1,1,0,1,0,'Genres'),(34,2,'Added in the Last','time_since_added',14,5,0,'num_results',0,1,1,1,1,0,0,0,'Added in the Last'),(35,2,'Awards','awards_facet',15,5,0,'num_results',0,0,1,1,1,0,0,0,'Awards'),(36,2,'Item Type','itype',16,5,0,'num_results',0,0,1,1,1,0,0,0,'Item Types'),(37,2,'Language','language',17,5,0,'num_results',0,1,1,1,1,0,1,1,'Languages'),(38,2,'Movie Rating','mpaa_rating',18,5,0,'num_results',0,0,1,1,1,0,1,0,'Movie Ratings'),(39,2,'Publication Date','publishDateSort',19,5,0,'num_results',0,1,1,1,1,0,0,0,'Publication Dates'),(40,2,'User Rating','rating_facet',20,5,0,'num_results',0,1,1,1,1,0,0,0,'User Ratings'),(41,3,'Format Category','format_category',1,0,0,'num_results',1,1,1,1,1,0,0,0,'Format Categories'),(42,3,'Available?','availability_toggle',2,0,0,'num_results',1,1,1,1,1,0,0,0,'Available?'),(43,3,'Fiction / Non-Fiction','literary_form',3,5,0,'num_results',0,1,1,1,1,0,1,1,'Fiction / Non-Fiction'),(44,3,'Reading Level','target_audience',4,8,0,'num_results',0,1,1,1,1,0,1,1,'Readling Levels'),(45,3,'Available Now At','available_at',5,5,0,'num_results',0,1,1,1,1,0,0,0,'Available Now At'),(46,3,'eContent Collection','econtent_source',6,5,0,'num_results',0,1,1,1,1,0,1,0,'eContent Collections'),(47,3,'Format','format',7,5,0,'num_results',0,1,1,1,1,0,1,1,'Formats'),(48,3,'Author','authorStr',8,5,0,'num_results',0,1,1,1,1,0,0,0,'Authors'),(49,3,'Series','series_facet',9,5,0,'num_results',0,1,1,1,1,0,1,0,'Series'),(50,3,'AR Interest Level','accelerated_reader_interest_level',10,5,0,'num_results',0,1,1,1,1,0,0,0,'AR Interest Levels'),(51,3,'AR Reading Level','accelerated_reader_reading_level',11,5,0,'num_results',0,1,1,1,1,0,0,0,'AR Reading Levels'),(52,3,'AR Point Value','accelerated_reader_point_value',12,5,0,'num_results',0,1,1,1,1,0,0,0,'AR Point Values'),(53,3,'Subject','subject_facet',13,5,0,'num_results',0,1,1,1,1,0,1,0,'Subjects'),(54,3,'Added in the Last','time_since_added',14,5,0,'num_results',0,1,1,1,1,0,0,0,'Added in the Last'),(55,3,'Awards','awards_facet',15,5,0,'num_results',0,0,1,1,1,0,0,0,'Awards'),(56,3,'Item Type','itype',16,5,0,'num_results',0,0,1,1,1,0,0,0,'Item Types'),(57,3,'Language','language',17,5,0,'num_results',0,1,1,1,1,0,1,1,'Languages'),(58,3,'Movie Rating','mpaa_rating',18,5,0,'num_results',0,0,1,1,1,0,1,0,'Movie Ratings'),(59,3,'Publication Date','publishDateSort',19,5,0,'num_results',0,1,1,1,1,0,0,0,'Publication Dates'),(60,3,'User Rating','rating_facet',20,5,0,'num_results',0,1,1,1,1,0,0,0,'User Ratings'),(61,4,'Format Category','format_category',1,0,0,'num_results',1,1,1,1,1,0,0,0,'Format Categories'),(62,4,'Available?','availability_toggle',2,0,0,'num_results',1,1,1,1,1,0,0,0,'Available?'),(63,4,'Fiction / Non-Fiction','literary_form',3,5,0,'num_results',0,1,1,1,1,0,1,1,'Fiction / Non-Fiction'),(64,4,'Reading Level','target_audience',4,8,0,'num_results',0,1,1,1,1,0,1,1,'Readling Levels'),(65,4,'Available Now At','available_at',5,5,0,'num_results',0,1,1,1,1,0,0,0,'Available Now At'),(66,4,'eContent Collection','econtent_source',6,5,0,'num_results',0,1,1,1,1,0,1,0,'eContent Collections'),(67,4,'Format','format',7,5,0,'num_results',0,1,1,1,1,0,1,1,'Formats'),(68,4,'Author','authorStr',8,5,0,'num_results',0,1,1,1,1,0,0,0,'Authors'),(69,4,'Series','series_facet',9,5,0,'num_results',0,1,1,1,1,0,1,0,'Series'),(70,4,'AR Interest Level','accelerated_reader_interest_level',10,5,0,'num_results',0,1,1,1,1,0,0,0,'AR Interest Levels'),(71,4,'AR Reading Level','accelerated_reader_reading_level',11,5,0,'num_results',0,1,1,1,1,0,0,0,'AR Reading Levels'),(72,4,'AR Point Value','accelerated_reader_point_value',12,5,0,'num_results',0,1,1,1,1,0,0,0,'AR Point Values'),(73,4,'Subject','subject_facet',13,5,0,'num_results',0,1,1,1,1,0,1,0,'Subjects'),(74,4,'Added in the Last','time_since_added',14,5,0,'num_results',0,1,1,1,1,0,0,0,'Added in the Last'),(75,4,'Awards','awards_facet',15,5,0,'num_results',0,0,1,1,1,0,0,0,'Awards'),(76,4,'Item Type','itype',16,5,0,'num_results',0,0,1,1,1,0,0,0,'Item Types'),(77,4,'Language','language',17,5,0,'num_results',0,1,1,1,1,0,1,1,'Languages'),(78,4,'Movie Rating','mpaa_rating',18,5,0,'num_results',0,0,1,1,1,0,1,0,'Movie Ratings'),(79,4,'Publication Date','publishDateSort',19,5,0,'num_results',0,1,1,1,1,0,0,0,'Publication Dates'),(80,4,'User Rating','rating_facet',20,5,0,'num_results',0,1,1,1,1,0,0,0,'User Ratings');\n");
+fwrite($fhnd, "INSERT INTO grouped_work_facet (id, facetGroupId, displayName, facetName, weight, numEntriesToShowByDefault, showAsDropDown,sortMode,showAboveResults,showInResults,showInAdvancedSearch,collapseByDefault,useMoreFacetPopup,translate,multiSelect,canLock,displayNamePlural) VALUES 
+                                   (1,1,'Format Category','format_category',1,0,0,'num_results',1,1,1,1,1,0,0,0,'Format Categories'),
+                                   (2,1,'Search Within','availability_toggle',2,0,0,'num_results',1,1,1,1,1,0,0,0,'Available?'),
+                                   (3,1,'Fiction / Non-Fiction','literary_form',3,5,0,'num_results',0,1,1,1,1,0,1,1,'Fiction / Non-Fiction'),
+                                   (4,1,'Reading Level','target_audience',4,8,0,'num_results',0,1,1,1,1,0,1,1,'Reading Levels'),
+                                   (5,1,'Available Now At','available_at',5,5,0,'num_results',0,1,1,1,1,0,0,0,'Available Now At'),
+                                   (6,1,'eContent Collection','econtent_source',6,5,0,'num_results',0,1,1,1,1,0,1,0,'eContent Collections'),
+                                   (7,1,'Format','format',7,5,0,'num_results',0,1,1,1,1,0,1,1,'Formats'),
+                                   (8,1,'Author','authorStr',8,5,0,'num_results',0,1,1,1,1,0,0,0,'Authors'),
+                                   (9,1,'Series','series_facet',9,5,0,'num_results',0,1,1,1,1,0,1,0,'Series'),
+                                   (10,1,'AR Interest Level','accelerated_reader_interest_level',10,5,0,'num_results',0,1,1,1,1,0,0,0,'AR Interest Levels'),
+                                   (11,1,'AR Reading Level','accelerated_reader_reading_level',11,5,0,'num_results',0,1,1,1,1,0,0,0,'AR Reading Levels'),
+                                   (12,1,'AR Point Value','accelerated_reader_point_value',12,5,0,'num_results',0,1,1,1,1,0,0,0,'AR Point Values'),
+                                   (13,1,'Subject','subject_facet',13,5,0,'num_results',0,1,1,1,1,0,1,0,'Subjects'),
+                                   (14,1,'Added in the Last','time_since_added',14,5,0,'num_results',0,1,1,1,1,0,0,0,'Added in the Last'),
+                                   (15,1,'Awards','awards_facet',15,5,0,'num_results',0,0,1,1,1,0,0,0,'Awards'),
+                                   (16,1,'Item Type','itype',16,5,0,'num_results',0,0,1,1,1,0,0,0,'Item Types'),
+                                   (17,1,'Language','language',17,5,0,'num_results',0,1,1,1,1,0,1,1,'Languages'),
+                                   (18,1,'Content Rating','content_rating',18,5,0,'num_results',0,0,1,1,1,0,1,0,'Content Ratings'),
+                                   (19,1,'Publication Date','publishDateSort',19,5,0,'num_results',0,1,1,1,1,0,0,0,'Publication Dates'),
+                                   (20,1,'User Rating','rating_facet',20,5,0,'num_results',0,1,1,1,1,0,0,0,'User Ratings'),
+                                   (21,2,'Format Category','format_category',1,0,0,'num_results',1,1,1,1,1,0,0,0,'Format Categories'),
+                                   (22,2,'Available?','availability_toggle',2,0,0,'num_results',1,1,1,1,1,0,0,0,'Available?'),
+                                   (23,2,'Literary Form','literary_form',3,5,0,'num_results',0,1,1,1,1,0,0,1,'Literary Forms'),
+                                   (24,2,'Reading Level','target_audience',4,8,0,'num_results',0,1,1,1,1,0,1,1,'Readling Levels'),
+                                   (25,2,'Available Now At','available_at',5,5,0,'num_results',0,1,1,1,1,0,0,0,'Available Now At'),
+                                   (26,2,'eContent Collection','econtent_source',6,5,0,'num_results',0,1,1,1,1,0,1,0,'eContent Collections'),
+                                   (27,2,'Format','format',7,5,0,'num_results',0,1,1,1,1,0,1,1,'Formats'),
+                                   (28,2,'Author','authorStr',8,5,0,'num_results',0,1,1,1,1,0,0,0,'Authors'),
+                                   (29,2,'Series','series_facet',9,5,0,'num_results',0,1,1,1,1,0,1,0,'Series'),
+                                   (30,2,'Subject','topic_facet',10,5,0,'num_results',0,1,1,1,1,0,1,0,'Subjects'),
+                                   (31,2,'Region','geographic_facet',11,5,0,'num_results',0,0,1,1,1,0,0,0,'Regions'),
+                                   (32,2,'Era','era',12,5,0,'num_results',0,0,1,1,1,0,0,0,'Eras'),
+                                   (33,2,'Genre','genre_facet',13,5,0,'num_results',0,1,1,1,1,0,1,0,'Genres'),
+                                   (34,2,'Added in the Last','time_since_added',14,5,0,'num_results',0,1,1,1,1,0,0,0,'Added in the Last'),
+                                   (35,2,'Awards','awards_facet',15,5,0,'num_results',0,0,1,1,1,0,0,0,'Awards'),
+                                   (36,2,'Item Type','itype',16,5,0,'num_results',0,0,1,1,1,0,0,0,'Item Types'),
+                                   (37,2,'Language','language',17,5,0,'num_results',0,1,1,1,1,0,1,1,'Languages'),
+                                   (38,2,'Content Rating','content_rating',18,5,0,'num_results',0,0,1,1,1,0,1,0,'Content Ratings'),
+                                   (39,2,'Publication Date','publishDateSort',19,5,0,'num_results',0,1,1,1,1,0,0,0,'Publication Dates'),
+                                   (40,2,'User Rating','rating_facet',20,5,0,'num_results',0,1,1,1,1,0,0,0,'User Ratings'),
+                                   (41,3,'Format Category','format_category',1,0,0,'num_results',1,1,1,1,1,0,0,0,'Format Categories'),
+                                   (42,3,'Available?','availability_toggle',2,0,0,'num_results',1,1,1,1,1,0,0,0,'Available?'),
+                                   (43,3,'Fiction / Non-Fiction','literary_form',3,5,0,'num_results',0,1,1,1,1,0,1,1,'Fiction / Non-Fiction'),
+                                   (44,3,'Reading Level','target_audience',4,8,0,'num_results',0,1,1,1,1,0,1,1,'Readling Levels'),
+                                   (45,3,'Available Now At','available_at',5,5,0,'num_results',0,1,1,1,1,0,0,0,'Available Now At'),
+                                   (46,3,'eContent Collection','econtent_source',6,5,0,'num_results',0,1,1,1,1,0,1,0,'eContent Collections'),
+                                   (47,3,'Format','format',7,5,0,'num_results',0,1,1,1,1,0,1,1,'Formats'),
+                                   (48,3,'Author','authorStr',8,5,0,'num_results',0,1,1,1,1,0,0,0,'Authors'),
+                                   (49,3,'Series','series_facet',9,5,0,'num_results',0,1,1,1,1,0,1,0,'Series'),
+                                   (50,3,'AR Interest Level','accelerated_reader_interest_level',10,5,0,'num_results',0,1,1,1,1,0,0,0,'AR Interest Levels'),
+                                   (51,3,'AR Reading Level','accelerated_reader_reading_level',11,5,0,'num_results',0,1,1,1,1,0,0,0,'AR Reading Levels'),
+                                   (52,3,'AR Point Value','accelerated_reader_point_value',12,5,0,'num_results',0,1,1,1,1,0,0,0,'AR Point Values'),
+                                   (53,3,'Subject','subject_facet',13,5,0,'num_results',0,1,1,1,1,0,1,0,'Subjects'),
+                                   (54,3,'Added in the Last','time_since_added',14,5,0,'num_results',0,1,1,1,1,0,0,0,'Added in the Last'),
+                                   (55,3,'Awards','awards_facet',15,5,0,'num_results',0,0,1,1,1,0,0,0,'Awards'),
+                                   (56,3,'Item Type','itype',16,5,0,'num_results',0,0,1,1,1,0,0,0,'Item Types'),
+                                   (57,3,'Language','language',17,5,0,'num_results',0,1,1,1,1,0,1,1,'Languages'),
+                                   (58,3,'Content Rating','content_rating',18,5,0,'num_results',0,0,1,1,1,0,1,0,'Content Ratings'),
+                                   (59,3,'Publication Date','publishDateSort',19,5,0,'num_results',0,1,1,1,1,0,0,0,'Publication Dates'),
+                                   (60,3,'User Rating','rating_facet',20,5,0,'num_results',0,1,1,1,1,0,0,0,'User Ratings'),
+                                   (61,4,'Format Category','format_category',1,0,0,'num_results',1,1,1,1,1,0,0,0,'Format Categories'),
+                                   (62,4,'Available?','availability_toggle',2,0,0,'num_results',1,1,1,1,1,0,0,0,'Available?'),
+                                   (63,4,'Fiction / Non-Fiction','literary_form',3,5,0,'num_results',0,1,1,1,1,0,1,1,'Fiction / Non-Fiction'),
+                                   (64,4,'Reading Level','target_audience',4,8,0,'num_results',0,1,1,1,1,0,1,1,'Readling Levels'),
+                                   (65,4,'Available Now At','available_at',5,5,0,'num_results',0,1,1,1,1,0,0,0,'Available Now At'),
+                                   (66,4,'eContent Collection','econtent_source',6,5,0,'num_results',0,1,1,1,1,0,1,0,'eContent Collections'),
+                                   (67,4,'Format','format',7,5,0,'num_results',0,1,1,1,1,0,1,1,'Formats'),
+                                   (68,4,'Author','authorStr',8,5,0,'num_results',0,1,1,1,1,0,0,0,'Authors'),
+                                   (69,4,'Series','series_facet',9,5,0,'num_results',0,1,1,1,1,0,1,0,'Series'),
+                                   (70,4,'AR Interest Level','accelerated_reader_interest_level',10,5,0,'num_results',0,1,1,1,1,0,0,0,'AR Interest Levels'),
+                                   (71,4,'AR Reading Level','accelerated_reader_reading_level',11,5,0,'num_results',0,1,1,1,1,0,0,0,'AR Reading Levels'),
+                                   (72,4,'AR Point Value','accelerated_reader_point_value',12,5,0,'num_results',0,1,1,1,1,0,0,0,'AR Point Values'),
+                                   (73,4,'Subject','subject_facet',13,5,0,'num_results',0,1,1,1,1,0,1,0,'Subjects'),
+                                   (74,4,'Added in the Last','time_since_added',14,5,0,'num_results',0,1,1,1,1,0,0,0,'Added in the Last'),
+                                   (75,4,'Awards','awards_facet',15,5,0,'num_results',0,0,1,1,1,0,0,0,'Awards'),
+                                   (76,4,'Item Type','itype',16,5,0,'num_results',0,0,1,1,1,0,0,0,'Item Types'),
+                                   (77,4,'Language','language',17,5,0,'num_results',0,1,1,1,1,0,1,1,'Languages'),
+                                   (78,4,'Content Rating','content_rating',18,5,0,'num_results',0,0,1,1,1,0,1,0,'Content Ratings'),
+                                   (79,4,'Publication Date','publishDateSort',19,5,0,'num_results',0,1,1,1,1,0,0,0,'Publication Dates'),
+                                   (80,4,'User Rating','rating_facet',20,5,0,'num_results',0,1,1,1,1,0,0,0,'User Ratings');\n");
 fwrite($fhnd, "INSERT INTO grouped_work_facet_groups (id, name) VALUES (1, 'public'), (2, 'academic'), (3, 'schools'), (4, 'consortia');\n");
 fwrite($fhnd, "INSERT INTO ip_lookup (id, locationId, location, ip, startIpVal, endIpVal, isOpac, blockAccess, allowAPIAccess, showDebuggingInformation, logTimingInformation, logAllQueries) VALUES (1,-1,'Internal','127.0.0.1',2130706433,2130706433,0,0,1,1,0,0);\n");
 fwrite($fhnd, "INSERT INTO languages VALUES (1,0,'en','English','English','English',0,'en-US');\n");
@@ -155,6 +234,7 @@ fwrite($fhnd, "INSERT INTO events_facet VALUES (1,1, 'Age Group/Audience', 'Age 
 fwrite($fhnd, "INSERT INTO open_archives_facet_groups (id, name) VALUES (1, 'default');\n");
 fwrite($fhnd, "INSERT INTO open_archives_facets VALUES (1,1, 'Collection', 'Collections', 'collection_name', 1, 5, 'num_results', 1, 1, 1, 1, 1),(2,1, 'Creator', 'Creators', 'creator_facet', 2, 5, 'num_results', 1, 1, 1, 1, 1),(3,1, 'Contributor', 'Contributors', 'contributor_facet', 3, 5, 'num_results', 1, 1, 1, 1, 1),(4,1, 'Type', 'Types', 'type', 4, 5, 'num_results', 1, 1, 1, 1, 1),(5,1, 'Subject', 'Subjects', 'subject_facet', 5, 5, 'num_results', 1, 1, 1, 1, 1),(6,1, 'Publisher', 'Publishers', 'publisher_facet', 6, 5, 'num_results', 1, 1, 1, 1, 1),(7,1, 'Source', 'Sources', 'source', 7, 5, 'num_results', 1, 1, 1, 1, 1);\n");
 fwrite($fhnd, "INSERT INTO grouped_work_format_sort_group (id, name) VALUES (1, 'Default Format Sorting');\n");
+fwrite($fhnd, "INSERT INTO user_list_facet_groups (id, name) VALUES (1, 'default');\n");
 
 //TODO: Fix which modules are enabled by default
 //TODO: Make sure the permissions are all correct
@@ -164,7 +244,7 @@ fwrite($fhnd, "SET FOREIGN_KEY_CHECKS=1;\n");
 
 fclose($fhnd);
 
-function exec_advanced($command, $log) {
+function exec_advanced($command, $log) : void {
 	if ($log) {
 		console_log($command, 'RUNNING: ');
 	}
@@ -173,7 +253,7 @@ function exec_advanced($command, $log) {
 		console_log($result, 'RESULT: ');
 	}
 }
-function console_log($message, $prefix = '') {
+function console_log($message, $prefix = '') : void {
 	$STDERR = fopen("php://stderr", "w");
 	fwrite($STDERR, $prefix.$message."\n");
 	fclose($STDERR);

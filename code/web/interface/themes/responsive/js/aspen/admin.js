@@ -1824,11 +1824,24 @@ AspenDiscovery.Admin = (function () {
 			return false;
 		},
 		setDateFilterFieldVisibility: function (propertyName) {
-			var selectedValue = $('#filterType_' + propertyName).val();
+			let selectedValue = $('#filterType_' + propertyName).val();
 			if (selectedValue === 'afterTime') {
 				$('#filterValue_' + propertyName).show();
 				$('#filterValue2_' + propertyName).val('').hide();
 			} else if (selectedValue === 'beforeTime') {
+				$('#filterValue_' + propertyName).val('').hide();
+				$('#filterValue2_' + propertyName).show();
+			} else {
+				$('#filterValue_' + propertyName).show();
+				$('#filterValue2_' + propertyName).show();
+			}
+		},
+		setIntegerFilterFieldVisibility: function (propertyName) {
+			let selectedValue = $('#filterType_' + propertyName).val();
+			if (selectedValue === 'equals' || selectedValue === 'greaterThan' || selectedValue === 'greaterThanOrEqual') {
+				$('#filterValue_' + propertyName).show();
+				$('#filterValue2_' + propertyName).val('').hide();
+			} else if (selectedValue === 'lessThan' || selectedValue === 'lessThanOrEqual') {
 				$('#filterValue_' + propertyName).val('').hide();
 				$('#filterValue2_' + propertyName).show();
 			} else {
@@ -2886,10 +2899,10 @@ AspenDiscovery.Admin = (function () {
 			return false;
 		},
 
-		getNotificationDevicesForUser: function () {
+		getNotificationDevicesForUser: function (tokenType="expo") {
 			const barcode = $("#testPatronBarcode").val();
 			if (barcode) {
-				$.getJSON(Globals.path + "/Admin/AJAX?method=getNotificationDevicesForUser&user=" + barcode, function (data) {
+				$.getJSON(Globals.path + "/Admin/AJAX?method=getNotificationDevicesForUser&user=" + barcode + "&tokenType=" + tokenType, function (data) {
 					if (data.success) {
 						$("#error").html(data.message).hide();
 						$("#patronDevices").html(data.message).show();

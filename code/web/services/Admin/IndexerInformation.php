@@ -30,7 +30,7 @@ class IndexerInformation extends Admin_Admin{
 			$user->updateMessage = $stopResults;
 			$user->update();
 
-			header('Location: /Greenhouse/IndexerInformation');
+			header('Location: /Admin/IndexerInformation');
 			die();
 		}else{
 			$user = UserAccount::getActiveUserObj();
@@ -116,21 +116,17 @@ class IndexerInformation extends Admin_Admin{
 	}
 
 	function getActiveAdminSection(): string {
-		return 'greenhouse';
+		return 'system_admin';
 	}
 
 	function canView(): bool {
-		if (UserAccount::isLoggedIn()) {
-			if (UserAccount::getActiveUserObj()->isAspenAdminUser()) {
-				return true;
-			}
-		}
-		return false;
+		return UserAccount::userHasPermission('Perform System Maintenance');
 	}
 
 	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
-		$breadcrumbs[] = new Breadcrumb('/Greenhouse/Home', 'Greenhouse Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#system_admin', 'System Administration');
 		$breadcrumbs[] = new Breadcrumb('', 'Indexer Information');
 
 		return $breadcrumbs;

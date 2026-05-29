@@ -18,6 +18,7 @@ abstract class Admin_AbstractUsageGraphs extends Admin_Admin {
 		} else {
 			$instanceName = '';
 		}
+		$profileName = $_REQUEST['profileName'] ?? '';
 
 		// includes dashboard subsection name in title if relevant
 		$subSectionName = $_REQUEST['subSection'] ?? '';
@@ -33,6 +34,8 @@ abstract class Admin_AbstractUsageGraphs extends Admin_Admin {
 		$interface->assign('graphTitle', $sectionTitle);
 		$interface->assign('showCSVExportButton', true);
 		$interface->assign('propName', 'exportToCSV');
+		$interface->assign('profileName', $profileName);
+		$interface->assign('instance', $instanceName);
 
 		$this->assignGraphSpecificTitle($stat);
 		$this->getAndSetInterfaceDataSeries($stat, $instanceName);

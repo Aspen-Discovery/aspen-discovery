@@ -135,6 +135,7 @@ class Location extends DataObject {
 
 	/** @noinspection PhpUnused */
 	public $allowUpdatingHoursFromILS;
+	public $showInHolidayHoursTable;
 	/** @noinspection PhpUnused */
 	public $allowUpdatingContactInfoFromILS;
 
@@ -172,6 +173,7 @@ class Location extends DataObject {
 			'statGroup',
 			'isMainBranch',
 			'showInLocationsAndHoursList',
+			'showInHolidayHoursTable',
 			'validHoldPickupBranch',
 			'useScope',
 			'restrictSearchByLocation',
@@ -384,6 +386,7 @@ class Location extends DataObject {
 				'maxHeight' => 400,
 				'hideInLists' => true,
 				'affectsLiDA' => true,
+				'editPermissions' => ['Location Address and Hours Settings'],
 			],
 			'createSearchInterface' => [
 				'property' => 'createSearchInterface',
@@ -391,7 +394,7 @@ class Location extends DataObject {
 				'label' => 'Create Search Interface',
 				'description' => 'Whether or not a search interface is created.  Things like lockers and drive through windows do not need search interfaces.',
 				'forcesReindex' => true,
-				'editPermissions' => ['Location Domain Settings'],
+				'permissions' => ['Location Domain Settings'],
 				'default' => true,
 			],
 			'showInSelectInterface' => [
@@ -400,7 +403,7 @@ class Location extends DataObject {
 				'label' => 'Show In Select Interface (requires Create Search Interface)',
 				'description' => 'Whether or not this Location will show in the Select Interface Page.',
 				'forcesReindex' => false,
-				'editPermissions' => ['Location Domain Settings'],
+				'permissions' => ['Location Domain Settings'],
 				'default' => true,
 			],
 			'showOnDonationsPage' => [
@@ -409,7 +412,7 @@ class Location extends DataObject {
 				'label' => 'Show Location on Donations page',
 				'description' => 'Whether or not this Location will show on the Donation page.',
 				'forcesReindex' => false,
-				'editPermissions' => ['Location Domain Settings'],
+				'permissions' => ['Location Domain Settings'],
 				'default' => true,
 			],
 			'useLibraryThemes' => [
@@ -418,7 +421,7 @@ class Location extends DataObject {
 				'label' => 'Use Library Themes',
 				'description' => "Whether or not this location will use it's own themes or use themes from the parent library.",
 				'forcesReindex' => false,
-				'editPermissions' => ['Location Theme Configuration'],
+				'permissions' => ['Location Theme Configuration'],
 				'default' => true,
 				'onchange' => 'return AspenDiscovery.Admin.updateLocationFields()'
 			],
@@ -437,7 +440,7 @@ class Location extends DataObject {
 				'canEdit' => true,
 				'canAddNew' => true,
 				'canDelete' => true,
-				'editPermissions' => ['Location Theme Configuration'],
+				'permissions' => ['Location Theme Configuration'],
 			],
 			'libraryId' => [
 				'property' => 'libraryId',
@@ -465,6 +468,16 @@ class Location extends DataObject {
 				'default' => true,
 				'editPermissions' => ['Location Address and Hours Settings'],
 				'affectsLiDA' => true,
+			],
+			'showInHolidayHoursTable' => [
+				'property' => 'showInHolidayHoursTable',
+				'type' => 'checkbox',
+				'label' => 'Show in Holidays & Special Hours table',
+				'description' => 'Whether or not this location shows in the holiday & special hours table',
+				'note' => 'Turning it off deletes all holiday rows for this location',
+				'hideInLists' => true,
+				'default' => true,
+				'editPermissions' => ['Location Address and Hours Settings'],
 			],
 			'allowUpdatingContactInfoFromILS' => [
 				'property' => 'allowUpdatingContactInfoFromILS',
@@ -532,12 +545,13 @@ class Location extends DataObject {
 				'editPermissions' => ['Location Address and Hours Settings'],
 				'affectsLiDA' => true,
 			],
-				'useLocationNameForMaps' => [
+			'useLocationNameForMaps' => [
 				'property' => 'useLocationNameForMaps',
 				'type' => 'checkbox',
 				'label' => 'Use Library Name for Google Maps',
 				'description' => 'Use the library name for the map displayed on the "Library Hours & Locations" popup instead of the longitude and latitude',
 				'hideInLists' => true,
+				'editPermissions' => ['Location Address and Hours Settings'],
 				'default' => 0,
 			],
 			'unit' => [
@@ -630,14 +644,14 @@ class Location extends DataObject {
 						'default' => true,
 						'permissions' => ['Location Theme Configuration'],
 					],
-					[
+					'homeLink' => [
 						'property' => 'homeLink',
 						'type' => 'text',
 						'label' => 'Home Link',
 						'description' => 'The location to send the user when they click on the home button or logo.  Use default or blank to go back to the aspen home location.',
 						'hideInLists' => true,
 						'size' => '40',
-						'editPermissions' => ['Location Domain Settings'],
+						'permissions' => ['Location Domain Settings'],
 						'affectsLiDA' => true,
 					],
 					[
@@ -794,7 +808,7 @@ class Location extends DataObject {
 						'description' => 'Library Hours',
 						'sortable' => false,
 						'storeDb' => true,
-						'permissions' => ['Location Address and Hours Settings'],
+						'editPermissions' => ['Location Address and Hours Settings'],
 						'canAddNew' => true,
 						'canDelete' => true,
 					],
@@ -1046,6 +1060,7 @@ class Location extends DataObject {
 				'type' => 'section',
 				'label' => 'Explore More Bar Section',
 				'hideInLists' => true,
+				'permissions' => ['Location Catalog Options'],
 				'properties' => [
 					'displayExploreMoreBarInCatalogSearch' => [
 						'property' => 'displayExploreMoreBarInCatalogSearch',
@@ -1534,6 +1549,7 @@ class Location extends DataObject {
 			'label' => 'Sublocations',
 			'hideInLists' => true,
 			'renderAsHeading' => true,
+			'permissions' => ['Location Catalog Options', 'Location ILS Options'],
 			'properties' => [
 				'sublocations' => [
 					'property' => 'sublocations',
@@ -2071,6 +2087,16 @@ class Location extends DataObject {
 					}
 				}
 			}
+			//Add the library facet info as well since we sometimes use library label (i.e. when there is only 1 location)
+			$library = new Library();
+			$library->libraryId = $libraryId;
+			if ($library->find(true)) {
+				if (empty($library->facetLabel)) {
+					$facets[] = $library->displayName;
+				} else {
+					$facets[] = $library->facetLabel;
+				}
+			}
 			$this->_locationFacets = $facets;
 		}
 
@@ -2145,6 +2171,9 @@ class Location extends DataObject {
 			$this->saveThemes();
 			$this->saveEventMapping();
 			$this->saveSublocations();
+			if (empty($this->showInHolidayHoursTable)) {
+				$this->clearLocationHolidays();
+			}
 		}
 		return $ret;
 	}
@@ -2168,16 +2197,21 @@ class Location extends DataObject {
 			$this->saveThemes();
 			$this->saveEventMapping();
 			$this->saveSublocations();
+			if (empty($this->showInHolidayHoursTable)) {
+				$this->clearLocationHolidays();
+			}
 		}
 		return $ret;
 	}
 
 	public function delete(bool $useWhere = false, bool $hardDelete = false) : bool|int {
 		$ret = parent::delete($useWhere, $hardDelete);
-		if ($ret && !empty($this->id)) {
+		if ($ret && !empty($this->locationId)) {
 			$locationMap = new EventsBranchMapping();
 			$locationMap->locationId = $this->locationId;
 			$locationMap->delete(true);
+
+			$this->clearLocationHolidays();
 		}
 		return $ret;
 	}
@@ -2237,6 +2271,13 @@ class Location extends DataObject {
 			$this->saveOneToManyOptions($this->_hours, 'locationId');
 			unset($this->_hours);
 		}
+	}
+
+	private function clearLocationHolidays(): void {
+		require_once ROOT_DIR . '/sys/LibraryLocation/Holiday.php';
+		$holidayLocation = new Holiday();
+		$holidayLocation->locationId = $this->locationId;
+		$holidayLocation->delete(true);
 	}
 
 	public function getCloudLibraryScope(): int {
@@ -2303,16 +2344,38 @@ class Location extends DataObject {
 			// format $timeToCheck according to MySQL default date format
 			$todayFormatted = date('Y-m-d', $timeToCheck);
 
-			// check to see if today is a holiday
-			require_once ROOT_DIR . '/sys/LibraryLocation/Holiday.php';
-			$holiday = new Holiday();
-			$holiday->date = $todayFormatted;
-			$holiday->libraryId = $location->libraryId;
-			if ($holiday->find(true)) {
-				return [
-					'closed' => true,
-					'closureReason' => $holiday->name,
-				];
+			// check to see if today is a holiday or special hours
+			if (!empty($location->showInHolidayHoursTable)) {
+				require_once ROOT_DIR . '/sys/LibraryLocation/Holiday.php';
+				$holiday = new Holiday();
+				$holiday->date = $todayFormatted;
+				$holiday->locationId = $locationId;
+				if ($holiday->find(true)) {
+					if (!empty($holiday->closed)) {
+						return [
+							'closed' => true,
+							'closureReason' => $holiday->name,
+						];
+					}
+					$specialOpen = !empty($holiday->open) ? ltrim($holiday->open, '0') : null;
+					$specialClose = !empty($holiday->close) ? ltrim($holiday->close, '0') : null;
+
+					if ($specialOpen !== null && $specialClose !== null) {
+						if ($specialOpen == $specialClose) {
+							return [
+								'closed' => true,
+								'closureReason' => $holiday->name,
+							];
+						}
+						return [[
+							'open' => $specialOpen,
+							'close' => $specialClose,
+							'closed' => false,
+							'openFormatted' => ($holiday->open == '12:00' ? 'Noon' : date("g:i A", strtotime($holiday->open))),
+							'closeFormatted' => ($holiday->close == '12:00' ? 'Noon' : date("g:i A", strtotime($holiday->close))),
+						]];
+					}
+				}
 			}
 
 			// get the day of the week (0=Sunday to 6=Saturday)
@@ -3120,11 +3183,34 @@ class Location extends DataObject {
 		} else {
 			$apiInfo['email'] = $this->contactEmail;
 		}
+
+		require_once ROOT_DIR . '/sys/LibraryLocation/Holiday.php';
+
+		$today = (int)date('w');
+		$specialHours = new Holiday();
+		$specialHours->locationId = $this->locationId;
+		$specialHours->date = date('Y-m-d');
+		$isHoliday = $specialHours->find(true);
+		if ($isHoliday){
+			$apiInfo['hours'][] = [
+				'day' => $today,
+				'dayName' => $specialHours->name,
+				'isClosed' => (bool)$specialHours->closed,
+				'open' => $specialHours->open ?? '',
+				'close' => $specialHours->close ?? '',
+				'notes' => '',
+			];
+		}
+
 		unset($this->_hours);
 		$hours = $this->getHours();
 		foreach ($hours as $hour) {
+			$dayOfWeek = (int)$hour->day;
+			if ($isHoliday && $today === $dayOfWeek) {
+				continue;
+			}
 			$apiInfo['hours'][] = [
-				'day' => (int)$hour->day,
+				'day' => $dayOfWeek,
 				'dayName' => LocationHours::$dayNames[$hour->day],
 				'isClosed' => (bool)$hour->closed,
 				'open' => $hour->open,

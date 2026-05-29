@@ -576,11 +576,11 @@ class CatalogConnection {
 	 * AspenError otherwise.
 	 * @access public
 	 */
-	public function getCheckouts(User $user, ?bool $forceRefresh = false): array {
+	public function getCheckouts(User $user, ?bool $forceRefresh = false, array $options = []): array {
 		$accountSummary = $user->getCachedAccountSummary('ils');
 		$cachedCheckouts = $user->getCachedCheckoutsForSource('ils');
 		if ($forceRefresh || $accountSummary->areCheckoutsStale() || isset($_REQUEST['reload']) || isset($_REQUEST['refreshCheckouts'])) {
-			$checkouts = $this->driver->getCheckouts($user);
+			$checkouts = $this->driver->getCheckouts($user, $options);
 
 			$cachedCheckouts = $this->driver->updateCachedCheckoutsBasedOnActiveCheckouts($cachedCheckouts, $checkouts, $accountSummary);
 		}
@@ -1250,7 +1250,7 @@ class CatalogConnection {
 			}
 		}
 
-		$checkouts = $patron->getCheckouts(false);
+		$checkouts = $patron->getCheckouts(false, isNightlyUpdate: $isNightlyUpdate);
 		foreach ($checkouts as $checkout) {
 			$source = $checkout->source;
 			$sourceId = $checkout->sourceId;
@@ -1401,7 +1401,7 @@ class CatalogConnection {
 		if ($okToCancel) {
 			$result = $this->driver->cancelHold($patron, $recordId, $cancelId, $isIll);
 			if ($result['success']) {
-				$this->driver->updateCachesForCancelledHold($patron, $holdToCancel);
+				$this->driver->updateCachesForCancelledHold($patron, $holdToCancel, 'ils');
 			}
 			return $result;
 		} else {

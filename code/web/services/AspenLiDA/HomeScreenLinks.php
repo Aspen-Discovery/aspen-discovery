@@ -28,10 +28,10 @@ class AspenLiDA_HomeScreenLinks extends ObjectEditor {
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		if (!UserAccount::userHasPermission('Administer All Aspen LiDA Home Screen Links')) {
 			// Administer Library Aspen LiDA Home Screen Links: Include the links for the home library.
-			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
-			$libraryId = $library == null ? -1 : $library->libraryId;
+			$validLibraries = Library::getLibraryList(true);
+			$libraryIds = empty($validLibraries) ? [-1] : array_keys($validLibraries);
 			$object->whereAdd("sharing = 'everyone'");
-			$object->whereAdd("sharing = 'library' AND libraryId = " . $libraryId, 'OR');
+			$object->whereAdd("sharing = 'library' AND libraryId IN (" . implode(',' ,$libraryIds) . ')', 'OR');
 		}
 		$object->find();
 		$list = [];
@@ -104,12 +104,12 @@ class AspenLiDA_HomeScreenLinks extends ObjectEditor {
 		if ($this->_numObjects == null) {
 			if (!UserAccount::userHasPermission('Administer All Aspen LiDA Home Screen Links')) {
 				/** @var DataObject $object */
-				$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
-				$libraryId = $library == null ? -1 : $library->libraryId;
+				$validLibraries = Library::getLibraryList(true);
+				$libraryIds = empty($validLibraries) ? [-1] : array_keys($validLibraries);
 				$objectType = $this->getObjectType();
 				$object = new $objectType();
 				$object->whereAdd("sharing = 'everyone'");
-				$object->whereAdd("sharing = 'library' AND libraryId = " . $libraryId, 'OR');
+				$object->whereAdd("sharing = 'library' AND libraryId IN (" . implode(',', $libraryIds) . ')', 'OR');
 				$this->applyFilters($object);
 				$this->_numObjects = $object->count();
 			} elseif (UserAccount::userHasPermission('Administer All Aspen LiDA Home Screen Links')) {

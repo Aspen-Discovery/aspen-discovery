@@ -33,61 +33,61 @@ public class OverDriveRecordGrouper extends RecordGroupingProcessor {
 	public String processOverDriveRecord(String overdriveId) {
 		try {
 			getOverDriveProductInfoStmt.setString(1, overdriveId);
-			ResultSet overDriveRecordRS = getOverDriveProductInfoStmt.executeQuery();
-			if (overDriveRecordRS.next()) {
-				long id = overDriveRecordRS.getLong("id");
-				String mediaType = overDriveRecordRS.getString("mediaType");
-				String title = overDriveRecordRS.getString("title");
-				title = wordsInParensPattern.matcher(title).replaceAll("");
-				String subtitle = overDriveRecordRS.getString("subtitle");
-				String series = overDriveRecordRS.getString("series");
-				String author = overDriveRecordRS.getString("primaryCreatorName");
-				String primaryLanguage = "eng";
-				getProductMetadataStmt.setLong(1, id);
-				ResultSet metadataRS = getProductMetadataStmt.executeQuery();
-				if (metadataRS.next()) {
-					byte[] rawDataBytes = metadataRS.getBytes("rawData");
-					if (rawDataBytes != null) {
-						String metadata = new String(rawDataBytes, StandardCharsets.UTF_8);
-						JSONObject productMetadata;
-						try {
-							productMetadata = new JSONObject(metadata);
-							if (productMetadata.has("languages")) {
-								JSONArray languagesFromMetadata = productMetadata.getJSONArray("languages");
-								if (languagesFromMetadata.length() > 1) {
-									primaryLanguage = "mul";
-								} else {
-									for (int i = 0; i < languagesFromMetadata.length(); i++) {
-										JSONObject curLanguageObj = languagesFromMetadata.getJSONObject(i);
-										String languageCode = curLanguageObj.getString("code");
-										String threeLetterCode = translateValue("two_to_three_character_language_codes", languageCode.toLowerCase());
-										if (threeLetterCode != null) {
-											primaryLanguage = threeLetterCode;
+			try (ResultSet overDriveRecordRS = getOverDriveProductInfoStmt.executeQuery()) {
+				if (overDriveRecordRS.next()) {
+					long id = overDriveRecordRS.getLong("id");
+					String mediaType = overDriveRecordRS.getString("mediaType");
+					String title = overDriveRecordRS.getString("title");
+					title = wordsInParensPattern.matcher(title).replaceAll("");
+					String subtitle = overDriveRecordRS.getString("subtitle");
+					String series = overDriveRecordRS.getString("series");
+					String author = overDriveRecordRS.getString("primaryCreatorName");
+					String primaryLanguage = "eng";
+					getProductMetadataStmt.setLong(1, id);
+					try (ResultSet metadataRS = getProductMetadataStmt.executeQuery()) {
+						if (metadataRS.next()) {
+							byte[] rawDataBytes = metadataRS.getBytes("rawData");
+							if (rawDataBytes != null) {
+								String metadata = new String(rawDataBytes, StandardCharsets.UTF_8);
+								JSONObject productMetadata;
+								try {
+									productMetadata = new JSONObject(metadata);
+									if (productMetadata.has("languages")) {
+										JSONArray languagesFromMetadata = productMetadata.getJSONArray("languages");
+										if (languagesFromMetadata.length() > 1) {
+											primaryLanguage = "mul";
+										} else {
+											for (int i = 0; i < languagesFromMetadata.length(); i++) {
+												JSONObject curLanguageObj = languagesFromMetadata.getJSONObject(i);
+												String languageCode = curLanguageObj.getString("code");
+												String threeLetterCode = translateValue("two_to_three_character_language_codes", languageCode.toLowerCase());
+												if (threeLetterCode != null) {
+													primaryLanguage = threeLetterCode;
+												}
+											}
 										}
 									}
-								}
-							}
-							//Check to see if this should be a comic rather than an eBook
-							if (productMetadata.has("subjects") && mediaType.equals("eBook")) {
-								JSONArray subjectsFromMetadata = productMetadata.getJSONArray("subjects");
-								for (int i = 0; i < subjectsFromMetadata.length(); i++) {
-									JSONObject curSubjectObj = subjectsFromMetadata.getJSONObject(i);
-									if (curSubjectObj.getString("value").equalsIgnoreCase("Comic and Graphic Books")) {
-										mediaType = "eComic";
-										break;
+									//Check to see if this should be a comic rather than an eBook
+									if (productMetadata.has("subjects") && mediaType.equals("eBook")) {
+										JSONArray subjectsFromMetadata = productMetadata.getJSONArray("subjects");
+										for (int i = 0; i < subjectsFromMetadata.length(); i++) {
+											JSONObject curSubjectObj = subjectsFromMetadata.getJSONObject(i);
+											if (curSubjectObj.getString("value").equalsIgnoreCase("Comic and Graphic Books")) {
+												mediaType = "eComic";
+												break;
+											}
+										}
 									}
+								} catch (JSONException e) {
+									logEntry.incErrors("Error loading raw data for OverDrive MetaData for record " + overdriveId, e);
 								}
 							}
-						} catch (JSONException e) {
-							logEntry.incErrors("Error loading raw data for OverDrive MetaData for record " + overdriveId, e);
 						}
 					}
+					overDriveRecordRS.close();
+					return processOverDriveRecord(overdriveId, title, subtitle, series, author, mediaType, primaryLanguage);
 				}
-				metadataRS.close();
-				overDriveRecordRS.close();
-				return processOverDriveRecord(overdriveId, title, subtitle, series, author, mediaType, primaryLanguage);
 			}
-			overDriveRecordRS.close();
 		} catch (SQLException e) {
 			logEntry.incErrors("Error getting information about overdrive record for grouping", e);
 		}
@@ -114,5 +114,19 @@ public class OverDriveRecordGrouper extends RecordGroupingProcessor {
 		}
 
 		return processRecord(primaryIdentifier, title, subtitle, author, mediaType, primaryLanguage, true);
+	}
+
+	public void close() {
+		super.close();
+		try {
+			getOverDriveProductInfoStmt.close();
+		} catch (SQLException e) {
+			logEntry.incErrors("Error closing prepared statements in OverDrive Record Grouper", e);
+		}
+		try {
+			getProductMetadataStmt.close();
+		} catch (SQLException e) {
+			logEntry.incErrors("Error closing prepared statements in OverDrive Record Grouper", e);
+		}
 	}
 }

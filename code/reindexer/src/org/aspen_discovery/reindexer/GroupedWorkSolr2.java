@@ -59,8 +59,13 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 			doc.addField("title_new", titleNew);
 
 			//author and variations
+			String primaryAuthor = getPrimaryAuthor();
 			doc.addField("auth_author", authAuthor);
-			doc.addField("author", getPrimaryAuthor());
+			doc.addField("author", primaryAuthor);
+			if (primaryAuthor != null && !primaryAuthor.isEmpty()){ //skip if empty so titles with no author are sorted last
+				primaryAuthor = primaryAuthor.toLowerCase();
+				doc.addField("author_sort", primaryAuthor);
+			}
 
 			doc.addField("auth_author2", authAuthor2);
 			doc.addField("author2", author2);
@@ -86,7 +91,8 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 			if (languages.isEmpty()) {
 				languages.add(groupedWorkIndexer.getTreatUnknownLanguageAs());
 			}
-			doc.addField("language", languages);
+			doc.addField("all_languages", languages);
+			doc.addField("language", primaryLanguage);
 			doc.addField("translation", translations);
 			doc.addField("language_boost", languageBoost);
 			doc.addField("language_boost_es", languageBoostSpanish);
@@ -99,6 +105,7 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 
 			//faceting and refined searching
 			doc.addField("physical", physicals);
+			doc.addField("duration", durations);
 			doc.addField("edition", editions);
 			doc.addField("dateSpan", dateSpans);
 			//series.values().removeAll(GroupedWorkIndexer.hideSeries);
@@ -286,7 +293,7 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 
 			doc.addField("barcode", barcodes);
 			//Awards and ratings
-			doc.addField("mpaa_rating", mpaaRatings);
+			doc.addField("content_rating", contentRatings);
 			doc.addField("awards_facet", awards);
 			if (lexileScore.isEmpty()) {
 				doc.addField("lexile_score", -1);
@@ -549,7 +556,7 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 								detailedLocations.add(scopePrefix + curItem.getDetailedLocation());
 							}
 							String shelfLocation = curItem.getShelfLocation();
-							if (shelfLocation != null && !shelfLocation.isEmpty()) {
+							if (shelfLocation != null && !shelfLocation.isEmpty() && (scopeDisplaySettings.includeEContentInShelvingLocations() || !isEContent)) {
 								shelfLocations.add(scopePrefix + curItem.getShelfLocation());
 							}
 						}

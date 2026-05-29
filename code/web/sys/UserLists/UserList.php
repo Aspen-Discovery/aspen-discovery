@@ -11,6 +11,7 @@ class UserList extends DataObject {
 	public $created;
 	public $public;
 	public $searchable;
+	public $customAuthorName;
 	public $displayListAuthor;
 	public $deleted;
 	public $dateUpdated;
@@ -2010,7 +2011,7 @@ class UserList extends DataObject {
 			'author' => 'author asc,title asc',
 			'dateAdded' => "list_entry_date_added_$this->id asc",
 			'recentlyAdded' => "list_entry_date_added_$this->id desc",
-			'call_number' => 'callnumber_sort',
+			'call_number' => "callnumber_sort_$solrScope asc,title asc",
 			'copies_available', 'availability_desc' => "available_copies_$solrScope desc,title asc",
 			'copies_available_asc', 'availability' => "available_copies_$solrScope asc,title asc",
 			'custom' => "list_entry_weight_$this->id asc",

@@ -58,7 +58,8 @@ class JSON_Action extends Action {
 		if (!in_array($moduleName, $enabledModules)) {
 			$this->outputEncodedResult([
 				'success' => false,
-				'error' => "$moduleName is not active"
+				'error' => "$moduleName is not active",
+				'message' => "$moduleName is not active"
 			]);
 			die();
 		}
@@ -68,7 +69,8 @@ class JSON_Action extends Action {
 		if (!UserAccount::userHasPermission($permission)) {
 			$this->outputEncodedResult([
 				'success' => false,
-				'error' => "You don't have permission to access this functionality"
+				'error' => "You don't have permission to access this functionality",
+				'message' => "You don't have permission to access this functionality"
 			]);
 			die();
 		}

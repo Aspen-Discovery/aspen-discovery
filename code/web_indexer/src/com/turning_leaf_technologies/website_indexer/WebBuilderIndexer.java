@@ -55,10 +55,15 @@ class WebBuilderIndexer {
 		}
 
 		indexBasicPages();
+		logEntry.addNote("Finished indexing basic pages.");
 		indexCustomPages();
+		logEntry.addNote("Finished indexing custom pages.");
 		indexResources();
+		logEntry.addNote("Finished indexing web resources.");
 		indexGrapesPages();
+		logEntry.addNote("Finished indexing grapes pages.");
 		indexWebResourcePages();
+		logEntry.addNote("Finished indexing web resource pages.");
 
 		try {
 			solrUpdateServer.commit(false, false, true);
@@ -141,6 +146,8 @@ class WebBuilderIndexer {
 				solrDocument.addField("title", title);
 				solrDocument.addField("title_display", title);
 				solrDocument.addField("title_sort", AspenStringUtils.makeValueSortable(title));
+				boolean showInExploreMore = getResourcesRS.getBoolean("showInExploreMore");
+				solrDocument.addField("show_in_explore_more", Boolean.valueOf(showInExploreMore));
 
 				//Load libraries to scope to
 				getLibrariesForResourceStmt.setString(1, id);

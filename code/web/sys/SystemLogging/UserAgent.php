@@ -9,6 +9,14 @@ class UserAgent extends DataObject {
 	public $isBot;
 	public $blockAccess;
 
+	public function getNumericColumnNames(): array {
+		return [
+			'id',
+			'isBot',
+			'blockAccess',
+		];
+	}
+
 	static $_objectStructure = [];
 	static function getObjectStructure(string $context = ''): array {
 		if (isset(self::$_objectStructure[$context]) && self::$_objectStructure[$context] !== null) {

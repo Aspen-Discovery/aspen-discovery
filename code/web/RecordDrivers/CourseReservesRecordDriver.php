@@ -76,7 +76,7 @@ class CourseReservesRecordDriver extends IndexRecordDriver {
 		return 'RecordDrivers/CourseReserve/result.tpl';
 	}
 
-	public function getMoreDetailsOptions() {
+	public function getMoreDetailsOptions() : array {
 		return [];
 	}
 

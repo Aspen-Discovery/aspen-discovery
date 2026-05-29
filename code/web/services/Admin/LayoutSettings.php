@@ -28,8 +28,15 @@ class Admin_LayoutSettings extends ObjectEditor {
 		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		if (!UserAccount::userHasPermission('Administer All Layout Settings')) {
-			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
-			$object->id = $library->layoutSettingId;
+			$libraries = Library::getLibraryListAsObjects(true);
+			$validLayoutSettingIds = [];
+			foreach ($libraries as $library) {
+				$validLayoutSettingIds[] = $library->layoutSettingId;
+			}
+			if (empty($validLayoutSettingIds)) {
+				return [];
+			}
+			$object->whereAddIn('id', $validLayoutSettingIds, false);
 		}
 		$object->find();
 		$list = [];

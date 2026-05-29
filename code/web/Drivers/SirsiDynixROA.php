@@ -809,6 +809,7 @@ class SirsiDynixROA extends AbstractIlsDriver {
 			}
 
 			$foundValidBarcode = false;
+			$barcode = '';
 			if ($selfRegistrationForm != null){
 				$barcodePrefix = $selfRegistrationForm->selfRegistrationBarcodePrefix;
 				$barcodeSuffixLength = $selfRegistrationForm->selfRegBarcodeSuffixLength;
@@ -824,7 +825,6 @@ class SirsiDynixROA extends AbstractIlsDriver {
 					$foundValidBarcode = true;
 				}
 			}
-			$barcode = '';
 			if (!$foundValidBarcode) {
 				$barcodeVariable = new Variable();
 				$barcodeVariable->name = 'self_registration_card_number';
@@ -844,7 +844,7 @@ class SirsiDynixROA extends AbstractIlsDriver {
 				}
 			}
 
-			if ($foundValidBarcode) {
+			if ($foundValidBarcode && !empty($barcode)) {
 				$createPatronInfoParameters['fields']['barcode'] = (string)$barcode;
 
 				//global $configArray;
@@ -1048,13 +1048,17 @@ class SirsiDynixROA extends AbstractIlsDriver {
 	}
 
 	/**
-	 * @param User $patron
-	 * @param int $page
-	 * @param int $recordsPerPage
-	 * @param string $sortOption
-	 * @return Checkout[]
+	 * Get Patron Checkouts
+	 *
+	 * This is responsible for retrieving all checkouts (i.e. checked out items)
+	 * by a specific patron.
+	 *
+	 * @param User $patron       The user to load transactions for
+	 * @param array $options     Additional options
+	 * @return Checkout[]        Array of the patron's transactions on success
+	 * @access public
 	 */
-	public function getCheckouts(User $patron, int $page = 1, int $recordsPerPage = -1, string $sortOption = 'dueDate'): array {
+	public function getCheckouts(User $patron, array $options = []): array {
 		require_once ROOT_DIR . '/sys/User/Checkout.php';
 		$checkedOutTitles = [];
 
@@ -3780,6 +3784,7 @@ class SirsiDynixROA extends AbstractIlsDriver {
 					'text' => 'There was an error checking out this title.',
 					'isPublicFacing' => true,
 				]),
+				'itemNotFound' => false,
 			],
 			'itemData' => []
 		];
@@ -3813,22 +3818,56 @@ class SirsiDynixROA extends AbstractIlsDriver {
 				'text' => 'Could not find an item with that barcode, unable to checkout item.',
 				'isPublicFacing' => true,
 			]);
+			$result['api']['itemNotFound'] = true;
 		}else{
 			require_once ROOT_DIR . '/sys/AspenLiDA/SelfCheckSetting.php';
 			$scoSettings = new AspenLiDASelfCheckSetting();
 			$checkoutLocationSetting = $scoSettings->getCheckoutLocationSetting($currentLocation->code);
 			$itemKey = $lookupItemResponse->key;
+			$bibKey = $lookupItemResponse->fields->bib->key;
 			$currentItemLocation = $lookupItemResponse->fields->currentLocation->key;
+			$owningLocationCode = $lookupItemResponse->fields->currentLibrary->key;
 
+			//Check to see if the user already has a copy of the title checked out.
+			$includeFields = urlencode("circRecordList{*,bib{title,author}},holdRecordList{*,bib{title,author},selectedItem{call{*},itemType{*},barcode}}");
+			$patronHoldsAndCheckouts = $this->getWebServiceResponse('getHolds', $webServiceURL . '/user/patron/key/' . $patron->unique_ils_id . '?includeFields=' . $includeFields, null, $sessionToken);
+			if ($patronHoldsAndCheckouts && isset($patronHoldsAndCheckouts->fields)) {
+				foreach ($patronHoldsAndCheckouts->fields->circRecordList as $checkout) {
+					if (str_starts_with($checkout->key, $bibKey . ':')){
+						$result['message'] = translate([
+							'text' => 'A copy of this title already checked out to you, see a staff member to checkout additional copies.',
+							'isPublicFacing' => true,
+						]);
+						$result['api']['message'] = translate([
+							'text' => 'A copy of this title already checked out to you, see a staff member to checkout additional copies.',
+							'isPublicFacing' => true,
+						]);
+						return $result;
+					}
+				}
+			}
 			if ($checkoutLocationSetting == 0) {
 				//Use the active location, no change needed
 				$doCheckout = true;
+				/** @var Location $locationSingleton **/
+				global $locationSingleton;
+				$activeLocation = $locationSingleton->getActiveLocation();
+				if (empty($activeLocation)) {
+					global $library;
+					$libraryLocations = $library->getLocations();
+					if (!empty($libraryLocations)) {
+						$activeLocation = reset($libraryLocations);
+					}
+				}
+				$checkoutLocationCode = !empty($activeLocation) ? $activeLocation->code : '';
 			}elseif ($checkoutLocationSetting == 1) {
 				//Use home location for the user
 				$currentLocation = $patron->getHomeLocation();
+				$checkoutLocationCode = $currentLocation->code;
 				$doCheckout = true;
 			}else {
 				$doCheckout = true;
+				$checkoutLocationCode = $owningLocationCode;
 
 				if ($currentItemLocation == 'CHECKEDOUT') {
 					$result['message'] = translate([
@@ -3845,10 +3884,8 @@ class SirsiDynixROA extends AbstractIlsDriver {
 					$doCheckout = false;
 
 					//Get holds for the patron
-					$includeFields = urlencode("holdRecordList{*,bib{title,author},selectedItem{call{*},itemType{*},barcode}}");
-					$patronHolds = $this->getWebServiceResponse('getHolds', $webServiceURL . '/user/patron/key/' . $patron->unique_ils_id . '?includeFields=' . $includeFields, null, $sessionToken);
-					if ($patronHolds && isset($patronHolds->fields)) {
-						foreach ($patronHolds->fields->holdRecordList as $hold) {
+					if ($patronHoldsAndCheckouts && isset($patronHoldsAndCheckouts->fields)) {
+						foreach ($patronHoldsAndCheckouts->fields->holdRecordList as $hold) {
 							if (isset($hold->fields->status)) {
 								$holdStatus = strtolower($hold->fields->status);
 								if ($holdStatus == "being_held") {
@@ -3861,6 +3898,7 @@ class SirsiDynixROA extends AbstractIlsDriver {
 										$curPickupBranch->code = $hold->fields->pickupLibrary->key;
 										if ($curPickupBranch->find(true)) {
 											$currentLocation = $curPickupBranch;
+											$checkoutLocationCode = $curPickupBranch->code;
 										}else{
 											//We didn't get a valid code, use the passed in location
 										}
@@ -3875,6 +3913,7 @@ class SirsiDynixROA extends AbstractIlsDriver {
 						$curPickupBranch->code = $currentItemLocation;
 						if ($curPickupBranch->find(true)) {
 							$currentLocation = $curPickupBranch;
+							$checkoutLocationCode = $curPickupBranch->code;
 						}else{
 							//We didn't get a valid code, use the passed in location
 						}
@@ -3973,9 +4012,15 @@ class SirsiDynixROA extends AbstractIlsDriver {
 				$processCheckoutResponse = true;
 				//Check for things that we cannot look for proactively.
 				$retryCheckout = false;
+				$additionalPromptReturn = '';
 				if (!empty($checkOutResponse->dataMap)) {
-					if (!empty($checkOutResponse->dataMap->promptType) && ($checkOutResponse->dataMap->promptType == 'CKOBLOCKS')) {
-						if (!empty($checkOutResponse->dataMap->claimsReturned)) {
+					if (!empty($checkOutResponse->dataMap->promptType)) {
+						if ($checkOutResponse->dataMap->promptType == 'CKOBLOCKS') {
+							if (!empty($checkOutResponse->dataMap->claimsReturned)) {
+								$retryCheckout = true;
+							}
+						}elseif ($checkOutResponse->dataMap->promptType == 'CIRC_HOLDS_OVRCD') {
+							$additionalPromptReturn = 'CIRC_HOLDS_OVRCD/Y;';
 							$retryCheckout = true;
 						}
 					}
@@ -3987,7 +4032,10 @@ class SirsiDynixROA extends AbstractIlsDriver {
 				}
 
 				if ($retryCheckout && !empty($this->accountProfile->overrideCode)) {
-					$additionalHeaders[] = 'SD-Prompt-Return: CKOBLOCKS/' . $this->accountProfile->overrideCode;
+					$additionalHeaders = [
+						'SD-Preferred-Role: STAFF',
+						"SD-Prompt-Return: {$additionalPromptReturn}CKOBLOCKS/" . $this->accountProfile->overrideCode
+					];
 					$checkOutResponse = $this->getWebServiceResponse('checkOutItem', $webServiceURL . '/circulation/circRecord/checkOut', $checkOutParams, $sessionToken, 'POST', $additionalHeaders, [], $currentLocation->code);
 					if (empty($checkOutResponse)) {
 						$processCheckoutResponse = false;

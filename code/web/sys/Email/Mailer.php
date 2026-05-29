@@ -10,22 +10,22 @@ class Mailer {
 	 * @param string $to Recipient email address
 	 * @param string $subject Subject line for message
 	 * @param string $body Message body
-	 * @param string $replyTo Someone to reply to
-	 * @param bool $htmlMessage True to send the email as html
-	 * @param string? $htmlBody Message body
+	 * @param ?string $replyTo Someone to reply to
+	 * @param ?string $htmlBody Message body
+	 * @param array $attachments an array of attachments to include
 	 *
 	 * @return  boolean
 	 */
-	public function send($to, $subject, $body, $replyTo = null, $htmlBody = null, $attachments = []) : bool {
+	public function send(string $to, string $subject, string $body, ?string $replyTo = null, ?string $htmlBody = null, array $attachments = []) : bool {
 
 		require_once ROOT_DIR . '/sys/Email/SendGridSetting.php';
 		require_once ROOT_DIR . '/sys/Email/AmazonSesSetting.php';
 		require_once ROOT_DIR . '/sys/Email/SMTPSetting.php';
 		require_once ROOT_DIR . '/sys/CurlWrapper.php';
-		global $logger;
-		//TODO: Do validation of the address
 		$amazonSesSettings = new AmazonSesSetting();
 		$smtpServerSettings = new SMTPSetting();
+
+		$to = $this->validateAndFilterEmails($to);
 
 		if($smtpServerSettings->find(true)) {
 			$result = $this->sendViaSMTP($smtpServerSettings, $to, $replyTo, $subject, $body, $htmlBody, $attachments);
@@ -47,9 +47,18 @@ class Mailer {
 		}else{
 			$aspenUsage->incEmailsFailed();
 		}
-		$ret = $aspenUsage->update();
+		$aspenUsage->update();
 
 		return $result;
+	}
+
+	/**
+	 * @param string $emails
+	 */
+	private function validateAndFilterEmails(string $emails) : string {
+		$isValidEmail = fn($address) => filter_var(trim($address), FILTER_VALIDATE_EMAIL);
+		$validEmails = array_filter(explode(';', $emails), $isValidEmail);
+		return implode(';', $validEmails);
 	}
 
 	/**
@@ -57,11 +66,11 @@ class Mailer {
 	 * @param string $to
 	 * @param string|null $replyTo
 	 * @param string $subject
-	 * @param bool $htmlMessage
 	 * @param string|null $body
+	 * @param string|null $htmlBody
 	 * @return bool
 	 */
-	protected function sendViaSendGrid(SendGridSetting $sendGridSettings, string $to, ?string $replyTo, string $subject, ?string $body, ?string $htmlBody) {
+	protected function sendViaSendGrid(SendGridSetting $sendGridSettings, string $to, ?string $replyTo, string $subject, ?string $body, ?string $htmlBody) : bool {
 		//Send the email
 		$curlWrapper = new CurlWrapper();
 		$headers = [
@@ -100,7 +109,7 @@ class Mailer {
 
 		$apiBody->content[] = $content;
 
-		$response = $curlWrapper->curlPostPage('https://api.sendgrid.com/v3/mail/send', json_encode($apiBody));
+		$response = $curlWrapper->curlPostPage(!empty($sendGridSettings->baseUrl) ? $sendGridSettings->baseUrl :'https://api.sendgrid.com/v3/mail/send', json_encode($apiBody));
 		if ($response != '') {
 			global $logger;
 			$logger->log('Error sending email via SendGrid ' . $curlWrapper->getResponseCode() . ' ' . $response, Logger::LOG_ERROR);

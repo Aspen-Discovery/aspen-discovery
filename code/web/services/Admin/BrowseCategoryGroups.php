@@ -45,9 +45,11 @@ class Admin_BrowseCategoryGroups extends ObjectEditor {
 			} else {
 				// Administer Library Browse Categories: Include the group for the home library and any location groups.
 				$browseCategoryGroups = [];
-				$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
-				if ($library && $library->browseCategoryGroupId > 0) {
-					$browseCategoryGroups[] = $library->browseCategoryGroupId;
+				$libraries = Library::getLibraryListAsObjects(true);
+				foreach ($libraries as $library) {
+					if ($library->browseCategoryGroupId > 0) {
+						$browseCategoryGroups[] = $library->browseCategoryGroupId;
+					}
 				}
 				require_once ROOT_DIR . '/sys/LibraryLocation/Location.php';
 				$locations = Location::getLocationListAsObjects(true);
@@ -147,9 +149,11 @@ class Admin_BrowseCategoryGroups extends ObjectEditor {
 				} else {
 					// Administer Library Browse Categories: Include home library and location groups.
 					$browseCategoryGroups = [];
-					$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
-					if ($library && $library->browseCategoryGroupId > 0) {
-						$browseCategoryGroups[] = $library->browseCategoryGroupId;
+					$libraries = Library::getLibraryListAsObjects(true);
+					foreach ($libraries as $library) {
+						if ($library->browseCategoryGroupId > 0) {
+							$browseCategoryGroups[] = $library->browseCategoryGroupId;
+						}
 					}
 					require_once ROOT_DIR . '/sys/LibraryLocation/Location.php';
 					$locations = Location::getLocationListAsObjects(true);

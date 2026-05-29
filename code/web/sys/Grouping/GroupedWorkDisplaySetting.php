@@ -47,6 +47,7 @@ class GroupedWorkDisplaySetting extends DataObject {
 
 	// Faceting
 	public $includeAllRecordsInShelvingFacets;
+	public $includeEContentInShelvingLocations;
 	public $includeAllRecordsInDateAddedFacets;
 	public $facetCountsToShow;
 	public $facetGroupId;
@@ -90,6 +91,7 @@ class GroupedWorkDisplaySetting extends DataObject {
 	public $showItemNotes;
 	public $showItemBarcodes;
 	public $showCopiesForPeriodicalsWithNoItems;
+	public $whereIsItDisplayStyle;
 
 	// Series display
 	public $showIndexedSeriesWithNoveList;
@@ -315,6 +317,18 @@ class GroupedWorkDisplaySetting extends DataObject {
 						'type' => 'checkbox',
 						'label' => 'Sort Owned Editions First',
 						'description' => 'Sort owned editions first within editions list.',
+						'hideInLists' => true,
+					],
+					'whereIsItDisplayStyle' => [
+						'property' => 'whereIsItDisplayStyle',
+						'type' => 'enum',
+						'values' => [
+							'1' => 'Summary',
+							'2' => 'Item Details',
+						],
+						'label' => 'Where Is It Display Style',
+						'description' => 'Define whether the Where is it? displays a summary or item details.',
+						'default' => 1,
 						'hideInLists' => true,
 					],
 				]
@@ -636,6 +650,15 @@ class GroupedWorkDisplaySetting extends DataObject {
 						'description' => 'Turn on to include all records (owned and included) in shelving related facets (detailed location, collection).',
 						'hideInLists' => true,
 						'default' => false,
+						'forcesReindex' => true,
+					],
+					'includeEContentInShelvingLocations' => [
+						'property' => 'includeEContentInShelvingLocations',
+						'label' => 'Include eContent in Shelf Locations Facet',
+						'description' => 'Define whether all or only physical materials are included in the Shelf Location facet.',
+						'type' => 'checkbox',
+						'hideInLists' => true,
+						'default' => 1,
 						'forcesReindex' => true,
 					],
 					'includeAllRecordsInDateAddedFacets' => [

@@ -25,6 +25,7 @@ abstract class DataObject implements JsonSerializable {
 	private $__groupBy;
 	private $__where;
 	private $__hasEmptyWhereAddIn = false;
+	private $__having;
 	private $__limitStart;
 	private $__limitCount;
 	protected $__lastQuery;
@@ -317,6 +318,18 @@ abstract class DataObject implements JsonSerializable {
 				$this->__where .= ' ' . $logic . ' (' . $cond . ')';
 			} else {
 				$this->__where .= '(' . $cond . ')';
+			}
+		}
+	}
+
+	public function havingAdd(mixed $cond = false, string $logic = 'AND') : void {
+		if ($cond === false) {
+			$this->__having = null;
+		} else {
+			if (!empty($this->__having)) {
+				$this->__having .= ' ' . $logic . ' (' . $cond . ')';
+			} else {
+				$this->__having .= '(' . $cond . ')';
 			}
 		}
 	}
@@ -697,24 +710,26 @@ abstract class DataObject implements JsonSerializable {
 			}
 		}
 
-		$query = 'SELECT COUNT(*) from ' . $this->__table;
-		foreach ($this->__joins as $join) {
-			$query .= $this->getJoinQuery($join);
+		if (!empty($this->__having) || !empty($this->__groupBy)) {
+			$query = $this->getSelectQuery($aspen_db);
+			$query = "SELECT COUNT(*) FROM ($query) as mainQuery";
+		}else{
+			$query = "SELECT COUNT(*) from $this->__table";
+			foreach ($this->__joins as $join) {
+				$query .= $this->getJoinQuery($join);
+			}
+			$query .= $this->getWhereClause($aspen_db);
+			$query .= $this->__groupBy;
+			$query .= $this->getHavingClause($aspen_db);
 		}
-		$query .= $this->getWhereClause($aspen_db);
-		$query .= $this->__groupBy;
 		$this->__lastQuery = $query;
 		$this->__queryStmt = $aspen_db->prepare($query);
 		$startTime = hrtime(true);
 		try {
 			if ($this->__queryStmt->execute()) {
-				if (!empty($this->__groupBy)) {
-					return $this->__queryStmt->rowCount();
-				} else {
-					if ($this->__queryStmt->rowCount()) {
-						$data = $this->__queryStmt->fetch();
-						return $data[0];
-					}
+				if ($this->__queryStmt->rowCount()) {
+					$data = $this->__queryStmt->fetch();
+					return $data[0];
 				}
 			} else {
 				echo("Failed to execute " . $query);
@@ -842,7 +857,7 @@ abstract class DataObject implements JsonSerializable {
 		} else {
 			$selectClause = '';
 			foreach ($properties as $name => $value) {
-				if ($name[0] != '_') {
+				if ($name[0] != '_' && !is_array($value)) {
 					if (!empty($selectClause)) {
 						$selectClause .= ', ';
 					}
@@ -870,7 +885,7 @@ abstract class DataObject implements JsonSerializable {
 
 		$where = '';
 		foreach ($properties as $name => $value) {
-			if ($value !== null && $name[0] != '_') {
+			if ($value !== null && !is_array($value) && $name[0] != '_') {
 				if (strlen($where) != 0) {
 					$where .= ' AND ';
 				}
@@ -899,6 +914,9 @@ abstract class DataObject implements JsonSerializable {
 		if ($this->__groupBy != null) {
 			$query .= $this->__groupBy;
 		}
+
+		$query .= $this->getHavingClause($aspen_db);
+
 		if ($this->__orderBy != null) {
 			$query .= $this->__orderBy;
 		}
@@ -921,14 +939,14 @@ abstract class DataObject implements JsonSerializable {
 		$properties = get_object_vars($this);
 		$where = '';
 		foreach ($properties as $name => $value) {
-			if ($value !== null && $name[0] != '_') {
+			if ($value !== null && !is_array($value) && $name[0] != '_') {
 				if (strlen($where) != 0) {
 					$where .= ' AND ';
 				}
 				if (in_array($name, $this->getNumericColumnNames()) && is_numeric($value)) {
-					$where .= $name . ' = ' . $value;
+					$where .= "$this->__table.$name = $value";
 				} else {
-					$where .= $name . ' = ' . $aspen_db->quote($value);
+					$where .= "$this->__table.$name = " . $aspen_db->quote($value);
 				}
 			}
 		}
@@ -940,6 +958,18 @@ abstract class DataObject implements JsonSerializable {
 			$where = ' WHERE ' . $where;
 		}
 		return $where;
+	}
+
+	/**
+	 * @param PDO $aspen_db
+	 * @return string
+	 */
+	private function getHavingClause(PDO $aspen_db): string {
+		$having = '';
+		if (!empty($this->__having)) {
+			$having = ' HAVING ' . $this->__having;
+		}
+		return $having;
 	}
 
 	public function __sleep() {

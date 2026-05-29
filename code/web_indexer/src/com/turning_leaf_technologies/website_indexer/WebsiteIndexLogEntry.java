@@ -13,6 +13,7 @@ class WebsiteIndexLogEntry extends BaseLogEntry {
 	private int numAdded = 0;
 	private int numDeleted = 0;
 	private int numUpdated = 0;
+	private int numSkipped = 0;
 	private int numInvalidPages = 0;
 
 	WebsiteIndexLogEntry(String websiteName, Connection dbConn, Logger logger){
@@ -20,7 +21,7 @@ class WebsiteIndexLogEntry extends BaseLogEntry {
 		this.websiteName = websiteName;
 		try {
 			insertLogEntry = dbConn.prepareStatement("INSERT into website_index_log (startTime, websiteName) VALUES (?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
-			updateLogEntry = dbConn.prepareStatement("UPDATE website_index_log SET lastUpdate = ?, endTime = ?, notes = ?, numPages = ?, numAdded = ?, numUpdated = ?, numDeleted = ?, numErrors = ?, numInvalidPages = ? WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
+			updateLogEntry = dbConn.prepareStatement("UPDATE website_index_log SET lastUpdate = ?, endTime = ?, notes = ?, numPages = ?, numAdded = ?, numUpdated = ?, numDeleted = ?, numErrors = ?, numInvalidPages = ?, numSkipped = ? WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
 		} catch (SQLException e) {
 			logger.error("Error creating prepared statements to update log", e);
 		}
@@ -54,6 +55,7 @@ class WebsiteIndexLogEntry extends BaseLogEntry {
 				updateLogEntry.setInt(++curCol, numDeleted);
 				updateLogEntry.setInt(++curCol, numErrors);
 				updateLogEntry.setInt(++curCol, numInvalidPages);
+				updateLogEntry.setInt(++curCol, numSkipped);
 				updateLogEntry.setLong(++curCol, logEntryId);
 				updateLogEntry.executeUpdate();
 			}
@@ -70,7 +72,7 @@ class WebsiteIndexLogEntry extends BaseLogEntry {
 	}
 	void incAdded(){
 		numAdded++;
-		if ((numAdded + numUpdated) % 100 == 0){
+		if ((numAdded + numUpdated + numSkipped) % 50 == 0){
 			this.saveResults();
 		}
 	}
@@ -82,12 +84,21 @@ class WebsiteIndexLogEntry extends BaseLogEntry {
 	}
 	void incUpdated(){
 		numUpdated++;
-		if ((numAdded + numUpdated) % 100 == 0){
+		if ((numAdded + numUpdated + numSkipped) % 50 == 0){
+			this.saveResults();
+		}
+	}
+	void incSkipped() {
+		numSkipped++;
+		if ((numAdded + numUpdated + numSkipped) % 50 == 0){
 			this.saveResults();
 		}
 	}
 	void incNumPages() {
 		numPages++;
+		if (numPages % 50 == 0){
+			this.saveResults();
+		}
 	}
 
 	public void incInvalidPages(String note) {

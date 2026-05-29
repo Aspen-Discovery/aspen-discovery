@@ -37,6 +37,9 @@
 	{include file="masquerade-top-navbar.tpl"}
 {/if}
 {strip}
+	<a class="screen-reader-text" href="#main" id="skip-to-main-content">
+		<span>{translate text="Skip to main content" isPublicFacing=true}</span>
+	</a>
 	<div {if empty($fullWidthTheme)}class="container"{/if} id="page-container">
 {*
 		{if !empty($systemMessage)}
@@ -63,7 +66,7 @@
 		<div id="content-container">
 			<div class="row">
 				<div class="col-xs-12" id="main-content">
-					<div role="main">
+					<div id="main" role="main">
 						{if !empty($module)}
 							{include file="$module/$pageTemplate"}
 						{else}

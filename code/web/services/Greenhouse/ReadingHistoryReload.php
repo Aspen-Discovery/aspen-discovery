@@ -56,6 +56,7 @@ class Greenhouse_ReadingHistoryReload extends Admin_Admin {
 	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Greenhouse/Home', 'Greenhouse Home');
+		$breadcrumbs[] = new Breadcrumb('/Greenhouse/Home#greenhouse-maintenance-tools', 'Maintenance Tools');
 		$breadcrumbs[] = new Breadcrumb('', 'Reload Reading History for User');
 
 		return $breadcrumbs;

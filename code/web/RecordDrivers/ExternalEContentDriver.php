@@ -77,7 +77,7 @@ class ExternalEContentDriver extends BaseEContentDriver {
 		}
 	}
 
-	public function getMoreDetailsOptions() {
+	public function getMoreDetailsOptions() : array {
 		global $interface;
 
 		$isbn = $this->getCleanISBN();

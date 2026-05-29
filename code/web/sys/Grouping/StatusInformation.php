@@ -382,4 +382,21 @@ class Grouping_StatusInformation {
 	public function setIsLibraryOwned(bool $isLibraryOwned): void {
 		$this->_isLibraryOwned = $isLibraryOwned;
 	}
+
+	/** @noinspection PhpUnused */
+	public function getCssClass() : string {
+		return match ($this->_groupedStatus) {
+			'Currently Unavailable' => 'status-currently-unavailable',
+			'Under Consideration' => 'status-under-consideration',
+			'On Order' => 'status-on-order',
+			'Coming Soon' => 'status-coming-soon',
+			'In Processing' => 'status-in-processing',
+			'In Transit' => 'status-in-transit',
+			'Checked Out' => 'status-checked-out',
+			'Library Use Only' => 'status-library-use-only',
+			'Available Online' => 'status-available-online',
+			'On Shelf' => 'status-on-shelf',
+			default => 'status-withdrawn'
+		};
+	}
 }

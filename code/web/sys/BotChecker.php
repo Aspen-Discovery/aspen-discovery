@@ -2,20 +2,19 @@
 
 class BotChecker {
 
-	static $isBot = null;
+	static ?bool $isBot = null;
 
 	/**
-	 *
 	 * Determines if the current request appears to be from a bot
 	 */
-	public static function isRequestFromBot() {
+	public static function isRequestFromBot() : bool {
 		if (BotChecker::$isBot == null) {
 			global $logger;
 			global $timer;
 			global $memCache;
 			global $configArray;
 			global $userAgent;
-			if ($userAgent instanceof UserAgent) {
+			if ($userAgent instanceof UserAgent && $userAgent->isBot !== null) {
 				return $userAgent->isBot;
 			}
 			if (isset($_SERVER['HTTP_USER_AGENT'])) {
@@ -48,6 +47,19 @@ class BotChecker {
 					}
 				}
 				fclose($fileHandle);
+
+				// Check for common bot strings.
+				$botStrings = ['Bot', 'Crawl', 'Slurp', 'Spider', 'Spyder', 'SearchHelper'];
+				// Additionally, calls from the AspenDiscovery user agent can also be
+				// treated as a bot since these are generally monitoring calls or
+				// calls for Aspen to update itself.
+				$botStrings[] = 'Aspen Discovery';
+				foreach ($botStrings as $botString) {
+					if (stripos($userAgent, $botString) !== false) {
+						$isBot = true;
+						break;
+					}
+				}
 
 				$memCache->set("bot_by_user_agent_" . $userAgent, ($isBot ? 'TRUE' : 'FALSE'), $configArray['Caching']['bot_by_user_agent']);
 				if ($isBot) {

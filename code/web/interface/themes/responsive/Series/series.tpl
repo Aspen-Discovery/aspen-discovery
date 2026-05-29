@@ -9,6 +9,19 @@
 
 	{* Information about the search *}
 	<div class="result-head">
+		{if !empty($seriesRedirectedFrom)}
+			<div id="series-redirect-info-block" class="alert alert-info" role="alert">
+				<div class="pull-left replacement-search-info-text"><i class='fas fa-question-circle fa-2xl' role="presentation" style="padding-right: 10px;"></i></div>
+				<span class="replacement-search-info-text">{translate text="You were redirected to a series search for more relevant results." isPublicFacing=true}</span>
+				{assign var=restoreUrl value=$seriesRedirectedFrom}
+				{if strpos($restoreUrl, '?') !== false}
+					{assign var=restoreUrl value=$restoreUrl|cat:'&bypassSeriesRedirect=1'}
+				{else}
+					{assign var=restoreUrl value=$restoreUrl|cat:'?bypassSeriesRedirect=1'}
+				{/if}
+				<span class="replacement-search-info-text"><a href="{$restoreUrl}" class="btn btn-default btn-sm">{translate text="Restore original search" isPublicFacing=true}</a></span>
+			</div>
+		{/if}
 		{if !empty($replacementTerm)}
 			<div id="replacement-search-info-block">
 				<div id="replacement-search-info"><span class="replacement-search-info-text">{translate text="Showing Results for" isPublicFacing=true}</span> {$replacementTerm}</div>

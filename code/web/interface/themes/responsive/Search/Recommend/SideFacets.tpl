@@ -51,7 +51,7 @@
 									{include file="Search/Recommend/yearFacetFilter.tpl" cluster=$cluster title=$title}
 								{elseif $title == 'rating_facet'}
 									{include file="Search/Recommend/ratingFacet.tpl" cluster=$cluster title=$title}
-								{elseif $title == 'lexile_score' || $title == 'accelerated_reader_reading_level' || $title == 'accelerated_reader_point_value'}
+								{elseif $title == 'lexile_score' || $title == 'accelerated_reader_reading_level' || $title == 'accelerated_reader_point_value' || $title == 'duration'}
 									{include file="Search/Recommend/sliderFacet.tpl" cluster=$cluster title=$title}
 								{elseif $title == 'start_date'}
 									{include file="Search/Recommend/calendarFacet.tpl" cluster=$cluster title=$title}

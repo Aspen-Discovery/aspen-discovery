@@ -159,7 +159,7 @@ class SearchObject_CloudSourceSearcher extends SearchObject_BaseSearcher{
 	public function processSearch($returnIndexErrors = false, $recommendations = false, $preventQueryModification = false) : AspenError|stdClass|array|null {
 		$settings = $this->getSettings();
 		$curlConnection = $this->getCurlConnection();
-		$url = $settings->baseUrl . '/api/cloudsourcesearch/search';
+		$url = $settings->apiUrl . '/api/cloudsourcesearch/search';
 		if (!empty($this->searchTerms) && is_array($this->searchTerms)) {
 			$searchTerm = $this->searchTerms[0]['lookfor'];
 		} else {
@@ -192,7 +192,7 @@ class SearchObject_CloudSourceSearcher extends SearchObject_BaseSearcher{
 			'term' => $searchTerm,
 			'start' => $start,
 			'pageSize' => 20,
-			'includeFields' => 'title,author{name},format{name},webUrl,publishDate,abstrakt,index,isbn,publication',
+			'includeFields' => 'title,author{name},format{name},webUrl,publishDate,abstrakt,index,isbn,publication,doi',
 			'includeFacets' => true,
 			'profileKey' => $settings->profileKey,
 			'facetSelections' => $facets
@@ -251,7 +251,7 @@ class SearchObject_CloudSourceSearcher extends SearchObject_BaseSearcher{
 			'SD-Stats-Session-ID: ' . $_COOKIE['aspen_session']
 		];
 
-		$baseUrl = $settings->baseUrl . '/api/cloudsourcesearch/search/id/' . $index . '/' . $id;
+		$baseUrl = $settings->apiUrl . '/api/cloudsourcesearch/search/id/' . $index . '/' . $id;
 
 
 		$recordData = $this->httpRequest($baseUrl, $headers);
@@ -311,7 +311,7 @@ class SearchObject_CloudSourceSearcher extends SearchObject_BaseSearcher{
 	 * @access  public
 	 * @return  string   URL of a new search
 	 */
-	public function renderLinkPageTemplate() {
+	public function renderLinkPageTemplate() : string {
 		// Stash our old data for a minute
 		$oldPage = $this->page;
 		// Add the page template

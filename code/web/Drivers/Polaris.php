@@ -205,7 +205,18 @@ class Polaris extends AbstractIlsDriver {
 		];
 	}
 
-	public function getCheckouts(User $patron): array {
+	/**
+	 * Get Patron Checkouts
+	 *
+	 * This is responsible for retrieving all checkouts (i.e. checked out items)
+	 * by a specific patron.
+	 *
+	 * @param User $patron       The user to load transactions for
+	 * @param array $options     Additional options
+	 * @return Checkout[]        Array of the patron's transactions on success
+	 * @access public
+	 */
+	public function getCheckouts(User $patron, array $options = []): array {
 		require_once ROOT_DIR . '/sys/User/Checkout.php';
 		$checkedOutTitles = [];
 
@@ -624,7 +635,20 @@ class Polaris extends AbstractIlsDriver {
 					if (count($curPickupBranch->getPickupSublocations()) > 0){
 						//Polaris does not return the hold area for the hold, instead it updates the pickup branch name
 						// to include the name of the hold area.
-						$curHold->pickupLocationName = $holdInfo->PickupBranchName;
+						$holdPickupAreaID = $holdInfo->HoldPickupAreaID;
+						$pickupAreaFound = false;
+						foreach ($curPickupBranch->getPickupSublocations() as $pickupArea) {
+							if ($pickupArea->ilsId == $holdInfo->HoldPickupAreaID) {
+								$curHold->pickupLocationName = $curPickupBranch->displayName;
+								$curHold->pickupSublocationId = $pickupArea->id;
+								$curHold->pickupSublocationName = $pickupArea->name;
+								$pickupAreaFound = true;
+								break;
+							}
+						}
+						if (!$pickupAreaFound) {
+							$curHold->pickupLocationName = $holdInfo->PickupBranchName;
+						}
 					}else{
 						//We can display the name of the branch which includes any translations
 						$curHold->pickupLocationName = $curPickupBranch->displayName;
@@ -1095,7 +1119,7 @@ class Polaris extends AbstractIlsDriver {
 		global $library;
 		if ($library) {
 			if ($library->barcodePrefix) {
-				if (strpos($username, $library->barcodePrefix) !== 0) {
+				if (!str_starts_with($username, $library->barcodePrefix)) {
 					//Add the barcode prefix to the barcode
 					$barcodesToTest[] = $library->barcodePrefix . $username;
 				}
@@ -1830,7 +1854,6 @@ class Polaris extends AbstractIlsDriver {
 		}
 		$result = [
 			'success' => false,
-			'message' => "Unknown error updating password.",
 		];
 		$staffInfo = $this->getStaffUserInfo();
 		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}";
@@ -1851,10 +1874,10 @@ class Polaris extends AbstractIlsDriver {
 				$patron->ils_password = $newPin;
 				$patron->update();
 			} else {
-				$result['message'] = "Error updating your password. (Error {$jsonResponse->PAPIErrorCode}).";
+				$result['message'] = "Error updating your password. (Error $jsonResponse->PAPIErrorCode).";
 			}
 		} else {
-			$result['message'] = "Error updating your password. ({$this->lastResponseCode}).";
+			$result['message'] = "Error updating your password. ($this->lastResponseCode).";
 		}
 		return $result;
 	}
@@ -3131,7 +3154,7 @@ class Polaris extends AbstractIlsDriver {
 		];
 	}
 
-	public function updateEditableUsername(User $patron, string $newUsername): array {
+	public function updateEditableUsername(User $patron, string $username): array {
 		$result = [
 			'success' => false,
 			'message' => translate([
@@ -3140,7 +3163,7 @@ class Polaris extends AbstractIlsDriver {
 			]),
 		];
 
-		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/username/" . urlencode($newUsername);
+		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/username/" . urlencode($username);
 		$updateUsernameResponse = $this->getWebServiceResponse($polarisUrl, 'PUT', Polaris::$accessTokensForUsers[$patron->getBarcode()]['accessToken'], false, UserAccount::isUserMasquerading());
 		ExternalRequestLogEntry::logRequest('polaris.updateUsername', 'PUT', $this->getWebServiceURL() . $polarisUrl, $this->apiCurlWrapper->getHeaders(), false, $this->lastResponseCode, $updateUsernameResponse, []);
 		if ($updateUsernameResponse && $this->lastResponseCode == 200) {

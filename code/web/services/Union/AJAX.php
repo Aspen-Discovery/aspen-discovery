@@ -338,7 +338,7 @@ class Union_AJAX extends JSON_Action {
 		return $results;
 	}
 
-	private function getResultsFromInnReach(string $searchType, int $searchTerm, string $numberOfResults, string $fullResultsLink) : string {
+	private function getResultsFromInnReach(string $searchType, string $searchTerm, string $numberOfResults, string $fullResultsLink) : string {
 		global $interface;
 		$interface->assign('viewingCombinedResults', true);
 		require_once ROOT_DIR . '/sys/InterLibraryLoan/InnReach.php';
@@ -366,7 +366,7 @@ class Union_AJAX extends JSON_Action {
 		return $results;
 	}
 
-	private function getResultsFromShareIt(string $searchType, int $searchTerm, string $numberOfResults) : string {
+	private function getResultsFromShareIt(string $searchType, string $searchTerm, string $numberOfResults) : string {
 		global $interface;
 		$interface->assign('viewingCombinedResults', true);
 		require_once ROOT_DIR . '/sys/InterLibraryLoan/ShareIt.php';

@@ -28,12 +28,34 @@ class SideLoads_UploadMarc extends Admin_Admin {
 					//File was uploaded, need to verify it was the correct type
 					$fileType = $uploadedFile["type"];
 					$uploadPath = $sideload->marcPath;
+					global $logger;
+					$logger->log("UploadMarc: file={$uploadedFile['name']}, type={$fileType}, replaceExisting=" . ($replaceExisting ? 'true' : 'false') . ", uploadPath={$uploadPath}", Logger::LOG_NOTICE, true);
 					if ($replaceExisting) {
-						$files = glob($uploadPath . '/*'); // get all file names
-						foreach ($files as $file) {
-							if (is_file($file)) {
-								unlink($file);
+						$files = glob($uploadPath . '/*');
+						if ($files === false) {
+							$logger->log("UploadMarc: glob() returned false for pattern: {$uploadPath}/*", Logger::LOG_ERROR, true);
+							$interface->assign('error', 'Could not read the upload directory to replace existing files.');
+						} else {
+							$logger->log("UploadMarc: replacing " . count($files) . " existing file(s): " . implode(', ', $files), Logger::LOG_NOTICE, true);
+							$deleteFailed = false;
+							foreach ($files as $file) {
+								if (is_file($file)) {
+									$unlinkResult = unlink($file);
+									$logger->log("UploadMarc: unlink({$file}): " . ($unlinkResult ? 'SUCCESS' : 'FAILED'), Logger::LOG_NOTICE, true);
+									if (!$unlinkResult) {
+										$deleteFailed = true;
+									}
+								}
 							}
+							if ($deleteFailed) {
+								$logger->log("UploadMarc: one or more files could not be deleted in {$uploadPath}", Logger::LOG_ERROR, true);
+								$interface->assign('error', 'One or more existing files could not be deleted. Check file permissions on the upload directory.');
+							}
+						}
+						if (!empty($interface->getVariable('error'))) {
+							$interface->assign('id', $_REQUEST['id']);
+							$this->display('uploadMarc.tpl', 'Upload MARC File');
+							return;
 						}
 					}
 					$destFileName = $uploadedFile["name"];

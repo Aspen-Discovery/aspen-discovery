@@ -111,7 +111,7 @@ class SeriesRecordDriver extends IndexRecordDriver {
 		return 'RecordDrivers/Series/result.tpl';
 	}
 
-	public function getMoreDetailsOptions() {
+	public function getMoreDetailsOptions() : array {
 		return [];
 	}
 

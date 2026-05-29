@@ -77,6 +77,7 @@ class Talpa_Results extends ResultsAction {
 
 		//If queryID matches the session data queryID (from Talpa's top facets), use those saved results to save load time.
 		if (isset($_REQUEST['queryId']) && $_SESSION['last_recordData'] && ($_SESSION['last_query_id']== $_REQUEST['queryId']) ) {
+			SearchObjectFactory::initSearchObject();
 			$result = unserialize($_SESSION['last_recordData']);
 			$searchObject->processRepeatedSearch($result);
 

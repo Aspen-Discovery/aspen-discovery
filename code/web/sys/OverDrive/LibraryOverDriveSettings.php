@@ -128,7 +128,7 @@ class LibraryOverDriveSettings extends DataObject {
 				'type' => 'storedPassword',
 				'label' => 'Circulation Client Secret (if different from settings)',
 				'description' => 'The client secret provided by OverDrive when registering',
-				'hideInLists' => true,
+				'hideInLists' => false,
 			],
 		];
 

@@ -2,10 +2,30 @@
 
 require_once 'Solr.php';
 require_once ROOT_DIR . '/sys/SearchObject/GroupedWorkSearcher.php';
+require_once ROOT_DIR . '/sys/SystemVariables.php';
 
 class GroupedWorksSolrConnector extends Solr {
 	function __construct($host, $index = '') {
 		parent::__construct($host, 'grouped_works');
+	}
+
+	function getSearchSpecs()
+	{
+		$systemVariables = SystemVariables::getSystemVariables();
+		$useCustomSearchSpecs = $systemVariables && !empty($systemVariables->customGroupedWorkSearchSpecs);
+		if(!$useCustomSearchSpecs)
+		{
+			// Fall back to default grouped work search specs
+			return $this->getSearchSpecsFile();
+		}
+		$specs = $systemVariables->customGroupedWorkSearchSpecs;
+		if (!file_exists($specs) ||!is_readable($specs))
+		{
+			// Log warning if file doesn't exist or isn't readable
+			global $logger;
+			$logger->log("Custom grouped work search specs is not an accessible file. Interpreting as yaml text instead of a path for system variables", Logger::LOG_WARNING);
+		}
+		return $specs;
 	}
 
 	/**
@@ -91,7 +111,7 @@ class GroupedWorksSolrConnector extends Solr {
 	 *
 	 */
 	function getMoreLikeThis($id, $selectedAvailabilityToggle = 'global', $availableOnly = false, $limitFormat = true, $limit = null, $fieldsToReturn = null) {
-		$originalResult = $this->getRecord($id, 'target_audience_full,mpaa_rating,literary_form,language,isbn,upc,series');
+		$originalResult = $this->getRecord($id, 'target_audience_full,content_rating,literary_form,language,isbn,upc,series');
 		// Query String Parameters
 		if ($fieldsToReturn == null) {
 			$fieldsToReturn = SearchObject_GroupedWorkSearcher::$fields_to_return;
@@ -122,20 +142,20 @@ class GroupedWorksSolrConnector extends Solr {
 					$options['fq'][] = 'target_audience_full:"' . $originalResult['target_audience_full'] . '"';
 				}
 			}
-			if (isset($originalResult['mpaa_rating'])) {
-				if (is_array($originalResult['mpaa_rating'])) {
+			if (isset($originalResult['content_rating'])) {
+				if (is_array($originalResult['content_rating'])) {
 					$filter = '';
-					foreach ($originalResult['mpaa_rating'] as $rating) {
+					foreach ($originalResult['content_rating'] as $rating) {
 						if (strlen($filter) > 0) {
 							$filter .= ' OR ';
 						}
-						$filter .= 'mpaa_rating:"' . $rating . '"';
+						$filter .= 'content_rating:"' . $rating . '"';
 					}
 					if (strlen($filter) > 0) {
 						$options['fq'][] = "($filter)";
 					}
 				} else {
-					$options['fq'][] = 'mpaa_rating:"' . $originalResult['mpaa_rating'] . '"';
+					$options['fq'][] = 'content_rating:"' . $originalResult['content_rating'] . '"';
 				}
 			}
 			if (isset($originalResult['literary_form'])) {

@@ -40,8 +40,12 @@
 										<option value="">{translate text='My Favorites' isPublicFacing=true}</option>
 									{/foreach}
 								</select>
-								&nbsp;or&nbsp;
-								<button class="btn btn-sm btn-default" onclick="return AspenDiscovery.Account.showCreateListForm('{$source|escape:"url"}', '{$sourceId|escape:"url"}')">{translate text="Create a New List" isPublicFacing=true}</button>
+								<div style="margin-top: 6px; text-align: center;">
+									<div>{translate text='or' isPublicFacing=true}</div>
+									<div style="margin-top: 6px;">
+										<button class="btn btn-sm btn-default" onclick="return AspenDiscovery.Account.showCreateListForm('{$source|escape:"url"}', '{$sourceId|escape:"url"}')">{translate text="Create a New List" isPublicFacing=true}</button>
+									</div>
+								</div>
 							</div>
 						</div>
 					{else}

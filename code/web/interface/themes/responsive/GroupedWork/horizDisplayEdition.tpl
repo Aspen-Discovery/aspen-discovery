@@ -45,8 +45,8 @@
 					</div>
 				{/if}
 			{/foreach}
-			{if count($itemSummary) > 2 && $totalSummariesToDisplay != count($itemSummary)}
-				<div class="col-tn-4">
+			{if count($itemSummary) > 2 && $totalSummariesToDisplay != count($itemSummary) || ($showQuickCopy == 2 || $showQuickCopy == 3)}
+				<div class="col-tn-4 pull-right">
 					<button class="btn btn-default btn-sm btn-wrap viewAllLocationsBtn" onclick="return AspenDiscovery.GroupedWork.showCopyDetails('{$workId}', '{if !empty($relatedManifestation)}{$relatedManifestation->format|urlencode}{else}{$format}{/if}', '{$workId}');">{translate text="View All Locations" isPublicFacing=true}</button>
 				</div>
 			{/if}

@@ -336,6 +336,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			loadEditions(groupedWork, record, allRelatedRecords);
 			loadAudiences(groupedWork, record, allRelatedRecords);
 			loadPhysicalDescription(groupedWork, record, allRelatedRecords);
+			loadDuration(groupedWork, record, allRelatedRecords);
 			loadLanguageDetails(groupedWork, record, allRelatedRecords, identifier);
 			loadPublicationDetails(groupedWork, record, allRelatedRecords);
 			loadClosedCaptioning(record, allRelatedRecords);
@@ -950,6 +951,10 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		if (settings.getFormatSource().equals("item")){
 			formatClassifier.loadItemFormat(groupedWork, recordInfo, itemField, itemInfo, settings, indexer.getLogEntry(), logger);
 		}
+
+		itemInfo.setBarcode(MarcUtil.getItemSubfieldData(settings.getBarcodeSubfield(), itemField, indexer.getLogEntry(), logger));
+		itemInfo.setNote(MarcUtil.getItemSubfieldData(settings.getNoteSubfield(), itemField, indexer.getLogEntry(), logger));
+		itemInfo.setDueDate(MarcUtil.getItemSubfieldData(settings.getDueDateSubfield(), itemField, indexer.getLogEntry(), logger));
 
 		groupedWork.addKeywords(itemLocation);
 		if (!itemSublocation.isEmpty()){

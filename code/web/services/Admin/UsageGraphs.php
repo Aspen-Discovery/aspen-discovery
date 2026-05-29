@@ -29,6 +29,7 @@ class Admin_UsageGraphs extends Admin_AbstractUsageGraphs {
 
 		$dataSeries = [];
 		$columnLabels = [];
+		// Default: AspenUsage
 		$userUsage = new AspenUsage();
 		$userUsage->groupBy('year, month');
 		if (!empty($instanceName)) {
@@ -237,6 +238,41 @@ class Admin_UsageGraphs extends Admin_AbstractUsageGraphs {
 			}
 		}
 
+		// Placard Usage Stats
+		if ($stat == 'placardUsage') {
+			require_once ROOT_DIR . '/sys/WebBuilder/PlacardUsage.php';
+			require_once ROOT_DIR . '/sys/LocalEnrichment/Placard.php';
+			$placardId = $_REQUEST['placardId'] ?? null;
+			// Get placard name for title
+			$placard = new Placard();
+			$placard->id = $placardId;
+			$interface->assign('placardId', $placardId);
+			if ($placard->find(true)) {
+				$placardName = $placard->title;
+			} else {
+				$placardName = '';
+			}
+			$usage = new PlacardUsage();
+			if (!empty($instanceName)) {
+				$usage->instance = $instanceName;
+			}
+			$usage->placardName = $placardName;
+			$usage->selectAdd();
+			$usage->selectAdd('year');
+			$usage->selectAdd('month');
+			$usage->selectAdd('SUM(timesShown) as sumTimesShown');
+			$usage->groupBy('year, month');
+			$usage->orderBy('year, month');
+			$usage->find();
+			$dataSeries['Times Shown'] = GraphingUtils::getDataSeriesArray(0);
+			$columnLabels = [];
+			while ($usage->fetch()) {
+				$curPeriod = "{$usage->month}-{$usage->year}";
+				$columnLabels[] = $curPeriod;
+				$dataSeries['Times Shown']['data'][$curPeriod] = (int)$usage->sumTimesShown;
+			}
+		}
+
 		$interface->assign('columnLabels', $columnLabels);
 		$interface->assign('dataSeries', $dataSeries);
 		$interface->assign('translateDataSeries', true);
@@ -309,6 +345,20 @@ class Admin_UsageGraphs extends Admin_AbstractUsageGraphs {
 				break;
 			case 'failedEmails':
 				$title .= ' - Failed Emails';
+				break;
+			case 'placardUsage':
+				// Get placard name for title
+				require_once ROOT_DIR . '/sys/LocalEnrichment/Placard.php';
+				$placardId = $_REQUEST['placardId'] ?? null;
+				$placardName = '';
+				if (!empty($placardId)) {
+					$placard = new Placard();
+					$placard->id = $placardId;
+					if ($placard->find(true)) {
+						$placardName = $placard->title;
+					}
+				}
+				$title = 'Admin Usage Graph - Placard: ' . $placardName;
 				break;
 		}
 		$interface->assign('graphTitle', $title);

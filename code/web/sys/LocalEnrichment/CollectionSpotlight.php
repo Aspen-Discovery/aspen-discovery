@@ -79,10 +79,7 @@ class CollectionSpotlight extends DataObject {
 				$libraryList[$library->libraryId] = $library->displayName;
 			}
 		} else {
-			$homeLibrary = Library::getPatronHomeLibrary();
-			if (!empty($homeLibrary)) {
-				$libraryList[$homeLibrary->libraryId] = $homeLibrary->displayName;
-			}
+			$libraryList = Library::getLibraryList(true);
 		}
 
 		$spotlightListStructure = CollectionSpotlightList::getObjectStructure($context);

@@ -301,105 +301,72 @@ class GroupedWorkDriver extends IndexRecordDriver {
 	 * @return int
 	 */
 	function compareRelatedRecords(Grouping_Record $a, Grouping_Record $b) : int {
-		//Get literary form to determine if we should compare editions
-		$literaryForm = '';
-		if (isset($this->fields['literary_form'])) {
-			if (is_array($this->fields['literary_form'])) {
-				$literaryForm = reset($this->fields['literary_form']);
-			} else {
-				$literaryForm = $this->fields['literary_form'];
-			}
-		}
-		//First sort by format
-		$format1 = $a->format;
-		$format2 = $b->format;
-		$formatComparison = strcasecmp($format1, $format2);
-		//Make sure that book is the very first format always
-		if ($formatComparison != 0) {
-			if ($format1 == 'Book') {
-				return -1;
-			} elseif ($format2 == 'Book') {
-				return 1;
-			}
-		}
+		$literaryForm = $this->getPrimaryLiteraryForm();
 
 		global $library;
-		$groupedWorkDisplaySettings = $library->getGroupedWorkDisplaySettings();
-		if ($formatComparison == 0) {
-			//1) Optionally sort owned editions first
-			if ($groupedWorkDisplaySettings->sortOwnedEditionsFirst) {
-				$ownedRecordComparison = GroupedWorkDriver::compareOwnedEditions($a, $b);
-			} else {
-				$ownedRecordComparison = 0;
-			}
+		$settings = $library->getGroupedWorkDisplaySettings();
 
-			if ($ownedRecordComparison == 0) {
-				//2) Put anything that is holdable first
-				$holdabilityComparison = GroupedWorkDriver::compareHoldability($a, $b);
-				if ($holdabilityComparison == 0) {
-					//2) Compare by language to put english titles before spanish by default
-					$languageComparison = GroupedWorkDriver::compareLanguagesForRecords($a, $b);
-					if ($languageComparison == 0) {
-						//3) Compare editions for non-fiction if available
-						$editionComparisonResult = GroupedWorkDriver::compareEditionsForRecords($literaryForm, $a, $b);
-						if ($editionComparisonResult == 0) {
-							//4) Put anything with locally available items first
-							$localAvailableItemComparisonResult = GroupedWorkDriver::compareLocalAvailableItemsForRecords($a, $b);
-							if ($localAvailableItemComparisonResult == 0) {
-								//5) Anything that is available elsewhere goes higher
-								$availabilityComparisonResults = GroupedWorkDriver::compareAvailabilityForRecords($a, $b);
-								if ($availabilityComparisonResults == 0) {
-									//6) Put anything with a local copy higher
-									$localItemComparisonResult = GroupedWorkDriver::compareLocalItemsForRecords($a, $b);
-									if ($localItemComparisonResult == 0) {
-										//7) Do a status check to make sure we don't place a hold on something that will be slow to come in
-										$statusA = $a->getStatusRanking();
-										$statusB = $b->getStatusRanking();
-										//Status rankings should be between 4 (checked out and 1 currently available), we prefer the highest but could group some
-										$statusComparison = $statusB <=> $statusA;
-										if ($statusComparison == 0) {
-											//8) All else being equal, sort by hold ratio
-											if ($a->getHoldRatio() == $b->getHoldRatio()) {
-												//9) Hold Ratio is the same, last thing to check is the number of copies
-												if ($a->getCopies() == $b->getCopies()) {
-													return 0;
-												} elseif ($a->getCopies() > $b->getCopies()) {
-													return -1;
-												} else {
-													return 1;
-												}
-											} elseif ($a->getHoldRatio() < $b->getHoldRatio()) {
-												return -1;
-											} else {
-												return 1;
-											}
-										}else{
-											return $statusComparison;
-										}
-									} else {
-										return $localItemComparisonResult;
-									}
-								} else {
-									return $availabilityComparisonResults;
-								}
-							} else {
-								return $localAvailableItemComparisonResult;
-							}
-						} else {
-							return $editionComparisonResult;
-						}
-					} else {
-						return $languageComparison;
-					}
-				} else {
-					return $holdabilityComparison;
-				}
-			} else {
-				return $ownedRecordComparison;
+		/*
+		Sort priority for related records:
+
+		1. First sort by format (Book always first)
+		2. Optionally sort owned editions first
+		3. Put anything that is holdable first
+		4. Compare by language to put English titles before Spanish by default
+		5. Compare editions for non-fiction if available
+		6. Put anything with locally available items first
+		7. Anything that is available elsewhere goes higher
+		8. Put anything with a local copy higher
+		9. Do a status check to make sure we don't place a hold on something that will be slow to come in
+		10. All else being equal, sort by hold ratio
+		11. If hold ratio is the same, compare number of copies (more copies first)
+		*/
+		$comparators = [
+			fn() => $this->compareFormats($a->format, $b->format),
+			fn() => $settings->sortOwnedEditionsFirst
+				? GroupedWorkDriver::compareOwnedEditions($a, $b)
+				: 0,
+			fn() => GroupedWorkDriver::compareHoldability($a, $b),
+			fn() => GroupedWorkDriver::compareLanguagesForRecords($a, $b),
+			fn() => GroupedWorkDriver::compareEditionsForRecords($literaryForm, $a, $b),
+			fn() => GroupedWorkDriver::compareLocalAvailableItemsForRecords($a, $b),
+			fn() => GroupedWorkDriver::compareAvailabilityForRecords($a, $b),
+			fn() => GroupedWorkDriver::compareLocalItemsForRecords($a, $b),
+			//Status rankings should be between 4 (checked out and 1 currently available), we prefer the highest but could group some
+			fn() => $b->getStatusRanking() <=> $a->getStatusRanking(), 
+			fn() => $a->getHoldRatio() <=> $b->getHoldRatio(),
+			fn() => $b->getCopies() <=> $a->getCopies(),
+		];
+
+		foreach ($comparators as $compare) {
+			$result = $compare();
+			if ($result !== 0) {
+				return $result;
 			}
-		} else {
-			return $formatComparison;
 		}
+
+		return 0;
+	}
+
+	private function getPrimaryLiteraryForm(): string {
+		if (!isset($this->fields['literary_form'])) {
+			return '';
+		}
+
+		$value = $this->fields['literary_form'];
+
+		return is_array($value) ? reset($value) : $value;
+	}
+
+	private function compareFormats(string $format1, string $format2): int {
+		$comparison = strcasecmp($format1, $format2);
+
+		if ($comparison !== 0) {
+			if ($format1 === 'Book') return -1;
+			if ($format2 === 'Book') return 1;
+		}
+
+		return $comparison;
 	}
 
 	private static ?GroupedWorkFormatSortingGroup $_formatSorting = null;
@@ -1622,7 +1589,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		return 'GroupedWork';
 	}
 
-	public function getMoreDetailsOptions() {
+	public function getMoreDetailsOptions() : array {
 		global $interface;
 
 		$isbn = $this->getCleanISBN();
@@ -1675,8 +1642,8 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		return $this->_moreInfoLink;
 	}
 
-	public function getMpaaRating() {
-		return $this->fields['mpaa_rating'] ?? null;
+	public function getContentRating() {
+		return $this->fields['content_rating'] ?? null;
 	}
 
 	private $numRelatedRecords = -1;
@@ -2102,6 +2069,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		global $interface;
 		global $timer;
 		global $memoryWatcher;
+		global $library;
 
 		$interface->assign('displayingSearchResults', true);
 
@@ -2278,6 +2246,15 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		$interface->assign('recordDriver', $this);
 		$timer->logTime("Finished grouped work search result render prep");
 		$timer->logTime("Assigned all information to show search results");
+
+		$user = UserAccount::getActiveUserObj();
+		$catalogDriver = $user ? $user->getCatalogDriver() : null;
+		$allowHoldsToBeGrouped = $catalogDriver && $catalogDriver->supportsHyperholdsGrouping()
+			? User::resolveAllowHoldsToBeGrouped($user, $library)
+			: false;
+
+		$interface->assign('allowHoldsToBeGrouped', $allowHoldsToBeGrouped);
+
 		return 'RecordDrivers/GroupedWork/result.tpl';
 	}
 
@@ -2476,6 +2453,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 							$this->seriesData = [
 								'seriesTitle' => $existingDisplayInfo->seriesName,
 								'volume' => $existingDisplayInfo->seriesDisplayOrder,
+								'groupedWorkId' => $this->getPermanentId(),
 								'fromNovelist' => true,
 								'fromSeriesIndex' => false
 							];
@@ -2520,6 +2498,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 					$this->seriesData = [
 						'seriesTitle' => $novelistData->seriesTitle,
 						'volume' => $novelistData->volume,
+						'groupedWorkId' => $this->getPermanentId(),
 						'fromNovelist' => true,
 						'fromSeriesIndex' => false
 					];
@@ -2772,9 +2751,9 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		return null;
 	}
 
-	public function getAlternateTitles() {
+	public function getAlternateTitles() : ?array {
 		//Load alternate titles
-		if (UserAccount::userHasPermission('Set Grouped Work Display Information')) {
+		if (UserAccount::userHasPermission('Manually Group and Ungroup Works')) {
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWorkAlternateTitle.php';
 			$alternateTitle = new GroupedWorkAlternateTitle();
 			$permanentId = $this->getPermanentId();
@@ -3200,7 +3179,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 					if ($mainLocation->isMainBranch) {
 						$scope = new Grouping_Scope();
 						$mainLibraryScopeName = str_replace('-', '', !empty($mainLocation->subdomain) ? $mainLocation->subdomain : $mainLocation->code);
-						$scope->name = $mainLibraryScopeName;
+						$scope->whereAdd('LOWER(name) = ' . $scope->escape(strtolower($mainLibraryScopeName)));
 						$scope->isLocationScope = 1;
 						if ($scope->find(true)) {
 							GroupedWorkDriver::$mainLocationScopeId = $scope->id;
@@ -3212,7 +3191,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 				if ($activeLocation != null) {
 					$scope = new Grouping_Scope();
 					$activeLocationScopeName = str_replace('-', '', !empty($activeLocation->subdomain) ? $activeLocation->subdomain : $activeLocation->code);
-					$scope->name = $activeLocationScopeName;
+					$scope->whereAdd('LOWER(name) = ' . $scope->escape(strtolower($activeLocationScopeName)));
 					$scope->isLocationScope = 1;
 					if ($scope->find(true)) {
 						GroupedWorkDriver::$activeLocationScopeId = $scope->id;
@@ -3224,7 +3203,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 						if ($altLocation1->find(true)) {
 							$scope = new Grouping_Scope();
 							$altLocation1ScopeName = str_replace('-', '', !empty($altLocation1->subdomain) ? $altLocation1->subdomain : $altLocation1->code);
-							$scope->name = $altLocation1ScopeName;
+							$scope->whereAdd('LOWER(name) = ' . $scope->escape(strtolower($altLocation1ScopeName)));
 							$scope->isLocationScope = 1;
 							if ($scope->find(true)) {
 								GroupedWorkDriver::$atNearbyLocation1 = $scope->id;
@@ -3233,11 +3212,11 @@ class GroupedWorkDriver extends IndexRecordDriver {
 					}
 					if ($activeLocation->nearbyLocation2 > 0) {
 						$altLocation2 = new Location();
-						$altLocation2->locationId = $activeLocation->nearbyLocation2;
+						$altLocation2->locationId = strtolower($activeLocation->nearbyLocation2);
 						if ($altLocation2->find(true)) {
 							$scope = new Grouping_Scope();
 							$altLocation2ScopeName = str_replace('-', '', !empty($altLocation2->subdomain) ? $altLocation2->subdomain : $altLocation2->code);
-							$scope->name = $altLocation2ScopeName;
+							$scope->whereAdd('LOWER(name) = ' . $scope->escape(strtolower($altLocation2ScopeName)));
 							$scope->isLocationScope = 1;
 							if ($scope->find(true)) {
 								GroupedWorkDriver::$atNearbyLocation2 = $scope->id;
@@ -3251,7 +3230,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 					if ($userHomeLocation != null) {
 						$scope = new Grouping_Scope();
 						$mainLibraryScopeName = str_replace('-', '', !empty($userHomeLocation->subdomain) ? $userHomeLocation->subdomain : $userHomeLocation->code);
-						$scope->name = $mainLibraryScopeName;
+						$scope->whereAdd('LOWER(name) = ' . $scope->escape(strtolower($mainLibraryScopeName)));
 						$scope->isLocationScope = 1;
 						if ($scope->find(true)) {
 							GroupedWorkDriver::$homeLocationScopeId = $scope->id;
@@ -3263,7 +3242,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 						if ($myLocation1->find(true)) {
 							$mainLibraryScopeName = str_replace('-', '', !empty($myLocation1->subdomain) ? $myLocation1->subdomain : $myLocation1->code);
 							$scope = new Grouping_Scope();
-							$scope->name = $mainLibraryScopeName;
+							$scope->whereAdd('LOWER(name) = ' . $scope->escape(strtolower($mainLibraryScopeName)));
 							$scope->isLocationScope = 1;
 							if ($scope->find(true)) {
 								GroupedWorkDriver::$userNearbyLocation1ScopeId = $scope->id;
@@ -3276,7 +3255,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 						if ($myLocation2->find(true)) {
 							$mainLibraryScopeName = str_replace('-', '', !empty($myLocation2->subdomain) ? $myLocation2->subdomain : $myLocation2->code);
 							$scope = new Grouping_Scope();
-							$scope->name = $mainLibraryScopeName;
+							$scope->whereAdd('LOWER(name) = ' . $scope->escape(strtolower($mainLibraryScopeName)));
 							$scope->isLocationScope = 1;
 							if ($scope->find(true)) {
 								GroupedWorkDriver::$userNearbyLocation2ScopeId = $scope->id;
@@ -3515,13 +3494,14 @@ class GroupedWorkDriver extends IndexRecordDriver {
 			$records = [];
 		} else {
 			$uniqueRecordIdsString = implode(',', $uniqueRecordIds);
-			$recordQuery = "SELECT grouped_work_records.id, recordIdentifier, isClosedCaptioned, indexed_record_source.source, indexed_record_source.subSource, indexed_edition.edition, indexed_publisher.publisher, indexed_publication_date.publicationDate, indexed_place_of_publication.placeOfPublication, indexed_physical_description.physicalDescription, indexed_format.format, indexed_format_category.formatCategory, indexed_language.language, indexed_audience.audience, hasParentRecord, hasChildRecord FROM grouped_work_records
+			$recordQuery = "SELECT grouped_work_records.id, recordIdentifier, isClosedCaptioned, indexed_record_source.source, indexed_record_source.subSource, indexed_edition.edition, indexed_publisher.publisher, indexed_publication_date.publicationDate, indexed_place_of_publication.placeOfPublication, indexed_physical_description.physicalDescription, indexed_format.format, indexed_format_category.formatCategory, indexed_language.language, indexed_audience.audience, indexed_duration.duration, hasParentRecord, hasChildRecord FROM grouped_work_records
 								  LEFT JOIN indexed_record_source ON sourceId = indexed_record_source.id
 								  LEFT JOIN indexed_edition ON editionId = indexed_edition.id
 								  LEFT JOIN indexed_publisher ON publisherId = indexed_publisher.id
 								  LEFT JOIN indexed_publication_date ON publicationDateId = indexed_publication_date.id
 								  LEFT JOIN indexed_place_of_publication ON placeOfPublicationId = indexed_place_of_publication.id
 								  LEFT JOIN indexed_physical_description ON physicalDescriptionId = indexed_physical_description.id
+								  LEFT JOIN indexed_duration ON durationId = indexed_duration.id
 								  LEFT JOIN indexed_format on formatId = indexed_format.id
 								  LEFT JOIN indexed_format_category on formatCategoryId = indexed_format_category.id
 								  LEFT JOIN indexed_language on languageId = indexed_language.id
@@ -3543,7 +3523,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 			$uniqueItemIdsString = implode(',', $uniqueItemIds);
 			$scopeQuery = "SELECT grouped_work_record_items.id as groupedWorkItemId, available, holdable, inLibraryUseOnly, locationOwnedScopes, libraryOwnedScopes, groupedStatusTbl.status as groupedStatus, statusTbl.status as status,
 								  grouped_work_record_items.groupedWorkRecordId, grouped_work_record_items.groupedWorkVariationId, grouped_work_record_items.itemId, indexed_call_number.callNumber, indexed_shelf_location.shelfLocation, numCopies, isOrderItem, dateAdded,
-       							  indexed_location_code.locationCode, indexed_sub_location_code.subLocationCode, lastCheckInDate, isVirtual
+       							  indexed_location_code.locationCode, indexed_sub_location_code.subLocationCode, lastCheckInDate, isVirtual, barcode, note, dueDate
 								  FROM grouped_work_record_items
 								  LEFT JOIN indexed_status as groupedStatusTbl on groupedStatusId = groupedStatusTbl.id
 								  LEFT JOIN indexed_status as statusTbl on statusId = statusTbl.id

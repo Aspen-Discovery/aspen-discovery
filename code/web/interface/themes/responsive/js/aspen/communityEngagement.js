@@ -446,23 +446,6 @@ AspenDiscovery.CommunityEngagement = function() {
 			}
 			
 		},
-		getLibraryUsers: function (callback) {
-			var url = Globals.path + "/CommunityEngagement/AJAX";
-			var params = {
-				method: 'getLibraryUsers',
-			};
-
-			$.getJSON(url, params, function (data) {
-				if (data.success && data.users) {
-					callback(data.users);
-				} else{
-					callback([]);
-				}
-			}).fail (function(jqXHR, textStatus, errorThrown) {
-				AspenDiscovery.ajaxFail(jqXHR, textStatus, errorThrown);
-				callback([]);
-			});
-		},
 		displaySearchResults: function (users) {
 			const resultsDiv = document.getElementById('user_search_results');
 
@@ -489,30 +472,48 @@ AspenDiscovery.CommunityEngagement = function() {
 			const resultsDiv = document.getElementById('user_search_results');
 			const hiddenInput = document.getElementById('selected_user_id');
 
+			// 1. Clear the debounce timer
+			clearTimeout(this.searchTimer);
+
+			// 2. Abort any existing AJAX request
+			if (this.currentSearchRequest) {
+				this.currentSearchRequest.abort();
+			}
+
 			if (query.length < 2) {
 				resultsDiv.style.display = 'none';
 				hiddenInput.value = '';
 				return;
 			}
 
-			hiddenInput.value = '';
-			const url = Globals.path + '/CommunityEngagement/AJAX';
-			const params = {
-				method: 'searchUsers',
-				query: query
-			};
+			// 3. Set the debounce timer (300ms)
+			this.searchTimer = setTimeout(() => {
 
-			$.getJSON(url, params, function(data) {
-				if (data.success) {
-					AspenDiscovery.CommunityEngagement.displaySearchResults(data.users);
-				} else {
-					resultsDiv.style.display = 'none';
-					console.warn('No users found or error in AJAX call');
-				}
-			}).fail(function(jqXHR, textStatus, errorThrown) {
-				console.error('AJAX Error: ', textStatus, errorThrown);
-			});
-		},
+                resultsDiv.innerHTML = '<div style="padding: 10px; color: #666;">Searching...</div>';
+                resultsDiv.style.display = 'block';
+
+				hiddenInput.value = '';
+				const url = Globals.path + '/CommunityEngagement/AJAX';
+				const params = {
+					method: 'searchUsers',
+					query: query
+				};
+
+				// 4. Store the AJAX object to allow aborting
+				this.currentSearchRequest = $.getJSON(url, params, function(data) {
+					if (data.success) {
+						AspenDiscovery.CommunityEngagement.displaySearchResults(data.users);
+					} else {
+						resultsDiv.style.display = 'none';
+					}
+				}).fail(function(jqXHR, textStatus, errorThrown) {
+					// Ignore manual aborts, log real errors
+					if (textStatus !== 'abort') {
+						console.error('AJAX Error: ', textStatus, errorThrown);
+					}
+				});
+			}, 300);
+        },
 		loadCheckoutsForUser: function(userId, callback) {
 			let url = Globals.path + "/MyAccount/AJAX";
 			var params = {
@@ -721,17 +722,6 @@ AspenDiscovery.CommunityEngagement = function() {
 				success: function (data) {
 					if (data.success) {
 						AspenDiscovery.showMessage(data.title, data.message);
-						AspenDiscovery.CommunityEngagement.getLibraryUsers(function(users) {
-							if ($('#user_id').length > 0) {
-								const $dropdown = $('#user_id');
-								const currentValue = $dropdown.val();
-								$dropdown.empty().append('<option value="">-</option>');
-								users.forEach(function(user) {
-									const selected = user.id == currentValue ? 'selected' : '';
-									$dropdown.append(`<option value="${user.id}" ${selected}>${user.displayName}</option>`);
-								});
-							}
-						});
 						$('#addUserByBarcodeModal').modal('hide');
 						$('#newUserBarcode').val('');
 					} else {

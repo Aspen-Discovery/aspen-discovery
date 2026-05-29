@@ -774,6 +774,11 @@ class UInterface extends Smarty {
 		}
 		$this->assign('allowAccountLinking', ($library->allowLinkedAccounts == 1));
 		$this->assign('librarySystemName', $library->displayName);
+		global $enabledModules;
+		$pwaEnabled = array_key_exists('Aspen Progressive Web Application(PWA)', $enabledModules);
+		$pwaEnabled = $pwaEnabled && $library->AspenPWASettingId != -1;
+		$this->assign('AspenPWAEnabled', $pwaEnabled);
+
 		$this->assign('showLibraryHoursAndLocationsLink', $library->getLayoutSettings()->showLibraryHoursAndLocationsLink);
 		//Check to see if we should just call it library location
 		$numLocations = $library->getNumLocationsForLibrary();

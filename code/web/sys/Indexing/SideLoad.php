@@ -484,12 +484,11 @@ class SideLoad extends DataObject {
 		//Check to see if the name is unique
 		$sideLoad = new SideLoad();
 		$sideLoad->name = $this->name;
-		$sideLoad->owningLibrary = $this->owningLibrary;
 		if (!empty($this->id)) {
 			$sideLoad->whereAdd("id != " . $this->id);
 		}
 		if ($sideLoad->count() > 0) {
-			$validationResults['errors'][] = "A Side Load has already been created with that name for this library.  Please select another name.";
+			$validationResults['errors'][] = "A Side Load has already been created with that name.  Please select another name.";
 		}
 
 		//Make sure there aren't errors

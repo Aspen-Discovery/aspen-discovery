@@ -5,7 +5,7 @@ require_once ROOT_DIR . '/sys/SystemLogging/SlowPage.php';
 require_once ROOT_DIR . '/sys/SystemLogging/SlowAjaxRequest.php';
 
 class Admin_PerformanceReport extends Admin_Admin {
-	function launch() {
+	function launch() : void {
 		global $interface;
 
 		$thisMonth = date('n');
@@ -45,28 +45,28 @@ class Admin_PerformanceReport extends Admin_Admin {
 	private function getSlowPageStats(int $month, int $year, $setName, array $stats): array {
 		$usage = new SlowPage();
 		if ($month != null) {
-			$usage->month = $month;
+			$usage->setMonth($month);
 		}
 		if ($year != null) {
-			$usage->year = $year;
+			$usage->setYear($year);
 		}
 		$usage->find();
 		while ($usage->fetch()) {
-			if (isset($stats[$usage->module . '_' . $usage->action])) {
-				$stats[$usage->module . '_' . $usage->action][$setName . '_fast'] = ($usage->timesFast == null ? 0 : $usage->timesFast);
-				$stats[$usage->module . '_' . $usage->action][$setName . '_acceptable'] = ($usage->timesAcceptable == null ? 0 : $usage->timesAcceptable);
-				$stats[$usage->module . '_' . $usage->action][$setName . '_slow'] = ($usage->timesSlow == null ? 0 : $usage->timesSlow);
-				$stats[$usage->module . '_' . $usage->action][$setName . '_slower'] = ($usage->timesSlower == null ? 0 : $usage->timesSlower);
-				$stats[$usage->module . '_' . $usage->action][$setName . '_very_slow'] = ($usage->timesVerySlow == null ? 0 : $usage->timesVerySlow);
+			if (isset($stats[$usage->getModule() . '_' . $usage->getAction()])) {
+				$stats[$usage->getModule() . '_' . $usage->getAction()][$setName . '_fast'] = $usage->getTimesFast();
+				$stats[$usage->getModule() . '_' . $usage->getAction()][$setName . '_acceptable'] = $usage->getTimesAcceptable();
+				$stats[$usage->getModule() . '_' . $usage->getAction()][$setName . '_slow'] = $usage->getTimesSlow();
+				$stats[$usage->getModule() . '_' . $usage->getAction()][$setName . '_slower'] = $usage->getTimesSlower();
+				$stats[$usage->getModule() . '_' . $usage->getAction()][$setName . '_very_slow'] = $usage->getTimesVerySlow();
 			} else {
-				$stats[$usage->module . '_' . $usage->action] = [
-					'module' => $usage->module,
-					'action' => $usage->action,
-					$setName . '_fast' => $usage->timesFast == null ? 0 : $usage->timesFast,
-					$setName . '_acceptable' => $usage->timesAcceptable == null ? 0 : $usage->timesAcceptable,
-					$setName . '_slow' => $usage->timesSlow == null ? 0 : $usage->timesSlow,
-					$setName . '_slower' => $usage->timesSlower == null ? 0 : $usage->timesSlower,
-					$setName . '_very_slow' => $usage->timesVerySlow == null ? 0 : $usage->timesVerySlow,
+				$stats[$usage->getModule() . '_' . $usage->getAction()] = [
+					'module' => $usage->getModule(),
+					'action' => $usage->getAction(),
+					$setName . '_fast' => $usage->getTimesFast(),
+					$setName . '_acceptable' => $usage->getTimesAcceptable(),
+					$setName . '_slow' => $usage->getTimesSlow(),
+					$setName . '_slower' => $usage->getTimesSlower(),
+					$setName . '_very_slow' => $usage->getTimesVerySlow(),
 				];
 			}
 		}
@@ -76,25 +76,25 @@ class Admin_PerformanceReport extends Admin_Admin {
 	private function getSlowAsyncRequestStats(int $month, int $year, $setName, array $stats): array {
 		$usage = new SlowAjaxRequest();
 		if ($month != null) {
-			$usage->month = $month;
+			$usage->setMonth($month);
 		}
 		if ($year != null) {
-			$usage->year = $year;
+			$usage->setYear($year);
 		}
 		$usage->find();
 		while ($usage->fetch()) {
-			if (isset($stats[$usage->module . '_' . $usage->action . '_' . $usage->method])) {
-				$stats[$usage->module . '_' . $usage->action . '_' . $usage->method][$setName] = $usage->timesSlow;
+			if (isset($stats[$usage->getModule() . '_' . $usage->getAction() . '_' . $usage->method])) {
+				$stats[$usage->getModule() . '_' . $usage->getAction() . '_' . $usage->method][$setName] = $usage->getTimesSlow();
 			} else {
-				$stats[$usage->module . '_' . $usage->action . '_' . $usage->method] = [
-					'module' => $usage->module,
-					'action' => $usage->action,
-					'method' => $usage->method,
-					$setName . '_fast' => $usage->timesFast,
-					$setName . '_acceptable' => $usage->timesAcceptable,
-					$setName . '_slow' => $usage->timesSlow,
-					$setName . '_slower' => $usage->timesSlower,
-					$setName . '_very_slow' => $usage->timesVerySlow,
+				$stats[$usage->getModule() . '_' . $usage->getAction() . '_' . $usage->getMethod()] = [
+					'module' => $usage->getModule(),
+					'action' => $usage->getAction(),
+					'method' => $usage->getMethod(),
+					$setName . '_fast' => $usage->getTimesFast(),
+					$setName . '_acceptable' => $usage->getTimesAcceptable(),
+					$setName . '_slow' => $usage->getTimesSlow(),
+					$setName . '_slower' => $usage->getTimesSlower(),
+					$setName . '_very_slow' => $usage->getTimesVerySlow(),
 				];
 			}
 		}

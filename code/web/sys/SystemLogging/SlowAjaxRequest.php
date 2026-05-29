@@ -42,4 +42,44 @@ class SlowAjaxRequest extends DataObject {
 	public function okToExport(array $selectedFilters): bool {
 		return true;
 	}
+
+	public function getModule() : string {
+		return $this->module;
+	}
+
+	public function getAction() : string {
+		return $this->action;
+	}
+
+	public function getMethod() : string {
+		return $this->method;
+	}
+
+	public function getTimesFast() : int {
+		return $this->timesFast ?? 0;
+	}
+
+	public function getTimesAcceptable() : int {
+		return $this->timesAcceptable ?? 0;
+	}
+
+	public function getTimesSlow() : int {
+		return $this->timesSlow ?? 0;
+	}
+
+	public function getTimesSlower() : int {
+		return $this->timesSlower ?? 0;
+	}
+
+	public function getTimesVerySlow() : int {
+		return $this->timesVerySlow ?? 0;
+	}
+
+	public function setMonth(int $month) : void {
+		$this->month = $month;
+	}
+
+	public function setYear(int $year) : void {
+		$this->year = $year;
+	}
 }

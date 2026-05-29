@@ -25,8 +25,12 @@ class Admin_CollectionSpotlights extends ObjectEditor {
 
 		$object = new CollectionSpotlight();
 		if (!UserAccount::userHasPermission('Administer All Collection Spotlights')) {
-			$homeLibrary = Library::getPatronHomeLibrary();
-			$object->whereAdd('libraryId = ' . $homeLibrary->libraryId . ' OR libraryId = -1');
+			$libraries = Library::getLibraryList(true);
+			if (empty($libraries)) {
+				$object->whereAdd('libraryId = -1');
+			}else{
+				$object->whereAdd('libraryId IN (' . implode(',', array_keys($libraries)) . ') OR libraryId = -1');
+			}
 		}
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
@@ -82,8 +86,12 @@ class Admin_CollectionSpotlights extends ObjectEditor {
 		$availableSpotlights = [];
 		$collectionSpotlight = new CollectionSpotlight();
 		if (!UserAccount::userHasPermission('Administer All Collection Spotlights')) {
-			$homeLibrary = Library::getPatronHomeLibrary();
-			$collectionSpotlight->whereAdd('libraryId = ' . $homeLibrary->libraryId . ' OR libraryId = -1');
+			$libraries = Library::getLibraryList(true);
+			if (empty($libraries)) {
+				$collectionSpotlight->whereAdd('libraryId = -1');
+			}else{
+				$collectionSpotlight->whereAdd('libraryId IN (' . implode(',', array_keys($libraries)) . ') OR libraryId = -1');
+			}
 		}
 		$collectionSpotlight->orderBy('name ASC');
 		$collectionSpotlight->find();

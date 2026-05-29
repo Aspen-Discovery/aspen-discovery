@@ -461,7 +461,7 @@ class UserAccount {
 	 * @param User $user
 	 */
 	public static function updateSession($user) {
-		if ($user != false) {
+		if ($user !== false) {
 			$_SESSION['activeUserId'] = $user->id;
 		} else {
 			unset($_SESSION['activeUserId']);
@@ -485,10 +485,9 @@ class UserAccount {
 	 * Try to log in the user using current query parameters
 	 * return User object on success, AspenError on failure.
 	 *
-	 * @return AspenError|2FA|User
 	 * @throws UnknownAuthenticationMethodException
 	 */
-	public static function login($validatedViaSSO = false) {
+	public static function login($validatedViaSSO = false) : AspenError|User|TwoFactorAuthenticationError|null|false {
 		global $logger;
 		global $usageByIPAddress;
 		global $library;
@@ -502,8 +501,8 @@ class UserAccount {
 			//Check CAS first
 			require_once ROOT_DIR . '/sys/Authentication/CASAuthentication.php';
 			$casAuthentication = new CASAuthentication(null);
-			$casUsername = $casAuthentication->authenticate(false);
-			if ($casUsername == false || $casUsername instanceof AspenError) {
+			$casUsername = $casAuthentication->authenticate(false, null);
+			if ($casUsername === false || $casUsername instanceof AspenError) {
 				//The user could not be authenticated in CAS
 				$logger->log("The user could not be logged in", Logger::LOG_NOTICE);
 				$usageByIPAddress->incrementNumFailedLoginAttempts();
@@ -610,7 +609,7 @@ class UserAccount {
 					$primaryUser->addLinkedUser($tempUser);
 				}
 			} elseif ($tempUser != null) {
-				$username = isset($_REQUEST['username']) ? $_REQUEST['username'] : 'No username provided';
+				$username = $_REQUEST['username'] ?? 'No username provided';
 				$logger->log("Error authenticating patron $username for driver {$driverName}", Logger::LOG_ERROR);
 				$lastError = $tempUser;
 				$logger->log($lastError->toString(), Logger::LOG_ERROR);

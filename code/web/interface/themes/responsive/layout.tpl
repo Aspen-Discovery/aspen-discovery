@@ -52,6 +52,10 @@
 		{/if}
 		<link rel="search" type="application/opensearchdescription+xml" title="{$site.title|escape} Catalog Search" href="/Search/OpenSearch?method=describe">
 		{include file="cssAndJsIncludes.tpl"}
+		{if $AspenPWAEnabled}
+			{* manifest.json produced from code/web/services/AspenPWA/manifest.php *}
+			<link rel="manifest" href="/manifest.json"/>
+		{/if}
 		{if !empty($themeCss)}{$themeCss}{/if}
 		{if $isRTL && !empty($themeRTLCss)}{$themeRTLCss}{/if}
 		{if !empty($loadRecaptcha)}
@@ -61,6 +65,9 @@
 </head>
 <body class="module_{$module} action_{$action}{if !empty($masqueradeMode)} masqueradeMode{/if}{if !empty($loggedIn)} loggedIn{else} loggedOut{/if}" id="{$module}-{$action}{if $module=="WebBuilder" && $action=="BasicPage" || $action=="PortalPage" || $action=="GrapesPage"}-{$id}{/if}" dir="{if $userLang->isRTL()}rtl{else}auto{/if}">
 {strip}
+	<a class="screen-reader-text" href="#main" id="skip-to-main-content">
+		<span>{translate text="Skip to main content" isPublicFacing=true}</span>
+	</a>
 	{if !empty($showTopOfPageButton) && empty($minimalInterface)}
 	<a class="top-link hide" href="" id="js-top">
 		<i class="fas fa-arrow-up fa-2x fa-fw" role="presentation"></i>
@@ -139,9 +146,13 @@
 							{include file="breadcrumbs.tpl"}
 							</div>
 						{/if}
-						<div role="main">
-							{if !empty($module)}
-								{include file="$module/$pageTemplate"}
+						<div id="main" role="main">
+							{if !file_exists($pageTemplate)}
+								{if !empty($module)}
+									{include file="$module/$pageTemplate"}
+								{else}
+									{include file="$pageTemplate"}
+								{/if}
 							{else}
 								{include file="$pageTemplate"}
 							{/if}
@@ -154,9 +165,13 @@
 							{include file="breadcrumbs.tpl"}
 							</div>
 						{/if}
-						<div role="main">
-							{if !empty($module)}
-								{include file="$module/$pageTemplate"}
+						<div id="main" role="main">
+							{if !file_exists($pageTemplate)}
+								{if !empty($module)}
+									{include file="$module/$pageTemplate"}
+								{else}
+									{include file="$pageTemplate"}
+								{/if}
 							{else}
 								{include file="$pageTemplate"}
 							{/if}
@@ -180,7 +195,7 @@
 
 	{include file="tracking.tpl"}
 
-	{include file="sse.tpl"}
+	{include file="polling.tpl"}
 
 	{if !empty($semanticData)}
 		{include file="jsonld.tpl"}

@@ -903,7 +903,7 @@
         geographic_facet^50
         personal_name_facet^50
         corporate_name_facet^50
-        mpaa_rating
+        content_rating
         accelerated_reader_interest_level
       </str>
       <str name="mlt.mintf">1</str>

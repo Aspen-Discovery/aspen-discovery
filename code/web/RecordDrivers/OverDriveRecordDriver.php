@@ -108,62 +108,53 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 	}
 
 	function getStatusSummary() : array {
-		$availabilityInfo = $this->getAvailabilityInformation();
+		$relatedRecord = $this->getRelatedRecord();
 		$readerName = new OverDriveDriver();
 		$readerName = $readerName->getReaderName();
 
-		$holdPosition = 0;
+		$statusSummary = [];
+		$statusSummary['isOverDrive'] = true;
+		$statusSummary['recordId'] = $this->id;
+		$statusSummary['accessType'] = 'overdrive';
+		$statusSummary['alwaysAvailable'] = false;
+		$statusSummary['showAccessOnline'] = false;
 
 		$availableCopies = 0;
 		$totalCopies = 0;
 		$onOrderCopies = 0;
-		$checkedOut = 0;
-		$onHold = 0;
-		$wishListSize = 0;
-		$numHolds = 0;
-		foreach ($availabilityInfo  as $availability) {
-			$availableCopies += $availability->copiesAvailable;
-			$totalCopies += $availability->copiesOwned;
-			$numHolds += $availability->numberOfHolds;
-		}
 
-		//Load status summary
-		$statusSummary = [];
-		$statusSummary['recordId'] = $this->id;
+		if ($relatedRecord == null) {
+			$statusSummary['status'] = "Unavailable";
+			$statusSummary['available'] = false;
+			$statusSummary['class'] = 'unavailable';
+		} else {
+			$statusSummary['holdQueueLength'] = $relatedRecord->getStatusInformation()->getNumHolds();
+			$statusSummary['numHolds'] = $relatedRecord->getStatusInformation()->getNumHolds();
+
+			if ($relatedRecord->getGroupedStatus() == 'On Order') {
+				$onOrderCopies += $relatedRecord->getCopies();
+				$statusSummary['status'] = 'On Order';
+				$statusSummary['class'] = 'checkedOut';
+				$statusSummary['available'] = false;
+			}else if ($relatedRecord->getAvailableCopies() > 0) {
+				$availableCopies += $relatedRecord->getAvailableCopies();
+				$totalCopies += $relatedRecord->getCopies();
+				if ($totalCopies >= 999999) {
+					$statusSummary['alwaysAvailable'] = true;
+				}
+				$statusSummary['status'] = "Available from $readerName";
+				$statusSummary['available'] = true;
+				$statusSummary['class'] = 'available';
+			} else {
+				$totalCopies += $relatedRecord->getCopies();
+				$statusSummary['status'] = 'Checked Out';
+				$statusSummary['class'] = 'checkedOut';
+				$statusSummary['available'] = false;
+			}
+		}
 		$statusSummary['totalCopies'] = $totalCopies;
 		$statusSummary['onOrderCopies'] = $onOrderCopies;
-		$statusSummary['accessType'] = 'overdrive';
-		$statusSummary['alwaysAvailable'] = false;
-
 		$statusSummary['availableCopies'] = $availableCopies;
-		$statusSummary['isOverDrive'] = true;
-		if ($totalCopies >= 999999) {
-			$statusSummary['alwaysAvailable'] = true;
-		}
-		if ($availableCopies > 0) {
-			$statusSummary['status'] = "Available from " . $readerName;
-			$statusSummary['available'] = true;
-			$statusSummary['class'] = 'available';
-		} else {
-			$statusSummary['status'] = 'Checked Out';
-			$statusSummary['available'] = false;
-			$statusSummary['class'] = 'checkedOut';
-			$statusSummary['isOverDrive'] = true;
-		}
-
-
-		//Determine which buttons to show
-		$statusSummary['holdQueueLength'] = $numHolds;
-		$statusSummary['numHolds'] = $numHolds;
-		$statusSummary['showPlaceHold'] = $availableCopies == 0;
-		$statusSummary['showCheckout'] = $availableCopies > 0;
-		$statusSummary['showAddToWishlist'] = false;
-		$statusSummary['showAccessOnline'] = false;
-
-		$statusSummary['onHold'] = $onHold;
-		$statusSummary['checkedOut'] = $checkedOut;
-		$statusSummary['holdPosition'] = $holdPosition;
-		$statusSummary['wishListSize'] = $wishListSize;
 
 		return $statusSummary;
 	}

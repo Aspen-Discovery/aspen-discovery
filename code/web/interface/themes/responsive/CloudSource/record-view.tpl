@@ -12,7 +12,7 @@
 	<div class="col-tn-12 col-xs-12 col-sm-4 col-md-3 col-lg-3">
 		<div class="panel active">
 			<div class="panel-body" style="display:flex; justify-content:center">
-				<a href="{$recordDriver->getLinkUrl()}"><img class="img-responsive img-thumbnail {$coverStyle}" src="{$image}" alt="{$recordDriver->getTitle()|escape}" style="max-height: 280px; width: auto"></a>
+				<a href="{$patronUrl}"><img class="img-responsive img-thumbnail {$coverStyle}" src="{$image}" alt="{$recordDriver->getTitle()|escape}" style="max-height: 280px; width: auto"></a>
 			</div>
 		</div>
 		{if !empty($record->format)}
@@ -156,7 +156,7 @@
 		{*column for tool buttons & event description*}
 		<div class="col-sm-9">
 			<div class="btn-group btn-group-sm">
-				<a href="{$recordDriver->getRecordUrl()}" class="btn btn-sm btn-tools" target="_blank" aria-label="{translate text="More Info" isPublicFacing=true inAttribute=true} ({translate text="opens in a new window" isPublicFacing=true inAttribute=true})"><i class="fas fa-external-link-alt" role="presentation"></i> {translate text="More Info" isPublicFacing=true}</a>
+				<a href="{$patronUrl}" class="btn btn-sm btn-tools" target="_blank" aria-label="{translate text="More Info" isPublicFacing=true inAttribute=true} ({translate text="opens in a new window" isPublicFacing=true inAttribute=true})"><i class="fas fa-external-link-alt" role="presentation"></i> {translate text="More Info" isPublicFacing=true}</a>
 				<button onclick="return AspenDiscovery.Account.showSaveToListForm(this, 'CloudSource', '{$recordDriver->getUniqueID()|escape}');" class="btn btn-sm btn-tools addToListBtn">{translate text="Add to List" isPublicFacing=true}</button>
 			</div>
 			<div class="btn-group btn-group-sm">

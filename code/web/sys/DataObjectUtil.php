@@ -658,9 +658,12 @@ class DataObjectUtil {
 									'regularExpression',
 									'multilineRegularExpression',
 									'hidden',
+									'storedPassword'
 								])) {
 									$oldValue = $subObject->$subPropertyName;
-									$changed = $subObject->setProperty($subPropertyName, $_REQUEST[$requestKey][$id], $subProperty);
+									$isCheckboxList = $subProperty['type'] == 'multiSelect' && ($subProperty['listStyle'] ?? '') == 'checkboxList';
+									$newValue = $_REQUEST[$requestKey][$id] ?? ($isCheckboxList ? [] : null);
+									$changed = $subObject->setProperty($subPropertyName, $newValue, $subProperty);
 									if ($changed && !empty($object->{$object->__primaryKey}) && $object->objectHistoryEnabled()) {
 										require_once ROOT_DIR . '/sys/DB/DataObjectHistory.php';
 										$history = new DataObjectHistory();

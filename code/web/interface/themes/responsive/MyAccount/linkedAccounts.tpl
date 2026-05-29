@@ -41,7 +41,7 @@
 					{/if}
 					{if $linkSetting !=2}
 						<h2>{translate text="Other accounts that can view this account" isPublicFacing=true}</h2>
-						<p>{translate text="The following accounts can view checkout and hold information from this account.  If someone is viewing your account that you do not want to have access, please contact library staff." isPublicFacing=true}</p>
+						<p>{translate text="The following accounts can view checkout, Aspen events registrations, and hold information from this account.  If someone is viewing your account that you do not want to have access, please contact library staff." isPublicFacing=true}</p>
 						<ul>
 							{foreach from=$profile->getViewers() item=tmpUser}
 								<li>{$tmpUser->getNameAndLibraryLabel()|escape} {if $linkRemoveSetting != 0}<button class="btn btn-xs btn-warning" onclick="AspenDiscovery.Account.removeManagingAccount({$tmpUser->id});">Remove</button>{/if} </li>

@@ -68,6 +68,7 @@ class Greenhouse_Sites extends ObjectEditor {
 	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Greenhouse/Home', 'Greenhouse Home');
+		$breadcrumbs[] = new Breadcrumb('/Greenhouse/Home#greenhouse-main', 'Greenhouse Configuration');
 		$breadcrumbs[] = new Breadcrumb('/Greenhouse/Sites', 'Sites');
 		return $breadcrumbs;
 	}

@@ -108,6 +108,7 @@ class Person_Home extends Action {
 			$s->find();
 			if ($s->getNumResults() > 0) {
 				$s->fetch();
+				SearchObjectFactory::initSearchObject($s->searchSource);
 				$minSO = unserialize($s->search_object);
 				$searchObject = SearchObjectFactory::deminify($minSO);
 				$searchObject->setPage($currentPage);

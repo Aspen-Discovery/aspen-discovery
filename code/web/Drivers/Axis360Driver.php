@@ -64,14 +64,18 @@ class Axis360Driver extends AbstractEContentDriver {
 	 * This is responsible for retrieving all checkouts (i.e. checked out items)
 	 * by a specific patron.
 	 *
-	 * @param User $patron The user to load transactions for
+	 * @param User $patron 	     The user to load transactions for
+	 * @param array $options     Additional options
 	 * @return Checkout[]        Array of the patron's transactions on success
 	 * @access public
 	 */
-	public function getCheckouts(User $patron): array {
+	public function getCheckouts(User $patron, array $options = []): array {
 		$accountSummary = $patron->getCachedAccountSummary('axis360');
 		$cachedCheckouts = $patron->getCachedCheckoutsForSource('axis360');
 		if ($accountSummary->areCheckoutsStale() || isset($_REQUEST['reload']) || isset($_REQUEST['refreshCheckouts'])) {
+			$userEligibleForPalaceProject = $patron->isValidForEContentSource('palace_project');
+			$showPalaceProjectLink = $userEligibleForPalaceProject && $patron->getHomeLibrary()->getPalaceProjectSettings()->showPalaceProjectLinks;
+
 			require_once ROOT_DIR . '/sys/User/Checkout.php';
 			if (isset($this->checkouts[$patron->id])) {
 				return $this->checkouts[$patron->id];
@@ -98,7 +102,7 @@ class Axis360Driver extends AbstractEContentDriver {
 					$status = $xmlResults->status;
 					if ($status->code == '0000') {
 						foreach ($xmlResults->title as $title) {
-							$this->loadCheckoutInfo($title, $checkouts, $patron);
+							$this->loadCheckoutInfo($title, $checkouts, $patron, $showPalaceProjectLink);
 						}
 					} else {
 						global $logger;
@@ -429,7 +433,7 @@ class Axis360Driver extends AbstractEContentDriver {
 				]);
 
 				$this->incrementStat('numHoldsCancelled');
-				$this->updateCachesForCancelledHold($patron, $holdToCancel);
+				$this->updateCachesForCancelledHold($patron, $holdToCancel, 'axis360');
 			}
 		} else {
 			$result['message'] = translate([
@@ -771,7 +775,7 @@ class Axis360Driver extends AbstractEContentDriver {
 		}
 	}
 
-	private function loadCheckoutInfo(SimpleXMLElement $title, &$checkouts, User $user) : void {
+	private function loadCheckoutInfo(SimpleXMLElement $title, &$checkouts, User $user, $showPalaceProjectLink) : void {
 		$checkout = new Checkout();
 		$checkout->type = 'axis360';
 		$checkout->source = 'axis360';
@@ -794,6 +798,8 @@ class Axis360Driver extends AbstractEContentDriver {
 			$checkout->updateFromRecordDriver($axis360Record);
 		}
 		$checkout->userId = $user->id;
+
+		$checkout->showPalaceProjectLink = $showPalaceProjectLink;
 
 		$key = $checkout->source . $checkout->sourceId . $checkout->userId;
 		$checkouts[$key] = $checkout;

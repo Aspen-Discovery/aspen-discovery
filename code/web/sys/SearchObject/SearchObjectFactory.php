@@ -15,7 +15,7 @@ class SearchObjectFactory {
 		global $configArray;
 		$engine = match ($engine) {
 			'local' => 'GroupedWork',
-			'series', 'list', 'events' => ucfirst($engine),
+			'series', 'list', 'lists', 'events' => ucfirst($engine),
 			'cloudsource' => 'CloudSource',
 			default => $engine,
 		};

@@ -124,6 +124,14 @@ class Series extends DataObject {
 					],
 				],
 			],
+			'numTitlesInSeries' => [
+				'property' => 'numTitlesInSeries',
+				'type' => 'calculatedInteger',
+				'label' => 'Number of Titles',
+				'description' => 'The number of titles in the series (unscoped, does not include excluded titles)',
+				'readOnly' => true,
+				'canFilter' => true
+			]
 		];
 
 		self::$_objectStructure[$context] = $structure;
@@ -229,14 +237,6 @@ class Series extends DataObject {
 				}
 			}
 		}
-	}
-
-	function numTitlesInSeries() {
-		require_once ROOT_DIR . '/sys/Series/SeriesMember.php';
-		$members = new SeriesMember();
-		$members->seriesId = $this->id;
-		$members->excluded = 0;
-		return $members->count();
 	}
 
 	function numScopedTitlesInSeries() : int {

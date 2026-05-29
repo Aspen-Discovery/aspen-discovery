@@ -105,6 +105,7 @@
 				</div>
 			{/if}
 			{if !empty($showUserPreferences)}<div class="header-menu-option" ><a href="/MyAccount/MyPreferences">{translate text='Your Preferences' isPublicFacing=true}</a></div>{/if}
+			{if $AspenPWAEnabled }<div class="header-menu-option"><a href="/MyAccount/MyNotificationPreferences">{translate text="Your Notification Preferences" isPublicFacing=true}</a></div>{/if}
 			{if $privacyConsentEnabled} <div class="header-menu-option"><a href="/MyAccount/MyPrivacySettings">{translate text="Your Privacy Settings" isPublicFacing=true}</a></div>{/if}
 			{if !empty($showUserContactInformation)}<div class="header-menu-option" ><a href="/MyAccount/ContactInformation">{translate text='Contact Information' isPublicFacing=true}</a></div>{/if}
 			{if $user->showHoldNotificationPreferences()}

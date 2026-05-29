@@ -207,7 +207,7 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 		}
 	}
 
-	public function getMoreDetailsOptions() {
+	public function getMoreDetailsOptions() : array {
 		global $interface;
 
 		$isbn = $this->getCleanISBN();
@@ -616,8 +616,6 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 			$statusSummary['status'] = "Unavailable";
 			$statusSummary['available'] = false;
 			$statusSummary['class'] = 'unavailable';
-			$statusSummary['showPlaceHold'] = false;
-			$statusSummary['showCheckout'] = false;
 		} else {
 			// Check if it's a Flex title
 			if ($this->getHooplaType() == 'Flex') {
@@ -626,21 +624,15 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 					$statusSummary['status'] = "Available from Hoopla";
 					$statusSummary['available'] = true;
 					$statusSummary['class'] = 'available';
-					$statusSummary['showPlaceHold'] = false;
-					$statusSummary['showCheckout'] = true;
 				} else {
 					$statusSummary['status'] = "Checked Out";
 					$statusSummary['available'] = false;
 					$statusSummary['class'] = 'checkedOut';
-					$statusSummary['showPlaceHold'] = true;
-					$statusSummary['showCheckout'] = false;
 				}
 			} else {
 				$statusSummary['status'] = "Available from Hoopla";
 				$statusSummary['available'] = true;
 				$statusSummary['class'] = 'available';
-				$statusSummary['showPlaceHold'] = false;
-				$statusSummary['showCheckout'] = true;
 			}
 		}
 		return $statusSummary;

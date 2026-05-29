@@ -148,8 +148,8 @@ class Record_Home extends GroupedWorkSubRecordHomeAction {
 				}
 			}
 
-			if (!empty($this->recordDriver->getGroupedWorkDriver()->getMpaaRating())) {
-				$interface->assign('mpaaRating', $this->recordDriver->getGroupedWorkDriver()->getMpaaRating());
+			if (!empty($this->recordDriver->getGroupedWorkDriver()->getContentRating())) {
+				$interface->assign('contentRating', $this->recordDriver->getGroupedWorkDriver()->getContentRating());
 			}
 
 			$format = $this->recordDriver->getFormat();

@@ -1,5 +1,5 @@
 <?xml version="1.0" ?>
-<schema name="Aspen Genealogy Index" version="1.5">
+<schema name="Aspen Website Index" version="1.5">
 	<types>
 		<fieldType name="unchanged_string" class="StrField"/> 
 		<fieldType name="integer" class="IntPointField"/>
@@ -103,6 +103,7 @@
 				<filter class="solr.TrimFilterFactory"/>
 			</analyzer>
 		</fieldType>
+		<fieldType name="boolean" class="solr.BoolField" sortMissingLast="true"/>
 	</types>
 
 	<fields>
@@ -131,6 +132,7 @@
 		<field name="audience" type="searchable_text" indexed="true" stored="true" multiValued="true"/>
 		<field name="category_facet" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
 		<field name="category" type="searchable_text" indexed="true" stored="true" multiValued="true"/>
+		<field name="show_in_explore_more" type="boolean" indexed="true" stored="true" required="false" />
 
 		<!-- Field to get random titles -->
 		<dynamicField name="random*" type="random" indexed="true" stored="true"/>

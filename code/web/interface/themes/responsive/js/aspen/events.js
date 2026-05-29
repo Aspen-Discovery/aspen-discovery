@@ -142,6 +142,15 @@ AspenDiscovery.Events = (function(){
 						}
 						$("#accordion_body_Fields_for_this_Event_Type .panel-body").html(data.typeFields);
 						$('#accordion_body_Fields_for_this_Event_Type [data-toggle="tooltip"]').tooltip();
+				
+						// Wait a tick for the DOM to render before running the display logic
+						setTimeout(function() {
+							AspenDiscovery.Events.displayRegistrationNumberOfSeats();
+							$('#registrationRequired').off('change').on('change', function() {
+								AspenDiscovery.Events.displayRegistrationNumberOfSeats();
+							});
+						}, 0);
+
 						$("#propertyRowtitle").show();
 						$("#propertyRowinfoSection").show();
 						$("#propertyRowscheduleSection").show();
@@ -721,6 +730,34 @@ AspenDiscovery.Events = (function(){
 					AspenDiscovery.showMessage('Sorry', data.message);
 				}
 			})
+		},
+		handleRegistrationEnabledToggle: function () {
+			AspenDiscovery.Events.displayRegistrationNumberOfSeats();
+		},
+		displayRegistrationNumberOfSeats: function () {
+			const requireEventRegistration = document.getElementById('registrationRequired');
+			if (!requireEventRegistration) {
+				return;
+			}
+
+			let registrationNumberOfSeats = document.getElementById('propertyRownumberOfSeats');
+			if (!registrationNumberOfSeats) {
+				return;
+			}
+			
+			if (requireEventRegistration.checked) {
+				registrationNumberOfSeats.style.display = '';
+				return;
+			}
+			AspenDiscovery.Events.unsetNumberOfSeats();
+			registrationNumberOfSeats.style.display = 'none';
+		},
+		unsetNumberOfSeats: function () {
+			let numberofSeats = document.getElementById('numberOfSeats');
+			if (!numberofSeats) {
+				return;
+			}
+			numberofSeats.value = null;
 		},
 		saveEventsForType: function(doFullSave){
 			if (doFullSave) {

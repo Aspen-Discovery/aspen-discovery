@@ -11,7 +11,7 @@ class Events_AJAX extends JSON_Action {
 	/** @noinspection PhpUnused */
 	public function getEventTypesAndSubLocationsForLocation() : array {
 		$this->requireLoggedInUser();
-		$this->checkRequiredPermission(["View Event Reports for All Libraries","View Event Reports for Home Library",]);
+		$this->checkRequiredPermission(["View Event Reports for All Libraries","View Event Reports for Home Library",'Administer Events for All Locations', 'Administer Events for Home Library Locations', 'Administer Events for Home Location']);
 		require_once ROOT_DIR . '/sys/Events/EventType.php';
 		$result = [
 			'success' => false,

@@ -157,4 +157,9 @@
 #######################################################
 59 23 * * * root php /usr/local/aspen-discovery/code/web/cron/updateCommunityEngagementMilestones.php {sitename}
 
+#######################################
+# Purge User App Request Logs #
+#######################################
+0 */12 * * * root php /usr/local/aspen-discovery/code/web/cron/purgeUserAppRequestLogs.php {sitename}
+
 # Debian needs a blank line at the end of cron, make sure to add additional cron lines above this.

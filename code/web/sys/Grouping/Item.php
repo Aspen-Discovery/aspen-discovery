@@ -36,6 +36,9 @@ class Grouping_Item {
 	public int $numHolds = 0;
 	public bool $available = false;
 	public bool $isVirtual = false;
+	public string $barcode = '';
+	public string $dueDate = '';
+	public string $note = '';
 	private array $_relatedUrls = [];
 	private array $_actions = [];
 	private bool $_displayByDefault = false;
@@ -93,6 +96,9 @@ class Grouping_Item {
 		$this->lastCheckInDate = $itemDetails['lastCheckInDate'];
 		$this->isVirtual = $itemDetails['isVirtual'];
 		$this->variationId = $itemDetails['groupedWorkVariationId'];
+		$this->barcode = $itemDetails['barcode'] ?? '';
+		$this->dueDate = $itemDetails['dueDate'] ?? '';
+		$this->note = $itemDetails['note'] ?? '';
 
 		if ($this->status == 'Library Use Only' && !$this->available) {
 			$this->status = 'Checked Out (library use only)';
@@ -247,6 +253,9 @@ class Grouping_Item {
 			'locationCode' => $this->locationCode,
 			'locationName' => $this->getLocationName(),
 			'subLocation' => $this->subLocation,
+			'barcode' => $this->barcode,
+			'note' => $this->note,
+			'dueDate' => $this->dueDate,
 			'itemId' => $this->itemId,
 			'variationId' => $this->variationId,
 			'actions' => $this->getActions(),

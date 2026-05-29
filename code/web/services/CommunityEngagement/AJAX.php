@@ -1289,6 +1289,7 @@ class CommunityEngagement_AJAX extends JSON_Action {
 
 		$escapedQuery = addslashes($query);
 
+		# FIXME: This will never work if displayName is encrypted. Only barcode matching will work.
 		$user->whereAdd("displayName LIKE '%$escapedQuery%' OR ils_barcode LIKE '%$escapedQuery%'");
 
 		$user->limit(0, 25);

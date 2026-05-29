@@ -120,7 +120,7 @@ abstract class RecordInterface {
 
 	public abstract function getDescription();
 
-	public abstract function getMoreDetailsOptions();
+	public abstract function getMoreDetailsOptions() : array ;
 
 	public function getBaseMoreDetailsOptions($isbn) : array {
 		global $interface;
@@ -174,7 +174,7 @@ abstract class RecordInterface {
 			'openByDefault' => true,
 		];
 		$timer->logTime('Loaded Description');
-		if (SystemVariables::getSystemVariables()->enableNovelistSeriesIntegration) {
+		if ((SystemVariables::getSystemVariables()->enableNovelistSeriesIntegration && $library->novelistSettingId > 0) || $library->useSeriesSearchIndex) {
 			$moreDetailsOptions['series'] = [
 				'label' => 'Also in this Series',
 				'body' => $interface->fetch('GroupedWork/series.tpl'),

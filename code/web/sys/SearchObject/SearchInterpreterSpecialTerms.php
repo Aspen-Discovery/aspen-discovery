@@ -3,6 +3,7 @@
 class SearchInterpreterSpecialTerms extends DataObject {
 	public $__table = 'search_interpreter_special_terms';
 	public $id;
+	public $weight;
 	public $settingId;
 	public $term;
 	public $processTerm;
@@ -28,6 +29,12 @@ class SearchInterpreterSpecialTerms extends DataObject {
 				'label' => 'Id',
 				'description' => 'The unique id within the database',
 				'uniqueProperty' => true,
+			],
+			'weight' => [
+				'property' => 'weight',
+				'type' => 'integer',
+				'label' => 'Weight',
+				'description' => 'The sort order',
 			],
 			'term' => [
 				'property' => 'term',

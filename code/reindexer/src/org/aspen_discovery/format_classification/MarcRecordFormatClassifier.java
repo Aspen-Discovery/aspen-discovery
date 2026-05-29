@@ -130,6 +130,9 @@ public class MarcRecordFormatClassifier {
 			}else if (Character.toUpperCase(leaderBit) == 'O') {
 				if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Adding bib level format Kit based on leader", 2);}
 				printFormats.add("Kit");
+			}else if (Character.toUpperCase(leaderBit) == 'P') {
+				if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Adding bib level format Mixed Materials based on leader", 2);}
+				printFormats.add("MixedMaterials");
 			}
 		}
 		//Check for braille
@@ -382,6 +385,9 @@ public class MarcRecordFormatClassifier {
 						}else if (subfieldData.contains("picture book")) {
 							if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Adding bib level format PictureBook based on 655 Genre", 2);}
 							result.add("PictureBook");
+						}else if (subfieldData.contains("big book")) {
+							if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Adding bib level format BigBook based on 655 Genre", 2);}
+							result.add("BigBook");
 						}else if (subfieldData.contains("pop-up")) {
 							if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Adding bib level format Pop-UpBook based on 655 Genre", 2);}
 							result.add("Pop-UpBook");
@@ -565,7 +571,31 @@ public class MarcRecordFormatClassifier {
 			}
 		}
 		String title = MarcUtil.getFirstFieldVal(record, "245a");
+		boolean titleIn880 = false;
 		if (title != null){
+			if (title.equals("<>.")) { //a title of <>. is an indicator that the title may be in the 880
+				List<DataField> altTitleField = MarcUtil.getDataFields(record, 880);
+				Iterator<DataField> fieldIterator = altTitleField.iterator();
+				DataField field;
+				while (fieldIterator.hasNext()) {
+					field = fieldIterator.next();
+					List<Subfield> subfields = field.getSubfields();
+					for (Subfield subfield : subfields) {
+						if (subfield.getCode() == '6') {
+							String subfieldData = subfield.getData().toLowerCase();
+							if (subfieldData.contains("245")) { //we are looking at the correct 880 field for title
+								titleIn880 = true;
+							}
+						}
+						if (titleIn880) {
+							if (subfield.getCode() == 'a') { //the title is in 880a if 880 |6 has 245
+								title = subfield.getData().toLowerCase();
+								break;
+							}
+						}
+					}
+				}
+			}
 			title = title.toLowerCase();
 			if (title.contains("book club kit")){
 				if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Adding bib level format BookClubKit based on 245a", 2);}
@@ -573,6 +603,28 @@ public class MarcRecordFormatClassifier {
 			}
 		}
 		String subTitle = MarcUtil.getFirstFieldVal(record, "245b");
+		if (titleIn880) {
+			boolean checkForSubTitle = false;
+			List<DataField> altSubTitleField = MarcUtil.getDataFields(record, 880);
+			Iterator<DataField> fieldIterator = altSubTitleField.iterator();
+			DataField field;
+			while (fieldIterator.hasNext()) {
+				field = fieldIterator.next();
+				List<Subfield> subfields = field.getSubfields();
+				for (Subfield subfield : subfields) {
+					if (subfield.getCode() == '6') {
+						String subfieldData = subfield.getData().toLowerCase();
+						if (subfieldData.contains("245")) {
+							checkForSubTitle = true;
+						}
+					}
+					if (checkForSubTitle && subfield.getCode() == 'b') {
+						subTitle = subfield.getData().toLowerCase();
+						break;
+					}
+				}
+			}
+		}
 		if (subTitle != null){
 			if (graphicNovelSubtitle.matcher(subTitle).find()){
 				if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Adding bib level format GraphicNovel based on 245b", 2);}
@@ -1296,6 +1348,11 @@ public class MarcRecordFormatClassifier {
 	}
 
 	public void filterPrintFormats(Set<String> printFormats) {
+		if (printFormats.contains("MixedMaterials")){
+			printFormats.clear();
+			printFormats.add("MixedMaterials");
+			return;
+		}
 		if (printFormats.contains("Archival Materials")){
 			printFormats.clear();
 			printFormats.add("Archival Materials");
@@ -1491,6 +1548,10 @@ public class MarcRecordFormatClassifier {
 			printFormats.remove("Book");
 		}
 		if (printFormats.contains("PictureBook")){
+			printFormats.remove("Book");
+		}
+		if (printFormats.contains("BigBook")){
+			printFormats.remove("PictureBook");
 			printFormats.remove("Book");
 		}
 		if (printFormats.contains("Journal")){
