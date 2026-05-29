@@ -136,7 +136,7 @@ class CurlWrapper {
 	 * @return bool|string   The response from the web page if any
 	 */
 	public function curlGetPage(string $url) : bool|string {
-		$this->rateLimited($url, "get", null);
+		$this->throttle($url);
 		$this->curl_connect($url);
 		curl_setopt($this->curl_connection, CURLOPT_CUSTOMREQUEST, null);
 		curl_setopt($this->curl_connection, CURLOPT_HTTPGET, true);
@@ -166,7 +166,7 @@ class CurlWrapper {
 	 * @return string|bool   The response from the web page if any
 	 */
 	public function curlPostPage(string $url, string|array $postParams, $curlOptions = null) : string|bool {
-		$this->rateLimited($url, "post", $postParams);
+		$this->throttle($url);
 		if (is_string($postParams)) {
 			$post_string = $postParams;
 		} else {
@@ -203,7 +203,7 @@ class CurlWrapper {
 	 * @return string   The response from the web page if any
 	 */
 	public function curlPostBodyData($url, $postParams, $jsonEncode = true) {
-		$this->rateLimited($url, "post", $postParams);
+		$this->throttle($url);
 		if ($jsonEncode) {
 			$post_string = json_encode($postParams);
 		} else {
@@ -257,7 +257,7 @@ class CurlWrapper {
 	 * and if so wait before returning.
 	 * @param string $url the url we are checking. 
 	 */
-	public function throttle(string $url, string $httpMethod, $body = null) : void {
+	public function throttle(string $url) : void {
 		//skip limiting if not turned on in config or explicitly set
 		if($this->requestInterval === -1)
 		{
@@ -282,6 +282,7 @@ class CurlWrapper {
 			$this->lastRequest[$endpoint] = floor($MILLI_PER_SEC * microtime(true));
 			return;
 		}
+
 		//log too frequent requests so they can be corrected upstream
 		global $logger;
 		$logger->log(
@@ -306,7 +307,7 @@ class CurlWrapper {
 	}
 
 	public function curlSendPage(string $url, string $httpMethod, $body = null) {
-		$this->rateLimited($url, $httpMethod, $body);
+		$this->throttle($url);
 		$this->curl_connect($url);
 		curl_setopt($this->curl_connection, CURLOPT_CUSTOMREQUEST, null);
 		if ($httpMethod == 'GET') {
