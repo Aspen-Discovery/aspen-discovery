@@ -277,7 +277,7 @@ class CurlWrapper {
 		}
 		$request_time = floor($MILLI_PER_SEC * microtime(true));
 		$time_diff = $request_time - $this->lastRequest[$endpoint];
-		if($time_diff >= $requestInterval)
+		if($time_diff >= $this->requestInterval)
 		{
 			$this->lastRequest[$endpoint] = floor($MILLI_PER_SEC * microtime(true));
 			return;
@@ -296,9 +296,9 @@ class CurlWrapper {
 		//we should only need to wait once since
 		//a separate thread would have a separate
 		//CurlWrapper object but being cautious.
-		while($time_diff < $requestInterval)
+		while($time_diff < $this->requestInterval)
 		{
-			usleep($requestInterval * $MICRO_PER_MILLI);
+			usleep($this->requestInterval * $MICRO_PER_MILLI);
 			$current_time = floor($MILLI_PER_SEC * microtime(true));
 			$time_diff = $current_time - $this->lastRequest[$endpoint];
 		}
