@@ -8973,6 +8973,115 @@ AspenDiscovery.Admin = (function () {
 				$('#propertyRowissuerTOTP').hide();
 			}
 		},
+		configureRateLimits: function () {
+			var url = Globals.path + "/OAuth2/RateLimitingAJAX";
+			var params = {
+				method: 'configureRateLimits'
+			};
+
+			$.getJSON(url, params)
+				.done(function (data) {
+					if (data.success) {
+						AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+					} else {
+						AspenDiscovery.showMessage("Error", data.message);
+					}
+				})
+				.fail(function () {
+					AspenDiscovery.showMessage("Error", "An error occurred while retrieving rate limit configuration.");
+				});
+
+			return false;
+		},
+		updateOAuth2GrantType: function () {
+			var clientType = $("#client_typeSelect").val();
+			// Show/hide redirect_uri fields based on client_type
+			if (clientType === "web_application") {
+				$("#propertyRowredirect_uri").show();
+			} else {
+				$("#propertyRowredirect_uri").hide();
+			}
+		},
+		updateOAuth2Scopes: function (element) {
+			const dependencies = {
+				'user:write': ['user:read'],
+				'list:write': ['list:read'],
+				'event:write': ['event:read'],
+				'community:write': ['community:read'],
+			};
+
+			if (element.checked) {
+				const scope = element.value;
+
+				if (dependencies[scope]) {
+					dependencies[scope].forEach(function (dependency) {
+						const dependencyCheckbox = document.querySelector('input[value="' + dependency + '"]');
+						if (dependencyCheckbox && !dependencyCheckbox.checked) {
+							dependencyCheckbox.checked = true;
+						}
+					});
+				}
+			} else {
+				const scope = element.value;
+				for (const [writeScope, readDependencies] of Object.entries(dependencies)) {
+					if (readDependencies.includes(scope)) {
+						const writeScopeCheckbox = document.querySelector('input[value="' + writeScope + '"]');
+						if (writeScopeCheckbox && writeScopeCheckbox.checked) {
+							writeScopeCheckbox.checked = false;
+						}
+					}
+				}
+			}
+		},
+		maskOAuth2ClientSecret: function () {
+			var clientSecretField = $("#client_secret");
+
+			if (clientSecretField.length === 0) {
+				return;
+			}
+
+			var originalSecret = clientSecretField.text().trim();
+			if (!originalSecret || originalSecret.match(/^\*+$/)) {
+				return;
+			}
+
+			clientSecretField.data('actual-secret', originalSecret);
+
+			var maskedSecret = Array(Math.min(originalSecret.length + 1, 33)).join('*');
+			clientSecretField.text(maskedSecret);
+			clientSecretField.addClass('masked');
+			clientSecretField.css({
+				'font-family': 'monospace',
+				'word-break': 'break-all'
+			});
+
+			var toggleButton = $('<button type="button" class="btn btn-sm btn-default" id="toggleClientSecret" title="Show or hide the client secret"><i class="fas fa-eye"></i> Show Secret</button>');
+			clientSecretField.after(toggleButton);
+			$("#toggleClientSecret").on("click", function (e) {
+				e.preventDefault();
+				AspenDiscovery.Admin.toggleMaskOAuth2ClientSecret();
+			});
+		},
+		toggleMaskOAuth2ClientSecret: function () {
+			var clientSecretField = $("#client_secret");
+			var toggleButton = $("#toggleClientSecret");
+			var isVisible = clientSecretField.data('visible') === true;
+
+			if (isVisible) {
+				var actualSecret = clientSecretField.data('actual-secret');
+				var maskedSecret = Array(Math.min(actualSecret.length + 1, 33)).join('*');
+				clientSecretField.text(maskedSecret);
+				clientSecretField.addClass('masked').removeClass('unmasked');
+				toggleButton.html('<i class="fas fa-eye"></i> Show Secret');
+				clientSecretField.data('visible', false);
+			} else {
+				var actualSecret = clientSecretField.data('actual-secret');
+				clientSecretField.text(actualSecret);
+				clientSecretField.addClass('unmasked').removeClass('masked');
+				toggleButton.html('<i class="fas fa-eye-slash"></i> Hide Secret');
+				clientSecretField.data('visible', true);
+			}
+		}
 	};
 }(AspenDiscovery.Admin || {}));
 AspenDiscovery.Authors = (function () {

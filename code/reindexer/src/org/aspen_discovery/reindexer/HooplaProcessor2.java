@@ -161,7 +161,7 @@ class HooplaProcessor2 {
 						if (rawResponse.has("episodeNumber") || rawResponse.has("episode")) {
 							volume += " Episode " + rawResponse.optString("episodeNumber", rawResponse.optString("episode", ""));
 						}
-						groupedWork.addSeriesWithVolume(series, volume, 2, false);
+						groupedWork.addSeriesWithVolume(series, volume, 2, false, primaryAuthor);
 					}
 				}
 

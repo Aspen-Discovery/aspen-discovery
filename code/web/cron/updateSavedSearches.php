@@ -190,30 +190,49 @@ foreach ($usersWithUpdatesToEmail as $data) {
 		$activeLanguage = $validLanguages['en'];
 	}
 	$emailTemplate = EmailTemplate::getActiveTemplate('savedSearchAlert', $activeUser);
-	$emailTemplate->plainTextBody .= "\r\n%searchHistory.url%";
-	$emailTemplate->plainTextBody .= "\r\n%searchHistory.updatedSearchesWithSampleTitles%";
 
 	$emailAddress = $data['user']->email;
 
 	$updatedSearches = "";
-	$updatedSearchesHtml = '<li>';
+	$updatedSearchesHtml = "<ul>";
+
 	$updatedSearchesWithSampleTitles = "";
-	$updatedSearchesWithSampleTitlesHtml = "";
+	$updatedSearchesWithSampleTitlesHtml = "<ul>";
+
+	$nl = PHP_EOL;
+
 	foreach ($data['updatedSearches'] as $updatedSearch) {
-		$updatedSearches .= "{$updatedSearch['title']} ({$updatedSearch['url']})\r\n";
-		$updatedSearchesHtml .= "<ul><strong style='font-size: 125%;'><a href='{$updatedSearch['url']}'>{$updatedSearch['title']}</a></strong></ul>";
-		$updatedSearchesWithSampleTitles .= "{$updatedSearch['title']} ({$updatedSearch['url']})\r\n";
-		$updatedSearchesWithSampleTitlesHtml = "<strong style='font-size: 125%;'><a href='{$updatedSearch['url']}'>{$updatedSearch['title']}</a></strong>";
-		$updatedSearchesWithSampleTitlesHtml .= "<ul>";
-		foreach ($updatedSearch['newTitles'] as $newTitle) {
-			$titleUrl = $data['baseUrl'] . "/GroupedWork/" . $newTitle['id'];
-			$updatedSearchesWithSampleTitles .= "{$newTitle['title_display']} - {$newTitle['author_display']} ($titleUrl)\r\n";
-			$updatedSearchesWithSampleTitlesHtml .= "<li><a href='$titleUrl'>{$newTitle['title_display']}</a> {$newTitle['author_display']}</li>";
+		$title = $updatedSearch['title'];
+		$url = $updatedSearch['url'];
+		if (empty($title) || empty($url)) {
+			continue;
 		}
-		$updatedSearchesWithSampleTitles .= "\r\n";
-		$updatedSearchesWithSampleTitlesHtml .= "</ul><br/>";
-;	}
-	$updatedSearchesHtml .= '</li>';
+
+		$updatedSearches .= "{$title} ({$url}){$nl}";
+		$updatedSearchesWithSampleTitles .= "{$title} ({$url}){$nl}";
+		$updatedSearchesHtml .= "<li><strong style='font-size:125%;'><a href='{$url}'>{$title}</a></strong></li>";
+		$updatedSearchesWithSampleTitlesHtml .= "<li><strong style='font-size:125%;'><a href='{$url}'>{$title}</a></strong>";
+
+		if (!empty($updatedSearch['newTitles']) && is_array($updatedSearch['newTitles'])) {
+			$updatedSearchesWithSampleTitlesHtml .= "<ul>";
+			foreach ($updatedSearch['newTitles'] as $newTitle) {
+				$titleId = $newTitle['id'] ?? null;
+				if (!$titleId) {
+					continue;
+				}
+				$titleUrl = rtrim($data['baseUrl'] ?? '', '/') . "/GroupedWork/" . $titleId;
+				$displayTitle = $newTitle['title_display'] ?? '';
+				$displayAuthor = $newTitle['author_display'] ?? '';
+				$updatedSearchesWithSampleTitles .= $displayTitle . " - " . $displayAuthor . " (" . $titleUrl . ")" . $nl;
+				$updatedSearchesWithSampleTitlesHtml .= "<li><a href='{$titleUrl}'>{$displayTitle}</a> {$displayAuthor}</li>";
+			}
+			$updatedSearchesWithSampleTitlesHtml .= "</ul>";
+		}
+		$updatedSearchesWithSampleTitlesHtml .= "</li>";
+		$updatedSearchesWithSampleTitles .= $nl;
+	}
+	$updatedSearchesHtml .= "</ul>";
+	$updatedSearchesWithSampleTitlesHtml .= "</ul>";
 
 	$parameters = [
 		'user' => $activeUser,

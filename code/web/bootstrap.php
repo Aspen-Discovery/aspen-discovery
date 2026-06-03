@@ -2,6 +2,17 @@
 define('ROOT_DIR', __DIR__);
 
 /**
+ * Load and register Composer Autoloader
+ */
+global $composerActive;
+if (file_exists(ROOT_DIR . '/vendor/autoload.php')) {
+	$composerActive = true;
+	require_once ROOT_DIR . '/vendor/autoload.php';
+} else {
+	$composerActive = false;
+}
+
+/**
  * Load and register Smarty Autoloader
  */
 if (!class_exists('Smarty_Autoloader')) {

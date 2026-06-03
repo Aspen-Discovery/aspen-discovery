@@ -81,7 +81,7 @@ class SMTPSetting extends DataObject {
 				'label' => 'Username',
 				'description' => 'The username',
 				'default' => '',
-				'required' => true,
+				'required' => false,
 			],
 			'password' => [
 				'property' => 'password',
@@ -110,9 +110,11 @@ class SMTPSetting extends DataObject {
 		// $mail->SMTPDebug = SMTP::DEBUG_SERVER;
 		$mail->Host = $this->host;
 		$mail->Port = $this->port;
-		$mail->SMTPAuth = true;
-		$mail->Username = $this->user_name;
-		$mail->Password = $this->password;
+		if (!empty($this->user_name)) {
+			$mail->SMTPAuth = true;
+			$mail->Username = $this->user_name;
+			$mail->Password = $this->password;
+		}
 
 		if($this->ssl_mode != 'disabled'){
 			$mail->SMTPSecure = $this->ssl_mode;

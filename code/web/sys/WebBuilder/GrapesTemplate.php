@@ -71,7 +71,7 @@ class GrapesTemplate extends DataObject {
 		if ($existingObject instanceof GrapesTemplate) {
 			$objectActions[] = [
 				'text' => 'Open in Editor',
-				'url' => '/services/WebBuilder/GrapesJSTemplates?objectAction=edit&id=' . $existingObject->id,
+				'url' => '/WebBuilder/GrapesJSTemplates?objectAction=edit&id=' . $existingObject->id,
 			];
 		}
 		return $objectActions;
@@ -82,7 +82,7 @@ class GrapesTemplate extends DataObject {
 		$objectActions = [];
 		$objectActions[] = [
 			'text' => 'Open in Editor',
-			'url' => '/services/WebBuilder/GrapesJSTemplates?objectAction=edit&id=' . $this->id,
+			'url' => '/WebBuilder/GrapesJSTemplates?objectAction=edit&id=' . $this->id,
 		];
 		return $objectActions;
 	}

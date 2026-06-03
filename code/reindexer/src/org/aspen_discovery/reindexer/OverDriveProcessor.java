@@ -203,13 +203,14 @@ class OverDriveProcessor implements AutoCloseable {
 								groupedWork.setTitle(title, subtitle, metadata.get("sortTitle"), formatCategory, false, overDriveRecord);
 								groupedWork.addFullTitle(fullTitle);
 
+								String primaryAuthor = productRS.getString("primaryCreatorName");
 								if (series != null && !series.isEmpty()) {
 									groupedWork.addSeries(series);
-									groupedWork.addSeriesWithVolume(series, "", 2, false);
+									groupedWork.addSeriesWithVolume(series, "", 2, false, primaryAuthor);
 								}
-								groupedWork.setAuthor(productRS.getString("primaryCreatorName"));
-								groupedWork.setAuthAuthor(productRS.getString("primaryCreatorName"));
-								groupedWork.setAuthorDisplay(productRS.getString("primaryCreatorName"), formatCategory, overDriveRecord);
+								groupedWork.setAuthor(primaryAuthor);
+								groupedWork.setAuthAuthor(primaryAuthor);
+								groupedWork.setAuthorDisplay(primaryAuthor, formatCategory, overDriveRecord);
 								if (rawMetadataDecoded != null) {
 									//Loop through all creators and add them as alternate author names
 									JSONArray creators = rawMetadataDecoded.getJSONArray("creators");

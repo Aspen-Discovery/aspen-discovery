@@ -18,6 +18,8 @@ class Series extends DataObject {
 	public $dateUpdated;
 	public $created;
 	public $deleted;
+	public $seriesPermanentId;
+	public $seriesLanguage;
 
 	public $_seriesMembers; // grouped works and placeholders
 
@@ -37,6 +39,18 @@ class Series extends DataObject {
 				'type' => 'label',
 				'label' => 'Id',
 				'description' => 'The unique id',
+			],
+			'seriesPermanentId' => [
+				'property' => 'seriesPermanentId',
+				'type' => 'label',
+				'label' => 'Series Permanent Id',
+				'description' => 'The unique, permanent id for the series',
+			],
+			'seriesLanguage' => [
+				'property' => 'seriesLanguage',
+				'type' => 'label',
+				'label' => 'Series Language',
+				'description' => 'The language of the series',
 			],
 			'displayName' => [
 				'property' => 'displayName',

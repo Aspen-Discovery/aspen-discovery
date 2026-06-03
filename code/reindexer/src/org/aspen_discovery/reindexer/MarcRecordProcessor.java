@@ -404,7 +404,11 @@ abstract class MarcRecordProcessor {
 				//Separate out the volume so we can link specially
 				volume = seriesField.getSubfield('v').getData();
 			}
-			groupedWork.addSeriesWithVolume(series, volume, 3, false);
+			String seriesAuthor = "";
+			if (seriesField.getIndicator2() == '1' && seriesField.getSubfield('a') != null) {
+				seriesAuthor = seriesField.getSubfield('a').getData();
+			}
+			groupedWork.addSeriesWithVolume(series, volume, 3, false, seriesAuthor);
 			groupedWork.addSeries(series);
 		}
 
@@ -434,7 +438,11 @@ abstract class MarcRecordProcessor {
 				//Separate out the volume so we can link specially
 				volume = seriesField.getSubfield('v').getData();
 			}
-			groupedWork.addSeriesWithVolume(series, volume, 5, false);
+			String seriesAuthor = "";
+			if (seriesField.getSubfield('a') != null) {
+				seriesAuthor = seriesField.getSubfield('a').getData();
+			}
+			groupedWork.addSeriesWithVolume(series, volume, 5, false, seriesAuthor);
 			groupedWork.addSeries(series);
 		}
 
@@ -455,7 +463,11 @@ abstract class MarcRecordProcessor {
 					//Separate out the volume so we can link specially
 					volume = seriesField.getSubfield('v').getData();
 				}
-				groupedWork.addSeriesWithVolume(series, volume, 1, true);
+				String seriesAuthor = "";
+				if (seriesField.getSubfield('a') != null) {
+					seriesAuthor = seriesField.getSubfield('a').getData();
+				}
+				groupedWork.addSeriesWithVolume(series, volume, 1, true, seriesAuthor);
 				groupedWork.addSeries(series);
 			}
 		}

@@ -630,6 +630,10 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 		return mostUsedAuthor;
 	}
 
+	protected String getPrimaryLanguage() {
+		return this.primaryLanguage;
+	}
+
 	void setAuthorDisplay(String newAuthor) {
 		this.setAuthorDisplay(newAuthor, "Books", null);
 	}
@@ -804,7 +808,7 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 		this.seriesWithVolumePriority.clear();
 	}
 
-	void addSeriesWithVolume(String seriesName, String volume, int priority, boolean untraced) {
+	void addSeriesWithVolume(String seriesName, String volume, int priority, boolean untraced, String seriesAuthor) {
 		if (seriesName != null && !seriesName.isEmpty()) {
 			String seriesInfo = getNormalizedSeries(seriesName);
 			if (seriesInfo.isEmpty()) {
@@ -818,7 +822,8 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 				volume = getNormalizedSeriesVolume(volume);
 			}
 			String volumeLower = volume.toLowerCase();
-			String seriesInfoWithVolume = seriesInfo + "|" + (!volume.isEmpty() ? volume : "");
+			String seriesInfoWithVolume = seriesInfo + "|" + (!volume.isEmpty() ? volume : "") + "|" + (!seriesAuthor.isEmpty() ? seriesAuthor : "");
+
 			String normalizedSeriesInfoWithVolume = seriesInfoWithVolume.toLowerCase();
 			if (seriesWithVolumePriority.containsKey(normalizedSeriesInfoWithVolume)) {
 				seriesWithVolumePriority.put(normalizedSeriesInfoWithVolume, seriesWithVolumePriority.get(normalizedSeriesInfoWithVolume) + priority);

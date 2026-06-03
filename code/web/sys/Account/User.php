@@ -4362,6 +4362,12 @@ class User extends DataObject {
 		$sections['system_admin']->addAction(new AdminAction('Consolidate Reading History', 'Consolidate Reading History Entries to minimize database size.', '/Admin/ConsolidateReadingHistory'), 'Perform System Maintenance');
 		$sections['system_admin']->addAction(new AdminAction('Indexer Information', 'View information about the indexers running on the system.', '/Admin/IndexerInformation'), 'Perform System Maintenance');
 
+		$oauth2Action = new AdminAction('OAuth2 Clients', 'Manage OAuth2 clients for API access, third-party integrations, and authentication tokens.', '/Admin/OAuth2Clients');
+		$sections['system_admin']->addAction($oauth2Action, 'Administer OAuth2');
+		$oauth2Action->addSubAction(new AdminAction('OAuth2 Rate Limits', 'View and manage OAuth2 API rate limits.', '/Admin/OAuth2RateLimits'), 'Administer OAuth2');
+		$oauth2Action->addSubAction(new AdminAction('OpenID Connect', 'View and manage OpenID Connect (OIDC) clients.', '/Admin/OpenIDClients'), 'Administer OpenID Connect');
+
+
 		$sections['system_reports'] = new AdminSection('System Reports');
 		$sections['system_reports']->addAction(new AdminAction('Site Status', 'View Status of Aspen Discovery.', '/Admin/SiteStatus'), 'View System Reports');
 		$sections['system_reports']->addAction(new AdminAction('Usage Dashboard', 'Usage Report for Aspen Discovery.', '/Admin/UsageDashboard'), [

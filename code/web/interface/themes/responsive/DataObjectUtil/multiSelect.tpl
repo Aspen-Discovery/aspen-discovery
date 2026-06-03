@@ -20,7 +20,7 @@
 				{* Modified Behavior: $propertyValue is used only as a display name to the user *}
 				{foreach from=$property.values item=propertyName key=propertyValue}
 					<label for="{$propName}_{$propertyValue|escapeCSS}">
-						   <input class="{$propName}" id="{$propName}_{$propertyValue|escapeCSS}" name='{$propName}[]' type="checkbox" value='{$propertyValue}' {if is_array($propValue) && in_array($propertyValue, array_keys($propValue))}checked='checked'{/if} {if !empty($property.readOnly)}readonly disabled{/if}> {if !empty($property.translateValues)}{translate text=$propertyName|escape inAttribute=true isPublicFacing=$property.isPublicFacing isAdminFacing=$property.isAdminFacing }{else}{$propertyName|escape}{/if}<br>
+						   <input class="{$propName}" id="{$propName}_{$propertyValue|escapeCSS}" name='{$propName}[]' type="checkbox" value='{$propertyValue}' {if is_array($propValue) && in_array($propertyValue, array_keys($propValue))}checked='checked'{/if} {if !empty($property.readOnly)}readonly disabled{/if} {if !empty($property.onchange)}onchange="{$property.onchange}"{/if}> {if !empty($property.translateValues)}{translate text=$propertyName|escape inAttribute=true isPublicFacing=$property.isPublicFacing isAdminFacing=$property.isAdminFacing }{else}{$propertyName|escape}{/if}<br>
 					</label>
 				{/foreach}
 			</div>
