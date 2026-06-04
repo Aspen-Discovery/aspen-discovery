@@ -4199,9 +4199,9 @@ class MyAccount_AJAX extends JSON_Action {
 					$statuses = ['available', 'unavailable', 'cancelled'];
 					foreach ($statuses as $status) {
 						foreach ($allHolds[$status] as $hold) {
-							$this->addFilterOption($hold, $filterOptions, 'format', $hold->format);
-							$this->addFilterOption($hold, $filterOptions, 'account', $hold->userId);
-							$this->addFilterOption($hold, $filterOptions, 'status', $hold->status);
+							$this->addFilterOption($filterOptions, 'format', $hold->format);
+							$this->addFilterOption($filterOptions, 'account', $hold->userId);
+							$this->addFilterOption($filterOptions, 'status', $hold->status);
 						}
 					}
 				}
@@ -4265,23 +4265,23 @@ class MyAccount_AJAX extends JSON_Action {
 		return $result;
 	}
 
-	private function addFilterOption($hold, &$filterOptions, $filterType, $value) {
+	private function addFilterOption(&$filterOptions, $filterType, $value) {
 		// Add to options if not already present
 		if (!in_array($value, $filterOptions[$filterType]['options'], true)) {
 			$filterOptions[$filterType]['options'][$value] = $value;
 		}
 
 		// Add to selected if it matches GET parameter
-		if ($this->shouldSelectFilter($filterType, $hold->format) && 
+		if ($this->shouldSelectFilter($filterType, $value) && 
 			!in_array($value, $filterOptions[$filterType]['selected'], true)) {
 			$filterOptions[$filterType]['selected'][$value] = $value;
 		}
 	}
 
-	private function shouldSelectFilter($filterType, $holdFormat) {
+	private function shouldSelectFilter($filterType, $value) {
 		return isset($_GET[$filterType]) && 
 			is_array($_GET[$filterType]) && 
-			in_array($holdFormat, $_GET[$filterType], true);
+			in_array($value, $_GET[$filterType], true);
 	}
 
 	private function getVendor($sourceId) : string {
