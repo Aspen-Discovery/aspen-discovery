@@ -577,7 +577,7 @@ class Koha extends AbstractIlsDriver {
 			$curCheckout->dueDate = $dueTime;
 			$curCheckout->itemId = $itemNumber;
 
-			if( !$options['isNightlyUpdate'] ) {
+			if($options['isNightlyUpdate'] ) {
 				$checkouts[$curCheckout->source . $curCheckout->sourceId . $curCheckout->userId] = $curCheckout;
 				continue;
 			}
