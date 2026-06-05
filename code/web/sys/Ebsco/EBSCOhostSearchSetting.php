@@ -187,7 +187,7 @@ class EBSCOhostSearchSetting extends DataObject {
 		return parent::delete($useWhere, $hardDelete);
 	}
 
-	public function updateDatabasesFromEBSCOhost() : string|true {
+	public function updateDatabasesFromEBSCOhost() : string|bool {
 		$currentDatabases = $this->getDatabases();
 		/** @var SearchObject_EbscohostSearcher $ebscohostSearch */
 		$ebscohostSearch = SearchObjectFactory::initSearchObject('Ebscohost');
