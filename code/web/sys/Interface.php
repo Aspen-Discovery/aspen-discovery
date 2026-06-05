@@ -160,9 +160,12 @@ class UInterface extends Smarty {
 					$this->assign('enableEContentWhileOffline', $loginAllowedWhileOffline);
 					$this->assign('offlineMessage', $systemVariables->offlineMessage);
 				} else {
-					$systemVariables->scheduledOfflineStart = 0;
-					$systemVariables->scheduledOfflineEnd = 0;
-					$systemVariables->catalogStatus = 0;
+					//Offline time has finished, reset
+					if ($scheduledEnd <= $now) {
+						$systemVariables->scheduledOfflineStart = 0;
+						$systemVariables->scheduledOfflineEnd = 0;
+						$systemVariables->catalogStatus = 0;
+					}
 				}
 				$systemVariables->update();
 			} elseif ($systemVariables->catalogStatus == 2) {

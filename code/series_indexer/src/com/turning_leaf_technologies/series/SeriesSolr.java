@@ -12,7 +12,7 @@ import java.util.HashSet;
 
 class SeriesSolr {
 	private final SeriesIndexer seriesIndexer;
-	private long id;
+	private String id;
 	private final HashSet<String> relatedRecordIds = new HashSet<>();
 	private final HashSet<String> authors = new HashSet<>();
 	private final HashSet<String> formats = new HashSet<>();
@@ -171,7 +171,7 @@ class SeriesSolr {
 		this.created = created;
 	}
 
-	void setId(long id) {
+	void setId(String id) {
 		this.id = id;
 	}
 

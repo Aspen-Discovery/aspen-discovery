@@ -1,7 +1,7 @@
 #!/bin/bash
 
 apt-get install -y composer
-composer --version
+runuser -u www-data -- /usr/bin/composer --version
 cd /usr/local/aspen-discovery/code/web || exit
-runuser -uwww-data -- composer install --no-interaction --prefer-dist
-runuser -uwww-data -- composer check-platform-reqs
+runuser -u www-data -- /usr/bin/composer install --no-interaction --prefer-dist
+runuser -u www-data -- /usr/bin/composer check-platform-reqs

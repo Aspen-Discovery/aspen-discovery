@@ -281,13 +281,24 @@ class AJAX_JSON extends Action {
 							$_SESSION['twoFactorStart'] = time();
 							$_SESSION['has2FA'] = false;
 							$_SESSION['passwordExpired'] = false;
-							$_SESSION['authMethod'] = UserAccount::typeOf2FAEnabled();
+							$authStatus = UserAccount::get2FAMethodStatus();
+							$interface->assign('canUseTotp', $authStatus['allowTotp']);
+							$interface->assign('canUseEmail', $authStatus['allowEmail']);
+							$interface->assign('isModal', true);
 							return [
 								'success' => false,
 								'enroll2FA' => true,
 								'has2FA' => false,
 								'passwordExpired' => false,
-								'authMethod' => UserAccount::typeOf2FAEnabled(),
+								'title' => translate([
+									'text' => 'Two-factor Authentication',
+									'isPublicFacing' => true
+								]),
+								'body' => $interface->fetch('MyAccount/login-2fa-enroll.tpl'),
+								'buttons' => "<button id='loginFormCancelLogin' class='btn btn-warning' href='/MyAccount/Logout'>" . translate([
+										'text' => 'Cancel Sign In',
+										'isPublicFacing' => true,
+									]) . "</button>",
 							];
 						} else {
 							// User needs to authenticate with 2FA
@@ -295,19 +306,22 @@ class AJAX_JSON extends Action {
 							$_SESSION['has2FA'] = true;
 							$_SESSION['twoFactorStart'] = time();
 							$_SESSION['passwordExpired'] = false;
-							$_SESSION['authMethod'] = UserAccount::typeOf2FAEnabled();
+							$authStatus = UserAccount::get2FAMethodStatus();
 							$referer = $_REQUEST['referer'] ?? null;
 							$interface->assign('referer', $referer);
 							$name = $_REQUEST['name'] ?? null;
 							$interface->assign('name', $name);
 							$interface->assign('codeSent', !empty($_SESSION['codeSent']));
-							$interface->assign('authMethod', UserAccount::typeOf2FAEnabled());
+							$interface->assign('hasTotp', $authStatus['hasTotp']);
+							$interface->assign('hasEmail', $authStatus['hasEmail']);
+							$interface->assign('setupMethods', $authStatus['setupMethods']);
 							return [
 								'success' => false,
 								'enroll2FA' => false,
 								'has2FA' => true,
 								'passwordExpired' => false,
-								'authMethod' => UserAccount::typeOf2FAEnabled(),
+								'hasTotp' => $authStatus['hasTotp'],
+								'hasEmail' => $authStatus['hasEmail'],
 								'title' => translate([
 									'text' => 'Two-Factor Authentication',
 									'isPublicFacing' => true,

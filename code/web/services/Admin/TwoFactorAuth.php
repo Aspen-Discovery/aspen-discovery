@@ -99,6 +99,6 @@ class Admin_TwoFactorAuth extends ObjectEditor {
 	}
 
 	function getInitializationJs(): string {
-		return 'AspenDiscovery.Admin.toggle2FAMethodOptions();';
+		return 'AspenDiscovery.Admin.toggle2FATOTPOptions();';
 	}
 }

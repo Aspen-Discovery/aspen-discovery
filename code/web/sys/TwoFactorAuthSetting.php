@@ -7,7 +7,8 @@ class TwoFactorAuthSetting extends DataObject {
 	public $name;
 	public $isEnabled;
 	public $deniedMessage;
-	public $allowedMethod;
+	public $allowEmail;
+	public $allowTotp;
 	public $issuerTOTP;
 
 	private $_libraries;
@@ -66,16 +67,18 @@ class TwoFactorAuthSetting extends DataObject {
 				'label' => 'Is Enabled',
 				'values' => $requiredList,
 			],
-			'allowedMethod' => [
-				'property' => 'allowedMethod',
-				'type' => 'enum',
-				'label' => '2FA Method',
-				'values' => [
-					'totp' => 'TOTP apps (Google Authenticator, Authy, etc.)',
-					'email' => 'Email'
-				],
-				'description' => 'Which method of 2FA should be allowed for this setting',
-				'onchange' => 'return AspenDiscovery.Admin.toggle2FAMethodOptions();',
+			'allowEmail' => [
+				'property' => 'allowEmail',
+				'type' => 'checkbox',
+				'label' => 'Allow Email',
+				'description' => 'Allow users to select email as a method for 2FA. If allowed, users will have the option to receive a code via email when they log in.'
+			],
+			'allowTotp' => [
+				'property' => 'allowTotp',
+				'type' => 'checkbox',
+				'label' => 'Allow TOTP apps (Google Authenticator, Authy, etc.)',
+				'description' => 'Allow users to select TOTP apps as a method for 2FA. If allowed, users will have the option to set up an authenticator app to receive codes when they log in.',
+				'onchange' => 'return AspenDiscovery.Admin.toggle2FATOTPOptions();',
 			],
 			'issuerTOTP' => [
 				'property' => 'issuerTOTP',

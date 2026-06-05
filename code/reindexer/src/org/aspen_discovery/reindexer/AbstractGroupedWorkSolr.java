@@ -86,10 +86,7 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 	protected HashSet<String> publicationDates = new HashSet<>();
 	protected HashSet<String> placesOfPublication = new HashSet<>();
 	protected float rating = -1f;
-	protected HashMap<String, String> series = new HashMap<>();
-	protected HashMap<String, String> seriesWithVolume = new HashMap<>(); // 800s and 830s
-	protected HashMap<String, String> seriesWithVolumeUntraced = new HashMap<>(); // 490s
-	protected Map<String, Integer> seriesWithVolumePriority = new HashMap<>();
+	protected HashMap<String, SeriesInfo> series = new HashMap<>();
 	protected String subTitle;
 	protected HashSet<String> targetAudienceFull = new HashSet<>();
 	protected TreeSet<String> targetAudience = new TreeSet<>();
@@ -214,11 +211,7 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 		// noinspection unchecked
 		clonedWork.placesOfPublication = (HashSet<String>)placesOfPublication.clone();
 		// noinspection unchecked
-		clonedWork.series = (HashMap<String, String>) series.clone();
-		// noinspection unchecked
-		clonedWork.seriesWithVolume = (HashMap<String, String>) seriesWithVolume.clone();
-		// noinspection unchecked
-		clonedWork.seriesWithVolumeUntraced = (HashMap<String, String>) seriesWithVolumeUntraced.clone();
+		clonedWork.series = (HashMap<String, SeriesInfo>) series.clone();
 		// noinspection unchecked
 		clonedWork.targetAudienceFull = (HashSet<String>) targetAudienceFull.clone();
 		// noinspection unchecked
@@ -797,117 +790,68 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 		this.subjects.addAll(AspenStringUtils.normalizeSubjects(fieldList));
 	}
 
-	void addSeries(String series) {
-		addSeriesInfoToField(series, this.series);
-	}
-
 	void clearSeries(){
-		this.seriesWithVolume.clear();
-		this.seriesWithVolumeUntraced.clear();
 		this.series.clear();
-		this.seriesWithVolumePriority.clear();
 	}
 
-	void addSeriesWithVolume(String seriesName, String volume, int priority, boolean untraced, String seriesAuthor) {
-		if (seriesName != null && !seriesName.isEmpty()) {
-			String seriesInfo = getNormalizedSeries(seriesName);
-			if (seriesInfo.isEmpty()) {
-				return;
-			}
-			String seriesInfoLower = seriesInfo.toLowerCase();
-			if (groupedWorkIndexer.hideSeries.contains(seriesInfoLower)) {
-				return;
-			}
-			if (!volume.isEmpty()) {
-				volume = getNormalizedSeriesVolume(volume);
-			}
-			String volumeLower = volume.toLowerCase();
-			String seriesInfoWithVolume = seriesInfo + "|" + (!volume.isEmpty() ? volume : "") + "|" + (!seriesAuthor.isEmpty() ? seriesAuthor : "");
-
-			String normalizedSeriesInfoWithVolume = seriesInfoWithVolume.toLowerCase();
-			if (seriesWithVolumePriority.containsKey(normalizedSeriesInfoWithVolume)) {
-				seriesWithVolumePriority.put(normalizedSeriesInfoWithVolume, seriesWithVolumePriority.get(normalizedSeriesInfoWithVolume) + priority);
-			} else {
-				seriesWithVolumePriority.put(normalizedSeriesInfoWithVolume, priority);
-			}
-
-			HashMap<String, String> seriesMapToCheck;
-			if (untraced) {
-				seriesMapToCheck = this.seriesWithVolumeUntraced;
-				if (this.seriesWithVolume.containsKey(normalizedSeriesInfoWithVolume)) {
-					//Don't add to the untraced if we already have a traced version
-					return;
-				}
-			}else{
-				seriesMapToCheck = this.seriesWithVolume;
-			}
-			if (!seriesMapToCheck.containsKey(normalizedSeriesInfoWithVolume)) {
-				boolean okToAdd = true;
-
-				if (!groupedWorkIndexer.hasSeriesModuleEnabled()) {
-					//Check to see if we have a similar series name (where one series name is fully contained in the other series).
-					// This helps to prevent cases where series of "Dark" and "Dark Series" both appear.
-					// When this occurs, the more specific series (longer or with a volume) will be preserved.
-					// This logic only applies if the series module is NOT active.
-					// First Check the traced series
-					okToAdd = isSeriesOkToAdd(volume, this.seriesWithVolume, seriesInfoLower, volumeLower, true);
-
-					// Next, check the untraced series
-					if (okToAdd && untraced) {
-						okToAdd = isSeriesOkToAdd(volume, this.seriesWithVolumeUntraced, seriesInfoLower, volumeLower, true);
-					}
-				}
-
-				if (okToAdd) {
-					if (untraced) {
-						seriesMapToCheck.put(normalizedSeriesInfoWithVolume, seriesInfoWithVolume);
-					}else {
-						seriesMapToCheck.put(normalizedSeriesInfoWithVolume, seriesInfoWithVolume);
-						this.seriesWithVolumeUntraced.remove(normalizedSeriesInfoWithVolume);
-					}
-				}
-			}
+	void addSeriesWithVolume(String seriesName, String seriesAuthor, String volume, int priority, boolean untraced) {
+		if (seriesName == null || seriesName.isEmpty()) {
+			return;
 		}
+		String normalizedSeriesName = getNormalizedSeries(seriesName);
+		if (normalizedSeriesName.isEmpty()) {
+			return;
+		}
+		String seriesNameLower = normalizedSeriesName.toLowerCase();
+		if (groupedWorkIndexer.hideSeries.contains(seriesNameLower)) {
+			return;
+		}
+		if (!volume.isEmpty()) {
+			volume = getNormalizedSeriesVolume(volume);
+		}
+
+		//Series Module Version 2 separates out series by author and language. Version 1 ignores author and language.
+		//We also ignore if the series module is not enabled.
+		SeriesInfo seriesInfo;
+		if (!groupedWorkIndexer.hasSeriesModuleEnabled()) {
+			//Check to see if we have a similar series name (where one series name is fully contained in the other series).
+			// This helps to prevent cases where series of "Dark" and "Dark Series" both appear.
+			// When this occurs, the more specific series (longer or with a volume) will be preserved.
+			// This logic only applies if the series module is NOT active.
+			// First Check the traced series
+			seriesInfo = getPreferredSeriesWithPartialMatching(seriesNameLower);
+		}else if (groupedWorkIndexer.getSeriesVersion() == 1) {
+			seriesInfo = new SeriesInfo(seriesName);
+		}else{ //version 2
+			seriesInfo = new SeriesInfo(seriesName, seriesAuthor, this.getPrimaryLanguage(), groupedWorkIndexer);
+		}
+		String seriesKey = seriesInfo.getKey();
+		if (!series.containsKey(seriesKey)) {
+			series.put(seriesKey, seriesInfo);
+		}else{
+			seriesInfo = series.get(seriesKey);
+		}
+		seriesInfo.setTraced(!untraced);
+		seriesInfo.addPriority(priority);
+		seriesInfo.addVolume(volume);
 	}
 
-	private static boolean isSeriesOkToAdd(String volume, HashMap<String, String> seriesMapToCheck, String seriesInfoLower, String volumeLower, boolean okToAdd) {
-		for (String existingSeries2 : seriesMapToCheck.keySet()) {
-			String[] existingSeriesInfo = existingSeries2.split("\\|", 2);
-			String existingSeriesName = existingSeriesInfo[0];
-			String existingVolume = "";
-			if (existingSeriesInfo.length > 1) {
-				existingVolume = existingSeriesInfo[1];
-			}
-			//Get the longer series name
-			if (existingSeriesName.contains(seriesInfoLower)) {
-				//Use the old one unless it doesn't have a volume
-				if (existingVolume.isEmpty()) {
-					seriesMapToCheck.remove(existingSeries2);
-					break;
-				} else {
-					if (volumeLower.equals(existingVolume)) {
-						okToAdd = false;
-						break;
-					} else if (volumeLower.isEmpty()) {
-						okToAdd = false;
-						break;
-					}
-				}
-			} else if (seriesInfoLower.contains(existingSeriesName)) {
-				//Before removing the old series, make sure the new one has a volume
-				if (!existingVolume.isEmpty() && existingVolume.equals(volumeLower)) {
-					seriesMapToCheck.remove(existingSeries2);
-					break;
-				} else if (volume.isEmpty() && !existingVolume.isEmpty()) {
-					okToAdd = false;
-					break;
-				} else if (volume.isEmpty()) {
-					seriesMapToCheck.remove(existingSeries2);
-					break;
-				}
+	private SeriesInfo getPreferredSeriesWithPartialMatching(String seriesNameLower) {
+		if (series.isEmpty()) {
+			return new SeriesInfo(seriesNameLower);
+		}
+		Iterator<String> iterator = series.keySet().iterator();
+
+		while (iterator.hasNext()) {
+			String existingSeriesName = iterator.next();
+			if (existingSeriesName.contains(seriesNameLower)) {
+				//Use the old one
+				return series.get(existingSeriesName);
+			} else if (seriesNameLower.contains(existingSeriesName)) {
+				iterator.remove();
 			}
 		}
-		return okToAdd;
+		return new SeriesInfo(seriesNameLower);
 	}
 
 	private void addSeriesInfoToField(String seriesInfo, HashMap<String, String> seriesField) {
@@ -941,26 +885,71 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 		}
 	}
 
+	private static final Map<String, String> wordToDigitMap;
+
+	// A regex pattern to find whole words in the map to avoid partial replacements
+	// (e.    -> avoids replacing "one" inside "someone")
+	private static final Pattern wordReplacementPattern;
+
+	static {
+		HashMap<String, String> numericVolumeToNumber = new HashMap<>();
+		numericVolumeToNumber.put("one", "1");
+		numericVolumeToNumber.put("two", "2");
+		numericVolumeToNumber.put("three", "3");
+		numericVolumeToNumber.put("four", "4");
+		numericVolumeToNumber.put("five", "5");
+		numericVolumeToNumber.put("six", "6");
+		numericVolumeToNumber.put("seven", "7");
+		numericVolumeToNumber.put("eight", "8");
+		numericVolumeToNumber.put("nine", "9");
+		numericVolumeToNumber.put("ten", "10");
+		numericVolumeToNumber.put("eleven", "11");
+		numericVolumeToNumber.put("twelve", "12");
+		numericVolumeToNumber.put("thirteen", "13");
+		numericVolumeToNumber.put("fourteen", "14");
+		numericVolumeToNumber.put("fifteen", "15");
+		numericVolumeToNumber.put("sixteen", "16");
+		numericVolumeToNumber.put("seventeen", "17");
+		numericVolumeToNumber.put("eighteen", "18");
+		numericVolumeToNumber.put("nineteen", "19");
+		numericVolumeToNumber.put("twenty", "20");
+
+		//noinspection Java9CollectionFactory
+		wordToDigitMap = Collections.unmodifiableMap(numericVolumeToNumber);
+
+		// Creates a regex pattern like: \b(one|two|three|...)\b
+		String patternString = "\\b(" + String.join("|", wordToDigitMap.keySet()) + ")\\b";
+		wordReplacementPattern = Pattern.compile(patternString, Pattern.CASE_INSENSITIVE);
+	}
+
 	private String getNormalizedSeriesVolume(String volume) {
+		if (volume == null) {
+			return "";
+		}
 		volume = AspenStringUtils.trimTrailingPunctuation(volume);
-		volume = volume.replaceAll("(bk\\.?|book)", "");
-		volume = volume.replaceAll("(volume|vol\\.|v\\.)", "");
-		volume = volume.replace("libro", "");
-		volume = volume.replace("one", "1");
-		volume = volume.replace("two", "2");
-		volume = volume.replace("three", "3");
-		volume = volume.replace("four", "4");
-		volume = volume.replace("five", "5");
-		volume = volume.replace("six", "6");
-		volume = volume.replace("seven", "7");
-		volume = volume.replace("eight", "8");
-		volume = volume.replace("nine", "9");
+		volume = replaceWordsWithDigits(volume);
 		volume = volume.replaceAll("[\\[\\]#]", "");
 		volume = AspenStringUtils.trimTrailingPunctuation(volume.trim());
 		return volume;
 	}
 
+	private String replaceWordsWithDigits(String input) {
+		Matcher matcher = wordReplacementPattern.matcher(input);
+		StringBuilder sb = new StringBuilder();
+		while (matcher.find()) {
+			// Find the replacement in our map (case-insensitive)
+			String replacement = wordToDigitMap.get(matcher.group().toLowerCase());
+			matcher.appendReplacement(sb, replacement != null ? replacement : matcher.group());
+		}
+		matcher.appendTail(sb);
+		return sb.toString();
+	}
+
 	private String getNormalizedSeries(String series) {
+		if (series == null || series.isEmpty()) {
+			return "";
+		}
+
 		series = AspenStringUtils.trimTrailingPunctuation(series);
 		series = series.replaceAll("[#|]\\s*\\d+$", "");
 		series = series.replace(" & ", " and ");
@@ -1813,10 +1802,7 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 		}
 	}
 
-	public void removeSeries(String series, String seriesNameWithVolume) {
-		this.series.remove(series);
-		this.seriesWithVolume.remove(seriesNameWithVolume);
-		this.seriesWithVolumeUntraced.remove(seriesNameWithVolume);
-		this.seriesWithVolumePriority.remove(seriesNameWithVolume);
+	public void removeSeries(SeriesInfo seriesInfo) {
+		this.series.remove(seriesInfo);
 	}
 }

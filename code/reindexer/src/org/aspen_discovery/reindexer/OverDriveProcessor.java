@@ -205,8 +205,7 @@ class OverDriveProcessor implements AutoCloseable {
 
 								String primaryAuthor = productRS.getString("primaryCreatorName");
 								if (series != null && !series.isEmpty()) {
-									groupedWork.addSeries(series);
-									groupedWork.addSeriesWithVolume(series, "", 2, false, primaryAuthor);
+									groupedWork.addSeriesWithVolume(series, primaryAuthor, "", 2, false);
 								}
 								groupedWork.setAuthor(primaryAuthor);
 								groupedWork.setAuthAuthor(primaryAuthor);

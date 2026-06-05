@@ -37,14 +37,23 @@ function getUpdates26_06_00(): array {
 		//addForceReadingHistoryOptIn
 		'extend2FAforTOTP' => [
 			'title' => 'Extend 2FA to support TOTP apps',
-			'description' => 'Allow libraries to select TOTP as an option for 2FA method',
+			'description' => 'Allow libraries to select TOTP and/or email as options for 2FA methods',
 			'sql' => [
-				"ALTER TABLE two_factor_auth_settings ADD COLUMN allowedMethod VARCHAR(255) DEFAULT 'totp'",
+				"ALTER TABLE two_factor_auth_settings ADD COLUMN allowEmail TINYINT(1) DEFAULT 0",
+				"ALTER TABLE two_factor_auth_settings ADD COLUMN allowTotp TINYINT(1) DEFAULT 0",
 				//Default to email for previous setups
-				"UPDATE two_factor_auth_settings SET allowedMethod = 'email' WHERE 1",
+				"UPDATE two_factor_auth_settings SET allowEmail = 1 WHERE 1",
 			]
-		],
-		//extend2FAforTOTP
+		], //extend2FAforTOTP
+		'addTotpIssuer' => [
+			'title' => 'Add TOTP Issuer for 2FA',
+			'description' => 'Add TOTP Issuer for 2FA',
+			'continueOnError' => true,
+			'sql' => [
+				"ALTER TABLE two_factor_auth_settings ADD COLUMN issuerTOTP VARCHAR(255)",
+			]
+		], //addTotpIssuer
+
 		'addTOTPSecretsTable' => [
 			'title' => 'Add table to store TOTP user secrets',
 			'description' => 'Add table to store TOTP user secrets',
@@ -67,7 +76,6 @@ function getUpdates26_06_00(): array {
 				"UPDATE user
 				 SET twoFactorMethod = CASE
 				   WHEN twoFactorStatus = 1 THEN 'email'
-				   ELSE NULL
 				 END
 				 WHERE twoFactorMethod IS NULL
 					OR (twoFactorStatus = 1 AND twoFactorMethod <> 'email')
@@ -217,12 +225,20 @@ function getUpdates26_06_00(): array {
 				'ALTER TABLE series ADD COLUMN seriesLanguage VARCHAR(20)',
 			]
 		], //series_columns
+		'series_version' => [
+			'title' => 'Store the version of the series',
+			'description' => 'Store the version of the series',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE series ADD COLUMN version TINYINT default 1',
+			]
+		], //series_columns
 		'series_setting_version' => [
 			'title' => 'Add Column in Series Indexing Settings Table',
 			'description' => 'Add column in series settings indexing table for version',
 			'continueOnError' => false,
 			'sql' => [
-				'ALTER TABLE series_indexing_settings ADD COLUMN version tinyint(1) DEFAULT 0',
+				'ALTER TABLE series_indexing_settings ADD COLUMN version tinyint(1) DEFAULT 1',
 				'ALTER TABLE series_indexing_settings ADD COLUMN truncateForVersionSwitch TINYINT(1) NOT NULL DEFAULT 0',
 			]
 		], //series_setting_version
@@ -283,6 +299,13 @@ function getUpdates26_06_00(): array {
 				'ALTER TABLE library ADD COLUMN moreLikeThisSettings tinyint(1) DEFAULT 1',
 			]
 		], //scoped_more_like_this
+		'accelerated_reading_points' => [
+			'title' => 'Accelerated Reading Points',
+			'description' => 'Update column for AR points to store decimal values.',
+			'sql' => [
+				'ALTER TABLE accelerated_reading_titles CHANGE COLUMN arPoints arPoints decimal(6,1) DEFAULT NULL',
+			]
+		], //accelerated_reading_points
 
 		//yanjun
 		'add_overdriveAdvantageId' => [

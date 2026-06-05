@@ -194,6 +194,7 @@ class Event extends DataObject {
 				'label' => 'Total Upcoming Events',
 				'hiddenByDefault' => true,
 				'readOnly' => true,
+				'canSort' => false
 			],
 			'dateUpdated' => [
 				'property' => 'dateUpdated',
@@ -301,6 +302,7 @@ class Event extends DataObject {
 				'label' => 'End Date',
 				'description' => 'The date this event ends',
 				'note' => 'Automatically calculated based on Event Date, Start Time, and Event Length',
+				'canSort' => false
 			],
 			'endTime' => [
 				'property' => 'endTime',
@@ -482,6 +484,7 @@ class Event extends DataObject {
 				'note' => 'To update, change the scheduling options above',
 				'readOnly' => true,
 				'hiddenByDefault' => true,
+				'canSort' => false
 			],
 		];
 		if ($context == 'addNew') {

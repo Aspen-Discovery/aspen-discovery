@@ -180,9 +180,20 @@ class MyAccount_Login extends Action {
 		if (!empty($_SESSION['has2FA'])) {
 			$interface->assign('codeSent', !empty($_SESSION['codeSent']));
 			$interface->assign('authMethod', $_SESSION['authMethod']);
+			$interface->assign('setupMethods', UserAccount::get2FAMethodStatus());
 			$this->display('../MyAccount/login-2fa.tpl', 'Login', '');
 		} elseif (!empty($_SESSION['enroll2FA'])) {
-			$interface->assign('authMethod', $_SESSION['authMethod']);
+			$canUseTotp = false;
+			$canUseEmail = false;
+			$authSetting = new TwoFactorAuthSetting();
+			$authSetting->id = $library->twoFactorAuthSettingId;
+			if ($authSetting->find(true)) {
+				$canUseTotp = $authSetting->allowTotp;
+				$canUseEmail = $authSetting->allowEmail;
+			}
+			$interface->assign('canUseTotp', $canUseTotp);
+			$interface->assign('canUseEmail', $canUseEmail);
+			$interface->assign('isModal', false);
 			$this->display('../MyAccount/login-2fa-enroll.tpl', 'Login', '');
 		} else {
 			$this->display('../MyAccount/login.tpl', 'Login', '');

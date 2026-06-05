@@ -18,7 +18,8 @@ class Security extends MyAccount {
 				if ($isEnabled != 'notAvailable') {
 					$interface->assign('twoFactorStatus', (int)$user->twoFactorStatus);
 					$interface->assign('twoFactorMethodSetup', $user->twoFactorMethod);
-					$interface->assign('twoFactorMethodAllowed', $twoFactorAuthSetting->allowedMethod);
+					$interface->assign('allowEmail2FA', $twoFactorAuthSetting->allowEmail);
+					$interface->assign('allowTOTP2FA', $twoFactorAuthSetting->allowTotp);
 					$interface->assign('showBackupCodes', false);
 					$interface->assign('enableDeactivation', true);
 					$interface->assign('userHasTOTP', $user->twoFactorMethod == 'totp');
@@ -33,20 +34,7 @@ class Security extends MyAccount {
 
 					$interface->assign('userHasEmailCodes', $userHasEmailCodes);
 
-					// determine if the user needs to update 2FA method
-					$migrationNeeded = false;
-					if ($twoFactorAuthSetting->allowedMethod === 'totp' && $user->twoFactorMethod != 'totp' && $user->twoFactorStatus == '1') {
-						$migrationNeeded = true;
-						$interface->assign('migrationRequired', true);
-
-					}
-
-					$interface->assign('migrationMessage', translate([
-						'text' => 'Your library has migrated to authenticator app-based two-factor authentication. Please set it up now to continue accessing your account.',
-						'isPublicFacing' => true,
-					]));
-
-					if ($user->twoFactorStatus == '1' && !$migrationNeeded) {
+					if ($user->twoFactorStatus == '1') {
 						$interface->assign('showBackupCodes', true);
 						require_once ROOT_DIR . '/sys/TwoFactorAuthCode.php';
 						require_once ROOT_DIR . '/sys/TwoFactorAuthTOTPSecret.php';
@@ -59,6 +47,16 @@ class Security extends MyAccount {
 							$interface->assign('enableDeactivation', false);
 						}
 					}
+
+					$twoFactorData = UserAccount::get2FAMethodStatus();
+					$interface->assign('setupMethods', $twoFactorData['setupMethods']);
+					$interface->assign('showSetupEmail', $twoFactorData['showSetupEmail']);
+					$interface->assign('showSetupTotp', $twoFactorData['showSetupTotp']);
+					$interface->assign('showDisableEmail', $twoFactorData['showDisableEmail']);
+					$interface->assign('showDisableTotp', $twoFactorData['showDisableTotp']);
+					$interface->assign('canDisableEmail', $twoFactorData['canDisableEmail']);
+					$interface->assign('canDisableTotp', $twoFactorData['canDisableTotp']);
+					$interface->assign('requiredSetupWarning', $twoFactorData['requiredSetupWarning']);
 
 				}
 			}

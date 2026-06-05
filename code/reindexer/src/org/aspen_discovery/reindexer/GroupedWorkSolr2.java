@@ -110,23 +110,24 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 			doc.addField("dateSpan", dateSpans);
 			//series.values().removeAll(GroupedWorkIndexer.hideSeries);
 			doc.addField("series", series.values());
-			String[] sortedSeriesWithVolume = seriesWithVolumePriority.entrySet().stream().sorted(Map.Entry.<String, Integer>comparingByValue().reversed()).map(Map.Entry::getKey).toArray(String[]::new);
-			if (isDebugEnabled() && !seriesWithVolumePriority.isEmpty()) {
+			SeriesInfo[] sortedSeriesWithVolume = series.values().stream()
+				.sorted(Comparator.comparingInt(SeriesInfo::getPriorityScore).reversed())
+				.toArray(SeriesInfo[]::new);
+			if (isDebugEnabled() && !series.isEmpty()) {
 				addDebugMessage("Series Priority Values", 1);
-				for (String seriesWithVolume : sortedSeriesWithVolume) {
-					addDebugMessage(seriesWithVolume + " priority: " + seriesWithVolumePriority.get(seriesWithVolume), 2);
+				for (SeriesInfo seriesInfo : sortedSeriesWithVolume) {
+					addDebugMessage(seriesInfo.getSeriesName() + " priority: " + seriesInfo.getVolumes(), 2);
 				}
 			}
 			//seriesWithVolume.values().removeAll(GroupedWorkIndexer.hideSeries);
 			boolean isFirstSeries = true;
-			for (String seriesName : sortedSeriesWithVolume) {
-				if (seriesWithVolume.containsKey(seriesName) || seriesWithVolumeUntraced.containsKey(seriesName)) {
-					seriesWithVolume.putAll(seriesWithVolumeUntraced); // Join both types together in the Solr index.
-					doc.addField("series_with_volume", seriesWithVolume.get(seriesName));
-					if (isFirstSeries) {
-						doc.addField("series_author", seriesName + " " + getPrimaryAuthor());
-						isFirstSeries = false;
-					}
+			for (SeriesInfo seriesInfo : sortedSeriesWithVolume) {
+				for (String volume : seriesInfo.getVolumes()) {
+					doc.addField("series_with_volume", seriesInfo.getSeriesName() + "|" + volume);
+				}
+				if (isFirstSeries) {
+					doc.addField("series_author", seriesInfo.getSeriesName() + " " + getPrimaryAuthor());
+					isFirstSeries = false;
 				}
 			}
 

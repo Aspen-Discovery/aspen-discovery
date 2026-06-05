@@ -1834,7 +1834,11 @@ class BookCoverProcessor {
 		$coverBuilder = new SeriesCoverBuilder();
 		require_once ROOT_DIR . '/sys/Series/Series.php';
 		$series = new Series();
-		$series->id = $id;
+		if (is_numeric($id)) {
+			$series->id = $id;
+		}else{
+			$series->seriesPermanentId = $id;
+		}
 
 		if ($series->find(true)) {
 			if ($this->getUploadedSeriesCover($series->cover)) {

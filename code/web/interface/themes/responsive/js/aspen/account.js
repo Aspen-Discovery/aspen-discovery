@@ -726,7 +726,7 @@ AspenDiscovery.Account = (function () {
 						AspenDiscovery.showMessageWithButtons(response.result.title, response.result.body, response.result.buttons);
 						$('#resetPin').validate();
 					} else if (response.result.success === false && response.result.enroll2FA === true) {
-						AspenDiscovery.showMessageWithButtons('Error', 'Your are required to enroll into two-factor authentication before logging in.', '<button class=\'tool btn btn-primary\' onclick=\'AspenDiscovery.Account.show2FAEnrollment(true); return false;\'>Continue</button>');
+						AspenDiscovery.showMessageWithButtons(response.result.title, response.result.body, response.result.buttons);
 					} else if (response.result.success === false && response.result.has2FA === true) {
 						AspenDiscovery.showMessageWithButtons(response.result.title, response.result.body, response.result.buttons);
 					} else {
@@ -2766,7 +2766,7 @@ AspenDiscovery.Account = (function () {
 		show2FAEnrollment: function (mandatoryEnroll, method) {
 			if (Globals.loggedIn || mandatoryEnroll) {
 				AspenDiscovery.loadingMessage();
-				$.getJSON(Globals.path + "/MyAccount/AJAX?method=get2FAEnrollment&step=register&mandatoryEnrollment=" + mandatoryEnroll + "&authMethod=" + method, function (data) {
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=get2FAEnrollment&step=register&mandatoryEnrollment=" + mandatoryEnroll + "&useMethod=" + method, function (data) {
 					if (data.success) {
 						AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons, false, '/MyAccount/Logout')
 					} else {
@@ -2783,7 +2783,7 @@ AspenDiscovery.Account = (function () {
 		show2FAEnrollmentVerify: function (mandatoryEnroll, method, secretId = null) {
 			const secret = secretId ? secretId : '';
 			if (Globals.loggedIn || mandatoryEnroll) {
-				$.getJSON(Globals.path + "/MyAccount/AJAX?method=get2FAEnrollment&step=verify&mandatoryEnrollment=" + mandatoryEnroll + "&authMethod=" + method + "&secretId=" + secret, function (data) {
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=get2FAEnrollment&step=verify&mandatoryEnrollment=" + mandatoryEnroll + "&useMethod=" + method + "&secretId=" + secret, function (data) {
 					if (data.success) {
 						AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons, false, '/MyAccount/Logout')
 					} else {
@@ -2800,7 +2800,7 @@ AspenDiscovery.Account = (function () {
 		show2FAEnrollmentBackupCodes: function (mandatoryEnroll, method, secretId) {
 			const secret = secretId ? secretId : '';
 			if (Globals.loggedIn || mandatoryEnroll) {
-				$.getJSON(Globals.path + "/MyAccount/AJAX?method=get2FAEnrollment&step=backup&mandatoryEnrollment=" + mandatoryEnroll + "&authMethod=" + method + "&secretId=" + secret, function (data) {
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=get2FAEnrollment&step=backup&mandatoryEnrollment=" + mandatoryEnroll + "&useMethod=" + method + "&secretId=" + secret, function (data) {
 					if (data.success) {
 						AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons)
 					} else {
@@ -2817,7 +2817,7 @@ AspenDiscovery.Account = (function () {
 		show2FAEnrollmentSuccess: function (mandatoryEnroll, method, secretId) {
 			const secret = secretId ? secretId : '';
 			if (Globals.loggedIn || mandatoryEnroll) {
-				$.getJSON(Globals.path + "/MyAccount/AJAX?method=get2FAEnrollment&step=complete&mandatoryEnrollment=" + mandatoryEnroll + "&authMethod=" + method + "&secretId=" + secret, function (data) {
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=get2FAEnrollment&step=complete&mandatoryEnrollment=" + mandatoryEnroll + "&useMethod=" + method + "&secretId=" + secret, function (data) {
 					if (data.success) {
 						AspenDiscovery.showMessage(data.title, data.body, false, 2000)
 					}
@@ -2829,10 +2829,10 @@ AspenDiscovery.Account = (function () {
 			}
 			return false;
 		},
-		showCancel2FA: function () {
+		showCancel2FA: function (method) {
 			if (Globals.loggedIn) {
 				AspenDiscovery.loadingMessage();
-				$.getJSON(Globals.path + "/MyAccount/AJAX?method=confirmCancel2FA", function (data) {
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=confirmCancel2FA&type=" + method, function (data) {
 					if (data.success) {
 						AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons)
 					} else {
@@ -2846,10 +2846,10 @@ AspenDiscovery.Account = (function () {
 			}
 			return false;
 		},
-		cancel2FA: function () {
+		cancel2FA: function (method) {
 			if (Globals.loggedIn) {
 				AspenDiscovery.loadingMessage();
-				$.getJSON(Globals.path + "/MyAccount/AJAX?method=cancel2FA", function (data) {
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=cancel2FA&type=" + method, function (data) {
 					if (data.success) {
 						AspenDiscovery.showMessage(data.title, data.body, true, 2000)
 					} else {
@@ -2868,7 +2868,7 @@ AspenDiscovery.Account = (function () {
 			var loggingIn = mandatoryEnrollment ? true : false;
 			var secret = secretId ? secretId : ""; // only needed during enrollment verification for TOTP
 			if (Globals.loggedIn || mandatoryEnrollment) {
-				$.getJSON(Globals.path + "/MyAccount/AJAX?method=verify2FA&loggingIn=" + loggingIn + "&code=" + code + "&mandatoryEnrollment=" + mandatoryEnrollment + "&authMethod=" + method + "&secretId=" + secret, function (data) {
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=verify2FA&loggingIn=" + loggingIn + "&code=" + code + "&mandatoryEnrollment=" + mandatoryEnrollment + "&useMethod=" + method + "&secretId=" + secret, function (data) {
 					// update #codeVerificationFailedPlaceholder with failed verification status, otherwise move onto next step
 					if (data.success === "true") {
 						return AspenDiscovery.Account.show2FAEnrollmentBackupCodes(mandatoryEnrollment, method, secretId);
@@ -2883,11 +2883,15 @@ AspenDiscovery.Account = (function () {
 			}
 			return false;
 		},
-		new2FACode: function () {
+		new2FACode: function (showMessage = true) {
 			$.getJSON(Globals.path + "/MyAccount/AJAX?method=new2FACode", function (data) {
 				// update #newCodeSentPlaceholder with sent status
-				$("#newCodeSentPlaceholder").html(data.body).show();
-				return data;
+				if (showMessage) {
+					$("#newCodeSentPlaceholder").html(data.body).show();
+					return data;
+				} else {
+					return true;
+				}
 			});
 			return false;
 		},
@@ -2927,7 +2931,34 @@ AspenDiscovery.Account = (function () {
 			var name = $("#name").val();
 			var myAccountAuth = $("#myAccountAuth").val();
 			var authMethod = $("#authMethod").val();
-			$.getJSON(Globals.path + "/MyAccount/AJAX?method=verify2FA&loggingIn=true&code=" + code + "&authMethod=" + authMethod, function (data) {
+
+			if ($("#altMethodWrapper").is(":visible")) {
+				const $activeToggle = $(".alt-method-toggle.active");
+				let $errorTarget;
+				if ($activeToggle.length) {
+					const target = $activeToggle.data("target"); // #alt-method-email|totp|backup
+					const $panel = $(target);
+
+					if (target === "#alt-method-email") {
+						authMethod = "email";
+						code = $panel.find("#code_email").val() || "";
+					} else if (target === "#alt-method-totp") {
+						authMethod = "totp";
+						code = $panel.find("#code_totp").val() || "";
+					} else if (target === "#alt-method-backup") {
+						authMethod = "backup";
+						code = $panel.find("#code_backup").val() || "";
+					}
+
+					$("#authMethod").val(authMethod);
+					const $panelError = $panel.find(".codeVerificationFailedPlaceholder");
+					if ($panelError.length) {
+						$errorTarget = $panelError;
+					}
+				}
+			}
+
+			$.getJSON(Globals.path + "/MyAccount/AJAX?method=verify2FA&loggingIn=true&code=" + code + "&useMethod=" + authMethod, function (data) {
 				// update #codeVerificationFailedPlaceholder with failed verification status, otherwise move onto next step
 				if (data.success === "true") {
 					Globals.loggedIn = true;

@@ -165,7 +165,7 @@ class TwoFactorAuthCode extends DataObject {
 		}
 	}
 
-	function validateCode($code, $secretId = null): array {
+	function validateCode($code, $method, $secretId = null): array {
 		global $library;
 		require_once ROOT_DIR . '/sys/TwoFactorAuthSetting.php';
 		require_once ROOT_DIR . '/sys/TwoFactorAuthTOTPSecret.php';
@@ -189,8 +189,7 @@ class TwoFactorAuthCode extends DataObject {
 			$deniedMessage = "";
 		}
 
-		// Check if TOTP is the enabled method
-		if ($authSetting->allowedMethod === 'totp') {
+		if ($method === 'totp') {
 			return $this->validateTOTPCode($code, $userId, $deniedMessage, $secretId);
 		}
 
@@ -374,12 +373,18 @@ class TwoFactorAuthCode extends DataObject {
 		}
 	}
 
-	function deactivate2FA() : void {
+	function deactivate2FA($method): void {
 		$user = new User();
 		$user->id = UserAccount::getActiveUserId();
 		if ($user->find(true)) {
+			$methods = array_filter(array_map('trim', explode(',', (string)$user->twoFactorMethod)));
+			$methodToRemove = trim((string)$method);
+			$methods = array_values(array_filter($methods, function ($m) use ($methodToRemove) {
+				return strcasecmp($m, $methodToRemove) !== 0;
+			}));
+
 			$user->twoFactorStatus = 0;
-			$user->twoFactorMethod = null;
+			$user->twoFactorMethod = implode(',', $methods);
 			$user->update();
 
 			$userCodes = new TwoFactorAuthCode();

@@ -86,7 +86,13 @@ public class GroupedWorkSolr extends AbstractGroupedWorkSolr implements Cloneabl
 			doc.addField("edition", editions);
 			doc.addField("dateSpan", dateSpans);
 			doc.addField("series", series.values());
-			doc.addField("series_with_volume", seriesWithVolume.values());
+			HashSet<String> seriesWithVolume = new HashSet<>();
+			for (SeriesInfo seriesInfo : series.values()) {
+				for (String volume : seriesInfo.getVolumes()) {
+					seriesWithVolume.add(seriesInfo.getSeriesName() + "|" + volume);
+				}
+			}
+			doc.addField("series_with_volume", seriesWithVolume);
 			doc.addField("topic", topics);
 			doc.addField("topic_facet", topicFacets);
 			doc.addField("subject_facet", subjects);

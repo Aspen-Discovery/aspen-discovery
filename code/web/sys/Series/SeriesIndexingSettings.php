@@ -5,7 +5,7 @@ require_once ROOT_DIR . '/sys/CourseReserves/CourseReserveLibraryMapValue.php';
 class SeriesIndexingSettings extends DataObject {
 	public $__table = 'series_indexing_settings';    // table name
 	public $id;
-	public $version;
+	public $version; //TODO: We should prevent going backwards
 	public $runFullUpdate;
 	public $truncateForVersionSwitch;
 	/** @noinspection PhpUnused */
@@ -29,17 +29,18 @@ class SeriesIndexingSettings extends DataObject {
 				'property' => 'version',
 				'type' => 'enum',
 				'values' => [
-					0 => 'Version 1 - Only use series name for indexing series',
-					1 => 'Version 2 - Index series based on title, author, language and use permanent ids',
+					1 => 'Version 1 - Only use series name for indexing series',
+					2 => 'Version 2 - Index series based on title, author, language and use permanent ids',
 				],
 				'label' => 'Version of Series Indexing',
 				'description' => 'Determine which version of indexing is used for series',
 				'forcesSeriesTruncation' => true,
-				'default' => 0,
+				'default' => 1,
 			],
 			'truncateForVersionSwitch' => [
 				'property' => 'truncateForVersionSwitch',
 				'type' => 'hidden',
+				'hideInLists' => true,
 			],
 			'runFullUpdate' => [
 				'property' => 'runFullUpdate',
@@ -72,9 +73,8 @@ class SeriesIndexingSettings extends DataObject {
 		$currentSetting = new SeriesIndexingSettings();
 		$currentSetting->find(true);
 		if ($currentSetting->version !== $this->version) {
-			$this->truncateForVersionSwitch = 1;
-		} else {
-			$this->truncateForVersionSwitch = 0;
+			$this->__set('truncateForVersionSwitch', 1);
+			$this->__set('runFullUpdate', 1);
 		}
 		return parent::update($context);
 	}

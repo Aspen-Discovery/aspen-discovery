@@ -157,6 +157,16 @@ class MyAccount_StaffLogin extends Action {
 		if ($msg === 'You must authenticate before logging in. Please provide the 6-digit code that was emailed to you.') {
 			$this->display('../MyAccount/login-2fa.tpl', 'Login', '');
 		} elseif ($msg === 'You must enroll into two-factor authentication before logging in.') {
+			$canUseTotp = false;
+			$canUseEmail = false;
+			$authSetting = new TwoFactorAuthSetting();
+			$authSetting->id = $library->twoFactorAuthSettingId;
+			if ($authSetting->find(true)) {
+				$canUseTotp = $authSetting->allowTotp;
+				$canUseEmail = $authSetting->allowEmail;
+			}
+			$interface->assign('canUseTotp', $canUseTotp);
+			$interface->assign('canUseEmail', $canUseEmail);
 			$this->display('../MyAccount/login-2fa-enroll.tpl', 'Login', '');
 		} else {
 			$this->display('../MyAccount/login-staff.tpl', 'Staff Login', '');

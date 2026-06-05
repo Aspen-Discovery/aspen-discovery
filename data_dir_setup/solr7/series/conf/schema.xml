@@ -109,6 +109,7 @@
 		<field name="_version_" type="long" indexed="true" stored="true"/>
 		<!-- Core Fields  -->
 		<field name="id" type="unchanged_string" indexed="true" stored="true"/>
+		<field name="seriesVersion" type="integer" indexed="false" stored="true"/>
 		<field name="recordtype" type="unchanged_string" indexed="true" stored="true"/>
 		<field name="title" type="searchable_text" indexed="true" stored="true"/>
 		<field name="title_display" type="unchanged_string" indexed="false" stored="true"/>

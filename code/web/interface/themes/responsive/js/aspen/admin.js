@@ -3140,9 +3140,9 @@ AspenDiscovery.Admin = (function () {
 			}).fail(AspenDiscovery.ajaxFail);
 			return false;
 		},
-		toggle2FAMethodOptions: function () {
-			var method = $("#allowedMethodSelect").val();
-			if (method === "totp") {
+		toggle2FATOTPOptions: function () {
+			var allowTOTP = $("#allowTotp").prop("checked");
+			if (allowTOTP) {
 				$('#propertyRowissuerTOTP').show();
 			} else {
 				$('#propertyRowissuerTOTP').hide();

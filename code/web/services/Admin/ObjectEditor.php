@@ -1362,7 +1362,8 @@ abstract class ObjectEditor extends Admin_Admin {
 		$table = empty($filter['field']['filterOmitTablename']) ? "$object->__table." : '';
 		$addAsHaving = in_array($filter['field']['type'], ['calculatedInteger', 'calculatedBoolean']);
 		$fullFieldName = "$table$fieldName";
-		switch ($filter['filterType']) {
+		$filterType = $filter['filterType'];
+		switch ($filterType) {
 			case 'matches':
 				if ($filter['field']['type'] == 'enum' && $filter['filterValue'] == 'all_values') {
 					//Skip this value
@@ -1385,25 +1386,23 @@ abstract class ObjectEditor extends Admin_Admin {
 				$object->whereAdd("$fullFieldName like " . $object->escape($filter['filterValue'] . '%'));
 				break;
 			case 'beforeTime':
-				$fieldValue = strtotime($filter['filterValue2']);
-				if ($fieldValue !== false) {
-					$object->whereAdd("$fullFieldName" . ' < ' . $fieldValue);
-				}
-				break;
 			case 'afterTime':
-				$fieldValue = strtotime($filter['filterValue']);
-				if ($fieldValue !== false) {
-					$object->whereAdd("$fullFieldName" . ' > ' . $fieldValue);
-				}
-				break;
 			case 'betweenTimes':
-				$fieldValue = strtotime($filter['filterValue']);
-				if ($fieldValue !== false) {
-					$object->whereAdd("$fullFieldName" . ' > ' . $fieldValue);
+				$fieldValueLower = null;
+				$fieldValueUpper = null;
+				if($filter['field']['type'] == 'timestamp') {
+					$fieldValueLower = strtotime($filter['filterValue']);
+					$fieldValueUpper = strtotime($filter['filterValue2']);
+				} elseif ($filter['field']['type'] == 'date') {
+					$fieldValueLower = 'DATE(' . $object->escape($filter['filterValue']) . ')';
+					$fieldValueUpper = 'DATE(' . $object->escape($filter['filterValue2']) . ')';
 				}
-				$fieldValue2 = strtotime($filter['filterValue2']);
-				if ($fieldValue2 !== false) {
-					$object->whereAdd("$fullFieldName" . ' < ' . $fieldValue2);
+
+				if ($fieldValueLower && ($filterType == 'afterTime' || $filterType == 'betweenTimes')) {
+					$object->whereAdd("$fullFieldName" . ' > ' . $fieldValueLower);
+				}
+				if ($fieldValueUpper && ($filterType == 'beforeTime' || $filterType == 'betweenTimes')) {
+					$object->whereAdd("$fullFieldName" . ' < ' . $fieldValueUpper);
 				}
 				break;
 			case 'lessThan':
