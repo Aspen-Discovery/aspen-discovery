@@ -1,6 +1,6 @@
 {if is_array($filterOptions)}
 	<div id="holdsFilterDisplayHorizontal">
-		<div class="row horizontalFilterSelector" id="holdsFilterRow">
+		<div class="row row-no-gutters horizontalFilterSelector" id="holdsFilterRow">
 				<div class="col-xs-12">
 					<div class="slider-container" role="region" id="slider-holds-filter">
 					<button type="button" class="slider-button slider-button-prev btn btn-default" id="slider-prev-holds-filter" aria-label="{translate text="Previous Filter" isPublicFacing=true inAttribute=true}"><i class="fas fa-chevron-left"></i></button>
@@ -45,8 +45,64 @@
 	<script type="text/javascript">
         {literal}
 		$(document).ready(function() {
+			const $filterTiles = $('#holdsFilterRow .horizontal-filter-select');
+			let activeFilterIndex = -1;
 			$('.multipleSelect').multipleSelect({
-				container: '#holdsFilterRow'
+				container: '#holdsFilterRow',
+				onOpen: function() {
+					setTimeout(function() {
+						const $openDrop = $('.ms-drop:visible').last();
+						if (!$openDrop.length) return;
+
+						const $firstInput = $openDrop.find('li:not(.disabled) input:not(:disabled)').first();
+						if ($firstInput.length) $firstInput.focus();
+					}, 0);
+				}
+			});
+			$('#holdsFilterRow').on('keydown', '.ms-choice', function(e) {
+				if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+
+				e.preventDefault();
+
+				const $tile = $(this).closest('.horizontal-filter-select');
+				activeFilterIndex = $filterTiles.index($tile);
+
+				const $select = $tile.find('select.multipleSelect').first();
+				if (!$select.length) return;
+
+				$select.multipleSelect('open');
+			});
+			$(document).on('keydown.holdsFilterTabFlow', function(e) {
+				if (e.key !== 'Tab') return;
+
+				const $openDrop = $('.ms-drop:visible').last();
+				if (!$openDrop.length) return;
+
+				if (activeFilterIndex < 0) return;
+
+				const nextIndex = e.shiftKey ? activeFilterIndex - 1 : activeFilterIndex + 1;
+
+				if (nextIndex < 0 || nextIndex >= $filterTiles.length) {
+					activeFilterIndex = -1;
+					return;
+				}
+
+				e.preventDefault();
+				e.stopPropagation();
+
+				const $currentTile = $filterTiles.eq(activeFilterIndex);
+				const $currentSelect = $currentTile.find('select.multipleSelect').first();
+				if ($currentSelect.length) $currentSelect.multipleSelect('close');
+
+				activeFilterIndex = nextIndex;
+
+				const $targetChoice = $filterTiles.eq(activeFilterIndex).find('.ms-choice').first();
+				if ($targetChoice.length) $targetChoice.focus();
+			});
+			$(document).on('click', function(evt) {
+				if (!$(evt.target).closest('#holdsFilterRow').length) {
+					activeFilterIndex = -1;
+				}
 			});
 			$('#applyHoldsFilters').on('click', function() {
 				let filters = {};
@@ -54,11 +110,10 @@
 					let key = $(this).attr('id').replace('HoldFilter_', '');
 					filters[key] = $(this).val() || [];
 				});
-				console.log(filters);
-				AspenDiscovery.Account.loadHolds('{/literal}{$source}{literal}', $('#availableHoldSort_{/literal}{$source}{literal} option:selected').val(), $('#unavailableHoldSort_{/literal}{$source}{literal} option:selected').val(), null, null, filters);
+				AspenDiscovery.Account.loadHolds('all', $('#availableHoldSort_{/literal}{$source}{literal} option:selected').val(), $('#unavailableHoldSort_{/literal}{$source}{literal} option:selected').val(), null, null, filters);
 			});
 			$('#clearHoldsFilters').on('click', function() {
-				AspenDiscovery.Account.loadHolds('{/literal}{$source}{literal}', $('#availableHoldSort_{/literal}{$source}{literal} option:selected').val(), $('#unavailableHoldSort_{/literal}{$source}{literal} option:selected').val());
+				AspenDiscovery.Account.loadHolds('all', $('#availableHoldSort_{/literal}{$source}{literal} option:selected').val(), $('#unavailableHoldSort_{/literal}{$source}{literal} option:selected').val());
 			});
 		});
         {/literal}

@@ -25,87 +25,18 @@
 			{assign var="filterType" value="holds"}
 			{include file="./linkedUsersDropdown.tpl"}
 		{/if}
-			<ul class="nav nav-tabs" role="tablist" id="holdsTab">
-				{if empty($offline)}
-					<li role="presentation"{if $tab=='all'} class="active"{/if}><a href="#all" aria-controls="all" role="tab" data-toggle="tab">{translate text="All" isPublicFacing=true} <span class="badge"><span class="holds-placeholder">&nbsp;</span></span></a></li>
-					<li role="presentation"{if $tab=='ils'} class="active"{/if}><a href="#ils" aria-controls="ils" role="tab" data-toggle="tab">{translate text="Physical Materials" isPublicFacing=true} <span class="badge"><span class="ils-holds-placeholder">&nbsp;</span></span></a></li>
-				{/if}
-				{if $user->getInterlibraryLoanType() == 'vdx'}
-					<li role="presentation"{if $tab=='interlibrary_loan'} class="active"{/if}><a href="#interlibrary_loan" aria-controls="interlibrary_loan" role="tab" data-toggle="tab">{translate text="Interlibrary Loan Requests" isPublicFacing=true} <span class="badge"><span class="interlibrary-loan-requests-placeholder">&nbsp;</span></span></a></li>
-				{/if}
-				{if $user->isValidForEContentSource('overdrive')}
-					<li role="presentation"{if $tab=='overdrive'} class="active"{/if}><a href="#overdrive" aria-controls="overdrive" role="tab" data-toggle="tab">{$readerName} <span class="badge"><span class="overdrive-holds-placeholder">&nbsp;</span></span></a></li>
-				{/if}
-				{if $user->isValidForEContentSource('hoopla_flex')}
-					<li role="presentation"{if $tab=='hoopla'} class="active"{/if}><a href="#hoopla" aria-controls="hoopla" role="tab" data-toggle="tab">{translate text="Hoopla" isPublicFacing=true} <span class="badge"><span class="hoopla-holds-placeholder">&nbsp;</span></span></a></li>
-				{/if}
-				{if $user->isValidForEContentSource('palace_project')}
-					<li role="presentation"{if $tab=='palace_project'} class="active"{/if}><a href="#palace_project" aria-controls="palace_project" role="tab" data-toggle="tab">{translate text="Palace Project" isPublicFacing=true} <span class="badge"><span class="palace_project-holds-placeholder">&nbsp;</span></span></a></li>
-				{/if}
-				{if $user->isValidForEContentSource('cloud_library')}
-					<li role="presentation"{if $tab=='cloud_library'} class="active"{/if}><a href="#cloud_library" aria-controls="cloud_library" role="tab" data-toggle="tab">{translate text="cloudLibrary" isPublicFacing=true} <span class="badge"><span class="cloud_library-holds-placeholder">&nbsp;</span></span></a></li>
-				{/if}
-				{if $user->isValidForEContentSource('axis360')}
-					<li role="presentation"{if $tab=='axis360'} class="active"{/if}><a href="#axis360" aria-controls="axis360" role="tab" data-toggle="tab">{translate text="Boundless" isPublicFacing=true} <span class="badge"><span class="axis360-holds-placeholder">&nbsp;</span></span></a></li>
-				{/if}
-			</ul>
-
             <div id="holdsFiltersBar"></div>
 
-			<!-- Tab panes -->
-			<div class="tab-content" id="holds">
-				{if empty($offline)}
-					<div role="tabpanel" class="tab-pane{if $tab=='all'} active{/if}" id="all"><div id="allHoldsPlaceholder" aria-label="All Holds List">{translate text="Loading holds from all sources" isPublicFacing=true}</div></div>
-					<div role="tabpanel" class="tab-pane{if $tab=='ils'} active{/if}" id="ils"><div id="ilsHoldsPlaceholder" aria-label="List of Holds on Physical Materials">{translate text="Loading holds of physical materials" isPublicFacing=true}</div></div>
-				{/if}
-				{if $user->getInterlibraryLoanType() == 'vdx'}
-					<div role="tabpanel" class="tab-pane{if $tab=='interlibrary_loan'} active{/if}" id="interlibrary_loan" aria-label="List of Interlibrary Loan Requests"><div id="interlibrary_loanHoldsPlaceholder">{translate text="Loading Interlibrary Loan Requests" isPublicFacing=true}</div></div>
-				{/if}
-				{if $user->isValidForEContentSource('overdrive')}
-					<div role="tabpanel" class="tab-pane{if $tab=='overdrive'} active{/if}" id="overdrive" aria-label="List of Holds on OverDrive Titles"><div id="overdriveHoldsPlaceholder">{translate text="Loading holds from %1%" 1=$readerName isPublicFacing=true}</div></div>
-				{/if}
-				{if $user->isValidForEContentSource('hoopla_flex')}
-					<div role="tabpanel" class="tab-pane{if $tab=='hoopla'} active{/if}" id="hoopla" aria-label="List of Holds on Hoopla Titles"><div id="hooplaHoldsPlaceholder">{translate text="Loading holds from Hoopla" isPublicFacing=true}</div></div>
-				{/if}
-				{if $user->isValidForEContentSource('cloud_library')}
-					<div role="tabpanel" class="tab-pane{if $tab=='cloud_library'} active{/if}" id="cloud_library" aria-label="List of Holds on cloudLibrary Titles"><div id="cloud_libraryHoldsPlaceholder">{translate text="Loading holds from cloudLibrary" isPublicFacing=true}</div></div>
-				{/if}
-				{if $user->isValidForEContentSource('palace_project')}
-					<div role="tabpanel" class="tab-pane{if $tab=='palace_project'} active{/if}" id="palace_project" aria-label="List of Holds on Palace Project Titles"><div id="palace_projectHoldsPlaceholder">{translate text="Loading holds from Palace Project" isPublicFacing=true}</div></div>
-				{/if}
-				{if $user->isValidForEContentSource('axis360')}
-					<div role="tabpanel" class="tab-pane{if $tab=='axis360'} active{/if}" id="axis360" aria-label="List of Holds on Boundless Titles"><div id="axis360HoldsPlaceholder">{translate text="Loading holds from Boundless" isPublicFacing=true}</div></div>
-				{/if}
+			<div id="holds">
+                {if empty($offline)}
+					<div><div id="allHoldsPlaceholder" aria-label="All Holds List">{translate text="Loading holds from all sources" isPublicFacing=true}</div></div>
+                {/if}
 			</div>
 			<script type="text/javascript">
 				{literal}
 				$(document).ready(function() {
-					$("a[href='#all']").on('show.bs.tab', function (e) {
-						AspenDiscovery.Account.loadHolds('all');
-					});
-					$("a[href='#ils']").on('show.bs.tab', function (e) {
-						AspenDiscovery.Account.loadHolds('ils');
-					});
-					$("a[href='#interlibrary_loan']").on('show.bs.tab', function (e) {
-						AspenDiscovery.Account.loadHolds('interlibrary_loan');
-					});
-					$("a[href='#overdrive']").on('show.bs.tab', function (e) {
-						AspenDiscovery.Account.loadHolds('overdrive');
-					});
-					$("a[href='#hoopla']").on('show.bs.tab', function (e) {
-						AspenDiscovery.Account.loadHolds('hoopla');
-					});
-					$("a[href='#cloud_library']").on('show.bs.tab', function (e) {
-						AspenDiscovery.Account.loadHolds('cloud_library');
-					});
-					$("a[href='#palace_project']").on('show.bs.tab', function (e) {
-						AspenDiscovery.Account.loadHolds('palace_project');
-					});
-					$("a[href='#axis360']").on('show.bs.tab', function (e) {
-						AspenDiscovery.Account.loadHolds('axis360');
-					});
 					{/literal}
-					AspenDiscovery.Account.loadHolds('{$tab}');
+					AspenDiscovery.Account.loadHolds('all');
 					{literal}
 				});
 				{/literal}

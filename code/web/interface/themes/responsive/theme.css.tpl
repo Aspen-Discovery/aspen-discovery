@@ -1150,11 +1150,6 @@ pre a{ldelim}
     border-top-color: {$bodyTextColor};
 {rdelim}
 
-#holdsFiltersBar{ldelim}
-    border-left-color: {$activeTabBackgroundColor};
-    border-right-color: {$activeTabBackgroundColor};
-{rdelim}
-
 {$additionalCSS}
 </style>
 {/strip}

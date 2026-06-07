@@ -8,10 +8,7 @@ class MyAccount_Holds extends MyAccount {
 		global $interface;
 		global $library;
 		$user = UserAccount::getLoggedInUser();
-
-		$tab = $_REQUEST['tab'] ?? 'all';
-		$interface->assign('tab', $tab);
-
+		
 		if ($library->showLibraryHoursNoticeOnAccountPages) {
 			$libraryHoursMessage = Location::getLibraryHoursMessage($user->homeLocationId);
 			$interface->assign('libraryHoursMessage', $libraryHoursMessage);

@@ -259,8 +259,6 @@
 }
 
 #holdsFiltersBar {
-  border-left: 1px solid #ddd;
-  border-right: 1px solid #ddd;
   padding-top: .5em;
 }
 
@@ -295,7 +293,10 @@
   border: unset;
   border-bottom: unset;
   width: unset;
+}
 
+#holdsFilterRow label span {
+  padding-left: .5em;
 }
 
 /*# sourceMappingURL=multiple-select.css.map */

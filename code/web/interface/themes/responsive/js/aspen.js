@@ -2530,8 +2530,7 @@ AspenDiscovery.Account = (function () {
 		},
 
 		loadHolds: function (source, availableHoldSort, unavailableHoldSort, showCovers, selectedUser, filters) {
-			AspenDiscovery.Account.currentHoldSource = source;
-			var url = Globals.path + "/MyAccount/AJAX?method=getHolds&source=" + source;
+			var url = Globals.path + "/MyAccount/AJAX?method=getHolds";
 
 			if (selectedUser || selectedUser == "") {
 				url += "&selectedUser=" + selectedUser;
@@ -2553,31 +2552,14 @@ AspenDiscovery.Account = (function () {
 
 			var stateObj = {
 				page: 'Holds',
-				source: source,
 				availableHoldSort: availableHoldSort,
 				unavailableHoldSort: unavailableHoldSort,
 				showCovers: showCovers,
 				selectedUser: selectedUser
 			};
-			var newUrl = AspenDiscovery.buildUrl(document.location.origin + document.location.pathname, 'source', source);
+			var newUrl = document.location.origin + document.location.pathname;
 			if (document.location.href) {
-				var label = 'Holds';
-				if (source === 'ils') {
-					label = 'Physical Holds';
-				} else if (source === 'interlibrary_loan') {
-					label = 'Interlibrary Loan Requests';
-				} else if (source === 'overdrive') {
-					label = 'OverDrive Holds';
-				} else if (source === 'cloud_library') {
-					label = 'Cloud Library Holds';
-				} else if (source === 'axis360') {
-					label = 'Boundless Holds';
-				} else if (source === 'palace_project') {
-					label = 'Palace Project Holds';
-				} else if (source === 'hoopla') {
-					label = 'Hoopla Holds';
-				}
-				history.pushState(stateObj, label, newUrl);
+				history.replaceState(stateObj, 'Holds', newUrl);
 			}
 			document.body.style.cursor = "wait";
 			// noinspection JSUnresolvedFunction
@@ -2585,11 +2567,11 @@ AspenDiscovery.Account = (function () {
 				document.body.style.cursor = "default";
 				if (data.success) {
 					$('#accountLoadTime').html(data.holdInfoLastLoaded);
-					$("#" + source + "HoldsPlaceholder").html(data.holds);
+					$("#allHoldsPlaceholder").html(data.holds);
 					$("#holdsFiltersBar").html(data.filterOptions);
 					AspenDiscovery.Account.loadMenuData();
 				} else {
-					$("#" + source + "HoldsPlaceholder").html(data.message);
+					$("#allHoldsPlaceholder").html(data.message);
 				}
 			}).fail(AspenDiscovery.ajaxFail);
 			return false;
