@@ -3867,7 +3867,7 @@ class MyAccount_AJAX extends JSON_Action {
 		 * 3. This is more modular and is more testable.  This function can be pulled out into a helper function and
 		 * tested on its own.
 		 */
-		$matchingUserFound = function($hold, $key) use ($allUsersSelected, $selectedUser, $filters) {
+		$matchingHoldsFound = function($hold) use ($allUsersSelected, $selectedUser, $filters) {
 			$useSpecificUser = ($allUsersSelected || intval($hold->userId) === intval($selectedUser));
 			$filterByUserId = (empty($filters['userId']) || in_array($hold->userId, $filters['userId']));
 			$statusOkay = (empty($filters['status']) || in_array($hold->status, $filters['status']));
@@ -3890,7 +3890,7 @@ class MyAccount_AJAX extends JSON_Action {
 		 * to extend. If new hold types need to be added, we only need to add them in this list, in just one place.
 		 */
 		foreach(['available', 'unavailable', 'cancelled'] as $status) {
-			$filteredHolds[$status] = array_filter($allHolds[$status], $matchingUserFound, ARRAY_FILTER_USE_BOTH);
+			$filteredHolds[$status] = array_filter($allHolds[$status], $matchingHoldsFound);
 		}
 
 		return $filteredHolds;
