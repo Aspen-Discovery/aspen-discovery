@@ -3174,12 +3174,13 @@ class MyAccount_AJAX extends JSON_Action {
 		$selectedUser = $this->setFilterLinkedUser();
 		$selectedHolds = isset($_REQUEST['selectedHolds']) ? json_decode($_REQUEST['selectedHolds'], true) : [];
 
-		if (!empty($selectedHolds)) {
-			$allHolds = $this->filterHoldsBySelected($user->getHolds(true, $selectedUnavailableSortOption, $selectedAvailableSortOption, $source), $selectedHolds);
-		} else {
-			$allHolds = $this->filterHolds($user->getHolds(true, $selectedUnavailableSortOption, $selectedAvailableSortOption, $source), $selectedUser);
-		}
-
+		//$user->getHolds is called with the same parameters in both contexts, so it can be stored as a variable
+		// There is potentially a bug here, in that filterHolds expects filters, but has none in this function
+		$userHolds = $user->getHolds(true, $selectedUnavailableSortOption, $selectedAvailableSortOption, $source);
+		$allHolds = match(true){
+			!empty($selectedHolds) => $this->filterHoldsBySelected($userHolds, $selectedHolds),
+			default => $this->filterHolds($userHolds, $selectedUser, [])
+		};
 
 		$showDateWhenSuspending = $user->showDateWhenSuspending();
 
@@ -3854,25 +3855,42 @@ class MyAccount_AJAX extends JSON_Action {
 
 		// Check if we're filtering by a specific user
 		$allUsersSelected = (empty($selectedUser) || $selectedUser === '[""]');
+		
+		/**
+		 * This closure acts as our filter function. By placing the boolean value herein, we are able
+		 * to do three things:
+		 * 1. Because this logic is used multiple places, IF it were the case that there were a bug here,
+		 *  then we only need to change the logic one time rather than however many times this logic is repeated.
+		 * 2. The large chain of boolean values is somewhat difficult for developers to reason about. By 
+		 * breaking it down into smaller parts, we have a better idea of what each part signifies, and we're able to
+		 * adjust them individually should this change in the future.
+		 * 3. This is more modular and is more testable.  This function can be pulled out into a helper function and
+		 * tested on its own.
+		 */
+		$matchingUserFound = function($hold, $key) use ($allUsersSelected, $selectedUser, $filters) {
+			$useSpecificUser = ($allUsersSelected || intval($hold->userId) === intval($selectedUser));
+			$filterByUserId = (empty($filters['userId']) || in_array($hold->userId, $filters['userId']));
+			$statusOkay = (empty($filters['status']) || in_array($hold->status, $filters['status']));
+			$formatOkay = (empty($filters['format']) || in_array($hold->format, $filters['format']));
 
-		foreach ($allHolds['available'] as $key => $hold) {
-			if (($allUsersSelected || intval($hold->userId) === intval($selectedUser)) && (empty($filters['userId']) || in_array($hold->userId, $filters['userId'])) && (empty($filters['status']) || in_array($hold->status, $filters['status'])) && (empty($filters['format']) || in_array($hold->format, $filters['format']))) {
-				$filteredHolds['available'][$key] = $hold;
-			}
-		}
+			return $useSpecificUser && $filterByUserId && $statusOkay && $formatOkay;
+		};
 
-		foreach ($allHolds['unavailable'] as $key => $hold) {
-			if (($allUsersSelected || intval($hold->userId) === intval($selectedUser)) && (empty($filters['userId']) || in_array($hold->userId, $filters['userId'])) && (empty($filters['status']) || in_array($hold->status, $filters['status'])) && (empty($filters['format']) || in_array($hold->format, $filters['format']))) {
-				$filteredHolds['unavailable'][$key] = $hold;
-			}
-		}
-
-		if (isset($allHolds['cancelled'])) {
-			foreach ($allHolds['cancelled'] as $key => $hold) {
-				if (($allUsersSelected || intval($hold->userId) === intval($selectedUser)) && (empty($filters['userId']) || in_array($hold->userId, $filters['userId'])) && (empty($filters['status']) || in_array($hold->status, $filters['status'])) && (empty($filters['format']) || in_array($hold->format, $filters['format']))) {
-					$filteredHolds['cancelled'][$key] = $hold;
-				}
-			}
+		/**
+		 * In the original code, 3 loops are added with the same logic.  Iterate through, and for each hold ask:
+		 * Is this one of the holds I want to keep based on this boolean logic?
+		 * If so, we add it to the list.
+		 * 
+		 * There is a super helpful function for this called array_filter.
+		 * array_filter takes the array we're iterating over, a function which takes a parameter from within
+		 * the array, asks the question, and returns only those values for which it's true.
+		 * The final parameter has us pass both key and value as the value is used in determining boolean logic.
+		 * 
+		 * By implementing the logic in this way, we are cutting down on repetition, and making the code much easier
+		 * to extend. If new hold types need to be added, we only need to add them in this list, in just one place.
+		 */
+		foreach(['available', 'unavailable', 'cancelled'] as $status) {
+			$filteredHolds[$status] = array_filter($allHolds[$status], $matchingUserFound, ARRAY_FILTER_USE_BOTH);
 		}
 
 		return $filteredHolds;
@@ -3882,7 +3900,7 @@ class MyAccount_AJAX extends JSON_Action {
 		$filteredCheckouts = [];
 
 		$allUsersSelected = (empty($selectedUser) || $selectedUser === '[""]');
-
+		// This could be another good candidate for array_filter
 		foreach ($allCheckedOut as $key => $checkout) {
 			if ($allUsersSelected || intval($checkout->userId) === intval($selectedUser)) {
 				$filteredCheckouts[$key] = $checkout;
@@ -4359,17 +4377,12 @@ class MyAccount_AJAX extends JSON_Action {
 			return [];
 		}
 
-		if (!is_array($value)) {
-			$value = [$value];
-		}
+		$value = is_array($value) ? $value : [$value];
 
 		$out = [];
 		foreach ($value as $v) {
-			if ($v === null) {
-				continue;
-			}
 			$s = trim((string)$v);
-			if ($s === '') {
+			if (empty($s)) {
 				continue;
 			}
 			$out[$s] = true; // dedupe
