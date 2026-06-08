@@ -41,22 +41,28 @@ class UserAspenEventInstanceRegistrationAttendee extends DataObject {
 	 * $attendeeCounts: [attendeeCategoryId => count, ...]
 	 */
 	public static function saveForRegistration(int $registrationId, array $attendeeCounts): void {
-		foreach ($attendeeCounts as $categoryId => $count) {
-			$count = (int)$count;
-			if ($count <= 0) {
-				continue;
-			}
-			$attendee = new UserAspenEventInstanceRegistrationAttendee();
-			$attendee->registrationId = $registrationId;
-			$attendee->attendeeCategoryId = (int)$categoryId;
-			if ($attendee->find(true)) {
+		DataObject::runInTransaction(function() use ($registrationId, $attendeeCounts): void {
+			foreach ($attendeeCounts as $categoryId => $count) {
+				$count = (int)$count;
+				if ($count <= 0) {
+					continue;
+				}
+				$attendee = new UserAspenEventInstanceRegistrationAttendee();
+				$attendee->registrationId = $registrationId;
+				$attendee->attendeeCategoryId = (int)$categoryId;
+				if ($attendee->find(true)) {
+					$attendee->count = $count;
+					if ($attendee->update() === false) {
+						throw new RuntimeException("Failed to update attendee row (registrationId=$registrationId, categoryId=$categoryId).");
+					}
+					continue;
+				}
 				$attendee->count = $count;
-				$attendee->update();
-				continue;
+				if ($attendee->insert() === false) {
+					throw new RuntimeException("Failed to insert attendee row (registrationId=$registrationId, categoryId=$categoryId).");
+				}
 			}
-			$attendee->count = $count;
-			$attendee->insert();
-		}
+		});
 	}
 
 	public static function getCountsForRegistration(int $registrationId): array {
