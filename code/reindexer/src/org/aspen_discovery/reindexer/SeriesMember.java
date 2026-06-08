@@ -24,6 +24,9 @@ public class SeriesMember {
 	private boolean foundInCurrentIndex = false;
 	private boolean deleted;
 
+	/**
+	 * Constructor for use when loading series that are already linked to a Grouped Work via a Series Member
+	 */
 	public SeriesMember(ResultSet seriesMemberRS) throws SQLException {
 		this.seriesId = seriesMemberRS.getLong("seriesId");
 		this.seriesPermanentId = seriesMemberRS.getString("seriesPermanentId");
@@ -35,7 +38,42 @@ public class SeriesMember {
 		this.isIndexed = seriesMemberRS.getBoolean("isIndexed");
 		this.version = seriesMemberRS.getInt("version");
 		this.deleted = seriesMemberRS.getBoolean("deleted");
+	}
 
+	/**
+	 * Constructor to use when loading a version 1 series that is not linked to a grouped work.
+	 * Useful for linking grouped works to existing series so duplicates aren't created
+	 *
+	 * Note: This does NOT contain info about the linked member since there isn't one currently
+	 */
+	public SeriesMember(long seriesId, String groupedWorkSeriesTitle, String author, boolean isIndexed, boolean deleted) {
+		this.seriesId = seriesId;
+		this.groupedWorkSeriesTitle = groupedWorkSeriesTitle;
+		this.author = author;
+		this.priorityScore = 0;
+		this.version = 1;
+		this.isIndexed = isIndexed;
+		this.deleted = deleted;
+		this.seriesPermanentId = null;
+		this.seriesLanguage = null;
+	}
+
+	/**
+	 * Constructor to use when loading a version 2 series that is not linked to a grouped work.
+	 * Useful for linking grouped works to existing series so duplicates aren't created
+	 *
+	 * Note: This does NOT contain info about the linked member since there isn't one currently
+	 */
+	public SeriesMember(long seriesId, String seriesPermanentId, String groupedWorkSeriesTitle, String author, String seriesLanguage, boolean isIndexed, boolean deleted) {
+		this.seriesId = seriesId;
+		this.groupedWorkSeriesTitle = groupedWorkSeriesTitle;
+		this.author = author;
+		this.priorityScore = 0;
+		this.version = 1;
+		this.isIndexed = isIndexed;
+		this.deleted = deleted;
+		this.seriesPermanentId = seriesPermanentId;
+		this.seriesLanguage = seriesLanguage;
 	}
 
 	public long getSeriesId() {

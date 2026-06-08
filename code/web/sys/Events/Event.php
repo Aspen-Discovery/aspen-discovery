@@ -18,7 +18,11 @@ class Event extends DataObject {
 	public $displayEventBranchOnThumbnail;
 	public $_typeFields = [];
 	public $startDate;
+
+	// Used as an alias for startDate at the root of the model structure
+	// so that it can be displayed in lists
 	public $_startDateForList;
+
 	public $hideTimestamps;
 	public $startTime;
 	public $eventLength;
@@ -270,7 +274,7 @@ class Event extends DataObject {
 			'startDate' => [
 				'property' => 'startDate',
 				'type' => 'date',
-				'label' => 'Event Date',
+				'label' => 'Start Date',
 				'description' => 'The date this event starts',
 				'onchange' => "return AspenDiscovery.Events.updateRecurrenceOptions(this.value);",
 			],

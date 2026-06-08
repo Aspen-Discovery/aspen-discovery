@@ -29,7 +29,7 @@ class Series_AdministerSeries extends ObjectEditor {
 
 			//Join series member so we can sort by number of series members
 			$seriesMember = new SeriesMember();
-			$object->joinAdd($seriesMember, 'INNER', 'series_member', 'id', 'seriesId');
+			$object->joinAdd($seriesMember, 'LEFT', 'series_member', 'id', 'seriesId');
 			$object->selectAdd();
 			$object->selectAdd('series.*');
 			$object->selectAdd('count(series_member.seriesId) as numTitlesInSeries');
@@ -48,7 +48,7 @@ class Series_AdministerSeries extends ObjectEditor {
 
 		//Join series member so we can sort by number of series members
 		$seriesMember = new SeriesMember();
-		$object->joinAdd($seriesMember, 'INNER', 'series_member', 'id', 'seriesId');
+		$object->joinAdd($seriesMember, 'LEFT', 'series_member', 'id', 'seriesId');
 		$object->selectAdd();
 		$object->selectAdd('series.*');
 		$object->selectAdd('count(series_member.seriesId) as numTitlesInSeries');

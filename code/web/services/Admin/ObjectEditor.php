@@ -1256,7 +1256,7 @@ abstract class ObjectEditor extends Admin_Admin {
 	private function addFieldToSortableFieldsArray(&$sortableFields, $field) : void {
 		if ($field['type'] == 'section') {
 			foreach ($field['properties'] as $subField) {
-				$this->addFieldToSortableFieldsArray($batchFormatFields, $subField);
+				$this->addFieldToSortableFieldsArray($sortableFields, $subField);
 			}
 		} else {
 			$canSort = !isset($field['canSort']) || ($field['canSort'] == true);

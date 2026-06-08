@@ -70,6 +70,13 @@ class Series extends DataObject {
 				'label' => 'Series Title',
 				'description' => 'The title of the series',
 			],
+			'groupedWorkSeriesTitle' => [
+				'property' => 'groupedWorkSeriesTitle',
+				'type' => 'label',
+				'label' => 'Title from Grouped Work',
+				'description' => 'The title from the Grouped Work. This will be blank if the series was manually added.',
+				'hideInLists' => true,
+			],
 			'author' => [
 				'property' => 'author',
 				'type' => 'text',
