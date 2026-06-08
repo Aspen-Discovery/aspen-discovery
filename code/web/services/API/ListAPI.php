@@ -5,7 +5,6 @@ require_once ROOT_DIR . '/sys/API/APIMethodConfiguration.php';
 require_once ROOT_DIR . '/sys/Pager.php';
 require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 require_once ROOT_DIR . '/sys/SearchEntry.php';
-require_once ROOT_DIR . '/sys/Authentication/OAuth2/OAuth2Middleware.php';
 
 class ListAPI extends AbstractAPI {
 	use APIMethodConfiguration;

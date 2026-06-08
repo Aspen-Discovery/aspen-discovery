@@ -843,14 +843,14 @@ class SystemAPI extends AbstractAPI {
 					'message' => 'Invalid language code provided.',
 				];
 			}
-			if (isset($_REQUEST['terms']) || file_get_contents('php://input')) {
-				if (isset($_REQUEST['terms'])) {
-					$terms['terms'] = $_REQUEST['terms'];
-				}else{
-					$data = file_get_contents('php://input');
-					$terms = json_decode($data, true);
-				}
-
+			$terms = null;
+			if (isset($_REQUEST['terms'])) {
+				$terms['terms'] = $_REQUEST['terms'];
+			} else {
+				$data = file_get_contents('php://input');
+				$terms = json_decode($data, true);
+			}
+			if (!empty($terms) && !empty($terms['terms'])) {
 				$fromLiDA = $this->checkIfLiDA() && $this->grantTokenAccess();
 
 				$logger->log("Preparing to translate " . count($terms['terms']), Logger::LOG_DEBUG);

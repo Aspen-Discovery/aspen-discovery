@@ -1,4 +1,5 @@
 <?php
+
 require_once ROOT_DIR . '/services/API/AbstractAPI.php';
 require_once ROOT_DIR . '/CatalogConnection.php';
 
@@ -5105,21 +5106,24 @@ class UserAPI extends AbstractAPI {
 				return UserAccount::validateAccount($patronBarcode, $patronPassword);
 			}
 		} else {
-			$oauthUser = OAuth2Middleware::getAuthenticatedUser();
-			if ($oauthUser) {
-				if (empty($_REQUEST['language'])) {
-					global $activeLanguage;
-					global $translator;
-					$userLanguage = new Language();
-					$userLanguage->code = $oauthUser->interfaceLanguage;
-					if ($userLanguage->find(true)) {
-						if ($userLanguage->code != $activeLanguage->code) {
-							$activeLanguage = $userLanguage;
-							$translator = new Translator('lang', $userLanguage->code);
+			global $composerActive;
+			if ($composerActive) {
+				$oauthUser = OAuth2Middleware::getAuthenticatedUser();
+				if ($oauthUser) {
+					if (empty($_REQUEST['language'])) {
+						global $activeLanguage;
+						global $translator;
+						$userLanguage = new Language();
+						$userLanguage->code = $oauthUser->interfaceLanguage;
+						if ($userLanguage->find(true)) {
+							if ($userLanguage->code != $activeLanguage->code) {
+								$activeLanguage = $userLanguage;
+								$translator = new Translator('lang', $userLanguage->code);
+							}
 						}
 					}
+					return $oauthUser;
 				}
-				return $oauthUser;
 			}
 			$user = false;
 
