@@ -1953,8 +1953,8 @@ public class GroupedWorkIndexer implements AutoCloseable {
 						seriesId = seriesMemberRS.getLong("seriesId");
 						long seriesMemberId = seriesMemberRS.getLong("seriesMemberId");
 						deleteSeriesMemberByIdStmt.setLong(1, seriesMemberId);
-						deleteSeriesMemberStmt.setString(2, groupedWorkId);
-						int result = deleteSeriesMemberStmt.executeUpdate();
+						
+						int result = deleteSeriesMemberByIdStmt.executeUpdate();
 						// Also delete the series if it no longer has any members
 						if (result != 0) {
 							getNumberOfSeriesMembersStmt.setLong(1, seriesId);

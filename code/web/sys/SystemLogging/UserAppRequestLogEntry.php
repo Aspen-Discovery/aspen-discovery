@@ -113,6 +113,10 @@ class UserAppRequestLogEntry extends DataObject {
 				$data[$key] = "********";
 			}
 		}
-		return json_encode($data);
+		$encodedData = json_encode($data);
+		if (strlen($encodedData) > 65535) {
+			$encodedData = substr($encodedData, 0, 65535);
+		}
+		return $encodedData;
 	}
 }

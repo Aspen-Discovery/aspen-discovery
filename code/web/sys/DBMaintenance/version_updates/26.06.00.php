@@ -24,6 +24,14 @@ function getUpdates26_06_00(): array {
 				'ALTER TABLE grouped_work_display_settings ADD COLUMN showEarliestPublicationDateFullRecord TINYINT(1) UNSIGNED NOT NULL DEFAULT 1',
 			]
 		], //options_for_earliest_publication_date
+		'increase_method_length_in_app_request_log' => [
+			'title' => 'Increase method length in app_request_log',
+			'description' => 'Increase the method length in the app_request_log table to accommodate longer method names',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE user_app_request_log CHANGE COLUMN method method VARCHAR(75) NOT NULL',
+			]
+		], //increase_method_length_in_app_request_log
 
 		//kirstien
 		'addForceReadingHistoryOptIn' => [
