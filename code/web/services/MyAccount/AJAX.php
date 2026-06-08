@@ -3856,17 +3856,7 @@ class MyAccount_AJAX extends JSON_Action {
 		// Check if we're filtering by a specific user
 		$allUsersSelected = (empty($selectedUser) || $selectedUser === '[""]');
 		
-		/**
-		 * This closure acts as our filter function. By placing the boolean value herein, we are able
-		 * to do three things:
-		 * 1. Because this logic is used multiple places, IF it were the case that there were a bug here,
-		 *  then we only need to change the logic one time rather than however many times this logic is repeated.
-		 * 2. The large chain of boolean values is somewhat difficult for developers to reason about. By 
-		 * breaking it down into smaller parts, we have a better idea of what each part signifies, and we're able to
-		 * adjust them individually should this change in the future.
-		 * 3. This is more modular and is more testable.  This function can be pulled out into a helper function and
-		 * tested on its own.
-		 */
+		// Break out large boolean structure into separate closure to use in filter function
 		$matchingHoldsFound = function($hold) use ($allUsersSelected, $selectedUser, $filters) {
 			$useSpecificUser = ($allUsersSelected || intval($hold->userId) === intval($selectedUser));
 			$filterByUserId = (empty($filters['userId']) || in_array($hold->userId, $filters['userId']));
@@ -3876,19 +3866,7 @@ class MyAccount_AJAX extends JSON_Action {
 			return $useSpecificUser && $filterByUserId && $statusOkay && $formatOkay;
 		};
 
-		/**
-		 * In the original code, 3 loops are added with the same logic.  Iterate through, and for each hold ask:
-		 * Is this one of the holds I want to keep based on this boolean logic?
-		 * If so, we add it to the list.
-		 * 
-		 * There is a super helpful function for this called array_filter.
-		 * array_filter takes the array we're iterating over, a function which takes a parameter from within
-		 * the array, asks the question, and returns only those values for which it's true.
-		 * The final parameter has us pass both key and value as the value is used in determining boolean logic.
-		 * 
-		 * By implementing the logic in this way, we are cutting down on repetition, and making the code much easier
-		 * to extend. If new hold types need to be added, we only need to add them in this list, in just one place.
-		 */
+		// Populate Arrays using array_filter
 		foreach(['available', 'unavailable', 'cancelled'] as $status) {
 			$filteredHolds[$status] = array_filter($allHolds[$status], $matchingHoldsFound);
 		}
