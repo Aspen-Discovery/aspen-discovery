@@ -1010,6 +1010,35 @@ abstract class DataObject implements JsonSerializable {
 		$this->_data = null;
 	}
 
+	/*
+	* Implements atomicity for callables where multiple DB operation must run
+	* for the process to be considered succesful. Prevents partial writes.
+	* If applied to multi-item processing: any failure will revert 
+	* changes to all relevant items.
+	*/
+	public static function runInTransaction(callable $work): mixed {
+		global $aspen_db;
+		if (!isset($aspen_db)) {
+			throw new RuntimeException('Database connection not initialized; cannot run transaction.');
+		}
+		$transactionOwner = !$aspen_db->inTransaction();
+		if ($transactionOwner) {
+			$aspen_db->beginTransaction();
+		}
+		try {
+			$result = $work();
+			if ($transactionOwner) {
+				$aspen_db->commit();
+			}
+			return $result;
+		} catch (\Throwable $e) {
+			if ($transactionOwner && $aspen_db->inTransaction()) {
+				$aspen_db->rollBack();
+			}
+			throw $e;
+		}
+	}
+
 	/**
 	 * Saves "one to many" options that optionally take into account the values that an administrator has the ability to change.
 	 * This ensures that options that a user does not have access to are not cleared or saved incorrectly.
