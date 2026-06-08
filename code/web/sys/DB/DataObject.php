@@ -1021,18 +1021,18 @@ abstract class DataObject implements JsonSerializable {
 		if (!isset($aspen_db)) {
 			throw new RuntimeException('Database connection not initialized; cannot run transaction.');
 		}
-		$transactionOwner = !$aspen_db->inTransaction();
-		if ($transactionOwner) {
+		$transactionOwnedByCurrentCall = !$aspen_db->inTransaction();
+		if ($transactionOwnedByCurrentCall) {
 			$aspen_db->beginTransaction();
 		}
 		try {
 			$result = $work();
-			if ($transactionOwner) {
+			if ($transactionOwnedByCurrentCall) {
 				$aspen_db->commit();
 			}
 			return $result;
 		} catch (\Throwable $e) {
-			if ($transactionOwner && $aspen_db->inTransaction()) {
+			if ($transactionOwnedByCurrentCall && $aspen_db->inTransaction()) {
 				$aspen_db->rollBack();
 			}
 			throw $e;
