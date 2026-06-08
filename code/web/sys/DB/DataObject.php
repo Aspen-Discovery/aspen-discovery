@@ -1039,6 +1039,37 @@ abstract class DataObject implements JsonSerializable {
 		}
 	}
 
+	private static int $__savepointCounter = 0;
+
+	/*
+	 * Recommended for multi-row batch flows (applies atomicity on a per item basis).
+	 * Allows partial success (if failure occurs while one item is being process,
+	 * the failure is clean and complete for the item while processing carries on 
+	 * to the next iteration. The transaction is not interrupted).
+	 * 
+	 * Note: requires an active outer transaction.
+	 */
+	public static function runInSavepoint(callable $work): mixed {
+		global $aspen_db;
+		if (!isset($aspen_db)) {
+			throw new RuntimeException('Database connection not initialized; cannot create savepoint.');
+		}
+		if (!$aspen_db->inTransaction()) {
+			throw new RuntimeException('Cannot create savepoint outside an active transaction; wrap the caller in runInTransaction().');
+		}
+		$savepoint = 'aspen_sp_' . ++self::$__savepointCounter;
+		$aspen_db->exec('SAVEPOINT ' . $savepoint);
+		try {
+			$result = $work();
+			$aspen_db->exec('RELEASE SAVEPOINT ' . $savepoint);
+			return $result;
+		} catch (\Throwable $e) {
+			$aspen_db->exec('ROLLBACK TO SAVEPOINT ' . $savepoint);
+			$aspen_db->exec('RELEASE SAVEPOINT ' . $savepoint);
+			throw $e;
+		}
+	}
+
 	/**
 	 * Saves "one to many" options that optionally take into account the values that an administrator has the ability to change.
 	 * This ensures that options that a user does not have access to are not cleared or saved incorrectly.
