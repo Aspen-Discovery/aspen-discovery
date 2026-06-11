@@ -343,8 +343,10 @@ class DataObjectUtil {
 					$logger->log("No file was uploaded for $propertyName", Logger::LOG_DEBUG);
 					//No image supplied, use the existing value
 				} elseif (isset($_FILES[$propertyName]["error"]) && $_FILES[$propertyName]["error"] > 0) {
-					//return an error to the browser
-					$logger->log("Error in file upload for $propertyName", Logger::LOG_ERROR);
+					require_once ROOT_DIR . '/sys/Utils/SystemUtils.php';
+					$uploadError = $_FILES[$propertyName]["error"];
+					$logger->log("Error in file upload for $propertyName (code $uploadError)", Logger::LOG_ERROR);
+					AspenError::raiseError(SystemUtils::getUploadErrorMessage($uploadError));
 				} elseif ((!empty($property['validTypes']) && !in_array($_FILES[$propertyName]["type"], $property['validTypes'])) ||
 					(empty($property['validTypes']) && !in_array($_FILES[$propertyName]["type"], ['image/gif', 'image/jpeg', 'image/png', 'image/svg+xml']))) {
 					$allowedTypes = !empty($property['validTypes']) ? implode(', ', $property['validTypes']) : 'image/gif, image/jpeg, image/png, image/svg+xml';

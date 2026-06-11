@@ -11,9 +11,9 @@
 	{elseif !empty($showEventSelector)}
 		<div class="well">
 			<h2>{translate text="Select an Event" isAdminFacing=true}</h2>
-			<p>{translate text="Choose an upcoming event to manage registrations." isAdminFacing=true}</p>
+			<p>{translate text="Choose an event instance to view registrations and manage attendance." isAdminFacing=true}</p>
 
-			{if !empty($upcomingEvents)}
+			{if !empty($eventInstances)}
 				<table class="table table-striped table-bordered">
 					<thead>
 						<tr>
@@ -26,7 +26,7 @@
 						</tr>
 					</thead>
 					<tbody>
-						{foreach from=$upcomingEvents item=event}
+						{foreach from=$eventInstances item=event}
 							<tr>
 								<td>{$event.title|escape}</td>
 								<td>{$event.date|date_format:"%B %e, %Y"}</td>

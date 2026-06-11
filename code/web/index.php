@@ -1177,9 +1177,15 @@ function loadModuleActionId() {
 		$_GET['action'] = $matches[2];
 		$_REQUEST['module'] = $matches[1];
 		$_REQUEST['action'] = $matches[2];
-		if (file_exists(ROOT_DIR . '/services/' . $_REQUEST['module'] . '/' . $_REQUEST['action'] . '.php')) {
-			$checkWebBuilderAliases = false;
-		}else{
+		if (!file_exists(ROOT_DIR . '/services/' . $_REQUEST['module'] . '/' . $_REQUEST['action'] . '.php')) {
+			$checkWebBuilderAliases = true;
+		}
+	} elseif (preg_match("~([^/?]+)~", $requestURI, $matches)) {
+		$_GET['module'] = $matches[1];
+		$_GET['action'] = 'Home';
+		$_REQUEST['module'] = $matches[1];
+		$_REQUEST['action'] = 'Home';
+		if (!file_exists(ROOT_DIR . '/services/' . $_REQUEST['module'] . '/' . $_REQUEST['action'] . '.php')) {
 			$checkWebBuilderAliases = true;
 		}
 	}

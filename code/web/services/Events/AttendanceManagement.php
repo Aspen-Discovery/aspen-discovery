@@ -79,14 +79,17 @@ class Events_AttendanceManagement extends Admin_Admin {
 
 	private function displayEventSelector(): void {
 		global $interface;
-		$upcomingEvents = $this->getUpcomingEventsForUser();
-		$interface->assign('upcomingEvents', $upcomingEvents);
+		$eventInstances = $this->getActiveEventsInstances();
+		$interface->assign('eventInstances', $eventInstances);
 		$interface->assign('showEventSelector', true);
 
 		$this->display('eventManagement.tpl', 'Attendance Management');
 	}
 
-	private function getUpcomingEventsForUser(): array {
+	/*
+	* Excludes deleted events.
+	*/
+	private function getActiveEventsInstances(): array {
 		require_once ROOT_DIR . '/sys/Events/UserAspenEventInstanceRegistration.php';
 		require_once ROOT_DIR . '/services/EventRegistrationService.php';
 
@@ -94,7 +97,6 @@ class Events_AttendanceManagement extends Admin_Admin {
 
 		$eventInstance = new EventInstance();
 		$eventInstance->whereAdd("(deleted IS NULL OR deleted = 0)");
-		EventInstance::addUpcomingWhereClause($eventInstance);
 		$eventInstance->orderBy('date ASC, time ASC');
 		$eventInstance->limit(0, 100);
 

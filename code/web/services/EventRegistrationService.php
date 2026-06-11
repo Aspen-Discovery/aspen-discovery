@@ -1,5 +1,6 @@
 <?php
 
+require_once ROOT_DIR . '/sys/Utils/DateUtils.php';
 require_once ROOT_DIR . '/sys/Events/EventInstance.php';
 require_once ROOT_DIR . '/sys/Events/UserAspenEventInstanceRegistration.php';
 

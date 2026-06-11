@@ -41,6 +41,7 @@ class SeriesIndexingSettings extends DataObject {
 				'property' => 'truncateForVersionSwitch',
 				'type' => 'hidden',
 				'hideInLists' => true,
+				'default' => 0,
 			],
 			'runFullUpdate' => [
 				'property' => 'runFullUpdate',
