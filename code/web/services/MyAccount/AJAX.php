@@ -5788,7 +5788,7 @@ class MyAccount_AJAX extends JSON_Action {
 					$payment,
 					$purchaseUnits,
 					$patron,
-					$tempDonation,
+					$donation,
 				] = $result;
 			} else {
 				/** @noinspection PhpUnusedLocalVariableInspection */
@@ -6481,7 +6481,7 @@ class MyAccount_AJAX extends JSON_Action {
 					$payment,
 					$purchaseUnits,
 					$patron,
-					$tempDonation,
+					$donation,
 				] = $result;
 			} else {
 				[
@@ -7219,7 +7219,7 @@ class MyAccount_AJAX extends JSON_Action {
 					$payment,
 					$purchaseUnits,
 					$patron,
-					$tempDonation,
+					$donation,
 				] = $result;
 			} else {
 				[
@@ -7614,7 +7614,7 @@ class MyAccount_AJAX extends JSON_Action {
 				$payment,
 				$purchaseUnits,
 				$patron,
-				$tempDonation,
+				$donation,
 			] = $result;
 		} else {
 			[
@@ -8115,7 +8115,7 @@ class MyAccount_AJAX extends JSON_Action {
 				$payment,
 				$purchaseUnits,
 				$patron,
-				$tempDonation,
+				$donation,
 			] = $result;
 		} else {
 			[
