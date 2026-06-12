@@ -1,28 +1,24 @@
 <?php
 
 class ExpirationInformation {
+	private const SECONDS_PER_DAY = 86400;
+
 	public int $expirationDate = 0; //Expiration Date in time since epoch
+	public int $renewalWindowDays = 30;
 
 	private ?bool $_expired = null;
 	private ?bool $_expireClose = null;
 
 	private function loadExpirationInfo() : void {
-		if ($this->expirationDate > 0) {
-			$timeNow = time();
-			$this->_expired = false;
-			$timeToExpire = $this->expirationDate - $timeNow;
-			if ($timeToExpire <= 30 * 24 * 60 * 60) {
-				if ($timeToExpire <= 0) {
-					$this->_expired = true;
-				}
-				$this->_expireClose = true;
-			} else {
-				$this->_expireClose = false;
-			}
-		} else {
+		if ($this->expirationDate <= 0) {
 			$this->_expired = false;
 			$this->_expireClose = false;
+			return;
 		}
+
+		$timeToExpire = $this->expirationDate - time();
+		$this->_expired = $timeToExpire <= 0;
+		$this->_expireClose = $timeToExpire <= $this->renewalWindowDays * self::SECONDS_PER_DAY;
 	}
 
 	public function isExpired() : bool {

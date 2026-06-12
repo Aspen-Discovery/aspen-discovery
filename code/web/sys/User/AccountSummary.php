@@ -86,44 +86,49 @@ class AccountSummary extends DataObject {
 		$this->_numUpdatedSearches = $numUpdatedSearches;
 	}
 
-	private $_expired = null;
-	private $_expireClose = null;
+	private ?ExpirationInformation $_expirationInformation = null;
 
-	private function loadExpirationInfo() : void {
-		if ($this->expirationDate > 0) {
-			$timeNow = time();
-			$this->_expired = 0;
-			$timeToExpire = $this->expirationDate - $timeNow;
-			if ($timeToExpire <= 30 * 24 * 60 * 60) {
-				if ($timeToExpire <= 0) {
-					$this->_expired = 1;
-				}
-				$this->_expireClose = 1;
-			} else {
-				$this->_expireClose = 0;
-			}
-		} else {
-			$this->_expired = 0;
-			$this->_expireClose = 0;
+	private function getExpirationInformation() : ExpirationInformation {
+		if ($this->_expirationInformation === null) {
+			require_once ROOT_DIR . '/sys/User/ExpirationInformation.php';
+			$this->_expirationInformation = $this->loadIlsExpirationInformation() ?? $this->buildLocalExpirationInformation();
 		}
+		return $this->_expirationInformation;
+	}
+
+	private function loadIlsExpirationInformation() : ?ExpirationInformation {
+		if (empty($this->userId)) {
+			return null;
+		}
+		require_once ROOT_DIR . '/sys/Account/User.php';
+		$user = new User();
+		$user->id = $this->userId;
+		if (!$user->find(true) || !$user->hasIlsConnection()) {
+			return null;
+		}
+		return $user->getExpirationInformation();
+	}
+
+	private function buildLocalExpirationInformation() : ExpirationInformation {
+		$info = new ExpirationInformation();
+		$info->expirationDate = (int) ($this->expirationDate ?? 0);
+		return $info;
+	}
+
+	public function setRenewalWindowDays(int $days) : void {
+		$this->getExpirationInformation()->renewalWindowDays = $days;
 	}
 
 	public function isExpired() : bool {
-		if ($this->_expired === null) {
-			$this->loadExpirationInfo();
-		}
-		return $this->_expired;
+		return $this->getExpirationInformation()->isExpired();
 	}
 
 	public function isExpirationClose() : bool {
-		if ($this->_expireClose === null) {
-			$this->loadExpirationInfo();
-		}
-		return $this->_expireClose;
+		return $this->getExpirationInformation()->isExpirationClose();
 	}
 
 	public function expiresOn() : string {
-		return date('M j, Y', $this->expirationDate);
+		return $this->getExpirationInformation()->expiresOn();
 	}
 
 	//This is set and then returned as part of the toArray method
