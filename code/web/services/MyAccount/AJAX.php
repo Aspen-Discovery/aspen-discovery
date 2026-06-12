@@ -5463,40 +5463,6 @@ class MyAccount_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	private function addDonation($payment, $tempDonation) : Donation {
-		require_once ROOT_DIR . '/sys/Donations/Donation.php';
-		$donation = new Donation();
-		$donation->paymentId = $payment->id;
-		$donation->firstName = $tempDonation->firstName;
-		$donation->lastName = $tempDonation->lastName;
-		$donation->email = $tempDonation->email;
-		$donation->anonymous = $tempDonation->isAnonymous;
-		$donation->dedicate = $tempDonation->isDedicated;
-		if ($tempDonation->isDedicated == 1) {
-			$donation->dedicateType = $tempDonation->dedication->type;
-			$donation->honoreeFirstName = $tempDonation->dedication->honoreeFirstName;
-			$donation->honoreeLastName = $tempDonation->dedication->honoreeLastName;
-		}
-		$donation->shouldBeNotified = $tempDonation->shouldBeNotified;
-		if ($tempDonation->shouldBeNotified == 1) {
-			$donation->notificationFirstName = $tempDonation->notification->notificationFirstName;
-			$donation->notificationLastName = $tempDonation->notification->notificationLastName;
-			$donation->notificationAddress = $tempDonation->notification->notificationAddress;
-			$donation->notificationCity = $tempDonation->notification->notificationCity;
-			$donation->notificationState = $tempDonation->notification->notificationState;
-			$donation->notificationZip = $tempDonation->notification->notificationZip;
-		}
-		$donation->donateToLocationId = $tempDonation->donateToLocationId;
-		$donation->donateToLocation = $tempDonation->donateToLocation;
-		$donation->comments = $tempDonation->comments;
-		$donation->donationSettingId = $tempDonation->donationSettingId;
-		$donation->sendEmailToUser = 1;
-		$donation->insert();
-
-		return $donation;
-	}
-
-	/** @noinspection PhpUnused */
 	private function createGenericOrder($paymentType = '') {
 		$this->requireLoggedInUser(null, 'You must be signed in to pay fines, please sign in.');
 		$transactionDate = time();
@@ -6119,9 +6085,8 @@ class MyAccount_AJAX extends JSON_Action {
 					$payment,
 					,
 					,
-					$tempDonation,
+					$donation,
 				] = $result;
-				$this->addDonation($payment, $tempDonation);
 			} else {
 				[
 					,
@@ -6308,9 +6273,8 @@ class MyAccount_AJAX extends JSON_Action {
 					$payment,
 					,
 					,
-					$tempDonation,
+					$donation,
 				] = $result;
-				$this->addDonation($payment, $tempDonation);
 			} else {
 				[
 					,
@@ -6459,9 +6423,8 @@ class MyAccount_AJAX extends JSON_Action {
 					$payment,
 					$purchaseUnits,
 					$patron,
-					$tempDonation,
+					$donation,
 				] = $result;
-				$this->addDonation($payment, $tempDonation);
 			} else {
 				/** @noinspection PhpUnusedLocalVariableInspection */
 				[
@@ -6606,7 +6569,7 @@ class MyAccount_AJAX extends JSON_Action {
 					$payment,
 					$purchaseUnits,
 					$patron,
-					$tempDonation,
+					$donation,
 				] = $result;
 			} else {
 				[
@@ -6622,9 +6585,6 @@ class MyAccount_AJAX extends JSON_Action {
 			$proPaySetting->id = $paymentLibrary->proPaySettingId;
 			if ($proPaySetting->find(true)) {
 
-				if ($transactionType == 'donation') {
-					$donation = $this->addDonation($payment, $tempDonation);
-				}
 				$curlWrapper = new CurlWrapper();
 				$authorization = $proPaySetting->billerAccountId . ':' . $proPaySetting->authenticationToken;
 				$authorization = 'Basic ' . base64_encode($authorization);
@@ -6803,9 +6763,8 @@ class MyAccount_AJAX extends JSON_Action {
 					$payment,
 					$purchaseUnits,
 					$patron,
-					$tempDonation,
+					$donation,
 				] = $result;
-				$donation = $this->addDonation($payment, $tempDonation);
 			} else {
 				[
 					$paymentLibrary,
@@ -6890,9 +6849,8 @@ class MyAccount_AJAX extends JSON_Action {
 					$payment,
 					$purchaseUnits,
 					$patron,
-					$tempDonation,
+					$donation,
 				] = $result;
-				$donation = $this->addDonation($payment, $tempDonation);
 			} else {
 				[
 					$paymentLibrary,
@@ -6953,9 +6911,8 @@ class MyAccount_AJAX extends JSON_Action {
 					$payment,
 					$purchaseUnits,
 					$patron,
-					$tempDonation,
+					$donation,
 				] = $result;
-				$donation = $this->addDonation($payment, $tempDonation);
 			} else {
 				[
 					$paymentLibrary,
@@ -7022,9 +6979,8 @@ class MyAccount_AJAX extends JSON_Action {
 					$payment,
 					$purchaseUnits,
 					$patron,
-					$tempDonation,
+					$donation,
 				] = $result;
-				$donation = $this->addDonation($payment, $tempDonation);
 			} else {
 				[
 					$paymentLibrary,
@@ -7137,9 +7093,8 @@ class MyAccount_AJAX extends JSON_Action {
 					$payment,
 					$purchaseUnits,
 					$patron,
-					$tempDonation,
+					$donation,
 				] = $result;
-				$donation = $this->addDonation($payment, $tempDonation);
 			} else {
 				[
 					$paymentLibrary,
@@ -7528,9 +7483,8 @@ class MyAccount_AJAX extends JSON_Action {
 					$payment,
 					$purchaseUnits,
 					$patron,
-					$tempDonation,
+					$donation,
 				] = $result;
-				$donation = $this->addDonation($payment, $tempDonation);
 			} else {
 				[
 					$paymentLibrary,
