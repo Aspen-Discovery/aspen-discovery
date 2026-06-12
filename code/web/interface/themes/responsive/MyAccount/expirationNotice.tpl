@@ -1,5 +1,5 @@
 {strip}
-	{if $showExpirationWarnings && $ilsSummary->isExpirationClose()}
+	{if $showExpirationWarnings && ($ilsSummary->isExpirationClose() || $showRenewalLink)}
 		<div id="myAccountExpirationNotice">
 			<div class="alert alert-warning">
 				{if $ilsSummary->isExpired()}
