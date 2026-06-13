@@ -1094,100 +1094,53 @@ function loadModuleActionId() {
 		$allRecordModules .= '|' . $profile->recordUrlComponent;
 	}
 	$checkWebBuilderAliases = false;
-	if (preg_match("~(MyAccount)/([^/?]+)/([^/?]+)(\?.+)?~", $requestURI, $matches)) {
-		$_GET['module'] = $matches[1];
-		$_GET['id'] = $matches[3];
-		$_GET['action'] = $matches[2];
-		$_REQUEST['module'] = $matches[1];
-		$_REQUEST['id'] = $matches[3];
-		$_REQUEST['action'] = $matches[2];
-	} elseif (preg_match("~(MyAccount)/([^/?]+)(\?.+)?~", $requestURI, $matches)) {
-		$_GET['module'] = $matches[1];
-		$_GET['action'] = $matches[2];
-		$_REQUEST['id'] = '';
-		$_REQUEST['module'] = $matches[1];
-		$_REQUEST['action'] = $matches[2];
-		$_REQUEST['id'] = '';
-	} elseif (preg_match("~(MyAccount)/?~", $requestURI, $matches)) {
-		$_GET['module'] = $matches[1];
-		$_GET['action'] = 'Home';
-		$_REQUEST['id'] = '';
-		$_REQUEST['module'] = $matches[1];
-		$_REQUEST['action'] = 'Home';
-		$_REQUEST['id'] = '';
-	} elseif (preg_match('~/(Archive)/((?:[\\w\\d:]|%3A)+)/([^/?]+)~', $requestURI, $matches)) {
-		$_GET['module'] = $matches[1];
-		$_GET['id'] = urldecode($matches[2]); // Decodes colons % codes back into colons.
-		$_GET['action'] = $matches[3];
-		$_REQUEST['module'] = $matches[1];
-		$_REQUEST['id'] = urldecode($matches[2]);  // Decodes colons % codes back into colons.
-		$_REQUEST['action'] = $matches[3];
+	if (preg_match("~^/(MyAccount)/([^/?]+)/([^/?]+)(\?.+)?~", $requestURI, $matches)) {
+		setRoute($matches[1], $matches[2], $matches[3]);
+	} elseif (preg_match("~^/(MyAccount)/([^/?]+)(\?.+)?~", $requestURI, $matches)) {
+		setRoute($matches[1], $matches[2]);
+		setEmptyRouteId();
+	} elseif (preg_match("~^/(MyAccount)/?~", $requestURI, $matches)) {
+		setRoute($matches[1]);
+		setEmptyRouteId();
+	} elseif (preg_match('~^/(Archive)/((?:[\\w\\d:]|%3A)+)/([^/?]+)~', $requestURI, $matches)) {
+		setRoute($matches[1], $matches[3], urldecode($matches[2])); // Decodes colons % codes back into colons.
 		//Redirect things /GroupedWork/AJAX to the proper action
-	} elseif (preg_match("~($allRecordModules)/([a-zA-Z]+)(?:\?|/?$)~", $requestURI, $matches)) {
-		$_GET['module'] = $matches[1];
-		$_GET['action'] = $matches[2];
-		$_REQUEST['module'] = $matches[1];
-		$_REQUEST['action'] = $matches[2];
+	} elseif (preg_match("~^/($allRecordModules)/([a-zA-Z]+)(?:\?|/?$)~", $requestURI, $matches)) {
+		setRoute($matches[1], $matches[2]);
 		//Redirect things /Record/.b3246786/Home to the proper action
 		//Also things like /OverDrive/84876507-043b-b3ce-2930-91af93d2a4f0/Home
-	} elseif (preg_match("~($allRecordModules)/([^/?]+?)/([^/?]+)~", $requestURI, $matches)) {
+	} elseif (preg_match("~^/($allRecordModules)/([^/?]+?)/([^/?]+)~", $requestURI, $matches)) {
 		//Getting some weird cases where the action is replaced with an email address for uintah.
 		//As a workaround, if the action looks like an email, change it to Home
-		if (preg_match('/^[A-Z0-9][A-Z0-9._%+-]{0,63}@(?:[A-Z0-9-]{1,63}\.){1,8}[A-Z]{2,63}$/i', $matches[3])) {
+		if (preg_match('/[A-Z0-9][A-Z0-9._%+-]{0,63}@(?:[A-Z0-9-]{1,63}\.){1,8}[A-Z]{2,63}$/i', $matches[3])) {
 			$requestURI = str_replace($matches[3], 'Home', $requestURI);
 			header('Location: ' . $requestURI);
 			die();
 		}
-		$_GET['module'] = $matches[1];
-		$_GET['id'] = $matches[2];
-		$_GET['action'] = $matches[3];
-		$_REQUEST['module'] = $matches[1];
-		$_REQUEST['id'] = $matches[2];
-		$_REQUEST['action'] = $matches[3];
+		setRoute($matches[1], $matches[3], $matches[2]);
 		//Redirect things /Record/.b3246786 to the proper action
-	} elseif (preg_match("~($allRecordModules)/([^/?]+?)(?:\?|/?$)~", $requestURI, $matches)) {
-		$_GET['module'] = $matches[1];
-		$_GET['id'] = $matches[2];
-		$_GET['action'] = 'Home';
-		$_REQUEST['module'] = $matches[1];
-		$_REQUEST['id'] = $matches[2];
-		$_REQUEST['action'] = 'Home';
-	} elseif (preg_match("~(Authentication)/(OAuth2)/([^/?]+)~", $requestURI, $matches)) {
-		$_GET['module'] = $matches[1];
-		$_GET['action'] = 'OAuth2_' . $matches[3]; // OAuth2_Authorize or OAuth2_Token
-		$_REQUEST['module'] = $matches[1];
-		$_REQUEST['action'] = 'OAuth2_' . $matches[3];
-	} elseif (preg_match("~/(\.well-known)/([^/?]+)~", $requestURI, $matches)) {
+	} elseif (preg_match("~^/($allRecordModules)/([^/?]+?)(?:\?|/?$)~", $requestURI, $matches)) {
+		setRoute($matches[1], 'Home', $matches[2]);
+	} elseif (preg_match("~^/(Authentication)/(OAuth2)/([^/?]+)~", $requestURI, $matches)) {
+		setRoute($matches[1], 'OAuth2_' . $matches[3]); // OAuth2_Authorize or OAuth2_Token
+	} elseif (preg_match("~^/(\.well-known)/([^/?]+)~", $requestURI, $matches)) {
 		// Map well-known requests to appropriate OAuth2/OIDC endpoints
 		$wellKnownType = $matches[2];
-		$_GET['module'] = 'Authentication';
-		$_REQUEST['module'] = 'Authentication';
+		$action = $wellKnownType === 'jwks.json' ? 'OAuth2_JWKS' : 'OAuth2_Discovery';
 
-		// Route to appropriate OIDC endpoint based on well-known type
-		if ($wellKnownType === 'jwks.json') {
-			$_GET['action'] = 'OAuth2_JWKS';
-			$_REQUEST['action'] = 'OAuth2_JWKS';
-		} else {
-			// Default to Discovery endpoint (handles openid-configuration)
-			$_GET['action'] = 'OAuth2_Discovery';
-			$_REQUEST['action'] = 'OAuth2_Discovery';
-		}
-	} elseif (preg_match("~([^/?]+)/([^/?]+)~", $requestURI, $matches)) {
-		$_GET['module'] = $matches[1];
-		$_GET['action'] = $matches[2];
-		$_REQUEST['module'] = $matches[1];
-		$_REQUEST['action'] = $matches[2];
+		setRoute('Authentication', $action);
+	} elseif (preg_match("~^/([^/?]+)/([^/?]+)~", $requestURI, $matches)) {
+		setRoute($matches[1], $matches[2]);
 		if (!file_exists(ROOT_DIR . '/services/' . $_REQUEST['module'] . '/' . $_REQUEST['action'] . '.php')) {
 			$checkWebBuilderAliases = true;
 		}
-	} elseif (preg_match("~([^/?]+)~", $requestURI, $matches)) {
-		$_GET['module'] = $matches[1];
-		$_GET['action'] = 'Home';
-		$_REQUEST['module'] = $matches[1];
-		$_REQUEST['action'] = 'Home';
+	} elseif (preg_match("~^/([^/?]+)~", $requestURI, $matches)) {
+		setRoute($matches[1]);
 		if (!file_exists(ROOT_DIR . '/services/' . $_REQUEST['module'] . '/' . $_REQUEST['action'] . '.php')) {
 			$checkWebBuilderAliases = true;
 		}
+	}else{
+		$checkWebBuilderAliases = true;
 	}
 
 	global $plugins;
@@ -1673,4 +1626,21 @@ function trackSpammyRequest() : void {
 			}
 		}
 	}
+}
+
+function setRoute(string $module, string $action = 'Home', ?string $id = null): void {
+	$_GET['module'] = $module;
+	$_GET['action'] = $action;
+
+	$_REQUEST['module'] = $module;
+	$_REQUEST['action'] = $action;
+
+	if ($id !== null) {
+		$_GET['id'] = $id;
+		$_REQUEST['id'] = $id;
+	}
+}
+
+function setEmptyRouteId(): void {
+	$_REQUEST['id'] = '';
 }

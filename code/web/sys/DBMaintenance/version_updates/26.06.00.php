@@ -241,6 +241,14 @@ function getUpdates26_06_00(): array {
 				'ALTER TABLE series ADD COLUMN version TINYINT default 1',
 			]
 		], //series_columns
+		'series_add_indexes' => [
+			'title' => 'Add indexes to improve series indexing',
+			'description' => 'Add indexes to improve series indexing',
+			'sql' => [
+				'ALTER TABLE series ADD INDEX seriesPermanentId(seriesPermanentId)',
+				'ALTER TABLE series_member ADD INDEX series_work_volume(seriesId, groupedWorkPermanentId, volume, userAdded)',
+			]
+		], //series_permanent_id_index
 		'series_setting_version' => [
 			'title' => 'Add Column in Series Indexing Settings Table',
 			'description' => 'Add column in series settings indexing table for version',
