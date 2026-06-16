@@ -112,20 +112,18 @@
 			</div>
 
 			{if empty($viewingCombinedResults)}
-				{if (!empty($externalUrl))}
+				{if (!empty($directLinkUrl))}
 					<div class="col-tn-8 col-xs-8 col-md-4 col-lg-3">
 						<div class="btn-toolbar">
 							<div class="btn-group btn-group-vertical btn-block">
-								<a href="{$externalUrl}" class="btn btn-sm btn-action btn-wrap" target="_blank" aria-label="{translate text="Access Online" isPublicFacing=true inAttribute=true} ({translate text="opens in a new window" isPublicFacing=true inAttribute=true})"><i class="fas fa-external-link-alt" role="presentation"></i> {translate text="Access Online" isPublicFacing=true}</a>
+								<a href="{$directLinkUrl}" class="btn btn-sm btn-action btn-wrap" target="_blank" aria-label="{translate text="View Article" isPublicFacing=true inAttribute=true} ({translate text="opens in a new window" isPublicFacing=true inAttribute=true})"><i class="fas fa-external-link-alt" role="presentation"></i> {translate text="View Article" isPublicFacing=true}</a>
 							</div>
 						</div>
 					</div>
 				{/if}
 
-				<div class="row">
-					<div class="col-xs-12">
-						{include file='CloudSource/result-tools-horizontal.tpl' recordUrl=$summUrl showMoreInfo=true}
-					</div>
+				<div class="col-xs-12">
+					{include file='CloudSource/result-tools-horizontal.tpl' recordUrl=$summUrl showMoreInfo=true}
 				</div>
 			{/if}
 		</div>

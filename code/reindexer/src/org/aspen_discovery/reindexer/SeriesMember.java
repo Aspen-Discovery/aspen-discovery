@@ -3,6 +3,7 @@ package org.aspen_discovery.reindexer;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.Normalizer;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Set;
 
@@ -17,7 +18,7 @@ public class SeriesMember {
 	@SuppressWarnings("FieldCanBeLocal")
 	private final String seriesLanguage;
 	//A list of volumes found in the database with a flag for if it was found in the current index
-	private final HashMap<String, Boolean> volumes = new HashMap<>();
+	private final HashMap<String, SeriesMemberVolume> volumes = new HashMap<>();
 	private boolean isIndexed;
 	private final int priorityScore;
 	private int version;
@@ -33,7 +34,7 @@ public class SeriesMember {
 		this.groupedWorkSeriesTitle = seriesMemberRS.getString("groupedWorkSeriesTitle");
 		this.author = seriesMemberRS.getString("author");
 		this.seriesLanguage = seriesMemberRS.getString("seriesLanguage");
-		this.volumes.put(seriesMemberRS.getString("volume"), false);
+		this.volumes.put(seriesMemberRS.getString("volume"), new SeriesMemberVolume(seriesMemberRS.getString("volume"), seriesMemberRS.getBoolean("deleted"), seriesMemberRS.getBoolean("userAdded")));
 		this.priorityScore =  seriesMemberRS.getInt("priorityScore");
 		this.isIndexed = seriesMemberRS.getBoolean("isIndexed");
 		this.version = seriesMemberRS.getInt("version");
@@ -119,8 +120,19 @@ public class SeriesMember {
 		return volumes.keySet();
 	}
 
+	public Collection<SeriesMemberVolume> getSeriesVolumes() {
+		return volumes.values();
+	}
+
 	public void setVolumeFoundInIndex(String volumeId) {
-		this.volumes.put(volumeId, true);
+		if (this.volumes.containsKey(volumeId)) {
+			this.volumes.get(volumeId).setFoundInIndex(true);
+		}else{
+			SeriesMemberVolume volume = new SeriesMemberVolume();
+			volume.setVolume(volumeId);
+			volume.setFoundInIndex(true);
+			this.volumes.put(volumeId, volume);
+		}
 	}
 
 	public boolean isIndexed() {
@@ -139,8 +151,8 @@ public class SeriesMember {
 		this.version = version;
 	}
 
-	public void addVolume(String volume) {
-		this.volumes.put(volume, false);
+	public void addVolume(String volume, boolean deleted, boolean userAdded) {
+		this.volumes.put(volume, new SeriesMemberVolume(volume, deleted, userAdded));
 	}
 
 	public boolean isDeleted() {
@@ -164,7 +176,7 @@ public class SeriesMember {
 	}
 
 	public boolean volumeFoundInIndex(String volume) {
-		return this.volumes.get(volume);
+		return this.volumes.get(volume).isFoundInIndex();
 	}
 
 	@SuppressWarnings("unused")

@@ -145,11 +145,15 @@ class UInterface extends Smarty {
 			$scheduledStart = $systemVariables->scheduledOfflineStart ?? 0;
 			$scheduledEnd   = $systemVariables->scheduledOfflineEnd   ?? 0;
 
-			$inScheduledWindow = $scheduledStart && $scheduledEnd
-				&& $now >= $scheduledStart
-				&& $now <= $scheduledEnd;
+			if ($scheduledEnd != 0) {
+				$inScheduledWindow = $scheduledStart && $scheduledEnd
+					&& $now >= $scheduledStart
+					&& $now <= $scheduledEnd;
+			} else {
+				$inScheduledWindow = $scheduledStart && $now >= $scheduledStart;
+			}
 
-			if (!empty($scheduledStart) && !empty($scheduledEnd)) {
+			if (!empty($scheduledStart)) {
 				if ($inScheduledWindow) {
 					$systemVariables->catalogStatus = 1;
 					if ($systemVariables->scheduledEcontentAccess) {

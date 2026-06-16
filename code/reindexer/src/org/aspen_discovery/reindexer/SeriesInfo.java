@@ -91,6 +91,8 @@ public class SeriesInfo {
 			seriesLanguage = "unk";
 		}
 		this.language = seriesLanguage;
+		this.key = null;
+		this.permanentId = null;
 	}
 
 	public int getPriorityScore() {

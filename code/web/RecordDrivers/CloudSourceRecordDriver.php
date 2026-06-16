@@ -192,6 +192,7 @@ class CloudSourceRecordDriver extends RecordInterface {
 		$interface->assign('summFormats', $formats);
 		$interface->assign('summUrl', $this->getLinkUrl(false, $redirectUrl));
 		$interface->assign('externalUrl', $redirectUrl);
+		$interface->assign('directLinkUrl', $this->getAbsoluteUrl());
 		$interface->assign('summTitle', $this->getTitle());
 		$interface->assign('summAuthor', $this->getAuthor());
 		$interface->assign('summPublicationDates', $this->getPublicationDate());

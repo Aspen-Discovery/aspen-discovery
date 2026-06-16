@@ -40,6 +40,10 @@ class EmailTemplate extends DataObject {
 				'campaignComplete' => 'Campaign Complete',
 				'milestoneComplete' => 'Milestone Complete',
 				'staffCampaignComplete' => 'Campaign Complete Staff Alert',
+			];
+		}
+		if (in_array('Events', $enabledModules)) {
+			$availableTemplates += [
 				'registerForEventFromWaitingList' => 'Register for Event From Waiting List',
 				'eventWaitingListInviteExpired' => 'Waiting List Invitation Expired',
 				'eventCancellationRegistered' => 'Cancellation of an Event (Registered Patron)',

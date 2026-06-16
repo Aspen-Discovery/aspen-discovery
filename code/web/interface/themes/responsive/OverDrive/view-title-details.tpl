@@ -77,7 +77,15 @@
 			<div class="result-value col-sm-8 col-xs-12">
 				{math equation="floor(x/60)" x=$recordDriver->getDuration() assign="hours"}
 				{math equation="x%60" x=$recordDriver->getDuration() assign="minutes"}
-				{translate text='%1% hours %2% minutes' 1=$hours 2=$minutes isPublicFacing=true}
+				{if $hours != 0 && $minutes != 0}
+					{translate text='%1% hours %2% minutes' 1=$hours 2=$minutes isPublicFacing=true}
+				{else}
+					{if $hours == 0}
+						{translate text='Duration is %2% minutes' 2=$minutes isPublicFacing=true}<br/>
+					{else}
+						{translate text='Duration is %1% hours' 1=$hours isPublicFacing=true}<br/>
+					{/if}
+				{/if}
 			</div>
 		</div>
 	{/if}

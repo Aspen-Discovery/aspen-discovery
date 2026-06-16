@@ -385,8 +385,8 @@ class HooplaProcessor2 {
 					String translatedLanguage = StringUtils.capitalize(rawResponse.getString("dubLanguage").toLowerCase());
 					translatedLanguages.add(translatedLanguage);
 				}
-				if (rawResponse.has("SubTitleLanguage")) {
-					String translatedLanguage = StringUtils.capitalize(rawResponse.getString("SubTitleLanguage").toLowerCase());
+				if (rawResponse.has("subtitleLanguage")) {
+					String translatedLanguage = StringUtils.capitalize(rawResponse.getString("subtitleLanguage").toLowerCase());
 					translatedLanguages.add(translatedLanguage);
 				}
 				groupedWork.setTranslations(translatedLanguages);

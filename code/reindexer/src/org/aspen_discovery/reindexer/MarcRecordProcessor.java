@@ -461,10 +461,9 @@ abstract class MarcRecordProcessor {
 					//Separate out the volume so we can link specially
 					volume = seriesField.getSubfield('v').getData();
 				}
+
+				//490 does not have a series author field
 				String seriesAuthor = "";
-				if (seriesField.getSubfield('a') != null) {
-					seriesAuthor = seriesField.getSubfield('a').getData();
-				}
 				groupedWork.addSeriesWithVolume(series, seriesAuthor, volume, 1, true);
 			}
 		}

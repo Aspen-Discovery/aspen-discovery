@@ -247,7 +247,11 @@ class SeriesRecordDriver extends IndexRecordDriver {
 		if ($this->seriesObject == null) {
 			require_once ROOT_DIR . '/sys/Series/Series.php';
 			$this->seriesObject = new Series();
-			$this->seriesObject->id = $this->getId();
+			if (is_numeric($this->getId())) {
+				$this->seriesObject->id = $this->getId();
+			}else{
+				$this->seriesObject->seriesPermanentId = $this->getId();
+			}
 			if (!$this->seriesObject->find(true)) {
 				$this->seriesObject = false;
 			}
