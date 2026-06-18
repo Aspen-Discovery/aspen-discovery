@@ -444,6 +444,7 @@ class UInterface extends Smarty {
 			}
 
 			$this->assign('fullWidthTheme', $theme->fullWidth);
+			$this->assign('fullWidthContent', $theme->fullWidthContent);
 			$this->assign('coverStyle', $theme->coverStyle);
 
 			$browseCategoryLayoutStyle = "masonry";
@@ -1111,6 +1112,7 @@ class UInterface extends Smarty {
 
 			$this->assign('parentTheme', $theme->getParentTheme());
 			$this->assign('fullWidthTheme', $theme->fullWidth);
+			$this->assign('fullWidthContent', $theme->fullWidthContent);
 			$this->assign('coverStyle', $theme->coverStyle);
 
 			$browseCategoryLayoutStyle = 'masonry';
