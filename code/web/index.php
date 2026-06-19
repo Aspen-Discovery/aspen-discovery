@@ -17,6 +17,9 @@ global $memoryWatcher;
 //Do additional tasks that are only needed when running the full website
 loadModuleActionId();
 $timer->logTime("Loaded Module and Action Id");
+
+// Set Cloudflare Rate Limit complexity header based on endpoint weight
+setCloudflareComplexityHeader();
 $memoryWatcher->logMemory("Loaded Module and Action Id");
 initializeSession();
 $timer->logTime("Initialized session");
@@ -1646,4 +1649,69 @@ function setRoute(string $module, string $action = 'Home', ?string $id = null): 
 
 function setEmptyRouteId(): void {
 	$_REQUEST['id'] = '';
+=======
+/**
+ * Set Cloudflare Rate Limit complexity header based on endpoint weight.
+ *
+ * This enables per-endpoint rate limiting in Cloudflare WAF Rate Limiting Rules.
+ * High-complexity endpoints (search, AJAX) get higher scores so they consume
+ * more of a client's rate limit budget.
+ *
+ * Configured via [Security] section in config.ini:
+ *   enableComplexityHeader  = true/false
+ *   complexityHeaderName    = x-complexity-score
+ *
+ * To add new endpoint weights, add a new case block below.
+ *
+ * @see https://developers.cloudflare.com/waf/rate-limiting-rules/
+ */
+function setCloudflareComplexityHeader(): void {
+	global $configArray;
+
+	// Bail early if feature is disabled
+	if (empty($configArray['Security']['enableComplexityHeader'])) {
+		return;
+	}
+
+	$headerName = $configArray['Security']['complexityHeaderName'] ?: 'x-complexity-score';
+	$uri = $_SERVER['REQUEST_URI'] ?? '/';
+
+	// Match the URI to a weight bucket. Add new cases here to extend.
+	$complexity = matchEndpointWeight($uri);
+
+	header("$headerName: $complexity");
+}
+
+/**
+ * Map a request URI to a complexity weight score.
+ *
+ * Add new case blocks here to cover additional endpoints.
+ *
+ * @param string $uri The request URI (e.g. /Search/Results?page=2)
+ * @return int The complexity weight (default 1)
+ */
+function matchEndpointWeight(string $uri): int {
+	switch (true) {
+		// Score: 25 - Heavy search result pages
+		case preg_match('#^/Search/Results(?:\?|/|$)#', $uri):
+		case preg_match('#^/Union/Search(?:\?|/|$)#', $uri):
+			return 25;
+
+		// Score: 20 - AJAX/API search endpoints
+		case preg_match('#^/Search/AJAX(?:\?|/|$)#', $uri):
+		case preg_match('#^/API/SearchAPI(?:\?|/|$)#', $uri):
+			return 20;
+
+		// Score: 15 - GroupedWork detail and AJAX endpoints
+		case preg_match('#^/GroupedWork/[0-9]+/(?:Home|AJAX)(?:\?|/|$)#', $uri):
+			return 15;
+
+		// Score: 10 - Record detail and Author home pages
+		case preg_match('#^/Record/[0-9]+(?:\?|/|$)#', $uri):
+		case preg_match('#^/Author/Home(?:\?|/|$)#', $uri):
+			return 10;
+	}
+
+	// Default: lightweight pages (static content, home page, etc.)
+	return 1;
 }
