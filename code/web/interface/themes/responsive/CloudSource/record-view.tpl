@@ -150,7 +150,13 @@
 			</ul>
 		</div>
 		<div class="col-tn-4" style="display:flex; justify-content:center;">
-
+			{if (!empty($directLinkUrl))}
+				<div class="btn-toolbar">
+					<div class="btn-group btn-group-vertical btn-block">
+						<a href="{$directLinkUrl}" class="btn btn-sm btn-action btn-wrap" target="_blank" aria-label="{translate text="View Article" isPublicFacing=true inAttribute=true} ({translate text="opens in a new window" isPublicFacing=true inAttribute=true})"><i class="fas fa-external-link-alt" role="presentation"></i> {translate text="View Article" isPublicFacing=true}</a>
+					</div>
+				</div>
+			{/if}
 		</div>
 		</div>
 		{*column for tool buttons & event description*}

@@ -447,7 +447,7 @@ abstract class MarcRecordProcessor {
 		seriesFields = MarcUtil.getDataFields(record, 490);
 		for (DataField seriesField : seriesFields){
 			// Include only uncontrolled series from 490, since controlled will also be in 800/830
-			if (seriesField.getIndicator1() == '0') {
+			if (seriesField.getIndicator1() == '0' || seriesField.getIndicator1() == ' ') {
 				String series = AspenStringUtils.trimTrailingPunctuation(MarcUtil.getSpecifiedSubfieldsAsString(seriesField, "a", " ")).toString();
 				//Remove anything in parentheses since it's normally just the format
 				//series = series.replaceAll("\\s+\\(.*?\\)", "");
@@ -461,10 +461,9 @@ abstract class MarcRecordProcessor {
 					//Separate out the volume so we can link specially
 					volume = seriesField.getSubfield('v').getData();
 				}
+
+				//490 does not have a series author field
 				String seriesAuthor = "";
-				if (seriesField.getSubfield('a') != null) {
-					seriesAuthor = seriesField.getSubfield('a').getData();
-				}
 				groupedWork.addSeriesWithVolume(series, seriesAuthor, volume, 1, true);
 			}
 		}

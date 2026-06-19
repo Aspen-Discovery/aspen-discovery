@@ -32,6 +32,21 @@ function getUpdates26_06_00(): array {
 				'ALTER TABLE user_app_request_log CHANGE COLUMN method method VARCHAR(75) NOT NULL',
 			]
 		], //increase_method_length_in_app_request_log
+		'series_allow_indexing_490_0' => [
+			'title' => 'Allow Indexing of Series using 490 with first indicator 0',
+			'description' => 'Allow indexing of Series using 490 with first indicator 0',
+			'sql' => [
+				'ALTER TABLE series_indexing_settings ADD COLUMN include490_0 TINYINT(1) DEFAULT 0',
+			]
+		],
+		'add_solr_indexing_options' => [
+			'title' => 'Add solr indexing options',
+			'description' => 'Add solr indexing options',
+			'sql' => [
+				'ALTER TABLE system_variables ADD COLUMN solrThreadCount INT UNSIGNED NOT NULL DEFAULT 1',
+				'ALTER TABLE system_variables ADD COLUMN solrQueueSize INT UNSIGNED NOT NULL DEFAULT 25',
+			]
+		],
 
 		//kirstien
 		'addForceReadingHistoryOptIn' => [
@@ -241,6 +256,14 @@ function getUpdates26_06_00(): array {
 				'ALTER TABLE series ADD COLUMN version TINYINT default 1',
 			]
 		], //series_columns
+		'series_add_indexes' => [
+			'title' => 'Add indexes to improve series indexing',
+			'description' => 'Add indexes to improve series indexing',
+			'sql' => [
+				'ALTER TABLE series ADD INDEX seriesPermanentId(seriesPermanentId)',
+				'ALTER TABLE series_member ADD INDEX series_work_volume(seriesId, groupedWorkPermanentId, volume, userAdded)',
+			]
+		], //series_permanent_id_index
 		'series_setting_version' => [
 			'title' => 'Add Column in Series Indexing Settings Table',
 			'description' => 'Add column in series settings indexing table for version',

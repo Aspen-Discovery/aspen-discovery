@@ -25,7 +25,7 @@
 						{math equation="floor(x/60)" x=$relatedRecord->duration assign="hours"}
 						{math equation="x%60" x=$relatedRecord->duration assign="minutes"}
 
-						<div class="row"><div class="result-label col-lg-5 col-tn-12">{translate text="Duration" isPublicFacing=true}</div><div class="result-value col-lg-7 col-tn-12"> <a href="{$relatedRecord->getUrl()}">{$hours} hours {$minutes} minutes</a></div></div>
+						<div class="row"><div class="result-label col-lg-5 col-tn-12">{translate text="Duration" isPublicFacing=true}</div><div class="result-value col-lg-7 col-tn-12"> <a href="{$relatedRecord->getUrl()}">{if $hours != 0}{$hours} hours{/if} {if $minutes !=0}{$minutes} minutes{/if}</a></div></div>
 					{/if}
 					{if !empty($relatedRecord->languageNote)}
 						<div class="row"><div class="result-label col-lg-5 col-tn-12">{translate text="Language" isPublicFacing=true}</div><div class="result-value col-lg-7 col-tn-12"> <a href="{$relatedRecord->getUrl()}">{$relatedRecord->physical}</a></div></div>

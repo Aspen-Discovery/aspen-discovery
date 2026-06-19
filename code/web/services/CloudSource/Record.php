@@ -32,6 +32,7 @@ class CloudSource_Record extends Action {
 		$interface->assign('record', $record);
 
 		$patronUrl = (new CloudSourceRecordDriver($id))->getPatronURL(true);
+		$interface->assign('directLinkUrl', $this->recordDriver->getAbsoluteUrl());
 
 		$interface->assign('patronUrl', $patronUrl);
 

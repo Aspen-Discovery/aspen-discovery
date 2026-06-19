@@ -6,6 +6,8 @@ class SeriesIndexingSettings extends DataObject {
 	public $__table = 'series_indexing_settings';    // table name
 	public $id;
 	public $version; //TODO: We should prevent going backwards
+	/** @noinspection PhpUnused */
+	public $include490_0;
 	public $runFullUpdate;
 	public $truncateForVersionSwitch;
 	/** @noinspection PhpUnused */
@@ -36,6 +38,13 @@ class SeriesIndexingSettings extends DataObject {
 				'description' => 'Determine which version of indexing is used for series',
 				'forcesSeriesTruncation' => true,
 				'default' => 1,
+			],
+			'include490_0' => [
+				'property' => 'include490_0',
+				'type' => 'checkbox',
+				'label' => 'Include 490 with first indicator of 0',
+				'description' => 'Include 490 with first indicator of 0 when creating series',
+				'default' => 0,
 			],
 			'truncateForVersionSwitch' => [
 				'property' => 'truncateForVersionSwitch',

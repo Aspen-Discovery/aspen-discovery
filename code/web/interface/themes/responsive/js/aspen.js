@@ -12444,7 +12444,8 @@ AspenDiscovery.GroupedWork = (function(){
 
 			var params = {
 				'method':'getMoreLikeThis',
-				'format':format
+				'format': format,
+				'requestUrl' : encodeURIComponent(window.location.href)
 			};
 
 			if (forceReload !== undefined) {
@@ -12620,10 +12621,16 @@ AspenDiscovery.GroupedWork = (function(){
 		},
 
 
-		showGroupedWorkInfo:function(id, browseCategoryId){
+		showGroupedWorkInfo:function(id, browseCategoryId, format, requestSource){
 			var url = Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX?method=getWorkInfo";
 			if (browseCategoryId !== undefined){
 				url += "&browseCategoryId=" + browseCategoryId;
+			}
+			if (format !== undefined){
+				url += "&format=" + format;
+			}
+			if (requestSource !== undefined){
+				url += "&requestSource=" + requestSource;
 			}
 			AspenDiscovery.loadingMessage();
 			$.getJSON(url, function(data){

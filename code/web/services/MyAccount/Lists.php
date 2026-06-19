@@ -13,7 +13,10 @@ class Lists extends MyAccount {
 		$userLists = new UserList();
 		$userLists->user_id = UserAccount::getActiveUserId();
 		$userLists->deleted = "0";
-		$sort = $_REQUEST['sort'] ?? 'title';
+		$sort = $_REQUEST['sort'];
+		if (!in_array($sort, ['title', 'created', 'dateUpdated'], true)) {
+			$sort = 'title';
+		}
 		if (($sort == 'dateCreated') || ($sort == 'created') || ($sort == 'dateUpdated')) {
 			$order = ' DESC';
 		} else {

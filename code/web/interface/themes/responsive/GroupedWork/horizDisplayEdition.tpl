@@ -14,12 +14,29 @@
 					{if $multipleDurations == false}
 						{math equation="floor(x/60)" x=$duration assign="hours"}
 						{math equation="x%60" x=$duration assign="minutes"}
-						{translate text='Duration is %1% hours %2% minutes' 1=$hours 2=$minutes isPublicFacing=true}<br/>
+						{if $hours != 0 && $minutes != 0}
+							{translate text='Duration is %1% hours %2% minutes' 1=$hours 2=$minutes isPublicFacing=true}<br/>
+						{else}
+							{if $hours == 0}
+								{translate text='Duration is %2% minutes' 2=$minutes isPublicFacing=true}<br/>
+								{else}
+								{translate text='Duration is %1% hours' 1=$hours isPublicFacing=true}<br/>
+							{/if}
+						{/if}
+
 					{else}
 						{if $withinOneHour == true}
 							{math equation="floor(x/60)" x=$duration assign="hours"}
 							{math equation="x%60" x=$duration assign="minutes"}
-							{translate text='Duration is approximately %1% hours %2% minutes' 1=$hours 2=$minutes isPublicFacing=true}. <a href="javascript:void(0)" onclick="AspenDiscovery.GroupedWork.showAllEditionsForVariation('{$workId}', '{$format}', '{$variationId}')">{translate text='See editions' isPublicFacing=true}</a> <br>
+							{if $hours != 0 && $minutes != 0}
+								{translate text='Duration is approximately %1% hours %2% minutes' 1=$hours 2=$minutes isPublicFacing=true}. <a href="javascript:void(0)" onclick="AspenDiscovery.GroupedWork.showAllEditionsForVariation('{$workId}', '{$format}', '{$variationId}')">{translate text='See editions' isPublicFacing=true}</a> <br>
+							{else}
+								{if $hours == 0}
+									{translate text='Duration is approximately %2% minutes' 1=$hours 2=$minutes isPublicFacing=true}. <a href="javascript:void(0)" onclick="AspenDiscovery.GroupedWork.showAllEditionsForVariation('{$workId}', '{$format}', '{$variationId}')">{translate text='See editions' isPublicFacing=true}</a> <br>
+								{else}
+									{translate text='Duration is approximately %1% hours' 1=$hours 2=$minutes isPublicFacing=true}. <a href="javascript:void(0)" onclick="AspenDiscovery.GroupedWork.showAllEditionsForVariation('{$workId}', '{$format}', '{$variationId}')">{translate text='See editions' isPublicFacing=true}</a> <br>
+								{/if}
+							{/if}
 						{else}
 							<a href="javascript:void(0)" onclick="AspenDiscovery.GroupedWork.showAllEditionsForVariation('{$workId}', '{$format}', '{$variationId}')">{translate text='Duration varies, see editions' isPublicFacing=true}</a> <br>
 						{/if}

@@ -1048,12 +1048,26 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 	void setLanguages(HashSet<String> languages) {
 		this.languages.addAll(languages);
 		if (this.primaryLanguage == null) {
-			this.primaryLanguage = languages.iterator().next();
+			setPrimaryLanguage(languages.iterator().next());
 		}
 	}
 
 	void setPrimaryLanguage(String primaryLanguage) {
 		this.primaryLanguage = primaryLanguage;
+		//Check to see if we have any unknown series and if so, update the language
+		Iterator<SeriesInfo> seriesIterator = series.values().iterator();
+		ArrayList<SeriesInfo> seriesToAdd = new ArrayList<>();
+		while (seriesIterator.hasNext()) {
+			SeriesInfo seriesInfo = seriesIterator.next();
+			if (seriesInfo.getLanguage() == null || seriesInfo.getLanguage().equals("unk")) {
+				seriesIterator.remove();
+				seriesInfo.setLanguage(primaryLanguage, groupedWorkIndexer);
+				seriesToAdd.add(seriesInfo);
+			}
+		}
+		for (SeriesInfo seriesToAddObj : seriesToAdd) {
+			series.put(seriesToAddObj.getKey(), seriesToAddObj);
+		}
 	}
 
 	void setTranslations(HashSet<String> translations) {

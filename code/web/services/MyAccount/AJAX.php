@@ -10414,7 +10414,13 @@ class MyAccount_AJAX extends JSON_Action {
 		$this->requireLoggedInUser();
 		global $interface;
 
+		$user = UserAccount::getLoggedInUser();
+		$activeMethods = explode(',', $user->twoFactorMethod);
 		$methodToCancel = $_REQUEST['type'];
+		$willHave2FAActiveAfterRemoval = count($activeMethods) > 1;
+		$interface->assign('willHave2FAActiveAfterRemoval', $willHave2FAActiveAfterRemoval);
+		$interface->assign('methodToCancel', $methodToCancel);
+
 		// on submit of button, update user table for (un)enrollment status
 		return [
 			'success' => true,

@@ -60,86 +60,87 @@ class UserAccount {
 	}
 
 	public static function get2FAMethodStatus(): array {
-		global $library;
-		require_once ROOT_DIR . '/sys/TwoFactorAuthSetting.php';
-		$twoFactorAuthSetting = new TwoFactorAuthSetting();
-		$twoFactorAuthSetting->id = $library->twoFactorAuthSettingId;
-		if ($twoFactorAuthSetting->find(true)) {
-			$user = UserAccount::getActiveUserObj();
-			$userTwoFactorMethods = ($user->twoFactorMethod ?? '');
+		$activeLibrary = null;
+		$user = UserAccount::getActiveUserObj();
+		if ($user !== null) {
 
-			$setupMethods = array_values(array_filter(array_map('trim', explode(',', $userTwoFactorMethods)), static function ($method) {
-				return $method !== '';
-			}));
+			$twoFactorAuthSetting = $user->getTwoFactorAuthenticationSetting();
+			if ($twoFactorAuthSetting != null) {
+				$userTwoFactorMethods = ($user->twoFactorMethod ?? '');
 
-			$allowEmail = (int)$twoFactorAuthSetting->allowEmail === 1;
-			$allowTotp = (int)$twoFactorAuthSetting->allowTotp === 1;
+				$setupMethods = array_values(array_filter(array_map('trim', explode(',', $userTwoFactorMethods)), static function ($method) {
+					return $method !== '';
+				}));
 
-			$validMethods = [
-				'email',
-				'totp'
-			];
-			$setupMethods = array_values(array_unique(array_filter($setupMethods, static function ($method) use ($validMethods) {
-				return in_array($method, $validMethods, true);
-			})));
+				$allowEmail = (int)$twoFactorAuthSetting->allowEmail === 1;
+				$allowTotp = (int)$twoFactorAuthSetting->allowTotp === 1;
 
-			$filteredMethods = array_values(array_filter($setupMethods, static function ($method) use ($allowEmail, $allowTotp) {
-				if ($method === 'email' && !$allowEmail) {
-					return false;
+				$validMethods = [
+					'email',
+					'totp'
+				];
+				$setupMethods = array_values(array_unique(array_filter($setupMethods, static function ($method) use ($validMethods) {
+					return in_array($method, $validMethods, true);
+				})));
+
+				$filteredMethods = array_values(array_filter($setupMethods, static function ($method) use ($allowEmail, $allowTotp) {
+					if ($method === 'email' && !$allowEmail) {
+						return false;
+					}
+					if ($method === 'totp' && !$allowTotp) {
+						return false;
+					}
+					return true;
+				}));
+
+				$methodsChanged = $filteredMethods !== $setupMethods;
+				$setupMethods = $filteredMethods;
+				$updatedTwoFactorMethod = implode(',', $setupMethods);
+
+				if ($methodsChanged) {
+					// remove 2FA methods the user has set up which the library no longer allows
+					$user->twoFactorMethod = $updatedTwoFactorMethod;
+					$user->update();
 				}
-				if ($method === 'totp' && !$allowTotp) {
-					return false;
+
+				$hasEmail = in_array('email', $setupMethods, true);
+				$hasTotp = in_array('totp', $setupMethods, true);
+
+				$showSetupEmail = !$hasEmail && $allowEmail;
+				$showSetupTotp = !$hasTotp && $allowTotp;
+				$showDisableEmail = $hasEmail;
+				$showDisableTotp = $hasTotp;
+
+				$canDisableEmail = $showDisableEmail;
+				$canDisableTotp = $showDisableTotp;
+
+				if (UserAccount::isRequired2FA()) {
+					$configuredAllowedCount = 0;
+					if ($hasEmail && $allowEmail) {
+						$configuredAllowedCount++;
+					}
+					if ($hasTotp && $allowTotp) {
+						$configuredAllowedCount++;
+					}
+					if ($configuredAllowedCount <= 1) {
+						$canDisableEmail = false;
+						$canDisableTotp = false;
+					}
 				}
-				return true;
-			}));
 
-			$methodsChanged = $filteredMethods !== $setupMethods;
-			$setupMethods = $filteredMethods;
-			$updatedTwoFactorMethod = implode(',', $setupMethods);
-
-			if ($methodsChanged) {
-				// remove 2FA methods the user has set up which the library no longer allows
-				$user->twoFactorMethod = $updatedTwoFactorMethod;
-				$user->update();
-			}
-
-			$hasEmail = in_array('email', $setupMethods, true);
-			$hasTotp = in_array('totp', $setupMethods, true);
-
-			$showSetupEmail = !$hasEmail && $allowEmail;
-			$showSetupTotp = !$hasTotp && $allowTotp;
-			$showDisableEmail = $hasEmail;
-			$showDisableTotp = $hasTotp;
-
-			$canDisableEmail = $showDisableEmail;
-			$canDisableTotp = $showDisableTotp;
-
-			if (UserAccount::isRequired2FA()) {
-				$configuredAllowedCount = 0;
-				if ($hasEmail && $allowEmail) {
-					$configuredAllowedCount++;
-				}
-				if ($hasTotp && $allowTotp) {
-					$configuredAllowedCount++;
-				}
-				if ($configuredAllowedCount <= 1) {
-					$canDisableEmail = false;
-					$canDisableTotp = false;
-				}
-			}
-
-			$requiredSetupWarning = null;
-			if (!$hasEmail && !$hasTotp) {
-				if ($allowEmail && !$allowTotp) {
-					$requiredSetupWarning = translate([
-						'text' => 'You must set up email two-factor authentication to keep using two-factor authentication.',
-						'isPublicFacing' => true
-					]);
-				} elseif (!$allowEmail && $allowTotp) {
-					$requiredSetupWarning = translate([
-						'text' => 'You must set up authenticator app (TOTP) to keep using two-factor authentication.',
-						'isPublicFacing' => true
-					]);
+				$requiredSetupWarning = null;
+				if (!$hasEmail && !$hasTotp) {
+					if ($allowEmail && !$allowTotp) {
+						$requiredSetupWarning = translate([
+							'text' => 'You must set up email two-factor authentication to keep using two-factor authentication.',
+							'isPublicFacing' => true
+						]);
+					} elseif (!$allowEmail && $allowTotp) {
+						$requiredSetupWarning = translate([
+							'text' => 'You must set up authenticator app (TOTP) to keep using two-factor authentication.',
+							'isPublicFacing' => true
+						]);
+					}
 				}
 			}
 		}
