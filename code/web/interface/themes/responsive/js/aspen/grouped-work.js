@@ -102,9 +102,17 @@ AspenDiscovery.GroupedWork = (function(){
 			);
 		},
 
-		loadDescription: function (id){
-			var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=getDescription';
-			$.getJSON(url, function (data){
+		loadDescription: function (id, recordType, recordId){
+			console.log("BEGIN");
+			console.log(recordType);
+			console.log(recordId);
+			var url = Globals.path + '/GroupedWork/' + id + '/AJAX',
+				params = {'method':'getDescription'};
+			if (recordType && recordId) {
+				params['recordType'] = recordType;
+				params['recordId'] = recordId;
+			}
+			$.getJSON(url, params, function (data){
 					if (data.success){
 						$("#descriptionPlaceholder").html(data.description);
 					}

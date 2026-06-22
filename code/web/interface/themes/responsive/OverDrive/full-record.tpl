@@ -1,4 +1,4 @@
-{include file="GroupedWork/load-full-record-view-enrichment.tpl"}
+{include file="GroupedWork/load-full-record-view-enrichment.tpl" recordType="libbyRecord" recordId=$recordDriver->getId()}
 
 {strip}
 	<div class="col-xs-12">
