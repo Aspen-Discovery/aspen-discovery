@@ -1649,7 +1649,8 @@ function setRoute(string $module, string $action = 'Home', ?string $id = null): 
 
 function setEmptyRouteId(): void {
 	$_REQUEST['id'] = '';
-=======
+}
+
 /**
  * Set Cloudflare Rate Limit complexity header based on endpoint weight.
  *
