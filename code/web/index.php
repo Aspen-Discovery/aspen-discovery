@@ -1704,11 +1704,11 @@ function matchEndpointWeight(string $uri): int {
 			return 20;
 
 		// Score: 15 - GroupedWork detail and AJAX endpoints
-		case preg_match('#^/GroupedWork/[0-9]+/(?:Home|AJAX)(?:\?|/|$)#', $uri):
+		case preg_match('#^/GroupedWork(?:/|$)#', $uri):
 			return 15;
 
 		// Score: 10 - Record detail and Author home pages
-		case preg_match('#^/Record/[0-9]+(?:\?|/|$)#', $uri):
+		case preg_match('#^/Record(?:/|$)#', $uri):
 		case preg_match('#^/Author/Home(?:\?|/|$)#', $uri):
 			return 10;
 	}
