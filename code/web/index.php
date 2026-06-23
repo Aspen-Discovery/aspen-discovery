@@ -1675,41 +1675,45 @@ function setCloudflareComplexityHeader(): void {
 	}
 
 	$headerName = $configArray['Security']['complexityHeaderName'] ?: 'x-complexity-score';
-	$uri = $_SERVER['REQUEST_URI'] ?? '/';
 
-	// Match the URI to a weight bucket. Add new cases here to extend.
-	$complexity = matchEndpointWeight($uri);
+	// Module and action are already parsed by loadModuleActionId()
+	$module = $_GET['module'] ?? '';
+	$action = $_GET['action'] ?? '';
+
+	$complexity = matchEndpointWeight($module, $action);
 
 	header("$headerName: $complexity");
 }
 
 /**
- * Map a request URI to a complexity weight score.
+ * Map module/action to a complexity weight score.
  *
  * Add new case blocks here to cover additional endpoints.
  *
- * @param string $uri The request URI (e.g. /Search/Results?page=2)
+ * @param string $module The request module (e.g. Search)
+ * @param string $action The request action (e.g. Results)
  * @return int The complexity weight (default 1)
  */
-function matchEndpointWeight(string $uri): int {
-	switch (true) {
+function matchEndpointWeight(string $module, string $action): int {
+	switch ($module . '/' . $action) {
 		// Score: 25 - Heavy search result pages
-		case preg_match('#^/Search/Results(?:\?|/|$)#', $uri):
-		case preg_match('#^/Union/Search(?:\?|/|$)#', $uri):
+		case 'Search/Results':
+		case 'Union/Search':
 			return 25;
 
 		// Score: 20 - AJAX/API search endpoints
-		case preg_match('#^/Search/AJAX(?:\?|/|$)#', $uri):
-		case preg_match('#^/API/SearchAPI(?:\?|/|$)#', $uri):
+		case 'Search/AJAX':
+		case 'API/SearchAPI':
 			return 20;
 
 		// Score: 15 - GroupedWork detail and AJAX endpoints
-		case preg_match('#^/GroupedWork(?:/|$)#', $uri):
+		case 'GroupedWork/Home':
+		case 'GroupedWork/AJAX':
 			return 15;
 
 		// Score: 10 - Record detail and Author home pages
-		case preg_match('#^/Record(?:/|$)#', $uri):
-		case preg_match('#^/Author/Home(?:\?|/|$)#', $uri):
+		case 'Record/Home':
+		case 'Author/Home':
 			return 10;
 	}
 
