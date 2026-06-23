@@ -1695,25 +1695,29 @@ function setCloudflareComplexityHeader(): void {
  * @return int The complexity weight (default 1)
  */
 function matchEndpointWeight(string $module, string $action): int {
-	switch ($module . '/' . $action) {
+	switch (true) {
 		// Score: 25 - Heavy search result pages
-		case 'Search/Results':
-		case 'Union/Search':
+		case $module === 'Search' && $action === 'Results':
+		case $module === 'Union' && $action === 'Search':
 			return 25;
 
 		// Score: 20 - AJAX/API search endpoints
-		case 'Search/AJAX':
-		case 'API/SearchAPI':
+		case $module === 'Search' && $action === 'AJAX':
+		case $module === 'API' && $action === 'SearchAPI':
 			return 20;
 
 		// Score: 15 - GroupedWork detail and AJAX endpoints
-		case 'GroupedWork/Home':
-		case 'GroupedWork/AJAX':
+		case $module === 'GroupedWork':
 			return 15;
 
-		// Score: 10 - Record detail and Author home pages
-		case 'Record/Home':
-		case 'Author/Home':
+		// Score: 10 - Record, Author, and eContent detail pages
+		case $module === 'Record':
+		case $module === 'Author' && $action === 'Home':
+		case $module === 'Hoopla':
+		case $module === 'OverDrive':
+		case $module === 'PalaceProject':
+		case $module === 'Axis360':
+		case $module === 'CloudLibrary':
 			return 10;
 	}
 
