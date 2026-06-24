@@ -38,6 +38,11 @@
 					{/literal}
 					AspenDiscovery.Account.loadHolds('all');
 					{literal}
+					document.getElementById('allHoldsPlaceholder').addEventListener('change', function (e) {
+						if (e.target.matches('.titleSelect')) {
+							AspenDiscovery.Account.toggleGroupSelectedHoldsButton();
+						}
+					});
 				});
 				{/literal}
 			</script>

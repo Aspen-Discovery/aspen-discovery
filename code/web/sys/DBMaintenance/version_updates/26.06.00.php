@@ -381,6 +381,14 @@ function getUpdates26_06_00(): array {
 				"ALTER TABLE bookcover_info ADD COLUMN IF NOT EXISTS original_url_large TEXT DEFAULT NULL",
 			]
 		], //store_original_cover_urls_by_size
+		'expand_overdriveAdvantageProductsKey' => [
+			'title' => 'Expand overdriveAdvantageProductsKey',
+			'description' => 'Expand overdriveAdvantageProductsKey to allow longer collection tokens',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE library_overdrive_settings MODIFY COLUMN overdriveAdvantageProductsKey VARCHAR(255) DEFAULT ''",
+			]
+		], //expand_overdriveAdvantageProductsKey
 
 		//imani
 

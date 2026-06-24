@@ -4013,7 +4013,7 @@ class MyAccount_AJAX extends JSON_Action {
 				$interface->assign('allowFreezeHolds', false);
 			}
 
-			$interface->assign('allowHoldsToBeGrouped', $holdsSource === 'ils' ? $allowHoldsToBeGrouped : false);
+			$interface->assign('allowHoldsToBeGrouped', $allowHoldsToBeGrouped);
 
 			$showPosition = $user->showHoldPosition();
 			$suspendRequiresReactivationDate = $user->suspendRequiresReactivationDate();
@@ -4754,7 +4754,7 @@ class MyAccount_AJAX extends JSON_Action {
 		// Hide Covers when the user has set that setting on a Search Results Page
 		// this is the same setting as used by the MyAccount Pages for now.
 		$showCovers = true;
-		if (isset($_REQUEST['showCovers'])) {
+		if (isset($_REQUEST['showCovers']) && $_REQUEST['showCovers'] !== 'null' && $_REQUEST['showCovers'] !== 'undefined') {
 			$showCovers = ($_REQUEST['showCovers'] == 'on' || $_REQUEST['showCovers'] == 'true');
 			if (isset($_SESSION)) {
 				$_SESSION['showCovers'] = $showCovers;

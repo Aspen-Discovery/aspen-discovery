@@ -2542,10 +2542,27 @@ AspenDiscovery.Account = (function () {
 			if (unavailableHoldSort !== undefined) {
 				url += "&unavailableHoldSort=" + unavailableHoldSort;
 			}
-			if (showCovers !== undefined) {
+			if (showCovers === undefined || showCovers === null) {
+				let showCoversCtl = $('#hideCovers_all');
+				if (showCoversCtl.length > 0) {
+					showCovers = showCoversCtl.prop('checked') ? 'false' : 'true';
+				}
+			}
+			if (showCovers !== undefined && showCovers !== null) {
 				url += "&showCovers=" + showCovers;
 			}
 
+			if (filters === undefined) {
+				//Grab the current state
+				let selectOptions = $('#holdsFilterRow select');
+				if (selectOptions.length > 0) {
+					filters = {};
+					selectOptions.each(function() {
+						let key = $(this).attr('id').replace('HoldFilter_', '');
+						filters[key] = $(this).val() || [];
+					});
+				}
+			}
 			if (filters !== undefined) {
 				url += "&" + AspenDiscovery.buildQueryString(filters);
 			}
@@ -5594,6 +5611,15 @@ AspenDiscovery.Account = (function () {
 			}).fail(function(jqXHR, textStatus, errorThrown) {
 				console.error('AJAX Error: ', textStatus, errorThrown);
 			})
+		},
+		toggleGroupSelectedHoldsButton: function () {
+			// Ensure all holds selected are ILS holds.
+			const selectedHolds = Array.from(document.querySelectorAll('.titleSelect:checked'));
+			const allIlsHolds = selectedHolds.every(checkbox => checkbox.closest('.result.row')?.classList.contains('ilsHold'));
+			const groupingAvailable = selectedHolds.length > 1 && allIlsHolds;
+
+			// target both the top and bottom 'Group Selected Pending Ils Hold' buttons.
+			document.querySelectorAll('.groupSelectedHoldsButton').forEach(button => button.classList.toggle('disabled', !groupingAvailable));
 		},
 		groupSelectedPendingHolds:  function (source, availableSort, interlibrarySort, unavailableSort) {
 			let selectedHolds = [];
