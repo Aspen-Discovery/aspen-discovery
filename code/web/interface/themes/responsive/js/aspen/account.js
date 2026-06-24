@@ -199,7 +199,7 @@ AspenDiscovery.Account = (function () {
 
 		followLinkIfLoggedIn: function (trigger, linkDestination) {
 			if (trigger === undefined) {
-				alert("You must provide the trigger to follow a link after logging in.");
+				alert(__('You must provide the trigger to follow a link after logging in.'));
 			}
 			var jqTrigger = $(trigger);
 			if (linkDestination === undefined) {
@@ -770,7 +770,7 @@ AspenDiscovery.Account = (function () {
 
 
 		removeLinkedUser: function (idToRemove) {
-			if (confirm("Are you sure you want to stop managing this account?")) {
+			if (confirm(__('Are you sure you want to stop managing this account?'))) {
 				var url = Globals.path + "/MyAccount/AJAX?method=removeAccountLink&idToRemove=" + idToRemove;
 				$.getJSON(url, function (data) {
 					if (data.success === true) {
@@ -784,7 +784,7 @@ AspenDiscovery.Account = (function () {
 		},
 
 		removeManagingAccount: function (idToRemove) {
-			if (confirm("Are you sure you want to break the link with this account?")) {
+			if (confirm(__('Are you sure you want to break the link with this account?'))) {
 				var url = Globals.path + "/MyAccount/AJAX?method=removeManagingAccount&idToRemove=" + idToRemove;
 				$.getJSON(url, function (data) {
 					if (data.success === true) {
@@ -882,7 +882,7 @@ AspenDiscovery.Account = (function () {
 
 		renewAll: function () {
 			if (Globals.loggedIn) {
-				if (confirm('Renew All Items?')) {
+				if (confirm(__('Renew All Items?'))) {
 					AspenDiscovery.loadingMessage();
 					// noinspection JSUnresolvedFunction
 					$.getJSON(Globals.path + "/MyAccount/AJAX?method=renewAll", function (data) {
@@ -924,7 +924,7 @@ AspenDiscovery.Account = (function () {
 			if (Globals.loggedIn) {
 				var selectedTitles = AspenDiscovery.getSelectedTitles();
 				if (selectedTitles) {
-					if (confirm('Renew selected Items?')) {
+					if (confirm(__('Renew selected Items?'))) {
 						AspenDiscovery.loadingMessage();
 						// noinspection JSUnresolvedFunction
 						$.getJSON(Globals.path + "/MyAccount/AJAX?method=renewSelectedItems&" + selectedTitles, function (data) {
@@ -1127,7 +1127,7 @@ AspenDiscovery.Account = (function () {
 		},
 
 		cancelVdxRequest: function (patronId, requestId, cancelId) {
-			if (confirm("Are you sure you want to cancel this request?")) {
+			if (confirm(__('Are you sure you want to cancel this request?'))) {
 				var ajaxUrl = Globals.path + "/MyAccount/AJAX?method=cancelVdxRequest&patronId=" + patronId + "&requestId=" + requestId + "&cancelId=" + cancelId;
 				$.ajax({
 					url: ajaxUrl,
@@ -1450,7 +1450,7 @@ AspenDiscovery.Account = (function () {
 				promptForSelectAll = true;
 			}
 			var selectedTitles = $("input.titleSelect:checked ");
-			if (selectedTitles.length === 0 && promptForSelectAll && confirm('You have not selected any items, process all items?')) {
+			if (selectedTitles.length === 0 && promptForSelectAll && confirm(__('You have not selected any items, process all items?'))) {
 				selectedTitles = $("input.titleSelect")
 					.attr('checked', 'checked');
 			}
@@ -2519,7 +2519,7 @@ AspenDiscovery.Account = (function () {
 		},
 
 		deleteSavedEvent: function (id, page, filter) {
-			if (confirm("Are you sure you want to remove this event?")) {
+			if (confirm(__('Are you sure you want to remove this event?'))) {
 				var url = Globals.path + '/MyAccount/AJAX?method=deleteSavedEvent&id=' + id;
 
 				$.getJSON(url, function (data) {
@@ -2636,7 +2636,7 @@ AspenDiscovery.Account = (function () {
 			return false;
 		},
 		deleteAllListTitles: function (id) {
-			AspenDiscovery.confirm("Delete All Titles?", "Are you sure you want to delete all items from this list? The titles will be permanently deleted.","Yes", "No", true, "AspenDiscovery.Account.doDeleteAllListTitles(" + id + ");", "btn-danger");
+			AspenDiscovery.confirm(__('Delete All Titles?'), __('Are you sure you want to delete all items from this list? The titles will be permanently deleted.'), __('Yes'), __('No'), false, "AspenDiscovery.Account.doDeleteAllListTitles(" + id + ");", "btn-danger");
 			return false;
 		},
 		doDeleteAllListTitles: function (id) {
@@ -2650,9 +2650,9 @@ AspenDiscovery.Account = (function () {
 		deleteSelectedListTitles: function (id) {
 			var selectedTitles = AspenDiscovery.getSelectedTitles(false);
 			if (selectedTitles) {
-				AspenDiscovery.confirm("Delete Selected Titles?", "Are you sure you want to delete the selected items from this list? The titles will be permanently deleted.","Yes", "No", true, "AspenDiscovery.Account.doDeleteSelectedListTitles(" + id + ");", "btn-danger");
+				AspenDiscovery.confirm(__('Delete Selected Titles?'), __('Are you sure you want to delete the selected items from this list? The titles will be permanently deleted.'), __('Yes'), __('No'), false, "AspenDiscovery.Account.doDeleteSelectedListTitles(" + id + ");", "btn-danger");
 			}else{
-				AspenDiscovery.confirm("Delete Selected Titles?", "No titles are selected, would you like to delete all titles on this page? The titles will be permanently deleted.","Yes", "No", true, "AspenDiscovery.selectAllTitles();AspenDiscovery.Account.doDeleteSelectedListTitles(" + id + ");", "btn-danger");
+				AspenDiscovery.confirm(__('Delete Selected Titles?'), __('No titles are selected, would you like to delete all titles on this page? The titles will be permanently deleted.'), __('Yes'), __('No'), false, "AspenDiscovery.selectAllTitles();AspenDiscovery.Account.doDeleteSelectedListTitles(" + id + ");", "btn-danger");
 			}
 			return false;
 		},
