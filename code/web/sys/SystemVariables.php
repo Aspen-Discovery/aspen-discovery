@@ -22,7 +22,12 @@ class SystemVariables extends DataObject {
 	public $storeRecordDetailsInDatabase;
 	/** @noinspection PhpUnused */
 	public $deletionCommitInterval;
+	/** @noinspection PhpUnused */
 	public $indexCommitInterval;
+	/** @noinspection PhpUnused */
+	public $solrThreadCount;
+	/** @noinspection PhpUnused */
+	public $solrQueueSize;
 	/** @noinspection PhpUnused */
 	public $waitAfterDeleteCommit;
 	/** @noinspection PhpUnused */
@@ -242,6 +247,24 @@ class SystemVariables extends DataObject {
 						'required' => true,
 						'default' => 10000,
 						'min' => 10000,
+					],
+					'solrThreadCount' => [
+						'property' => 'solrThreadCount',
+						'type' => 'integer',
+						'label' => 'Solr Thread Count',
+						'description' => 'The number of solr threads to use while indexing. Servers with more CPU can handle more threads.',
+						'default' => 1,
+						'min' => 1,
+						'max' => 4,
+					],
+					'solrQueueSize' => [
+						'property' => 'solrQueueSize',
+						'type' => 'integer',
+						'label' => 'Solr Queue Size',
+						'description' => 'The number of documents that are added to the solr queue. This is based on memory as well as processors and document size to ensure too many documents are not loaded causing a timeout.',
+						'default' => 25,
+						'min' => 25,
+						'max' => 1000,
 					],
 					'waitAfterDeleteCommit' => [
 						'property' => 'waitAfterDeleteCommit',

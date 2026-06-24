@@ -203,6 +203,8 @@ public class GroupedWorkIndexer implements AutoCloseable {
 	private int searchVersion;
 	private boolean enableNovelistSeriesIntegration;
 	private int hooplaVersion;
+	private int solrThreadCount;
+	private int solrQueueSize;
 
 	public GroupedWorkIndexer(String serverName, Connection dbConn, Ini configIni, boolean fullReindex, boolean clearIndex, BaseIndexingLogEntry logEntry, Logger logger) {
 		this(serverName, dbConn, configIni, fullReindex, clearIndex, false, logEntry, logger);
@@ -247,7 +249,7 @@ public class GroupedWorkIndexer implements AutoCloseable {
 		}
 
 		//Check to see if we should store record details in Solr
-		try (PreparedStatement systemVariablesStmt = dbConn.prepareStatement("SELECT storeRecordDetailsInSolr, storeRecordDetailsInDatabase, indexVersion, searchVersion, processEmptyGroupedWorks, enableNovelistSeriesIntegration, deletionCommitInterval, waitAfterDeleteCommit, removeTheWordSeriesFromEndOfSeries, hooplaVersion, indexCommitInterval from system_variables")){
+		try (PreparedStatement systemVariablesStmt = dbConn.prepareStatement("SELECT storeRecordDetailsInSolr, storeRecordDetailsInDatabase, indexVersion, searchVersion, processEmptyGroupedWorks, enableNovelistSeriesIntegration, deletionCommitInterval, waitAfterDeleteCommit, removeTheWordSeriesFromEndOfSeries, hooplaVersion, indexCommitInterval, solrThreadCount, solrQueueSize from system_variables")){
 			try (ResultSet systemVariablesRS = systemVariablesStmt.executeQuery()) {
 				if (systemVariablesRS.next()) {
 					this.storeRecordDetailsInSolr = systemVariablesRS.getBoolean("storeRecordDetailsInSolr");
@@ -262,6 +264,8 @@ public class GroupedWorkIndexer implements AutoCloseable {
 					}
 					this.removeTheWordSeriesFromEndOfSeries = systemVariablesRS.getBoolean("removeTheWordSeriesFromEndOfSeries");
 					this.hooplaVersion = systemVariablesRS.getInt("hooplaVersion");
+					this.solrThreadCount = systemVariablesRS.getInt("solrThreadCount");
+					this.solrQueueSize = systemVariablesRS.getInt("solrQueueSize");
 				}
 			}
 		} catch (Exception e){
@@ -424,24 +428,11 @@ public class GroupedWorkIndexer implements AutoCloseable {
 			.connectionTimeout(15000)
 			.build();
 		try {
-			int totalCores = Runtime.getRuntime().availableProcessors();
-			int workerThreads;
-			int queueSize;
 
-			if (totalCores <= 4) {
-				workerThreads = 1;
-				queueSize = 250;
-			} else if (totalCores <= 16) {
-				workerThreads = 2;
-				queueSize = 500;
-			} else {
-				workerThreads = 4;
-				queueSize = 1000;
-			}
 
 			updateServer = new ConcurrentUpdateHttp2SolrClient.Builder(solrUrl, http2Client)
-				.withThreadCount(workerThreads)
-				.withQueueSize(queueSize)
+				.withThreadCount(solrThreadCount)
+				.withQueueSize(solrQueueSize)
 				.build();
 		}catch (OutOfMemoryError e) {
 			logger.error("Unable to create solr client, out of memory", e);

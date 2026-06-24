@@ -329,7 +329,8 @@ class GroupedWork_AJAX extends JSON_Action {
 				$selectedAvailabilityToggle = 'local';
 			}
 			UserAccount::getActiveUserObj();
-			if (($library->moreLikeThisSettings == 3 || $library->moreLikeThisSettings == 4) && !empty($_REQUEST['format'])) {
+			$format = null;
+			if (($library->moreLikeThisSettings == 3 || $library->moreLikeThisSettings == 4) && !empty($_REQUEST['format']) && !str_contains($_REQUEST['requestUrl'], 'GroupedWork')) {
 				$format = $_REQUEST['format'];
 				$similar = $db->getMoreLikeThis($id, $selectedAvailabilityToggle, false, true, null, $format);
 			} else{
@@ -342,7 +343,7 @@ class GroupedWork_AJAX extends JSON_Action {
 				$similarTitles = [];
 				foreach ($similar['response']['docs'] as $key => $similarTitle) {
 					$similarTitleDriver = new GroupedWorkDriver($similarTitle);
-					$similarTitles[] = $similarTitleDriver->getScrollerTitle($key, 'MoreLikeThis');
+					$similarTitles[] = $similarTitleDriver->getScrollerTitle($key, 'MoreLikeThis', $format);
 				}
 				$similarTitlesInfo = [
 					'titles' => $similarTitles,

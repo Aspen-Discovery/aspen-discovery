@@ -1468,6 +1468,9 @@ class Koha extends AbstractIlsDriver {
 				$user->update();
 			} else {
 				$user->created = date('Y-m-d');
+				if ($user->getHomeLibrary()->forceReadingHistoryOptIn){
+					$user->trackReadingHistory = false;
+				}
 				if (!$user->insert()) {
 					return null;
 				}
@@ -6401,10 +6404,6 @@ class Koha extends AbstractIlsDriver {
 				$lookupUserRow = $lookupUserResult->fetch_assoc();
 				$patronId = $lookupUserRow['borrowernumber'];
 				$newUser = $this->loadPatronInfoFromDB($patronId, null, $patronBarcode);
-				if ($library->forceReadingHistoryOptIn) {
-					$newUser->trackReadingHistory = false;
-					$newUser->update();
-				}
 				if (!empty($newUser) && !($newUser instanceof AspenError)) {
 					return $newUser;
 				}
@@ -6420,10 +6419,6 @@ class Koha extends AbstractIlsDriver {
 				$lookupUserRow = $lookupUserResult->fetch_assoc();
 				$patronId = $lookupUserRow['borrowernumber'];
 				$newUser = $this->loadPatronInfoFromDB($patronId, null, $patronUsername);
-				if ($library->forceReadingHistoryOptIn) {
-					$newUser->trackReadingHistory = false;
-					$newUser->update();
-				}
 				if (!empty($newUser) && !($newUser instanceof AspenError)) {
 					return $newUser;
 				}

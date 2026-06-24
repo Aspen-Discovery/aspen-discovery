@@ -52,7 +52,13 @@ class ScheduledUpdate extends DataObject {
 		if ($systemVariables && !empty($systemVariables->greenhouseUrl)) {
 			if ($result = file_get_contents($systemVariables->greenhouseUrl . '/API/GreenhouseAPI?method=getReleaseInformation')) {
 				$data = json_decode($result, true);
-				$releases = $data['releases'];
+				if ($data === false) {
+					$releases = [];
+				}else if (array_key_exists('releases', $data)){
+					$releases =  $data['releases'];
+				}else{
+					$releases =  $data['result']['releases'];
+				}
 			}
 		} else {
 			global $configArray;

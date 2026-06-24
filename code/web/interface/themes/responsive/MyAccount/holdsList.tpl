@@ -85,7 +85,9 @@
 		{if $sectionKey == 'available'}
 			{translate text='You do not have any holds that are ready to be picked up.' isPublicFacing=true}
 		{elseif $sectionKey == 'cancelled'}
-			{translate text='You do not have any cancelled holds.' isPublicFacing=true}
+			{if $showCancelled}
+				{translate text='You do not have any cancelled holds.' isPublicFacing=true}
+			{/if}
 		{elseif $sectionKey != 'available'}
 			{if $source == 'interlibrary_loan'}
 				{translate text='You do not have any pending requests.' isPublicFacing=true}
@@ -100,8 +102,8 @@
 	{/if}
 {/foreach}
 {* HyperHolds Section *}
-{if $hasHyperHolds && !empty($hyperHolds) && $source == 'ils'}
-	<h2>{translate text="Hyperholds" isPublicFacing=true}</h2>
+{if $hasHyperHolds && !empty($hyperHolds) && ($source == 'ils' || $source == 'all') }
+	<h2>{translate text="ILS Hyperholds" isPublicFacing=true}</h2>
 	<p class="alert alert-info">
 		{translate text="Multiple records are on hold for you. The library will fulfill whichever record becomes available first. Once a record is available, it will appear in the 'Ready for Pickup' section." isPublicFacing=true}
 	</p>

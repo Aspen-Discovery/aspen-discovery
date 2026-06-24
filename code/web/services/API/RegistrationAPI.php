@@ -10,7 +10,7 @@ class API_RegistrationAPI extends AbstractAPI {
 	 * @see Action::launch()
 	 * @access private
 	 */
-	function launch() {
+	function launch() : void {
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 		$output = '';
 
@@ -19,61 +19,9 @@ class API_RegistrationAPI extends AbstractAPI {
 		//header('Content-type: text/html');
 		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 
-		global $activeLanguage;
-		if (isset($_GET['language'])) {
-			$language = new Language();
-			$language->code = $_GET['language'];
-			if ($language->find(true)) {
-				$activeLanguage = $language;
-			}
-		}
+		$this->setLanguage();
 
-		if (isset($_SERVER['PHP_AUTH_USER'])) {
-			if ($this->grantTokenAccess()) {
-				if (in_array($method, [
-					'getRegistrationCapabilities',
-					'lookupAccountByEmail',
-					'lookupAccountByPhoneNumber',
-					'getBasicRegistrationForm',
-					'processBasicRegistrationForm',
-					'getForgotPasswordType',
-					'initiatePasswordResetByEmail',
-					'initiatePasswordResetByBarcode',
-					'getSelfRegistrationForm',
-					'getSelfRegistrationTerms',
-					'processSelfRegistration'
-				])) {
-					header("Cache-Control: max-age=10800");
-					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
-					APIUsage::incrementStat('RegistrationAPI', $method);
-					$output = json_encode(['result' => $this->logPatronRequestExternal($this->$method())]);
-				} else {
-					header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-					$output = json_encode(['error' => 'invalid_method']);
-				}
-			} else {
-				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-				header('HTTP/1.0 401 Unauthorized');
-				$output = json_encode(['error' => 'unauthorized_access']);
-			}
-			ExternalRequestLogEntry::logRequest('UserAPI.' . $method, $_SERVER['REQUEST_METHOD'], $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], getallheaders(), '', $_SERVER['REDIRECT_STATUS'], $output, []);
-			echo $output;
-		} elseif (IPAddress::allowAPIAccessForClientIP()) {
-			header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-			if ($method != 'getUserForApiCall' && method_exists($this, $method)) {
-				$result = [
-					'result' => $this->$method(),
-				];
-				$output = json_encode($result);
-				require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
-				APIUsage::incrementStat('RegistrationAPI', $method);
-			} else {
-				$output = json_encode(['error' => 'invalid_method']);
-			}
-			echo $output;
-		} else {
-			$this->forbidAPIAccess();
-		}
+		$this->handleAPIRequestAuto($method, 'registration_api');
 	}
 
 	function getBreadcrumbs(): array {

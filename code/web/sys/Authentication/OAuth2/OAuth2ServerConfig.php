@@ -25,6 +25,8 @@ class OAuth2ServerConfig {
 	 */
 	public static function getAuthorizationServer(): AuthorizationServer {
 		global $logger;
+		global $serverName;
+		$dataPath = '/data/aspen-discovery/' . $serverName . '/';
 		
 		if (self::$authorizationServer === null) {
 			$logger->log("[OAuth2] OAuth2ServerConfig::getAuthorizationServer() - Initializing authorization server", Logger::LOG_DEBUG);
@@ -38,7 +40,7 @@ class OAuth2ServerConfig {
 
 			$logger->log("[OAuth2] OAuth2ServerConfig::getAuthorizationServer() - All repositories initialized", Logger::LOG_DEBUG);
 
-			$privateKeyPath = ROOT_DIR . '/sys/Authentication/OAuth2/private.key';
+			$privateKeyPath = $dataPath . '/private.key';
 			$encryptionKey = self::getEncryptionKey();
 
 			$logger->log("[OAuth2] OAuth2ServerConfig::getAuthorizationServer() - Using private key path: " . $privateKeyPath, Logger::LOG_DEBUG);
@@ -68,7 +70,7 @@ class OAuth2ServerConfig {
 			self::$authorizationServer->enableGrantType($refreshTokenGrant, new DateInterval('PT1H') // Access tokens expire after 1 hour
 			);
 
-			$clientCredentialsGrant = new ClientCredentialsGrant($clientRepository, $scopeRepository);
+			$clientCredentialsGrant = new ClientCredentialsGrant();
 			$logger->log("[OAuth2] OAuth2ServerConfig::getAuthorizationServer() - ClientCredentialsGrant configured (token TTL: 4 hours)", Logger::LOG_DEBUG);
 			
 			self::$authorizationServer->enableGrantType($clientCredentialsGrant, new DateInterval('PT4H') // Client credentials tokens last longer (4 hours)
@@ -87,7 +89,9 @@ class OAuth2ServerConfig {
 			$logger->log("[OAuth2] OAuth2ServerConfig::getResourceServer() - Initializing resource server", Logger::LOG_DEBUG);
 			
 			$accessTokenRepository = new AccessTokenRepository();
-			$publicKeyPath = ROOT_DIR . '/sys/Authentication/OAuth2/public.key';
+			global $serverName;
+			$dataPath = '/data/aspen-discovery/' . $serverName . '/';
+			$publicKeyPath = $dataPath . 'public.key';
 
 			$logger->log("[OAuth2] OAuth2ServerConfig::getResourceServer() - Using public key path: " . $publicKeyPath, Logger::LOG_DEBUG);
 
@@ -102,7 +106,10 @@ class OAuth2ServerConfig {
 	private static function getEncryptionKey(): string {
 		global $logger;
 
-		$keyFile = ROOT_DIR . '/sys/Authentication/OAuth2/encryption.key';
+		global $serverName;
+		$dataPath = '/data/aspen-discovery/' . $serverName . '/';
+
+		$keyFile = $dataPath . 'encryption.key';
 
 		if (!file_exists($keyFile)) {
 			$logger->log("[OAuth2] OAuth2ServerConfig::getEncryptionKey() - Encryption key file not found, generating new key: " . $keyFile, Logger::LOG_DEBUG);
@@ -120,8 +127,11 @@ class OAuth2ServerConfig {
 	public static function generateKeyPairIfNeeded(): void {
 		global $logger;
 
-		$privateKeyPath = ROOT_DIR . '/sys/Authentication/OAuth2/private.key';
-		$publicKeyPath = ROOT_DIR . '/sys/Authentication/OAuth2/public.key';
+		global $serverName;
+		$dataPath = '/data/aspen-discovery/' . $serverName . '/';
+
+		$privateKeyPath = $dataPath . 'private.key';
+		$publicKeyPath = $dataPath . 'public.key';
 
 		if (!file_exists($privateKeyPath) || !file_exists($publicKeyPath)) {
 			$logger->log("[OAuth2] OAuth2ServerConfig::generateKeyPairIfNeeded() - RSA key pair not found, generating new pair", Logger::LOG_DEBUG);
@@ -198,7 +208,10 @@ class OAuth2ServerConfig {
 		$header64 = self::base64urlEncode(json_encode($header));
 		$payload64 = self::base64urlEncode(json_encode($claims));
 
-		$privateKeyPath = ROOT_DIR . '/sys/Authentication/OAuth2/private.key';
+		global $serverName;
+		$dataPath = '/data/aspen-discovery/' . $serverName . '/';
+
+		$privateKeyPath = $dataPath . 'private.key';
 		$privateKey = file_get_contents($privateKeyPath);
 
 		$signature = '';

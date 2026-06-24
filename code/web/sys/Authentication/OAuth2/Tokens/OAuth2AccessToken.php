@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpMissingFieldTypeInspection */
 
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
 
@@ -13,8 +13,12 @@ class OAuth2AccessToken extends DataObject {
 	protected $expires_at;
 	protected $created_at;
 
-	static function getObjectStructure($context = ''): array {
-		return [
+	static $_objectStructure = [];
+	static function getObjectStructure(string $context = ''): array {
+		if (isset(self::$_objectStructure[$context]) && self::$_objectStructure[$context] !== null) {
+			return self::$_objectStructure[$context];
+		}
+		self::$_objectStructure[$context] = [
 			'id' => [
 				'property' => 'id',
 				'type' => 'label',
@@ -67,6 +71,7 @@ class OAuth2AccessToken extends DataObject {
 				'description' => 'When this token was created',
 			],
 		];
+		return self::$_objectStructure[$context];
 	}
 
 	function getNumericColumnNames(): array {
@@ -87,5 +92,64 @@ class OAuth2AccessToken extends DataObject {
 
 	public function isRevoked(): bool {
 		return $this->revoked == 1;
+	}
+
+	public function setTokenId(string $tokenId) : void
+	{
+		$this->token_id = $tokenId;
+	}
+
+	public function getScopes()
+	{
+		return $this->scopes;
+	}
+
+	public function getClientId()
+	{
+		return $this->client_id;
+	}
+
+	public function getUserId()
+	{
+		return $this->user_id;
+	}
+
+	public function setUserId(?string $userId) : void
+	{
+		$this->user_id = $userId;
+	}
+
+	public function setClientId(string $clientId) : void
+	{
+		$this->client_id = $clientId;
+	}
+
+	/**
+	 * @param string $scopes - a comma delimited list of valid scopes (by id), i.e. work:read,work:write
+	 * @return void
+	 */
+	public function setScopes(string $scopes) : void
+	{
+		$this->scopes = $scopes;
+	}
+
+	public function setExpiresAt(string $expirationDate) : void
+	{
+		$this->expires_at = $expirationDate;
+	}
+
+	public function setRevoked(int $revokedFlag) : void
+	{
+		$this->revoked = $revokedFlag;
+	}
+
+	public function getTokenId()
+	{
+		return $this->token_id;
+	}
+
+	public function getExpiration()
+	{
+		return $this->expires_at;
 	}
 }

@@ -1084,6 +1084,9 @@ function loadModuleActionId() {
 			//This happens before the table is added, just ignore it.
 		}
 	}
+	if (str_starts_with($requestURI, '//')) {
+		$requestURI = substr($requestURI, 1);
+	}
 	/** IndexingProfile[] $indexingProfiles */ global $indexingProfiles;
 	/** SideLoad[] $sideLoadSettings */ global $sideLoadSettings;
 	$allRecordModules = "OverDrive|GroupedWork|Record|ExternalEContent|Person|Library|Hoopla|CloudLibrary|Files|Axis360|WebBuilder|ProPay|CourseReserves|Springshare|LibraryMarket|Communico|PalaceProject|Assabet|AspenEvents|Series|LocalHop";

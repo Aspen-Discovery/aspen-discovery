@@ -39,6 +39,14 @@ function getUpdates26_06_00(): array {
 				'ALTER TABLE series_indexing_settings ADD COLUMN include490_0 TINYINT(1) DEFAULT 0',
 			]
 		],
+		'add_solr_indexing_options' => [
+			'title' => 'Add solr indexing options',
+			'description' => 'Add solr indexing options',
+			'sql' => [
+				'ALTER TABLE system_variables ADD COLUMN solrThreadCount INT UNSIGNED NOT NULL DEFAULT 1',
+				'ALTER TABLE system_variables ADD COLUMN solrQueueSize INT UNSIGNED NOT NULL DEFAULT 25',
+			]
+		],
 
 		//kirstien
 		'addForceReadingHistoryOptIn' => [
@@ -373,6 +381,14 @@ function getUpdates26_06_00(): array {
 				"ALTER TABLE bookcover_info ADD COLUMN IF NOT EXISTS original_url_large TEXT DEFAULT NULL",
 			]
 		], //store_original_cover_urls_by_size
+		'expand_overdriveAdvantageProductsKey' => [
+			'title' => 'Expand overdriveAdvantageProductsKey',
+			'description' => 'Expand overdriveAdvantageProductsKey to allow longer collection tokens',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE library_overdrive_settings MODIFY COLUMN overdriveAdvantageProductsKey VARCHAR(255) DEFAULT ''",
+			]
+		], //expand_overdriveAdvantageProductsKey
 
 		//imani
 

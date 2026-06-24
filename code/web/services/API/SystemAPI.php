@@ -11,14 +11,7 @@ class SystemAPI extends AbstractAPI {
 		header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 
-		global $activeLanguage;
-		if (isset($_GET['language'])) {
-			$language = new Language();
-			$language->code = $_GET['language'];
-			if ($language->find(true)) {
-				$activeLanguage = $language;
-			}
-		}
+		$this->setLanguage();
 
 		if ($method === 'getLogoFile') {
 			$this->$method();
@@ -35,64 +28,7 @@ class SystemAPI extends AbstractAPI {
 			die();
 		}
 
-		if (isset($_SERVER['PHP_AUTH_USER'])) {
-			if ($this->grantTokenAccess()) {
-				if (in_array($method, [
-					'getLibraryInfo',
-					'getLocationInfo',
-					'getThemeInfo',
-					'getAppSettings',
-					'getLocationAppSettings',
-					'getLanguages',
-					'getVdxForm',
-					'getLocalIllForm',
-					'getSelfCheckSettings',
-					'getSystemMessages',
-					'dismissSystemMessage',
-					'getLibraryLinks',
-					'getCatalogStatus',
-					'getLocations',
-					'getMaterialsRequestForm',
-					'getHomeScreenLinks',
-				])) {
-					$result = [
-						'result' => $this->logPatronRequestExternal($this->$method()),
-					];
-					$output = json_encode($result);
-					header("Cache-Control: max-age=10800");
-					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
-					APIUsage::incrementStat('SystemAPI', $method);
-				} else {
-					$output = json_encode(['error' => 'invalid_method']);
-				}
-			} else {
-				header('HTTP/1.0 401 Unauthorized');
-				$output = json_encode(['error' => 'unauthorized_access']);
-			}
-			ExternalRequestLogEntry::logRequest('SystemAPI.' . $method, $_SERVER['REQUEST_METHOD'], $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], getallheaders(), '', $_SERVER['REDIRECT_STATUS'], $output, []);
-			echo $output;
-		} elseif (IPAddress::allowAPIAccessForClientIP()) {
-			if (!in_array($method, [
-					'getCatalogConnection',
-					'getUserForApiCall',
-					'checkWhichUpdatesHaveRun',
-					'getPendingDatabaseUpdates',
-					'runSQLStatement',
-					'markUpdateAsRun',
-				]) && method_exists($this, $method)) {
-				$result = [
-					'result' => $this->$method(),
-				];
-				$output = json_encode($result);
-				require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
-				APIUsage::incrementStat('SystemAPI', $method);
-			} else {
-				$output = json_encode(['error' => 'invalid_method']);
-			}
-			echo $output;
-		} else {
-			$this->forbidAPIAccess();
-		}
+		$this->handleAPIRequestAuto($method, 'system_api');
 	}
 
 	/** @noinspection PhpUnused */
@@ -378,6 +314,14 @@ class SystemAPI extends AbstractAPI {
 		];
 	}
 
+	/**
+	 * Gets an array of all available database updates
+	 * @oauth false
+	 * @token false
+	 * @public false
+	 *
+	 * @return array
+	 */
 	public function getDatabaseUpdates(): array {
 		require_once ROOT_DIR . '/sys/DBMaintenance/library_location_updates.php';
 		$library_location_updates = getLibraryLocationUpdates();
@@ -449,11 +393,27 @@ class SystemAPI extends AbstractAPI {
 		return $baseUpdates;
 	}
 
+	/**
+	 * Returns whether there are pending updates for the system
+	 *
+	 * @oauth false
+	 * @token false
+	 * @public false
+	 * @return bool
+	 */
 	public function hasPendingDatabaseUpdates() : bool {
 		$availableUpdates = $this->getPendingDatabaseUpdates();
 		return count($availableUpdates) > 0;
 	}
 
+	/**
+	 * Returns a list of database updates that have not been run.
+	 *
+	 * @oauth false
+	 * @token false
+	 * @public false
+	 * @return array
+	 */
 	public function getPendingDatabaseUpdates() : array {
 		$availableUpdates = $this->getDatabaseUpdates();
 		$availableUpdates = $this->checkWhichUpdatesHaveRun($availableUpdates);
@@ -462,6 +422,15 @@ class SystemAPI extends AbstractAPI {
 		});
 	}
 
+	/**
+	 * Runs a specific database update
+	 * @oauth false
+	 * @token false
+	 * @public false
+	 * @param $availableUpdates - An array of all available updates
+	 * @param $updateName - The name of the update to run
+	 * @return array
+	 */
 	public function runDatabaseUpdate(&$availableUpdates, $updateName) : array {
 		if ($availableUpdates == null) {
 			$availableUpdates = $this->getDatabaseUpdates();
@@ -500,6 +469,16 @@ class SystemAPI extends AbstractAPI {
 		}
 	}
 
+	/**
+	 * Runs a sql statement for a database update
+	 *
+	 * @oauth false
+	 * @token false
+	 * @public false
+	 * @param $update - Information about the update to be run
+	 * @param $sql - The specific SQL statement to run
+	 * @return bool
+	 */
 	private function runSQLStatement(&$update, $sql) : bool {
 		global $aspen_db;
 		set_time_limit(500);
@@ -530,6 +509,15 @@ class SystemAPI extends AbstractAPI {
 		return $updateOk;
 	}
 
+	/**
+	 * Updates that an update has been run within the database.
+	 *
+	 * @oauth false
+	 * @token false
+	 * @public false
+	 * @param $update_key - The name of the update that was run
+	 * @return void
+	 */
 	private function markUpdateAsRun($update_key) : void {
 		global $aspen_db;
 		$result = $aspen_db->query("SELECT * from db_update where update_key = " . $aspen_db->quote($update_key));
@@ -541,6 +529,11 @@ class SystemAPI extends AbstractAPI {
 		}
 	}
 
+	/**
+	 * Runs all pending database updates
+	 *
+	 * @return array
+	 */
 	public function runPendingDatabaseUpdates() : array {
 		$pendingUpdates = $this->getPendingDatabaseUpdates();
 		$numRun = 0;
@@ -582,7 +575,17 @@ class SystemAPI extends AbstractAPI {
 		];
 	}
 
-	public function checkWhichUpdatesHaveRun($availableUpdates) {
+	/**
+	 * Returns a list of updates that have been run. Not for use within APIs
+	 *
+	 * @param array $availableUpdates
+	 * @oauth false
+	 * @token false
+	 * @public false
+	 *
+	 * @return mixed
+	 */
+	public function checkWhichUpdatesHaveRun(array $availableUpdates) : array {
 		global $aspen_db;
 		foreach ($availableUpdates as $key => $update) {
 			$update['alreadyRun'] = false;

@@ -3844,33 +3844,29 @@ class MyAccount_AJAX extends JSON_Action {
 	}
 
 
-	private function filterHolds(array $allHolds, string $selectedUser, array $filters): array {
+	/**
+	 * Filter the holds for display to the user
+	 * @param array $allHolds - The full list of unfiltered holds.
+	 * @param array $filters - Information about the filters to apply to the holds.
+	 * @return array|array[]
+	 */
+	private function filterHolds(array $allHolds, array $filters): array {
 
-		$filteredHolds = [
-			'available' => [],
-			'unavailable' => [],
-			'cancelled' => [],
-		];
+		$filteredHolds = [];
 
 		// Check if we're filtering by a specific user
-		$allUsersSelected = (empty($selectedUser) || $selectedUser === '[""]');
-
-		foreach ($allHolds['available'] as $key => $hold) {
-			if (($allUsersSelected || intval($hold->userId) === intval($selectedUser)) && (empty($filters['userId']) || in_array($hold->userId, $filters['userId'])) && (empty($filters['status']) || in_array($hold->status, $filters['status'])) && (empty($filters['format']) || in_array($hold->format, $filters['format']))) {
-				$filteredHolds['available'][$key] = $hold;
-			}
-		}
-
-		foreach ($allHolds['unavailable'] as $key => $hold) {
-			if (($allUsersSelected || intval($hold->userId) === intval($selectedUser)) && (empty($filters['userId']) || in_array($hold->userId, $filters['userId'])) && (empty($filters['status']) || in_array($hold->status, $filters['status'])) && (empty($filters['format']) || in_array($hold->format, $filters['format']))) {
-				$filteredHolds['unavailable'][$key] = $hold;
-			}
-		}
-
-		if (isset($allHolds['cancelled'])) {
-			foreach ($allHolds['cancelled'] as $key => $hold) {
-				if (($allUsersSelected || intval($hold->userId) === intval($selectedUser)) && (empty($filters['userId']) || in_array($hold->userId, $filters['userId'])) && (empty($filters['status']) || in_array($hold->status, $filters['status'])) && (empty($filters['format']) || in_array($hold->format, $filters['format']))) {
-					$filteredHolds['cancelled'][$key] = $hold;
+		foreach ($allHolds as $group => $holdGroup) {
+			$filteredHolds[$group] = [];
+			foreach ($holdGroup as $hold) {
+				$holdIsValid = true;
+				foreach ($filters as $field => $filterInformation) {
+					if (!in_array($hold->$field, $filterInformation['selected'])) {
+						$holdIsValid = false;
+						break;
+					}
+				}
+				if ($holdIsValid) {
+					$filteredHolds[$group][] = $hold;
 				}
 			}
 		}
@@ -3955,32 +3951,45 @@ class MyAccount_AJAX extends JSON_Action {
 			}
 
 			$catalogDriver = $user->getCatalogDriver();
-			$allowHoldsToBeGrouped = $catalogDriver && $catalogDriver->supportsHyperholdsGrouping()
-				? User::resolveAllowHoldsToBeGrouped($user, $library)
-				: false;
+			$allowHoldsToBeGrouped = $catalogDriver && $catalogDriver->supportsHyperholdsGrouping() && User::resolveAllowHoldsToBeGrouped($user, $library);
 		
 			if ($allowHoldsToBeGrouped) {
-				$patronId = $user->unique_ils_id;
-				$groupedHoldsResponse = $catalogDriver->getPatronHoldGroups($patronId);
 				$groupedHolds = [];
-				if (isset($groupedHoldsResponse['content'])) {
-					if (is_string($groupedHoldsResponse['content'])) {
-						$groupedHolds = json_decode($groupedHoldsResponse['content'], true) ?: [];
-					} elseif (is_array($groupedHoldsResponse['content'])) {
-						$groupedHolds = $groupedHoldsResponse['content'];
+				$holdGroupUsers = array_merge([$user], $user->getLinkedUsers());
+				foreach ($holdGroupUsers as $holdGroupUser) {
+					$patronId = $holdGroupUser->unique_ils_id;
+					$groupedHoldsResponse = $catalogDriver->getPatronHoldGroups($patronId);
+
+					$patronGroups = [];
+					if (isset($groupedHoldsResponse['content'])) {
+						if (is_string($groupedHoldsResponse['content'])) {
+							$patronGroups = json_decode($groupedHoldsResponse['content'], true) ?: [];
+						} elseif (is_array($groupedHoldsResponse['content'])) {
+							$patronGroups = $groupedHoldsResponse['content'];
+						} else {
+							$logger->log(
+								'Unexpected type for groupedHoldsResponse["content"]: ' . gettype($groupedHoldsResponse['content']),
+								Logger::LOG_ERROR
+							);
+						}
+					} elseif (is_array($groupedHoldsResponse)) {
+						$patronGroups = $groupedHoldsResponse;
 					} else {
 						$logger->log(
-							'Unexpected type for groupedHoldsResponse["content"]: ' . gettype($groupedHoldsResponse['content']),
+							'Unexpected type for groupedHoldsResponse: ' . gettype($groupedHoldsResponse),
 							Logger::LOG_ERROR
 						);
 					}
-				} elseif (is_array($groupedHoldsResponse)) {
-					$groupedHolds = $groupedHoldsResponse;
-				} else {
-					$logger->log(
-						'Unexpected type for groupedHoldsResponse: ' . gettype($groupedHoldsResponse),
-						Logger::LOG_ERROR
-					);
+
+					if ($holdGroupUser->id !== $user->id) {
+						foreach ($patronGroups as &$patronGroup) {
+							$patronGroup['linked_user_id'] = $holdGroupUser->id;
+							$patronGroup['linked_user_name'] = $holdGroupUser->displayName;
+						}
+						unset($patronGroup);
+					}
+
+					$groupedHolds = array_merge($groupedHolds, $patronGroups);
 				}
 			}
 
@@ -4004,7 +4013,7 @@ class MyAccount_AJAX extends JSON_Action {
 				$interface->assign('allowFreezeHolds', false);
 			}
 
-			$interface->assign('allowHoldsToBeGrouped', $holdsSource === 'ils' ? $allowHoldsToBeGrouped : false);
+			$interface->assign('allowHoldsToBeGrouped', $allowHoldsToBeGrouped);
 
 			$showPosition = $user->showHoldPosition();
 			$suspendRequiresReactivationDate = $user->suspendRequiresReactivationDate();
@@ -4023,9 +4032,7 @@ class MyAccount_AJAX extends JSON_Action {
 				'format' => 'Format',
 			];
 			$unavailableHoldSortOptions['status'] = 'Status';
-			if ($holdsSource == 'all' || $holdsSource == 'ils') {
-				$unavailableHoldSortOptions['location'] = 'Pickup Location';
-			}
+			$unavailableHoldSortOptions['location'] = 'Pickup Location';
 			if ($showPosition) {
 				$unavailableHoldSortOptions['position'] = 'Position';
 			}
@@ -4046,9 +4053,7 @@ class MyAccount_AJAX extends JSON_Action {
 				'expire' => 'Expiration Date',
 				'placed' => 'Date Placed',
 			];
-			if ($holdsSource == 'all' || $holdsSource == 'ils') {
-				$availableHoldSortOptions['location'] = 'Pickup Location';
-			}
+			$availableHoldSortOptions['location'] = 'Pickup Location';
 
 			if (count($user->getLinkedUsers()) > 0) {
 				$unavailableHoldSortOptions['libraryAccount'] = 'Library Account';
@@ -4082,7 +4087,7 @@ class MyAccount_AJAX extends JSON_Action {
 				} else {
 					$selectedUnavailableSortOption = ($showPosition ? 'position' : 'title');
 				}
-							}
+			}
 
 			$user->updateSortPreferences();
 
@@ -4114,33 +4119,40 @@ class MyAccount_AJAX extends JSON_Action {
 				// Get & Set Filter Options
 				$activeFilters = $this->getActiveHoldFilters($filtersList);
 				$filters = $this->getHoldFiltersForUser($user, $activeFilters, $filtersList);
-				$interface->assign('filterOptions', $filters);
-				$result['filterOptions'] = $interface->fetch('MyAccount/holdsFilters.tpl');
+				//If we have nothing to filter, don't show the filter options
+				$showFilterOptions = false;
+				foreach ($filters as $filter) {
+					if (count($filter['options']) > 1) {
+						$showFilterOptions = true;
+					}
+				}
+				if ($showFilterOptions) {
+					$interface->assign('filterOptions', $filters);
+					$result['filterOptions'] = $interface->fetch('MyAccount/holdsFilters.tpl');
+				}
 
 
-				$allHolds = $this->filterHolds($user->getHolds(true, $selectedUnavailableSortOption, $selectedAvailableSortOption, 'all', $defaultCancelledSortOption), $selectedUser, $activeFilters);
+				$allHolds = $this->filterHolds($user->getHolds(true, $selectedUnavailableSortOption, $selectedAvailableSortOption, 'all', $defaultCancelledSortOption), $filters);
 				$hyperHolds = [];
 				$hiddenHoldIds = [];
 
 				if (!empty($groupedHolds) && !empty($allHolds['unavailable'])) {
 					foreach($groupedHolds as $group) {
 						if (!empty($group['holds']) && is_array($group['holds']) && count ($group['holds']) > 1) {
-							$groupBiblioIds = [];
 							$groupHoldIds = [];
 							foreach ($group['holds'] as $hold) {
-								$groupBiblioIds[] = $hold['biblio_id'] ?? null;
 								$groupHoldIds[] = $hold['hold_id'] ?? null;
 							}
 							$matchingHolds = [];
 							foreach ($allHolds['unavailable'] as $holdKey => $holdObj) {
-								if (in_array($holdObj->recordId, $groupBiblioIds)) {
+								if (in_array($holdObj->cancelId, $groupHoldIds)) {
 									$matchingHolds[] = $holdObj;
 									$hiddenHoldIds[] = $holdKey;
 								}
 							}
 							if (count($matchingHolds) > 1) {
 								$hyperHolds[] = [
-									'visual_hold_id' => $group['visual_hold_group_id'],
+									'visual_hold_id' => $group['hold_group_id'],
 									'hold_group_id' => $group['hold_group_id'],
 									'holdCount' => count($matchingHolds),
 									'holds' => $matchingHolds,
@@ -4201,12 +4213,8 @@ class MyAccount_AJAX extends JSON_Action {
 			$interface->assign('readerName', $readerName);
 			$interface->assign('showCancelled', $showCancelled);
 
-			if ($holdsSource == 'ils') {
-				$showAvailableHoldsSection = $library->showHoldsReadyForPickupSection == 1 || ($allHolds != null && count($allHolds['available']) > 0);
-				$interface->assign('showAvailableHoldsSection', $showAvailableHoldsSection);
-			} else {
-				$interface->assign('showAvailableHoldsSection', true);
-			}
+			$showAvailableHoldsSection = $library->showHoldsReadyForPickupSection == 1 || ($allHolds != null && count($allHolds['available']) > 0);
+			$interface->assign('showAvailableHoldsSection', $showAvailableHoldsSection);
 			$interface->assign('showHoldHelpMessages', $user->showHoldHelpMessages);
 
 			$result['holds'] = $interface->fetch('MyAccount/holdsList.tpl');
@@ -4221,46 +4229,81 @@ class MyAccount_AJAX extends JSON_Action {
 	}
 
 	/** Hold Filtering Functions */
-	private function getHoldFilterValue($hold, string $field): ?string {
+	private function getHoldFilterValue(Hold|array $hold, string $field): ?array {
 		if (is_array($hold)) {
-			return isset($hold[$field]) ? (string)$hold[$field] : null;
+			$fieldValue = isset($hold[$field]) ? (string)$hold[$field] : null;
+		}else{
+			$fieldValue = $hold->$field;
 		}
-		if (is_object($hold) && isset($hold->$field)) {
-			return (string)$hold->$field;
+
+		$label = $fieldValue;
+		//Do special processing of some fields
+		switch ($field) {
+			case "userId":
+				$label = $hold->getUserName();
+				break;
+			case "status":
+				if ($hold->available) {
+					$label = translate(['text' => 'Available', 'isPublicFacing' => true]);
+				}else{
+					if (empty($hold->status)) {
+						$label = translate(['text' => 'Unavailable', 'isPublicFacing' => true]);
+					}else{
+						$label = translate(['text' => (string)$hold->$field, 'isPublicFacing' => true]);
+					}
+				}
+				break;
+			case "format":
+				$label = translate(['text' => (string)$hold->$field, 'isPublicFacing' => true]);
+				break;
+			case "source":
+				switch ($hold->source) {
+					case 'ils':
+						$sourceUntranslated = 'Physical Materials';
+						break;
+					case 'overdrive':
+						$readerName = new OverDriveDriver();
+						$sourceUntranslated = $readerName->getReaderName();
+						break;
+					case 'cloud_library':
+						$sourceUntranslated = 'Cloud Library';
+						break;
+					case 'hoopla':
+						$sourceUntranslated = 'Hoopla';
+						break;
+					case 'axis360':
+						$sourceUntranslated = 'Boundless';
+						break;
+					default:
+						$sourceUntranslated = 'Unknown';
+				}
+				$label = translate(['text' => $sourceUntranslated, 'isPublicFacing' => true]);
+				break;
+			default:
+				$label = (string)$hold->$field;
 		}
-		return null;
+		return [
+			'value' => $fieldValue,
+			'label' => $label
+		];
 	}
 
-	private function getHoldMatchesFilters($hold, array $filters): bool {
-		foreach ($filters as $field => $allowedValues) {
-			if ($allowedValues === null || $allowedValues === '' || $allowedValues === []) {
-				continue;
-			}
-			if (!is_array($allowedValues)) {
-				$allowedValues = [$allowedValues];
-			}
-
-			$value = $this->getHoldFilterValue($hold, $field);
-			if ($value === null || !in_array($value, $allowedValues, true)) {
-				return false;
-			}
-		}
-		return true;
-	}
-
+	/**
+	 * Get the filters that apply to the active user's holds.
+	 *
+	 * @param User $user - The user that we are getting the filters for
+	 * @param array $activeFilters - The filters that have been applied by the user
+	 * @param array $filtersList - The list of filters that are available to the user
+	 * @return array
+	 */
 	private function getHoldFiltersForUser(User $user, array $activeFilters, array $filtersList): array {
+		//Get all holds for the user including linked users
 		$allHolds = $user->getHolds();
-		$holds = [];
 
-		foreach ([
-					 'available',
-					 'unavailable',
-					 'cancelled'
-				 ] as $group) {
-			if (empty($allHolds[$group]) || !is_array($allHolds[$group])) {
-				continue;
-			}
-			foreach ($allHolds[$group] as $hold) {
+		//Gather all holds into a single array
+		$holds = [];
+		foreach ($allHolds as $group => $holdGroup) {
+			foreach ($holdGroup as $hold) {
 				if (is_array($hold)) {
 					$hold['_holdGroup'] = $group;
 				} elseif (is_object($hold)) {
@@ -4270,77 +4313,26 @@ class MyAccount_AJAX extends JSON_Action {
 			}
 		}
 
+		//Loop through all the filters that we want to process to get the valid values for each
 		$filters = [];
-		$accountNameCache = [];
-		$baselineValuesByFacet = [];
 		foreach ($filtersList as $facet) {
-			$set = [];
+			$options = [];
 			foreach ($holds as $hold) {
 				$value = $this->getHoldFilterValue($hold, $facet);
-				if ($value !== null && $value !== '') {
-					$set[$value] = true;
+				if (!array_key_exists($value['value'], $options)) {
+					$options[$value['value']] = $value;
 				}
 			}
-			$values = array_keys($set);
-			sort($values, SORT_NATURAL | SORT_FLAG_CASE);
-			$baselineValuesByFacet[$facet] = $values;
-		}
-
-		foreach ($filtersList as $facet) {
-			$filtersForCounts = $activeFilters;
-			unset($filtersForCounts[$facet]);
-
-			$counts = [];
-			foreach ($holds as $hold) {
-				if (!$this->getHoldMatchesFilters($hold, $filtersForCounts)) {
-					continue;
-				}
-				$value = $this->getHoldFilterValue($hold, $facet);
-				if ($value === null || $value === '') {
-					continue;
-				}
-				$counts[$value] = ($counts[$value] ?? 0) + 1;
-			}
-
-			$selected = $activeFilters[$facet] ?? [];
-			if (!is_array($selected)) {
-				$selected = [$selected];
-			}
+			uasort($options, function ($a, $b) {
+				return strnatcasecmp($a['label'], $b['label']);
+			});
 
 			$noFiltersSet = empty($activeFilters);
 			if ($noFiltersSet) {
-				$selected = $baselineValuesByFacet[$facet] ?? [];
-			}
-
-			$values = $baselineValuesByFacet[$facet];
-			foreach ($selected as $selectedValue) {
-				if ($selectedValue !== null && $selectedValue !== '' && !in_array($selectedValue, $values, true)) {
-					$values[] = (string)$selectedValue;
-				}
-			}
-
-			$options = [];
-			$selectedValues = [];
-			foreach ($values as $value) {
-				$isSelected = in_array($value, $selected, true);
-
-				$label = (string)$value;
-				if ($facet === 'userId') {
-					$accountId = (string)$value;
-					if (!array_key_exists($accountId, $accountNameCache)) {
-						$tmpUser = $user->getUserReferredTo($accountId);
-						$accountNameCache[$accountId] = $tmpUser ? $tmpUser->getDisplayName() : null;
-					}
-					if (!empty($accountNameCache[$accountId])) {
-						$label = $accountNameCache[$accountId];
-					}
-				}
-
-				$options[(string)$value] = $label;
-
-				if ($isSelected) {
-					$selectedValues[] = (string)$value;
-				}
+				$selectedValues = array_keys($options);
+			}else{
+				//Get selected values from the active filters. If nothing is provided, use all options since we don't show options with only 1 value.
+				$selectedValues = $activeFilters[$facet] ?? array_keys($options);
 			}
 
 			$filters[$facet] = [
@@ -4378,6 +4370,12 @@ class MyAccount_AJAX extends JSON_Action {
 		return array_keys($out);
 	}
 
+	/**
+	 * Get a list of filters that are being applied to the hold list by the user.
+	 *
+	 * @param array $filtersList
+	 * @return array
+	 */
 	private function getActiveHoldFilters(array $filtersList): array {
 		$filters = [];
 		$rawFilters = $_REQUEST['filters'] ?? null;
@@ -4756,7 +4754,7 @@ class MyAccount_AJAX extends JSON_Action {
 		// Hide Covers when the user has set that setting on a Search Results Page
 		// this is the same setting as used by the MyAccount Pages for now.
 		$showCovers = true;
-		if (isset($_REQUEST['showCovers'])) {
+		if (isset($_REQUEST['showCovers']) && $_REQUEST['showCovers'] !== 'null' && $_REQUEST['showCovers'] !== 'undefined') {
 			$showCovers = ($_REQUEST['showCovers'] == 'on' || $_REQUEST['showCovers'] == 'true');
 			if (isset($_SESSION)) {
 				$_SESSION['showCovers'] = $showCovers;
@@ -10414,7 +10412,13 @@ class MyAccount_AJAX extends JSON_Action {
 		$this->requireLoggedInUser();
 		global $interface;
 
+		$user = UserAccount::getLoggedInUser();
+		$activeMethods = explode(',', $user->twoFactorMethod);
 		$methodToCancel = $_REQUEST['type'];
+		$willHave2FAActiveAfterRemoval = count($activeMethods) > 1;
+		$interface->assign('willHave2FAActiveAfterRemoval', $willHave2FAActiveAfterRemoval);
+		$interface->assign('methodToCancel', $methodToCancel);
+
 		// on submit of button, update user table for (un)enrollment status
 		return [
 			'success' => true,

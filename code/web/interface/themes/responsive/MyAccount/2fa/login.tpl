@@ -19,8 +19,7 @@
 						<label for="code">{translate text="6-digit code" isPublicFacing=true}</label>
 						<input type="text" class="form-control" id="code" name="code" maxlength="6" spellcheck="false" autocomplete="false">
 					</div>
-					<div class="alert alert-danger" id="codeVerificationFailedPlaceholder" style="display: none;"></div>
-                    {if $hasEmail && !$hasTotp}
+					{if $hasEmail && !$hasTotp}
 						<a class="btn btn-xs btn-link" style="margin-top: 2em" onclick="return AspenDiscovery.Account.new2FACode();">{translate text="Code expired? Send another" isPublicFacing=true}</a>
 						<div id="newCodeSentPlaceholder" class="alert alert-info" style="display: none;"></div>
                     {/if}
@@ -83,17 +82,17 @@
                     {/if}
 
 					<div id="alt-method-backup" class="alt-method-form" style="margin-top: 2em; display: none;">
-						<div id="alt-method-backup" class="alt-method-form" style="display:none;">
-							<div class="form-group">
-								<label for="code_backup">{translate text='Backup Code' isPublicFacing=true}</label>
-								<input type="text" class="form-control alt-code-input" id="code_backup" data-method="backup" autocomplete="off">
-							</div>
+						<div class="form-group">
+							<label for="code_backup">{translate text='Backup Code' isPublicFacing=true}</label>
+							<input type="text" class="form-control alt-code-input" id="code_backup" data-method="backup" autocomplete="off">
 						</div>
 					</div>
 				</div>
 			</div>
 		</div>
 	</div>
+
+	<div class="alert alert-danger" id="codeVerificationFailedPlaceholder" style="display: none;"></div>
 
 	<script>
 		$('.alt-method-toggle').on('click', function(e){

@@ -2247,4 +2247,12 @@ class CatalogConnection {
 	public function isPatronAccountLocked(User $patron, $fine): bool {
 		return $this->driver->isPatronAccountLocked($patron, $fine);
 	}
+
+	public function supportsHyperholdsGrouping(): bool {
+		return $this->driver->supportsHyperholdsGrouping();
+	}
+
+	public function getPatronHoldGroups($patronId): ?array {
+		return $this->driver->getPatronHoldGroups($patronId);
+	}
 }

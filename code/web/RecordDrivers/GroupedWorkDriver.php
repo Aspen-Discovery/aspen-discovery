@@ -1940,6 +1940,16 @@ class GroupedWorkDriver extends IndexRecordDriver {
 				$defaultAvailabilityToggle = $searchLibrary->getGroupedWorkDisplaySettings()->defaultAvailabilityToggle;
 			}
 
+			$requestSource = $_REQUEST['requestSource'] ?? '';
+			if ($requestSource == 'getMoreLikeThis') {
+				if ($searchLibrary->moreLikeThisSettings == 2 || $searchLibrary->moreLikeThisSettings == 3) {
+					$defaultAvailabilityToggle = 'local';
+				}
+				if (($searchLibrary->moreLikeThisSettings == 3 || $searchLibrary->moreLikeThisSettings == 4) && !empty($_REQUEST['format'])) {
+					$selectedFormat[] = $_REQUEST['format'];
+				}
+			}
+
 			if (empty($selectedAvailability) && $defaultAvailabilityToggle != 'global') {
 				$selectedAvailability[] = $defaultAvailabilityToggle;
 			}
@@ -2036,13 +2046,14 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		}
 	}
 
-	public function getScrollerTitle($index, $scrollerName) {
+	public function getScrollerTitle($index, $scrollerName, $format = null) {
 		global $interface;
 		$interface->assign('index', $index);
 		$interface->assign('scrollerName', $scrollerName);
 		$interface->assign('id', $this->getPermanentId());
 		$interface->assign('title', $this->getTitle());
 		$interface->assign('linkUrl', $this->getLinkUrl());
+		$interface->assign('format', $format);
 		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
 		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
 
@@ -2053,6 +2064,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 			'image' => $this->getBookcoverUrl('medium'),
 			'title' => $this->getTitle(),
 			'author' => $this->getPrimaryAuthor(),
+			'format' => $format,
 			'formattedTitle' => $interface->fetch('RecordDrivers/GroupedWork/scroller-title.tpl'),
 		];
 	}

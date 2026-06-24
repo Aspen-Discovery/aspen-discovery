@@ -447,7 +447,7 @@ abstract class MarcRecordProcessor {
 		seriesFields = MarcUtil.getDataFields(record, 490);
 		for (DataField seriesField : seriesFields){
 			// Include only uncontrolled series from 490, since controlled will also be in 800/830
-			if (seriesField.getIndicator1() == '0') {
+			if (seriesField.getIndicator1() == '0' || seriesField.getIndicator1() == ' ') {
 				String series = AspenStringUtils.trimTrailingPunctuation(MarcUtil.getSpecifiedSubfieldsAsString(seriesField, "a", " ")).toString();
 				//Remove anything in parentheses since it's normally just the format
 				//series = series.replaceAll("\\s+\\(.*?\\)", "");
