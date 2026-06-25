@@ -207,6 +207,8 @@ class Library extends DataObject {
 	public $showLogMeOutAfterPlacingHolds;
 	public $showHoldFeeMessage;
 	public $enableBookings;
+	public $enableBookingUpdates;
+	public $enableBookingCancellations;
 	public $displayItemBarcode;
 	public $displayHoldsOnCheckout;
 	public $showCheckoutRenewalFeeMessage;
@@ -2799,6 +2801,24 @@ class Library extends DataObject {
 								'type' => 'checkbox',
 								'label' => 'Enable Bookings',
 								'description' => 'Whether or not patrons can place item-level bookings via Aspen. Requires the Koha Bookings module to be enabled in the ILS.',
+								'hideInLists' => true,
+								'default' => 0,
+								'relatedIls' => ['koha'],
+							],
+							'enableBookingUpdates' => [
+								'property' => 'enableBookingUpdates',
+								'type' => 'checkbox',
+								'label' => 'Enable Booking Updates',
+								'description' => 'Whether or not patrons can update item-level bookings via Aspen. Requires the Koha Bookings module to be enabled in the ILS.',
+								'hideInLists' => true,
+								'default' => 0,
+								'relatedIls' => ['koha'],
+							],
+							'enableBookingCancellations' => [
+								'property' => 'enableBookingCancellations',
+								'type' => 'checkbox',
+								'label' => 'Enable Booking Cancellations',
+								'description' => 'Whether or not patrons can cancel item-level bookings via Aspen. Requires the Koha Bookings module to be enabled in the ILS.',
 								'hideInLists' => true,
 								'default' => 0,
 								'relatedIls' => ['koha'],
