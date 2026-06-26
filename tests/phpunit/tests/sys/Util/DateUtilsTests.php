@@ -67,4 +67,70 @@ class DateUtilsTests extends TestCase {
 		$timestamp = strtotime('2025-03-15 00:00:00');
 		$this->assertSame('2025-03-15', \DateUtils::formatDateLocale($timestamp, 'medium', 'none', 'yyyy-MM-dd'));
 	}
+
+	public static function emptyTimeRangeProvider(): array {
+		return [
+			'both empty'        => ['', ''],
+			'empty start'       => ['', '2025-01-01 10:00:00'],
+			'empty end'         => ['2025-01-01 09:00:00', ''],
+			'unparseable start' => ['not a time', '2025-01-01 10:00:00'],
+			'unparseable end'   => ['2025-01-01 09:00:00', 'not a time'],
+		];
+	}
+
+	#[DataProvider('emptyTimeRangeProvider')]
+	public function testFormatTimeRangeReturnsEmptyForInvalidInput($start, $end): void {
+		$this->assertSame('', \DateUtils::formatTimeRange($start, $end));
+	}
+
+	public static function timeRangeProvider(): array {
+		return [
+			'both am, 12h'             => ['2025-01-01 09:00:00', '2025-01-01 10:30:00', '12', '9:00 - 10:30 AM'],
+			'both pm, 12h'             => ['2025-01-01 13:00:00', '2025-01-01 14:30:00', '12', '1:00 - 2:30 PM'],
+			'across noon, 12h'         => ['2025-01-01 09:00:00', '2025-01-01 13:00:00', '12', '9:00 AM - 1:00 PM'],
+			'noon boundary differs'    => ['2025-01-01 11:00:00', '2025-01-01 12:00:00', '12', '11:00 AM - 12:00 PM'],
+			'noon and after same half' => ['2025-01-01 12:00:00', '2025-01-01 13:00:00', '12', '12:00 - 1:00 PM'],
+			'24 hour format'           => ['2025-01-01 09:00:00', '2025-01-01 10:30:00', '24', '09:00 - 10:30'],
+		];
+	}
+
+	#[DataProvider('timeRangeProvider')]
+	public function testFormatTimeRange($start, $end, $format, $expected): void {
+		$this->assertSame($expected, \DateUtils::formatTimeRange($start, $end, $format));
+	}
+
+	public function testFormatTimeRangeAcceptsDateTimeObjects(): void {
+		$start = new \DateTime('2025-01-01 09:00:00', new \DateTimeZone('UTC'));
+		$end = new \DateTime('2025-01-01 10:30:00', new \DateTimeZone('UTC'));
+		$this->assertSame('9:00 - 10:30 AM', \DateUtils::formatTimeRange($start, $end, '12'));
+	}
+
+	public function testFormatTimeRangePartsReturnsSeparateStartAndEnd(): void {
+		$parts = \DateUtils::formatTimeRangeParts('2025-01-01 09:00:00', '2025-01-01 10:30:00', '12');
+		$this->assertSame('9:00', $parts['start']);
+		$this->assertSame('10:30 AM', $parts['end']);
+	}
+
+	public function testFormatTimeRangePartsAreEmptyForInvalidInput(): void {
+		$this->assertSame(['start' => '', 'end' => ''], \DateUtils::formatTimeRangeParts('', ''));
+	}
+
+	public function testFormatTimeRangeDefaultsTo12Hour(): void {
+		$this->assertSame('9:00 - 10:30 AM', \DateUtils::formatTimeRange('2025-01-01 09:00:00', '2025-01-01 10:30:00'));
+	}
+
+	public function testFormatTimeRangeForces12HourEvenInA24HourLocale(): void {
+		global $activeLanguage;
+		$activeLanguage = (object)['locale' => 'en_GB'];
+		$default = \DateUtils::formatTimeRange('2025-01-01 11:00:00', '2025-01-01 16:00:00');
+		$this->assertMatchesRegularExpression('/\d{1,2}:\d{2}\s*[ap]m/i', $default);
+		$this->assertStringNotContainsString('16:00', $default);
+		$this->assertSame(\DateUtils::formatTimeRange('2025-01-01 11:00:00', '2025-01-01 16:00:00', '12'), $default);
+	}
+
+	public function testFormatTimeRangeForces24HourOnRequest(): void {
+		global $activeLanguage;
+		$activeLanguage = (object)['locale' => 'en_US'];
+		$this->assertSame('09:00 - 16:00', \DateUtils::formatTimeRange('2025-01-01 09:00:00', '2025-01-01 16:00:00', '24'));
+	}
 }
