@@ -105,14 +105,22 @@ class DateUtilsTests extends TestCase {
 		$this->assertSame('9:00 - 10:30 AM', \DateUtils::formatTimeRange($start, $end, '12'));
 	}
 
-	public function testFormatTimeRangePartsReturnsSeparateStartAndEnd(): void {
+	public function testFormatTimeRangePartsCollapseExposesStartMeridiem(): void {
 		$parts = \DateUtils::formatTimeRangeParts('2025-01-01 09:00:00', '2025-01-01 10:30:00', '12');
 		$this->assertSame('9:00', $parts['start']);
+		$this->assertSame('AM', $parts['startMeridiem']);
 		$this->assertSame('10:30 AM', $parts['end']);
 	}
 
+	public function testFormatTimeRangePartsAcrossNoonKeepStartMeridiemInline(): void {
+		$parts = \DateUtils::formatTimeRangeParts('2025-01-01 09:00:00', '2025-01-01 13:00:00', '12');
+		$this->assertSame('9:00 AM', $parts['start']);
+		$this->assertSame('', $parts['startMeridiem']);
+		$this->assertSame('1:00 PM', $parts['end']);
+	}
+
 	public function testFormatTimeRangePartsAreEmptyForInvalidInput(): void {
-		$this->assertSame(['start' => '', 'end' => ''], \DateUtils::formatTimeRangeParts('', ''));
+		$this->assertSame(['start' => '', 'startMeridiem' => '', 'end' => ''], \DateUtils::formatTimeRangeParts('', ''));
 	}
 
 	public function testFormatTimeRangeDefaultsTo12Hour(): void {
@@ -132,5 +140,24 @@ class DateUtilsTests extends TestCase {
 		global $activeLanguage;
 		$activeLanguage = (object)['locale' => 'en_US'];
 		$this->assertSame('09:00 - 16:00', \DateUtils::formatTimeRange('2025-01-01 09:00:00', '2025-01-01 16:00:00', '24'));
+	}
+
+	public function testFormatDateTimeLocaleCombinesLocaleDateAnd12HourTime(): void {
+		$result = \DateUtils::formatDateTimeLocale('2025-07-07 09:00:00', 'long');
+		$this->assertStringContainsString('July 7, 2025', $result);
+		$this->assertStringContainsString('9:00 AM', $result);
+	}
+
+	public function testFormatDateTimeLocaleForces12HourInA24HourLocale(): void {
+		global $activeLanguage;
+		$activeLanguage = (object)['locale' => 'en_GB'];
+		$result = \DateUtils::formatDateTimeLocale('2025-07-07 16:00:00', 'long');
+		$this->assertStringContainsString('7 July 2025', $result);
+		$this->assertMatchesRegularExpression('/4:00\s*pm/i', $result);
+		$this->assertStringNotContainsString('16:00', $result);
+	}
+
+	public function testFormatDateTimeLocaleEmptyForInvalidInput(): void {
+		$this->assertSame('', \DateUtils::formatDateTimeLocale(''));
 	}
 }
