@@ -114,7 +114,7 @@ class DateUtils {
 
 	static function formatTimeRangeParts($startTime, $endTime, $format = null): array {
 		global $activeLanguage;
-		$empty = ['start' => '', 'end' => ''];
+		$empty = ['start' => '', 'startMeridiem' => '', 'end' => ''];
 
 		if (empty($startTime) || empty($endTime)) {
 			return $empty;
@@ -150,8 +150,9 @@ class DateUtils {
 			$formatter = new IntlDateFormatter($locale, IntlDateFormatter::NONE, IntlDateFormatter::NONE, $timezone);
 			$formatter->setPattern('HH:mm');
 			return [
-				'start' => $formatter->format($startTimestamp),
-				'end'   => $formatter->format($endTimestamp),
+				'start'         => $formatter->format($startTimestamp),
+				'startMeridiem' => '',
+				'end'           => $formatter->format($endTimestamp),
 			];
 		}
 
@@ -162,9 +163,29 @@ class DateUtils {
 
 		$sameHalf = ((int)date('G', $startTimestamp) < 12) === ((int)date('G', $endTimestamp) < 12);
 
+		if ($sameHalf) {
+			$meridiemOnly = new IntlDateFormatter($locale, IntlDateFormatter::NONE, IntlDateFormatter::NONE, $timezone);
+			$meridiemOnly->setPattern('a');
+			return [
+				'start'         => $noMeridiem->format($startTimestamp),
+				'startMeridiem' => $meridiemOnly->format($startTimestamp),
+				'end'           => $withMeridiem->format($endTimestamp),
+			];
+		}
+
 		return [
-			'start' => ($sameHalf ? $noMeridiem : $withMeridiem)->format($startTimestamp),
-			'end'   => $withMeridiem->format($endTimestamp),
+			'start'         => $withMeridiem->format($startTimestamp),
+			'startMeridiem' => '',
+			'end'           => $withMeridiem->format($endTimestamp),
 		];
+	}
+
+	static function formatDateTimeLocale($value, $dateStyle = 'long'): string {
+		$date = self::formatDateLocale($value, $dateStyle);
+		if ($date === '') {
+			return '';
+		}
+		$time = self::formatDateLocale($value, 'medium', 'none', 'h:mm a');
+		return $date . ' ' . $time;
 	}
 }
