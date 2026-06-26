@@ -68,15 +68,15 @@
 			<div class="col-xs-8">
 				<ul>
 					{if $recordDriver->isAllDayEvent()}
-						<li>{translate text="Date: " isPublicFacing=true}{$recordDriver->getStartDate()|date_format:"%A %B %e, %Y"}</li>
+						<li>{translate text="Date: " isPublicFacing=true}{$recordDriver->getStartDate()|format_date_locale:'full'}</li>
 						<li>{translate text="Time: All Day Event" isPublicFacing=true}</li>
 					{elseif $recordDriver->isMultiDayEvent()}
-						<li>{translate text="Start Date: " isPublicFacing=true}{$recordDriver->getStartDate()|date_format:"%a %b %e, %Y %l:%M%p"}</li>
-						<li>{translate text="End Date: " isPublicFacing=true}{$recordDriver->getEndDate()|date_format:"%a %b %e, %Y %l:%M%p"}</li>
+						<li>{translate text="Start Date: " isPublicFacing=true}{$recordDriver->getStartDate()|format_date_locale:'long':'short'}</li>
+						<li>{translate text="End Date: " isPublicFacing=true}{$recordDriver->getEndDate()|format_date_locale:'long':'short'}</li>
 					{else}
-						<li>{translate text="Date: " isPublicFacing=true}{$recordDriver->getStartDate()|date_format:"%A %B %e, %Y"}</li>
+						<li>{translate text="Date: " isPublicFacing=true}{$recordDriver->getStartDate()|format_date_locale:'full'}</li>
 						{if !$recordDriver->hiddenTimestamps()}
-							<li>{translate text="Time: " isPublicFacing=true}{$recordDriver->getStartDate()|date_format:"%l:%M %p"} to {$recordDriver->getEndDate()|date_format:"%l:%M %p"}</li>
+							<li>{translate text="Time: " isPublicFacing=true}{$recordDriver->getStartDate()|format_time_range_locale:$recordDriver->getEndDate()}</li>
 						{/if}
 					{/if}
 					<li>{translate text="Branch: " isPublicFacing=true}{$recordDriver->getBranch()}</li>
