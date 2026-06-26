@@ -179,7 +179,7 @@ class Grouping_Record {
 			}
 			$this->_statusInformation->addHoldableCopies($item->numCopies);
 		}
-		if ($item->bookable) {
+		if ($item->bookable && $item->libraryOwned) {
 			$this->_bookable = true;
 		}
 

@@ -3987,7 +3987,7 @@ class UserAPI extends AbstractAPI {
 			];
 		}
 
-		$bookableItems = array_values(array_filter($marcRecord->getCopies(), fn($item) => !empty($item['bookable'])));
+		$bookableItems = array_values(array_filter($marcRecord->getCopies(), fn($item) => !empty($item['bookable']) && !empty($item['isLibraryItem'])));
 		require_once ROOT_DIR . '/sys/LibraryLocation/Location.php';
 		$location = new Location();
 		$pickupLocations = $location->getPickupBranches($user);
