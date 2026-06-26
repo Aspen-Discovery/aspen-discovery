@@ -71,8 +71,8 @@
 						<li>{translate text="Date: " isPublicFacing=true}{$recordDriver->getStartDate()|format_date_locale:'full'}</li>
 						<li>{translate text="Time: All Day Event" isPublicFacing=true}</li>
 					{elseif $recordDriver->isMultiDayEvent()}
-						<li>{translate text="Start Date: " isPublicFacing=true}{$recordDriver->getStartDate()|format_date_locale:'long':'short'}</li>
-						<li>{translate text="End Date: " isPublicFacing=true}{$recordDriver->getEndDate()|format_date_locale:'long':'short'}</li>
+						<li>{translate text="Start Date: " isPublicFacing=true}{$recordDriver->getStartDate()|format_datetime_locale:'long'}</li>
+						<li>{translate text="End Date: " isPublicFacing=true}{$recordDriver->getEndDate()|format_datetime_locale:'long'}</li>
 					{else}
 						<li>{translate text="Date: " isPublicFacing=true}{$recordDriver->getStartDate()|format_date_locale:'full'}</li>
 						{if !$recordDriver->hiddenTimestamps()}

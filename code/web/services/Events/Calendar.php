@@ -364,9 +364,11 @@ class Events_Calendar extends Action {
 						if (($endDate->getTimestamp() - $startDate->getTimestamp()) > 24 * 60 * 60) {
 							$formattedTime = 'All day';
 						} else {
-							// Wrap the end time in a span so the calendar can hide it responsively.
 							$timeParts = DateUtils::formatTimeRangeParts($startDate, $endDate);
-							$formattedTime = $timeParts['start'] . '<span class="end-time"> - ' . $timeParts['end'] . '</span>';
+							$startMeridiem = $timeParts['startMeridiem'] !== ''
+								? '<span class="start-meridiem"> ' . $timeParts['startMeridiem'] . '</span>'
+								: '';
+							$formattedTime = $timeParts['start'] . $startMeridiem . '<span class="end-time"> - ' . $timeParts['end'] . '</span>';
 						}
 						$isCancelled = false;
 						if (array_key_exists('reservation_state', $result) && in_array('Cancelled', $result['reservation_state'])) {
