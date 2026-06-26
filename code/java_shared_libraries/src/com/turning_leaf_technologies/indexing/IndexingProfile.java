@@ -128,6 +128,8 @@ public class IndexingProfile extends BaseIndexingSettings {
 	// Whether to ignore on-order records when selecting titles for display in grouped works.
 	private boolean prioritizeAvailableRecordsForTitleSelection = false;
 
+	//0 = do not index bookability, 1 = index for the owning library only, TODO: 2 = all libraries reserved for cross-library bookings
+
 	public IndexingProfile(String serverName, BaseIndexingLogEntry logEntry){
 		//This is only intended to be used for unit testing
 		super(serverName, logEntry);
@@ -1209,6 +1211,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 	public boolean getPrioritizeAvailableRecordsForTitleSelection() {
 		return prioritizeAvailableRecordsForTitleSelection;
 	}
+
 
 	/**
 	 * Sets the flag indicating whether on-order records should be ignored for title selection.

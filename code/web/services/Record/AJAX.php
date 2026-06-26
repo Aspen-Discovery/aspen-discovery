@@ -2760,7 +2760,7 @@ class Record_AJAX extends JSON_Action {
 			return $this->failureResult('Unable to place booking', 'Bookings are not supported for this record.');
 		}
 
-		$bookableItems = array_filter($marcRecord->getCopies(), fn($item) => !empty($item['bookable']));
+		$bookableItems = array_filter($marcRecord->getCopies(), fn($item) => !empty($item['bookable']) && !empty($item['isLibraryItem']));
 		if (empty($bookableItems)) {
 			return $this->failureResult('Unable to place booking', 'No bookable items found for this record.');
 		}
