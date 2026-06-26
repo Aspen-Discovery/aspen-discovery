@@ -2766,6 +2766,10 @@ class Record_AJAX extends JSON_Action {
 		}
 
 		$user = UserAccount::getLoggedInUser();
+		if (empty($user->unique_ils_id)) {
+			return $this->failureResult('Unable to place booking', 'You need an ILS account to use this feature.');
+		}
+
 		require_once ROOT_DIR . '/sys/LibraryLocation/Location.php';
 		$location = new Location();
 		$pickupLocations = $location->getPickupBranches($user);
