@@ -103,4 +103,68 @@ class DateUtils {
 
 		return $formatter->format($timestamp);
 	}
+
+	static function formatTimeRange($startTime, $endTime, $format = null): string {
+		$parts = self::formatTimeRangeParts($startTime, $endTime, $format);
+		if ($parts['start'] === '' && $parts['end'] === '') {
+			return '';
+		}
+		return $parts['start'] . ' - ' . $parts['end'];
+	}
+
+	static function formatTimeRangeParts($startTime, $endTime, $format = null): array {
+		global $activeLanguage;
+		$empty = ['start' => '', 'end' => ''];
+
+		if (empty($startTime) || empty($endTime)) {
+			return $empty;
+		}
+
+		if ($startTime instanceof DateTime) {
+			$startTimestamp = $startTime->getTimestamp();
+		} elseif (is_numeric($startTime)) {
+			$startTimestamp = (int)$startTime;
+		} else {
+			$startTimestamp = strtotime($startTime);
+		}
+
+		if ($endTime instanceof DateTime) {
+			$endTimestamp = $endTime->getTimestamp();
+		} elseif (is_numeric($endTime)) {
+			$endTimestamp = (int)$endTime;
+		} else {
+			$endTimestamp = strtotime($endTime);
+		}
+
+		if ($startTimestamp === false || $startTimestamp === -1 ||
+			$endTimestamp === false || $endTimestamp === -1) {
+			return $empty;
+		}
+
+		$locale = $activeLanguage->locale ?? 'en_US';
+		$timezone = date_default_timezone_get();
+
+		$use12Hour = $format !== '24';
+
+		if (!$use12Hour) {
+			$formatter = new IntlDateFormatter($locale, IntlDateFormatter::NONE, IntlDateFormatter::NONE, $timezone);
+			$formatter->setPattern('HH:mm');
+			return [
+				'start' => $formatter->format($startTimestamp),
+				'end'   => $formatter->format($endTimestamp),
+			];
+		}
+
+		$withMeridiem = new IntlDateFormatter($locale, IntlDateFormatter::NONE, IntlDateFormatter::NONE, $timezone);
+		$withMeridiem->setPattern('h:mm a');
+		$noMeridiem = new IntlDateFormatter($locale, IntlDateFormatter::NONE, IntlDateFormatter::NONE, $timezone);
+		$noMeridiem->setPattern('h:mm');
+
+		$sameHalf = ((int)date('G', $startTimestamp) < 12) === ((int)date('G', $endTimestamp) < 12);
+
+		return [
+			'start' => ($sameHalf ? $noMeridiem : $withMeridiem)->format($startTimestamp),
+			'end'   => $withMeridiem->format($endTimestamp),
+		];
+	}
 }
