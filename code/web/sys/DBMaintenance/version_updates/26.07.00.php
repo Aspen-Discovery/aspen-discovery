@@ -31,6 +31,14 @@ function getUpdates26_07_00(): array {
 				'ALTER TABLE system_variables ADD COLUMN userAgentRetentionMonths INT NOT NULL DEFAULT 3'
 			]
 		], //add_user_agent_retention_months
+		'add_user_agent_usage_year_month_index' => [
+			'title' => 'Add User Agent Usage Year Month Index',
+			'description' => 'Add an index on year and month to usage_by_user_agent for retention cleanup',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE usage_by_user_agent ADD INDEX idx_year_month (year, month)'
+			]
+		], //add_user_agent_usage_year_month_index
 
 		//imani
 
