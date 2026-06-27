@@ -61,14 +61,14 @@
 								{if is_array($summAuthor)}
 									{foreach from=$summAuthor item=author}
 										{if !$talpaResult}
-											<a href='/Author/Home?author="{$author|escape:"url"}"'>{$author|highlight}</a>
+											<a href='/Search/Results?lookfor={$author|escape:"url"}&searchIndex=Author'>{$author|highlight}</a>
 										{else}
 											{$author|highlight}
 										{/if}
 									{/foreach}
 								{else}
 									{if !$talpaResult}
-										<a href='/Author/Home?author="{$summAuthor|escape:"url"}"'>{$summAuthor|highlight}</a>
+										<a href='/Search/Results?lookfor={$summAuthor|escape:"url"}&searchIndex=Author'>{$summAuthor|highlight}</a>
 									{else}
 										{$summAuthor|highlight}
 									{/if}

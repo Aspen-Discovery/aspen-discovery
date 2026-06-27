@@ -41,14 +41,14 @@
 								{if $author == "Various"}
 									{translate text="Various" isPublicFacing=true}
 								{else}
-									<a href='/Author/Home?author="{$author|escape:"url"}"'>{$author|highlight}</a> <br/>
+									<a href='/Search/Results?lookfor={$author|escape:"url"}&searchIndex=Author'>{$author|highlight}</a> <br/>
 								{/if}
 							{/foreach}
 						{else}
 							{if $author == "Various"}
 								{translate text="Various" isPublicFacing=true}
 							{else}
-								<a href='/Author/Home?author="{$summAuthor|escape:"url"}"'>{$summAuthor|highlight}</a>
+								<a href='/Search/Results?lookfor={$summAuthor|escape:"url"}&searchIndex=Author'>{$summAuthor|highlight}</a>
 							{/if}
 						{/if}
 					</div>

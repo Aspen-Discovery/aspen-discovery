@@ -29,10 +29,10 @@
 						<div class="result-value col-tn-9 col-xs-9 notranslate">
 							{if is_array($placeholder['author'])}
 								{foreach from=$placeholder['author'] item=author}
-									<a href='/Author/Home?author="{$author|escape:"url"}"'>{$author|highlight}</a> <br/>
+									<a href='/Search/Results?lookfor={$author|escape:"url"}&searchIndex=Author'>{$author|highlight}</a> <br/>
 								{/foreach}
 							{else}
-								<a href='/Author/Home?author="{$placeholder['author']|escape:"url"}"'>{$placeholder['author']|highlight}</a>
+								<a href='/Search/Results?lookfor={$placeholder['author']|escape:"url"}&searchIndex=Author'>{$placeholder['author']|highlight}</a>
 							{/if}
 						</div>
 					</div>

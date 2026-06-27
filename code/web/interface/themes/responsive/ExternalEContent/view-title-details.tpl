@@ -4,7 +4,7 @@
 		<div class="row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text=Author isPublicFacing=true} </div>
 			<div class="result-value col-sm-8 col-xs-12">
-				<a href='/Author/Home?author="{$recordDriver->getAuthor()|escape:"url"}"'>{$recordDriver->getAuthor()|highlight}</a>
+				<a href='/Search/Results?lookfor={$recordDriver->getAuthor()|escape:"url"}&searchIndex=Author'>{$recordDriver->getAuthor()|highlight}</a>
 			</div>
 		</div>
 	{/if}

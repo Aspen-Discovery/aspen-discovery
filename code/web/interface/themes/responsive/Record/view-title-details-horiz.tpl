@@ -19,7 +19,7 @@
             {if empty($recordDriver->getAuthor()) && !empty($recordDriver->get880Authors())}
 				<span class="agrAuthor">{implode subject=$recordDriver->get880Authors() glue=',' removeTrailingPunctuationFromTerms=true}</span>
             {else}
-				<a href='/Author/Home?author="{$recordDriver->getAuthor()|escape:"url"}"'>{$recordDriver->getAuthor()|highlight}</a>{if !empty($recordDriver->get880Authors())} <span class="agrAuthor">({implode subject=$recordDriver->get880Authors() glue=',' removeTrailingPunctuationFromTerms=true})</span>{/if}<br/>
+				<a href='/Search/Results?lookfor={$recordDriver->getAuthor()|escape:"url"}&searchIndex=Author'>{$recordDriver->getAuthor()|highlight}</a>{if !empty($recordDriver->get880Authors())} <span class="agrAuthor">({implode subject=$recordDriver->get880Authors() glue=',' removeTrailingPunctuationFromTerms=true})</span>{/if}<br/>
             {/if}
 		</div>
 	</div>
@@ -42,7 +42,7 @@
                 {else}
 				<div class="contributor">
                     {/if}
-					<a href='/Author/Home?author="{$contributor.name|trim|escape:"url"}"'>{$contributor.name|escape}</a>
+					<a href='/Search/Results?lookfor={$contributor.name|trim|escape:"url"}&searchIndex=Author'>{$contributor.name|escape}</a>
                     {if !empty($contributor.roles)}
 						&nbsp;{implode subject=$contributor.roles glue=", " translate=true isPublicFacing=true removeTrailingPunctuationFromTerms=true}
                     {/if}

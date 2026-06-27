@@ -46,7 +46,7 @@
 						<div class="row">
 							<div class="result-label col-tn-4">{translate text='Author' isPublicFacing=true}</div>
 							<div class="col-tn-8 result-value">
-								<a href='/Author/Home?author="{$record->getAuthor()|escape:"url"}"'>{$record->getAuthor()|highlight}</a>
+								<a href='/Search/Results?lookfor={$record->getAuthor()|escape:"url"}&searchIndex=Author'>{$record->getAuthor()|highlight}</a>
 							</div>
 						</div>
 					{/if}

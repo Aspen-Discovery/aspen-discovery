@@ -20,7 +20,7 @@
 												{if $author == "Various"}
 													{translate text="Various" isPublicFacing=true}
 												{else}
-													<a href='/Author/Home?author="{$author|escape:"url"}"'>{$author|highlight}</a> <br/>
+													<a href='/Search/Results?lookfor={$author|escape:"url"}&searchIndex=Author'>{$author|highlight}</a> <br/>
 												{/if}
 											{/foreach}
 										{else}

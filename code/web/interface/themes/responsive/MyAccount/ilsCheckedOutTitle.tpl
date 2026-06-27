@@ -72,10 +72,10 @@
 							<div class="col-sm-12 col-md-7 result-value">
 								{if is_array($record->getAuthor())}
 									{foreach from=$record->getAuthor() item=author}
-										<a href='/Author/Home?author="{$author|escape:"url"}"'>{$author|highlight}</a>
+										<a href='/Search/Results?lookfor={$author|escape:"url"}&searchIndex=Author'>{$author|highlight}</a>
 									{/foreach}
 								{else}
-									<a href='/Author/Home?author="{$record->getAuthor()|escape:"url"}"'>{$record->getAuthor()|highlight}</a>
+									<a href='/Search/Results?lookfor={$record->getAuthor()|escape:"url"}&searchIndex=Author'>{$record->getAuthor()|highlight}</a>
 								{/if}
 							</div>
 						</div>
