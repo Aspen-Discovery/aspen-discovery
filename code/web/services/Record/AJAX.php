@@ -792,7 +792,7 @@ class Record_AJAX extends JSON_Action {
 			foreach ($relatedRecord->recordVariations as $variation) {
 				foreach ($variation->getRecords() as $record) {
 					if ($record->id == $relatedRecord->id) {
-						$unsuppressedVolumeData = $relatedRecord->getUnsuppressedVolumeData(true);
+						$unsuppressedVolumeData = $record->getUnsuppressedVolumeData(true);
 						foreach ($unsuppressedVolumeData as $volumeInfo) {
 							if (!isset($volumeData[$volumeInfo->volumeId])) {
 								$volumeData[$volumeInfo->volumeId] = clone($volumeInfo);
