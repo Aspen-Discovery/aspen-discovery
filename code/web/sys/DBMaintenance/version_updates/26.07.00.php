@@ -23,6 +23,14 @@ function getUpdates26_07_00(): array {
 		//kodi
 
 		//yanjun
+		'add_user_agent_retention_months' => [
+			'title' => 'Add User Agent Retention Months',
+			'description' => 'Add userAgentRetentionMonths column to system_variables',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE system_variables ADD COLUMN userAgentRetentionMonths INT NOT NULL DEFAULT 3'
+			]
+		], //add_user_agent_retention_months
 
 		//imani
 
