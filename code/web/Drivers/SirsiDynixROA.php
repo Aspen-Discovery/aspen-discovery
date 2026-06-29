@@ -592,12 +592,15 @@ class SirsiDynixROA extends AbstractIlsDriver {
 
 			$selfRegistrationForm = null;
 			$formFields = null;
+			$municipalities = null;
+			$matchId = null;
 			if ($library->selfRegistrationFormId > 0){
 				require_once ROOT_DIR . '/sys/SelfRegistrationForms/SelfRegistrationForm.php';
 				$selfRegistrationForm = new SelfRegistrationForm();
 				$selfRegistrationForm->id = $library->selfRegistrationFormId;
 				if ($selfRegistrationForm->find(true)) {
 					$formFields = $selfRegistrationForm->getFields();
+					$municipalities = $selfRegistrationForm->getMunicipalities();
 				}else {
 					$selfRegistrationForm = null;
 				}
@@ -718,6 +721,25 @@ class SirsiDynixROA extends AbstractIlsDriver {
 						$this->setPatronUpdateField('APT/SUITE', $this->getPatronFieldValue($_REQUEST['apt_suite'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
 					}
 					elseif ($field == 'city' && (!empty($_REQUEST['city']) && (!empty($_REQUEST['state'])))) {
+						$matchId = $selfRegistrationForm->getMunicipalitySettingsByName($_REQUEST['city']);
+						if ($matchId) {
+							// Abort if self-registration is not allowed
+							if (!$municipalities[$matchId]->selfRegAllowed) {
+								return [
+									'success' => false,
+									'message' => translate([
+										'text' => "Your address is not within the library’s service area. Please contact the library for more information.",
+										'isPublicFacing' => true
+									])
+								];
+							}
+							if (!empty($municipalities[$matchId]->ilsMunicipality)) {
+								$createPatronInfoParameters['fields']['category01'] = [
+									'key' => $municipalities[$matchId]->ilsMunicipality,
+									'resource' => '/policy/patronCategory01',
+								];
+							}
+						}
 						if ($selfRegistrationForm->cityStateField == 1) {
 							$this->setPatronUpdateField('CITY', $this->getPatronFieldValue($_REQUEST['city'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
 							$this->setPatronUpdateField('STATE', $this->getPatronFieldValue($_REQUEST['state'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
@@ -4448,5 +4470,21 @@ class SirsiDynixROA extends AbstractIlsDriver {
 		}
 
 		return 0;
+	}
+
+	public function getPatronMetadataOptions(): array {
+		//Get a list of locations for the system.
+		$sessionToken = $this->getStaffSessionToken();
+		if (!$sessionToken) {
+			return [
+				'success' => false,
+				'message' => 'Unable to authenticate with Symphony'
+			];
+		}
+
+		//Now that we have the session token, get information
+		$webServiceURL = $this->getWebServiceURL();
+		$response = $this->getWebServiceResponse('getPatronMetadataOptions', $webServiceURL . '/policy/patronCategory01/simpleQuery?key=*', null, $sessionToken);
+	return $response;
 	}
 }

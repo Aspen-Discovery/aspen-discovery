@@ -1,6 +1,7 @@
 <?php /** @noinspection PhpMissingFieldTypeInspection */
 require_once ROOT_DIR . '/sys/SelfRegistrationForms/SelfRegistrationFormValues.php';
 require_once ROOT_DIR . '/sys/SelfRegistrationForms/SelfRegistrationTerms.php';
+require_once ROOT_DIR . '/sys/SelfRegistrationForms/SymphonySelfRegistrationMunicipalityValues.php';
 
 class SelfRegistrationForm extends DataObject {
 	public $__table = 'self_registration_form';
@@ -18,6 +19,7 @@ class SelfRegistrationForm extends DataObject {
 
 	private $_fields;
 	private $_libraries;
+	private $_municipalities;
 
 	static $_objectStructure = [];
 	static function getObjectStructure(string $context = ''): array {
@@ -36,6 +38,7 @@ class SelfRegistrationForm extends DataObject {
 		}
 
 		$fieldValuesStructure = SelfRegistrationFormValues::getObjectStructure($context);
+		$symphonySelfRegistrationMunicipalityValuesStructure = SymphonySelfRegistrationMunicipalityValues::getObjectStructure($context);
 		unset($fieldValuesStructure['weight']);
 		unset($fieldValuesStructure['selfRegistrationFormId']);
 
@@ -133,6 +136,32 @@ class SelfRegistrationForm extends DataObject {
 				'description' => 'Remaining length of the self registration barcode after the prefix.',
 				'default' => '',
 			],
+			'municipalities' => [
+				'property' => 'municipalities',
+				'type' => 'oneToMany',
+				'label' => 'Municipality Settings',
+				'description' => 'Default settings for specific municipalities',
+				'keyThis' => 'id',
+				'keyOther' => 'selfRegistrationFormId',
+				'subObjectType' => 'SymphonySelfRegistrationMunicipalityValues',
+				'structure' => $symphonySelfRegistrationMunicipalityValuesStructure,
+				'sortable' => false,
+				'storeDb' => true,
+				'allowEdit' => true,
+				'canEdit' => false,
+				'canAddNew' => true,
+				'canDelete' => true,
+				'hideInLists' => true,
+				'permissions' => ['Manage Self Registration Municipalities'],
+				'note' => "Add 'Other' to define settings when there is no match.",
+				'additionalOneToManyActions' => [
+					0 => [
+						'text' => 'Populate from ILS',
+						'onclick' => "AspenDiscovery.Admin.populateFromILS('symphony', 'municipalities');",
+					],
+				],
+				'newCanDoAdditionalActions' => true,
+			],
 			'libraries' => [
 				'property' => 'libraries',
 				'type' => 'multiSelect',
@@ -151,6 +180,7 @@ class SelfRegistrationForm extends DataObject {
 		if ($ret !== FALSE) {
 			$this->saveFields();
 			$this->saveLibraries();
+			$this->saveMunicipalities();
 		}
 		return $ret;
 	}
@@ -160,6 +190,7 @@ class SelfRegistrationForm extends DataObject {
 		if ($ret !== FALSE) {
 			$this->saveFields();
 			$this->saveLibraries();
+			$this->saveMunicipalities();
 		}
 		return $ret;
 	}
@@ -169,6 +200,8 @@ class SelfRegistrationForm extends DataObject {
 			return $this->getFields();
 		} if ($name == "libraries") {
 			return $this->getLibraries();
+		} if ($name == 'municipalities') {
+			return $this->getMunicipalities();
 		}else {
 			return parent::__get($name);
 		}
@@ -179,8 +212,44 @@ class SelfRegistrationForm extends DataObject {
 			$this->_fields = $value;
 		} if ($name == "libraries") {
 			$this->_libraries = $value;
+		} if ($name == "municipalities") {
+			$this->_municipalities = $value;
 		} else {
 			parent::__set($name, $value);
+		}
+	}
+
+	/**
+	 * @return SymphonySelfRegistrationMunicipalityValues[]|null
+	 */
+	public function getMunicipalities(): ?array {
+		if (!isset($this->_municipalities) && $this->id) {
+			$this->_municipalities = [];
+			$municipality = new SymphonySelfRegistrationMunicipalityValues();
+			$municipality->selfRegistrationFormId = $this->id;
+			$municipality->orderBy('municipality');
+			$municipality->find();
+			while ($municipality->fetch()) {
+				$this->_municipalities[$municipality->id] = clone($municipality);
+			}
+		}
+		return $this->_municipalities;
+	}
+
+	public function getMunicipalitySettingsByName($name) : ?int {
+		$municipalities = new SymphonySelfRegistrationMunicipalityValues();
+		$municipalities->selfRegistrationFormId = $this->id;
+		$municipalities->whereAdd("LEFT(municipality, 7) = " . $municipalities->escape(substr($name, 0, 7))); //ILS imported values only go up to 7 char
+		if ($municipalities->find(true)) {
+			return $municipalities->id;
+		}
+		return null;
+	}
+
+	public function saveMunicipalities() : void {
+		if (isset ($this->_municipalities) && is_array($this->_municipalities)) {
+			$this->saveOneToManyOptions($this->_municipalities, 'selfRegistrationFormId');
+			unset($this->_municipalities);
 		}
 	}
 
