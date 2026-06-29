@@ -1,7 +1,7 @@
 <?php
 
 class MyAccount_Login extends Action {
-	function launch($msg = null) {
+	function launch($msg = null) : void {
 		global $interface;
 		global $module;
 		global $action;
@@ -185,9 +185,9 @@ class MyAccount_Login extends Action {
 		} elseif (!empty($_SESSION['enroll2FA'])) {
 			$canUseTotp = false;
 			$canUseEmail = false;
-			$authSetting = new TwoFactorAuthSetting();
-			$authSetting->id = $library->twoFactorAuthSettingId;
-			if ($authSetting->find(true)) {
+			$user = UserAccount::getLoggedInUser();
+			$authSetting = $user->getTwoFactorAuthenticationSetting();
+			if ($authSetting) {
 				$canUseTotp = $authSetting->allowTotp;
 				$canUseEmail = $authSetting->allowEmail;
 			}
