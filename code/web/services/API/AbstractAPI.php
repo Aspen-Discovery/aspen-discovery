@@ -396,9 +396,12 @@ abstract class AbstractAPI extends Action{
 	 */
 	protected function handleAPIRequestAuto($method, $rateLimitEndpoint = 'api'): void {
 		// Automatically discover method permissions from docblock annotations
-		$oauthMethods = $this->getOAuthMethods();
-		$tokenMethods = $this->getTokenMethods();
-		$publicMethods = $this->getPublicMethods();
+		// Convert method names to lowercase for comparison to allow method names to be case-insensitive
+		$oauthMethods = array_map('strtolower', $this->getOAuthMethods());
+		$tokenMethods = array_map('strtolower', $this->getTokenMethods());
+		$publicMethods = array_map('strtolower', $this->getPublicMethods());
+
+		$method = strtolower($method);
 
 		// Use the existing handleAPIRequest method
 		$this->handleAPIRequest($method, $oauthMethods, $tokenMethods, $publicMethods, $rateLimitEndpoint);
