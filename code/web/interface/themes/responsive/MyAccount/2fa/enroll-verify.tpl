@@ -30,6 +30,21 @@
 			<div class="form-group text-left">
 				<label for="code">{translate text="6-digit code" isPublicFacing=true}</label>
 				<input type="text" class="form-control" id="code" name="code" maxlength="6" spellcheck="false" autocomplete="false">
+				<script type="text/javascript">
+					{literal}
+					$(document).ready(function () {
+						$("#code").on('keydown', function (e) {
+							if (e.which === 13) {
+								{/literal}
+								AspenDiscovery.Account.verify2FA("{$mandatoryEnrollment}", "{$method}", "{$secretId}"); return false;
+								{literal}
+								e.preventDefault();
+							}
+						});
+
+					});
+					{/literal}
+				</script>
 			</div>
 			<div class="alert alert-danger" id="codeVerificationFailedPlaceholder" style="display: none;"></div>
             {if $twoFactorMethod !== 'totp'}

@@ -92,7 +92,15 @@ class TwoFactorAuthCode extends DataObject {
 	public function createRecoveryCode($username) : array {
 		$user = new User();
 		$user->ils_barcode = $username;
-		if ($user->find(true)) {
+		if (!$user->find(true)) {
+			//Try username for local admins
+			$user = new User();
+			$user->username = $username;
+			if (!$user->find(true)) {
+				$user = null;
+			}
+		}
+		if ($user != null) {
 			if ($user->twoFactorStatus == '1') {
 				$twoFactorAuthCode = new TwoFactorAuthCode();
 				$twoFactorAuthCode->code = mt_rand(100000, 999999);
@@ -248,11 +256,11 @@ class TwoFactorAuthCode extends DataObject {
 			];
 		}
 
-		// Check if it's a backup code
+		// Check if it's a backup code or manual recovery code
 		$backupCode = new TwoFactorAuthCode();
 		$backupCode->code = $code;
 		$backupCode->userId = $userId;
-		$backupCode->status = 'backup';
+		$backupCode->whereAddIn('status', ['created', 'backup'], true);
 
 		if ($backupCode->find(true)) {
 			$backupCode->status = 'used';
