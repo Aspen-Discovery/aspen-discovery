@@ -6831,7 +6831,7 @@ class Koha extends AbstractIlsDriver {
 			'message' => 'Unknown error completing fine payment',
 		];
 
-		$creditType = 'payment';
+		$creditType = 'PAYMENT';
 
 		$oauthToken = $this->getOAuthToken();
 		if ($oauthToken == false) {
