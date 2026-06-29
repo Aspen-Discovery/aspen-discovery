@@ -118,6 +118,12 @@ public class AspenStringUtils {
 		"(?:ca\\.\\s*)?(\\d+)\\s*(?:minutes?|min\\.|m(?!s))"
 	);
 
+	/**
+	 * Extracts a duration from a string. Note this is also in StringUtils.php
+	 *
+	 * @param input
+	 * @return
+	 */
 	public static int extractTotalMinutes(String input) {
 		// Check for "N disc/discs" at the start, used when "each" appears later to calculate total time
 		// Allow a word in-between the number and disc/discs for matching

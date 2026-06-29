@@ -81,9 +81,9 @@
 					{translate text='%1% hours %2% minutes' 1=$hours 2=$minutes isPublicFacing=true}
 				{else}
 					{if $hours == 0}
-						{translate text='Duration is %2% minutes' 2=$minutes isPublicFacing=true}<br/>
+						{translate text='%2% minutes' 2=$minutes isPublicFacing=true}<br/>
 					{else}
-						{translate text='Duration is %1% hours' 1=$hours isPublicFacing=true}<br/>
+						{translate text='%1% hours' 1=$hours isPublicFacing=true}<br/>
 					{/if}
 				{/if}
 			</div>
