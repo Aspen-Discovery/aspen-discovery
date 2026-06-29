@@ -29,7 +29,7 @@ function getUpdates26_07_00(): array {
 					`id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
 					`selfRegistrationFormId` int(11) NOT NULL,
 					`municipality` varchar(255) default '' NOT NULL,
-    				`ilsMunicipality` varchar(255) default '' NOT NULL,
+					`ilsMunicipality` varchar(255) default '' NOT NULL,
 					`municipalityType` varchar(10),
 					`selfRegAllowed` tinyint(1) NOT NULL DEFAULT '1',
 				) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;",
