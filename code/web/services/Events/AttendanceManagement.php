@@ -97,8 +97,10 @@ class Events_AttendanceManagement extends Admin_Admin {
 
 		$eventInstance = new EventInstance();
 		$eventInstance->whereAdd("(deleted IS NULL OR deleted = 0)");
+		$lowerBound = $eventInstance->escape(date('Y-m-d', strtotime('-12 months')));
+		$upperBound = $eventInstance->escape(date('Y-m-d', strtotime('+12 months')));
+		$eventInstance->whereAdd("date >= $lowerBound AND date <= $upperBound");
 		$eventInstance->orderBy('date ASC, time ASC');
-		$eventInstance->limit(0, 100);
 
 		$eventInstance->find();
 		while ($eventInstance->fetch()) {

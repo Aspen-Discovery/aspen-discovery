@@ -792,7 +792,7 @@ class Record_AJAX extends JSON_Action {
 			foreach ($relatedRecord->recordVariations as $variation) {
 				foreach ($variation->getRecords() as $record) {
 					if ($record->id == $relatedRecord->id) {
-						$unsuppressedVolumeData = $relatedRecord->getUnsuppressedVolumeData(true);
+						$unsuppressedVolumeData = $record->getUnsuppressedVolumeData(true);
 						foreach ($unsuppressedVolumeData as $volumeInfo) {
 							if (!isset($volumeData[$volumeInfo->volumeId])) {
 								$volumeData[$volumeInfo->volumeId] = clone($volumeInfo);
@@ -1331,6 +1331,16 @@ class Record_AJAX extends JSON_Action {
 						}
 					} else {
 						$interface->assign('whileYouWaitTitles', []);
+					}
+
+					/** @var Koha $catalogDriver */
+					$catalogDriver = $user->getCatalogDriver();
+					if ($catalogDriver->hasHoldFeeMessage()) {
+						$marcRecord = RecordDriverFactory::initRecordDriverById($recordId);
+						$reserveFeeMessage = $catalogDriver->getPostHoldSubmissionFeeMessage($marcRecord);
+						if ($reserveFeeMessage) {
+							$interface->assign('reserveFeeMessage', $reserveFeeMessage);
+						}
 					}
 
 					$results = [
@@ -2262,6 +2272,16 @@ class Record_AJAX extends JSON_Action {
 		$interface->assign('allowFreezeHolds', $library->allowFreezeHolds);
 		$interface->assign('promptToFreezeHoldsImmediately', $user->promptToFreezeHoldsImmediately);
 		$interface->assign('onlyValidPickupLocation', $onlyValidPickupLocation ?? null);
+
+
+		/** @var Koha $catalogDriver */
+		$catalogDriver = $marcRecord->getCatalogDriver();
+		if ($catalogDriver->hasHoldFeeMessage()) {
+			$reserveFeeMessage = $catalogDriver->getPreHoldSubmissionFeeMessage($marcRecord);
+			if ($reserveFeeMessage) {
+				$interface->assign('reserveFeeMessage', $reserveFeeMessage);
+			}
+		}
 
 		$interface->assign('pickupLocations', $locations);
 		$interface->assign('pickupSublocations', $pickupSublocations);

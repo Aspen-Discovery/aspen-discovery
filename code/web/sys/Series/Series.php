@@ -364,7 +364,7 @@ class Series extends DataObject {
 	 *
 	 * @return SeriesMember[]      array of series members
 	 */
-	function getSeriesMembers($sortName = null, $showExcluded = true, $includePlaceholders = true) : array {
+	function getSeriesMembers($sortName = null, $showExcluded = true, $includePlaceholders = true, $seriesId = null) : array {
 		if (empty($this->id)) {
 			return [];
 		}

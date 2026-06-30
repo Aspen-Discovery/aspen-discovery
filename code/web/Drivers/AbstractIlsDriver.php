@@ -1075,4 +1075,16 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 	public function supportsHyperholdsGrouping() {
 		return false;
 	}
+
+	public function getPatronHoldGroups($patronId): ?array {
+		return null;
+	}
+
+	public function hasHoldFeeMessage(): bool {
+		return false;
+	}
+
+	public function hasCardRenewalSupport(): bool {
+		return false;
+	}
 }

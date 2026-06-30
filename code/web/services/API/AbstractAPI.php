@@ -9,7 +9,7 @@ require_once ROOT_DIR . '/sys/API/APIMethodConfiguration.php';
 abstract class AbstractAPI extends Action{
 	use APIMethodConfiguration;
 	
-	protected $context;
+	protected string $context;
 	function __construct($context = 'external') {
 		parent::__construct(false);
 		$this->context = $context;
@@ -18,64 +18,63 @@ abstract class AbstractAPI extends Action{
 		}
 	}
 
-	function checkIfLiDA(): bool {
+	protected function getHeaders() : array {
 		if (function_exists('getallheaders')) {
-			foreach (getallheaders() as $name => $value) {
-				if ($name == 'User-Agent' || $name == 'user-agent') {
-					if (str_contains($value, "Aspen LiDA")) {
-						return true;
-					}
-				}
+			return getallheaders();
+		} else {
+			return [];
+		}
+	}
+
+	protected function getHeader(string $headerToRetrieve) : ?string {
+		$headers = $this->getHeaders();
+		foreach ($headers as $name => $value) {
+			if (strcasecmp($name, $headerToRetrieve) === 0) {
+				return $value;
 			}
+		}
+		return null;
+	}
+
+	protected function checkIfLiDA(): bool {
+		$userAgent = $this->getHeader('User-Agent');
+		if (!is_null($userAgent) && str_contains($userAgent, "Aspen LiDA")) {
+			return true;
 		}
 		return false;
 	}
 
-	function getLiDAVersion() {
-		if (function_exists('getallheaders')) {
-			foreach (getallheaders() as $name => $value) {
-				if ($name == 'version' || $name == 'Version') {
-					$version = explode(' ', $value);
-					$version = substr($version[0], 1); // remove starting 'v'
-					return floatval($version);
-				}
-			}
+	protected function getLiDAVersion() : float {
+		$versionHeader = $this->getHeader('Version');
+		if (!is_null($versionHeader)) {
+			$version = explode(' ', $versionHeader);
+			$version = substr($version[0], 1); // remove starting 'v'
+			return floatval($version);
 		}
-		return 0;
+		return 0.0;
 	}
 
-	function getLiDASession() {
-		if (function_exists('getallheaders')) {
-			foreach (getallheaders() as $name => $value) {
-				if ($name == 'LiDA-SessionID' || $name == 'lida-sessionid') {
-					$sessionId = explode(' ', $value);
-					return $sessionId[0];
-				}
-			}
+	protected function getLiDASession() : string|false {
+		$lidaSessionHeader = $this->getHeader('LiDA-SessionID');
+		if (!is_null($lidaSessionHeader)) {
+			$sessionId = explode(' ', $lidaSessionHeader);
+			return $sessionId[0];
 		}
 		return false;
 	}
 
-	function getLiDASlug() {
-		if (function_exists('getallheaders')) {
-			foreach (getallheaders() as $name => $value) {
-				if (strcasecmp($name, 'lida-slug') === 0) {
-					return $value;
-				}
-			}
+	protected function getLiDASlug() : string|false {
+		$lidaSlugHeader = $this->getHeader('lida-slug');
+		if (!is_null($lidaSlugHeader)) {
+			return $lidaSlugHeader;
 		}
 		return false;
 	}
 
-	function getLiDAUserAgent() {
-		if (function_exists('getallheaders')) {
-			foreach (getallheaders() as $name => $value) {
-				if ($name == 'User-Agent' || $name == 'user-agent') {
-					if (str_contains($value, 'Aspen LiDA') || str_contains($value, 'aspen lida')) {
-						return true;
-					}
-				}
-			}
+	protected function getLiDAUserAgent() : bool {
+		$userAgent = $this->getHeader('User-Agent');
+		if (!is_null($userAgent) && (str_contains($userAgent, "Aspen LiDA") || str_contains($userAgent, 'aspen lida'))) {
+			return true;
 		}
 		return false;
 	}
@@ -84,7 +83,7 @@ abstract class AbstractAPI extends Action{
 	 * @return array
 	 * @noinspection PhpUnused
 	 */
-	function loadUsernameAndPassword() {
+	protected function loadUsernameAndPassword() : array {
 		$username = $_REQUEST['username'] ?? '';
 		$password = $_REQUEST['password'] ?? '';
 
@@ -102,7 +101,7 @@ abstract class AbstractAPI extends Action{
 		return [$username, $password];
 	}
 
-	function logPatronRequest($userId): void {
+	protected function logPatronRequest($userId): void {
 		if ($this->context == 'lida') {
 			require_once ROOT_DIR . '/sys/SystemLogging/UserAppRequestLogEntry.php';
 			UserAppRequestLogEntry::logRequest($userId, $_GET['action'], $_GET['method'], json_encode($_REQUEST), $this->getLiDAVersion());
@@ -130,9 +129,18 @@ abstract class AbstractAPI extends Action{
 	private $_userForAPICall = null;
 	/**
 	 * Get user for API call - supports both OAuth2 and traditional authentication
-	 * @return bool|User
+	 * Not for use with direct call
+	 *
+	 * @oauth false
+	 * @token false
+	 * @public false
+	 *
+	 * @return bool|User|null
 	 */
-	function getUserForApiCall() {
+	protected function getUserForApiCall(): User|bool|null {
+		if ($this->_userForAPICall != null) {
+			return $this->_userForAPICall;
+		}
 		global $composerActive;
 		if ($composerActive) {
 			// Check if this is an OAuth2 authenticated request first
@@ -150,12 +158,12 @@ abstract class AbstractAPI extends Action{
 						}
 					}
 				}
+				$this->_userForAPICall = $oauthUser;
 				return $oauthUser;
 			}
 		}
 
 		// Fall back to previous authentication
-		$user = false;
 		[$username, $password] = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user !== false && $user->source == 'admin') {
@@ -163,24 +171,24 @@ abstract class AbstractAPI extends Action{
 			return false;
 		}
 
-			//Set translations up based on the active user's desired language
-			if (empty($_REQUEST['language']) && $user !== false) {
-				global $activeLanguage;
-				global $translator;
-				$userLanguage = new Language();
-				$userLanguage->code = $user->interfaceLanguage;
-				if ($userLanguage->find(true)) {
-					if ($userLanguage->code != $activeLanguage->code) {
-						$activeLanguage = $userLanguage;
-						$translator = new Translator('lang', $userLanguage->code);
-					}
+		//Set translations up based on the active user's desired language
+		if (empty($_REQUEST['language']) && $user !== false) {
+			global $activeLanguage;
+			global $translator;
+			$userLanguage = new Language();
+			$userLanguage->code = $user->interfaceLanguage;
+			if ($userLanguage->find(true)) {
+				if ($userLanguage->code != $activeLanguage->code) {
+					$activeLanguage = $userLanguage;
+					$translator = new Translator('lang', $userLanguage->code);
 				}
 			}
+		}
 
-			if ($user !== false && $user->allowAppRequestLogging) {
-				$this->logPatronRequest($user->id);
-			}
-			$this->_userForAPICall = $user;
+		if ($user !== false && $user->allowAppRequestLogging) {
+			$this->logPatronRequest($user->id);
+		}
+		$this->_userForAPICall = $user;
 
 		return $this->_userForAPICall;
 	}
@@ -276,7 +284,7 @@ abstract class AbstractAPI extends Action{
 	 * @param string $method The API method being called
 	 * @param array $allowedMethods Array of methods allowed for traditional token access
 	 */
-	protected function handleTraditionalTokenAuth($method, $allowedMethods = []): void {
+	protected function handleTraditionalTokenAuth(string $method, array $allowedMethods = []): void {
 		if ($this->grantTokenAccess()) {
 			if (in_array($method, $allowedMethods)) {
 				$result = ['result' => $this->$method()];
@@ -307,10 +315,9 @@ abstract class AbstractAPI extends Action{
 	 * @param array $allowedMethods Array of methods allowed for public access
 	 * @param bool $requireIPWhitelisting Whether to require IP whitelisting (default: true)
 	 */
-	protected function handlePublicRequest($method, $allowedMethods = [], $requireIPWhitelisting = true): void {
+	protected function handlePublicRequest(string $method, array $allowedMethods = [], bool $requireIPWhitelisting = true): void {
 		if ($requireIPWhitelisting && !IPAddress::allowAPIAccessForClientIP()) {
 			$this->forbidAPIAccess();
-			return;
 		}
 
 		if (in_array($method, $allowedMethods) && method_exists($this, $method)) {
@@ -354,10 +361,10 @@ abstract class AbstractAPI extends Action{
 	 * @param array $publicMethods Methods that allow public access
 	 * @param string $rateLimitEndpoint Rate limiting endpoint name
 	 */
-	protected function handleAPIRequest($method, $oauthMethods = [], $tokenMethods = [], $publicMethods = [], $rateLimitEndpoint = 'api'): void {
+	protected function handleAPIRequest(string $method, array $oauthMethods = [], array $tokenMethods = [], array $publicMethods = [], string $rateLimitEndpoint = 'api'): void {
 		$oauthAuthenticated = false;
-		$authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
-		if (strpos($authHeader, 'Bearer ') === 0) {
+		$authHeader = $this->getHeader('Authorization');
+		if (!is_null($authHeader) && str_starts_with($authHeader, 'Bearer ')) {
 			if ($this->authenticateWithOAuth2($method)) {
 				$oauthAuthenticated = true;
 			} else {

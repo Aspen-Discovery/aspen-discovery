@@ -180,6 +180,17 @@
 																	<input type="text" size="4" maxlength="4" class="yearbox form-control" name="accelerated_reader_reading_levelto" id="accelerated_reader_reading_levelto" value="" aria-label="Accelerated Reader Level To">
 																</div>
 															</div>
+														{elseif $facetInfo.facetName == "duration"}
+															<div class="row">
+																<div class="col-xs-6 col-md-4 col-lg-3">
+																	<label for="durationfrom" class="yearboxlabel">{translate text="From" isPublicFacing=true} </label>
+																	<input type="text" size="4" maxlength="4" class="yearbox form-control" name="durationfrom" id="durationfrom" value="" aria-label="Audiobook Duration From">
+																</div>
+																<div class="col-xs-6 col-md-4 col-lg-3">
+																	<label for="durationto" class="yearboxlabel">{translate text="To" isPublicFacing=true} </label>
+																	<input type="text" size="4" maxlength="4" class="yearbox form-control" name="durationto" id="durationto" value="" aria-label="Audiobook Duration To">
+																</div>
+															</div>
 														{else}
 															{assign var="facetValueCount" value=$facetInfo.values|@count}
 															<select name="filter[]"

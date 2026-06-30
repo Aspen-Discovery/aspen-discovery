@@ -27,17 +27,9 @@ class LibraryCard extends MyAccount {
 			$showRenewalLink = $user->showRenewalLink($ilsSummary);
 			$interface->assign('showRenewalLink', $showRenewalLink);
 			if ($showRenewalLink) {
-				$userLibrary = $user->getHomeLibrary();
-				if ($userLibrary->enableCardRenewal == 2) {
-					if (!empty($userLibrary->cardRenewalUrl)) {
-						$interface->assign('cardRenewalLink', $userLibrary->cardRenewalUrl);
-					}
-				} elseif ($userLibrary->enableCardRenewal == 3) {
-					require_once ROOT_DIR . '/sys/Enrichment/QuipuECardSetting.php';
-					$quipuECardSettings = new QuipuECardSetting();
-					if ($quipuECardSettings->find(true) && $quipuECardSettings->hasERenew) {
-						$interface->assign('cardRenewalLink', "/MyAccount/eRENEW");
-					}
+				$renewalConfig = $user->getHomeLibrary()->getCardRenewalConfig();
+				if ($renewalConfig['externalLink'] !== null) {
+					$interface->assign('cardRenewalLink', $renewalConfig['externalLink']);
 				}
 			}
 		}

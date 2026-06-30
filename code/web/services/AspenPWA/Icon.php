@@ -17,7 +17,7 @@ class AspenPWA_Icon extends Action {
 		$success = true;
 		//TODO we should return an error code instead of 200
 		// if we have no settings
-		if($setting)
+		if($settings)
 		{
 			$_REQUEST['themeId'] = $settings->themeId;
 		} else {

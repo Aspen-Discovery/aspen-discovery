@@ -3,47 +3,51 @@
 		<div class="row row-no-gutters horizontalFilterSelector" id="holdsFilterRow">
 				<div class="col-xs-12">
 					<div class="slider-container" role="region" id="slider-holds-filter">
-					<button type="button" class="slider-button slider-button-prev btn btn-default" id="slider-prev-holds-filter" aria-label="{translate text="Previous Filter" isPublicFacing=true inAttribute=true}"><i class="fas fa-chevron-left"></i></button>
-					<div class="slider-wrapper" role="listbox" aria-activedescendant="slide-holds-filter-0">
-						{foreach from=$filterOptions item=filterOption key=filterKey}
-							<div role="option" tabindex="0" class="slider-slide horizontal-filter-select" data-filterKey="{$filterKey}" data-filter="{$filterKey}">
-								<div class="form-group">
-									<fieldset>
-										<legend>{$filterOption.label}</legend>
-										<select
-												name="HoldFilter_{$filterKey}[]"
-												id="HoldFilter_{$filterKey}"
-												class="multipleSelect"
-												aria-label="{translate text='Filter by %1%' 1=$filterOption.label isPublicFacing=true inAttribute=true}"
-                                                {if $filterOption.type === "multiselect"}multiple="multiple"{/if}
-										>
-                                            {foreach from=$filterOption.options item=optionVal key=optionKey}
-												<option value="{$optionKey}"{if isset($filterOption.selected) && in_array($optionKey, $filterOption.selected)} selected="selected"{/if}>{$optionVal}</option>
-                                            {/foreach}
-										</select>
-									</fieldset>
+						<button type="button" class="slider-button slider-button-prev btn btn-default" id="slider-prev-holds-filter" aria-label="{translate text="Previous Filter" isPublicFacing=true inAttribute=true}"><i class="fas fa-chevron-left"></i></button>
+						<div class="slider-wrapper" role="listbox" aria-activedescendant="slide-holds-filter-0" style="display:flex;align-items: flex-end">
+							{foreach from=$filterOptions item=filterOption key=filterKey}
+								{if count($filterOption.options) > 1}
+									<div role="option" tabindex="0" class="slider-slide horizontal-filter-select" data-filterKey="{$filterKey}" data-filter="{$filterKey}">
+										<div class="form-group">
+											<fieldset>
+												<legend>{translate text=$filterOption.label isPublicFacing=true}</legend>
+												<select
+														name="HoldFilter_{$filterKey}[]"
+														id="HoldFilter_{$filterKey}"
+														class="multipleSelect"
+														aria-label="{translate text='Filter by %1%' 1=$filterOption.label isPublicFacing=true inAttribute=true}"
+														{if $filterOption.type === "multiselect"}multiple="multiple"{/if}
+												>
+													{foreach from=$filterOption.options item=optionVal key=optionKey}
+														<option value="{$optionKey}"{if isset($filterOption.selected) && in_array($optionKey, $filterOption.selected)} selected="selected"{/if}>{$optionVal.label}</option>
+													{/foreach}
+												</select>
+											</fieldset>
+										</div>
+									</div>
+								{/if}
+							{/foreach}
+							<div style="display:flex;align-items: flex-end;padding-bottom: 0.25em">
+								<div role="option" tabindex="0" class="slider-slide horizontal-filter-button">
+									<button type="button" class="btn btn-sm btn-primary" id="applyHoldsFilters">{translate text="Apply Filters" isPublicFacing=true}</button>
+								</div>
+								<div role="option" tabindex="0" class="slider-slide horizontal-filter-button" style="margin-left:0.25em">
+									<button type="button" class="btn btn-sm btn-default" id="clearHoldsFilters">{translate text="Clear Filters" isPublicFacing=true}</button>
 								</div>
 							</div>
-			        {/foreach}
-						<div role="option" tabindex="0" class="slider-slide horizontal-filter-button">
-							<button type="button" style="margin-top: .5em;" class="btn btn-primary" id="applyHoldsFilters">Apply Filters</button>
 						</div>
-						<div role="option" tabindex="0" class="slider-slide horizontal-filter-button">
-							<button type="button" style="margin-top: .5em;" class="btn btn-default" id="clearHoldsFilters">Clear Filters</button>
-						</div>
+						<button type="button" class="slider-button slider-button-next btn btn-default" id="slider-next-hold-filter" aria-label="{translate text="Next Filter" isPublicFacing=true inAttribute=true}"><i class="fas fa-chevron-right"></i></button>
+					</div>
 				</div>
-				<button type="button" class="slider-button slider-button-next btn btn-default" id="slider-next-hold-filter" aria-label="{translate text="Next Filter" isPublicFacing=true inAttribute=true}"><i class="fas fa-chevron-right"></i></button>
-					</div>
-					</div>
 				<script>
 					$(document).ready(function(){ldelim}
 						AspenDiscovery.Account.initializeHorizontalHoldFiltersSwipers('holds-filter');
-                        {rdelim});
+					{rdelim});
 				</script>
 		</div>
 	</div>
 	<script type="text/javascript">
-        {literal}
+		{literal}
 		$(document).ready(function() {
 			const $filterTiles = $('#holdsFilterRow .horizontal-filter-select');
 			let activeFilterIndex = -1;
@@ -116,6 +120,6 @@
 				AspenDiscovery.Account.loadHolds('all', $('#availableHoldSort_{/literal}{$source}{literal} option:selected').val(), $('#unavailableHoldSort_{/literal}{$source}{literal} option:selected').val());
 			});
 		});
-        {/literal}
+		{/literal}
 	</script>
 {/if}
