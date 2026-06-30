@@ -63,7 +63,7 @@
 		{/if}
 	{/strip}
 </head>
-<body class="module_{$module} action_{$action}{if !empty($masqueradeMode)} masqueradeMode{/if}{if !empty($loggedIn)} loggedIn{else} loggedOut{/if}" id="{$module}-{$action}{if $module=="WebBuilder" && $action=="BasicPage" || $action=="PortalPage" || $action=="GrapesPage"}-{$id}{/if}" dir="{if $userLang->isRTL()}rtl{else}auto{/if}">
+<body class="module_{$module} action_{$action}{if !empty($masqueradeMode)} masqueradeMode{/if}{if !empty($loggedIn)} loggedIn{else} loggedOut{/if}{if $fullWidthContent} fullWidthContent{/if}" id="{$module}-{$action}{if $module=="WebBuilder" && $action=="BasicPage" || $action=="PortalPage" || $action=="GrapesPage"}-{$id}{/if}" dir="{if $userLang->isRTL()}rtl{else}auto{/if}">
 {strip}
 	<a class="screen-reader-text" href="#main" id="skip-to-main-content">
 		<span>{translate text="Skip to main content" isPublicFacing=true}</span>

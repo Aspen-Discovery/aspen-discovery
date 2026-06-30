@@ -78,6 +78,14 @@ function getUpdates26_07_00(): array {
 		//tomas
 
 		// stephen
+		'theme_full_width_content' => [
+			'title' => 'Add fullWidthContent column',
+			'description' => 'Add fullWidthContent column to themes table.',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE themes ADD COLUMN fullWidthContent TINYINT(1) DEFAULT 0',
+			]
+		], //theme_full_width_content
 
 		//other
 
