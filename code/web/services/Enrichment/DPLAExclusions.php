@@ -73,8 +73,4 @@ class Enrichment_DPLAExclusions extends ObjectEditor {
 	public function getViewPermissions() : array {
 		return ['Administer DP.LA Exclusions'];
 	}
-
-	function canAddNew() : bool {
-		return $this->getNumObjects() == 0;
-	}
 }
