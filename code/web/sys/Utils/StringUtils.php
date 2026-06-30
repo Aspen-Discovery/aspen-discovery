@@ -15,7 +15,7 @@ class StringUtils {
 		return $string;
 	}
 
-	static function formatCurrency($number) : string {
+	static function getCurrencyFormatter() : NumberFormatter {
 		global $activeLanguage;
 
 		$currencyCode = 'USD';
@@ -24,23 +24,21 @@ class StringUtils {
 			$currencyCode = $variables->currencyCode;
 		}
 
-		$currencyFormatter = new NumberFormatter($activeLanguage->locale . '@currency=' . $currencyCode, NumberFormatter::CURRENCY);
+		return new NumberFormatter($activeLanguage->locale . '@currency=' . $currencyCode, NumberFormatter::CURRENCY);
+	}
 
-		return $currencyFormatter->formatCurrency($number, $currencyCode);
+	static function formatCurrency(float $number) : string {
+		$currencyCode = 'USD';
+		$variables = new SystemVariables();
+		if ($variables->find(true)) {
+			$currencyCode = $variables->currencyCode;
+		}
+
+		return static::getCurrencyFormatter()->formatCurrency($number, $currencyCode);
 	}
 
 	static function getCurrencySymbol() : string {
-		global $activeLanguage;
-
-		$currencyCode = 'USD';
-		$variables = new SystemVariables();
-		if ($variables->find(true)) {
-			$currencyCode = $variables->currencyCode;
-		}
-
-		$currencyFormatter = new NumberFormatter($activeLanguage->locale . '@currency=' . $currencyCode, NumberFormatter::CURRENCY);
-
-		return $currencyFormatter->getSymbol(NumberFormatter::CURRENCY_SYMBOL);
+		return static::getCurrencyFormatter()->getSymbol(NumberFormatter::CURRENCY_SYMBOL);
 	}
 
 	static function truncate($string, $length = 80, $etc = '...', $break_words = false, $middle = false) : string {
@@ -127,6 +125,11 @@ class StringUtils {
 			return true;
 		}
 		return substr($haystack, -$length) === $needle;
+	}
+
+	public static function removeSuffix(string $haystack, string $needle) : string {
+		if(!static::endsWith($haystack, $needle)) return $haystack;
+		return substr($haystack, 0, strlen($haystack) - strlen($needle));
 	}
 
 	public static function extractTotalMinutes(string $input): int {

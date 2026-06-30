@@ -13,6 +13,7 @@ class Events_Calendar extends Action {
 		}
 		// Include Search Engine Class
 		require_once ROOT_DIR . '/sys/SolrConnector/Solr.php';
+		require_once ROOT_DIR . '/sys/Utils/DateUtils.php';
 
 		$today = new DateTime();
 		$useWeek = 0;
@@ -51,7 +52,8 @@ class Events_Calendar extends Action {
 			$weekFilter = $year . '-' . $paddedWeek;
 			$calendarStart = "{$year}W$paddedWeek";
 			$calendarStartDay = strtotime($calendarStart . " - 1 days"); // So that the week starts on Sunday
-			$formattedWeekYear = date("M j, Y", $calendarStartDay) . " - " . date("M j, Y", strtotime($calendarStart . "+ 5 days"));
+			$calendarEndDay = strtotime($calendarStart . "+ 5 days");
+			$formattedWeekYear = DateUtils::formatDateLocale($calendarStartDay, 'medium') . " - " . DateUtils::formatDateLocale($calendarEndDay, 'medium');
 			$month = date("n", strtotime($calendarStart));
 			$interface->assign('calendarMonth', $formattedWeekYear);
 			$monthLink = "/Events/Calendar?month=$month&year=$year";
@@ -80,8 +82,9 @@ class Events_Calendar extends Action {
 			$monthFilter = $year . '-' . $paddedMonth;
 			$calendarStart = "$paddedMonth/1/$year";
 			$calendarStartDay = new DateTime($calendarStart);
+
 			$monthDisplay = $this->getMonthDisplaySetting($calendarDisplaySettingId);
-			$formattedMonthYear = $monthDisplay ? $calendarStartDay->format("F Y") : $calendarStartDay->format("M Y");
+			$formattedMonthYear = DateUtils::formatDateLocale($calendarStartDay, 'medium', 'none', $monthDisplay ? 'MMMM yyyy' : 'MMM yyyy');
 			$week = (int)$calendarStartDay->format("W") + 1;
 			$interface->assign('calendarMonth', $formattedMonthYear);
 			$weekLink = "/Events/Calendar?week=$week&year=$year";
@@ -355,17 +358,17 @@ class Events_Calendar extends Action {
 					if (in_array($eventDay, $result['event_day'])) {
 						$startDate = new DateTime($result['start_date']);
 						$startDate->setTimezone($defaultTimezone);
-						if ($printEndTime) {
-							// Save space by leaving off AM/PM from start time
-							$formattedTime = date_format($startDate, "h:i");
-						} else {
-							$formattedTime = date_format($startDate, "h:iA");
-						}
 						$endDate = new DateTime($result['end_date']);
 						$endDate->setTimezone($defaultTimezone);
-						$formattedTime .= '<span class="end-time"> - ' . date_format($endDate, "h:iA") . "</span>";
+
 						if (($endDate->getTimestamp() - $startDate->getTimestamp()) > 24 * 60 * 60) {
 							$formattedTime = 'All day';
+						} else {
+							$timeParts = DateUtils::formatTimeRangeParts($startDate, $endDate);
+							$startMeridiem = $timeParts['startMeridiem'] !== ''
+								? '<span class="start-meridiem"> ' . $timeParts['startMeridiem'] . '</span>'
+								: '';
+							$formattedTime = $timeParts['start'] . $startMeridiem . '<span class="end-time"> - ' . $timeParts['end'] . '</span>';
 						}
 						$isCancelled = false;
 						if (array_key_exists('reservation_state', $result) && in_array('Cancelled', $result['reservation_state'])) {

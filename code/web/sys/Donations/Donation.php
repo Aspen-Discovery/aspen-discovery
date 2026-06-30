@@ -291,24 +291,6 @@ class Donation extends DataObject {
 		}
 	}
 
-	function getCurrencySymbol() {
-		$currencyCode = 'USD';
-		$systemVariables = SystemVariables::getSystemVariables();
-		if (!empty($systemVariables->currencyCode)) {
-			$currencyCode = $systemVariables->currencyCode;
-		}
-		if ($currencyCode == 'USD') {
-			$currencySymbol = '$';
-		} elseif ($currencyCode == 'EUR') {
-			$currencySymbol = '€';
-		} elseif ($currencyCode == 'CAD') {
-			$currencySymbol = '$';
-		} elseif ($currencyCode == 'GBP') {
-			$currencySymbol = '£';
-		}
-		return $currencySymbol;
-	}
-
 	function getDonationFormFields(DonationsSetting $donationSettings) {
 		require_once ROOT_DIR . '/sys/Donations/DonationFormFields.php';
 		$fieldsToSortByCategory = $donationSettings->getDefaultFormFields();
@@ -447,7 +429,7 @@ class Donation extends DataObject {
 			$error = $mail->send($this->email, translate([
 				'text' => 'Your Donation Receipt',
 				'isPublicFacing' => true,
-			]), $body, $replyToAddress);
+			]), null, $replyToAddress, $body);
 			if (($error instanceof AspenError)) {
 				global $interface;
 				$interface->assign('error', $error->getMessage());

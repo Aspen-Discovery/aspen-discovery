@@ -1,12 +1,13 @@
 <?php /** @noinspection PhpMissingFieldTypeInspection */
+require_once ROOT_DIR . '/sys/AbstractUsage.php';
 
-
-class Axis360Stats extends DataObject {
+class Axis360Stats extends AbstractUsage {
 	public $__table = 'axis360_stats';
 	public $id;
 	public $instance;
 	public $year;
 	public $month;
+	public $day;
 
 	public $numCheckouts;
 	public $numRenewals;

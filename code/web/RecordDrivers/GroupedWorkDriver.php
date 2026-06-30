@@ -1501,6 +1501,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
 
 		$interface->assign('recordDriver', $this);
+		$interface->assign('seriesId', $seriesId);
 
 		return 'RecordDrivers/GroupedWork/seriesEntry.tpl';
 	}

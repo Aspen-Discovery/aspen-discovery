@@ -51,11 +51,23 @@
 					{translate text="Other Dates in this Series" isPublicFacing=true}
 				</div>
 				<div class="panel-body">
-					{foreach from=$recordDriver->getOtherEventsInSeries() item=event key=key}
+					{foreach from=$recordDriver->getOtherEventsInSeries() item=event key=key name="eventDateLoop"}
+						{if $smarty.foreach.eventDateLoop.iteration == 6}
+							<div class="col-xs-12">
+								<a href="#" id="moreEventDates" onclick="AspenDiscovery.Events.moreEventDates(); return false;">{translate text='more' isPublicFacing=true} ...</a>
+							</div>
+							<div class="narrowGroupHidden" id="narrowGroupHidden_eventDates" style="display:none">
+						{/if}
 						<div class="col-xs-12">
-							<a href='/AspenEvents/{$key|escape:'url'}/Event'>{$event|date_format:"%x"}</a>
+							<a href='/AspenEvents/{$key|escape:'url'}/Event'>{$event|format_date_locale:'medium'}</a>
 						</div>
 					{/foreach}
+					{if $smarty.foreach.eventDateLoop.total > 5}
+						<div class="col-xs-12">
+							<a href="#" onclick="AspenDiscovery.Events.lessEventDates(); return false;">{translate text='less' isPublicFacing=true} ...</a>
+						</div>
+						</div>{* closes narrowGroupHidden div *}
+					{/if}
 				</div>
 			</div>
 		{/if}
@@ -68,15 +80,15 @@
 			<div class="col-xs-8">
 				<ul>
 					{if $recordDriver->isAllDayEvent()}
-						<li>{translate text="Date: " isPublicFacing=true}{$recordDriver->getStartDate()|date_format:"%A %B %e, %Y"}</li>
+						<li>{translate text="Date: " isPublicFacing=true}{$recordDriver->getStartDate()|format_date_locale:'full'}</li>
 						<li>{translate text="Time: All Day Event" isPublicFacing=true}</li>
 					{elseif $recordDriver->isMultiDayEvent()}
-						<li>{translate text="Start Date: " isPublicFacing=true}{$recordDriver->getStartDate()|date_format:"%a %b %e, %Y %l:%M%p"}</li>
-						<li>{translate text="End Date: " isPublicFacing=true}{$recordDriver->getEndDate()|date_format:"%a %b %e, %Y %l:%M%p"}</li>
+						<li>{translate text="Start Date: " isPublicFacing=true}{$recordDriver->getStartDate()|format_datetime_locale:'long'}</li>
+						<li>{translate text="End Date: " isPublicFacing=true}{$recordDriver->getEndDate()|format_datetime_locale:'long'}</li>
 					{else}
-						<li>{translate text="Date: " isPublicFacing=true}{$recordDriver->getStartDate()|date_format:"%A %B %e, %Y"}</li>
+						<li>{translate text="Date: " isPublicFacing=true}{$recordDriver->getStartDate()|format_date_locale:'full'}</li>
 						{if !$recordDriver->hiddenTimestamps()}
-							<li>{translate text="Time: " isPublicFacing=true}{$recordDriver->getStartDate()|date_format:"%l:%M %p"} to {$recordDriver->getEndDate()|date_format:"%l:%M %p"}</li>
+							<li>{translate text="Time: " isPublicFacing=true}{$recordDriver->getStartDate()|format_time_range_locale:$recordDriver->getEndDate()}</li>
 						{/if}
 					{/if}
 					<li>{translate text="Branch: " isPublicFacing=true}{$recordDriver->getBranch()}</li>

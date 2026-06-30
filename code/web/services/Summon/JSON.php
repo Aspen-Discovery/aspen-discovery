@@ -22,6 +22,7 @@ class Summon_JSON extends JSON_Action {
 		$summonRecordUsage->summonId = $id;
 		$summonRecordUsage->year = date('Y');
 		$summonRecordUsage->month = date('n');
+		$summonRecordUsage->day = date('d');
 		if ($summonRecordUsage->find(true)) {
 			$summonRecordUsage->timesUsed++;
 			$ret = $summonRecordUsage->update();
@@ -46,6 +47,7 @@ class Summon_JSON extends JSON_Action {
 				$userSummonUsage->userId = $userId;
 				$userSummonUsage->year = date('Y');
 				$userSummonUsage->month = date('n');
+				$userSummonUsage->day = date('d');
 	
 				if ($userSummonUsage->find(true)) {
 					$userSummonUsage->usageCount++;

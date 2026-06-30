@@ -216,6 +216,7 @@ class HooplaDriver extends AbstractEContentDriver {
 					$hooplaErrorMessage = empty($hooplaPatronStatusResponse['body']->message) ? '' : ' Hoopla Message :' . $hooplaPatronStatusResponse['body']->message;
 					$logger->log('Error retrieving patron status from Hoopla. User ID : ' . $user->id . $hooplaErrorMessage, Logger::LOG_NOTICE);
 					$this->hooplaPatronStatuses[$user->id] = false; // Don't do status call again for this user
+					$summary->resetCounters();
 				}
 				// Get Holds status for only the patrons can access to Hoopla Flex
 				if ($user->isValidForEContentSource('hoopla_flex')) {

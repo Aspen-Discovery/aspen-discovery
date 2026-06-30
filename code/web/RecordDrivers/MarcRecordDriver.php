@@ -931,6 +931,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 			'b',
 			'c',
 			'd',
+			'q',
 		]);
 	}
 
@@ -950,6 +951,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 					'b',
 					'c',
 					'd',
+					'q',
 				], true);
 				$titleSubfieldArray = $this->getSubfieldArray($field, [
 					't',
