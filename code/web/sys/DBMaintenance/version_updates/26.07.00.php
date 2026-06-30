@@ -27,7 +27,7 @@ function getUpdates26_07_00(): array {
 			'sql' => [
 				'CREATE TABLE IF NOT EXISTS dpla_exclusion_settings (
 					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    				dplaLink VARCHAR(255) NOT NULL
+					dplaLink VARCHAR(255) NOT NULL
 				) ENGINE INNODB',
 			],
 		], // dpla_exclusions
