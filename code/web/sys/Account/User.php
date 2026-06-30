@@ -1676,6 +1676,10 @@ class User extends DataObject {
 
 		//Make sure the selected location codes are in the database.
 		if (isset($_POST['pickupLocation'])) {
+			$catalogDriver = $this->getCatalogDriver();
+			if ($catalogDriver->driver instanceof Polaris) {
+				$catalogDriver->updatePreferredPickupLocation($this, $_POST['pickupLocation'], UserAccount::isUserMasquerading());
+			}
 			if ($_POST['pickupLocation'] == 0) {
 				$this->__set('pickupLocationId', $_POST['pickupLocation']);
 			} else {

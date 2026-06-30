@@ -2259,4 +2259,8 @@ class CatalogConnection {
 	public function getPatronHoldGroups($patronId): ?array {
 		return $this->driver->getPatronHoldGroups($patronId);
 	}
+
+	public function updatePreferredPickupLocation($user, $pickupLocation, $fromMasquerade): bool {
+		return $this->driver->updatePreferredPickupLocation($user, $pickupLocation, $fromMasquerade);
+	}
 }
