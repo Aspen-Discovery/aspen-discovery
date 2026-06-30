@@ -15,6 +15,7 @@ class Series extends DataObject {
 	public $groupedWorkSeriesTitle;
 	public $author;
 	public $seriesLanguage;
+	public $seriesToGroupWithId;
 
 
 	public $description;

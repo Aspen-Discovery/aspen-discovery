@@ -95,8 +95,10 @@ class SeriesRecordDriver extends IndexRecordDriver {
 		$seriesObject = $this->getSeriesObject();
 		if ($seriesObject) {
 			$interface->assign('summNumTitles', $seriesObject->numScopedTitlesInSeries());
+			$interface->assign('seriesObjectId', $seriesObject->id);
 		}else{
 			$interface->assign('summNumTitles', 0);
+			$interface->assign('seriesObjectId', -1);
 		}
 
 		if ($showListsAppearingOn) {
