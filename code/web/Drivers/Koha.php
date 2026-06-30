@@ -179,6 +179,7 @@ class Koha extends AbstractIlsDriver {
 					'category_id' => $patron->patronType,
 				];
 
+				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'street_number', 'borrower_streetnumber', $library->useAllCapsWhenUpdatingProfile, false, $validFieldsToUpdate);
 				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'address', 'borrower_address', $library->useAllCapsWhenUpdatingProfile, false, $validFieldsToUpdate);
 				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'address2', 'borrower_address2', $library->useAllCapsWhenUpdatingProfile, false, $validFieldsToUpdate);
 				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'altaddress_address', 'borrower_B_address', $library->useAllCapsWhenUpdatingProfile, false, $validFieldsToUpdate);
@@ -343,6 +344,7 @@ class Koha extends AbstractIlsDriver {
 					$postVariables = $this->setPostField($postVariables, 'borrower_initials', $library->useAllCapsWhenUpdatingProfile);
 					$postVariables = $this->setPostField($postVariables, 'borrower_othernames', $library->useAllCapsWhenUpdatingProfile);
 					$postVariables = $this->setPostField($postVariables, 'borrower_sex', $library->useAllCapsWhenUpdatingProfile);
+					$postVariables = $this->setPostField($postVariables, 'borrower_streetnumber', $library->useAllCapsWhenUpdatingProfile);
 					$postVariables = $this->setPostField($postVariables, 'borrower_address', $library->useAllCapsWhenUpdatingProfile);
 					$postVariables = $this->setPostField($postVariables, 'borrower_address2', $library->useAllCapsWhenUpdatingProfile);
 					$postVariables = $this->setPostField($postVariables, 'borrower_city', $library->useAllCapsWhenUpdatingProfile);
@@ -532,8 +534,6 @@ class Koha extends AbstractIlsDriver {
 		require_once ROOT_DIR . '/sys/Indexing/IlsRecord.php';
 		IlsRecord::preloadIlsRecords($this->getIndexingProfile()->name, $allBibNumbers);
 
-		$circControl = $this->getKohaSystemPreference('CircControl', 'PatronLibrary');
-		$activeLibrary = Library::getActiveLibrary();
 		foreach ($allRows as $curRow) {
 			$curCheckout = new Checkout();
 			$curCheckout->type = 'ils';
@@ -600,22 +600,7 @@ class Koha extends AbstractIlsDriver {
 
 			$patronType = $patron->patronType;
 			$itemType = $curRow['itype'];
-			if ($circControl == 'PatronLibrary') {
-				$circBranch = $patron->getHomeLocationCode();
-			} else if ($circControl == 'PickupLibrary') {
-				$circBranch = $curRow['branchcode'];
-				if ($activeLibrary) {
-					$locations = $activeLibrary->getLocations();
-					if (!empty($locations)) {
-						$firstLocation = reset($locations);
-						if ($firstLocation != null && !empty($firstLocation->code)) {
-							$circBranch = $firstLocation->code;
-						}
-					}
-				}
-			} else {
-				$circBranch = $curRow['branchcode'];
-			}
+			$circBranch = $this->getCircControlBranch($patron, $curRow['branchcode']);
 
 			$curCheckout->returnClaim = '';
 
@@ -2033,6 +2018,96 @@ class Koha extends AbstractIlsDriver {
 		return $hold_result;
 	}
 
+	public function hasHoldFeeMessage(): bool {
+		global $library;
+		return !empty($library->showHoldFeeMessage);
+	}
+
+	public function getPreHoldSubmissionFeeMessage(MarcRecordDriver $marcRecordDriver): string|null {
+		return $this->getHoldFeeMessage($marcRecordDriver, false);
+	}
+
+	public function getPostHoldSubmissionFeeMessage(MarcRecordDriver $marcRecordDriver): string|null {
+		return $this->getHoldFeeMessage($marcRecordDriver, true);
+	}
+
+	private function getHoldFeeMessage(MarcRecordDriver $marcRecordDriver, bool $placed): string|null {
+		if (!UserAccount::isLoggedIn()) {
+			return "You must be logged in to place holds.";
+		}
+		$rawFee = $this->calculateHoldFeeForRecord($marcRecordDriver);
+		if (!$rawFee || $rawFee == 'unknown' || $rawFee == "0.000000") {
+			return null;
+		}
+		$fee = $this->formatFee($rawFee);
+		if ($this->getKohaSystemPreference('HoldFeeMode') == 'any_time_is_collected') {
+			return "You will be charged a hold fee of $fee when you collect this item.";
+		}
+		return $placed
+			? "You have been charged a hold fee of $fee for placing this hold."
+			: "You will be charged a hold fee of $fee for placing this hold.";
+	}
+
+	// Replicates the logic in Koha's _calculate_title_hold_fee() for bib-level holds
+	public function calculateHoldFeeForRecord(MarcRecordDriver $marcRecordDriver) {
+		/** @var Grouping_Item			- includes relevant location information */
+		$groupingItems 					= $marcRecordDriver->getRelatedRecord()->getItems();
+		/** @var User					- includes relevant user unique identifier and location information */
+		$patron 						= UserAccount::getActiveUserObj();
+		/** @var File_MARC_Record 		- links to relavent item type information */
+		$marcRecordFile 				= $marcRecordDriver->getMarcRecord();
+		/** @var File_MARC_Data_Field 	- contains the item type id*/
+		$itemTypeField 					= $marcRecordFile->getField('952');
+
+		if ($itemTypeField ==  false) {
+			global $logger;
+			$logger->log('No field 952 found on record with id: ' . $marcRecordDriver->getId(), Logger::LOG_ERROR);
+			return 'unknown';
+		}
+
+		$itemTypeSubfield = $itemTypeField->getSubfield('y');
+
+		if ($itemTypeSubfield ==  false) {
+			global $logger;
+			$logger->log('No subfield y found for field 952 on record with id: ' . $marcRecordDriver->getId(), Logger::LOG_ERROR);
+			return 'unknown';
+		}
+		
+		$itemTypeId = trim($itemTypeSubfield->getData());
+
+		$fees = [];
+
+		foreach ($groupingItems as $groupingItem) {
+			$fee = $this->getRawCirculationRule('hold_fee', [
+				'patronCategoryId' => $patron->patronType,
+				'itemTypeId' => $itemTypeId,
+				'locationId' => $groupingItem->locationCode
+			]);
+
+			array_push($fees, $fee);
+		}
+
+		$sortingStrategy = $this->getKohaSystemPreference('TitleHoldFeeStrategy');
+
+    	if ( $sortingStrategy == 'highest' ) {
+    	    return max($fees);
+    	}
+		if ( $sortingStrategy == 'lowest' ) {
+    	    return min($fees);
+    	}
+
+		// If more than one option share an equal number of occurrences, then pick the first one.
+		if ( $sortingStrategy == 'most_common' ) {
+			$feeCounts = array_count_values($fees);
+			// Ensure it is sorted by fee (desc)
+			krsort($feeCounts);
+			// Sort by count (desc)
+			arsort($feeCounts);
+			return array_key_first($feeCounts);
+		}	
+    	
+    	return max($fees);
+	}
 
 	/**
 	 * @param User $patron
@@ -2362,8 +2437,6 @@ class Koha extends AbstractIlsDriver {
 		require_once ROOT_DIR . '/sys/Indexing/IlsRecord.php';
 		IlsRecord::preloadIlsRecords($this->getIndexingProfile()->name, $allBibNumbers);
 
-		$circControl = $this->getKohaSystemPreference('CircControl', 'PatronLibrary');
-		$activeLibrary = Library::getActiveLibrary();
 		foreach ($allRows as $curRow) {
 			//Each row in the table represents a hold
 			$curHold = new Hold();
@@ -2444,22 +2517,7 @@ class Koha extends AbstractIlsDriver {
 				if($this->getKohaVersion() >= 22.11) {
 					$patronType = $patron->patronType;
 					$itemType = $curRow['itype'];
-					if ($circControl == 'PatronLibrary') {
-						$circBranch = $patron->getHomeLocationCode();
-					} else if ($circControl == 'PickupLibrary') {
-						$circBranch = $curRow['branchcode'];
-						if ($activeLibrary) {
-							$locations = $activeLibrary->getLocations();
-							if (!empty($locations)) {
-								$firstLocation = reset($locations);
-								if ($firstLocation != null && !empty($firstLocation->code)) {
-									$circBranch = $firstLocation->code;
-								}
-							}
-						}
-					} else {
-						$circBranch = $curRow['branchcode'];
-					}
+					$circBranch = $this->getCircControlBranch($patron, $curRow['branchcode']);
 					/** @noinspection SqlResolve */
 					$issuingRulesSql = "SELECT *  FROM circulation_rules where rule_name =  'waiting_hold_cancellation' AND (categorycode IN ('$patronType', '*') OR categorycode IS NULL) and (itemtype IN('$itemType', '*') OR itemtype is null) and (branchcode IN ('$circBranch', '*') OR branchcode IS NULL) order by branchcode desc, categorycode desc, itemtype desc limit 1";
 					$issuingRulesRS = mysqli_query($this->dbConnection, $issuingRulesSql);
@@ -2885,6 +2943,19 @@ class Koha extends AbstractIlsDriver {
 			return $hold_result;
 		}
 
+		$homeLibrary = $patron->getHomeLibrary();
+		if (empty($_REQUEST['confirmedRenewal']) && $itemId && $homeLibrary && $homeLibrary->showCheckoutRenewalFeeMessage) {
+			$feeMessage = $this->getPreRenewalFeeMessage($itemId);
+			if ($feeMessage) {
+				$result['success'] = false;
+				$result['message'] = $feeMessage;
+				$result['confirmRenewalFee'] = true;
+				$result['api']['title'] = translate(['text' => 'Confirm Renewal', 'isPublicFacing' => true]);
+				$result['api']['message'] = $feeMessage;
+				return $result;
+			}
+		}
+
 		/** @noinspection PhpBooleanCanBeSimplifiedInspection */
 		if (false && $this->getKohaVersion() >= 19.11) {
 			/** @noinspection PhpUnreachableStatementInspection */
@@ -3007,9 +3078,6 @@ class Koha extends AbstractIlsDriver {
 			$renewResponse = $this->getXMLWebServiceResponse($renewURL);
 			ExternalRequestLogEntry::logRequest('koha.renewCheckout', 'GET', $renewURL, $this->curlWrapper->getHeaders(), '', $this->curlWrapper->getResponseCode(), $renewResponse, []);
 
-			$circControl = $this->getKohaSystemPreference('CircControl', 'PatronLibrary');
-			$activeLibrary = Library::getActiveLibrary();
-
 			//Parse the result
 			if (isset($renewResponse->success) && ($renewResponse->success == 1)) {
 				$renewResults = mysqli_query($this->dbConnection, $renewSql);
@@ -3017,22 +3085,7 @@ class Koha extends AbstractIlsDriver {
 				while ($curRow = mysqli_fetch_assoc($renewResults)) {
 					$patronType = $patron->patronType;
 					$itemType = $curRow['itype'];
-					if ($circControl == 'PatronLibrary') {
-						$circBranch = $patron->getHomeLocationCode();
-					} else if ($circControl == 'PickupLibrary') {
-						$circBranch = $curRow['branchcode'];
-						if ($activeLibrary) {
-							$locations = $activeLibrary->getLocations();
-							if (!empty($locations)) {
-								$firstLocation = reset($locations);
-								if ($firstLocation != null && !empty($firstLocation->code)) {
-									$circBranch = $firstLocation->code;
-								}
-							}
-						}
-					} else {
-						$circBranch = $curRow['branchcode'];
-					}
+					$circBranch = $this->getCircControlBranch($patron, $curRow['branchcode']);
 					if ($this->getKohaVersion() >= 22.11) {
 						$renewCount = $curRow['renewals_count'];
 					} else {
@@ -3155,6 +3208,122 @@ class Koha extends AbstractIlsDriver {
 			}
 		}
 		return $result;
+	}
+
+	private function getCircControlBranch(User $patron, ?string $itemBranch): ?string {
+		$circControl = $this->getKohaSystemPreference('CircControl', 'PatronLibrary');
+		if ($circControl == 'PatronLibrary') {
+			return $patron->getHomeLocationCode();
+		}
+		if ($circControl == 'PickupLibrary') {
+			$activeLibrary = Library::getActiveLibrary();
+			if ($activeLibrary) {
+				$locations = $activeLibrary->getLocations();
+				if (!empty($locations)) {
+					$firstLocation = reset($locations);
+					if ($firstLocation != null && !empty($firstLocation->code)) {
+						return $firstLocation->code;
+					}
+				}
+			}
+		}
+		return $itemBranch;
+	}
+
+	public function getPreRenewalFeeMessage(string $itemId): string|null {
+		$item = $this->getItemForRenewal($itemId);
+		if (!$item) {
+			return null;
+		}
+
+		$branchField = $this->getKohaSystemPreference('HomeOrHoldingBranch', 'homebranch');
+		$itemBranch = $branchField === 'holdingbranch'
+			? ($item['holding_library_id'] ?? null)
+			: ($item['home_library_id'] ?? null);
+		$circBranch = $this->getCircControlBranch(UserAccount::getActiveUserObj(), $itemBranch);
+
+		$rawFee = $this->getRenewalFeeForItem($item['item_type_id'], $circBranch);
+		if (!$rawFee) {
+			return null;
+		}
+
+		return translate([
+			'text'           => 'You will be charged a renewal fee of %1%.',
+			'1'              => $this->formatFee($rawFee),
+			'isPublicFacing' => true,
+		]);
+	}
+
+	public function getRenewalFeeForItem(string $itemType, string $locationCode): float|null {
+		$rawRentalCharge = $this->getItemTypeRentalCharge($itemType);
+		if (!$rawRentalCharge || (float)$rawRentalCharge === 0.0) {
+			return null;
+		}
+
+		$patron = UserAccount::getActiveUserObj();
+		$discount = $this->getRawCirculationRule('rentaldiscount', [
+			'patronCategoryId' => $patron->patronType,
+			'itemTypeId'       => $itemType,
+			'locationId'       => $locationCode,
+		]);
+		
+		return $this->calculateRenewalFeeForItem((float)$rawRentalCharge, $discount);
+	}
+
+	public function calculateRenewalFeeForItem(float $rentalCharge, float $discount): float|null {
+		if ($discount && $discount > 0) {
+			$rentalCharge = $rentalCharge * (1 - $discount / 100);
+		}
+		if ($rentalCharge === 0.0) {
+			return null;
+		}
+		return $rentalCharge;
+	}
+
+	private function getItemTypeRentalCharge(string $itemType): string|null {
+		$response = $this->kohaApiUserAgent->get('/api/v1/item_types', 'koha.getItemTypeRentalCharge');
+
+		if ($response && $response['code'] == 200) {
+			foreach ($response['content'] as $type) {
+				if ($type['item_type_id'] === $itemType) {
+					return $type['rentalcharge'] ?? null;
+				}
+			}
+		}
+
+		return null;
+	}
+
+	private function getItemForRenewal(string $itemId): array|null {
+		$response = $this->kohaApiUserAgent->get('/api/v1/items/' . (int)$itemId, 'koha.getItemForRenewal');
+		if ($response && $response['code'] == 200) {
+			return $response['content'];
+		}
+		return null;
+	}
+
+	private function formatFee(float $rawFee): string|null {
+		global $activeLanguage;
+		$currencyCode = 'USD';
+		$variables = new SystemVariables();
+		if ($variables->find(true)) {
+			$currencyCode = $variables->currencyCode;
+		}
+		$currencyFormatter = new NumberFormatter($activeLanguage->locale . '@currency=' . $currencyCode, NumberFormatter::CURRENCY);
+		return $currencyFormatter->formatCurrency($rawFee, $currencyCode);
+	}
+
+	private function getRawCirculationRule(string $ruleName, array $context): string|null {
+		['itemTypeId' => $itemTypeId, 'locationId' => $locationId, 'patronCategoryId' => $patronCategoryId] = $context;
+
+		$endpoint = "/api/v1/circulation_rules?effective=true&item_type_id=$itemTypeId&library_id=$locationId&patron_category_id=$patronCategoryId&rules=$ruleName";
+		$response = $this->kohaApiUserAgent->get($endpoint, "koha.getCirculationRule.$ruleName");
+
+		if ($response && $response['code'] == 200) {
+			return $response['content'][0][$ruleName] ?? null;
+		}
+
+		return null;
 	}
 
 	/**
@@ -3939,7 +4108,7 @@ class Koha extends AbstractIlsDriver {
 		$this->initDatabaseConnection();
 
 		/** @noinspection SqlResolve */
-		$sql = "SELECT * FROM systempreferences where variable like 'PatronSelf%';";
+		$sql = "SELECT * FROM systempreferences where variable like 'PatronSelf%' or variable = 'BorrowersTitles';";
 		$results = mysqli_query($this->dbConnection, $sql);
 		$kohaPreferences = [];
 		while ($curRow = $results->fetch_assoc()) {
@@ -3962,6 +4131,15 @@ class Koha extends AbstractIlsDriver {
 			$validLibraries = [];
 		} else {
 			$validLibraries = array_flip(explode('|', $kohaPreferences['PatronSelfRegistrationLibraryList']));
+		}
+
+		$validTitles = [
+			'' => ''
+		];
+		if(array_key_exists('BorrowersTitles', $kohaPreferences)) {
+			foreach(explode('|', $kohaPreferences['BorrowersTitles']) as $title) {
+				$validTitles[$title] = $title;
+			}
 		}
 
 		$fields = [];
@@ -4072,32 +4250,29 @@ class Koha extends AbstractIlsDriver {
 			'label' => 'Identity',
 			'hideInLists' => true,
 			'expandByDefault' => true,
-			'properties' => [
-				'borrower_title' => [
-					'property' => 'borrower_title',
-					'type' => 'enum',
-					'label' => 'Salutation',
-					'values' => [
-						'' => '',
-						'Mr' => 'Mr',
-						'Mrs' => 'Mrs',
-						'Ms' => 'Ms',
-						'Miss' => 'Miss',
-						'Dr.' => 'Dr.',
-					],
-					'description' => 'Your preferred salutation',
-					'required' => false,
-				],
-				'borrower_surname' => [
-					'property' => 'borrower_surname',
-					'type' => 'text',
-					'label' => 'Surname',
-					'description' => 'Your last name',
-					'maxLength' => 60,
-					'required' => true,
-					'autocomplete' => false,
-				],
-			],
+			'properties' => []
+		];
+
+		// Always one blank title, show if we have more options than that
+		if(count($validTitles) > 1) {
+			$fields['identitySection']['properties']['borrower_title'] = [
+				'property' => 'borrower_title',
+				'type' => 'enum',
+				'label' => 'Salutation',
+				'values' => $validTitles,
+				'description' => 'Your preferred salutation',
+				'required' => false,
+			];
+		}
+
+		$fields['identitySection']['properties']['borrower_surname'] = [
+			'property' => 'borrower_surname',
+			'type' => 'text',
+			'label' => 'Surname',
+			'description' => 'Your last name',
+			'maxLength' => 60,
+			'required' => true,
+			'autocomplete' => false,
 		];
 
 		if($this->getKohaVersion() >= 22.11) {
@@ -4226,6 +4401,15 @@ class Koha extends AbstractIlsDriver {
 			'hideInLists' => true,
 			'expandByDefault' => true,
 			'properties' => [
+				'borrower_streetnumber' => [
+					'property' => 'borrower_streetnumber',
+					'type' => 'text',
+					'label' => 'Street Number',
+					'description' => 'Street Number',
+					'maxLength' => 128,
+					'required' => true,
+					'autocomplete' => false,
+				],
 				'borrower_address' => [
 					'property' => 'borrower_address',
 					'type' => 'text',
@@ -4732,6 +4916,7 @@ class Koha extends AbstractIlsDriver {
 				'firstname' => $ssoUser['borrower_firstname'] ?? $ssoUser['firstname'],
 				'surname' => $ssoUser['borrower_surname'] ?? $ssoUser['lastname'],
 				'email' => $ssoUser['borrower_email'] ?? $ssoUser['email'],
+				'street_number' => $ssoUser['borrower_streetnumber'] ?? '',
 				'address' =>  $ssoUser['borrower_address'] ?? 'UNKNOWN',
 				'city' => $ssoUser['borrower_city'] ?? 'UNKNOWN',
 				'library_id' => $mainBranch,
@@ -4884,6 +5069,7 @@ class Koha extends AbstractIlsDriver {
 			$postFields = $this->setPostField($postFields, 'borrower_initials', $library->useAllCapsWhenSubmittingSelfRegistration);
 			$postFields = $this->setPostField($postFields, 'borrower_othernames', $library->useAllCapsWhenSubmittingSelfRegistration);
 			$postFields = $this->setPostField($postFields, 'borrower_sex', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_streetnumber', $library->useAllCapsWhenSubmittingSelfRegistration);
 			$postFields = $this->setPostField($postFields, 'borrower_address', $library->useAllCapsWhenSubmittingSelfRegistration);
 			$postFields = $this->setPostField($postFields, 'borrower_address2', $library->useAllCapsWhenSubmittingSelfRegistration);
 			$postFields = $this->setPostField($postFields, 'borrower_city', $library->useAllCapsWhenSubmittingSelfRegistration);
@@ -4969,6 +5155,7 @@ class Koha extends AbstractIlsDriver {
 
 			//Use self registration API
 			$postVariables = [];
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'street_number', 'borrower_streetnumber', $library->useAllCapsWhenSubmittingSelfRegistration);
 			$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'address', 'borrower_address', $library->useAllCapsWhenSubmittingSelfRegistration);
 			$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'address2', 'borrower_address2', $library->useAllCapsWhenSubmittingSelfRegistration);
 			$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'altaddress_address', 'borrower_B_address', $library->useAllCapsWhenSubmittingSelfRegistration);
@@ -6588,6 +6775,7 @@ class Koha extends AbstractIlsDriver {
 					'allowableTransports' => [],
 					'wantsDigest' => 0,
 					'selectedTransports' => [],
+					'daysInAdvance' => 0,
 				];
 			}
 			$messagingSettings[$transportId]['allowableTransports'][$transportSetting['message_transport_type']] = $transportSetting['message_transport_type'];
@@ -7404,6 +7592,145 @@ class Koha extends AbstractIlsDriver {
 				'message' => 'Your password was updated successfully.',
 			];
 		}
+	}
+
+	/*
+	*  When Koha returns a verdict (404 -> no endpoint, 200 -> user allowed
+	*  to renew, 403 -> bad credentials), cache for a day as the verdict
+	*  will not change for that period. Prevents sending redundant queries.
+	*/
+	public function isRenewalInformationCacheable(array $renewalInfo): bool {
+		return in_array($renewalInfo['code'] ?? null, [200, 403, 404], true);
+	}
+
+	public function getSelfRenewalSettings(array $renewalInfo): array {
+		if (($renewalInfo['success'] ?? false) !== true) {
+			return [];
+		}
+		return $renewalInfo['data']['self_renewal_settings'] ?? [];
+	}
+
+	public function isPatronEligibleToRenew(array $selfRenewalSettings): bool {
+		return (int)($selfRenewalSettings['opac_patron_details'] ?? 0) === 1;
+	}
+
+	public function canPatronSelfRenew(array $renewalInfo): bool {
+		$selfRenewalSettings = $this->getSelfRenewalSettings($renewalInfo);
+		return !empty($selfRenewalSettings) && $this->isPatronEligibleToRenew($selfRenewalSettings);
+	}
+
+	public function getAccountRenewalInformationForPatron(string $userId): array {
+		$endpoint = '/api/v1/public/patrons/' . $userId . '/self_renewal';
+		$extraHeaders = [
+			'Accept-Encoding: gzip, deflate',
+			'Content-Type: application/json'
+		];
+
+		$response = $this->kohaApiUserAgent->get($endpoint, 'koha.getAccountRenewalInformationForPatron', [], $extraHeaders);
+
+		$code = $response['code'] ?? 'unknown';
+		$result = ['success' => false, 'code' => $code];
+
+		if ($code === 200) {
+			$result['success'] = true;
+			$result['data'] = $response['content'];
+			return $result;
+		}
+
+		global $logger;
+		$logger->log("Failed to fetch account renewal information. Response code: " . $code, Logger::LOG_ERROR);
+
+		if (!empty($response['content']['error'])) {
+			$result['message'] = translate([
+				'text' => $response['content']['error'],
+				'isPublicFacing' => true,
+			]);
+			return $result;
+		}
+
+		$result['message'] = translate([
+			'text' => 'Unspecified error fetching account renewal information from Koha.',
+			'isPublicFacing' => true,
+		]);
+		return $result;
+	}
+
+	private function formatPatronAttribute(string $key, $value): array {
+		if (str_contains($key, 'borrower_attribute_')) {
+			return [
+				'type'  => 'extended',
+				'code'  => str_replace('borrower_attribute_', '', $key),
+				'value' => $value
+			];
+		}
+
+		if (str_contains($key, 'borrower_')) {
+			return [
+				'type'  => 'standard',
+				'key'   => str_replace('borrower_', '', $key),
+				'value' => $value,
+			];
+		}
+
+		return ['type' => 'ignored'];
+	}
+
+	public function sendAccountRenewalRequest($userId, $requestedChanges, $selfRenewalSettings): array {		
+		$body = [
+			'self_renewal_settings' => $selfRenewalSettings,
+			'patron' => [],
+		];
+
+		foreach ($requestedChanges as $key => $value) {
+			$result = $this->formatPatronAttribute($key, $value);
+
+			if ($result['type'] === 'standard') {
+				$body['patron'][$result['key']] = $result['value'];
+			} elseif ($result['type'] === 'extended') {
+				$body['patron']['extended_attributes'][] = [
+					'code'	  => $result['code'],
+					'attribute' => $result['value']
+				];
+			}
+		}
+
+		return $this->postAccountRenewalRequestForPatron($userId, $body);
+	}
+
+	private function postAccountRenewalRequestForPatron(string $userId, array $params): array {
+		$result = ['success' => false];
+
+		$endpoint = '/api/v1/public/patrons/' . $userId . '/self_renewal';
+		$extraHeaders = [
+			'Accept-Encoding: gzip, deflate',
+			'Content-Type: application/json'
+		];
+
+		$response = $this->kohaApiUserAgent->post($endpoint, $params, 'koha.postAccountRenewalRequestForPatron', [], $extraHeaders);
+
+		if ($response && $response['code'] == 201) {
+			return [
+				'success' => true,
+				'data' => $response['content'],
+			];
+		}
+
+		global $logger;
+		$logger->log("Failed to post account renewal request information. Response code: " . ($response['code'] ?? 'unknown'), Logger::LOG_ERROR);
+
+		if (!empty($response['content']['error'])) {
+			$result['message'] = translate([
+				'text' => $response['content']['error'],
+				'isPublicFacing' => true,
+			]);
+			return $result;
+		}
+
+		$result['message'] = translate([
+			'text' => 'Unspecified error posting account renewal request to Koha.',
+			'isPublicFacing' => true,
+		]);
+		return $result;
 	}
 
 	function setExtendedAttributes() {
@@ -9334,6 +9661,10 @@ class Koha extends AbstractIlsDriver {
 	}
 
 	public function hasAdditionalFineFields(): bool {
+		return true;
+	}
+
+	public function hasCardRenewalSupport(): bool {
 		return true;
 	}
 

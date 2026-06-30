@@ -62,6 +62,10 @@ class DataObjectUtil {
 				}
 				continue;
 			}
+			if ($property['type'] == 'oneToMany' && isset($property['structure'])) {
+				DataObjectUtil::validateSubObjectRegexes($property, $object, $validationResults['errors']);
+				continue;
+			}
 			$value = $_REQUEST[$property['property']] ?? null;
 			if (isset($property['required']) && $property['required']) {
 				if ($value == null && strlen($value) > 0) {
@@ -74,6 +78,7 @@ class DataObjectUtil {
 					$validationResults['errors'][] = $property['property'] . ' does not match ' . $property['property'] . 'Repeat';
 				}
 			}
+			DataObjectUtil::validateRegexPropertyIfApplicable($value, $property, $validationResults['errors']);
 
 			//Check to see if there is a custom validation routine
 			if (isset($property['serverValidation'])) {
@@ -90,6 +95,41 @@ class DataObjectUtil {
 			$validationResults['validatedOk'] = false;
 		}
 		return $validationResults;
+	}
+
+	private static function validateSubObjectRegexes(array $property, $object, array &$errors) : void {
+		$subObjects = $object->{$property['property']} ?? [];
+		foreach ($subObjects as $subObject) {
+			if ($subObject->_deleteOnSave ?? false) {
+				continue;
+			}
+			foreach ($property['structure'] as $subProperty) {
+				$subValue = $subObject->{$subProperty['property']} ?? null;
+				DataObjectUtil::validateRegexPropertyIfApplicable($subValue, $subProperty, $errors);
+			}
+		}
+	}
+
+	private static function validateRegexPropertyIfApplicable(mixed $value, array $property, array &$errors) : void {
+		if (!DataObjectUtil::isRegularExpressionProperty($property)) {
+			return;
+		}
+		if (!DataObjectUtil::isValidRegularExpression($value)) {
+			DataObjectUtil::addRegularExpressionError($property, $errors);
+		}
+	}
+
+	private static function isRegularExpressionProperty(array $property) : bool {
+		return in_array($property['type'], ['regularExpression', 'multilineRegularExpression']);
+	}
+
+	private static function addRegularExpressionError(array $property, array &$errors) : void {
+		$errors[] = ($property['label'] ?? $property['property']) . ' is not a valid regular expression.';
+	}
+
+	static function isValidRegularExpression(mixed $value) : bool {
+		// preg_match returns false on compile failure, 0 on no-match — strict compare required
+		return is_string($value) && (@preg_match('~' . str_replace('~', '\~', $value) . '~', '') !== false);
 	}
 
 	static function updateFromUI($object, $structure, $fieldLocks) : void {

@@ -38,6 +38,7 @@ class GroupedWork_DownloadPDF {
 								$userUsage->indexingProfileId = $this->recordDriver->getIndexingProfile()->id;
 								$userUsage->year = date('Y');
 								$userUsage->month = date('n');
+								$userUsage->day = date('d');
 								if ($userUsage->find(true)) {
 									$userUsage->pdfDownloadCount++;
 									$userUsage->update();
@@ -56,6 +57,7 @@ class GroupedWork_DownloadPDF {
 							$recordUsage->recordId = $this->recordDriver->getUniqueID();
 							$recordUsage->year = date('Y');
 							$recordUsage->month = date('n');
+							$recordUsage->day = date('d');
 							if ($recordUsage->find(true)) {
 								$recordUsage->pdfDownloadCount++;
 								$recordUsage->update();

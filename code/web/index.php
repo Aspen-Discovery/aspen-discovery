@@ -17,6 +17,9 @@ global $memoryWatcher;
 //Do additional tasks that are only needed when running the full website
 loadModuleActionId();
 $timer->logTime("Loaded Module and Action Id");
+
+// Set Cloudflare Rate Limit complexity header based on endpoint weight
+setCloudflareComplexityHeader();
 $memoryWatcher->logMemory("Loaded Module and Action Id");
 initializeSession();
 $timer->logTime("Initialized session");
@@ -678,9 +681,14 @@ if (UserAccount::isLoggedIn() && (!isset($_REQUEST['action']) || $_REQUEST['acti
 
 //Find a reasonable default location to go to
 if ($module == null && $action == null) {
-	//We have no information about where to go, go to the default location from config
-	$module = $configArray['Site']['defaultModule'];
-	$action = 'Home';
+	$requestPath = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?: '/';
+	if ($requestPath === '/') {
+		$module = $configArray['Site']['defaultModule'];
+		$action = 'Home';
+	} else {
+		$module = 'Error';
+		$action = 'Handle404';
+	}
 } elseif ($action == null) {
 	$action = 'Home';
 }
@@ -1087,6 +1095,7 @@ function loadModuleActionId() {
 	if (str_starts_with($requestURI, '//')) {
 		$requestURI = substr($requestURI, 1);
 	}
+	$requestPath = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?: '/';
 	/** IndexingProfile[] $indexingProfiles */ global $indexingProfiles;
 	/** SideLoad[] $sideLoadSettings */ global $sideLoadSettings;
 	$allRecordModules = "OverDrive|GroupedWork|Record|ExternalEContent|Person|Library|Hoopla|CloudLibrary|Files|Axis360|WebBuilder|ProPay|CourseReserves|Springshare|LibraryMarket|Communico|PalaceProject|Assabet|AspenEvents|Series|LocalHop";
@@ -1097,22 +1106,22 @@ function loadModuleActionId() {
 		$allRecordModules .= '|' . $profile->recordUrlComponent;
 	}
 	$checkWebBuilderAliases = false;
-	if (preg_match("~^/(MyAccount)/([^/?]+)/([^/?]+)(\?.+)?~", $requestURI, $matches)) {
+	if (preg_match("~^/(MyAccount)/([^/]+)/([^/]+)/?$~", $requestPath, $matches)) {
 		setRoute($matches[1], $matches[2], $matches[3]);
-	} elseif (preg_match("~^/(MyAccount)/([^/?]+)(\?.+)?~", $requestURI, $matches)) {
+	} elseif (preg_match("~^/(MyAccount)/([^/]+)/?$~", $requestPath, $matches)) {
 		setRoute($matches[1], $matches[2]);
 		setEmptyRouteId();
-	} elseif (preg_match("~^/(MyAccount)/?~", $requestURI, $matches)) {
+	} elseif (preg_match("~^/(MyAccount)/?$~", $requestPath, $matches)) {
 		setRoute($matches[1]);
 		setEmptyRouteId();
-	} elseif (preg_match('~^/(Archive)/((?:[\\w\\d:]|%3A)+)/([^/?]+)~', $requestURI, $matches)) {
+	} elseif (preg_match('~^/(Archive)/((?:[\\w\\d:]|%3A)+)/([^/]+)/?$~', $requestPath, $matches)) {
 		setRoute($matches[1], $matches[3], urldecode($matches[2])); // Decodes colons % codes back into colons.
 		//Redirect things /GroupedWork/AJAX to the proper action
-	} elseif (preg_match("~^/($allRecordModules)/([a-zA-Z]+)(?:\?|/?$)~", $requestURI, $matches)) {
+	} elseif (preg_match("~^/($allRecordModules)/([a-zA-Z]+)/?$~", $requestPath, $matches)) {
 		setRoute($matches[1], $matches[2]);
 		//Redirect things /Record/.b3246786/Home to the proper action
 		//Also things like /OverDrive/84876507-043b-b3ce-2930-91af93d2a4f0/Home
-	} elseif (preg_match("~^/($allRecordModules)/([^/?]+?)/([^/?]+)~", $requestURI, $matches)) {
+	} elseif (preg_match("~^/($allRecordModules)/([^/]+)/([^/]+)/?$~", $requestPath, $matches)) {
 		//Getting some weird cases where the action is replaced with an email address for uintah.
 		//As a workaround, if the action looks like an email, change it to Home
 		if (preg_match('/[A-Z0-9][A-Z0-9._%+-]{0,63}@(?:[A-Z0-9-]{1,63}\.){1,8}[A-Z]{2,63}$/i', $matches[3])) {
@@ -1122,22 +1131,22 @@ function loadModuleActionId() {
 		}
 		setRoute($matches[1], $matches[3], $matches[2]);
 		//Redirect things /Record/.b3246786 to the proper action
-	} elseif (preg_match("~^/($allRecordModules)/([^/?]+?)(?:\?|/?$)~", $requestURI, $matches)) {
+	} elseif (preg_match("~^/($allRecordModules)/([^/]+)/?$~", $requestPath, $matches)) {
 		setRoute($matches[1], 'Home', $matches[2]);
-	} elseif (preg_match("~^/(Authentication)/(OAuth2)/([^/?]+)~", $requestURI, $matches)) {
+	} elseif (preg_match("~^/(Authentication)/(OAuth2)/([^/]+)/?$~", $requestPath, $matches)) {
 		setRoute($matches[1], 'OAuth2_' . $matches[3]); // OAuth2_Authorize or OAuth2_Token
-	} elseif (preg_match("~^/(\.well-known)/([^/?]+)~", $requestURI, $matches)) {
+	} elseif (preg_match("~^/(\.well-known)/([^/]+)/?$~", $requestPath, $matches)) {
 		// Map well-known requests to appropriate OAuth2/OIDC endpoints
 		$wellKnownType = $matches[2];
 		$action = $wellKnownType === 'jwks.json' ? 'OAuth2_JWKS' : 'OAuth2_Discovery';
 
 		setRoute('Authentication', $action);
-	} elseif (preg_match("~^/([^/?]+)/([^/?]+)~", $requestURI, $matches)) {
+	} elseif (preg_match("~^/([^/]+)/([^/]+)/?$~", $requestPath, $matches)) {
 		setRoute($matches[1], $matches[2]);
 		if (!file_exists(ROOT_DIR . '/services/' . $_REQUEST['module'] . '/' . $_REQUEST['action'] . '.php')) {
 			$checkWebBuilderAliases = true;
 		}
-	} elseif (preg_match("~^/([^/?]+)~", $requestURI, $matches)) {
+	} elseif (preg_match("~^/([^/]+)/?$~", $requestPath, $matches)) {
 		setRoute($matches[1]);
 		if (!file_exists(ROOT_DIR . '/services/' . $_REQUEST['module'] . '/' . $_REQUEST['action'] . '.php')) {
 			$checkWebBuilderAliases = true;
@@ -1646,4 +1655,78 @@ function setRoute(string $module, string $action = 'Home', ?string $id = null): 
 
 function setEmptyRouteId(): void {
 	$_REQUEST['id'] = '';
+}
+
+/**
+ * Set Cloudflare Rate Limit complexity header based on endpoint weight.
+ *
+ * This enables per-endpoint rate limiting in Cloudflare WAF Rate Limiting Rules.
+ * High-complexity endpoints (search, AJAX) get higher scores so they consume
+ * more of a client's rate limit budget.
+ *
+ * Configured via [Security] section in config.ini:
+ *   enableComplexityHeader  = true/false
+ *   complexityHeaderName    = x-complexity-score
+ *
+ * To add new endpoint weights, add a new case block below.
+ *
+ * @see https://developers.cloudflare.com/waf/rate-limiting-rules/
+ */
+function setCloudflareComplexityHeader(): void {
+	global $configArray;
+
+	// Bail early if feature is disabled
+	if (empty($configArray['Security']['enableComplexityHeader'])) {
+		return;
+	}
+
+	$headerName = $configArray['Security']['complexityHeaderName'] ?: 'x-complexity-score';
+
+	// Module and action are already parsed by loadModuleActionId()
+	$module = $_GET['module'] ?? '';
+	$action = $_GET['action'] ?? '';
+
+	$complexity = matchEndpointWeight($module, $action);
+
+	header("$headerName: $complexity");
+}
+
+/**
+ * Map module/action to a complexity weight score.
+ *
+ * Add new case blocks here to cover additional endpoints.
+ *
+ * @param string $module The request module (e.g. Search)
+ * @param string $action The request action (e.g. Results)
+ * @return int The complexity weight (default 1)
+ */
+function matchEndpointWeight(string $module, string $action): int {
+	switch (true) {
+		// Score: 25 - Heavy search result pages
+		case $module === 'Search' && $action === 'Results':
+		case $module === 'Union' && $action === 'Search':
+			return 25;
+
+		// Score: 20 - AJAX/API search endpoints
+		case $module === 'Search' && $action === 'AJAX':
+		case $module === 'API' && $action === 'SearchAPI':
+			return 20;
+
+		// Score: 15 - GroupedWork detail and AJAX endpoints
+		case $module === 'GroupedWork':
+			return 15;
+
+		// Score: 10 - Record, Author, and eContent detail pages
+		case $module === 'Record':
+		case $module === 'Author' && $action === 'Home':
+		case $module === 'Hoopla':
+		case $module === 'OverDrive':
+		case $module === 'PalaceProject':
+		case $module === 'Axis360':
+		case $module === 'CloudLibrary':
+			return 10;
+	}
+
+	// Default: lightweight pages (static content, home page, etc.)
+	return 1;
 }

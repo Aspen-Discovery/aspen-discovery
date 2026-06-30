@@ -195,6 +195,7 @@ class CatalogConnection {
 				$userUsage->indexingProfileId = $this->accountProfile->getIndexingProfile()->id;
 				$userUsage->year = date('Y');
 				$userUsage->month = date('n');
+				$userUsage->day = date('d');
 				if (!$userUsage->find(true)) {
 					$userUsage->insert();
 				}
@@ -1021,6 +1022,7 @@ class CatalogConnection {
 			$userUsage->indexingProfileId = $indexingProfileId;
 			$userUsage->year = date('Y');
 			$userUsage->month = date('n');
+			$userUsage->day = date('d');
 
 			if ($userUsage->find(true)) {
 				$userUsage->usageCount++;
@@ -1039,6 +1041,7 @@ class CatalogConnection {
 			$recordUsage->recordId = $recordId;
 			$recordUsage->year = date('Y');
 			$recordUsage->month = date('n');
+			$recordUsage->day = date('d');
 			if ($recordUsage->find(true)) {
 				$recordUsage->timesUsed++;
 				$recordUsage->update();
@@ -1137,6 +1140,7 @@ class CatalogConnection {
 			$userUsage->indexingProfileId = $this->driver->getIndexingProfile()->id;
 			$userUsage->year = date('Y');
 			$userUsage->month = date('n');
+			$userUsage->day = date('d');
 
 			if ($userUsage->find(true)) {
 				$userUsage->selfRegistrationCount++;

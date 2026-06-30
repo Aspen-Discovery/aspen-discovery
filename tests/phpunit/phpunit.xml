@@ -20,6 +20,7 @@
 		<directory suffix="Tests.php">./tests/services/API</directory>
 		<directory suffix="Tests.php">./tests/sys/Util</directory>
 		<directory suffix="Tests.php">./tests/sys/Events</directory>
+		<directory suffix="Tests.php">./tests/sys/ECommerce</directory>
 		<directory suffix="FinalizationTests.php">./tests</directory>
 	</testsuite>
 </phpunit>

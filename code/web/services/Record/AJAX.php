@@ -1333,6 +1333,16 @@ class Record_AJAX extends JSON_Action {
 						$interface->assign('whileYouWaitTitles', []);
 					}
 
+					/** @var Koha $catalogDriver */
+					$catalogDriver = $user->getCatalogDriver();
+					if ($catalogDriver->hasHoldFeeMessage()) {
+						$marcRecord = RecordDriverFactory::initRecordDriverById($recordId);
+						$reserveFeeMessage = $catalogDriver->getPostHoldSubmissionFeeMessage($marcRecord);
+						if ($reserveFeeMessage) {
+							$interface->assign('reserveFeeMessage', $reserveFeeMessage);
+						}
+					}
+
 					$results = [
 						'success' => $return['success'],
 						'message' => $interface->fetch('Record/hold-success-popup.tpl'),
@@ -2262,6 +2272,16 @@ class Record_AJAX extends JSON_Action {
 		$interface->assign('allowFreezeHolds', $library->allowFreezeHolds);
 		$interface->assign('promptToFreezeHoldsImmediately', $user->promptToFreezeHoldsImmediately);
 		$interface->assign('onlyValidPickupLocation', $onlyValidPickupLocation ?? null);
+
+
+		/** @var Koha $catalogDriver */
+		$catalogDriver = $marcRecord->getCatalogDriver();
+		if ($catalogDriver->hasHoldFeeMessage()) {
+			$reserveFeeMessage = $catalogDriver->getPreHoldSubmissionFeeMessage($marcRecord);
+			if ($reserveFeeMessage) {
+				$interface->assign('reserveFeeMessage', $reserveFeeMessage);
+			}
+		}
 
 		$interface->assign('pickupLocations', $locations);
 		$interface->assign('pickupSublocations', $pickupSublocations);

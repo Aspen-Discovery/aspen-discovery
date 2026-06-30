@@ -49,7 +49,7 @@ class DateUtils {
 		return str_replace('-', '_', $locale);
 	}
 
-	static function formatDateLocale($string, $dateStyle = 'medium', $timeStyle = 'none', $pattern = null): string|false {
+	static function formatDateLocale($string, $dateStyle = 'medium', $timeStyle = 'none', $pattern = null, $skeleton = null): string|false {
 		global $activeLanguage;
 
 		if (empty($string) || $string === '0000-00-00' || $string === '0000-00-00 00:00:00') {
@@ -89,6 +89,10 @@ class DateUtils {
 
 		$locale = $activeLanguage->locale ?? 'en_US';
 		$timezone = date_default_timezone_get();
+
+		if ($skeleton !== null) {
+			$pattern = (new IntlDatePatternGenerator($locale))->getBestPattern($skeleton);
+		}
 
 		$formatter = new IntlDateFormatter(
 			$locale,

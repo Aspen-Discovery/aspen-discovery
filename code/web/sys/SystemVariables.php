@@ -127,16 +127,17 @@ class SystemVariables extends DataObject {
 			],
 			'currencyCode' => [
 				'property' => 'currencyCode',
-				'type' => 'enum',
-				'values' => [
-					'USD' => 'USD',
-					'CAD' => 'CAD',
-					'EUR' => 'EUR',
-					'GBP' => 'GBP',
+				'type' => 'text',
+				'suggestions' => [
+					'USD',
+					'CAD',
+					'EUR',
+					'GBP',
 				],
 				'label' => 'Currency Code',
 				'description' => 'Currency code to use when formatting money',
 				'required' => true,
+				'maxLength' => 3,
 				'default' => 'USD',
 			],
 			'indexingSection' => [
@@ -578,26 +579,6 @@ class SystemVariables extends DataObject {
 			}
 		}
 		return SystemVariables::$_systemVariables;
-	}
-
-	public function getCurrencySymbol() : string {
-		$currencyCode = 'USD';
-		$systemVariables = SystemVariables::getSystemVariables();
-		if (!empty($systemVariables->currencyCode)) {
-			$currencyCode = $systemVariables->currencyCode;
-		}
-		if ($currencyCode == 'USD') {
-			$currencySymbol = '$';
-		} elseif ($currencyCode == 'EUR') {
-			$currencySymbol = '€';
-		} elseif ($currencyCode == 'CAD') {
-			$currencySymbol = '$';
-		} elseif ($currencyCode == 'GBP') {
-			$currencySymbol = '£';
-		} else {
-			$currencySymbol = '';
-		}
-		return $currencySymbol;
 	}
 
 	public function update(string $context = '') : int|bool {

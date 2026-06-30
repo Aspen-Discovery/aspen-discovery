@@ -1,5 +1,5 @@
 {strip}
-	{if $showExpirationWarnings && $ilsSummary->isExpirationClose()}
+	{if $showExpirationWarnings && ($ilsSummary->isExpirationClose() || $showRenewalLink)}
 		<div id="myAccountExpirationNotice">
 			<div class="alert alert-warning">
 				{if $ilsSummary->isExpired()}
@@ -18,7 +18,7 @@
 			</div>
 			{if $showRenewalLink}
 				<div class="text-center">
-					<a class="btn btn-info btn-sm" href="{$cardRenewalLink}">{translate text="Renew your card" isPublicFacing=true}</a>
+					<a class="btn btn-info btn-sm" href="{if $useILSCardRenewalFlow}/MyAccount/AccountRenewal{else}{$cardRenewalLink}{/if}">{translate text="Renew your card" isPublicFacing=true}</a>
 				</div>
 			{/if}
 		</div>
