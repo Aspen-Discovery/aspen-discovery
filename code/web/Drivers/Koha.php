@@ -6775,6 +6775,7 @@ class Koha extends AbstractIlsDriver {
 					'allowableTransports' => [],
 					'wantsDigest' => 0,
 					'selectedTransports' => [],
+					'daysInAdvance' => 0,
 				];
 			}
 			$messagingSettings[$transportId]['allowableTransports'][$transportSetting['message_transport_type']] = $transportSetting['message_transport_type'];
