@@ -106,4 +106,128 @@ class Series_AJAX extends JSON_Action {
 			];
 		}
 	}
+
+	/** @noinspection PhpUnused */
+	function getGroupSeriesSearchForm() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission('Administer Series');
+		$this->checkRequiredParameters(['id']);
+
+		$results = [
+			'success' => false,
+			'message' => translate([
+				'text' => 'Unknown Error',
+				'isAdminFacing' => true,
+			]),
+		];
+
+		require_once ROOT_DIR . '/sys/Series/Series.php';
+		$series = new Series();
+		$id = $_REQUEST['id'];
+		$series->seriesPermanentId = $id;
+		if ($series->find(true)) {
+			global $interface;
+			$interface->assign('id', $id);
+			$interface->assign('series', $series);
+
+			$searchId = $_REQUEST['searchId'];
+			/** @var SearchObject_AbstractGroupedWorkSearcher $searchObject */
+			$searchObject = SearchObjectFactory::initSearchObject();
+			$searchObject->init();
+			$searchObject = $searchObject->restoreSavedSearch($searchId, false);
+
+			if (!empty($_REQUEST['page'])) {
+				$searchObject->setPage($_REQUEST['page']);
+			}
+
+			$searchResults = $searchObject->processSearch(false, false);
+			$availableSeries = [];
+			$availableSeries[-1] = translate([
+				'text' => "Select the primary series",
+				'isAdminFacing' => true,
+			]);
+			$recordIndex = ($searchObject->getPage() - 1) * $searchObject->getLimit();
+			foreach ($searchResults['response']['docs'] as $doc) {
+				$recordIndex++;
+				if ($doc['id'] != $id) {
+					$primarySeries = new Series();
+					$primarySeries->seriesPermanentId = $doc['id'];
+					if ($primarySeries->find(true)) {
+						$availableSeries[$doc['id']] = "$recordIndex) $primarySeries->groupedWorkSeriesTitle $primarySeries->author";
+					}
+				}
+			}
+			$interface->assign('availableSeries', $availableSeries);
+
+			$results = [
+				'success' => true,
+				'title' => translate([
+					'text' => "Group this series with another",
+					'isAdminFacing' => true,
+				]),
+				'modalBody' => $interface->fetch("Series/groupSeriesSearchForm.tpl"),
+				'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.Series.processGroupSeriesForm()'>" . translate([
+						'text' => "Group",
+						'isAdminFacing' => true,
+					]) . "</button>",
+			];
+		} else {
+			$results['message'] = translate([
+				'text' => "Could not find a series with that id",
+				'isAdminFacing' => true,
+			]);
+		}
+		return $results;
+	}
+
+	/** @noinspection PhpUnused */
+	function processGroupSeriesForm() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission('Administer Series');
+		$this->checkRequiredParameters(['id']);
+
+		/** @noinspection PhpArrayIndexImmediatelyRewrittenInspection */
+		$results = [
+			'success' => false,
+			'message' => translate([
+				'text' => 'Unknown Error',
+				'isPublicFacing' => true,
+			]),
+		];
+
+		$id = $_REQUEST['id'];
+
+		require_once ROOT_DIR . '/sys/Series/Series.php';
+		$originalSeries = new Series();
+		$originalSeries->seriesPermanentId = $id;
+
+		if (!empty($id) && $originalSeries->find(true)) {
+			$seriesToGroupWithId = $_REQUEST['groupSeriesId'];
+			$seriesToGroupWith = new Series();
+			$seriesToGroupWith->seriesPermanentId = $seriesToGroupWithId;
+			if (!empty($seriesToGroupWithId) && $seriesToGroupWith->find(true)) {
+				$originalSeries->getSeriesMembers();
+				$originalSeries->seriesToGroupWithId = $seriesToGroupWithId;
+				$originalSeries->isIndexed = 0;
+				$originalSeries->update();
+
+				$results['success'] = true;
+				$results['message'] = translate([
+					'text' => "Your series have been grouped successfully, the index will update shortly.",
+					'isAdminFacing' => true,
+				]);
+			} else {
+				$results['message'] = translate([
+					'text' => "Could not find series to group with.",
+					'isAdminFacing' => true,
+				]);
+			}
+		} else {
+			$results['message'] = translate([
+				'text' => "Could not find series for original id.",
+				'isAdminFacing' => true,
+			]);
+		}
+		return $results;
+	}
 }

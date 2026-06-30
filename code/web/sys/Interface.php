@@ -165,7 +165,7 @@ class UInterface extends Smarty {
 					$this->assign('offlineMessage', $systemVariables->offlineMessage);
 				} else {
 					//Offline time has finished, reset
-					if ($scheduledEnd <= $now) {
+					if ($scheduledEnd <= $now && $scheduledStart <= $now) {
 						$systemVariables->scheduledOfflineStart = 0;
 						$systemVariables->scheduledOfflineEnd = 0;
 						$systemVariables->catalogStatus = 0;

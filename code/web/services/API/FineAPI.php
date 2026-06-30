@@ -3,7 +3,7 @@ require_once ROOT_DIR . '/services/API/AbstractAPI.php';
 require_once ROOT_DIR . '/CatalogConnection.php';
 
 class FineAPI extends AbstractAPI {
-	function launch() {
+	function launch() : void {
 		//Make sure the user can access the API based on the IP address
 		if (!IPAddress::allowAPIAccessForClientIP()) {
 			$this->forbidAPIAccess();
@@ -13,27 +13,10 @@ class FineAPI extends AbstractAPI {
 		header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 
-		global $activeLanguage;
-		if (isset($_GET['language'])) {
-			$language = new Language();
-			$language->code = $_GET['language'];
-			if ($language->find(true)) {
-				$activeLanguage = $language;
-			}
-		}
+		$this->setLanguage();
 
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
-		if (method_exists($this, $method)) {
-			$result = [
-				'result' => $this->$method(),
-			];
-			$output = json_encode($result);
-			require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
-			APIUsage::incrementStat('FineAPI', $method);
-		} else {
-			$output = json_encode(['error' => 'invalid_method']);
-		}
-		echo $output;
+		$this->handleAPIRequestAuto($method, 'fine_api');
 	}
 
 	function getBreadcrumbs(): array {

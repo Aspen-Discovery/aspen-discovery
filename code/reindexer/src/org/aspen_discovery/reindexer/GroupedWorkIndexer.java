@@ -181,9 +181,11 @@ public class GroupedWorkIndexer implements AutoCloseable {
 	private PreparedStatement getNumberOfSeriesMembersStmt;
 	private PreparedStatement getV1SeriesStmt;
 	private PreparedStatement getV2SeriesStmt;
+	private PreparedStatement checkIfSeriesMemberExistsStmt;
 	private PreparedStatement addSeriesStmt;
 	private PreparedStatement addSeriesV2Stmt;
 	private PreparedStatement setSeriesDateUpdated;
+	private PreparedStatement setSeriesMemberAsManualAddition;
 	private PreparedStatement updateSeriesAuthor;
 	private PreparedStatement updateSeriesScore;
 	private PreparedStatement updateSeriesToV2Stmt;
@@ -203,6 +205,8 @@ public class GroupedWorkIndexer implements AutoCloseable {
 	private int searchVersion;
 	private boolean enableNovelistSeriesIntegration;
 	private int hooplaVersion;
+	private int solrThreadCount;
+	private int solrQueueSize;
 
 	public GroupedWorkIndexer(String serverName, Connection dbConn, Ini configIni, boolean fullReindex, boolean clearIndex, BaseIndexingLogEntry logEntry, Logger logger) {
 		this(serverName, dbConn, configIni, fullReindex, clearIndex, false, logEntry, logger);
@@ -247,7 +251,7 @@ public class GroupedWorkIndexer implements AutoCloseable {
 		}
 
 		//Check to see if we should store record details in Solr
-		try (PreparedStatement systemVariablesStmt = dbConn.prepareStatement("SELECT storeRecordDetailsInSolr, storeRecordDetailsInDatabase, indexVersion, searchVersion, processEmptyGroupedWorks, enableNovelistSeriesIntegration, deletionCommitInterval, waitAfterDeleteCommit, removeTheWordSeriesFromEndOfSeries, hooplaVersion, indexCommitInterval from system_variables")){
+		try (PreparedStatement systemVariablesStmt = dbConn.prepareStatement("SELECT storeRecordDetailsInSolr, storeRecordDetailsInDatabase, indexVersion, searchVersion, processEmptyGroupedWorks, enableNovelistSeriesIntegration, deletionCommitInterval, waitAfterDeleteCommit, removeTheWordSeriesFromEndOfSeries, hooplaVersion, indexCommitInterval, solrThreadCount, solrQueueSize from system_variables")){
 			try (ResultSet systemVariablesRS = systemVariablesStmt.executeQuery()) {
 				if (systemVariablesRS.next()) {
 					this.storeRecordDetailsInSolr = systemVariablesRS.getBoolean("storeRecordDetailsInSolr");
@@ -262,6 +266,8 @@ public class GroupedWorkIndexer implements AutoCloseable {
 					}
 					this.removeTheWordSeriesFromEndOfSeries = systemVariablesRS.getBoolean("removeTheWordSeriesFromEndOfSeries");
 					this.hooplaVersion = systemVariablesRS.getInt("hooplaVersion");
+					this.solrThreadCount = systemVariablesRS.getInt("solrThreadCount");
+					this.solrQueueSize = systemVariablesRS.getInt("solrQueueSize");
 				}
 			}
 		} catch (Exception e){
@@ -363,10 +369,11 @@ public class GroupedWorkIndexer implements AutoCloseable {
 			getV1SeriesStmt = dbConn.prepareStatement("SELECT * from series where groupedWorkSeriesTitle = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			getV2SeriesStmt = dbConn.prepareStatement("SELECT * from series where seriesPermanentId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 
+			checkIfSeriesMemberExistsStmt = dbConn.prepareStatement("SELECT * from series_member where seriesId = ? AND groupedWorkPermanentId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			getSeriesMemberStmt = dbConn.prepareStatement("SELECT sm.id as seriesMemberId, sm.seriesId, s.seriesPermanentId, s.version, s.groupedWorkSeriesTitle, s.author, s.seriesLanguage, s.isIndexed, sm.volume, sm.priorityScore, sm.deleted, sm.userAdded FROM series_member AS sm LEFT JOIN series AS s ON sm.seriesId = s.id WHERE groupedWorkPermanentId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			addSeriesStmt = dbConn.prepareStatement("INSERT INTO series (displayName, audience, created, dateUpdated, author, groupedWorkSeriesTitle, version) VALUES (?, ?, ?, ?, ?, ?, 1)", PreparedStatement.RETURN_GENERATED_KEYS);
 			addSeriesV2Stmt = dbConn.prepareStatement("INSERT INTO series (displayName, audience, created, dateUpdated, author, groupedWorkSeriesTitle, seriesPermanentId, seriesLanguage, version) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 2)", PreparedStatement.RETURN_GENERATED_KEYS);
-			addSeriesMemberStmt = dbConn.prepareStatement("INSERT INTO series_member (seriesId, isPlaceholder, groupedWorkPermanentId, volume, pubDate, displayName, author, description, weight, priorityScore) VALUES (?, 0, ?, ?, ?, ?, ?, ?, ?, ?)");
+			addSeriesMemberStmt = dbConn.prepareStatement("INSERT INTO series_member (seriesId, isPlaceholder, groupedWorkPermanentId, volume, pubDate, displayName, author, description, weight, priorityScore) VALUES (?, 0, ?, ?, ?, ?, ?, ?, ?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
 			deleteSeriesMemberStmt = dbConn.prepareStatement("DELETE FROM series_member WHERE seriesId = ? AND groupedWorkPermanentId = ? AND volume = ?;");
 			deleteSeriesMemberByIdStmt = dbConn.prepareStatement("DELETE FROM series_member WHERE id = ?;");
 			deleteSeriesStmt = dbConn.prepareStatement("DELETE FROM series WHERE id = ?;");
@@ -375,6 +382,7 @@ public class GroupedWorkIndexer implements AutoCloseable {
 			updateSeriesScore = dbConn.prepareStatement("UPDATE series_member SET priorityScore = ? WHERE seriesId = ? AND groupedWorkPermanentId = ? AND volume = ?;");
 			updateSeriesToV2Stmt = dbConn.prepareStatement("UPDATE series SET version = 2, series.seriesLanguage = ?, seriesPermanentId = ?, dateUpdated = ? WHERE id = ?");
 			setSeriesDateUpdated = dbConn.prepareStatement("UPDATE series SET dateUpdated = ? WHERE id = ?;");
+			setSeriesMemberAsManualAddition = dbConn.prepareStatement("UPDATE series_member SET userAdded=1 WHERE id = ?;");
 		} catch (Exception e){
 			logEntry.incErrors("Could not load statements to get identifiers ", e);
 			this.okToIndex = false;
@@ -424,24 +432,11 @@ public class GroupedWorkIndexer implements AutoCloseable {
 			.connectionTimeout(15000)
 			.build();
 		try {
-			int totalCores = Runtime.getRuntime().availableProcessors();
-			int workerThreads;
-			int queueSize;
 
-			if (totalCores <= 4) {
-				workerThreads = 1;
-				queueSize = 250;
-			} else if (totalCores <= 16) {
-				workerThreads = 2;
-				queueSize = 500;
-			} else {
-				workerThreads = 4;
-				queueSize = 1000;
-			}
 
 			updateServer = new ConcurrentUpdateHttp2SolrClient.Builder(solrUrl, http2Client)
-				.withThreadCount(workerThreads)
-				.withQueueSize(queueSize)
+				.withThreadCount(solrThreadCount)
+				.withQueueSize(solrQueueSize)
 				.build();
 		}catch (OutOfMemoryError e) {
 			logger.error("Unable to create solr client, out of memory", e);
@@ -1631,6 +1626,11 @@ public class GroupedWorkIndexer implements AutoCloseable {
 					if (existingMember != null) {
 						//V2 series already exists. They don't' get updated since they are already unique by title, author, and language
 						seriesId = existingMember.getSeriesId();
+						//Check if this series has a value for "seriesToGroupWithId"
+						String seriesToGroupWithId = checkForSeriesToGroupWith(seriesInfo);
+						if (!seriesToGroupWithId.isEmpty()) {
+							updateGroupedSeriesMembers(seriesToGroupWithId, seriesInfo, existingMember, groupedWork, timeNow);
+						}
 					} else {
 						SeriesMember existingV1Member = seriesMembersInDb.get(seriesInfo.getNormalizedSeriesName());
 						//Upgrade this series to v2 if the author matches. If it doesn't we will create a new series
@@ -1683,6 +1683,23 @@ public class GroupedWorkIndexer implements AutoCloseable {
 		} catch (Exception e) {
 			logEntry.incErrors("Unable to update series data for grouped work " + groupedWork.getId(), e);
 		}
+	}
+
+	private String checkForSeriesToGroupWith(SeriesInfo seriesInfo) {
+		String seriesToGroupWithId = "";
+		try {
+			getV2SeriesStmt.setString(1, seriesInfo.getPermanentId());
+			try (ResultSet existingSeriesRS = getV2SeriesStmt.executeQuery()) {
+				if (existingSeriesRS.next()) {
+					seriesToGroupWithId = Objects.toString(existingSeriesRS.getString("seriesToGroupWithId"), "");
+				}
+			} catch (Exception e) {
+				logEntry.incErrors("No series found with id: " + seriesInfo.getPermanentId(), e);
+			}
+		} catch (Exception e) {
+			logEntry.incErrors("Unable to run check for series to group with for " + seriesInfo.getPermanentId(), e);
+		}
+		return seriesToGroupWithId;
 	}
 
 	private void deleteSeriesMember(long seriesMember, String groupedWorkId, String volume) {
@@ -1854,9 +1871,32 @@ public class GroupedWorkIndexer implements AutoCloseable {
 		memberInDB.setFoundInCurrentIndex(true);
 	}
 
+
+	private void updateGroupedSeriesMembers(String seriesToGroupWithId, SeriesInfo seriesInfo, SeriesMember seriesMember, AbstractGroupedWorkSolr groupedWork, long timeNow) {
+		try {
+			getV2SeriesStmt.setString(1, seriesToGroupWithId);
+			try (ResultSet existingSeriesRS = getV2SeriesStmt.executeQuery()) {
+				if (existingSeriesRS.next()) {
+					//Check to see if this has already been added
+					checkIfSeriesMemberExistsStmt.setLong(1, existingSeriesRS.getLong("id"));
+					checkIfSeriesMemberExistsStmt.setString(2, groupedWork.getId());
+					ResultSet checkIfSeriesMemberExistsRS = checkIfSeriesMemberExistsStmt.executeQuery();
+					if (!checkIfSeriesMemberExistsRS.next()) {
+						for (String volume : seriesMember.getVolumes()) {
+							addSeriesMemberWithVolume(existingSeriesRS.getLong("id"), seriesInfo, volume, groupedWork, timeNow, 1);
+						}
+					}
+					checkIfSeriesMemberExistsRS.close();
+				}
+			}
+		} catch (Exception e) {
+			logEntry.incErrors("Adding series member " + seriesInfo.getSeriesName(), e);
+		}
+	}
+
 	private void addMemberToSeries(long seriesId, SeriesInfo seriesInfo, AbstractGroupedWorkSolr groupedWork, long timeNow) {
 		for (String volume : seriesInfo.getVolumes()) {
-			addSeriesMemberWithVolume(seriesId, seriesInfo, volume, groupedWork, timeNow);
+			addSeriesMemberWithVolume(seriesId, seriesInfo, volume, groupedWork, timeNow, 0);
 		}
 	}
 
@@ -1864,7 +1904,7 @@ public class GroupedWorkIndexer implements AutoCloseable {
 		for (String volume : seriesInfo.getVolumes()) {
 			Set<String> existingVolumes = seriesMember.getVolumes();
 			if (!existingVolumes.contains(volume)) {
-				addSeriesMemberWithVolume(seriesId, seriesInfo, volume, groupedWork, timeNow);
+				addSeriesMemberWithVolume(seriesId, seriesInfo, volume, groupedWork, timeNow, 0);
 			}else{
 				seriesMember.setVolumeFoundInIndex(volume);
 				//Update priority score as needed
@@ -1903,7 +1943,7 @@ public class GroupedWorkIndexer implements AutoCloseable {
 		}
 	}
 
-	private void addSeriesMemberWithVolume(long seriesId, SeriesInfo seriesInfo, String volume, AbstractGroupedWorkSolr groupedWork, long timeNow) {
+	private void addSeriesMemberWithVolume(long seriesId, SeriesInfo seriesInfo, String volume, AbstractGroupedWorkSolr groupedWork, long timeNow,  int isManualGrouping) {
 		try {
 			addSeriesMemberStmt.setLong(1, seriesId);
 			addSeriesMemberStmt.setString(2, groupedWork.getId());
@@ -1924,6 +1964,15 @@ public class GroupedWorkIndexer implements AutoCloseable {
 			addSeriesMemberStmt.setString(7, groupedWork.displayDescription);
 			addSeriesMemberStmt.setInt(9, seriesInfo.getPriorityScore());
 			addSeriesMemberStmt.executeUpdate();
+			if (isManualGrouping == 1) {
+				try (ResultSet generatedKeys = addSeriesMemberStmt.getGeneratedKeys()) {
+					if (generatedKeys.next()) {
+						long seriesMemberId = generatedKeys.getLong(1);
+						setSeriesMemberAsManualAddition.setLong(1, seriesMemberId);
+						setSeriesMemberAsManualAddition.executeUpdate();
+					}
+				}
+			}
 			if (seriesId >= 0) {
 				setSeriesDateUpdated.setLong(1, timeNow);
 				setSeriesDateUpdated.setLong(2, seriesId);

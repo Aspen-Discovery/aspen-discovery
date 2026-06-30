@@ -116,6 +116,7 @@ foreach ($usersToProcess as $userId) {
 				}
 				if ($result['numTitles'] > 0) {
 					$cronLogEntry->notes .= "<br/>Found {$result['numTitles']} titles to load for $user->displayName ($user->id).";
+					$skippedDuplicates = 0;
 					foreach ($result['titles'] as $title) {
 						$userReadingHistoryEntry = new ReadingHistoryEntry();
 						$userReadingHistoryEntry->userId = $user->id;
@@ -147,6 +148,7 @@ foreach ($usersToProcess as $userId) {
 								$checkDuplicateEntry->whereAdd('barcode IS NULL OR barcode = ""');
 								$checkDuplicateEntry->whereAdd('checkInDate IS NOT NULL');
 								if ($checkDuplicateEntry->find(true)) {
+									$skippedDuplicates++;
 									continue;
 								}
 							}
@@ -160,12 +162,19 @@ foreach ($usersToProcess as $userId) {
 
 						$userReadingHistoryEntry->deleted = 0;
 						if (!$userReadingHistoryEntry->insert()) {
-							$cronLogEntry->numErrors++;
-							$cronLogEntry->notes .= "<br/>Error inserting reading history entry for user $user->id: " . $userReadingHistoryEntry->getLastError();
-							$errorCount++;
+							$lastError = $userReadingHistoryEntry->getLastError();
+							if (!empty($lastError)) {
+								$cronLogEntry->numErrors++;
+								$cronLogEntry->notes .= "<br/>Error inserting reading history entry for user $user->id: " . $lastError;
+								$errorCount++;
+							} else {
+								$skippedDuplicates++;
+							}
 						}
 					}
-
+					if ($skippedDuplicates > 0) {
+						$cronLogEntry->notes .= "<br/>Skipped $skippedDuplicates duplicate entries for $user->displayName ($user->id).";
+					}
 				}
 
 				// Mark that the initial reading history has been loaded and clear the timestamp.

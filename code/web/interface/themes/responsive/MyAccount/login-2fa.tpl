@@ -120,21 +120,19 @@
                         {/if}
 
 						<form id="alt-method-backup" class="alt-method-form" style="margin-top: 2em; display: none;">
-							<div id="alt-method-backup" class="alt-method-form" style="display:none;">
-								<div class="form-group">
-									<label for="code_backup">{translate text='Backup Code' isPublicFacing=true}</label>
-									<input type="text" class="form-control alt-code-input" id="code_backup" data-method="backup" autocomplete="off">
-								</div>
-								<div class="form-group">
-                                    {if !empty($followupModule)}<input type="hidden" name="followupModule" value="{$followupModule}">{/if}
-                                    {if !empty($followupAction)}<input type="hidden" name="followupAction" value="{$followupAction}">{/if}
-                                    {if !empty($recordId)}<input type="hidden" name="recordId" value="{$recordId|escape:"html"}">{/if}
-                                    {if !empty($comment)}<input type="hidden" id="comment" name="comment" value="{$comment|escape:"html"}">{/if}
-                                    {if !empty($cardNumber)}<input type="hidden" name="cardNumber" value="{$cardNumber|escape:"html"}">{/if}
-									<input type="hidden" id="myAccountAuth" value="true">
-									<input type="submit" name="submit" value="{translate text="Verify" isPublicFacing=true}" id="loginFormVerify" class="btn btn-primary" onclick="return AspenDiscovery.Account.verify2FALogin();">
-									&nbsp;<a id="loginFormCancelLogin" class="btn btn-warning" href="/MyAccount/Logout">{translate text="Cancel Sign In" isPublicFacing=true}</a>
-								</div>
+							<div class="form-group">
+								<label for="code_backup">{translate text='Backup Code' isPublicFacing=true}</label>
+								<input type="text" class="form-control alt-code-input" id="code_backup" data-method="backup" autocomplete="off">
+							</div>
+							<div class="form-group">
+								{if !empty($followupModule)}<input type="hidden" name="followupModule" value="{$followupModule}">{/if}
+								{if !empty($followupAction)}<input type="hidden" name="followupAction" value="{$followupAction}">{/if}
+								{if !empty($recordId)}<input type="hidden" name="recordId" value="{$recordId|escape:"html"}">{/if}
+								{if !empty($comment)}<input type="hidden" id="comment" name="comment" value="{$comment|escape:"html"}">{/if}
+								{if !empty($cardNumber)}<input type="hidden" name="cardNumber" value="{$cardNumber|escape:"html"}">{/if}
+								<input type="hidden" id="myAccountAuth" value="true">
+								<input type="submit" name="submit" value="{translate text="Verify" isPublicFacing=true}" id="loginFormVerify" class="btn btn-primary" onclick="return AspenDiscovery.Account.verify2FALogin();">
+								&nbsp;<a id="loginFormCancelLogin" class="btn btn-warning" href="/MyAccount/Logout">{translate text="Cancel Sign In" isPublicFacing=true}</a>
 							</div>
 						</form>
 					</div>

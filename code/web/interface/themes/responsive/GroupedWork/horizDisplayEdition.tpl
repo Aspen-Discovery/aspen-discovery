@@ -67,7 +67,7 @@
 				{/if}
 			{/foreach}
 			{foreach from=$itemSummary item=$curItemSummary name=itemSummary}
-				{*If we only have 3 or fewe summaries to show, show all 3. If we have more than 3, display 2 and a button to see the rest *}
+				{*If we only have 3 or fewer summaries to show, show all 3. If we have more than 3, display 2 and a button to see the rest *}
 				{if ($numDisplayed < 2 || ($totalSummariesToDisplay == 3 && count($itemSummary) == 3)) && $curItemSummary.displayByDefault}
 					{assign var=numDisplayed value=$numDisplayed+1}
 					<div class="col-tn-4">

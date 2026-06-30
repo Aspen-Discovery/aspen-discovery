@@ -90,7 +90,7 @@
 }
 
 .ms-drop {
-  width: auto;
+  width: auto !important;
   min-width: 100%;
   overflow: hidden;
   display: none;

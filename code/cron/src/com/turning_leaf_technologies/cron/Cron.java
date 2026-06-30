@@ -23,6 +23,12 @@ public class Cron {
 	 * @param args command line parameters passed
 	 */
 	public static void main(String[] args) {
+		// Java refuses to send the Host header set via setRequestProperty unless restricted headers are allowed.
+		// This must be set before the first HttpURLConnection is loaded, so it must happen here rather than in
+		// the process that needs it. UpdateReadingHistoryTask uses the Host header to route requests made via
+		// localhost to the correct virtual host.
+		System.setProperty("sun.net.http.allowRestrictedHeaders", "true");
+
 		String serverName;
 		if (args.length == 0) {
 			serverName = AspenStringUtils.getInputFromCommandLine("Please enter the server name");

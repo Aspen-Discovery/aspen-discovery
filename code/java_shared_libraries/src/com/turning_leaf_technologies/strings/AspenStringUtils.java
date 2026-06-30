@@ -112,7 +112,7 @@ public class AspenStringUtils {
 	static final Pattern discPattern = Pattern.compile("(\\d+)\\s+(?:\\w+\\s+)?discs?");
 	static final Pattern timeColonPattern = Pattern.compile("(\\d+):(\\d{2}):(\\d{2})");
 	static final Pattern hrPattern = Pattern.compile(
-		"(?:ca\\.\\s*)?(\\d+(?:\\.\\d+)?(?:\\s+\\d+/\\d+)?)\\s*(?:hours?|hr\\.|h\\b)"
+		"(?:ca\\.\\s*)?(\\d+(?:\\.\\d+)?(?:\\s+\\d+/\\d+)?)\\s*(?:hours?|hrs?\\.|h\\b)"
 	);
 	static final Pattern minPattern = Pattern.compile(
 		"(?:ca\\.\\s*)?(\\d+)\\s*(?:minutes?|min\\.|m(?!s))"

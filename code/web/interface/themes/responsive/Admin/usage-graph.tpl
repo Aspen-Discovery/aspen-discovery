@@ -1,6 +1,7 @@
 {strip}
 	<div id="main-content" class="col-sm-12">
 		<h1>{translate text=$graphTitle isAdminFacing=true}</h1>
+		{include file="Admin/usage-graph-data-filters.tpl"}
 		<div class="chart-container" style="position: relative; height:50%; width:100%">
 			<canvas id="chart"></canvas>
 		</div>
@@ -30,7 +31,7 @@
 		</div>
 		{if !empty($showCSVExportButton)}
 			<div>
-				<a id="UsageGraphExport" class="btn btn-sm btn-default" href="/{$section}/AJAX?method=exportUsageData&stat={$stat}{if !empty($profileName)}&profileName={$profileName}{/if}{if !empty($placardId)}&placardId={$placardId}{/if}&instance={if !empty($instance)}{$instance}{/if}">{translate text='Export To CSV' isAdminFacing=true}</a>
+				<a id="UsageGraphExport" class="btn btn-sm btn-default" href="/{$section}/AJAX?method=exportUsageData&stat={$stat}{if !empty($profileName)}&profileName={$profileName}{/if}{if !empty($placardId)}&placardId={$placardId}{/if}&instance={if !empty($instance)}{$instance}{/if}{if !empty($timeframe)}&timeframe={$timeframe}{/if}{if !empty($customUsagePeriodStart)}&customUsagePeriodStart={$customUsagePeriodStart}{/if}{if !empty($customUsagePeriodDuration)}&customUsagePeriodDuration={$customUsagePeriodDuration}{/if}">{translate text='Export To CSV' isAdminFacing=true}</a>
 				<div id="exportToCSVHelpBlock" class="help-block" style="margin-top:0"><small class="text-warning"><i class="fas fa-exclamation-triangle"></i> {translate text="Exporting will retrieve the latest data. To see it on screen, refresh this page." isAdminFacing=true}</small></div>
 			</div>
 		{/if}

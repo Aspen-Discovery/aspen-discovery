@@ -9,7 +9,7 @@ require_once ROOT_DIR . '/sys/SearchEntry.php';
 class ListAPI extends AbstractAPI {
 	use APIMethodConfiguration;
 
-	function launch() {
+	function launch() : void {
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 
 		$this->setLanguage();
