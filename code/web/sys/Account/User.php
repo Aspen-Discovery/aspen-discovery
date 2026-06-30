@@ -4620,7 +4620,10 @@ class User extends DataObject {
 		$sections['third_party_enrichment']->addAction(new AdminAction('ChiliFresh Settings', 'Define settings for ChiliFresh integration.', '/Enrichment/ChiliFreshSettings'), 'Administer Third Party Enrichment API Keys');
 		$sections['third_party_enrichment']->addAction(new AdminAction('Coce Server Settings', 'Define settings to load covers from a Coce server.', '/Enrichment/CoceServerSettings'), 'Administer Third Party Enrichment API Keys');
 		$sections['third_party_enrichment']->addAction(new AdminAction('ContentCafe Settings', 'Define settings for ContentCafe integration.', '/Enrichment/ContentCafeSettings'), 'Administer Third Party Enrichment API Keys');
-		$sections['third_party_enrichment']->addAction(new AdminAction('DP.LA Settings', 'Define settings for DP.LA integration.', '/Enrichment/DPLASettings'), 'Administer Third Party Enrichment API Keys');
+		$DPLASettingsAction = new AdminAction('DP.LA Settings', 'Define settings for DP.LA integration.', '/Enrichment/DPLASettings');
+		if ($sections['third_party_enrichment']->addAction($DPLASettingsAction, 'Administer Third Party Enrichment API Keys')) {
+			$DPLASettingsAction->addSubAction(new AdminAction('DP.LA Exclusions', 'Define titles to exclude from DP.LA results.', '/Enrichment/DPLAExclusions'), 'Administer DP.LA Exclusions');
+		}
 		$sections['third_party_enrichment']->addAction(new AdminAction('Google API Settings', 'Define settings for integrating Google APIs within Aspen Discovery.', '/Enrichment/GoogleApiSettings'), 'Administer Third Party Enrichment API Keys');
 		$sections['third_party_enrichment']->addAction(new AdminAction('LibKey Settings', 'Administer LibKey Settings', '/Admin/LibKeySettings'), 'Administer LibKey Settings');
 		$sections['third_party_enrichment']->addAction(new AdminAction('Loral Settings', 'Define settings for Loral integration.', '/Enrichment/LoralSettings'), 'Administer Loral');
