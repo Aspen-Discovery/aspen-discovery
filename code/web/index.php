@@ -17,6 +17,9 @@ global $memoryWatcher;
 //Do additional tasks that are only needed when running the full website
 loadModuleActionId();
 $timer->logTime("Loaded Module and Action Id");
+
+// Set Cloudflare Rate Limit complexity header based on endpoint weight
+setCloudflareComplexityHeader();
 $memoryWatcher->logMemory("Loaded Module and Action Id");
 initializeSession();
 $timer->logTime("Initialized session");
@@ -1652,4 +1655,78 @@ function setRoute(string $module, string $action = 'Home', ?string $id = null): 
 
 function setEmptyRouteId(): void {
 	$_REQUEST['id'] = '';
+}
+
+/**
+ * Set Cloudflare Rate Limit complexity header based on endpoint weight.
+ *
+ * This enables per-endpoint rate limiting in Cloudflare WAF Rate Limiting Rules.
+ * High-complexity endpoints (search, AJAX) get higher scores so they consume
+ * more of a client's rate limit budget.
+ *
+ * Configured via [Security] section in config.ini:
+ *   enableComplexityHeader  = true/false
+ *   complexityHeaderName    = x-complexity-score
+ *
+ * To add new endpoint weights, add a new case block below.
+ *
+ * @see https://developers.cloudflare.com/waf/rate-limiting-rules/
+ */
+function setCloudflareComplexityHeader(): void {
+	global $configArray;
+
+	// Bail early if feature is disabled
+	if (empty($configArray['Security']['enableComplexityHeader'])) {
+		return;
+	}
+
+	$headerName = $configArray['Security']['complexityHeaderName'] ?: 'x-complexity-score';
+
+	// Module and action are already parsed by loadModuleActionId()
+	$module = $_GET['module'] ?? '';
+	$action = $_GET['action'] ?? '';
+
+	$complexity = matchEndpointWeight($module, $action);
+
+	header("$headerName: $complexity");
+}
+
+/**
+ * Map module/action to a complexity weight score.
+ *
+ * Add new case blocks here to cover additional endpoints.
+ *
+ * @param string $module The request module (e.g. Search)
+ * @param string $action The request action (e.g. Results)
+ * @return int The complexity weight (default 1)
+ */
+function matchEndpointWeight(string $module, string $action): int {
+	switch (true) {
+		// Score: 25 - Heavy search result pages
+		case $module === 'Search' && $action === 'Results':
+		case $module === 'Union' && $action === 'Search':
+			return 25;
+
+		// Score: 20 - AJAX/API search endpoints
+		case $module === 'Search' && $action === 'AJAX':
+		case $module === 'API' && $action === 'SearchAPI':
+			return 20;
+
+		// Score: 15 - GroupedWork detail and AJAX endpoints
+		case $module === 'GroupedWork':
+			return 15;
+
+		// Score: 10 - Record, Author, and eContent detail pages
+		case $module === 'Record':
+		case $module === 'Author' && $action === 'Home':
+		case $module === 'Hoopla':
+		case $module === 'OverDrive':
+		case $module === 'PalaceProject':
+		case $module === 'Axis360':
+		case $module === 'CloudLibrary':
+			return 10;
+	}
+
+	// Default: lightweight pages (static content, home page, etc.)
+	return 1;
 }
