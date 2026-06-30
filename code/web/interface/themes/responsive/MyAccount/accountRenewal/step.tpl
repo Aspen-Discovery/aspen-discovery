@@ -5,6 +5,8 @@
     	<input type="hidden" name="userAgrees" id="userAgrees" value="" required>
     	<button type="button" id="noButton" class="btn btn-default">{translate text="No" isPublicFacing=true}</button>
     	<button type="button" id="yesButton" class="btn btn-default">{translate text="Yes" isPublicFacing=true}</button>
+		<br>
+		<br>
     {elseif $currentStep.name == 'verifyContactInformation'}
 		{if !empty($patronUpdateForm)}
 			{$patronUpdateForm}
