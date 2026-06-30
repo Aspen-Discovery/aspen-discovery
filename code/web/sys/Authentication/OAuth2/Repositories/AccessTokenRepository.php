@@ -9,6 +9,7 @@ require_once ROOT_DIR . '/sys/Authentication/OAuth2/Entities/OAuth2AccessTokenEn
 
 class AccessTokenRepository implements AccessTokenRepositoryInterface {
 
+
 	public function getNewToken(ClientEntityInterface $clientEntity, array $scopes, $userIdentifier = null): AccessTokenEntityInterface {
 		global $logger;
 		$logger->log("[OAuth2] AccessTokenRepository::getNewToken() - Creating new access token for client: " . $clientEntity->getIdentifier() . ", user: " . ($userIdentifier ?? 'anonymous'), Logger::LOG_DEBUG);
@@ -34,20 +35,20 @@ class AccessTokenRepository implements AccessTokenRepositoryInterface {
 		$logger->log("[OAuth2] AccessTokenRepository::persistNewAccessToken() - Persisting access token", Logger::LOG_DEBUG);
 		
 		$token = new OAuth2AccessToken();
-		$token->token_id = $accessTokenEntity->getClient()->getIdentifier();
-		$token->user_id = $accessTokenEntity->getUserIdentifier();
-		$token->client_id = $accessTokenEntity->getClient()->getIdentifier();
+		$token->setTokenId($accessTokenEntity->getIdentifier());
+		$token->setUserId($accessTokenEntity->getUserIdentifier());
+		$token->setClientId($accessTokenEntity->getClient()->getIdentifier());
 
 		$scopes = [];
 		foreach ($accessTokenEntity->getScopes() as $scope) {
 			$scopes[] = $scope->getIdentifier();
 		}
-		$token->scopes = implode(',', $scopes);
-		$token->expires_at = $accessTokenEntity->getExpiryDateTime()->format('Y-m-d H:i:s');
-		$token->revoked = 0;
+		$token->setScopes(implode(',', $scopes));
+		$token->setExpiresAt($accessTokenEntity->getExpiryDateTime()->format('Y-m-d H:i:s'));
+		$token->setRevoked(0);
 
-		$logger->log("[OAuth2] AccessTokenRepository::persistNewAccessToken() - Token ID: " . $token->token_id . ", User ID: " . $token->user_id . ", Client ID: " . $token->client_id, Logger::LOG_DEBUG);
-		$logger->log("[OAuth2] AccessTokenRepository::persistNewAccessToken() - Scopes: " . $token->scopes . ", Expires at: " . $token->expires_at, Logger::LOG_DEBUG);
+		$logger->log("[OAuth2] AccessTokenRepository::persistNewAccessToken() - Token ID: " . $token->getTokenId() . ", User ID: " . $token->getUserId() . ", Client ID: " . $token->getClientId(), Logger::LOG_DEBUG);
+		$logger->log("[OAuth2] AccessTokenRepository::persistNewAccessToken() - Scopes: " . $token->getScopes() . ", Expires at: " . $token->getExpiration(), Logger::LOG_DEBUG);
 
 		$token->insert();
 		
@@ -59,9 +60,9 @@ class AccessTokenRepository implements AccessTokenRepositoryInterface {
 		$logger->log("[OAuth2] AccessTokenRepository::revokeAccessToken() - Revoking access token: " . $tokenId, Logger::LOG_DEBUG);
 		
 		$token = new OAuth2AccessToken();
-		$token->token_id = $tokenId;
+		$token->setTokenId($tokenId);
 		if ($token->find(true)) {
-			$token->revoked = 1;
+			$token->setRevoked(1);
 			$token->update();
 			$logger->log("[OAuth2] AccessTokenRepository::revokeAccessToken() - Access token successfully revoked: " . $tokenId, Logger::LOG_DEBUG);
 		} else {
@@ -74,7 +75,7 @@ class AccessTokenRepository implements AccessTokenRepositoryInterface {
 		$logger->log("[OAuth2] AccessTokenRepository::isAccessTokenRevoked() - Checking revocation status for token: " . $tokenId, Logger::LOG_DEBUG);
 		
 		$token = new OAuth2AccessToken();
-		$token->token_id = $tokenId;
+		$token->setTokenId($tokenId);
 		if ($token->find(true)) {
 			$isRevoked = $token->isRevoked();
 			$logger->log("[OAuth2] AccessTokenRepository::isAccessTokenRevoked() - Token revoked status: " . ($isRevoked ? 'true' : 'false'), Logger::LOG_DEBUG);

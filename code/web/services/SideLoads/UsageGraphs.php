@@ -45,48 +45,42 @@ class SideLoads_UsageGraphs extends Admin_AbstractUsageGraphs {
 		return $sideload->fetch()->id;
 	}
 
-	protected function getAndSetInterfaceDataSeries($stat, $instanceName): void {
+	protected function getAndSetInterfaceDataSeries($stat, $instanceName, $timeframes = ['year', 'month'], $custom = false): void {
 		global $interface;
 
 		$dataSeries = [];
 		$columnLabels = [];
 		$usage = [];
+		$groupByTimeframe = implode(',', $timeframes);
 
-		$profileName= $_REQUEST['profileName'];
-		$sideloadId = $this->getSideloadIdBySideLoadName($profileName);
-
-		// for the graph displaying data retrieved from the user_sideload_usage table
-		if ($stat == 'activeUsers') {
-			$usage = new UserSideLoadUsage();
-			$usage->groupBy('year, month');
-			if (!empty($instanceName)) {
-				$usage->instance = $instanceName;
-			}
-			$usage->whereAdd("sideloadId = $sideloadId");
-			$usage->selectAdd();
-			$usage->selectAdd('year');
-			$usage->selectAdd('month');
-			$usage->orderBy('year, month');
-
-			$dataSeries['Active Users'] = GraphingUtils::getDataSeriesArray(count($dataSeries));
-			$usage->selectAdd('COUNT(id) as numUsers');
+		if ($_REQUEST['sideloadId']) {
+			$sideloadId = $_REQUEST['sideloadId'];
+		} else {
+			$profileName= $_REQUEST['profileName'];
+			$sideloadId = $this->getSideloadIdBySideLoadName($profileName);
 		}
 
-		// for the graph displaying data retrieved from the sideload_record_usage table
-		if ($stat == 'recordsAccessedOnline' ) {
+		if ($stat == 'activeUsers') {
+			$usage = new UserSideLoadUsage();
+		} elseif ($stat == 'recordsAccessedOnline') {
 			$usage = new SideLoadedRecordUsage();
-			$usage->groupBy('year, month');
-			if (!empty($instanceName)) {
-				$usage->instance = $instanceName;
+		}
+		
+		if (is_array($custom)) {
+			$usage->buildCustomPeriodQuery($custom);
+		} else {
+			$usage->groupBy($groupByTimeframe);
+			foreach ($timeframes as $timeframe) {
+				$usage->selectAdd($timeframe);
 			}
+			$usage->orderBy($groupByTimeframe);
+		}
+		$usage->sideloadId = $sideloadId;
 
-			$usage->whereAdd("sideloadId = $sideloadId");
-			$usage->selectAdd(null);
-			$usage->selectAdd();
-			$usage->selectAdd('year');
-			$usage->selectAdd('month');
-			$usage->orderBy('year, month');
-
+		if ($stat == 'activeUsers') {
+			$dataSeries['Active Users'] = GraphingUtils::getDataSeriesArray(count($dataSeries));
+			$usage->selectAdd('COUNT(id) as numUsers');
+		} elseif ($stat == 'recordsAccessedOnline') {
 			$dataSeries['Records Accessed Online'] = GraphingUtils::getDataSeriesArray(count($dataSeries));
 			$usage->selectAdd('SUM(IF(timesUsed>0,1,0)) as numRecordsUsed');
 		}
@@ -94,7 +88,7 @@ class SideLoads_UsageGraphs extends Admin_AbstractUsageGraphs {
 		// collect results
 		$usage->find();
 		while ($usage->fetch()) {
-			$curPeriod = "{$usage->month}-{$usage->year}";
+			$curPeriod = $custom ? $usage->getCustomPeriod() : $usage->getCurPeriod($timeframes);
 			$columnLabels[] = $curPeriod;
 			if ($stat == 'activeUsers') {
 				/** @noinspection PhpUndefinedFieldInspection */
@@ -110,6 +104,7 @@ class SideLoads_UsageGraphs extends Admin_AbstractUsageGraphs {
 		$interface->assign('dataSeries', $dataSeries);
 		$interface->assign('translateDataSeries', true);
 		$interface->assign('translateColumnLabels', false);
+		$interface->assign('sideloadId', $sideloadId);
 	}
 
 	protected function assignGraphSpecificTitle($stat): void {

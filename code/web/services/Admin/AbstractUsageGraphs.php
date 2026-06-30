@@ -6,13 +6,24 @@ abstract class Admin_AbstractUsageGraphs extends Admin_Admin {
 	abstract function getBreadcrumbs(): array;
 	abstract function getActiveAdminSection(): string;
 	abstract protected function assignGraphSpecificTitle(string $stat): void;
-	abstract protected function getAndSetInterfaceDataSeries(string $stat, string $instanceName): void;
+	abstract protected function getAndSetInterfaceDataSeries(string $stat, string $instanceName, array $timeframes, bool|array $customMode): void;
 
 	// methods shared amongst all usagegraph classes
 	protected function launchGraph(string $sectionName): void {
 		global $interface;
 
 		$stat = $_REQUEST['stat'];
+		$timeframe = $_REQUEST['timeframe'] ?? 'month';
+
+		if ($timeframe === 'custom') {
+			$customUsagePeriodStart = $_REQUEST['customUsagePeriodStart'] ?? null;
+			$customUsagePeriodDuration = $_REQUEST['customUsagePeriodDuration'] ?? null;
+			$custom = [
+				'customUsagePeriodStart' => $customUsagePeriodStart,
+				'customUsagePeriodDuration' => $customUsagePeriodDuration,
+			];
+		}
+
 		if (!empty($_REQUEST['instance'])) {
 			$instanceName = $_REQUEST['instance'];
 		} else {
@@ -36,12 +47,36 @@ abstract class Admin_AbstractUsageGraphs extends Admin_Admin {
 		$interface->assign('propName', 'exportToCSV');
 		$interface->assign('profileName', $profileName);
 		$interface->assign('instance', $instanceName);
+		$interface->assign('timeframe', $timeframe);
+		if ($timeframe === 'custom') {
+			$interface->assign('customUsagePeriodStart', $customUsagePeriodStart);
+			$interface->assign('customUsagePeriodDuration', $customUsagePeriodDuration);
+		}
 
 		$this->assignGraphSpecificTitle($stat);
-		$this->getAndSetInterfaceDataSeries($stat, $instanceName);
+		$this->getAndSetInterfaceDataSeries($stat, $instanceName, $this->setGroupBy($timeframe), $timeframe === 'custom' ? $custom : false);
 		
 		$graphTitle = $interface->getVariable('graphTitle');
 		$this->display('../Admin/usage-graph.tpl', $graphTitle);
+	}
+
+	private function setGroupBy(string $timeframe): array {
+		if ($timeframe == 'day') {
+			return ['year', 'month', 'day'];
+		}
+		if ($timeframe == 'month') {
+			return ['year', 'month'];
+		}
+		if ($timeframe == 'week') {
+			return ['year', 'week'];
+		}
+		if ($timeframe == 'year') {
+			return ['year'];
+		}
+		if ($timeframe == 'custom') {
+			return ['year', 'month', 'day'];
+		}
+		return ['year', 'month']; // monthly is the default
 	}
 
 	public function canView(): bool {
@@ -51,16 +86,27 @@ abstract class Admin_AbstractUsageGraphs extends Admin_Admin {
 		]);
 	}
 
-	public function buildCSV(string $section): void {
+	public function buildCSV(string $section, $customUsagePeriodStart = null, $customUsagePeriodDuration = null): void {
 		global $interface;
 
 		$stat = $_REQUEST['stat'];
+		$timeframe = $_REQUEST['timeframe'] ?? 'month';
+		$custom = false;
+		if ($timeframe === 'custom') {
+			$customUsagePeriodStart = $_REQUEST['customUsagePeriodStart'] ?? null;
+			$customUsagePeriodDuration = $_REQUEST['customUsagePeriodDuration'] ?? null;
+			$custom = [
+				'customUsagePeriodStart' => $customUsagePeriodStart,
+				'customUsagePeriodDuration' => $customUsagePeriodDuration,
+			];
+		}
+
 		if (!empty($_REQUEST['instance'])) {
 			$instanceName = $_REQUEST['instance'];
 		} else {
 			$instanceName = '';
 		}
-		$this->getAndSetInterfaceDataSeries($stat, $instanceName);
+		$this->getAndSetInterfaceDataSeries($stat, $instanceName, $this->setGroupBy($timeframe), $custom);
 		$dataSeries = $interface->getVariable('dataSeries');
 
 		// ensures csv filename contains dashboard subsection name if relevant

@@ -188,7 +188,8 @@ class SquareSetting extends DataObject {
 			'idempotency_key' => strval($payment->id),
 			'amount_money' => $amountMoney,
 			'source_id' => $paymentToken,
-			'order_id' => $squareOrderId
+			'order_id' => $squareOrderId,
+			'location_id' => strval($this->locationId),
 		];
 
 		$paymentUrl = $baseUrl . '/v2/payments';

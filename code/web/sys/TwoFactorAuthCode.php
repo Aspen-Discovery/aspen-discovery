@@ -166,7 +166,6 @@ class TwoFactorAuthCode extends DataObject {
 	}
 
 	function validateCode($code, $method, $secretId = null): array {
-		global $library;
 		require_once ROOT_DIR . '/sys/TwoFactorAuthSetting.php';
 		require_once ROOT_DIR . '/sys/TwoFactorAuthTOTPSecret.php';
 
@@ -383,19 +382,26 @@ class TwoFactorAuthCode extends DataObject {
 				return strcasecmp($m, $methodToRemove) !== 0;
 			}));
 
-			$user->twoFactorStatus = 0;
+			if (empty($methods)) {
+				$user->twoFactorStatus = 0;
+			}
 			$user->twoFactorMethod = implode(',', $methods);
 			$user->update();
 
-			$userCodes = new TwoFactorAuthCode();
-			$userCodes->userId = UserAccount::getActiveUserId();
-			$userCodes->find();
-			while ($userCodes->fetch()) {
-				$userCodes->deleteCode($userCodes->code);
+			if ($user->twoFactorStatus == 0) {
+				//Delete backup codes
+				$userCodes = new TwoFactorAuthCode();
+				$userCodes->userId = UserAccount::getActiveUserId();
+				$userCodes->find();
+				while ($userCodes->fetch()) {
+					$userCodes->deleteCode($userCodes->code);
+				}
 			}
 
-			require_once ROOT_DIR . '/sys/TwoFactorAuthTOTPSecret.php';
-			TwoFactorAuthTOTPSecret::deleteUserSecrets(UserAccount::getActiveUserId());
+			if ($methodToRemove == 'totp') {
+				require_once ROOT_DIR . '/sys/TwoFactorAuthTOTPSecret.php';
+				TwoFactorAuthTOTPSecret::deleteUserSecrets(UserAccount::getActiveUserId());
+			}
 		}
 	}
 

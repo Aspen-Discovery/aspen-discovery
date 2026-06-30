@@ -77,6 +77,12 @@
 				</p>
 				{/if}
 
+				{if !empty($reserveFeeMessage)}
+					<p class="alert alert-warning">
+						{translate text=$reserveFeeMessage isPublicFacing=true}&nbsp;
+					</p>
+				{/if}
+
 				<div id="holdOptions">
 					{assign var="onlyOnePickupLocation" value=false}
 					{if count($pickupLocations) == 1}

@@ -1059,7 +1059,7 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 		ArrayList<SeriesInfo> seriesToAdd = new ArrayList<>();
 		while (seriesIterator.hasNext()) {
 			SeriesInfo seriesInfo = seriesIterator.next();
-			if (seriesInfo.getLanguage().equals("unk")) {
+			if (seriesInfo.getLanguage() == null || seriesInfo.getLanguage().equals("unk")) {
 				seriesIterator.remove();
 				seriesInfo.setLanguage(primaryLanguage, groupedWorkIndexer);
 				seriesToAdd.add(seriesInfo);

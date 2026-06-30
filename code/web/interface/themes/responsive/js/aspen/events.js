@@ -1053,6 +1053,16 @@ AspenDiscovery.Events = (function(){
 				setTimeout(function() { cell.css('background-color', ''); }, 1200);
 				checkbox.prop('checked', !attended);
 			});
+		},
+
+		lessEventDates: function() {
+			document.getElementById("moreEventDates").style.display = "block";
+			document.getElementById("narrowGroupHidden_eventDates").style.display = "none";
+		},
+
+		moreEventDates: function() {
+			document.getElementById("moreEventDates").style.display = "none";
+			document.getElementById("narrowGroupHidden_eventDates").style.display = "block";
 		}
 	};
 }(AspenDiscovery.Events || {}));

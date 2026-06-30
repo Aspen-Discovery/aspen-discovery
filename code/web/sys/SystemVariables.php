@@ -22,7 +22,12 @@ class SystemVariables extends DataObject {
 	public $storeRecordDetailsInDatabase;
 	/** @noinspection PhpUnused */
 	public $deletionCommitInterval;
+	/** @noinspection PhpUnused */
 	public $indexCommitInterval;
+	/** @noinspection PhpUnused */
+	public $solrThreadCount;
+	/** @noinspection PhpUnused */
+	public $solrQueueSize;
 	/** @noinspection PhpUnused */
 	public $waitAfterDeleteCommit;
 	/** @noinspection PhpUnused */
@@ -59,6 +64,7 @@ class SystemVariables extends DataObject {
 	/** @noinspection PhpUnused */
 	public $removeTheWordSeriesFromEndOfSeries;
 	public $disable_user_agent_logging;
+	public $userAgentRetentionMonths;
 	public $logFrequentCrons;
 	public $hooplaVersion;
 
@@ -122,16 +128,17 @@ class SystemVariables extends DataObject {
 			],
 			'currencyCode' => [
 				'property' => 'currencyCode',
-				'type' => 'enum',
-				'values' => [
-					'USD' => 'USD',
-					'CAD' => 'CAD',
-					'EUR' => 'EUR',
-					'GBP' => 'GBP',
+				'type' => 'text',
+				'suggestions' => [
+					'USD',
+					'CAD',
+					'EUR',
+					'GBP',
 				],
 				'label' => 'Currency Code',
 				'description' => 'Currency code to use when formatting money',
 				'required' => true,
+				'maxLength' => 3,
 				'default' => 'USD',
 			],
 			'indexingSection' => [
@@ -242,6 +249,24 @@ class SystemVariables extends DataObject {
 						'required' => true,
 						'default' => 10000,
 						'min' => 10000,
+					],
+					'solrThreadCount' => [
+						'property' => 'solrThreadCount',
+						'type' => 'integer',
+						'label' => 'Solr Thread Count',
+						'description' => 'The number of solr threads to use while indexing. Servers with more CPU can handle more threads.',
+						'default' => 1,
+						'min' => 1,
+						'max' => 4,
+					],
+					'solrQueueSize' => [
+						'property' => 'solrQueueSize',
+						'type' => 'integer',
+						'label' => 'Solr Queue Size',
+						'description' => 'The number of documents that are added to the solr queue. This is based on memory as well as processors and document size to ensure too many documents are not loaded causing a timeout.',
+						'default' => 25,
+						'min' => 25,
+						'max' => 1000,
 					],
 					'waitAfterDeleteCommit' => [
 						'property' => 'waitAfterDeleteCommit',
@@ -489,6 +514,21 @@ class SystemVariables extends DataObject {
 				'description' => 'When enabled, disables all user agent tracking including logging, spam detection, and blocking.',
 				'default' => false,
 			],
+			'userAgentRetentionMonths' => [
+				'property' => 'userAgentRetentionMonths',
+				'type' => 'enum',
+				'values' => [
+					0 => 'Do not clean up',
+					1 => '1 month',
+					3 => '3 months',
+					6 => '6 months',
+					12 => '12 months',
+				],
+				'label' => 'User Agent Cleanup Retention',
+				'description' => 'Controls how many months of user agent usage statistics are retained. User agents marked as bots or blocked are preserved.',
+				'note' => 'Changes to this setting take effect on the first day of the next month.',
+				'default' => 3,
+			],
 			'logFrequentCrons' => [
 				'property' => 'logFrequentCrons',
 				'type' => 'checkbox',
@@ -555,26 +595,6 @@ class SystemVariables extends DataObject {
 			}
 		}
 		return SystemVariables::$_systemVariables;
-	}
-
-	public function getCurrencySymbol() : string {
-		$currencyCode = 'USD';
-		$systemVariables = SystemVariables::getSystemVariables();
-		if (!empty($systemVariables->currencyCode)) {
-			$currencyCode = $systemVariables->currencyCode;
-		}
-		if ($currencyCode == 'USD') {
-			$currencySymbol = '$';
-		} elseif ($currencyCode == 'EUR') {
-			$currencySymbol = '€';
-		} elseif ($currencyCode == 'CAD') {
-			$currencySymbol = '$';
-		} elseif ($currencyCode == 'GBP') {
-			$currencySymbol = '£';
-		} else {
-			$currencySymbol = '';
-		}
-		return $currencySymbol;
 	}
 
 	public function update(string $context = '') : int|bool {

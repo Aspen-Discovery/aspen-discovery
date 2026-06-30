@@ -199,7 +199,7 @@ foreach ($usersWithUpdatesToEmail as $data) {
 	$updatedSearchesWithSampleTitles = "";
 	$updatedSearchesWithSampleTitlesHtml = "<ul>";
 
-	$nl = PHP_EOL;
+	$nl = "\r\n";
 
 	foreach ($data['updatedSearches'] as $updatedSearch) {
 		$title = $updatedSearch['title'];

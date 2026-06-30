@@ -11749,6 +11749,12 @@ td[data-entry-id]:has(.date-edit:focus)::after {
   .calendar-row .calendar-day-cell .calendar-events .calendar-event .can-hide-end-time .end-time {
     display: none;
   }
+  .calendar-row .calendar-day-cell .calendar-events .calendar-event .start-meridiem {
+    display: none;
+  }
+  .calendar-row .calendar-day-cell .calendar-events .calendar-event .can-hide-end-time .start-meridiem {
+    display: inline;
+  }
   .calendar-row .calendar-day-cell .calendar-events .calendar-event .show-end-time {
     white-space: nowrap;
   }
@@ -11798,6 +11804,9 @@ td[data-entry-id]:has(.date-edit:focus)::after {
 @media print and (min-width: 768px) and (min-width: 1200px) {
   .calendar-row .calendar-day-cell .calendar-events .calendar-event .can-hide-end-time .end-time {
     display: inline;
+  }
+  .calendar-row .calendar-day-cell .calendar-events .calendar-event .can-hide-end-time .start-meridiem {
+    display: none;
   }
 }
 @media print and (min-width: 768px) and (min-width: 1700px) {
@@ -11954,6 +11963,12 @@ td[data-entry-id]:has(.date-edit:focus)::after {
   [data-context="print-layout"] .calendar-row .calendar-day-cell .calendar-events .calendar-event .can-hide-end-time .end-time {
     display: none;
   }
+  [data-context="print-layout"] .calendar-row .calendar-day-cell .calendar-events .calendar-event .start-meridiem {
+    display: none;
+  }
+  [data-context="print-layout"] .calendar-row .calendar-day-cell .calendar-events .calendar-event .can-hide-end-time .start-meridiem {
+    display: inline;
+  }
   [data-context="print-layout"] .calendar-row .calendar-day-cell .calendar-events .calendar-event .show-end-time {
     white-space: nowrap;
   }
@@ -12003,6 +12018,9 @@ td[data-entry-id]:has(.date-edit:focus)::after {
 @media (min-width: 768px) and (min-width: 1200px) {
   [data-context="print-layout"] .calendar-row .calendar-day-cell .calendar-events .calendar-event .can-hide-end-time .end-time {
     display: inline;
+  }
+  [data-context="print-layout"] .calendar-row .calendar-day-cell .calendar-events .calendar-event .can-hide-end-time .start-meridiem {
+    display: none;
   }
 }
 @media (min-width: 768px) and (min-width: 1700px) {
@@ -12783,4 +12801,3 @@ html.hero-slider-signage {
     overflow: visible !important;
   }
 }
-/*# sourceMappingURL=main.css.map */

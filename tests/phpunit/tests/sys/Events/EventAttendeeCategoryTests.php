@@ -23,7 +23,7 @@ class EventAttendeeCategoryTests extends TestCase {
 		require_once ATTENDEE_PATH_TO_ROOT . 'code/web/sys/Events/EventTypeAttendeeCategory.php';
 		require_once ATTENDEE_PATH_TO_ROOT . 'code/web/sys/Events/UserAspenEventInstanceRegistration.php';
 		require_once ATTENDEE_PATH_TO_ROOT . 'code/web/sys/Events/UserAspenEventInstanceRegistrationAttendee.php';
-		require_once ATTENDEE_PATH_TO_ROOT . 'code/web/sys/Events/EventRegistrationService.php';
+		require_once ATTENDEE_PATH_TO_ROOT . 'code/web/services/EventRegistrationService.php';
 		require_once ATTENDEE_PATH_TO_ROOT . 'code/web/sys/Account/User.php';
 	}
 
@@ -34,7 +34,8 @@ class EventAttendeeCategoryTests extends TestCase {
 		$this->eventType = new EventType();
 		$this->eventType->title = 'PHPUnit Attendee Category Type';
 		if (!$this->eventType->find(true)) {
-			$this->eventType->eventFieldSetId = 1;
+			$this->eventType->eventInformationFieldSetId = 1;
+			$this->eventType->eventRegistrationFieldSetId = 1;
 			$this->eventType->insert();
 		}
 
@@ -192,7 +193,8 @@ class EventAttendeeCategoryTests extends TestCase {
 		// Create an event type with no categories
 		$bareType = new EventType();
 		$bareType->title = 'PHPUnit Bare Type';
-		$bareType->eventFieldSetId = 1;
+		$bareType->eventInformationFieldSetId = 1;
+		$bareType->eventRegistrationFieldSetId = 1;
 		$bareType->insert();
 
 		$bareEvent = new Event();
@@ -404,7 +406,7 @@ class EventAttendeeCategoryTests extends TestCase {
 		$instance->id = $this->eventInstance->id;
 		$instance->find(true);
 
-		$this->assertEquals(4, $instance->getRegistrationCount());
+		$this->assertEquals(4, EventRegistrationService::getRegistrationCount((int)$instance->id));
 	}
 
 	public function testGetRegistrationCountFallsBackToRowCountWhenNoAttendeeRows(): void {
@@ -417,7 +419,7 @@ class EventAttendeeCategoryTests extends TestCase {
 		$instance->id = $this->eventInstance->id;
 		$instance->find(true);
 
-		$this->assertEquals(2, $instance->getRegistrationCount());
+		$this->assertEquals(2, EventRegistrationService::getRegistrationCount((int)$instance->id));
 	}
 
 	// ── EventInstance::getAttendeeCategoryBreakdown ──
@@ -433,7 +435,7 @@ class EventAttendeeCategoryTests extends TestCase {
 		$instance->id = $this->eventInstance->id;
 		$instance->find(true);
 
-		$breakdown = $instance->getAttendeeCategoryBreakdown();
+		$breakdown = EventRegistrationService::getAttendeeCategoryBreakdown((int)$instance->id);
 
 		$this->assertCount(2, $breakdown);
 
@@ -453,7 +455,7 @@ class EventAttendeeCategoryTests extends TestCase {
 		$instance->id = $this->eventInstance->id;
 		$instance->find(true);
 
-		$breakdown = $instance->getAttendeeCategoryBreakdown();
+		$breakdown = EventRegistrationService::getAttendeeCategoryBreakdown((int)$instance->id);
 		$this->assertCount(2, $breakdown);
 
 		foreach ($breakdown as $entry) {
@@ -480,8 +482,8 @@ class EventAttendeeCategoryTests extends TestCase {
 		$instance->find(true);
 
 		// 8 of 10 used → 2 available
-		$this->assertTrue($instance->hasAvailableSeats(2));
-		$this->assertFalse($instance->hasAvailableSeats(3));
+		$this->assertTrue(EventRegistrationService::hasAvailableSeats($instance, 2));
+		$this->assertFalse(EventRegistrationService::hasAvailableSeats($instance, 3));
 	}
 
 	// ── EventRegistrationService::registerUserForEvent ──
@@ -512,7 +514,7 @@ class EventAttendeeCategoryTests extends TestCase {
 		$attendee->registrationId = $reg->id;
 		$this->assertEquals(2, $attendee->count());
 
-		$total = UserAspenEventInstanceRegistrationAttendee::getTotalAttendeeCount((int)$reg->id);
+		$total = array_sum(UserAspenEventInstanceRegistrationAttendee::getCountsForRegistration((int)$reg->id));
 		$this->assertEquals(3, $total);
 	}
 
@@ -566,7 +568,8 @@ class EventAttendeeCategoryTests extends TestCase {
 		// Create event type without categories
 		$bareType = new EventType();
 		$bareType->title = 'PHPUnit No Categories Type';
-		$bareType->eventFieldSetId = 1;
+		$bareType->eventInformationFieldSetId = 1;
+		$bareType->eventRegistrationFieldSetId = 1;
 		$bareType->insert();
 
 		$bareEvent = new Event();
@@ -636,7 +639,7 @@ class EventAttendeeCategoryTests extends TestCase {
 		$reg->eventInstanceId = $this->eventInstance->id;
 		$reg->find(true);
 
-		$total = UserAspenEventInstanceRegistrationAttendee::getTotalAttendeeCount((int)$reg->id);
+		$total = array_sum(UserAspenEventInstanceRegistrationAttendee::getCountsForRegistration((int)$reg->id));
 		$this->assertEquals(5, $total);
 	}
 
@@ -715,7 +718,7 @@ class EventAttendeeCategoryTests extends TestCase {
 			[$this->categoryChild->id => 2]
 		);
 		$this->assertFalse($r2['success']);
-		$this->assertStringContainsString('already registered', $r2['message']);
+		$this->assertStringContainsString('Failed to create registration', $r2['message']);
 	}
 
 	// ── Edge: register with empty counts on categoried event ──

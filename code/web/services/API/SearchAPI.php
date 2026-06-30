@@ -9,82 +9,19 @@ class SearchAPI extends AbstractAPI {
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 		$output = '';
 
-		//Set Headers
-		header('Content-type: application/json');
-		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-
-		global $activeLanguage;
-		if (isset($_GET['language'])) {
-			$language = new Language();
-			$language->code = $_GET['language'];
-			if ($language->find(true)) {
-				$activeLanguage = $language;
-			}
+		if (in_array($method, [
+			'getListWidget',
+			'getCollectionSpotlight',
+		])) {
+			header('Content-type: text/html');
+			$output = $this->$method();
+			require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
+			APIUsage::incrementStat('SearchAPI', $method);
+			echo $output;
+			die();
 		}
 
-		//Check if user can access API with keys sent from LiDA
-		if (isset($_SERVER['PHP_AUTH_USER'])) {
-			if ($this->grantTokenAccess()) {
-				if (in_array($method, [
-					'getAppBrowseCategoryResults',
-					'getAppActiveBrowseCategories',
-					'getAppSearchResults',
-					'getListResults',
-					'getSavedSearchResults',
-					'getSortList',
-					'getAppliedFilters',
-					'getAvailableFacets',
-					'getAvailableFacetsKeys',
-					'searchLite',
-					'getDefaultFacets',
-					'getFacetClusterByKey',
-					'searchFacetCluster',
-					'getFormatCategories',
-					'getBrowseCategoryListForUser',
-					'searchAvailableFacets',
-					'getSearchSources',
-					'getSearchIndexes',
-					'getBrowseCategories',
-					'getHomeScreenFeed'
-				])) {
-					header("Cache-Control: max-age=10800");
-					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
-					APIUsage::incrementStat('SearchAPI', $method);
-					$jsonOutput = json_encode(['result' => $this->logPatronRequestExternal($this->$method())]);
-				} else {
-					$output = json_encode(['error' => 'invalid_method']);
-				}
-			} else {
-				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-				header('HTTP/1.0 401 Unauthorized');
-				$output = json_encode(['error' => 'unauthorized_access']);
-			}
-			ExternalRequestLogEntry::logRequest('SearchAPI.' . $method, $_SERVER['REQUEST_METHOD'], $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], getallheaders(), '', $_SERVER['REDIRECT_STATUS'], $jsonOutput ?? $output, []);
-			echo $jsonOutput ?? $output;
-		} elseif (IPAddress::allowAPIAccessForClientIP() || in_array($method, [
-				'getListWidget',
-				'getCollectionSpotlight',
-			])) {
-			header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-			if (!empty($method) && method_exists($this, $method)) {
-				if (in_array($method, [
-					'getListWidget',
-					'getCollectionSpotlight',
-				])) {
-					header('Content-type: text/html');
-					$output = $this->$method();
-				} else {
-					$jsonOutput = json_encode(['result' => $this->$method()]);
-				}
-				require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
-				APIUsage::incrementStat('SearchAPI', $method);
-				echo $jsonOutput ?? $output;
-			} else {
-				echo json_encode(['error' => 'invalid_method']);
-			}
-		} else {
-			$this->forbidAPIAccess();
-		}
+		$this->handleAPIRequestAuto($method, 'search_api');
 	}
 
 	// The time intervals in seconds beyond which we consider the status as not current
@@ -3528,7 +3465,7 @@ class SearchAPI extends AbstractAPI {
 						$eventSource = 'assabet';
 						$bypass = $assabetBypass;
 						$addToList = $assabetAddToList;
-					} else if (str_starts_with($record['id'], 'aspenEvents')) {
+					} else if (str_starts_with($record['id'], 'aspenEvent')) {
 						$eventSource = 'aspenEvents';
 						$bypass = $aspenEventsBypass;
 						$addToList = $aspenEventsAddToList;
