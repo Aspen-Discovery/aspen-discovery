@@ -40,6 +40,13 @@ function getUpdates26_07_00(): array {
 			],
 		],
 		// permissions_create_events_localhop
+		'series_to_group_with' => [
+			'title' => 'Add Column in Series Table for Grouping',
+			'description' => 'Add column for seriesToGroupWithId in Series table to be used for merging/grouping series.',
+			'sql' => [
+				'ALTER TABLE series ADD COLUMN seriesToGroupWithId CHAR(40)',
+			]
+		],
 
 		//yanjun
 		'add_user_agent_retention_months' => [
@@ -90,6 +97,14 @@ function getUpdates26_07_00(): array {
 		//tomas
 
 		// stephen
+		'theme_full_width_content' => [
+			'title' => 'Add fullWidthContent column',
+			'description' => 'Add fullWidthContent column to themes table.',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE themes ADD COLUMN fullWidthContent TINYINT(1) DEFAULT 0',
+			]
+		], //theme_full_width_content
 
 		//other
 

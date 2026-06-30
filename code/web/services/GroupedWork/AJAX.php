@@ -132,26 +132,71 @@ class GroupedWork_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function getDescription() : array {
-		$this->checkRequiredParameters(['id']);
-		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-		$result = [
-			'success' => false,
-		];
-		$id = $_REQUEST['id'];
+		global $library;
 
-		$recordDriver = new GroupedWorkDriver($id);
-		if ($recordDriver->isValid()) {
-			$description = $recordDriver->getDescription();
-			if (strlen($description) == 0) {
-				$description = translate([
-					'text' => 'Description not provided',
-					'isPublicFacing' => true,
-				]);
+		$this->checkRequiredParameters(['id']);
+
+		$description = '';
+
+		if (isset($_REQUEST['recordType'])) {
+			$driverMap = [
+				'marcRecord'         => 'MarcRecordDriver',
+				'hooplaRecord'        => 'HooplaRecordDriver',
+				'libbyRecord'         => 'OverDriveRecordDriver',
+				'cloudLibraryRecord'  => 'CloudLibraryRecordDriver',
+				'axis360Record'       => 'Axis360RecordDriver',
+				'palaceProjectRecord' => 'PalaceProjectRecordDriver',
+			];
+			$recordType = $_REQUEST['recordType'];
+
+			if (isset($driverMap[$recordType])) {
+				$driverClass = $driverMap[$recordType];
+				require_once ROOT_DIR . "/RecordDrivers/{$driverClass}.php";
+				$record = new $driverClass($_REQUEST['recordId']);
+
+				//first check if we prefer supplemental description instead
+				$useMarcSummary = true;
+				if ($library->getGroupedWorkDisplaySettings()->preferSyndeticsSummary == 1) {
+					$isbn = $record->getCleanISBN();
+					$upc = $record->getCleanUPC();
+					if ($isbn || $upc) {
+						require_once ROOT_DIR . '/Drivers/marmot_inc/GoDeeperData.php';
+						$summaryInfo = GoDeeperData::getSummary($record->getPermanentId(), $isbn, $upc);
+						if (isset($summaryInfo['summary'])) {
+							$description = $summaryInfo['summary'];
+							$useMarcSummary = false;
+						}
+					}
+				}
+
+				if ($useMarcSummary) {
+					$description = $record->getDescription();
+				}
 			}
+		}
+		if (empty($description)){
+			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+			$id = $_REQUEST['id'];
+
+			$recordDriver = new GroupedWorkDriver($id);
+			if ($recordDriver->isValid()) {
+				$description = $recordDriver->getDescription();
+			}
+		}
+
+		if (empty($description)) {
+			$description = translate([
+				'text' => 'Description not provided',
+				'isPublicFacing' => true,
+			]);
+			$result = [
+				'success' => false,
+			];
+		} else {
 			$description = strip_tags($description, '<a><b><p><i><em><strong><ul><li><ol>');
 			$result['success'] = true;
-			$result['description'] = $description;
 		}
+		$result['description'] = $description;
 
 		return $result;
 	}
@@ -2181,7 +2226,11 @@ class GroupedWork_AJAX extends JSON_Action {
 						}
 					}
 					if ($isValidForGrouping) {
-						$availableRecords[$seriesMembers->groupedWorkPermanentId] = "$primaryWork->full_title $primaryWork->author";
+						require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+						$groupedWorkDriver = new GroupedWorkDriver($primaryWork->permanent_id);
+						$primaryTitle = $groupedWorkDriver->getTitle();
+						$primaryAuthor = $groupedWorkDriver->getPrimaryAuthor();
+						$availableRecords[$seriesMembers->groupedWorkPermanentId] = "$primaryTitle  by  $primaryAuthor";
 					}
 				}
 			}
