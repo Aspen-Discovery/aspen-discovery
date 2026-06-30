@@ -45,6 +45,7 @@ global $serverName;
 $aspenUsage = new AspenUsage();
 $aspenUsage->year = date('Y');
 $aspenUsage->month = date('n');
+$aspenUsage->day = date('d');
 
 global $errorHandlingEnabled;
 $errorHandlingEnabled = 0;

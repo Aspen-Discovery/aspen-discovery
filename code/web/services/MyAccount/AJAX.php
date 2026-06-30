@@ -3,6 +3,7 @@
 use JetBrains\PhpStorm\NoReturn;
 
 require_once ROOT_DIR . '/JSON_Action.php';
+require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 
 class MyAccount_AJAX extends JSON_Action {
 	/** @noinspection PhpMissingClassConstantTypeInspection */
@@ -2527,107 +2528,95 @@ class MyAccount_AJAX extends JSON_Action {
 		global $timer;
 		global $interface;
 
-		$result = $this->failureResult(null, 'Unknown Error');
-
 		$user = UserAccount::getActiveUserObj();
-		if ($user->hasIlsConnection()) {
-			$ilsSummary = $user->getAccountSummary();
-			$ilsSummary->setMaterialsRequests($user->getNumMaterialsRequests());
-			if ($user->getLinkedUsers() != null) {
-				$selectedLinkedUser = $this->setFilterLinkedUser();
-				$selectedLinkedUserCheckouts = $this->setFilterLinkedUserCheckouts();
-				if ($selectedLinkedUser) {
-					$filterLinkedUser = new User();
-					$filterLinkedUser->id = $selectedLinkedUser;
-					if ($filterLinkedUser->find(true)) {
-						$filterLinkedUserSummary = $filterLinkedUser->getAccountSummary();
-						$ilsSummary->numAvailableHolds = $filterLinkedUserSummary->numAvailableHolds;
-						$ilsSummary->numUnavailableHolds = $filterLinkedUserSummary->numUnavailableHolds;
-					}
-				} else {
-					/** @var User $user */
-					foreach ($user->getLinkedUsers() as $linkedUser) {
-						$linkedUserSummary = $linkedUser->getAccountSummary();
-						$ilsSummary->numAvailableHolds += $linkedUserSummary->numAvailableHolds;
-						$ilsSummary->numUnavailableHolds += $linkedUserSummary->numUnavailableHolds;
+		if (!$user->hasIlsConnection()) {
+			return $this->failureResult(null, 'Unable to load ILS account information.');
+		}
 
-					}
+		$ilsSummary = $user->getAccountSummary();
+		$ilsSummary->setMaterialsRequests($user->getNumMaterialsRequests());
+		if ($user->getLinkedUsers() != null) {
+			$selectedLinkedUser = $this->setFilterLinkedUser();
+			$selectedLinkedUserCheckouts = $this->setFilterLinkedUserCheckouts();
+			if ($selectedLinkedUser) {
+				$filterLinkedUser = new User();
+				$filterLinkedUser->id = $selectedLinkedUser;
+				if ($filterLinkedUser->find(true)) {
+					$filterLinkedUserSummary = $filterLinkedUser->getAccountSummary();
+					$ilsSummary->numAvailableHolds = $filterLinkedUserSummary->numAvailableHolds;
+					$ilsSummary->numUnavailableHolds = $filterLinkedUserSummary->numUnavailableHolds;
 				}
-				if ($selectedLinkedUserCheckouts) {
-					$filterLinkedUserCheckouts = new User();
-					$filterLinkedUserCheckouts->id = $selectedLinkedUserCheckouts;
-					if ($filterLinkedUserCheckouts->find(true)) {
-						$filterLinkedUserCheckoutsSummary = $filterLinkedUserCheckouts->getAccountSummary();
-						$ilsSummary->numCheckedOut = $filterLinkedUserCheckoutsSummary->numCheckedOut;
-						$ilsSummary->numOverdue = $filterLinkedUserCheckoutsSummary->numOverdue;
-					}
-				} else {
-					foreach ($user->getLinkedUsers() as $linkedUser) {
-						$linkedUserSummary = $linkedUser->getAccountSummary();
-						$ilsSummary->numCheckedOut += $linkedUserSummary->numCheckedOut;
-						$ilsSummary->numOverdue += $linkedUserSummary->numOverdue;
-					}
-				}
+			} else {
+				/** @var User $user */
 				foreach ($user->getLinkedUsers() as $linkedUser) {
 					$linkedUserSummary = $linkedUser->getAccountSummary();
-					$ilsSummary->totalFines += $linkedUserSummary->totalFines;
-					$ilsSummary->setMaterialsRequests($ilsSummary->getMaterialsRequests() + $linkedUser->getNumMaterialsRequests());
+					$ilsSummary->numAvailableHolds += $linkedUserSummary->numAvailableHolds;
+					$ilsSummary->numUnavailableHolds += $linkedUserSummary->numUnavailableHolds;
 				}
 			}
-			$timer->logTime("Loaded ILS Summary for User and linked users");
-
-			$ilsSummary->setReadingHistory($user->getReadingHistorySize());
-
-			$searchEntry = new SearchEntry();
-			$searchEntry->user_id = $user->id;
-			$searchEntry->saved = 1;
-			$searchEntry->hasNewResults = 1;
-			$searchEntry->find();
-			$ilsSummary->hasUpdatedSavedSearches = ($searchEntry->getNumResults() > 0);
-			$ilsSummary->setNumUpdatedSearches($searchEntry->getNumResults());
-
-			//Expiration and fines
-			$interface->assign('ilsSummary', $ilsSummary);
-			$interface->setFinesRelatedTemplateVariables();
-
-			if ($interface->getVariable('expiredMessage')) {
-				$interface->assign('expiredMessage', str_replace('%date%', date('M j, Y', $ilsSummary->expirationDate), $interface->getVariable('expiredMessage')));
-			}
-			if ($interface->getVariable('expirationNearMessage')) {
-				$interface->assign('expirationNearMessage', str_replace('%date%', date('M j, Y', $ilsSummary->expirationDate), $interface->getVariable('expirationNearMessage')));
-			}
-
-			$showRenewalLink = $user->showRenewalLink($ilsSummary);
-			$interface->assign('showRenewalLink', $showRenewalLink);
-			if ($showRenewalLink) {
-				$userLibrary = $user->getHomeLibrary();
-				if ($userLibrary->enableCardRenewal == 2) {
-					if (!empty($userLibrary->cardRenewalUrl)) {
-						$interface->assign('cardRenewalLink', $userLibrary->cardRenewalUrl);
-					}
-				} elseif ($userLibrary->enableCardRenewal == 3) {
-					require_once ROOT_DIR . '/sys/Enrichment/QuipuECardSetting.php';
-					$quipuECardSettings = new QuipuECardSetting();
-					if ($quipuECardSettings->find(true) && $quipuECardSettings->hasERenew) {
-						$interface->assign('cardRenewalLink', "/MyAccount/eRENEW");
-					}
+			if ($selectedLinkedUserCheckouts) {
+				$filterLinkedUserCheckouts = new User();
+				$filterLinkedUserCheckouts->id = $selectedLinkedUserCheckouts;
+				if ($filterLinkedUserCheckouts->find(true)) {
+					$filterLinkedUserCheckoutsSummary = $filterLinkedUserCheckouts->getAccountSummary();
+					$ilsSummary->numCheckedOut = $filterLinkedUserCheckoutsSummary->numCheckedOut;
+					$ilsSummary->numOverdue = $filterLinkedUserCheckoutsSummary->numOverdue;
+				}
+			} else {
+				foreach ($user->getLinkedUsers() as $linkedUser) {
+					$linkedUserSummary = $linkedUser->getAccountSummary();
+					$ilsSummary->numCheckedOut += $linkedUserSummary->numCheckedOut;
+					$ilsSummary->numOverdue += $linkedUserSummary->numOverdue;
 				}
 			}
-
-			$ilsSummary->setExpirationNotice($interface->fetch('MyAccount/expirationNotice.tpl'));
-			$ilsSummary->setFinesBadge($interface->fetch('MyAccount/finesBadge.tpl'));
-
-			$result = [
-				'success' => true,
-				'summary' => $ilsSummary->toArray(),
-			];
-		} else {
-			$result['message'] = translate([
-				'text' => 'Unknown Error',
-				'isPublicFacing' => true,
-			]);
+			foreach ($user->getLinkedUsers() as $linkedUser) {
+				$linkedUserSummary = $linkedUser->getAccountSummary();
+				$ilsSummary->totalFines += $linkedUserSummary->totalFines;
+				$ilsSummary->setMaterialsRequests($ilsSummary->getMaterialsRequests() + $linkedUser->getNumMaterialsRequests());
+			}
 		}
-		return $result;
+		$timer->logTime("Loaded ILS Summary for User and linked users");
+
+		$ilsSummary->setReadingHistory($user->getReadingHistorySize());
+
+		$searchEntry = new SearchEntry();
+		$searchEntry->user_id = $user->id;
+		$searchEntry->saved = 1;
+		$searchEntry->hasNewResults = 1;
+		$searchEntry->find();
+		$ilsSummary->hasUpdatedSavedSearches = ($searchEntry->getNumResults() > 0);
+		$ilsSummary->setNumUpdatedSearches($searchEntry->getNumResults());
+
+		//Expiration and fines
+		$interface->assign('ilsSummary', $ilsSummary);
+		$interface->setFinesRelatedTemplateVariables();
+
+		if ($interface->getVariable('expiredMessage')) {
+			$interface->assign('expiredMessage', str_replace('%date%', date('M j, Y', $ilsSummary->expirationDate), $interface->getVariable('expiredMessage')));
+		}
+		if ($interface->getVariable('expirationNearMessage')) {
+			$interface->assign('expirationNearMessage', str_replace('%date%', date('M j, Y', $ilsSummary->expirationDate), $interface->getVariable('expirationNearMessage')));
+		}
+
+		$showRenewalLink = $user->showRenewalLink($ilsSummary);
+		$interface->assign('showRenewalLink', $showRenewalLink);
+		$useILSCardRenewalFlow = false;
+		if ($showRenewalLink) {
+			$renewalConfig = $user->getHomeLibrary()->getCardRenewalConfig();
+			$useILSCardRenewalFlow = $renewalConfig['useILSFlow'];
+			if ($renewalConfig['externalLink'] !== null) {
+				$interface->assign('cardRenewalLink', $renewalConfig['externalLink']);
+			}
+		}
+		$interface->assign('useILSCardRenewalFlow', $useILSCardRenewalFlow);
+
+		$ilsSummary->setExpirationNotice($interface->fetch('MyAccount/expirationNotice.tpl'));
+		$ilsSummary->setFinesBadge($interface->fetch('MyAccount/finesBadge.tpl'));
+
+		return  [
+			'success' => true,
+			'summary' => $ilsSummary->toArray(),
+		];
 	}
 
 	/** @noinspection PhpUnused */
@@ -4754,7 +4743,7 @@ class MyAccount_AJAX extends JSON_Action {
 		// Hide Covers when the user has set that setting on a Search Results Page
 		// this is the same setting as used by the MyAccount Pages for now.
 		$showCovers = true;
-		if (isset($_REQUEST['showCovers'])) {
+		if (isset($_REQUEST['showCovers']) && $_REQUEST['showCovers'] !== 'null' && $_REQUEST['showCovers'] !== 'undefined') {
 			$showCovers = ($_REQUEST['showCovers'] == 'on' || $_REQUEST['showCovers'] == 'true');
 			if (isset($_SESSION)) {
 				$_SESSION['showCovers'] = $showCovers;
@@ -5461,40 +5450,6 @@ class MyAccount_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	private function addDonation($payment, $tempDonation) : Donation {
-		require_once ROOT_DIR . '/sys/Donations/Donation.php';
-		$donation = new Donation();
-		$donation->paymentId = $payment->id;
-		$donation->firstName = $tempDonation->firstName;
-		$donation->lastName = $tempDonation->lastName;
-		$donation->email = $tempDonation->email;
-		$donation->anonymous = $tempDonation->isAnonymous;
-		$donation->dedicate = $tempDonation->isDedicated;
-		if ($tempDonation->isDedicated == 1) {
-			$donation->dedicateType = $tempDonation->dedication->type;
-			$donation->honoreeFirstName = $tempDonation->dedication->honoreeFirstName;
-			$donation->honoreeLastName = $tempDonation->dedication->honoreeLastName;
-		}
-		$donation->shouldBeNotified = $tempDonation->shouldBeNotified;
-		if ($tempDonation->shouldBeNotified == 1) {
-			$donation->notificationFirstName = $tempDonation->notification->notificationFirstName;
-			$donation->notificationLastName = $tempDonation->notification->notificationLastName;
-			$donation->notificationAddress = $tempDonation->notification->notificationAddress;
-			$donation->notificationCity = $tempDonation->notification->notificationCity;
-			$donation->notificationState = $tempDonation->notification->notificationState;
-			$donation->notificationZip = $tempDonation->notification->notificationZip;
-		}
-		$donation->donateToLocationId = $tempDonation->donateToLocationId;
-		$donation->donateToLocation = $tempDonation->donateToLocation;
-		$donation->comments = $tempDonation->comments;
-		$donation->donationSettingId = $tempDonation->donationSettingId;
-		$donation->sendEmailToUser = 1;
-		$donation->insert();
-
-		return $donation;
-	}
-
-	/** @noinspection PhpUnused */
 	private function createGenericOrder($paymentType = '') {
 		$this->requireLoggedInUser(null, 'You must be signed in to pay fines, please sign in.');
 		$transactionDate = time();
@@ -5549,7 +5504,6 @@ class MyAccount_AJAX extends JSON_Action {
 		$finesPaid = '';
 		$purchaseUnits = [];
 		$purchaseUnits['items'] = [];
-		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 		$totalFines = 0;
 
 		$currencyCode = 'USD';
@@ -5820,7 +5774,7 @@ class MyAccount_AJAX extends JSON_Action {
 					$payment,
 					$purchaseUnits,
 					$patron,
-					$tempDonation,
+					$donation,
 				] = $result;
 			} else {
 				/** @noinspection PhpUnusedLocalVariableInspection */
@@ -6117,9 +6071,8 @@ class MyAccount_AJAX extends JSON_Action {
 					$payment,
 					,
 					,
-					$tempDonation,
+					$donation,
 				] = $result;
-				$this->addDonation($payment, $tempDonation);
 			} else {
 				[
 					,
@@ -6306,9 +6259,8 @@ class MyAccount_AJAX extends JSON_Action {
 					$payment,
 					,
 					,
-					$tempDonation,
+					$donation,
 				] = $result;
-				$this->addDonation($payment, $tempDonation);
 			} else {
 				[
 					,
@@ -6457,9 +6409,8 @@ class MyAccount_AJAX extends JSON_Action {
 					$payment,
 					$purchaseUnits,
 					$patron,
-					$tempDonation,
+					$donation,
 				] = $result;
-				$this->addDonation($payment, $tempDonation);
 			} else {
 				/** @noinspection PhpUnusedLocalVariableInspection */
 				[
@@ -6516,7 +6467,7 @@ class MyAccount_AJAX extends JSON_Action {
 					$payment,
 					$purchaseUnits,
 					$patron,
-					$tempDonation,
+					$donation,
 				] = $result;
 			} else {
 				[
@@ -6604,7 +6555,7 @@ class MyAccount_AJAX extends JSON_Action {
 					$payment,
 					$purchaseUnits,
 					$patron,
-					$tempDonation,
+					$donation,
 				] = $result;
 			} else {
 				[
@@ -6620,9 +6571,6 @@ class MyAccount_AJAX extends JSON_Action {
 			$proPaySetting->id = $paymentLibrary->proPaySettingId;
 			if ($proPaySetting->find(true)) {
 
-				if ($transactionType == 'donation') {
-					$donation = $this->addDonation($payment, $tempDonation);
-				}
 				$curlWrapper = new CurlWrapper();
 				$authorization = $proPaySetting->billerAccountId . ':' . $proPaySetting->authenticationToken;
 				$authorization = 'Basic ' . base64_encode($authorization);
@@ -6801,9 +6749,8 @@ class MyAccount_AJAX extends JSON_Action {
 					$payment,
 					$purchaseUnits,
 					$patron,
-					$tempDonation,
+					$donation,
 				] = $result;
-				$donation = $this->addDonation($payment, $tempDonation);
 			} else {
 				[
 					$paymentLibrary,
@@ -6888,9 +6835,8 @@ class MyAccount_AJAX extends JSON_Action {
 					$payment,
 					$purchaseUnits,
 					$patron,
-					$tempDonation,
+					$donation,
 				] = $result;
-				$donation = $this->addDonation($payment, $tempDonation);
 			} else {
 				[
 					$paymentLibrary,
@@ -6951,9 +6897,8 @@ class MyAccount_AJAX extends JSON_Action {
 					$payment,
 					$purchaseUnits,
 					$patron,
-					$tempDonation,
+					$donation,
 				] = $result;
-				$donation = $this->addDonation($payment, $tempDonation);
 			} else {
 				[
 					$paymentLibrary,
@@ -7020,9 +6965,8 @@ class MyAccount_AJAX extends JSON_Action {
 					$payment,
 					$purchaseUnits,
 					$patron,
-					$tempDonation,
+					$donation,
 				] = $result;
-				$donation = $this->addDonation($payment, $tempDonation);
 			} else {
 				[
 					$paymentLibrary,
@@ -7135,9 +7079,8 @@ class MyAccount_AJAX extends JSON_Action {
 					$payment,
 					$purchaseUnits,
 					$patron,
-					$tempDonation,
+					$donation,
 				] = $result;
-				$donation = $this->addDonation($payment, $tempDonation);
 			} else {
 				[
 					$paymentLibrary,
@@ -7262,7 +7205,7 @@ class MyAccount_AJAX extends JSON_Action {
 					$payment,
 					$purchaseUnits,
 					$patron,
-					$tempDonation,
+					$donation,
 				] = $result;
 			} else {
 				[
@@ -7526,9 +7469,8 @@ class MyAccount_AJAX extends JSON_Action {
 					$payment,
 					$purchaseUnits,
 					$patron,
-					$tempDonation,
+					$donation,
 				] = $result;
-				$donation = $this->addDonation($payment, $tempDonation);
 			} else {
 				[
 					$paymentLibrary,
@@ -7658,7 +7600,7 @@ class MyAccount_AJAX extends JSON_Action {
 				$payment,
 				$purchaseUnits,
 				$patron,
-				$tempDonation,
+				$donation,
 			] = $result;
 		} else {
 			[
@@ -7681,6 +7623,16 @@ class MyAccount_AJAX extends JSON_Action {
 
 		$urlParameterSettings = $heyCentricSettings->__get('urlParameterSettingList');
 
+		// Set default values
+		if(empty($urlParameterSettings['rurl_value'])) {
+			$urlParameterSettings['rurl_value'] = $configArray['Site']['url'] . '/MyAccount';
+		}
+		$urlParameterSettings['rurl_value'] .= '/AJAX?method=completeHeyCentricOrder&paymentId=' . $payment->id;
+
+		if(empty($urlParameterSettings['email_value'])) {
+			$urlParameterSettings['email_value'] = $patron->email;
+		}
+
 		$finesSelected = [];
 
 		foreach (explode(',', $payment->finesPaid) as $fineSelected) {
@@ -7692,411 +7644,54 @@ class MyAccount_AJAX extends JSON_Action {
 
 		$locationDetails = $patron->getCatalogDriver()->hasAdditionalFineFields() ? $patron->getCatalogDriver()->getAdditionalLocationDetails($patron->getHomeLocationCode()) : [];
 
-		// URL parameters
-		$paymentRequestUrl = $heyCentricSettings->baseUrl;
-		if ($urlParameterSettings["client_includeInUrl"]) {
-			$paymentRequestUrl .= "client=";
-			if (isset($urlParameterSettings['client_kohaAdditionalField']) && $urlParameterSettings['client_kohaAdditionalField'] != "none") {
-				$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['client_kohaAdditionalField']));
-				$paymentRequestUrl .= urlencode(isset($locationDetails[$snakeCaseFieldName]) && $locationDetails[$snakeCaseFieldName] ? $locationDetails[$snakeCaseFieldName] : "none specified");
-			} else {
-				$paymentRequestUrl .= !empty($urlParameterSettings['client_value']) ? $urlParameterSettings['client_value'] : "";
-			}
+		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
+		$paramsToHash = [];
+		foreach($urlParameterSettings as $key => $value) {
+			if(!str_ends_with($key, "_includeInHash")) continue;
+			if(!$value) continue;
+			$paramsToHash[] = StringUtils::removeSuffix($key, "_includeInHash");
 		}
-		if ($urlParameterSettings["area_includeInUrl"]) {
-			$paymentRequestUrl .= "&area=";
-			if (isset($urlParameterSettings['area_kohaAdditionalField']) && $urlParameterSettings['area_kohaAdditionalField'] != "none") {
-				$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['area_kohaAdditionalField']));
-				$paymentRequestUrl .= urlencode(isset($locationDetails[$snakeCaseFieldName]) && $locationDetails[$snakeCaseFieldName] ? $locationDetails[$snakeCaseFieldName] : "none specified");
+
+		require_once ROOT_DIR . '/sys/ECommerce/HeyCentricUrlBuilder.php';
+		$builder = new HeyCentricUrlBuilder($heyCentricSettings->baseUrl, $heyCentricSettings->privateKey, $paramsToHash);
+
+		foreach(['client', 'area', 'till', 'entity', 'co', 'bu', 'lang', 'mode', 'rurl', 'burl', 'email', 'ccemail', 'sid'] as $param) {
+			if (!$urlParameterSettings[$param . '_includeInUrl']) continue;
+			if (isset($urlParameterSettings[$param . '_kohaAdditionalField']) && $urlParameterSettings[$param . '_kohaAdditionalField'] != "none") {
+				$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings[$param . '_kohaAdditionalField']));
+				$builder->addParam($param, isset($locationDetails[$snakeCaseFieldName]) && $locationDetails[$snakeCaseFieldName] ? $locationDetails[$snakeCaseFieldName] : "none specified");
 			} else {
-				$paymentRequestUrl .= !empty($urlParameterSettings['area_value']) ? $urlParameterSettings['area_value'] : "";
-			}
-		}
-		if ($urlParameterSettings["till_includeInUrl"]) {
-			$paymentRequestUrl .= "&till=";
-			if (isset($urlParameterSettings['till_kohaAdditionalField']) && $urlParameterSettings['till_kohaAdditionalField'] != "none") {
-				$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['till_kohaAdditionalField']));
-				$paymentRequestUrl .= urlencode(isset($locationDetails[$snakeCaseFieldName]) && $locationDetails[$snakeCaseFieldName] ? $locationDetails[$snakeCaseFieldName] : "none specified");
-			} else {
-				$paymentRequestUrl .= !empty($urlParameterSettings['till_value']) ? $urlParameterSettings['till_value'] : "";
-			}
-		}
-		if ($urlParameterSettings["entity_includeInUrl"]) {
-			$paymentRequestUrl .= "&entity=";
-			if (isset($urlParameterSettings['entity_kohaAdditionalField']) && $urlParameterSettings['entity_kohaAdditionalField'] != "none") {
-				$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['entity_kohaAdditionalField']));
-				$paymentRequestUrl .= urlencode(isset($locationDetails[$snakeCaseFieldName]) && $locationDetails[$snakeCaseFieldName] ? $locationDetails[$snakeCaseFieldName] : "none specified");
-			} else {
-				$paymentRequestUrl .= !empty($urlParameterSettings['entity_value']) ? $urlParameterSettings['entity_value'] : "";
-			}
-		}
-		if ($urlParameterSettings["co_includeInUrl"]) {
-			$paymentRequestUrl .= "&co=";
-			if (isset($urlParameterSettings['co_kohaAdditionalField']) && $urlParameterSettings['co_kohaAdditionalField'] != "none") {
-				$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['co_kohaAdditionalField']));
-				$paymentRequestUrl .= urlencode(isset($locationDetails[$snakeCaseFieldName]) && $locationDetails[$snakeCaseFieldName] ? $locationDetails[$snakeCaseFieldName] : "none specified");
-			} else {
-				$paymentRequestUrl .= !empty($urlParameterSettings['co_value']) ? $urlParameterSettings['co_value'] : "";
-			}
-		}
-		if ($urlParameterSettings["bu_includeInUrl"]) {
-			$paymentRequestUrl .= "&bu=";
-			if (isset($urlParameterSettings['bu_kohaAdditionalField']) && $urlParameterSettings['bu_kohaAdditionalField'] != "none") {
-				$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['bu_kohaAdditionalField']));
-				$paymentRequestUrl .= urlencode(isset($locationDetails[$snakeCaseFieldName]) && $locationDetails[$snakeCaseFieldName] ? $locationDetails[$snakeCaseFieldName] : "none specified");
-			} else {
-				$paymentRequestUrl .= !empty($urlParameterSettings['bu_value']) ? $urlParameterSettings['bu_value'] : "";
-			}
-		}
-		if ($urlParameterSettings["lang_includeInUrl"]) {
-			$paymentRequestUrl .= "&lang=";
-			if (isset($urlParameterSettings['lang_kohaAdditionalField']) && $urlParameterSettings['lang_kohaAdditionalField'] != "none") {
-				$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['lang_kohaAdditionalField']));
-				$paymentRequestUrl .= urlencode(isset($locationDetails[$snakeCaseFieldName]) && $locationDetails[$snakeCaseFieldName] ? $locationDetails[$snakeCaseFieldName] : "none specified");
-			} else {
-				$paymentRequestUrl .= !empty($urlParameterSettings['lang_value']) ? $urlParameterSettings['lang_value'] : "";
-			}
-		}
-		if ($urlParameterSettings["mode_includeInUrl"]) {
-			$paymentRequestUrl .= "&mode=";
-			if (isset($urlParameterSettings['mode_kohaAdditionalField']) && $urlParameterSettings['mode_kohaAdditionalField'] != "none") {
-				$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['mode_kohaAdditionalField']));
-				$paymentRequestUrl .= urlencode(isset($locationDetails[$snakeCaseFieldName]) && $locationDetails[$snakeCaseFieldName] ? $locationDetails[$snakeCaseFieldName] : "none specified");
-			} else {
-				$paymentRequestUrl .= !empty($urlParameterSettings['mode_value']) ? $urlParameterSettings['mode_value'] : "";
+				$builder->addParam($param, !empty($urlParameterSettings[$param . '_value']) ? $urlParameterSettings[$param . '_value'] : "");
 			}
 		}
 
-		// hash parameters
-		$hashParams = "";
-		if ($urlParameterSettings["client_includeInHash"]) {
-			$hashParams .= "client=";
-			if (isset($urlParameterSettings['client_kohaAdditionalField']) && $urlParameterSettings['client_kohaAdditionalField'] != "none") {
-				$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['client_kohaAdditionalField']));
-				$hashParams .= urlencode(isset($locationDetails[$snakeCaseFieldName]) && $locationDetails[$snakeCaseFieldName] ? $locationDetails[$snakeCaseFieldName] : "none specified");
-			} else {
-				$hashParams .= "client=" . $urlParameterSettings['client_value'] ? $urlParameterSettings['client_value'] : "";
-			}
-		}
-		if ($urlParameterSettings["area_includeInHash"]) {
-			$hashParams .= "&area=";
-			if (isset($urlParameterSettings['area_kohaAdditionalField']) && $urlParameterSettings['area_kohaAdditionalField'] != "none") {
-				$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['area_kohaAdditionalField']));
-				$hashParams .= urlencode(isset($locationDetails[$snakeCaseFieldName]) && $locationDetails[$snakeCaseFieldName] ? $locationDetails[$snakeCaseFieldName] : "none specified");
-			} else {
-				$hashParams .= "area=" . $urlParameterSettings['area_value'] ? $urlParameterSettings['area_value'] : "";
-			}
-		}
-		if ($urlParameterSettings["till_includeInHash"]) {
-			$hashParams .= "&till=";
-			if (isset($urlParameterSettings['till_kohaAdditionalField']) && $urlParameterSettings['till_kohaAdditionalField'] != "none") {
-				$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['till_kohaAdditionalField']));
-				$hashParams .= urlencode(isset($locationDetails[$snakeCaseFieldName]) && $locationDetails[$snakeCaseFieldName] ? $locationDetails[$snakeCaseFieldName] : "none specified");
-			} else {
-				$hashParams .= "till=" . $urlParameterSettings['till_value'] ? $urlParameterSettings['till_value'] : "";
-			}
-		}
-		if ($urlParameterSettings["entity_includeInHash"]) {
-			$hashParams .= "&entity=";
-			if (isset($urlParameterSettings['entity_kohaAdditionalField']) && $urlParameterSettings['entity_kohaAdditionalField'] != "none") {
-				$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['entity_kohaAdditionalField']));
-				$hashParams .= urlencode(isset($locationDetails[$snakeCaseFieldName]) && $locationDetails[$snakeCaseFieldName] ? $locationDetails[$snakeCaseFieldName] : "none specified");
-			} else {
-				$hashParams .= "entity=" . $urlParameterSettings['entity_value'] ? $urlParameterSettings['entity_value'] : "";
-			}
-		}
-		if ($urlParameterSettings["co_includeInHash"]) {
-			$hashParams .= "&co=";
-			if (isset($urlParameterSettings['co_kohaAdditionalField']) && $urlParameterSettings['co_kohaAdditionalField'] != "none") {
-				$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['co_kohaAdditionalField']));
-				$hashParams .= urlencode(isset($locationDetails[$snakeCaseFieldName]) && $locationDetails[$snakeCaseFieldName] ? $locationDetails[$snakeCaseFieldName] : "none specified");
-			} else {
-				$hashParams .= "co=" . $urlParameterSettings['co_value'] ? $urlParameterSettings['co_value'] : "";
-			}
-		}
-		if ($urlParameterSettings["bu_includeInHash"]) {
-			$hashParams .= "&bu=";
-			if (isset($urlParameterSettings['bu_kohaAdditionalField']) && $urlParameterSettings['bu_kohaAdditionalField'] != "none") {
-				$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['bu_kohaAdditionalField']));
-				$hashParams .= urlencode(isset($locationDetails[$snakeCaseFieldName]) && $locationDetails[$snakeCaseFieldName] ? $locationDetails[$snakeCaseFieldName] : "none specified");
-			} else {
-				$hashParams .= "bu=" . $urlParameterSettings['bu_value'] ? $urlParameterSettings['bu_value'] : "";
-			}
-		}
-		if ($urlParameterSettings["lang_includeInHash"]) {
-			$hashParams .= "&lang=";
-			if (isset($urlParameterSettings['lang_kohaAdditionalField']) && $urlParameterSettings['lang_kohaAdditionalField'] != "none") {
-				$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['lang_kohaAdditionalField']));
-				$hashParams .= urlencode(isset($locationDetails[$snakeCaseFieldName]) && $locationDetails[$snakeCaseFieldName] ? $locationDetails[$snakeCaseFieldName] : "none specified");
-			} else {
-				$hashParams .= "lang=" . $urlParameterSettings['lang_value'] ? $urlParameterSettings['lang_value'] : "";
-			}
-		}
-		if ($urlParameterSettings["mode_includeInHash"]) {
-			$hashParams .= "&mode=";
-			if (isset($urlParameterSettings['mode_kohaAdditionalField']) && $urlParameterSettings['mode_kohaAdditionalField'] != "none") {
-				$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['mode_kohaAdditionalField']));
-				$hashParams .= urlencode(isset($locationDetails[$snakeCaseFieldName]) && $locationDetails[$snakeCaseFieldName] ? $locationDetails[$snakeCaseFieldName] : "none specified");
-			} else {
-				$hashParams .= "mode=" . $urlParameterSettings['mode_value'] ? $urlParameterSettings['mode_value'] : "";
-			}
-		}
-
-		// multiline hash and URL parameters
 		foreach ($finesSelected as $index => $fine) {
 			$fineDetails = $patron->getCatalogDriver()->hasAdditionalFineFields() ? $patron->getCatalogDriver()->getFineById($fine['id'], true) : [];
-			$multilineSuffix = $index > 0 ? "_$index=" : "=";
 
-			// URL parameters
-			if ($urlParameterSettings["pmtTyp_includeInUrl"]) {
-				$paymentRequestUrl .= "&pmtTyp" . $multilineSuffix;
-				if (isset($urlParameterSettings['pmtTyp_kohaAdditionalField']) && $urlParameterSettings['pmtTyp_kohaAdditionalField'] != "none") {
-					$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['pmtTyp_kohaAdditionalField']));
-					$paymentRequestUrl .= urlencode(isset($fineDetails[$snakeCaseFieldName]) && $fineDetails[$snakeCaseFieldName] ? $fineDetails[$snakeCaseFieldName] : "none specified");
+			foreach(['pmtTyp', 'val1', 'val1Desc', 'val2', 'val2Desc', 'am', 'cmt', 'extRef'] as $param) {
+				if (!$urlParameterSettings[$param . '_includeInUrl']) continue;
+				if (isset($urlParameterSettings[$param . '_kohaAdditionalField']) && $urlParameterSettings[$param . '_kohaAdditionalField'] != "none") {
+					$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings[$param . '_kohaAdditionalField']));
+					$builder->addParam($param, isset($fineDetails[$snakeCaseFieldName]) && $fineDetails[$snakeCaseFieldName] ? $fineDetails[$snakeCaseFieldName] : "none specified", $index);
 				} else {
-					$paymentRequestUrl .= !empty($urlParameterSettings['pmtTyp_value']) ? $urlParameterSettings['pmtTyp_value'] : "";
-				}
-			}
-			if ($urlParameterSettings["val1_includeInUrl"]) {
-				$paymentRequestUrl .= "&val1" . $multilineSuffix;
-				if (isset($urlParameterSettings['val1_kohaAdditionalField']) && $urlParameterSettings['val1_kohaAdditionalField'] != "none") {
-					$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['val1_kohaAdditionalField']));
-					$paymentRequestUrl .= urlencode(isset($fineDetails[$snakeCaseFieldName]) && $fineDetails[$snakeCaseFieldName] ? $fineDetails[$snakeCaseFieldName] : "none specified");
-				} else {
-					$paymentRequestUrl .= !empty($urlParameterSettings['val1_value']) ? $urlParameterSettings['val1_value'] : urlencode($fineDetails['fineId']);
-				}
-			}
-			if ($urlParameterSettings["val1Desc_includeInUrl"]) {
-				$paymentRequestUrl .= "&val1Desc" . $multilineSuffix;
-				if (isset($urlParameterSettings['val1Desc_kohaAdditionalField']) && $urlParameterSettings['val1Desc_kohaAdditionalField'] != "none") {
-					$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['val1Desc_kohaAdditionalField']));
-					$paymentRequestUrl .= urlencode(isset($fineDetails[$snakeCaseFieldName]) && $fineDetails[$snakeCaseFieldName] ? $fineDetails[$snakeCaseFieldName] : "none specified");
-				} else {
-					$paymentRequestUrl .= !empty($urlParameterSettings['val1Desc_value']) ? $urlParameterSettings['val1Desc_value'] : urlencode($fineDetails['message']);
-				}
-			}
-			if ($urlParameterSettings["val2_includeInUrl"]) {
-				$paymentRequestUrl .= "&val2" . $multilineSuffix;
-				if (isset($urlParameterSettings['val2_kohaAdditionalField']) && $urlParameterSettings['val2_kohaAdditionalField'] != "none") {
-					$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['val2_kohaAdditionalField']));
-					$paymentRequestUrl .= urlencode(isset($fineDetails[$snakeCaseFieldName]) && $fineDetails[$snakeCaseFieldName] ? $fineDetails[$snakeCaseFieldName] : "none specified");
-				} else {
-					$paymentRequestUrl .= !empty($urlParameterSettings['val2_value']) ? $urlParameterSettings['val2_value'] : "";
-				}
-			}
-			if ($urlParameterSettings["val2Desc_includeInUrl"]) {
-				$paymentRequestUrl .= "&val2Desc" . $multilineSuffix;
-				if (isset($urlParameterSettings['val2Desc_kohaAdditionalField']) && $urlParameterSettings['val2Desc_kohaAdditionalField'] != "none") {
-					$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['val2Desc_kohaAdditionalField']));
-					$paymentRequestUrl .= urlencode(isset($fineDetails[$snakeCaseFieldName]) && $fineDetails[$snakeCaseFieldName] ? $fineDetails[$snakeCaseFieldName] : "none specified");
-				} else {
-					$paymentRequestUrl .= !empty($urlParameterSettings['val2Desc_value']) ? $urlParameterSettings['val2Desc_value'] : "";
-				}
-				$paymentRequestUrl .= "&val2Desc" . $multilineSuffix . $urlParameterSettings['val2Desc_value'];
-			}
-			if ($urlParameterSettings["am_includeInUrl"]) {
-				$paymentRequestUrl .= "&am" . $multilineSuffix;
-				if (isset($urlParameterSettings['am_kohaAdditionalField']) && $urlParameterSettings['am_kohaAdditionalField'] != "none") {
-					$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['am_kohaAdditionalField']));
-					$paymentRequestUrl .= urlencode(isset($fineDetails[$snakeCaseFieldName]) && $fineDetails[$snakeCaseFieldName] ? $fineDetails[$snakeCaseFieldName] : "none specified");
-				} else {
-					$paymentRequestUrl .= !empty($urlParameterSettings['am_value']) ? $urlParameterSettings['am_value'] : str_replace(SystemVariables::getSystemVariables()->getCurrencySymbol(), '', $fineDetails['amount']);
-				}
-			}
-			if ($urlParameterSettings["cmt_includeInUrl"]) {
-				$paymentRequestUrl .= "&cmt" . $multilineSuffix;
-				if (isset($urlParameterSettings['cmt_kohaAdditionalField']) && $urlParameterSettings['cmt_kohaAdditionalField'] != "none") {
-					$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['cmt_kohaAdditionalField']));
-					$paymentRequestUrl .= urlencode(isset($fineDetails[$snakeCaseFieldName]) && $fineDetails[$snakeCaseFieldName] ? $fineDetails[$snakeCaseFieldName] : "none specified");
-				} else {
-					$paymentRequestUrl .= !empty($urlParameterSettings['cmt_value']) ? $urlParameterSettings['cmt_value'] : "";
-				}
-			}
-			if ($urlParameterSettings["extRef_includeInUrl"]) {
-				$paymentRequestUrl .= "&extRef" . $multilineSuffix;
-				if (isset($urlParameterSettings['extRef_kohaAdditionalField']) && $urlParameterSettings['extRef_kohaAdditionalField'] != "none") {
-					$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['extRef_kohaAdditionalField']));
-					$paymentRequestUrl .= urlencode(isset($fineDetails[$snakeCaseFieldName]) && $fineDetails[$snakeCaseFieldName] ? $fineDetails[$snakeCaseFieldName] : "none specified");
-				} else {
-					$paymentRequestUrl .= !empty($urlParameterSettings['extRef_value']) ? $urlParameterSettings['extRef_value'] : "";
-				}
-			}
+					$defaultValue = '';
+					if($param === 'val1') {
+						$defaultValue = $fineDetails['fineId'];
+					} else if($param === 'val1Desc') {
+						$defaultValue = $fineDetails['message'];
+					} else if($param === 'am') {
+						$defaultValue = str_replace(StringUtils::getCurrencySymbol(), '', $fineDetails['amount']);
+					}
 
-			// hash parameters
-			if ($urlParameterSettings["pmtTyp_includeInHash"]) {
-				$hashParams .= "&pmtTyp" . $multilineSuffix;
-				if (isset($urlParameterSettings['pmtTyp_kohaAdditionalField']) && $urlParameterSettings['pmtTyp_kohaAdditionalField'] != "none") {
-					$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['pmtTyp_kohaAdditionalField']));
-					$hashParams .= urlencode(isset($fineDetails[$snakeCaseFieldName]) && $fineDetails[$snakeCaseFieldName] ? $fineDetails[$snakeCaseFieldName] : "none specified");
-				} else {
-					$hashParams .= isset($urlParameterSettings['pmtTyp_value']) && $urlParameterSettings['pmtTyp_value'] ? $urlParameterSettings['pmtTyp_value'] : "";
-				}
-			}
-			if ($urlParameterSettings["val1_includeInHash"]) {
-				$hashParams .= "&val1" . $multilineSuffix;
-				if (isset($urlParameterSettings['val1_kohaAdditionalField']) && $urlParameterSettings['val1_kohaAdditionalField'] != "none") {
-					$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['val1_kohaAdditionalField']));
-					$hashParams .= urlencode(isset($fineDetails[$snakeCaseFieldName]) && $fineDetails[$snakeCaseFieldName] ? $fineDetails[$snakeCaseFieldName] : "none specified");
-				} else {
-					$hashParams .= isset($urlParameterSettings['val1_value']) && $urlParameterSettings['val1_value'] ? $urlParameterSettings['val1_value'] : urlencode($fineDetails['fineId']);
-				}
-			}
-			if ($urlParameterSettings["val1Desc_includeInHash"]) {
-				$hashParams .= "&val1Desc" . $multilineSuffix;
-				if (isset($urlParameterSettings['val1Desc_kohaAdditionalField']) && $urlParameterSettings['val1Desc_kohaAdditionalField'] != "none") {
-					$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['val1Desc_kohaAdditionalField']));
-					$hashParams .= urlencode(isset($fineDetails[$snakeCaseFieldName]) && $fineDetails[$snakeCaseFieldName] ? $fineDetails[$snakeCaseFieldName] : "none specified");
-				} else {
-					$hashParams .= isset($urlParameterSettings['val1Desc_value']) && $urlParameterSettings['val1Desc_value'] ? $urlParameterSettings['val1Desc_value'] : urlencode($fineDetails['message']);
-				}
-			}
-			if ($urlParameterSettings["val2_includeInHash"]) {
-				$hashParams .= "&val2" . $multilineSuffix;
-				if (isset($urlParameterSettings['val2_kohaAdditionalField']) && $urlParameterSettings['val2_kohaAdditionalField'] != "none") {
-					$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['val2_kohaAdditionalField']));
-					$hashParams .= urlencode(isset($fineDetails[$snakeCaseFieldName]) && $fineDetails[$snakeCaseFieldName] ? $fineDetails[$snakeCaseFieldName] : "none specified");
-				} else {
-					$hashParams .= isset($urlParameterSettings['val2_value']) && $urlParameterSettings['val2_value'] ? $urlParameterSettings['val2_value'] : "";
-				}
-			}
-			if ($urlParameterSettings["val2Desc_includeInHash"]) {
-				$hashParams .= "&val2Desc" . $multilineSuffix;
-				if (isset($urlParameterSettings['val2Desc_kohaAdditionalField']) && $urlParameterSettings['val2Desc_kohaAdditionalField'] != "none") {
-					$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['val2Desc_kohaAdditionalField']));
-					$hashParams .= urlencode(isset($fineDetails[$snakeCaseFieldName]) && $fineDetails[$snakeCaseFieldName] ? $fineDetails[$snakeCaseFieldName] : "none specified");
-				} else {
-					$hashParams .= isset($urlParameterSettings['val2Desc_value']) && $urlParameterSettings['val2Desc_value'] ? $urlParameterSettings['val2Desc_value'] : "";
-				}
-			}
-			if ($urlParameterSettings["am_includeInHash"]) {
-				$hashParams .= "&am" . $multilineSuffix;
-				if (isset($urlParameterSettings['am_kohaAdditionalField']) && $urlParameterSettings['am_kohaAdditionalField'] != "none") {
-					$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['am_kohaAdditionalField']));
-					$hashParams .= urlencode(isset($fineDetails[$snakeCaseFieldName]) && $fineDetails[$snakeCaseFieldName] ? $fineDetails[$snakeCaseFieldName] : "none specified");
-				} else {
-					$hashParams .= isset($urlParameterSettings['am_value']) && $urlParameterSettings['am_value'] ? $urlParameterSettings['am_value'] : str_replace(SystemVariables::getSystemVariables()->getCurrencySymbol(), '', $fineDetails['amount']);
-				}
-			}
-			if ($urlParameterSettings["cmt_includeInHash"]) {
-				$hashParams .= "&cmt" . $multilineSuffix;
-				if (isset($urlParameterSettings['cmt_kohaAdditionalField']) && $urlParameterSettings['cmt_kohaAdditionalField'] != "none") {
-					$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['cmt_kohaAdditionalField']));
-					$hashParams .= urlencode(isset($fineDetails[$snakeCaseFieldName]) && $fineDetails[$snakeCaseFieldName] ? $fineDetails[$snakeCaseFieldName] : "none specified");
-				} else {
-					$hashParams .= isset($urlParameterSettings['cmt_value']) && $urlParameterSettings['cmt_value'] ? $urlParameterSettings['cmt_value'] : "";
-				}
-			}
-			if ($urlParameterSettings["extRef_includeInHash"]) {
-				$hashParams .= "&extRef" . $multilineSuffix;
-				if (isset($urlParameterSettings['extRef_kohaAdditionalField']) && $urlParameterSettings['extRef_kohaAdditionalField'] != "none") {
-					$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['extRef_kohaAdditionalField']));
-					$hashParams .= urlencode(isset($fineDetails[$snakeCaseFieldName]) && $fineDetails[$snakeCaseFieldName] ? $fineDetails[$snakeCaseFieldName] : "none specified");
-				} else {
-					$hashParams .= isset($urlParameterSettings['extRef_value']) && $urlParameterSettings['extRef_value'] ? $urlParameterSettings['extRef_value'] : "";
+					$builder->addParam($param, !empty($urlParameterSettings[$param . '_value']) ? $urlParameterSettings[$param . '_value'] : $defaultValue, $index);
 				}
 			}
 		}
-
-		// hash parameters
-		if ($urlParameterSettings["rurl_includeInHash"]) {
-			$hashParams .= "&rurl=";
-			if (isset($urlParameterSettings['rurl_kohaAdditionalField']) && $urlParameterSettings['rurl_kohaAdditionalField'] != "none") {
-				$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['rurl_kohaAdditionalField']));
-				$hashParams .= urlencode(isset($fineDetails[$snakeCaseFieldName]) && $fineDetails[$snakeCaseFieldName] ? $fineDetails[$snakeCaseFieldName] : "none specified");
-			} else {
-				$hashParams .= "rurl=" . $urlParameterSettings['rurl_value'] ? $urlParameterSettings['rurl_value'] : "";
-			}
-		}
-		if ($urlParameterSettings["burl_includeInHash"]) {
-			$hashParams .= "&burl=";
-			if (isset($urlParameterSettings['burl_kohaAdditionalField']) && $urlParameterSettings['burl_kohaAdditionalField'] != "none") {
-				$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['burl_kohaAdditionalField']));
-				$hashParams .= urlencode(isset($fineDetails[$snakeCaseFieldName]) && $fineDetails[$snakeCaseFieldName] ? $fineDetails[$snakeCaseFieldName] : "none specified");
-			} else {
-				$hashParams .= "burl=" . $urlParameterSettings['burl_value'] ? $urlParameterSettings['burl_value'] : "";
-			}
-		}
-		if ($urlParameterSettings["email_includeInHash"]) {
-			$hashParams .= "&email=";
-			if (isset($urlParameterSettings['email_kohaAdditionalField']) && $urlParameterSettings['email_kohaAdditionalField'] != "none") {
-				$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['email_kohaAdditionalField']));
-				$hashParams .= urlencode(isset($fineDetails[$snakeCaseFieldName]) && $fineDetails[$snakeCaseFieldName] ? $fineDetails[$snakeCaseFieldName] : "none specified");
-			} else {
-				$hashParams .= "email=" . $urlParameterSettings['email_value'] ? $urlParameterSettings['email_value'] : $patron->email;
-			}
-		}
-		if ($urlParameterSettings["ccemail_includeInHash"]) {
-			$hashParams .= "&ccemail=";
-			if (isset($urlParameterSettings['ccemail_kohaAdditionalField']) && $urlParameterSettings['ccemail_kohaAdditionalField'] != "none") {
-				$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['ccemail_kohaAdditionalField']));
-				$hashParams .= urlencode(isset($fineDetails[$snakeCaseFieldName]) && $fineDetails[$snakeCaseFieldName] ? $fineDetails[$snakeCaseFieldName] : "none specified");
-			} else {
-				$hashParams .= "ccemail=" . $urlParameterSettings['ccemail_value'] ? $urlParameterSettings['ccemail_value'] : "";
-			}
-		}
-		if ($urlParameterSettings["sid_includeInHash"]) {
-			$hashParams .= "&sid=";
-			if (isset($urlParameterSettings['sid_kohaAdditionalField']) && $urlParameterSettings['sid_kohaAdditionalField'] != "none") {
-				$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['sid_kohaAdditionalField']));
-				$hashParams .= urlencode(isset($fineDetails[$snakeCaseFieldName]) && $fineDetails[$snakeCaseFieldName] ? $fineDetails[$snakeCaseFieldName] : "none specified");
-			} else {
-				$hashParams .= "sid=" . $urlParameterSettings['sid_value'] ? $urlParameterSettings['sid_value'] : "";
-			}
-		}
-
-		// URL parameters
-		if ($urlParameterSettings["rurl_includeInUrl"]) {
-			$paymentRequestUrl .= "&rurl=";
-			if (isset($urlParameterSettings['rurl_kohaAdditionalField']) && $urlParameterSettings['rurl_kohaAdditionalField'] != "none") {
-				$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['rurl_kohaAdditionalField']));
-				$paymentRequestUrl .= urlencode(isset($fineDetails[$snakeCaseFieldName]) && $fineDetails[$snakeCaseFieldName] ? $fineDetails[$snakeCaseFieldName] : "none specified");
-			} else {
-				$paymentRequestUrl .= !empty($urlParameterSettings['rurl_value']) ? $urlParameterSettings['rurl_value'] . "/AJAX?method=completeHeyCentricOrder%26paymentId=" . $payment->id : $configArray['Site']['url'] . "/MyAccount/AJAX?method=completeHeyCentricOrder%26paymentId=" . $payment->id;
-			}
-		}
-		if ($urlParameterSettings["burl_includeInUrl"]) {
-			$paymentRequestUrl .= "&burl=";
-			if (isset($urlParameterSettings['burl_kohaAdditionalField']) && $urlParameterSettings['burl_kohaAdditionalField'] != "none") {
-				$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['burl_kohaAdditionalField']));
-				$paymentRequestUrl .= urlencode(isset($fineDetails[$snakeCaseFieldName]) && $fineDetails[$snakeCaseFieldName] ? $fineDetails[$snakeCaseFieldName] : "none specified");
-			} else {
-				$paymentRequestUrl .= !empty($urlParameterSettings['burl_value']) ? $urlParameterSettings['burl_value'] : "";
-			}
-		}
-		if ($urlParameterSettings["email_includeInUrl"]) {
-			$paymentRequestUrl .= "&email=";
-			if (isset($urlParameterSettings['email_kohaAdditionalField']) && $urlParameterSettings['email_kohaAdditionalField'] != "none") {
-				$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['email_kohaAdditionalField']));
-				$paymentRequestUrl .= urlencode(isset($fineDetails[$snakeCaseFieldName]) && $fineDetails[$snakeCaseFieldName] ? $fineDetails[$snakeCaseFieldName] : "none specified");
-			} else {
-				$paymentRequestUrl .= !empty($urlParameterSettings['email_value']) ? $urlParameterSettings['email_value'] : $patron->email;
-			}
-		}
-		if ($urlParameterSettings["ccemail_includeInUrl"]) {
-			$paymentRequestUrl .= "&ccemail=";
-			if (isset($urlParameterSettings['ccemail_kohaAdditionalField']) && $urlParameterSettings['ccemail_kohaAdditionalField'] != "none") {
-				$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['ccemail_kohaAdditionalField']));
-				$paymentRequestUrl .= urlencode(isset($fineDetails[$snakeCaseFieldName]) && $fineDetails[$snakeCaseFieldName] ? $fineDetails[$snakeCaseFieldName] : "none specified");
-			} else {
-				$paymentRequestUrl .= !empty($urlParameterSettings['ccemail_value']) ? $urlParameterSettings['ccemail_value'] : "";
-			}
-		}
-		if ($urlParameterSettings["sid_includeInUrl"]) {
-			$paymentRequestUrl .= "&sid=";
-			if (isset($urlParameterSettings['sid_kohaAdditionalField']) && $urlParameterSettings['sid_kohaAdditionalField'] != "none") {
-				$snakeCaseFieldName = str_replace(" ", "_", strtolower($urlParameterSettings['sid_kohaAdditionalField']));
-				$paymentRequestUrl .= urlencode(isset($fineDetails[$snakeCaseFieldName]) && $fineDetails[$snakeCaseFieldName] ? $fineDetails[$snakeCaseFieldName] : "none specified");
-			} else {
-				$paymentRequestUrl .= !empty($urlParameterSettings['sid_value']) ? $urlParameterSettings['sid_value'] : "";
-			}
-		}
-
-		$paymentRequestUrl .= "&hash=" . base64_encode(md5($hashParams . $heyCentricSettings->privateKey));
 
 		return [
 			'success' => true,
 			'message' => 'Redirecting to payment processor',
-			'paymentRequestUrl' => $paymentRequestUrl,
+			'paymentRequestUrl' => $builder->build(),
 		];
 	}
 
@@ -8159,7 +7754,7 @@ class MyAccount_AJAX extends JSON_Action {
 				$payment,
 				$purchaseUnits,
 				$patron,
-				$tempDonation,
+				$donation,
 			] = $result;
 		} else {
 			[

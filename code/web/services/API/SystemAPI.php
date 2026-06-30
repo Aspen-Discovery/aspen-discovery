@@ -349,6 +349,8 @@ class SystemAPI extends AbstractAPI {
 		$aspenEventWaitingListUpdates = getAspenEventWaitingListUpdates();
 		require_once ROOT_DIR . '/sys/DBMaintenance/aspen_event_notification_updates.php';
 		$aspenEventNotificationUpdates = getAspenEventNotificationUpdates();
+		require_once ROOT_DIR . '/sys/DBMaintenance/daily_usage_updates.php';
+		$dailyUsageUpdates = getDailyUsageUpdates();
 
 		//having these on separate lines should make merges easier to manage
 		$baseUpdates = array_merge(
@@ -364,7 +366,8 @@ class SystemAPI extends AbstractAPI {
 			$galeUpdates,
 			$aspenEventRegistrationUpdates,
 			$aspenEventWaitingListUpdates,
-			$aspenEventNotificationUpdates
+			$aspenEventNotificationUpdates,
+			$dailyUsageUpdates
 		);
 
 		//Get version updates

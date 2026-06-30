@@ -28,8 +28,12 @@
 						<button onclick="return AspenDiscovery.Account.showSaveToListForm(this, 'GroupedWork', '{$recordDriver->getPermanentId()|escape}');" onkeypress="return AspenDiscovery.Account.showSaveToListForm(this, 'GroupedWork', '{$recordDriver->getPermanentId()|escape}');" class="btn btn-sm btn-tools addToListBtn">{translate text="Add to List" isPublicFacing=true}</button>
 					{/if}
 				{/if}
-				{if !empty($loggedIn) && ($module == 'Search' || $module == 'Author') && in_array('Manually Group and Ungroup Works', $userPermissions) && !$recordDriver->isManuallyGrouped()}
-					<button onclick="return AspenDiscovery.GroupedWork.getGroupWithSearchForm(this, '{$recordDriver->getPermanentId()}', '{$searchId}', '{if empty($page)}1{else}{$page}{/if}')" onkeypress="return AspenDiscovery.GroupedWork.getGroupWithSearchForm(this, '{$recordDriver->getPermanentId()}', '{$searchId}', '{if empty($page)}1{else}{$page}{/if}')" class="btn btn-sm btn-tools">{translate text='Group With' isAdminFacing=true}</button>
+				{if !empty($loggedIn) && ($module == 'Search' || $module == 'Author' || $module == 'Series') && in_array('Manually Group and Ungroup Works', $userPermissions) && !$recordDriver->isManuallyGrouped()}
+					{if $module == 'Series'}
+						<button onclick="return AspenDiscovery.GroupedWork.getGroupWithSeriesPageForm(this, '{$recordDriver->getPermanentId()}', '{$seriesId}')" onkeypress="return AspenDiscovery.GroupedWork.getGroupWithSeriesPageForm(this, '{$recordDriver->getPermanentId()}', '{$seriesId}')" class="btn btn-sm btn-tools">{translate text='Group With' isAdminFacing=true}</button>
+					{else}
+						<button onclick="return AspenDiscovery.GroupedWork.getGroupWithSearchForm(this, '{$recordDriver->getPermanentId()}', '{$searchId}', '{if empty($page)}1{else}{$page}{/if}')" onkeypress="return AspenDiscovery.GroupedWork.getGroupWithSearchForm(this, '{$recordDriver->getPermanentId()}', '{$searchId}', '{if empty($page)}1{else}{$page}{/if}')" class="btn btn-sm btn-tools">{translate text='Group With' isAdminFacing=true}</button>
+					{/if}
 				{/if}
 			{/if}
 			</div>

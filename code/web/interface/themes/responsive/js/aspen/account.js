@@ -338,10 +338,27 @@ AspenDiscovery.Account = (function () {
 			if (unavailableHoldSort !== undefined) {
 				url += "&unavailableHoldSort=" + unavailableHoldSort;
 			}
-			if (showCovers !== undefined) {
+			if (showCovers === undefined || showCovers === null) {
+				let showCoversCtl = $('#hideCovers_all');
+				if (showCoversCtl.length > 0) {
+					showCovers = showCoversCtl.prop('checked') ? 'false' : 'true';
+				}
+			}
+			if (showCovers !== undefined && showCovers !== null) {
 				url += "&showCovers=" + showCovers;
 			}
 
+			if (filters === undefined) {
+				//Grab the current state
+				let selectOptions = $('#holdsFilterRow select');
+				if (selectOptions.length > 0) {
+					filters = {};
+					selectOptions.each(function() {
+						let key = $(this).attr('id').replace('HoldFilter_', '');
+						filters[key] = $(this).val() || [];
+					});
+				}
+			}
 			if (filters !== undefined) {
 				url += "&" + AspenDiscovery.buildQueryString(filters);
 			}

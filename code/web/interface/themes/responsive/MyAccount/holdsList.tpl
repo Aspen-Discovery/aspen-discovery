@@ -102,7 +102,7 @@
 	{/if}
 {/foreach}
 {* HyperHolds Section *}
-{if $hasHyperHolds && !empty($hyperHolds) && $source == 'ils' || $source == 'all' }
+{if $hasHyperHolds && !empty($hyperHolds) && ($source == 'ils' || $source == 'all') }
 	<h2>{translate text="ILS Hyperholds" isPublicFacing=true}</h2>
 	<p class="alert alert-info">
 		{translate text="Multiple records are on hold for you. The library will fulfill whichever record becomes available first. Once a record is available, it will appear in the 'Ready for Pickup' section." isPublicFacing=true}

@@ -712,6 +712,7 @@ class Evolve extends AbstractIlsDriver {
 			}
 			$user->phone = $accountDetails->Phone;
 			$user->email = $accountDetails->Email;
+			$user->patronType = $accountDetails->Type;
 
 			//Load home location for the user
 			global $library;

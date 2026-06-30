@@ -35,6 +35,9 @@
 					{include file='events-notifications.tpl'}
 				{/if}
 				{if !empty($userHasCatalogConnection)}
+					{if empty($offline)}
+						<span class="expirationNotice-placeholder visible-xs"></span>
+					{/if}
 					<h2>{translate text='Account Summary' isPublicFacing=true}</h2>
 					{if array_key_exists('Community Engagement', $enabledModules) && $highlightCommunityEngagement}
 						{include file='campaign-highlight.tpl'}

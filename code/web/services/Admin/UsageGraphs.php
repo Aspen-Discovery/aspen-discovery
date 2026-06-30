@@ -22,23 +22,32 @@ class Admin_UsageGraphs extends Admin_AbstractUsageGraphs {
 		return 'system_reports';
 	}
 
-	protected function getAndSetInterfaceDataSeries($stat, $instanceName): void {
+	protected function getAndSetInterfaceDataSeries($stat, $instanceName, $timeframes = ['year', 'month'], $custom = false): void {
 		global $interface;
 		global $enabledModules;
 		global $library;
 
 		$dataSeries = [];
 		$columnLabels = [];
+
+		$groupByTimeframe = implode(',', $timeframes);
+
 		// Default: AspenUsage
 		$userUsage = new AspenUsage();
-		$userUsage->groupBy('year, month');
+		$userUsage->selectAdd();
 		if (!empty($instanceName)) {
 			$userUsage->instance = $instanceName;
 		}
-		$userUsage->selectAdd();
-		$userUsage->selectAdd('year');
-		$userUsage->selectAdd('month');
-		$userUsage->orderBy('year, month');
+	
+		if (is_array($custom)) {
+			$userUsage->buildCustomPeriodQuery($custom);
+		} else {
+			$userUsage->groupBy($groupByTimeframe);
+			foreach ($timeframes as $timeframe) {
+				$userUsage->selectAdd($timeframe);
+			}
+			$userUsage->orderBy($groupByTimeframe);
+		}
 
 		//General Usage Stats
 		if ($stat == 'pageViews' || $stat == 'generalUsage') {
@@ -140,9 +149,8 @@ class Admin_UsageGraphs extends Admin_AbstractUsageGraphs {
 
 		//Collect results
 		$userUsage->find();
-
 		while ($userUsage->fetch()) {
-			$curPeriod = "{$userUsage->month}-{$userUsage->year}";
+			$curPeriod = $custom ? $userUsage->getCustomPeriod() : $userUsage->getCurPeriod($timeframes);
 			$columnLabels[] = $curPeriod;
 			if ($stat == 'pageViews' || $stat == 'generalUsage') {
 				/** @noinspection PhpUndefinedFieldInspection */
