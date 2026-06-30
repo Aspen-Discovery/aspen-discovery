@@ -22,21 +22,29 @@ class API_UsageGraphs extends Admin_AbstractUsageGraphs {
 		return 'system_reports';
 	}
 
-	protected function getAndSetInterfaceDataSeries($stat, $instanceName): void {
+	protected function getAndSetInterfaceDataSeries($stat, $instanceName, $timeframes = ['year', 'month'], $custom = false): void {
 		global $interface;
 
+		$groupByTimeframe = implode(',', $timeframes);
 		$dataSeries = [];
 		$columnLabels = [];
 		$usage = new APIUsage();
-		$usage->groupBy('year, month');
+		$usage->selectAdd();
 		if (!empty($instanceName)) {
 			$usage->instance = $instanceName;
 		}
-		$usage->whereAdd("method = '$stat'");
-		$usage->selectAdd();
-		$usage->selectAdd('year');
-		$usage->selectAdd('month');
-		$usage->orderBy('year, month');
+		$usage->method = $stat;
+
+		if (is_array($custom)) {
+			$usage->buildCustomPeriodQuery($custom);
+		} else {
+			$usage->groupBy($groupByTimeframe);
+			foreach ($timeframes as $timeframe) {
+				$usage->selectAdd($timeframe);
+			}
+			$usage->orderBy($groupByTimeframe);
+		}
+		
 		$dataSeries[$stat] = GraphingUtils::getDataSeriesArray(count($dataSeries));
 		$usage->selectAdd('SUM(numCalls) as numCalls');
 
@@ -44,7 +52,7 @@ class API_UsageGraphs extends Admin_AbstractUsageGraphs {
 		$usage->find();
 
 		while ($usage->fetch()) {
-			$curPeriod = "{$usage->month}-{$usage->year}";
+			$curPeriod = $custom ? $usage->getCustomPeriod() : $usage->getCurPeriod($timeframes);
 			$columnLabels[] = $curPeriod;
 			/** @noinspection PhpUndefinedFieldInspection */
 			$dataSeries[$stat]['data'][$curPeriod] = $usage->numCalls;

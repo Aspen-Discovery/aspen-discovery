@@ -668,6 +668,7 @@ class Axis360Driver extends AbstractEContentDriver {
 		$userUsage->userId = $user->id;
 		$userUsage->year = date('Y');
 		$userUsage->month = date('n');
+		$userUsage->day = date('d');
 		global $aspenUsage;
 		global $library;
 		$userUsage->instance = $aspenUsage->getInstance();
@@ -699,6 +700,7 @@ class Axis360Driver extends AbstractEContentDriver {
 			$recordUsage->instance = $aspenUsage->getInstance();
 			$recordUsage->year = date('Y');
 			$recordUsage->month = date('n');
+			$recordUsage->day = date('d');
 			if ($recordUsage->find(true)) {
 				$recordUsage->timesCheckedOut++;
 				$recordUsage->update();
@@ -725,6 +727,7 @@ class Axis360Driver extends AbstractEContentDriver {
 			$recordUsage->axis360Id = $product->axis360Id;
 			$recordUsage->year = date('Y');
 			$recordUsage->month = date('n');
+			$recordUsage->day = date('d');
 			if ($recordUsage->find(true)) {
 				$recordUsage->timesHeld++;
 				$recordUsage->update();
@@ -972,6 +975,7 @@ class Axis360Driver extends AbstractEContentDriver {
 		$axis360Stats->instance = $aspenUsage->getInstance();
 		$axis360Stats->year = date('Y');
 		$axis360Stats->month = date('n');
+		$axis360Stats->day = date('d');
 		if ($axis360Stats->find(true)) {
 			$axis360Stats->$fieldName++;
 			$axis360Stats->update();

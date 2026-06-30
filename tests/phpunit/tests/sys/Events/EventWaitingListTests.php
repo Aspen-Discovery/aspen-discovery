@@ -21,6 +21,7 @@ class EventWaitingListTests extends TestCase {
 		require_once PATH_TO_ROOT . 'code/web/sys/Events/Event.php';
 		require_once PATH_TO_ROOT . 'code/web/sys/Events/EventInstance.php';
 		require_once PATH_TO_ROOT . 'code/web/sys/Events/UserAspenEventInstanceRegistration.php';
+		require_once PATH_TO_ROOT . 'code/web/services/EventRegistrationService.php';
 		require_once PATH_TO_ROOT . 'code/web/sys/Events/EventType.php';
 		require_once PATH_TO_ROOT . 'code/web/sys/Account/User.php';
 	}
@@ -31,7 +32,8 @@ class EventWaitingListTests extends TestCase {
 		$eventType = new EventType();
 		$eventType->title = 'PHPUnit Test Type';
 		if (!$eventType->find(true)) {
-			$eventType->eventFieldSetId = 1;
+			$eventType->eventInformationFieldSetId = 1;
+			$eventType->eventRegistrationFieldSetId = 1;
 			$eventType->insert();
 		}
 
@@ -332,100 +334,100 @@ class EventWaitingListTests extends TestCase {
 		$this->insertRegistration(6002, 'waiting');
 		$this->insertRegistration(6003, 'invited');
 
-		$this->assertEquals(2, $this->eventInstance->getWaitingListCount());
+		$this->assertEquals(2, UserAspenEventInstanceRegistration::getWaitingListCount((int)$this->eventInstance->id));
 	}
 
 	public function testRegistrationCountOnlyCountsRegisteredRows(): void {
 		$this->insertRegistration(6004, 'registered');
 		$this->insertRegistration(6005, 'waiting');
 
-		$this->assertEquals(1, $this->eventInstance->getRegistrationCount());
+		$this->assertEquals(1, UserAspenEventInstanceRegistration::getRegistrationCount((int)$this->eventInstance->id));
 	}
 
 	public function testWaitingListFullWhenCountReachesCapacity(): void {
 		for ($i = 0; $i < 3; $i++) {
 			$this->insertRegistration(7000 + $i, 'waiting', date('Y-m-d H:i:s', strtotime("+{$i} minutes")));
 		}
-		$this->assertTrue($this->eventInstance->isWaitingListFull());
+		$this->assertTrue(EventRegistrationService::isWaitingListFull($this->eventInstance));
 	}
 
 	public function testWaitingListNotFullWhenBelowCapacity(): void {
 		$this->insertRegistration(7010, 'waiting');
-		$this->assertFalse($this->eventInstance->isWaitingListFull());
+		$this->assertFalse(EventRegistrationService::isWaitingListFull($this->eventInstance));
 	}
 
 	// ── Available seats ──────────────────────────
 
 	public function testAvailableSeatsIsZeroWhenWaitingListHasEntries(): void {
 		$this->insertRegistration(9001, 'waiting');
-		$this->assertEquals(0, $this->eventInstance->getAvailableSeats());
+		$this->assertEquals(0, EventRegistrationService::getAvailableSeats($this->eventInstance));
 	}
 
 	public function testAvailableSeatsReflectsCapacityMinusRegisteredWhenNoWaiters(): void {
 		$this->insertRegistration(9002, 'registered');
-		$this->assertEquals(1, $this->eventInstance->getAvailableSeats());
+		$this->assertEquals(1, EventRegistrationService::getAvailableSeats($this->eventInstance));
 	}
 
 	// ── Status messages ──────────────────────────
 
 	public function testStatusMessageRegistrationAvailableWhenNoWaitingList(): void {
-		$msg = $this->eventInstance->getRegistrationStatusMessage(false, false, false, 0, false, false);
+		$msg = EventRegistrationService::getRegistrationStatusMessage(false, false, false, 0, false, false);
 		$this->assertEquals('Registration available', $msg);
 	}
 
 	public function testStatusMessagePositionWhenOnWaitingList(): void {
-		$msg = $this->eventInstance->getRegistrationStatusMessage(true, true, false, 3, true, false);
+		$msg = EventRegistrationService::getRegistrationStatusMessage(true, true, false, 3, true, false);
 		$this->assertEquals('On waiting list - position 3', $msg);
 	}
 
 	public function testStatusMessageCanRegisterFromWaitingList(): void {
-		$msg = $this->eventInstance->getRegistrationStatusMessage(true, true, true, 0, true, false);
+		$msg = EventRegistrationService::getRegistrationStatusMessage(true, true, true, 0, true, false);
 		$this->assertEquals('Registration available', $msg);
 	}
 
 	public function testStatusMessageWaitingListAvailable(): void {
-		$msg = $this->eventInstance->getRegistrationStatusMessage(true, false, false, 0, true, false);
+		$msg = EventRegistrationService::getRegistrationStatusMessage(true, false, false, 0, true, false);
 		$this->assertEquals('Waiting List available', $msg);
 	}
 
 	public function testStatusMessageRegistrationUnavailable(): void {
-		$msg = $this->eventInstance->getRegistrationStatusMessage(true, false, false, 0, true, true);
+		$msg = EventRegistrationService::getRegistrationStatusMessage(true, false, false, 0, true, true);
 		$this->assertEquals('Registration unavailable', $msg);
 	}
 
 	public function testStatusMessageRegistrationAvailableWhenNotFull(): void {
-		$msg = $this->eventInstance->getRegistrationStatusMessage(true, false, false, 0, false, false);
+		$msg = EventRegistrationService::getRegistrationStatusMessage(true, false, false, 0, false, false);
 		$this->assertEquals('Registration available', $msg);
 	}
 
 	// ── Registration action ──────────────────────
 
 	public function testRegistrationActionRegisteredShortCircuits(): void {
-		$this->assertEquals('registered', $this->eventInstance->getRegistrationAction(true, true, true, true, true, true));
+		$this->assertEquals('registered', EventRegistrationService::getRegistrationAction(true, true, true, true, true, true));
 	}
 
 	public function testRegistrationActionNotFullReturnsRegistrationAvailable(): void {
-		$this->assertEquals('registrationAvailable', $this->eventInstance->getRegistrationAction(false, false, true, false, false, false));
+		$this->assertEquals('registrationAvailable', EventRegistrationService::getRegistrationAction(false, false, true, false, false, false));
 	}
 
 	public function testRegistrationActionFullNoWaitlist(): void {
-		$this->assertEquals('eventFull', $this->eventInstance->getRegistrationAction(false, true, false, false, false, false));
+		$this->assertEquals('eventFull', EventRegistrationService::getRegistrationAction(false, true, false, false, false, false));
 	}
 
 	public function testRegistrationActionCompleteRegistrationWhenInvited(): void {
-		$this->assertEquals('completeRegistration', $this->eventInstance->getRegistrationAction(false, true, true, true, true, false));
+		$this->assertEquals('completeRegistration', EventRegistrationService::getRegistrationAction(false, true, true, true, true, false));
 	}
 
 	public function testRegistrationActionShowPositionWhenQueued(): void {
-		$this->assertEquals('showPosition', $this->eventInstance->getRegistrationAction(false, true, true, true, false, false));
+		$this->assertEquals('showPosition', EventRegistrationService::getRegistrationAction(false, true, true, true, false, false));
 	}
 
 	public function testRegistrationActionJoinWaitingListWhenRoom(): void {
-		$this->assertEquals('joinWaitingList', $this->eventInstance->getRegistrationAction(false, true, true, false, false, false));
+		$this->assertEquals('joinWaitingList', EventRegistrationService::getRegistrationAction(false, true, true, false, false, false));
 	}
 
 	public function testRegistrationActionEventFullWhenWaitlistAlsoFull(): void {
-		$this->assertEquals('eventFull', $this->eventInstance->getRegistrationAction(false, true, true, false, false, true));
+		$this->assertEquals('eventFull', EventRegistrationService::getRegistrationAction(false, true, true, false, false, true));
 	}
 
 	// ── isUpcoming ───────────────────────────────
@@ -667,7 +669,7 @@ class EventWaitingListTests extends TestCase {
 		$user = $this->insertUser(18001, 'reachable@example.test', 1);
 		$this->insertRegistration($user->id, 'waiting');
 
-		$result = $this->eventInstance->inviteNextOnWaitingList();
+		$result = EventRegistrationService::inviteNextOnWaitingList($this->eventInstance);
 		$this->assertTrue($result);
 
 		$row = new UserAspenEventInstanceRegistration();
@@ -685,7 +687,7 @@ class EventWaitingListTests extends TestCase {
 		$unreachable = $this->insertRegistration($unreachableUser->id, 'waiting', '2026-04-09 10:00:00');
 		$reachable = $this->insertRegistration($reachableUser->id, 'waiting', '2026-04-09 10:05:00');
 
-		$result = $this->eventInstance->inviteNextOnWaitingList();
+		$result = EventRegistrationService::inviteNextOnWaitingList($this->eventInstance);
 		$this->assertTrue($result);
 
 		$check = new UserAspenEventInstanceRegistration();
@@ -706,7 +708,7 @@ class EventWaitingListTests extends TestCase {
 
 		$this->insertRegistration($user->id, 'waiting');
 
-		$this->assertFalse($this->eventInstance->inviteNextOnWaitingList());
+		$this->assertFalse(EventRegistrationService::inviteNextOnWaitingList($this->eventInstance));
 
 		$row = new UserAspenEventInstanceRegistration();
 		$row->userId = $user->id;
@@ -716,13 +718,13 @@ class EventWaitingListTests extends TestCase {
 	}
 
 	public function testInviteNextReturnsFalseWhenQueueEmpty(): void {
-		$this->assertFalse($this->eventInstance->inviteNextOnWaitingList());
+		$this->assertFalse(EventRegistrationService::inviteNextOnWaitingList($this->eventInstance));
 	}
 
 	public function testInviteNextDeletesRowsForMissingUsers(): void {
 		$ghost = $this->insertRegistration(19001, 'waiting');
 
-		$this->assertFalse($this->eventInstance->inviteNextOnWaitingList());
+		$this->assertFalse(EventRegistrationService::inviteNextOnWaitingList($this->eventInstance));
 
 		$check = new UserAspenEventInstanceRegistration();
 		$check->id = $ghost->id;

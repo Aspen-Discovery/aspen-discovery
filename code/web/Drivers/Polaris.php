@@ -1167,6 +1167,11 @@ class Polaris extends AbstractIlsDriver {
 				$user->firstname = $firstName;
 				$forceDisplayNameUpdate = true;
 			}
+			$middleName = isset($patronBasicData->NameMiddle) ? $patronBasicData->NameMiddle : '';
+			if ($user->middlename != $middleName) {
+				$user->middlename = $middleName;
+				$forceDisplayNameUpdate = true;
+			}
 			$lastName = isset($patronBasicData->NameLast) ? $patronBasicData->NameLast : '';
 			if ($user->lastname != $lastName) {
 				$user->lastname = isset($lastName) ? $lastName : '';

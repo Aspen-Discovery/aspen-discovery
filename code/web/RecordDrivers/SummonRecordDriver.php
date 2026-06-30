@@ -126,6 +126,7 @@ class SummonRecordDriver extends RecordInterface {
 		$recordUsage->summonId = $this->getUniqueID();
 		$recordUsage->year = date('Y');
 		$recordUsage->month = date('n');
+		$recordUsage->day = date('d');
 		if ($recordUsage->find(true)) {
 			$recordUsage->timesViewedInSearch++;
 			$recordUsage->update();

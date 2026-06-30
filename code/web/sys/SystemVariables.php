@@ -64,6 +64,7 @@ class SystemVariables extends DataObject {
 	/** @noinspection PhpUnused */
 	public $removeTheWordSeriesFromEndOfSeries;
 	public $disable_user_agent_logging;
+	public $userAgentRetentionMonths;
 	public $logFrequentCrons;
 	public $hooplaVersion;
 
@@ -127,16 +128,17 @@ class SystemVariables extends DataObject {
 			],
 			'currencyCode' => [
 				'property' => 'currencyCode',
-				'type' => 'enum',
-				'values' => [
-					'USD' => 'USD',
-					'CAD' => 'CAD',
-					'EUR' => 'EUR',
-					'GBP' => 'GBP',
+				'type' => 'text',
+				'suggestions' => [
+					'USD',
+					'CAD',
+					'EUR',
+					'GBP',
 				],
 				'label' => 'Currency Code',
 				'description' => 'Currency code to use when formatting money',
 				'required' => true,
+				'maxLength' => 3,
 				'default' => 'USD',
 			],
 			'indexingSection' => [
@@ -512,6 +514,21 @@ class SystemVariables extends DataObject {
 				'description' => 'When enabled, disables all user agent tracking including logging, spam detection, and blocking.',
 				'default' => false,
 			],
+			'userAgentRetentionMonths' => [
+				'property' => 'userAgentRetentionMonths',
+				'type' => 'enum',
+				'values' => [
+					0 => 'Do not clean up',
+					1 => '1 month',
+					3 => '3 months',
+					6 => '6 months',
+					12 => '12 months',
+				],
+				'label' => 'User Agent Cleanup Retention',
+				'description' => 'Controls how many months of user agent usage statistics are retained. User agents marked as bots or blocked are preserved.',
+				'note' => 'Changes to this setting take effect on the first day of the next month.',
+				'default' => 3,
+			],
 			'logFrequentCrons' => [
 				'property' => 'logFrequentCrons',
 				'type' => 'checkbox',
@@ -578,26 +595,6 @@ class SystemVariables extends DataObject {
 			}
 		}
 		return SystemVariables::$_systemVariables;
-	}
-
-	public function getCurrencySymbol() : string {
-		$currencyCode = 'USD';
-		$systemVariables = SystemVariables::getSystemVariables();
-		if (!empty($systemVariables->currencyCode)) {
-			$currencyCode = $systemVariables->currencyCode;
-		}
-		if ($currencyCode == 'USD') {
-			$currencySymbol = '$';
-		} elseif ($currencyCode == 'EUR') {
-			$currencySymbol = '€';
-		} elseif ($currencyCode == 'CAD') {
-			$currencySymbol = '$';
-		} elseif ($currencyCode == 'GBP') {
-			$currencySymbol = '£';
-		} else {
-			$currencySymbol = '';
-		}
-		return $currencySymbol;
 	}
 
 	public function update(string $context = '') : int|bool {

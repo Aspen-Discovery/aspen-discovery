@@ -16,6 +16,8 @@ function getUntitledVolumeHoldAction($module, $source, $id, $variationId) : arra
 }
 //Regular ILS holds
 function getHoldRequestAction($module, $source, $id, $variationId, $format) : array {
+	// Account for formats which might contain special characters
+	$format = addslashes($format);
 	return [
 		'title' => translate([
 			'text' => 'Place Hold',

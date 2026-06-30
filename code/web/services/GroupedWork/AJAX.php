@@ -2126,6 +2126,90 @@ class GroupedWork_AJAX extends JSON_Action {
 		return $results;
 	}
 
+	/** @noinspection PhpUnused */
+	function getGroupWithSeriesPageForm() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission('Manually Group and Ungroup Works');
+		$this->checkRequiredParameters(['id']);
+
+		$results = [
+			'success' => false,
+			'message' => translate([
+				'text' => 'Unknown Error',
+				'isAdminFacing' => true,
+			]),
+		];
+
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+		$groupedWork = new GroupedWork();
+		$id = $_REQUEST['id'];
+		$groupedWork->permanent_id = $id;
+		if ($groupedWork->find(true)) {
+			global $interface;
+			$interface->assign('id', $id);
+			$interface->assign('groupedWork', $groupedWork);
+
+			$availableRecords = [];
+			$availableRecords[-1] = translate([
+				'text' => "Select the primary work",
+				'isAdminFacing' => true,
+			]);
+
+			$seriesId = $_REQUEST['seriesId'];
+			require_once ROOT_DIR . '/sys/Series/SeriesMember.php';
+			$seriesMembers = new SeriesMember();
+			$seriesMembers->seriesId = $seriesId;
+			$seriesMembers->find();
+			while ($seriesMembers->fetch()) {
+				$primaryWork = new GroupedWork();
+				$primaryWork->permanent_id = $seriesMembers->groupedWorkPermanentId;
+				if ($primaryWork->find(true)) {
+					require_once ROOT_DIR . '/sys/Grouping/ManualGroupedWork.php';
+					$manualGroupedWork = new ManualGroupedWork();
+					$manualGroupedWork->grouped_work_permanent_id = $primaryWork->permanent_id;
+					if ($manualGroupedWork->find(true)) {
+						continue;
+					}
+					$isValidForGrouping = false;
+					if ($primaryWork->permanent_id != $id){
+						if ($primaryWork->grouping_category == $groupedWork->grouping_category) {
+							$isValidForGrouping = true;
+						}elseif (($groupedWork->grouping_category == 'comic' && $primaryWork->grouping_category == 'book') || ($groupedWork->grouping_category == 'book' && $primaryWork->grouping_category == 'comic')){
+							$isValidForGrouping = true;
+						}elseif ($groupedWork->grouping_category == 'other' || $primaryWork->grouping_category == 'other') {
+							$isValidForGrouping = true;
+						}
+					}
+					if ($isValidForGrouping) {
+						$availableRecords[$seriesMembers->groupedWorkPermanentId] = "$primaryWork->full_title $primaryWork->author";
+					}
+				}
+			}
+
+
+			$interface->assign('availableRecords', $availableRecords);
+
+			$results = [
+				'success' => true,
+				'title' => translate([
+					'text' => "Group this with another work",
+					'isAdminFacing' => true,
+				]),
+				'modalBody' => $interface->fetch("GroupedWork/groupWithSearchForm.tpl"),
+				'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.GroupedWork.processGroupWithForm()'>" . translate([
+						'text' => "Group",
+						'isAdminFacing' => true,
+					]) . "</button>",
+			];
+		} else {
+			$results['message'] = translate([
+				'text' => "Could not find a work with that id",
+				'isAdminFacing' => true,
+			]);
+		}
+		return $results;
+	}
+
 	function getStaffView() : array {
 		global $interface;
 		if (!$interface->getVariable('showStaffView')) {

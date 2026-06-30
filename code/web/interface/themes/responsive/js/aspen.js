@@ -12816,6 +12816,26 @@ AspenDiscovery.GroupedWork = (function(){
 			return false;
 		},
 
+		getGroupWithSeriesPageForm: function (trigger, id, seriesId) {
+			if (Globals.loggedIn){
+				AspenDiscovery.loadingMessage();
+				var url = Globals.path + "/GroupedWork/" + id + "/AJAX?method=getGroupWithSeriesPageForm&seriesId=" + seriesId;
+				$.getJSON(url, function(data){
+					if (data.success){
+						AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+					}else{
+						AspenDiscovery.showMessage("An error occurred", data.message);
+					}
+
+				}).fail(AspenDiscovery.ajaxFail);
+			}else{
+				AspenDiscovery.Account.ajaxLogin($(trigger), function (){
+					AspenDiscovery.GroupedWork.getGroupWithForm(id);
+				});
+			}
+			return false;
+		},
+
 		getGroupWithInfo: function() {
 			var groupWithId = $('#workToGroupWithId').val().trim();
 			if (groupWithId.length === 36){
