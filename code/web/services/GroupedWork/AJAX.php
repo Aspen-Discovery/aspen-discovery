@@ -2181,7 +2181,11 @@ class GroupedWork_AJAX extends JSON_Action {
 						}
 					}
 					if ($isValidForGrouping) {
-						$availableRecords[$seriesMembers->groupedWorkPermanentId] = "$primaryWork->full_title $primaryWork->author";
+						require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+						$groupedWorkDriver = new GroupedWorkDriver($primaryWork->permanent_id);
+						$primaryTitle = $groupedWorkDriver->getTitle();
+						$primaryAuthor = $groupedWorkDriver->getPrimaryAuthor();
+						$availableRecords[$seriesMembers->groupedWorkPermanentId] = "$primaryTitle  by  $primaryAuthor";
 					}
 				}
 			}
