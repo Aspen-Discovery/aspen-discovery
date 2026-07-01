@@ -11951,9 +11951,20 @@ AspenDiscovery.Events = (function(){
 				setTimeout(function() { cell.css('background-color', ''); }, 1200);
 				checkbox.prop('checked', !attended);
 			});
+		},
+
+		lessEventDates: function() {
+			document.getElementById("moreEventDates").style.display = "block";
+			document.getElementById("narrowGroupHidden_eventDates").style.display = "none";
+		},
+
+		moreEventDates: function() {
+			document.getElementById("moreEventDates").style.display = "none";
+			document.getElementById("narrowGroupHidden_eventDates").style.display = "block";
 		}
 	};
 }(AspenDiscovery.Events || {}));
+
 /* global Swiper, $ */
 AspenDiscovery.HeroSlider = (function(){
 	return {
@@ -15969,6 +15980,7 @@ AspenDiscovery.Record = (function () {
 			const variationId = $('#variationId');
 			const pickupSublocation = $('#pickupSublocation');
 			const cancelDateInput = $('#cancelDate');
+			const numberOfCopies = $('#numberOfCopies');
 			let params = {
 				'method': 'placeHold',
 				pickupBranch: $('#pickupBranch').val(),
@@ -15980,7 +15992,7 @@ AspenDiscovery.Record = (function () {
 				rememberHoldPickupLocation: $('#rememberHoldPickupLocation').prop('checked'),
 				promptForEdition: $('#holdPromptForEditions').val(),
 				freezeHoldImmediately: $('#freezeHoldImmediately').prop('checked'),
-				reactivationDate: $('#reactivationDate').val()
+				reactivationDate: $('#reactivationDate').val(),
 			};
 			if (autoLogOut) {
 				params['autologout'] = true;
@@ -15997,6 +16009,9 @@ AspenDiscovery.Record = (function () {
 			if (params['pickupBranch'] === 'undefined') {
 				alert("Please select a location to pick up your hold when it is ready.");
 				return false;
+			}
+			if (numberOfCopies.length > 0) {
+				params['numberOfCopies'] = numberOfCopies.val();
 			}
 			const holdType = $('#holdType');
 			if (holdType.length > 0) {

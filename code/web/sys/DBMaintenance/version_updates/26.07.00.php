@@ -16,7 +16,14 @@ function getUpdates26_07_00(): array {
 		 ], //name*/
 
 		//mark n
-
+		'multi_copy_holds_support' => [
+			'title' => 'Add multi-copy holds support',
+			'description' => 'Add multi-copy holds support within library table.',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE library ADD enableMultiCopyHolds TINYINT(1) NOT NULL DEFAULT 0',
+			],
+		], //multi_copy_holds_support
 
 		//kirstien
 

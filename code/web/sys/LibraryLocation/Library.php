@@ -112,6 +112,7 @@ class Library extends DataObject {
 	public $showHoldButton;
 	public $showHoldButtonInSearchResults;
 	public $showHoldButtonForUnavailableOnly;
+	public $enableMultiCopyHolds;
 	public $allowRememberPickupLocation;
 	public $treatBibOrItemHoldsAs;
 	public $showVolumesWithLocalCopiesFirst;
@@ -2258,6 +2259,13 @@ class Library extends DataObject {
 								'label' => 'Show Hold Button for items that are checked out only',
 								'description' => 'Whether or not the hold button is displayed within the search results so patrons can place holds on items',
 								'hideInLists' => true,
+								'default' => 0,
+							],
+							'enableMultiCopyHolds' => [
+								'property' => 'enableMultiCopyHolds',
+								'type' => 'checkbox',
+								'label' => 'Enable Multi-Copy Holds',
+								'description' => 'Whether the user can place multiple copies of a hold on the same item.',
 								'default' => 0,
 							],
 							'hidePickupLocationPrompt' => [
