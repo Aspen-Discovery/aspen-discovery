@@ -1073,6 +1073,10 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 		return false;
 	}
 
+	public function updatePreferredPickupLocation($user, $pickupLocation, $fromMasquerade): bool {
+		return false;
+	}
+
 	public function isPatronAccountLocked(User $patron, $fine): bool {
 		return false;
 	}
