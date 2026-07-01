@@ -163,7 +163,7 @@ class StringUtils {
 			if (str_contains($hrMatches[1], '/')) {
 				$hours = (int)(StringUtils::fractionToDecimal($hrMatches[1]) * 60);
 			} else {
-				$hours = (int)($hrMatches[1]) * 60;
+				$hours = (float)($hrMatches[1]) * 60;
 			}
 		}
 
