@@ -2562,8 +2562,8 @@ class User extends DataObject {
 	 * message - the message to display
 	 * @access public
 	 */
-	function placeHold(string $recordId, string $pickupBranch, ?string $cancelDate = null, ?string  $pickupSublocation = null) : array {
-		$result = $this->getCatalogDriver()->placeHold($this, $recordId, $pickupBranch, $cancelDate, $pickupSublocation);
+	function placeHold(string $recordId, string $pickupBranch, ?string $cancelDate = null, ?string  $pickupSublocation = null, $numberOfCopies = 1) : array {
+		$result = $this->getCatalogDriver()->placeHold($this, $recordId, $pickupBranch, $cancelDate, $pickupSublocation, $numberOfCopies);
 		$this->updateAltLocationForHold($pickupBranch);
 		$thisUser = translate([
 			'text' => 'You',
@@ -6909,6 +6909,10 @@ class User extends DataObject {
 			return $userLibrary->enableSavedSearches == 1;
 		}
 		return false;
+	}
+
+	public function canPlaceMultiCopyHolds() : bool {
+		return ($this->hasIlsConnection() && $this->getCatalogDriver()->supportsMultiCopyHolds() && $this->getHomeLibrary()->enableMultiCopyHolds);
 	}
 }
 

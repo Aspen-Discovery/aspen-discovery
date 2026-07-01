@@ -1005,12 +1005,13 @@ class CatalogConnection {
 	 * @param string $pickupBranch The branch where the user wants to pick up the item when available
 	 * @param ?string $cancelDate
 	 * @param ?string $pickupSublocation The sublocation within the location where the user wants to pick up the item
+	 * @param ?int $numberOfCopies The number of copies to place on hold
 	 * @return  mixed                 True if successful, false if unsuccessful
 	 *                                If an error occurs, return an AspenError
 	 * @access  public
 	 */
-	function placeHold(User $patron, string $recordId, string $pickupBranch, ?string $cancelDate = null, ?string $pickupSublocation = null) : array {
-		$result = $this->driver->placeHold($patron, $recordId, $pickupBranch, $cancelDate, $pickupSublocation);
+	function placeHold(User $patron, string $recordId, string $pickupBranch, ?string $cancelDate = null, ?string $pickupSublocation = null, ?int $numberOfCopies = 1) : array {
+		$result = $this->driver->placeHold($patron, $recordId, $pickupBranch, $cancelDate, $pickupSublocation, $numberOfCopies);
 		if ($result['success']) {
 			$indexingProfileId = $this->driver->getIndexingProfile()->id;
 			//Track usage by the user
@@ -2258,5 +2259,9 @@ class CatalogConnection {
 
 	public function getPatronHoldGroups($patronId): ?array {
 		return $this->driver->getPatronHoldGroups($patronId);
+	}
+
+	public function supportsMultiCopyHolds() : bool {
+		return $this->driver->supportsMultiCopyHolds();
 	}
 }

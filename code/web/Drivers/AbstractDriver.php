@@ -92,12 +92,13 @@ abstract class AbstractDriver {
 	 *
 	 * @param User $patron The User to place a hold for
 	 * @param string $recordId The id of the bib record
-	 * @param string $pickupBranch The branch where the user wants to pick up the item when available
-	 * @param string $cancelDate When the hold should be automatically cancelled
+	 * @param ?string $pickupBranch The branch where the user wants to pick up the item when available
+	 * @param ?string $cancelDate When the hold should be automatically cancelled
+	 *
 	 * @return  array results of the hold
 	 * @access  public
 	 */
-	abstract function placeHold(User $patron, $recordId, $pickupBranch = null, $cancelDate = null) : array ;
+	abstract function placeHold(User $patron, string $recordId, ?string $pickupBranch = null, ?string $cancelDate = null) : array ;
 
 	/**
 	 * Cancels a hold for a patron.
