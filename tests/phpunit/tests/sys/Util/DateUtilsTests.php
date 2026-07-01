@@ -159,6 +159,8 @@ class DateUtilsTests extends TestCase {
 
 	public function testFormatDateTimeLocaleEmptyForInvalidInput(): void {
 		$this->assertSame('', \DateUtils::formatDateTimeLocale(''));
+	}
+
 	public static function skeletonProvider(): array {
 		return [
 			'month and year (en_US)' => ['en_US', '2025-03-15', 'yMMM', 'Mar 2025'],
