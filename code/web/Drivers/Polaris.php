@@ -2440,8 +2440,8 @@ class Polaris extends AbstractIlsDriver {
 		if ($basicDataResponse != null) {
 			$user->branchcode = $user->getHomeLocationCode();
 			$user->firstName = $basicDataResponse->NameFirst;
+			$user->middleName = $user->middlename = $basicDataResponse->NameMiddle;
 			$user->lastName = $basicDataResponse->NameLast;
-			$user->middleName = $basicDataResponse->NameMiddle;
 			if (count($basicDataResponse->PatronAddresses) > 0) {
 				$address = reset($basicDataResponse->PatronAddresses);
 				$user->zipcode = $address->PostalCode;

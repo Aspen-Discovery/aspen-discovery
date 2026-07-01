@@ -112,6 +112,13 @@ function getUpdates26_07_00(): array {
 		//pedro
 
 		//mark j
+		'user_middlename' => [
+			'title' => 'Add middle name to user table',
+			'description' => 'Adds a middlename column to the user table to cache the patron middle name from the ILS.',
+			'sql' => [
+        "ALTER TABLE user ADD COLUMN middlename varchar(256) DEFAULT NULL AFTER firstname",
+			],
+		], //user_middlename
 
 		//lucas
 
