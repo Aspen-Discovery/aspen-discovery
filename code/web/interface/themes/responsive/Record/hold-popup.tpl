@@ -333,6 +333,18 @@
 							</label>
 						</div>
 					{/if}
+					{if $holdType == 'bib' && $enableMultiCopyHolds}
+						<div id="numberOfCopiesRow" class="form-group">
+							<div class="row">
+								<div class="col-tn-6">
+									<label for="numberOfCopies">{translate text="Number of Copies" isPublicFacing=true}</label>
+								</div>
+								<div class="col-tn-6">
+									<input type="number" name="numberOfCopies" id="numberOfCopies" value="1" min="1" max="{$maxCopyHolds}" class="form-control"/>
+								</div>
+							</div>
+						</div>
+					{/if}
 					{if !empty($promptForHoldNotifications)}
 						<div id="holdNotification" class="form-group">
 							{include file=$holdNotificationTemplate}

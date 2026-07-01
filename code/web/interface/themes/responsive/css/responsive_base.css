@@ -6,6 +6,7 @@
 @import "simplemde.min.css";
 @import "lib/Chart.min.css";
 @import "lib/swiper-bundle.css";
+@import "lib/multiple-select.css";
 article,
 aside,
 details,
@@ -1984,17 +1985,17 @@ output {
   box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102, 175, 233, 0.6);
 }
 .form-control:-moz-placeholder {
-  color: #999999;
+  color: #999;
 }
 .form-control::-moz-placeholder {
-  color: #999999;
+  color: #999;
   opacity: 1;
 }
 .form-control:-ms-input-placeholder {
-  color: #999999;
+  color: #999;
 }
 .form-control::-webkit-input-placeholder {
-  color: #999999;
+  color: #999;
 }
 .form-control[disabled],
 .form-control[readonly],
@@ -8062,6 +8063,7 @@ hr.menu {
   padding: 3px;
 }
 .system-message {
+  margin-top: 5px;
   padding: 5px;
 }
 .system-message-text {
@@ -8918,6 +8920,125 @@ a.placard-image-link {
   #side-bar.collapsed + #main-content-with-sidebar .breadcrumbs {
     margin-left: 60px !important;
   }
+}
+/* "Make Content Full Width" in theme settings */
+body.fullWidthContent {
+  /* Make series or you might like covers bigger */
+  /* Reduce space between tabs and what changes */
+  /* Deal with large covers on homepage-standard browse categories*/
+  /*Fix images on results page*/
+  /*Reduce Browse Category bottom margin from 5em */
+  /* reduce space between tabs */
+  /* Width of information on details page so hold button isn't so far over */
+  /* change width for sort by area */
+  /* change width for sort by area */
+  /* tighten sign-in page */
+  /* tighten library card barcodes */
+  /*Limit the size of the Explore More Box */
+  /*Group format Categories together*/
+  /*Limit Size of Linked User Dropdown*/
+  /*Limit Width Advanced Search Content*/
+  /* Narrow Events Filter*/
+  /* Limit width of preferences / contact information forms*/
+  /* Limit the Width of Forms*/
+}
+body.fullWidthContent .container,
+body.fullWidthContent .container-fluid {
+  max-width: 1900px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+@media (min-width: 1200px) {
+  body.fullWidthContent #side-bar {
+    width: 13%;
+  }
+  body.fullWidthContent #main-content-with-sidebar {
+    width: 87%;
+  }
+}
+body.fullWidthContent #more-details-accordion {
+  max-width: 1700px;
+  margin-left: auto;
+  margin-right: auto;
+}
+body.fullWidthContent .scrollerTitleCover {
+  max-height: 300px;
+}
+body.fullWidthContent .horizontalSliders {
+  margin-bottom: 0;
+}
+body.fullWidthContent #home-page-browse-results .browse-thumbnail img {
+  width: auto;
+  max-height: 300px;
+}
+body.fullWidthContent .swiper-slide img {
+  max-height: 250px;
+  width: auto;
+  object-fit: contain;
+}
+body.fullWidthContent .results-covers-view.home-page-browse-results-grid.home-page-browse-results-grid-grid .browse-thumbnail {
+  height: auto !important;
+  min-height: 350px !important;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+body.fullWidthContent .browse-category-feed-item {
+  margin-bottom: 2em !important;
+}
+body.fullWidthContent .slider-wrapper {
+  gap: 2px !important;
+}
+body.fullWidthContent #record-details-column {
+  max-width: 500px;
+}
+body.fullWidthContent div.col-md-4:has(label[for="results-sort"]) {
+  width: 40% !important;
+}
+body.fullWidthContent div.col-md-8:has(.btn-toolbar) {
+  width: 60% !important;
+}
+body.fullWidthContent #loginFormFields {
+  max-width: 600px !important;
+  margin: 0 auto !important;
+  /* Centers the 400px block on the page */
+  display: block;
+}
+body.fullWidthContent #library-barcode {
+  text-align: left;
+  padding-left: 100px;
+}
+body.fullWidthContent .exploreMoreBar {
+  width: 75%;
+  margin-left: auto;
+  margin-right: auto;
+}
+body.fullWidthContent .categoryValue {
+  max-width: 150px;
+}
+body.fullWidthContent #linkedUsersDropdown.form-control {
+  max-width: 300px;
+}
+body.fullWidthContent .advSearchContent {
+  max-width: 800px;
+  margin: 0 auto;
+}
+body.fullWidthContent div#eventsFilter.form-group.col-sm-6 {
+  max-width: 300px;
+}
+body.fullWidthContent#MyAccount-MyPreferences form[role="form"],
+body.fullWidthContent#MyAccount-ContactInformation form[role="form"] {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+body.fullWidthContent #pin,
+body.fullWidthContent #pin1,
+body.fullWidthContent #pin2,
+body.fullWidthContent #newUsername,
+body.fullWidthContent #overdriveEmail {
+  max-width: 300px;
+  margin-left: 30px;
 }
 .swiper {
   width: 100%;
@@ -10249,6 +10370,23 @@ td[data-entry-id]:has(.date-edit:focus)::after {
   border-bottom: 3px solid #d5d6da;
   padding-bottom: 6px;
 }
+.horizontal-filter-select {
+  break-inside: avoid-column;
+  -webkit-column-break-inside: avoid;
+  position: relative;
+  width: auto !important;
+  min-width: 175px;
+  display: inline-block;
+  flex-direction: column;
+}
+.horizontal-filter-button {
+  break-inside: avoid-column;
+  -webkit-column-break-inside: avoid;
+  position: relative;
+  width: auto !important;
+  display: inline-block;
+  flex-direction: column;
+}
 /**
  * Additional Styling related to the help system
  */
@@ -10798,10 +10936,6 @@ td[data-entry-id]:has(.date-edit:focus)::after {
 .facetTitle {
   padding: 8px 10px 6px 10px;
 }
-.facetTitle .facetLock a,
-.facetTitle .facetLock i {
-  color: inherit !important;
-}
 .exploreMoreTitle {
   padding: 8px 30px 6px 15px;
 }
@@ -10847,7 +10981,7 @@ td[data-entry-id]:has(.date-edit:focus)::after {
   font-size: 12px;
 }
 .replacement-search-info-text {
-  color: #888888;
+  opacity: 75%;
   font-style: normal;
 }
 .result-title {
@@ -11239,8 +11373,8 @@ td[data-entry-id]:has(.date-edit:focus)::after {
 .slider-button {
   width: 32px;
   height: 32px;
-  border-radius: 50%;
-  border: 2px solid #000 !important;
+  border-radius: 50% !important;
+  border-width: 2px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -11249,27 +11383,25 @@ td[data-entry-id]:has(.date-edit:focus)::after {
   transform: translateY(-50%);
   position: absolute;
   z-index: 10;
+  margin-top: 0 !important;
 }
-.slider-button:after {
-  content: "";
-  display: block;
-  width: 16px;
-  height: 16px;
-  background-size: 16px 16px;
-  background-repeat: no-repeat;
-  background-position: center;
+.slider-button i {
+  line-height: inherit;
+  transform: scale(0.85);
 }
 .slider-button-prev {
   left: 10px;
 }
-.slider-button-prev:after {
-  background-image: url("data:image/svg+xml,%3Csvg%20width%3D%2716%27%20height%3D%2716%27%20viewBox%3D%270%200%2016%2016%27%20fill%3D%27none%27%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%3E%3Cpath%20d%3D%27M10%204L6%208L10%2012%27%20stroke%3D%27black%27%20stroke-width%3D%272%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27/%3E%3C/svg%3E");
+.slider-button-prev i {
+  position: relative;
+  left: -1px;
 }
 .slider-button-next {
   right: 10px;
 }
-.slider-button-next:after {
-  background-image: url("data:image/svg+xml,%3Csvg%20width='16'%20height='16'%20viewBox='0%200%2016%2016'%20fill='none'%20xmlns='http://www.w3.org/2000/svg'%3E%3Cpath%20d='M6%204L10%208L6%2012'%20stroke='black'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'/%3E%3C/svg%3E");
+.slider-button-next i {
+  position: relative;
+  right: -1px;
 }
 .slider-button-disabled {
   opacity: 0;
@@ -11368,6 +11500,9 @@ td[data-entry-id]:has(.date-edit:focus)::after {
 }
 .horizDisplayShelfLocations .col-tn-4:last-child {
   padding-right: 0;
+}
+#multiple-variations-column.formatDisplayHorizontal .horizDisplayShelfLocations .col-tn-4:first-child {
+  padding-left: 0;
 }
 .relatedRecord {
   font-size: small;

@@ -16,11 +16,51 @@ function getUpdates26_07_00(): array {
 		 ], //name*/
 
 		//mark n
-
+		'multi_copy_holds_support' => [
+			'title' => 'Add multi-copy holds support',
+			'description' => 'Add multi-copy holds support within library table.',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE library ADD enableMultiCopyHolds TINYINT(1) NOT NULL DEFAULT 0',
+			],
+		], //multi_copy_holds_support
 
 		//kirstien
 
 		//kodi
+		'symphony_municipalities' => [
+			'title' => 'Add new table for Symphony municipalities',
+			'description' => 'Add new table for symphony municipalities for self registration.',
+			'sql' => [
+				"CREATE TABLE IF NOT EXISTS self_reg_municipality_values_symphony (
+					`id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					`selfRegistrationFormId` int(11) NOT NULL,
+					`municipality` varchar(255) default '' NOT NULL,
+					`ilsMunicipality` varchar(255) default '' NOT NULL,
+					`municipalityType` varchar(10),
+					`selfRegAllowed` tinyint(1) NOT NULL DEFAULT '1'
+				) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;"
+			]
+		], //symphony_municipalities
+		'dpla_exclusions' => [
+			'title' => 'Add Table for DP.LA Excluded Titles',
+			'description' => 'Add table for DP.LA excluded titles.',
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS dpla_exclusion_settings (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					dplaLink VARCHAR(255) NOT NULL
+				) ENGINE INNODB',
+			],
+		], // dpla_exclusions
+		'permissions_dpla_exclusions' => [
+			'title' => 'Alters permissions for DP.LA Exclusions',
+			'description' => 'Create permissions for DP.LA Exclusions',
+			'sql' => [
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Third Party Enrichment', 'Administer DP.LA Exclusions', '', 0, 'Allows the user to define DP.LA results exclusions for all libraries.')",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer DP.LA Exclusions'))",
+			],
+		],
+		// permissions_create_events_localhop
 		'series_to_group_with' => [
 			'title' => 'Add Column in Series Table for Grouping',
 			'description' => 'Add column for seriesToGroupWithId in Series table to be used for merging/grouping series.',
@@ -78,6 +118,14 @@ function getUpdates26_07_00(): array {
 		//tomas
 
 		// stephen
+		'theme_full_width_content' => [
+			'title' => 'Add fullWidthContent column',
+			'description' => 'Add fullWidthContent column to themes table.',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE themes ADD COLUMN fullWidthContent TINYINT(1) DEFAULT 0',
+			]
+		], //theme_full_width_content
 
 		//other
 

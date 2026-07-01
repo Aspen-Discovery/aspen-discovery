@@ -398,6 +398,13 @@ class Record_AJAX extends JSON_Action {
 			$isOnHold = $user->isRecordOnHold($recordSource, $id);
 			$interface->assign('isOnHold', $isOnHold);
 
+			$enableMultiCopyHolds = $user->canPlaceMultiCopyHolds();
+			$interface->assign('enableMultiCopyHolds', $enableMultiCopyHolds);
+			if ($enableMultiCopyHolds) {
+				$statusSummary = $marcRecord->getGroupedWorkDriver()->getRelatedRecord($marcRecord->getIdWithSource());
+				$interface->assign('maxCopyHolds', $statusSummary->getAvailableCopies());
+			}
+
 			if (!$this->setupHoldForm($recordSource, $rememberHoldPickupLocation, $marcRecord, $locations, $selectedVariationId, $promptForEdition)) {
 				return [
 					'holdFormBypassed' => false,
@@ -1154,7 +1161,8 @@ class Record_AJAX extends JSON_Action {
 							$return = $patron->placeVolumeHold($shortId, $_REQUEST['volume'], $pickupBranch, $pickupSublocation);
 						}
 					} else {
-						$return = $patron->placeHold($shortId, $pickupBranch, $cancelDate, $pickupSublocation);
+						$numberOfCopies = $_REQUEST['numberOfCopies'] ?? 1;
+						$return = $patron->placeHold($shortId, $pickupBranch, $cancelDate, $pickupSublocation, $numberOfCopies);
 					}
 				}
 

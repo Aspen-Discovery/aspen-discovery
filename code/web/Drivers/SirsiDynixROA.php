@@ -592,12 +592,15 @@ class SirsiDynixROA extends AbstractIlsDriver {
 
 			$selfRegistrationForm = null;
 			$formFields = null;
+			$municipalities = null;
+			$matchId = null;
 			if ($library->selfRegistrationFormId > 0){
 				require_once ROOT_DIR . '/sys/SelfRegistrationForms/SelfRegistrationForm.php';
 				$selfRegistrationForm = new SelfRegistrationForm();
 				$selfRegistrationForm->id = $library->selfRegistrationFormId;
 				if ($selfRegistrationForm->find(true)) {
 					$formFields = $selfRegistrationForm->getFields();
+					$municipalities = $selfRegistrationForm->getMunicipalities();
 				}else {
 					$selfRegistrationForm = null;
 				}
@@ -718,6 +721,25 @@ class SirsiDynixROA extends AbstractIlsDriver {
 						$this->setPatronUpdateField('APT/SUITE', $this->getPatronFieldValue($_REQUEST['apt_suite'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
 					}
 					elseif ($field == 'city' && (!empty($_REQUEST['city']) && (!empty($_REQUEST['state'])))) {
+						$matchId = $selfRegistrationForm->getMunicipalitySettingsByName($_REQUEST['city']);
+						if ($matchId) {
+							// Abort if self-registration is not allowed
+							if (!$municipalities[$matchId]->selfRegAllowed) {
+								return [
+									'success' => false,
+									'message' => translate([
+										'text' => "Your address is not within the library’s service area. Please contact the library for more information.",
+										'isPublicFacing' => true
+									])
+								];
+							}
+							if (!empty($municipalities[$matchId]->ilsMunicipality)) {
+								$createPatronInfoParameters['fields']['category01'] = [
+									'key' => $municipalities[$matchId]->ilsMunicipality,
+									'resource' => '/policy/patronCategory01',
+								];
+							}
+						}
 						if ($selfRegistrationForm->cityStateField == 1) {
 							$this->setPatronUpdateField('CITY', $this->getPatronFieldValue($_REQUEST['city'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
 							$this->setPatronUpdateField('STATE', $this->getPatronFieldValue($_REQUEST['state'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
@@ -1068,21 +1090,7 @@ class SirsiDynixROA extends AbstractIlsDriver {
 			return $checkedOutTitles;
 		}
 
-		require_once ROOT_DIR . '/sys/InterLibraryLoan/HoldGroup.php';
-		require_once ROOT_DIR . '/sys/InterLibraryLoan/HoldGroupLocation.php';
-
-		$homeLocation = $patron->getHomeLocation();
-		$holdGroupsForLocation = new HoldGroupLocation();
-		$holdGroupsForLocation->locationId = $homeLocation->locationId;
-		$holdGroupIds = $holdGroupsForLocation->fetchAll('holdGroupId');
-		$holdGroups = [];
-		foreach ($holdGroupIds as $holdGroupId) {
-			$holdGroup = new HoldGroup();
-			$holdGroup->id = $holdGroupId;
-			if ($holdGroup->find(true)) {
-				$holdGroups[] = clone $holdGroup;
-			}
-		}
+		$holdGroups = $this->getHoldGroupsForUser($patron);
 
 		//Now that we have the session token, get holds information
 		$webServiceURL = $this->getWebServiceURL();
@@ -1228,21 +1236,7 @@ class SirsiDynixROA extends AbstractIlsDriver {
 			return $holds;
 		}
 
-		require_once ROOT_DIR . '/sys/InterLibraryLoan/HoldGroup.php';
-		require_once ROOT_DIR . '/sys/InterLibraryLoan/HoldGroupLocation.php';
-
-		$homeLocation = $patron->getHomeLocation();
-		$holdGroupsForLocation = new HoldGroupLocation();
-		$holdGroupsForLocation->locationId = $homeLocation->locationId;
-		$holdGroupIds = $holdGroupsForLocation->fetchAll('holdGroupId');
-		$holdGroups = [];
-		foreach ($holdGroupIds as $holdGroupId) {
-			$holdGroup = new HoldGroup();
-			$holdGroup->id = $holdGroupId;
-			if ($holdGroup->find(true)) {
-				$holdGroups[] = clone $holdGroup;
-			}
-		}
+		$holdGroups = $this->getHoldGroupsForUser($patron);
 
 		//Now that we have the session token, get holds information
 		$webServiceURL = $this->getWebServiceURL();
@@ -1411,8 +1405,62 @@ class SirsiDynixROA extends AbstractIlsDriver {
 		return $holds;
 	}
 
-	public function placeHold(User $patron, $recordId, $pickupBranch = null, $cancelDate = null) : array {
-		return $this->placeItemHold($patron, $recordId, null, $pickupBranch, $cancelDate);
+	public function placeHold(User $patron, string $recordId, ?string $pickupBranch = null, ?string $cancelDate = null, ?string $pickupSublocation = null, ?int $numberOfCopies = 1) : array {
+		if ($numberOfCopies == 1) {
+			return $this->placeSirsiHold($patron, $recordId, null, false, $pickupBranch, $cancelDate);
+		}else{
+			//Determine which items to place holds on
+			require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+			$itemsToHold = [];
+
+			$marcRecordDriver = RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $recordId);
+			$relatedRecord = $marcRecordDriver->getRelatedRecord();
+			//Get hold groups for the user so we can prefer
+			$holdGroups = $this->getHoldGroupsForUser($patron);
+			$itemsForRecord = $relatedRecord->getItems();
+			$holdableItemsAtHomeLocation = [];
+			$holdableItemsInHoldGroup = [];
+			$remainingHoldableItems = [];
+			foreach ($itemsForRecord as $item) {
+				if ($item->holdable) {
+					if ($item->atUserHomeLocation) {
+						$holdableItemsAtHomeLocation[] = $item->itemId;
+					}else{
+						//Check to see if the item is in the hold group
+						$inHomeGroup = false;
+						foreach ($holdGroups as $holdGroup){
+							if (in_array($item->locationCode, $holdGroup->getLocationCodes())){
+								$inHomeGroup = true;
+								break;
+							}
+						}
+						if ($inHomeGroup) {
+							$holdableItemsInHoldGroup[] = $item->itemId;
+						}else{
+							$remainingHoldableItems[] = $item->itemId;
+						}
+					}
+				}
+			}
+			$itemsToHold = array_slice($holdableItemsAtHomeLocation, 0, $numberOfCopies);
+			if (count($itemsToHold) < $numberOfCopies) {
+				$itemsToHold = array_merge($itemsToHold, array_slice($holdableItemsInHoldGroup, 0, $numberOfCopies - count($itemsToHold)));
+				if (count($itemsToHold) < $numberOfCopies) {
+					$itemsToHold = array_merge($itemsToHold, array_slice($remainingHoldableItems, 0, $numberOfCopies - count($itemsToHold)));
+				}
+			}
+			$holdResults = [];
+			foreach ($itemsToHold as $itemId) {
+
+				$holdResult = $this->placeSirsiHold($patron, $recordId, $itemId, false, $pickupBranch, $cancelDate);
+				if ($holdResult['success'] === false) {
+					return $holdResult;
+				}
+				$holdResults[] = $holdResult;
+			}
+			//Just return the first result since it's representative of all the holds
+			return reset($holdResults);
+		}
 	}
 
 	/**
@@ -4448,5 +4496,49 @@ class SirsiDynixROA extends AbstractIlsDriver {
 		}
 
 		return 0;
+	}
+
+	public function getPatronMetadataOptions(): array {
+		//Get a list of locations for the system.
+		$sessionToken = $this->getStaffSessionToken();
+		if (!$sessionToken) {
+			return [
+				'success' => false,
+				'message' => 'Unable to authenticate with Symphony'
+			];
+		}
+
+		//Now that we have the session token, get information
+		$webServiceURL = $this->getWebServiceURL();
+		$response = $this->getWebServiceResponse('getPatronMetadataOptions', $webServiceURL . '/policy/patronCategory01/simpleQuery?key=*', null, $sessionToken);
+    return $response;
+  }
+
+	public function supportsMultiCopyHolds() : bool {
+		return true;
+	}
+
+	/**
+	 * @param User $patron
+	 * @return HoldGroup[]
+	 */
+	public function getHoldGroupsForUser(User $patron): array
+	{
+		require_once ROOT_DIR . '/sys/InterLibraryLoan/HoldGroup.php';
+		require_once ROOT_DIR . '/sys/InterLibraryLoan/HoldGroupLocation.php';
+
+		$homeLocation = $patron->getHomeLocation();
+		$holdGroupsForLocation = new HoldGroupLocation();
+		$holdGroupsForLocation->locationId = $homeLocation->locationId;
+		$holdGroupIds = $holdGroupsForLocation->fetchAll('holdGroupId');
+		$holdGroups = [];
+		foreach ($holdGroupIds as $holdGroupId) {
+			$holdGroup = new HoldGroup();
+			$holdGroup->id = $holdGroupId;
+			if ($holdGroup->find(true)) {
+				$holdGroups[] = clone $holdGroup;
+			}
+		}
+		return $holdGroups;
 	}
 }

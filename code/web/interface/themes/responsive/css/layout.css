@@ -44,6 +44,7 @@ hr.menu {
   padding: 3px;
 }
 .system-message {
+  margin-top: 5px;
   padding: 5px;
 }
 .system-message-text {
@@ -259,6 +260,18 @@ hr.menu {
 #horizontal-menu-bar-container.fullWidth {
   padding: 0 1em 0 1em;
 }
+#horizontal-menu-bar-container .dropdown-toggle:not(#header-menu-dropdown):after {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  margin-left: 0.255em;
+  vertical-align: 0.255em;
+  content: "";
+  border-top: 0.3em solid;
+  border-right: 0.3em solid transparent;
+  border-bottom: 0;
+  border-left: 0.3em solid transparent;
+}
 .menu-section-left {
   flex-grow: 10;
 }
@@ -308,16 +321,16 @@ hr.menu {
   color: #c62828;
 }
 .hiddenTitle {
-  font-size: 0;
+  position: absolute!important;
   width: 1px;
   height: 1px;
-  display: inline-block;
   overflow: hidden;
-  position: absolute!important;
   border: 0!important;
   padding: 0!important;
-  margin: 0!important;
-  clip: rect(1px, 1px, 1px, 1px);
+  margin: -1px !important;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  white-space: nowrap!important;
 }
 #language-selection-header {
   margin-top: 5px;
@@ -338,6 +351,9 @@ hr.menu {
 }
 .not_translated {
   background-color: lightpink;
+}
+.google_translated {
+  background-color: lightyellow;
 }
 .form-control-sm {
   display: block;
@@ -381,6 +397,10 @@ ul.account-submenu {
 .btn-wrap {
   white-space: normal !important;
 }
+.btn-toolbar .btn-group,
+.btn-toolbar .btn {
+  margin-bottom: 3px;
+}
 .label-wrap {
   white-space: normal !important;
 }
@@ -393,6 +413,9 @@ ul.account-submenu {
 a.placard-link {
   text-decoration: none;
 }
+a.placard-image-link {
+  text-decoration: none;
+}
 .placard-image {
   float: left;
   padding-right: 10px;
@@ -400,7 +423,7 @@ a.placard-link {
   height: auto;
 }
 .placard-body {
-  font-weight: bold;
+  font-weight: normal;
 }
 .table-sticky {
   overflow-y: auto;
@@ -878,5 +901,124 @@ a.placard-link {
   #side-bar.collapsed + #main-content-with-sidebar .breadcrumbs {
     margin-left: 60px !important;
   }
+}
+/* "Make Content Full Width" in theme settings */
+body.fullWidthContent {
+  /* Make series or you might like covers bigger */
+  /* Reduce space between tabs and what changes */
+  /* Deal with large covers on homepage-standard browse categories*/
+  /*Fix images on results page*/
+  /*Reduce Browse Category bottom margin from 5em */
+  /* reduce space between tabs */
+  /* Width of information on details page so hold button isn't so far over */
+  /* change width for sort by area */
+  /* change width for sort by area */
+  /* tighten sign-in page */
+  /* tighten library card barcodes */
+  /*Limit the size of the Explore More Box */
+  /*Group format Categories together*/
+  /*Limit Size of Linked User Dropdown*/
+  /*Limit Width Advanced Search Content*/
+  /* Narrow Events Filter*/
+  /* Limit width of preferences / contact information forms*/
+  /* Limit the Width of Forms*/
+}
+body.fullWidthContent .container,
+body.fullWidthContent .container-fluid {
+  max-width: 1900px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+@media (min-width: 1200px) {
+  body.fullWidthContent #side-bar {
+    width: 13%;
+  }
+  body.fullWidthContent #main-content-with-sidebar {
+    width: 87%;
+  }
+}
+body.fullWidthContent #more-details-accordion {
+  max-width: 1700px;
+  margin-left: auto;
+  margin-right: auto;
+}
+body.fullWidthContent .scrollerTitleCover {
+  max-height: 300px;
+}
+body.fullWidthContent .horizontalSliders {
+  margin-bottom: 0;
+}
+body.fullWidthContent #home-page-browse-results .browse-thumbnail img {
+  width: auto;
+  max-height: 300px;
+}
+body.fullWidthContent .swiper-slide img {
+  max-height: 250px;
+  width: auto;
+  object-fit: contain;
+}
+body.fullWidthContent .results-covers-view.home-page-browse-results-grid.home-page-browse-results-grid-grid .browse-thumbnail {
+  height: auto !important;
+  min-height: 350px !important;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+body.fullWidthContent .browse-category-feed-item {
+  margin-bottom: 2em !important;
+}
+body.fullWidthContent .slider-wrapper {
+  gap: 2px !important;
+}
+body.fullWidthContent #record-details-column {
+  max-width: 500px;
+}
+body.fullWidthContent div.col-md-4:has(label[for="results-sort"]) {
+  width: 40% !important;
+}
+body.fullWidthContent div.col-md-8:has(.btn-toolbar) {
+  width: 60% !important;
+}
+body.fullWidthContent #loginFormFields {
+  max-width: 600px !important;
+  margin: 0 auto !important;
+  /* Centers the 400px block on the page */
+  display: block;
+}
+body.fullWidthContent #library-barcode {
+  text-align: left;
+  padding-left: 100px;
+}
+body.fullWidthContent .exploreMoreBar {
+  width: 75%;
+  margin-left: auto;
+  margin-right: auto;
+}
+body.fullWidthContent .categoryValue {
+  max-width: 150px;
+}
+body.fullWidthContent #linkedUsersDropdown.form-control {
+  max-width: 300px;
+}
+body.fullWidthContent .advSearchContent {
+  max-width: 800px;
+  margin: 0 auto;
+}
+body.fullWidthContent div#eventsFilter.form-group.col-sm-6 {
+  max-width: 300px;
+}
+body.fullWidthContent#MyAccount-MyPreferences form[role="form"],
+body.fullWidthContent#MyAccount-ContactInformation form[role="form"] {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+body.fullWidthContent #pin,
+body.fullWidthContent #pin1,
+body.fullWidthContent #pin2,
+body.fullWidthContent #newUsername,
+body.fullWidthContent #overdriveEmail {
+  max-width: 300px;
+  margin-left: 30px;
 }
 /*# sourceMappingURL=layout.css.map */

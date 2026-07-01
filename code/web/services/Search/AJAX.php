@@ -799,6 +799,9 @@ class AJAX extends JSON_Action {
 		$facetName = $_REQUEST['facetName'];
 		$interface->assign('facetName', $facetName);
 
+		global $action;
+		$action = 'Advanced';
+
 		$searchObject = SearchObjectFactory::initSearchObject();
 		$searchObject->initAdvancedFacets();
 		$searchObject->disableLogging();
@@ -862,6 +865,9 @@ class AJAX extends JSON_Action {
 		$facetName  = $_REQUEST['facetName'];
 		$searchTerm = $_REQUEST['searchTerm'];
 		$interface->assign('facetName', $facetName);
+
+		global $action;
+		$action = 'Advanced';
 
 		$searchObject = SearchObjectFactory::initSearchObject();
 		$searchObject->initAdvancedFacets();
