@@ -3177,7 +3177,11 @@ class MyAccount_AJAX extends JSON_Action {
 		if (!empty($selectedHolds)) {
 			$allHolds = $this->filterHoldsBySelected($user->getHolds(true, $selectedUnavailableSortOption, $selectedAvailableSortOption, $source), $selectedHolds);
 		} else {
-			$allHolds = $this->filterHolds($user->getHolds(true, $selectedUnavailableSortOption, $selectedAvailableSortOption, $source), $selectedUser);
+			$filters = [];
+			if (!empty($selectedUser) && $selectedUser !== '[""]') {
+				$filters['userId'] = ['selected' => [$selectedUser]];
+			}
+			$allHolds = $this->filterHolds($user->getHolds(true, $selectedUnavailableSortOption, $selectedAvailableSortOption, $source), $filters);
 		}
 
 
