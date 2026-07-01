@@ -2,6 +2,7 @@
 
 use League\OAuth2\Server\Exception\OAuthServerException;
 use Laminas\Diactoros\ServerRequestFactory;
+use League\OAuth2\Server\ResourceServer;
 use Psr\Http\Message\ServerRequestInterface;
 
 require_once ROOT_DIR . '/sys/Authentication/OAuth2/OAuth2ServerConfig.php';
@@ -9,7 +10,7 @@ require_once ROOT_DIR . '/sys/Authentication/OAuth2/OAuth2Client.php';
 
 class OAuth2Middleware {
 
-	private static $resourceServer = null;
+	private static ?ResourceServer $resourceServer = null;
 	private static ?User $authenticatedUser = null;
 	private static ?string $authenticatedClientId = null;
 	private static array $currentScopes = [];
@@ -33,14 +34,28 @@ class OAuth2Middleware {
 
 			$request = self::createPsr7Request();
 			$logger->log("[OAuth2] OAuth2Middleware::authenticate() - PSR7 request created", Logger::LOG_DEBUG);
-			
-			$request = self::$resourceServer->validateAuthenticatedRequest($request);
-			$logger->log("[OAuth2] OAuth2Middleware::authenticate() - Bearer token validated successfully", Logger::LOG_DEBUG);
-			
-			$userId = $request->getAttribute('oauth_user_id');
-			$clientId = $request->getAttribute('oauth_client_id');
-			$tokenScopes = $request->getAttribute('oauth_scopes', []);
-			self::$currentScopes = is_array($tokenScopes) ? $tokenScopes : explode(' ', $tokenScopes);
+
+			$oauth2AccessToken = new OAuth2AccessToken();
+			$header = $request->getHeader('authorization');
+			$tokenFromClient = trim((string) preg_replace('/^\s*Bearer\s/i', '', $header[0]));
+			$oauth2AccessToken->setTokenId($tokenFromClient);
+			if (!$oauth2AccessToken->find(true)) {
+				self::sendGenericErrorResponse('Invalid Token');
+				return false;
+			}
+			if ($oauth2AccessToken->isExpired()) {
+				self::sendGenericErrorResponse('Token expired');
+				return false;
+			}
+			if ($oauth2AccessToken->isRevoked()) {
+				self::sendGenericErrorResponse('Token has been revoked');
+				return false;
+			}
+
+			$userId = $oauth2AccessToken->getUserId();
+			$clientId = $oauth2AccessToken->getClientId();
+			$tokenScopes = $oauth2AccessToken->getScopes();
+			self::$currentScopes = is_array($tokenScopes) ? $tokenScopes : explode(',', $tokenScopes);
 
 			$logger->log("[OAuth2] OAuth2Middleware::authenticate() - Token attributes - User ID: " . ($userId ?? 'none') . ", Client ID: " . ($clientId ?? 'none'), Logger::LOG_DEBUG);
 			$logger->log("[OAuth2] OAuth2Middleware::authenticate() - Token scopes: " . implode(', ', self::$currentScopes), Logger::LOG_DEBUG);
@@ -77,7 +92,7 @@ class OAuth2Middleware {
 				foreach ($requiredScopes as $requiredScope) {
 					if (!in_array($requiredScope, self::$currentScopes)) {
 						$logger->log("[OAuth2] OAuth2Middleware::authenticate() - Required scope missing: " . $requiredScope, Logger::LOG_WARNING);
-						self::sendGenericErrorResponse();
+						self::sendGenericErrorResponse('Invalid scope');
 						return false;
 					}
 				}
@@ -166,7 +181,7 @@ class OAuth2Middleware {
 			return false;
 		}
 
-		$logger->log("[OAuth2] OAuth2Middleware::validateClientTokenScopes() - FOUND {$clientType} client: " . $client->getName(), Logger::LOG_DEBUG);
+		$logger->log("[OAuth2] OAuth2Middleware::validateClientTokenScopes() - FOUND $clientType client: " . $client->getName(), Logger::LOG_DEBUG);
 
 		if ($clientType === 'openid') {
 			$allowed = $client->getClaimsArray();
@@ -180,7 +195,7 @@ class OAuth2Middleware {
 		$logger->log("[OAuth2] OAuth2Middleware::validateClientTokenScopes() - Token has scopes: " . implode(', ', $tokenScopes), Logger::LOG_DEBUG);
 
 		foreach ($tokenScopes as $tokenScope) {
-			$isAllowed = in_array($tokenScope, $allowed) || $tokenScope === 'openid';
+			$isAllowed = array_key_exists($tokenScope, $allowed) || $tokenScope === 'openid';
 
 			if (!$isAllowed) {
 				$logger->log("[OAuth2] OAuth2Middleware::validateClientTokenScopes() - SECURITY: Token scope NOT allowed for client: " . $tokenScope, Logger::LOG_ERROR);
@@ -194,7 +209,7 @@ class OAuth2Middleware {
 		return true;
 	}
 
-	private static function sendGenericErrorResponse(): void {
+	private static function sendGenericErrorResponse(?string $description = null): void {
 		global $logger;
 		$logger->log("[OAuth2] OAuth2Middleware::sendGenericErrorResponse() - Sending generic 401 unauthorized response", Logger::LOG_WARNING);
 		
@@ -202,7 +217,7 @@ class OAuth2Middleware {
 		header('Content-Type: application/json');
 		echo json_encode([
 			'error' => 'unauthorized',
-			'error_description' => 'Invalid or missing access token',
+			'error_description' => $description ?? 'Invalid or missing access token',
 		]);
 	}
 }

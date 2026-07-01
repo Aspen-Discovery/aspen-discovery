@@ -229,6 +229,7 @@ class AJAX_JSON extends Action {
 		global $logger;
 		$_SESSION['enroll2FA'] = false;
 		$_SESSION['has2FA'] = false;
+		$codeSent = $_SESSION['codeSent'] ?? false;
 		$_SESSION['codeSent'] = false;
 		$_SESSION['passwordExpired'] = false;
 		$_SESSION['authMethod'] = '';
@@ -295,7 +296,7 @@ class AJAX_JSON extends Action {
 									'isPublicFacing' => true
 								]),
 								'body' => $interface->fetch('MyAccount/login-2fa-enroll.tpl'),
-								'buttons' => "<button id='loginFormCancelLogin' class='btn btn-warning' href='/MyAccount/Logout'>" . translate([
+								'buttons' => "<button id='loginFormCancelLogin' class='btn btn-warning' onclick='window.location =\"/MyAccount/Logout\"'>" . translate([
 										'text' => 'Cancel Sign In',
 										'isPublicFacing' => true,
 									]) . "</button>",
@@ -311,7 +312,7 @@ class AJAX_JSON extends Action {
 							$interface->assign('referer', $referer);
 							$name = $_REQUEST['name'] ?? null;
 							$interface->assign('name', $name);
-							$interface->assign('codeSent', !empty($_SESSION['codeSent']));
+							$interface->assign('codeSent', $codeSent);
 							$interface->assign('hasTotp', $authStatus['hasTotp']);
 							$interface->assign('hasEmail', $authStatus['hasEmail']);
 							$interface->assign('setupMethods', $authStatus['setupMethods']);

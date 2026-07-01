@@ -256,6 +256,10 @@ class PalaceProjectDriver extends AbstractEContentDriver {
 				$foundCheckout = true;
 				$returnUrl = $checkout->earlyReturnUrl;
 				$headers = $this->getPalaceProjectHeaders($patron);
+				if (empty($headers)) {
+					$result['message'] = translate(['Palace Project is not properly configured.', 'isPublicFacing' => true]);
+					return $result;
+				}
 
 				$this->initCurlWrapper();
 				$this->curlWrapper->addCustomHeaders($headers, true);
@@ -380,6 +384,11 @@ class PalaceProjectDriver extends AbstractEContentDriver {
 				}
 			}
 			$headers = $this->getPalaceProjectHeaders($patron);
+			if (empty($headers)) {
+				$result['message'] = translate(['Palace Project is not properly configured.', 'isPublicFacing' => true]);
+				return $result;
+			}
+
 			$this->initCurlWrapper();
 			$this->curlWrapper->addCustomHeaders($headers, true);
 			$response = $this->curlWrapper->curlGetPage($borrowLink);
@@ -519,6 +528,10 @@ class PalaceProjectDriver extends AbstractEContentDriver {
 			$cancelHoldUrl = $hold->cancellationUrl;
 
 			$headers = $this->getPalaceProjectHeaders($patron);
+			if (empty($headers)) {
+				$result['message'] = translate(['Palace Project is not properly configured.', 'isPublicFacing' => true]);
+				return $result;
+			}
 
 			$this->initCurlWrapper();
 			$this->curlWrapper->addCustomHeaders($headers, true);
@@ -626,6 +639,10 @@ class PalaceProjectDriver extends AbstractEContentDriver {
 			}
 
 			$headers = $this->getPalaceProjectHeaders($patron);
+			if (empty($headers)) {
+				$result['message'] = translate(['Palace Project is not properly configured.', 'isPublicFacing' => true]);
+				return $result;
+			}
 			$this->initCurlWrapper();
 			$this->curlWrapper->addCustomHeaders($headers, true);
 			$response = $this->curlWrapper->curlGetPage($borrowLink);
@@ -918,7 +935,10 @@ class PalaceProjectDriver extends AbstractEContentDriver {
 		} else {
 			$aspenVersion = 'Primary';
 		}
-		$settings = $this->getSettings();
+		$settings = $this->getSettings($patron);
+		if ($settings === false) {
+			return [];
+		}
 		if ($settings->requirePin) {
 			$authorization = base64_encode("$patron->ils_barcode:$patron->ils_password");
 		}else{

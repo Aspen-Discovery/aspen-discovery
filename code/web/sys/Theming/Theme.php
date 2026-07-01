@@ -22,6 +22,7 @@ class Theme extends DataObject {
 		$headerLogoBackgroundColorAppDefault;
 
 	public $fullWidth;
+	public $fullWidthContent;
 
 	//Format Icons
 	public $booksImage;
@@ -733,6 +734,14 @@ class Theme extends DataObject {
 				'type' => 'checkbox',
 				'label' => 'Make Header & Footer Full Width',
 				'description' => 'Whether or not the header and footer should be full width',
+				'required' => false,
+				'hideInLists' => true,
+			],
+			'fullWidthContent' => [
+				'property' => 'fullWidthContent',
+				'type' => 'checkbox',
+				'label' => 'Make Content Full Width',
+				'description' => 'Whether or not the content should be full width',
 				'required' => false,
 				'hideInLists' => true,
 			],

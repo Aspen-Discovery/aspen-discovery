@@ -16,7 +16,8 @@ class ExploreMore {
 					if (!is_array($filter) && strlen($filter) > 0) {
 						if (str_contains($filter, ':')) {
 							$filterVals = explode(':', $filter, 2);
-							if ($filterVals[0] != 'mods_genre_s' && $filterVals[0] != 'literary_form' && $filterVals[0] != 'literary_form_full' && $filterVals[0] != 'target_audience' && $filterVals[0] != 'target_audience_full') {
+							$subject_facets = ['subject_facet', 'topic_facet', 'subject', 'SubjectTerms', 'OpenArchivesSubject', 'Subject'];
+							if (in_array($filterVals[0], $subject_facets)) {
 								$searchTerm = str_replace('"', '', $filterVals[1]);
 								break;
 							}

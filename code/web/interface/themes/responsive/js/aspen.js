@@ -2542,10 +2542,27 @@ AspenDiscovery.Account = (function () {
 			if (unavailableHoldSort !== undefined) {
 				url += "&unavailableHoldSort=" + unavailableHoldSort;
 			}
-			if (showCovers !== undefined) {
+			if (showCovers === undefined || showCovers === null) {
+				let showCoversCtl = $('#hideCovers_all');
+				if (showCoversCtl.length > 0) {
+					showCovers = showCoversCtl.prop('checked') ? 'false' : 'true';
+				}
+			}
+			if (showCovers !== undefined && showCovers !== null) {
 				url += "&showCovers=" + showCovers;
 			}
 
+			if (filters === undefined) {
+				//Grab the current state
+				let selectOptions = $('#holdsFilterRow select');
+				if (selectOptions.length > 0) {
+					filters = {};
+					selectOptions.each(function() {
+						let key = $(this).attr('id').replace('HoldFilter_', '');
+						filters[key] = $(this).val() || [];
+					});
+				}
+			}
 			if (filters !== undefined) {
 				url += "&" + AspenDiscovery.buildQueryString(filters);
 			}
@@ -5594,6 +5611,15 @@ AspenDiscovery.Account = (function () {
 			}).fail(function(jqXHR, textStatus, errorThrown) {
 				console.error('AJAX Error: ', textStatus, errorThrown);
 			})
+		},
+		toggleGroupSelectedHoldsButton: function () {
+			// Ensure all holds selected are ILS holds.
+			const selectedHolds = Array.from(document.querySelectorAll('.titleSelect:checked'));
+			const allIlsHolds = selectedHolds.every(checkbox => checkbox.closest('.result.row')?.classList.contains('ilsHold'));
+			const groupingAvailable = selectedHolds.length > 1 && allIlsHolds;
+
+			// target both the top and bottom 'Group Selected Pending Ils Hold' buttons.
+			document.querySelectorAll('.groupSelectedHoldsButton').forEach(button => button.classList.toggle('disabled', !groupingAvailable));
 		},
 		groupSelectedPendingHolds:  function (source, availableSort, interlibrarySort, unavailableSort) {
 			let selectedHolds = [];
@@ -11990,9 +12016,20 @@ AspenDiscovery.Events = (function(){
 				setTimeout(function() { cell.css('background-color', ''); }, 1200);
 				checkbox.prop('checked', !attended);
 			});
+		},
+
+		lessEventDates: function() {
+			document.getElementById("moreEventDates").style.display = "block";
+			document.getElementById("narrowGroupHidden_eventDates").style.display = "none";
+		},
+
+		moreEventDates: function() {
+			document.getElementById("moreEventDates").style.display = "none";
+			document.getElementById("narrowGroupHidden_eventDates").style.display = "block";
 		}
 	};
 }(AspenDiscovery.Events || {}));
+
 /* global Swiper, $ */
 AspenDiscovery.HeroSlider = (function(){
 	return {
@@ -12406,9 +12443,17 @@ AspenDiscovery.GroupedWork = (function(){
 			);
 		},
 
-		loadDescription: function (id){
-			var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=getDescription';
-			$.getJSON(url, function (data){
+		loadDescription: function (id, recordType, recordId){
+			console.log("BEGIN");
+			console.log(recordType);
+			console.log(recordId);
+			var url = Globals.path + '/GroupedWork/' + id + '/AJAX',
+				params = {'method':'getDescription'};
+			if (recordType && recordId) {
+				params['recordType'] = recordType;
+				params['recordId'] = recordId;
+			}
+			$.getJSON(url, params, function (data){
 					if (data.success){
 						$("#descriptionPlaceholder").html(data.description);
 					}
@@ -12509,7 +12554,8 @@ AspenDiscovery.GroupedWork = (function(){
 
 			var params = {
 				'method':'getMoreLikeThis',
-				'format':format
+				'format': format,
+				'requestUrl' : encodeURIComponent(window.location.href)
 			};
 
 			if (forceReload !== undefined) {
@@ -12685,10 +12731,16 @@ AspenDiscovery.GroupedWork = (function(){
 		},
 
 
-		showGroupedWorkInfo:function(id, browseCategoryId){
+		showGroupedWorkInfo:function(id, browseCategoryId, format, requestSource){
 			var url = Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX?method=getWorkInfo";
 			if (browseCategoryId !== undefined){
 				url += "&browseCategoryId=" + browseCategoryId;
+			}
+			if (format !== undefined){
+				url += "&format=" + format;
+			}
+			if (requestSource !== undefined){
+				url += "&requestSource=" + requestSource;
 			}
 			AspenDiscovery.loadingMessage();
 			$.getJSON(url, function(data){
@@ -12832,6 +12884,26 @@ AspenDiscovery.GroupedWork = (function(){
 			if (Globals.loggedIn){
 				AspenDiscovery.loadingMessage();
 				var url = Globals.path + "/GroupedWork/" + id + "/AJAX?method=getGroupWithSearchForm&searchId=" + searchId + "&page=" + page;
+				$.getJSON(url, function(data){
+					if (data.success){
+						AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+					}else{
+						AspenDiscovery.showMessage("An error occurred", data.message);
+					}
+
+				}).fail(AspenDiscovery.ajaxFail);
+			}else{
+				AspenDiscovery.Account.ajaxLogin($(trigger), function (){
+					AspenDiscovery.GroupedWork.getGroupWithForm(id);
+				});
+			}
+			return false;
+		},
+
+		getGroupWithSeriesPageForm: function (trigger, id, seriesId) {
+			if (Globals.loggedIn){
+				AspenDiscovery.loadingMessage();
+				var url = Globals.path + "/GroupedWork/" + id + "/AJAX?method=getGroupWithSeriesPageForm&seriesId=" + seriesId;
 				$.getJSON(url, function(data){
 					if (data.success){
 						AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
@@ -15973,6 +16045,7 @@ AspenDiscovery.Record = (function () {
 			const variationId = $('#variationId');
 			const pickupSublocation = $('#pickupSublocation');
 			const cancelDateInput = $('#cancelDate');
+			const numberOfCopies = $('#numberOfCopies');
 			let params = {
 				'method': 'placeHold',
 				pickupBranch: $('#pickupBranch').val(),
@@ -15984,7 +16057,7 @@ AspenDiscovery.Record = (function () {
 				rememberHoldPickupLocation: $('#rememberHoldPickupLocation').prop('checked'),
 				promptForEdition: $('#holdPromptForEditions').val(),
 				freezeHoldImmediately: $('#freezeHoldImmediately').prop('checked'),
-				reactivationDate: $('#reactivationDate').val()
+				reactivationDate: $('#reactivationDate').val(),
 			};
 			if (autoLogOut) {
 				params['autologout'] = true;
@@ -16001,6 +16074,9 @@ AspenDiscovery.Record = (function () {
 			if (params['pickupBranch'] === 'undefined') {
 				alert("Please select a location to pick up your hold when it is ready.");
 				return false;
+			}
+			if (numberOfCopies.length > 0) {
+				params['numberOfCopies'] = numberOfCopies.val();
 			}
 			const holdType = $('#holdType');
 			if (holdType.length > 0) {
@@ -17341,6 +17417,31 @@ AspenDiscovery.Series = (function(){
 		editAction: function (seriesId){
 			window.location.href = "/Series/AdministerSeries?objectAction=edit&id=" + seriesId;
 			return false;
+		},
+		getGroupSeriesSearchForm: function (trigger, id, searchId, page) {
+			AspenDiscovery.loadingMessage();
+			var url = Globals.path + "/Series/" + id + "/AJAX?method=getGroupSeriesSearchForm&searchId=" + searchId + "&page=" + page;
+			$.getJSON(url, function(data){
+				if (data.success){
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+				}else{
+					AspenDiscovery.showMessage("An error occurred", data.message);
+				}
+			}).fail(AspenDiscovery.ajaxFail);
+			return false;
+		},
+		processGroupSeriesForm: function() {
+			var id = $('#id').val();
+			var groupSeriesId = $('#seriesToGroupWithId').val().trim();
+			var url = Globals.path + "/Series/" + id + "/AJAX?method=processGroupSeriesForm&groupSeriesId=" + groupSeriesId;
+			//AspenDiscovery.closeLightbox();
+			$.getJSON(url, function(data){
+				if (data.success){
+					AspenDiscovery.showMessage("Success", data.message, true, false);
+				}else{
+					AspenDiscovery.showMessage("An error occurred", data.message, false, false);
+				}
+			}).fail(AspenDiscovery.ajaxFail);
 		},
 		emailAction: function (seriesId) {
 			var urlToDisplay = Globals.path + '/Series/AJAX';

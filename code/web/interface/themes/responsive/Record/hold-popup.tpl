@@ -77,6 +77,12 @@
 				</p>
 				{/if}
 
+				{if !empty($reserveFeeMessage)}
+					<p class="alert alert-warning">
+						{translate text=$reserveFeeMessage isPublicFacing=true}&nbsp;
+					</p>
+				{/if}
+
 				<div id="holdOptions">
 					{assign var="onlyOnePickupLocation" value=false}
 					{if count($pickupLocations) == 1}
@@ -325,6 +331,18 @@
 								<input type="checkbox" name="rememberEditionSelection" id="rememberEditionSelection" {if $rememberEditionSelection}checked{/if}>
 								{translate text="Always place holds on suggested edition" isPublicFacing=true}
 							</label>
+						</div>
+					{/if}
+					{if $holdType == 'bib' && $enableMultiCopyHolds}
+						<div id="numberOfCopiesRow" class="form-group">
+							<div class="row">
+								<div class="col-tn-6">
+									<label for="numberOfCopies">{translate text="Number of Copies" isPublicFacing=true}</label>
+								</div>
+								<div class="col-tn-6">
+									<input type="number" name="numberOfCopies" id="numberOfCopies" value="1" min="1" max="{$maxCopyHolds}" class="form-control"/>
+								</div>
+							</div>
 						</div>
 					{/if}
 					{if !empty($promptForHoldNotifications)}

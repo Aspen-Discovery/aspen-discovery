@@ -21,7 +21,6 @@ class Security extends MyAccount {
 					$interface->assign('allowEmail2FA', $twoFactorAuthSetting->allowEmail);
 					$interface->assign('allowTOTP2FA', $twoFactorAuthSetting->allowTotp);
 					$interface->assign('showBackupCodes', false);
-					$interface->assign('enableDeactivation', true);
 					$interface->assign('userHasTOTP', $user->twoFactorMethod == 'totp');
 					$userHasEmailCodes = false;
 
@@ -43,9 +42,6 @@ class Security extends MyAccount {
 						$numBackupCodes = count($backupCodes);
 						$interface->assign('backupCodes', $backupCodes);
 						$interface->assign('numBackupCodes', $numBackupCodes);
-						if ($isEnabled == 'mandatory') {
-							$interface->assign('enableDeactivation', false);
-						}
 					}
 
 					$twoFactorData = UserAccount::get2FAMethodStatus();

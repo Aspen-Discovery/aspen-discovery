@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.Date;
 
 import org.apache.logging.log4j.Logger;
@@ -32,6 +33,7 @@ public class DatabaseCleanup implements IProcessHandler {
 
 		cleanupReadingHistory(dbConn, logger, processLog);
 		removeOldIndexingDiagnostics(dbConn, logger, processLog);
+		cleanupUserAgent(dbConn, logger, processLog);
 
 		removeOldObjectHistory(dbConn, logger, processLog);
 		removeLocalAnalyticsTracking(dbConn, logger, processLog);
@@ -123,6 +125,61 @@ public class DatabaseCleanup implements IProcessHandler {
 			processLog.saveResults();
 		} catch (SQLException e) {
 			processLog.incErrors("Unable to cleanup reading history. ", e);
+		}
+	}
+
+	private void cleanupUserAgent(Connection dbConn, Logger logger, CronProcessLogEntry processLog) {
+		LocalDate today = LocalDate.now();
+
+		// Only run this cleanup on the first day of the month.
+		if (today.getDayOfMonth() != 1) {
+			return;
+		}
+		int retentionMonths = 0;
+		boolean isDisabled = false;
+		try (PreparedStatement getRetentionStmt = dbConn.prepareStatement("SELECT userAgentRetentionMonths, disable_user_agent_logging FROM system_variables LIMIT 1")) {
+			ResultSet retentionRS = getRetentionStmt.executeQuery();
+			if (retentionRS.next()) {
+				retentionMonths = retentionRS.getInt("userAgentRetentionMonths");
+				isDisabled = retentionRS.getBoolean("disable_user_agent_logging");
+			}
+		} catch (SQLException e) {
+			processLog.incErrors("Unable to load user agent retention setting. ", e);
+			return;
+		}
+
+		if (isDisabled) {
+			processLog.addNote("User agent retention cleanup skipped because User agent tracking is disabled.");
+			processLog.saveResults();
+			return;
+		}
+
+		if (retentionMonths == 0) {
+			processLog.addNote("User agent retention cleanup is set to Do not clean up.");
+			processLog.saveResults();
+			return;
+		}
+
+		LocalDate cutoff = today.withDayOfMonth(1).minusMonths(retentionMonths);
+		int cutoffYear = cutoff.getYear();
+		int cutoffMonth = cutoff.getMonthValue();
+
+		try {
+			PreparedStatement deleteOldUsageStmt = dbConn.prepareStatement("DELETE FROM usage_by_user_agent WHERE year < ? OR (year = ? AND month < ?)");
+			deleteOldUsageStmt.setInt(1, cutoffYear);
+			deleteOldUsageStmt.setInt(2, cutoffYear);
+			deleteOldUsageStmt.setInt(3, cutoffMonth);
+			int usageRowsRemoved = deleteOldUsageStmt.executeUpdate();
+
+			PreparedStatement deleteUnusedUserAgentsStmt = dbConn.prepareStatement("DELETE user_agent FROM user_agent LEFT JOIN usage_by_user_agent ON usage_by_user_agent.userAgentId = user_agent.id WHERE usage_by_user_agent.id IS NULL AND user_agent.blockAccess = 0 AND user_agent.isBot = 0");
+			int userAgentRowsRemoved = deleteUnusedUserAgentsStmt.executeUpdate();
+
+			processLog.addNote("Removed " + usageRowsRemoved + " old user agent usage rows.");
+			processLog.addNote("Removed " + userAgentRowsRemoved + " unused user agent rows.");
+			processLog.incUpdated();
+			processLog.saveResults();
+		} catch (SQLException e) {
+			processLog.incErrors("Unable to cleanup user agent. ", e);
 		}
 	}
 

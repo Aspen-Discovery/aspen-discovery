@@ -15,6 +15,7 @@ class User extends DataObject {
 	public $displayName;
 	public $password;
 	public $firstname;
+	public $middlename;
 	public $lastname;
 	public $userPreferredName;
 	public $email;
@@ -2561,8 +2562,8 @@ class User extends DataObject {
 	 * message - the message to display
 	 * @access public
 	 */
-	function placeHold(string $recordId, string $pickupBranch, ?string $cancelDate = null, ?string  $pickupSublocation = null) : array {
-		$result = $this->getCatalogDriver()->placeHold($this, $recordId, $pickupBranch, $cancelDate, $pickupSublocation);
+	function placeHold(string $recordId, string $pickupBranch, ?string $cancelDate = null, ?string  $pickupSublocation = null, $numberOfCopies = 1) : array {
+		$result = $this->getCatalogDriver()->placeHold($this, $recordId, $pickupBranch, $cancelDate, $pickupSublocation, $numberOfCopies);
 		$this->updateAltLocationForHold($pickupBranch);
 		$thisUser = translate([
 			'text' => 'You',
@@ -4620,7 +4621,10 @@ class User extends DataObject {
 		$sections['third_party_enrichment']->addAction(new AdminAction('ChiliFresh Settings', 'Define settings for ChiliFresh integration.', '/Enrichment/ChiliFreshSettings'), 'Administer Third Party Enrichment API Keys');
 		$sections['third_party_enrichment']->addAction(new AdminAction('Coce Server Settings', 'Define settings to load covers from a Coce server.', '/Enrichment/CoceServerSettings'), 'Administer Third Party Enrichment API Keys');
 		$sections['third_party_enrichment']->addAction(new AdminAction('ContentCafe Settings', 'Define settings for ContentCafe integration.', '/Enrichment/ContentCafeSettings'), 'Administer Third Party Enrichment API Keys');
-		$sections['third_party_enrichment']->addAction(new AdminAction('DP.LA Settings', 'Define settings for DP.LA integration.', '/Enrichment/DPLASettings'), 'Administer Third Party Enrichment API Keys');
+		$DPLASettingsAction = new AdminAction('DP.LA Settings', 'Define settings for DP.LA integration.', '/Enrichment/DPLASettings');
+		if ($sections['third_party_enrichment']->addAction($DPLASettingsAction, 'Administer Third Party Enrichment API Keys')) {
+			$DPLASettingsAction->addSubAction(new AdminAction('DP.LA Exclusions', 'Define titles to exclude from DP.LA results.', '/Enrichment/DPLAExclusions'), 'Administer DP.LA Exclusions');
+		}
 		$sections['third_party_enrichment']->addAction(new AdminAction('Google API Settings', 'Define settings for integrating Google APIs within Aspen Discovery.', '/Enrichment/GoogleApiSettings'), 'Administer Third Party Enrichment API Keys');
 		$sections['third_party_enrichment']->addAction(new AdminAction('LibKey Settings', 'Administer LibKey Settings', '/Admin/LibKeySettings'), 'Administer LibKey Settings');
 		$sections['third_party_enrichment']->addAction(new AdminAction('Loral Settings', 'Define settings for Loral integration.', '/Enrichment/LoralSettings'), 'Administer Loral');
@@ -5263,6 +5267,17 @@ class User extends DataObject {
 		$summary->update();
 	}
 
+	public function invalidateCachedAccountSummary(string $source) : void {
+		require_once ROOT_DIR . '/sys/User/AccountSummary.php';
+		$summary = new AccountSummary();
+		$summary->userId = $this->id;
+		$summary->source = $source;
+		if ($summary->find(true)) {
+			$summary->lastLoaded = 0;
+			$summary->update();
+		}
+	}
+
 	public function clearActiveSessions() : void {
 		//Delete any sessions for the patron to ensure they are logged out
 		$session = new Session();
@@ -5798,19 +5813,29 @@ class User extends DataObject {
 				} elseif ($homeLibrary->patronNameDisplayStyle == 'lastinitial_firstname') {
 					$this->__set('displayName', $this->firstname . ' ' . substr($this->lastname, 0, 1) . '.');
 				} elseif ($homeLibrary->patronNameDisplayStyle == 'firstinitial_middleinitial_lastname') {
+					// Ensure the middle name gets loaded from the ILS before we try to use it.
+					$this->loadContactInformation();
 					$firstNames = explode(' ', $this->firstname);
 					$displayName = '';
 					for ($i = 0; $i < count($firstNames); $i++) {
 						$displayName .= ' ' . substr($firstNames[$i], 0, 1) . '.';
 					}
+					if (!empty($this->middlename)) {
+						$displayName .= ' ' . substr($this->middlename, 0, 1) . '.';
+					}
 					$displayName .= ' ' . $this->lastname;
 
 					$this->__set('displayName', trim($displayName));
 				} elseif ($homeLibrary->patronNameDisplayStyle == 'firstname_middleinitial_lastinitial') {
+					// Ensure the middle name gets loaded from the ILS before we try to use it.
+					$this->loadContactInformation();
 					$firstNames = explode(' ', $this->firstname);
 					$displayName = $firstNames[0];
 					for ($i = 1; $i < count($firstNames); $i++) {
 						$displayName .= ' ' . substr($firstNames[$i], 0, 1) . '.';
+					}
+					if (!empty($this->middlename)) {
+						$displayName .= ' ' . substr($this->middlename, 0, 1) . '.';
 					}
 					$displayName .= ' ' . substr($this->lastname, 0, 1) . '.';
 					$this->__set('displayName', trim($displayName));
@@ -6343,28 +6368,37 @@ class User extends DataObject {
 	}
 
 	public function showRenewalLink(AccountSummary $ilsAccountSummary): bool {
-		$showRenewalLink = false;
-		if ($ilsAccountSummary->isExpirationClose()) {
-			$pType = $this->getPTypeObj();
-			if ($pType->canRenewOnline) {
-				$userLibrary = $this->getHomeLibrary();
-				if ($userLibrary->enableCardRenewal == 2) {
-					if (!empty($userLibrary->cardRenewalUrl)) {
-						$showRenewalLink = true;
-					}
-				} elseif ($userLibrary->enableCardRenewal == 3) {
-					require_once ROOT_DIR . '/sys/Enrichment/QuipuECardSetting.php';
-					$quipuECardSettings = new QuipuECardSetting();
-					if ($quipuECardSettings->find(true) && $quipuECardSettings->hasERenew) {
-						$showRenewalLink = true;
-					}
-				}
-				if (!$ilsAccountSummary->isExpired() && !$userLibrary->showCardRenewalWhenExpirationIsClose) {
-					$showRenewalLink = false;
-				}
-			}
+		$userLibrary = $this->getHomeLibrary();
+
+		if (!$this->getPTypeObj()->canRenewOnline) {
+			return false;
 		}
-		return $showRenewalLink;
+
+		if (!$ilsAccountSummary->isExpired() && !$userLibrary->showCardRenewalWhenExpirationIsClose) {
+			return false;
+		}
+
+		if ($userLibrary->enableCardRenewal == 1 && $this->getCatalogDriver()->hasCardRenewalSupport()) {
+			require_once ROOT_DIR . '/sys/Account/AccountRenewalService.php';
+			$accountRenewalService = new AccountRenewalService(); 
+			return $accountRenewalService->canRenew($this);
+		}
+
+		if (!$ilsAccountSummary->isExpirationClose()) {
+			return false;
+		}
+
+		if ($userLibrary->enableCardRenewal == 2) {
+			return !empty($userLibrary->cardRenewalUrl);
+		}
+
+		if ($userLibrary->enableCardRenewal == 3) {
+			require_once ROOT_DIR . '/sys/Enrichment/QuipuECardSetting.php';
+			$quipuECardSettings = new QuipuECardSetting();
+			return $quipuECardSettings->find(true) && $quipuECardSettings->hasERenew;
+		}
+
+		return false;
 	}
 
 	public function isNotificationHistoryEnabled() : bool {
@@ -6875,6 +6909,10 @@ class User extends DataObject {
 			return $userLibrary->enableSavedSearches == 1;
 		}
 		return false;
+	}
+
+	public function canPlaceMultiCopyHolds() : bool {
+		return ($this->hasIlsConnection() && $this->getCatalogDriver()->supportsMultiCopyHolds() && $this->getHomeLibrary()->enableMultiCopyHolds);
 	}
 }
 

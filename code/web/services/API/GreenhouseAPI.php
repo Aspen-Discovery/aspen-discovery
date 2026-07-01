@@ -8,27 +8,6 @@ class GreenhouseAPI extends AbstractAPI {
 	function launch() : void {
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 
-		global $activeLanguage;
-		if (isset($_GET['language'])) {
-			$language = new Language();
-			$language->code = $_GET['language'];
-			if ($language->find(true)) {
-				$activeLanguage = $language;
-			}
-		}
-
-		//Make sure the user can access the API based on the IP address
-		if (!in_array($method, [
-				'getLibraries',
-				'getLibrary',
-				'authenticateTokens',
-				'getNotificationAccessToken',
-				'updateAspenLiDABuild',
-			]) && !IPAddress::allowAPIAccessForClientIP()) {
-
-			$this->forbidAPIAccess();
-		}
-
 		//Move a few methods from GreenhouseAPI to CommunityAPI, but maintain compatibility
 		// with existing installations by forwarding the requests
 		if (in_array($method, [
@@ -42,21 +21,9 @@ class GreenhouseAPI extends AbstractAPI {
 			return;
 		}
 
-		header('Content-type: application/json');
-		//header('Content-type: text/html');
-		header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
+		$this->setLanguage();
 
-		if (method_exists($this, $method)) {
-			$result = $this->$method();
-			$output = json_encode($result);
-			require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
-			APIUsage::incrementStat('GreenhouseAPI', $method);
-			ExternalRequestLogEntry::logRequest('GreenhouseAPI.' . $method, $_SERVER['REQUEST_METHOD'], $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], getallheaders(), '', $_SERVER['REDIRECT_STATUS'], $output, []);
-		} else {
-			$output = json_encode(['error' => 'invalid_method']);
-		}
-		echo $output;
+		$this->handleAPIRequestAuto($method, 'greenhouse_api');
 	}
 
 	public function authenticateTokens(): array {

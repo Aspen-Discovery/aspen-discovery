@@ -511,7 +511,7 @@ class Evolve extends AbstractIlsDriver {
 	/**
 	 * @inheritDoc
 	 */
-	function placeHold(User $patron, $recordId, $pickupBranch = null, $cancelDate = null) : array {
+	function placeHold(User $patron, string $recordId, ?string $pickupBranch = null, ?string $cancelDate = null, ?string $pickupSublocation = null, ?int $numberOfCopies = 1) : array {
 		$hold_result = [
 			'success' => false,
 			'message' => translate([
@@ -712,6 +712,7 @@ class Evolve extends AbstractIlsDriver {
 			}
 			$user->phone = $accountDetails->Phone;
 			$user->email = $accountDetails->Email;
+			$user->patronType = $accountDetails->Type;
 
 			//Load home location for the user
 			global $library;
