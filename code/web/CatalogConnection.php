@@ -2261,6 +2261,10 @@ class CatalogConnection {
 		return $this->driver->getPatronHoldGroups($patronId);
 	}
 
+	public function updatePreferredPickupLocation($user, $pickupLocation, $fromMasquerade): bool {
+		return $this->driver->updatePreferredPickupLocation($user, $pickupLocation, $fromMasquerade);
+  }
+  
 	public function supportsMultiCopyHolds() : bool {
 		return $this->driver->supportsMultiCopyHolds();
 	}

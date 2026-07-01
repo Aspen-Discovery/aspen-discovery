@@ -2188,5 +2188,21 @@ class Admin_AJAX extends JSON_Action {
 			]),
 			'modalBody' => $interface->fetch('Admin/paymentDetails.tpl')
 		];
-	}	
+	}
+	/** @noinspection PhpUnused */
+	public function getILSMetadata(): array {
+		$accountProfile = null;
+		require_once ROOT_DIR . '/sys/Account/AccountProfile.php';
+		$accountProfiles = new AccountProfile();
+		$accountProfiles->find();
+		while ($accountProfiles->fetch()) {
+			if ($accountProfiles->ils == 'symphony') {
+				$accountProfile = $accountProfiles;
+				require_once ROOT_DIR . '/Drivers/SirsiDynixROA.php';
+				return (new SirsiDynixROA($accountProfile))->getPatronMetadataOptions();
+			}
+		}
+
+		return [];
+	}
 }

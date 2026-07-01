@@ -3259,6 +3259,71 @@ AspenDiscovery.Admin = (function () {
 				toggleButton.html('<i class="fas fa-eye-slash"></i> Hide Secret');
 				clientSecretField.data('visible', true);
 			}
+		},
+		populateFromILS: function (ils, objectType) {
+			function getMunicipalityTypeFromKey(key) {
+				var lastChar = key.charAt(key.length - 1);
+				if (lastChar === 'C') return 'city';
+				if (lastChar === 'T') return 'town';
+				if (lastChar === 'V') return 'village';
+				return null;
+			}
+
+			if (ils === "symphony") {
+				if (objectType === "municipalities") {
+					AspenDiscovery.Admin.showFullPageLoadingOverlay('Populating from ILS, this may take a while. Please wait...');
+
+					$.ajax({
+						url: Globals.path + "/Admin/AJAX",
+						type: 'GET',
+						data: {
+							method: 'getILSMetadata',
+						},
+						success: function (response) {
+							response.forEach(function (entry) {
+								var key = entry.key;
+								var municipalityType = getMunicipalityTypeFromKey(key);
+
+								if (municipalityType === null) {
+									return; // skip entries that don't end in C, T, or V
+								}
+
+								addNewmunicipalities(); // existing generated function
+
+								var $newRow = $('#municipalities tbody tr').last();
+
+								$newRow.find('input[name^="municipalities_ilsMunicipality"]').val(key);
+								$newRow.find('select[name^="municipalities_municipalityType"]').val(municipalityType);
+								$newRow.find('input[name^="municipalities_selfRegAllowed"]').prop('checked', true);
+							});
+
+							$('#aspenFullPageLoadingOverlay').remove();
+						},
+						error: function () {
+							$('#aspenFullPageLoadingOverlay').remove();
+							AspenDiscovery.showMessage('Error', 'Could not populate from ILS.');
+						}
+					});
+				}
+			}
+		},
+		showFullPageLoadingOverlay: function (message) {
+			if ($('#aspenFullPageLoadingOverlay').length) {
+				return; // already showing, don't stack multiple overlays
+			}
+			var $overlay = $(
+				'<div id="aspenFullPageLoadingOverlay" style="' +
+				'position: fixed; top: 0; left: 0; width: 100%; height: 100%; ' +
+				'background: rgba(0, 0, 0, 0.5); z-index: 99999; ' +
+				'display: flex; align-items: center; justify-content: center; ' +
+				'flex-direction: column;">' +
+				'<i class="fas fa-spinner fa-spin fa-3x" style="color: #fff;"></i>' +
+				'<div style="color: #fff; margin-top: 15px; font-size: 1.1em;">' +
+				(message || 'Loading...') +
+				'</div>' +
+				'</div>'
+			);
+			$('body').append($overlay);
 		}
 	};
 }(AspenDiscovery.Admin || {}));

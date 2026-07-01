@@ -1263,7 +1263,12 @@ class Polaris extends AbstractIlsDriver {
 
 						if ($homeLocationChanged) {
 							//reset the patrons preferred pickup location to their new home library
-							$user->setPickupLocationId($user->homeLocationId);
+							//unless we get preferred pickup location from api response
+							if (isset($patronBasicData->RequestPickupBranchID)) {
+								$user->setPickupLocationId($patronBasicData->RequestPickupBranchID);
+							} else {
+								$user->setPickupLocationId($user->homeLocationId);
+							}
 							$user->setRememberHoldPickupLocation(0);
 						}
 					}
@@ -1845,6 +1850,35 @@ class Polaris extends AbstractIlsDriver {
 			$result['messages'][] = 'You do not have permission to update profile information.';
 		}
 		return $result;
+	}
+
+	function updatePreferredPickupLocation($patron, $pickupLocation, $fromMasquerade): bool {
+		$staffInfo = $this->getStaffUserInfo();
+		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}";
+		$body = new stdClass();
+		$body->LogonBranchID = $patron->getHomeLocationCode();
+		$body->LogonUserID = (string)$staffInfo['polarisId'];
+		$body->LogonWorkstationID = $this->getWorkstationID($patron);
+
+		//User the patron's home library rather than the active library just in case they are on the wrong interface
+		$library = $patron->getHomeLibrary();
+		$this->setupBodyForSelfRegAndPatronUpdateCall('patronUpdate', $body, $library);
+
+		// Update Preferred Pickup Location
+		if (!empty($pickupLocation)) {
+			$homeLibraryLocation = new Location();
+			if ($homeLibraryLocation->get('locationId', $pickupLocation)) {
+				$homeBranchCode = strtoupper($homeLibraryLocation->code);
+				$body->RequestPickupBranchID = $homeBranchCode;
+			}
+		}
+		$encodedBody = json_encode($body);
+		$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), $encodedBody, $fromMasquerade || UserAccount::isUserMasquerading());
+		ExternalRequestLogEntry::logRequest('polaris.updatePatronInfo', 'PUT', $this->getWebServiceURL() . $polarisUrl, $this->apiCurlWrapper->getHeaders(), $encodedBody, $this->lastResponseCode, $response, []);
+		if ($response && $this->lastResponseCode == 200) {
+			return true;
+		}
+		return false;
 	}
 
 	function updatePin(User $patron, ?string $oldPin, string $newPin) {
