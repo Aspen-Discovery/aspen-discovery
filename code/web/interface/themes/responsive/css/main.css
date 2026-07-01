@@ -11498,9 +11498,6 @@ td[data-entry-id]:has(.date-edit:focus)::after {
   margin-top: 2em;
   font-size: small;
 }
-.horizDisplayShelfLocations .col-tn-4:last-child {
-  padding-right: 0;
-}
 #multiple-variations-column.formatDisplayHorizontal .horizDisplayShelfLocations .col-tn-4:first-child {
   padding-left: 0;
 }
@@ -12920,3 +12917,4 @@ html.hero-slider-signage {
     overflow: visible !important;
   }
 }
+/*# sourceMappingURL=main.css.map */

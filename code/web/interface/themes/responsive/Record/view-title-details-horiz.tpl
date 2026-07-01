@@ -123,7 +123,7 @@
 
     {if !empty($showPhysicalDescriptions) && !empty($physicalDescriptions)}
 		<div class="row">
-			<div class="result-label col-sm-4 col-xs-12">{translate text='Physical Desc' isPublicFacing=true}</div>
+			<div class="result-label col-sm-4 col-xs-12">{translate text='Physical Description' isPublicFacing=true}</div>
 			<div class="result-value col-sm-8 col-xs-12">
                 {implode subject=$physicalDescriptions glue="<br>"}
                 {if $recordDriver->isClosedCaptioned()}
@@ -132,6 +132,25 @@
 			</div>
 		</div>
     {/if}
+
+	{if !empty($showPhysicalDescriptions) && !empty($duration)}
+		<div class="row">
+			<div class="result-label col-sm-4 col-xs-12">{translate text='Duration' isPublicFacing=true}</div>
+			<div class="result-value col-sm-8 col-xs-12">
+				{math equation="floor(x/60)" x=$duration assign="hours"}
+				{math equation="x%60" x=$duration assign="minutes"}
+				{if $hours != 0 && $minutes != 0}
+					{translate text='%1% hours %2% minutes' 1=$hours 2=$minutes isPublicFacing=true}
+				{else}
+					{if $hours == 0}
+						{translate text='%2% minutes' 2=$minutes isPublicFacing=true}<br/>
+					{else}
+						{translate text='%1% hours' 1=$hours isPublicFacing=true}<br/>
+					{/if}
+				{/if}
+			</div>
+		</div>
+	{/if}
 
     {if !empty($showArInfo) && $recordDriver->getAcceleratedReaderDisplayString()}
 		<div class="row">

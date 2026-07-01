@@ -23,9 +23,9 @@ class UserAccount {
 	public static function needsToComplete2FA(): bool {
 		try {
 			require_once ROOT_DIR . '/sys/TwoFactorAuthSetting.php';
-			$twoFactorSetting = new TwoFactorAuthSetting();
-			$twoFactorSetting->whereAdd("isEnabled = 'optional' OR isEnabled = 'mandatory'");
-			if ($twoFactorSetting->find()) {
+			$user = UserAccount::getActiveUserObj();
+			$twoFactorAuthSetting = $user->getTwoFactorAuthenticationSetting();
+			if ($twoFactorAuthSetting != null) {
 
 				if (!UserAccount::isUserMasquerading()) {
 					//Two-factor authentication might be required
@@ -60,7 +60,6 @@ class UserAccount {
 	}
 
 	public static function get2FAMethodStatus(): array {
-		$activeLibrary = null;
 		$user = UserAccount::getActiveUserObj();
 		if ($user !== null) {
 

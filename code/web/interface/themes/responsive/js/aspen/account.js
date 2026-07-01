@@ -2818,7 +2818,7 @@ AspenDiscovery.Account = (function () {
 			if (Globals.loggedIn || mandatoryEnroll) {
 				$.getJSON(Globals.path + "/MyAccount/AJAX?method=get2FAEnrollment&step=complete&mandatoryEnrollment=" + mandatoryEnroll + "&useMethod=" + method + "&secretId=" + secret, function (data) {
 					if (data.success) {
-						AspenDiscovery.showMessage(data.title, data.body, false, 2000)
+						AspenDiscovery.showMessage(data.title, data.body, false, true);
 					}
 				});
 			} else {
@@ -2957,13 +2957,15 @@ AspenDiscovery.Account = (function () {
 				}
 			}
 
+			$("#codeVerificationFailedPlaceholder").html("").hide();
+
 			$.getJSON(Globals.path + "/MyAccount/AJAX?method=verify2FA&loggingIn=true&code=" + code + "&useMethod=" + authMethod, function (data) {
 				// update #codeVerificationFailedPlaceholder with failed verification status, otherwise move onto next step
 				if (data.success === "true") {
 					Globals.loggedIn = true;
 
 					if (myAccountAuth === 'true') {
-						window.location.reload();
+						window.location.href = window.location.pathname + window.location.search;
 					}
 					$('#loginLinkIcon').removeClass('fa-sign-in-alt').addClass('fa-user');
 					$('#login-button-label').html(name);
