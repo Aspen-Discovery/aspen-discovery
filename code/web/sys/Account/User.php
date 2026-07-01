@@ -227,6 +227,7 @@ class User extends DataObject {
 			'cat_password',
 			'ils_password',
 			'firstname',
+			'middlename',
 			'lastname',
 			'email',
 			'displayName',
