@@ -5022,7 +5022,7 @@ AspenDiscovery.Account = (function () {
 			if (Globals.loggedIn || mandatoryEnroll) {
 				$.getJSON(Globals.path + "/MyAccount/AJAX?method=get2FAEnrollment&step=complete&mandatoryEnrollment=" + mandatoryEnroll + "&useMethod=" + method + "&secretId=" + secret, function (data) {
 					if (data.success) {
-						AspenDiscovery.showMessage(data.title, data.body, false, 2000)
+						AspenDiscovery.showMessage(data.title, data.body, false, true);
 					}
 				});
 			} else {

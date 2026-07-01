@@ -155,15 +155,26 @@ class MyAccount_StaffLogin extends Action {
 		$interface->assign('isLoginPage', true);
 
 		if ($msg === 'You must authenticate before logging in. Please provide the 6-digit code that was emailed to you.') {
+			$canUseTotp = false;
+			$canUseEmail = false;
+			$user = UserAccount::getActiveUserObj();
+			$twoFactorAuthSetting = $user->getTwoFactorAuthenticationSetting();
+			if ($twoFactorAuthSetting != null){
+				$canUseTotp = $twoFactorAuthSetting->allowTotp;
+				$canUseEmail = $twoFactorAuthSetting->allowEmail;
+			}
+			$interface->assign('hasTotp', $canUseTotp);
+			$interface->assign('hasEmail', $canUseEmail);
+
 			$this->display('../MyAccount/login-2fa.tpl', 'Login', '');
 		} elseif ($msg === 'You must enroll into two-factor authentication before logging in.') {
 			$canUseTotp = false;
 			$canUseEmail = false;
-			$authSetting = new TwoFactorAuthSetting();
-			$authSetting->id = $library->twoFactorAuthSettingId;
-			if ($authSetting->find(true)) {
-				$canUseTotp = $authSetting->allowTotp;
-				$canUseEmail = $authSetting->allowEmail;
+			$user = UserAccount::getActiveUserObj();
+			$twoFactorAuthSetting = $user->getTwoFactorAuthenticationSetting();
+			if ($twoFactorAuthSetting != null){
+				$canUseTotp = $twoFactorAuthSetting->allowTotp;
+				$canUseEmail = $twoFactorAuthSetting->allowEmail;
 			}
 			$interface->assign('canUseTotp', $canUseTotp);
 			$interface->assign('canUseEmail', $canUseEmail);

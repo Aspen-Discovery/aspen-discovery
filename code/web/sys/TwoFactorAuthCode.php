@@ -232,8 +232,22 @@ class TwoFactorAuthCode extends DataObject {
 					]),
 				];
 			}
+			if (TwoFactorAuthTOTPSecret::verifyCode($totpSecret->secretKey, $code, 1)) {
+				//We're verifing the code for the first time
+				$totpSecret->verified = 1;
+				$totpSecret->update();
+				return [
+					'success' => 'true',
+					'message' => translate([
+						'text' => 'Code OK',
+						'isPublicFacing' => true,
+					]),
+				];
+			}
 		} else {
 			$totpSecret->verified = 1;
+			//Make sure we get the latest secret if the user has opted in and out of TOTP multiple times
+			$totpSecret->orderBy('id desc');
 			if (!$totpSecret->find(true)) {
 				return [
 					'success' => 'false',
@@ -243,17 +257,15 @@ class TwoFactorAuthCode extends DataObject {
 					]),
 				];
 			}
-		}
-
-		// Verify TOTP code
-		if (TwoFactorAuthTOTPSecret::verifyCode($totpSecret->secretKey, $code, 1)) {
-			return [
-				'success' => 'true',
-				'message' => translate([
-					'text' => 'Code OK',
-					'isPublicFacing' => true,
-				]),
-			];
+			if (TwoFactorAuthTOTPSecret::verifyCode($totpSecret->secretKey, $code, 1)) {
+				return [
+					'success' => 'true',
+					'message' => translate([
+						'text' => 'Code OK',
+						'isPublicFacing' => true,
+					]),
+				];
+			}
 		}
 
 		// Check if it's a backup code or manual recovery code

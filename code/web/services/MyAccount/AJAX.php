@@ -10376,7 +10376,11 @@ class MyAccount_AJAX extends JSON_Action {
 
 		if ($secretId !== null) {
 			// TOTP enrollment verification
-			return $twoFactorAuth->validateCode($code, $authMethod, $secretId);
+			$totpValidated = $twoFactorAuth->validateCode($code, $authMethod, $secretId);
+			//If we don't validate we can return the message. If we do validate we need to continue with the login
+			if (!$totpValidated['success']) {
+				return $totpValidated;
+			}
 		}
 
 		if ($isLoggingIn) {
