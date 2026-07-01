@@ -1027,39 +1027,40 @@ class Koha extends AbstractIlsDriver {
 					}
 				} else {
 					if (isset($error) && strpos($apiURL, "/api/v1/auth/password/validation") !== false) {
-					global $logger;
-					$logger->log("OAuth2 is disabled", Logger::LOG_ERROR);
-					//User is not valid, check to see if they have a valid account in Koha so we can return a different error
-					/** @noinspection SqlResolve */
-					$sql = "SELECT borrowernumber, cardnumber, userId, login_attempts from borrowers where cardnumber = '" . mysqli_escape_string($this->dbConnection, $barcode) . "' OR userId = '" . mysqli_escape_string($this->dbConnection, $barcode) . "'";
+						global $logger;
+						$logger->log("OAuth2 is disabled", Logger::LOG_ERROR);
+						//User is not valid, check to see if they have a valid account in Koha so we can return a different error
+						/** @noinspection SqlResolve */
+						$sql = "SELECT borrowernumber, cardnumber, userId, login_attempts from borrowers where cardnumber = '" . mysqli_escape_string($this->dbConnection, $barcode) . "' OR userId = '" . mysqli_escape_string($this->dbConnection, $barcode) . "'";
 
-					$lookupUserResult = mysqli_query($this->dbConnection, $sql);
-					if ($lookupUserResult->num_rows > 0) {
-						$userExistsInDB = true;
-						$lookupUserRow = $lookupUserResult->fetch_assoc();
-						$lookupUserResult->close();
-						if (UserAccount::isUserMasquerading()) {
-							$patronId = $lookupUserRow['borrowernumber'];
-							$newUser = $this->loadPatronInfoFromDB($patronId, null, $barcode);
-							if (!empty($newUser) && !($newUser instanceof AspenError)) {
-								return $newUser;
-							}
-						} else {
-							//Check to see if the patron password has expired, this is not available on all systems.
-							if (isset($error) && $error == 'PasswordExpired') {
-								$expiredPasswordResult = $this->processExpiredPassword($lookupUserRow['borrowernumber'], $barcode);
-								if ($expiredPasswordResult != null) {
-									return $expiredPasswordResult;
+						$lookupUserResult = mysqli_query($this->dbConnection, $sql);
+						if ($lookupUserResult->num_rows > 0) {
+							$userExistsInDB = true;
+							$lookupUserRow = $lookupUserResult->fetch_assoc();
+							$lookupUserResult->close();
+							if (UserAccount::isUserMasquerading()) {
+								$patronId = $lookupUserRow['borrowernumber'];
+								$newUser = $this->loadPatronInfoFromDB($patronId, null, $barcode);
+								if (!empty($newUser) && !($newUser instanceof AspenError)) {
+									return $newUser;
+								}
+							} else {
+								//Check to see if the patron password has expired, this is not available on all systems.
+								if (isset($error) && $error == 'PasswordExpired') {
+									$expiredPasswordResult = $this->processExpiredPassword($lookupUserRow['borrowernumber'], $barcode);
+									if ($expiredPasswordResult != null) {
+										return $expiredPasswordResult;
+									}
+								}
+								//Check to see if the user has reached the maximum number of login attempts
+								$maxLoginAttempts = $this->getKohaSystemPreference('FailedLoginAttempts');
+								if (!empty($maxLoginAttempts) && $maxLoginAttempts <= $lookupUserRow['login_attempts']) {
+									return new AspenError('Maximum number of failed login attempts reached, your account has been locked.');
 								}
 							}
-							//Check to see if the user has reached the maximum number of login attempts
-							$maxLoginAttempts = $this->getKohaSystemPreference('FailedLoginAttempts');
-							if (!empty($maxLoginAttempts) && $maxLoginAttempts <= $lookupUserRow['login_attempts']) {
-								return new AspenError('Maximum number of failed login attempts reached, your account has been locked.');
-							}
+						} else {
+							$lookupUserResult->close();
 						}
-					} else {
-						$lookupUserResult->close();
 					}
 				}
 			} else {
