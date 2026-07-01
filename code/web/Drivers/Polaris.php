@@ -1867,7 +1867,7 @@ class Polaris extends AbstractIlsDriver {
 		// Update Preferred Pickup Location
 		if (!empty($pickupLocation)) {
 			$homeLibraryLocation = new Location();
-			if ($homeLibraryLocation->get('code', $pickupLocation)) {
+			if ($homeLibraryLocation->get('locationId', $pickupLocation)) {
 				$homeBranchCode = strtoupper($homeLibraryLocation->code);
 				$body->RequestPickupBranchID = $homeBranchCode;
 			}
