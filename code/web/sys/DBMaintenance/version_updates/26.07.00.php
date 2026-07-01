@@ -32,7 +32,7 @@ function getUpdates26_07_00(): array {
 					`ilsMunicipality` varchar(255) default '' NOT NULL,
 					`municipalityType` varchar(10),
 					`selfRegAllowed` tinyint(1) NOT NULL DEFAULT '1',
-				) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;",
+				) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;"
 			]
 		], //symphony_municipalities
 
