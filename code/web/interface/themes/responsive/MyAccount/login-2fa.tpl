@@ -64,7 +64,7 @@
                     {/if}
 				</div>
 			</form>
-            {if !empty($setupMethods) && count($setupMethods) > 1}
+			{if !empty($hasTotp) && !empty($hasEmail)}
 				<div class="text-center">
 					<a class="btn btn-secondary" style="margin-top: 2em" onclick="$('#loginFormWrapper').toggle(); $('#altMethodWrapper').toggle(); return false;">{translate text="Try Another Method" isPublicFacing=true}</a>
 				</div>

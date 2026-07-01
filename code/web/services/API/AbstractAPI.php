@@ -71,7 +71,14 @@ abstract class AbstractAPI extends Action{
 		return false;
 	}
 
-	protected function getLiDAUserAgent() : bool {
+	/**
+	 * @oauth false
+	 * @token false
+	 * @public false
+	 *
+	 * @return bool
+	 */
+	public function getLiDAUserAgent() : bool {
 		$userAgent = $this->getHeader('User-Agent');
 		if (!is_null($userAgent) && (str_contains($userAgent, "Aspen LiDA") || str_contains($userAgent, 'aspen lida'))) {
 			return true;
