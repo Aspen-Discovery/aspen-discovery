@@ -3031,7 +3031,7 @@ class GroupedWork_AJAX extends JSON_Action {
 				$firstRecord = reset($relatedRecords);
 				$interface->assign('firstRecord', $firstRecord);
 				$interface->assign('isEContent', $firstRecord->isEContent());
-				$interface->assign('itemSummary', $firstRecord->getItemSummary());
+				$interface->assign('itemSummary', $variation->getItemSummary());
 				if (count($relatedRecords) === 1){
 					$interface->assign('duration', $firstRecord->duration);
 					$interface->assign('multipleDurations', false);
