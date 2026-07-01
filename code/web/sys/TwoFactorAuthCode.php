@@ -92,7 +92,15 @@ class TwoFactorAuthCode extends DataObject {
 	public function createRecoveryCode($username) : array {
 		$user = new User();
 		$user->ils_barcode = $username;
-		if ($user->find(true)) {
+		if (!$user->find(true)) {
+			//Try username for local admins
+			$user = new User();
+			$user->username = $username;
+			if (!$user->find(true)) {
+				$user = null;
+			}
+		}
+		if ($user != null) {
 			if ($user->twoFactorStatus == '1') {
 				$twoFactorAuthCode = new TwoFactorAuthCode();
 				$twoFactorAuthCode->code = mt_rand(100000, 999999);
@@ -224,8 +232,22 @@ class TwoFactorAuthCode extends DataObject {
 					]),
 				];
 			}
+			if (TwoFactorAuthTOTPSecret::verifyCode($totpSecret->secretKey, $code, 1)) {
+				//We're verifing the code for the first time
+				$totpSecret->verified = 1;
+				$totpSecret->update();
+				return [
+					'success' => 'true',
+					'message' => translate([
+						'text' => 'Code OK',
+						'isPublicFacing' => true,
+					]),
+				];
+			}
 		} else {
 			$totpSecret->verified = 1;
+			//Make sure we get the latest secret if the user has opted in and out of TOTP multiple times
+			$totpSecret->orderBy('id desc');
 			if (!$totpSecret->find(true)) {
 				return [
 					'success' => 'false',
@@ -235,24 +257,22 @@ class TwoFactorAuthCode extends DataObject {
 					]),
 				];
 			}
+			if (TwoFactorAuthTOTPSecret::verifyCode($totpSecret->secretKey, $code, 1)) {
+				return [
+					'success' => 'true',
+					'message' => translate([
+						'text' => 'Code OK',
+						'isPublicFacing' => true,
+					]),
+				];
+			}
 		}
 
-		// Verify TOTP code
-		if (TwoFactorAuthTOTPSecret::verifyCode($totpSecret->secretKey, $code, 1)) {
-			return [
-				'success' => 'true',
-				'message' => translate([
-					'text' => 'Code OK',
-					'isPublicFacing' => true,
-				]),
-			];
-		}
-
-		// Check if it's a backup code
+		// Check if it's a backup code or manual recovery code
 		$backupCode = new TwoFactorAuthCode();
 		$backupCode->code = $code;
 		$backupCode->userId = $userId;
-		$backupCode->status = 'backup';
+		$backupCode->whereAddIn('status', ['created', 'backup'], true);
 
 		if ($backupCode->find(true)) {
 			$backupCode->status = 'used';

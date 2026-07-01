@@ -1,6 +1,7 @@
 {strip}
 	<div id="page-content" class="col-xs-12">
 		<h1>{translate text='Two-factor Authentication' isPublicFacing=true}</h1>
+		<p class="alert alert-danger" id="codeVerificationFailedPlaceholder" style="display: none;"></p>
 		<div id="loginFormWrapper">
             {if $authMethod === 'totp'}
                 {if !$codeSent}
@@ -15,7 +16,6 @@
 					<p>{translate text="Enter the code sent to your authentication method or provide a backup code." isPublicFacing=true}</p>
                 {/if}
             {/if}
-			<p class="alert alert-danger" id="codeVerificationFailedPlaceholder" style="display: none;"></p>
 			<p id="newCodeSentPlaceholder" class="alert alert-info" style="display: none;"></p>
 			<p class="alert alert-info" id="loading" style="display: none">
                 {translate text="Logging you in now. Please wait." isPublicFacing=true}
@@ -29,6 +29,20 @@
 						<div class="col-xs-12 col-sm-8">
 							<input type="text" class="form-control" id="code" name="code" maxlength="6" spellcheck="false" autocomplete="false">
 						</div>
+						<script type="text/javascript">
+							{literal}
+							$(document).ready(function () {
+								$("#code").on('keydown', function (e) {
+									if (e.which === 13) {
+										AspenDiscovery.Account.verify2FALogin();
+										e.preventDefault();
+										return false;
+									}
+								});
+
+							});
+							{/literal}
+						</script>
 					</div>
 				</div>
 				<div id="loginActions" class="form-group">
@@ -39,6 +53,7 @@
                         {if !empty($comment)}<input type="hidden" id="comment" name="comment" value="{$comment|escape:"html"}">{/if}
                         {if !empty($cardNumber)}<input type="hidden" name="cardNumber" value="{$cardNumber|escape:"html"}">{/if}
 						<input type="hidden" id="myAccountAuth" value="true">
+						<input type="hidden" id="authMethod" value="{$authMethod}">
 						<input type="submit" name="submit" value="{translate text="Verify" isPublicFacing=true}" id="loginFormVerify" class="btn btn-primary" onclick="return AspenDiscovery.Account.verify2FALogin();">
 						&nbsp;<a id="loginFormCancelLogin" class="btn btn-warning" href="/MyAccount/Logout">{translate text="Cancel Sign In" isPublicFacing=true}</a>
 					</div>
@@ -49,7 +64,7 @@
                     {/if}
 				</div>
 			</form>
-            {if !empty($setupMethods) && count($setupMethods) > 1}
+			{if !empty($hasTotp) && !empty($hasEmail)}
 				<div class="text-center">
 					<a class="btn btn-secondary" style="margin-top: 2em" onclick="$('#loginFormWrapper').toggle(); $('#altMethodWrapper').toggle(); return false;">{translate text="Try Another Method" isPublicFacing=true}</a>
 				</div>

@@ -1805,6 +1805,9 @@ AspenDiscovery.Admin = (function () {
 		createRecovery2FACode: function () {
 			var username = $("#username").val();
 			if (Globals.loggedIn) {
+				$("#error").html("").hide();
+				$("#generatedCode").html("").hide();
+
 				$.getJSON(Globals.path + "/Admin/AJAX?method=createRecoveryCode&user=" + username, function (data) {
 					// update #codeVerificationFailedPlaceholder with failed verification status, otherwise move onto next step
 					if (data.success) {

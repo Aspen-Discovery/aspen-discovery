@@ -1363,6 +1363,9 @@ class Admin_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function createRecoveryCode() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission(['Administer Two-Factor Authentication']);
+		$this->checkRequiredParameters(['user']);
 		$user = $_REQUEST['user'] ?? '0';
 		require_once ROOT_DIR . '/sys/TwoFactorAuthCode.php';
 		$twoFactorAuth = new TwoFactorAuthCode();

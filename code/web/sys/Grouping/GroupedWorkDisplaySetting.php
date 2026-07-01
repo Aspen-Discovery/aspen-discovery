@@ -752,12 +752,13 @@ class GroupedWorkDisplaySetting extends DataObject {
 						'type' => 'enum',
 						'values' => [
 							2 => 'Show first 3 available copies & Where Is It link always',
-							1 => 'Show first 3 available copies  & Where Is It link only if there additional copies',
+							1 => 'Show first 3 available copies & Where Is It link only if there additional copies',
 							0 => 'Show first 3 available copies only',
 							3 => 'Show Where Is It link only',
 						],
 						'label' => 'Copy Information to show',
 						'description' => 'What to show for copy summary and in the Where Is It link.',
+						'note' => 'In Horizontal Display, only 2 copies are shown. If there are 3 copies and Where Is It is only displayed when additional copies are present, the 3rd location will be shown.',
 						'hideInLists' => true,
 					],
 					'showInSearchResultsMainDetails' => [
