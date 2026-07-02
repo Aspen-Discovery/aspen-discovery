@@ -932,9 +932,31 @@ var Globals = (function () {
 		cookiePolicyHTML: '',
 		timeUntilSessionExpiration: 0,
 		modalCloseDestination: '',
-		language: 'en'
+		language: 'en',
+		jsTranslations: {}
 	}
 })(Globals || {});
+
+function __(phrase, vars) {
+	if (Globals.jsTranslations[phrase] !== undefined) {
+		var result = Globals.jsTranslations[phrase];
+		if (vars) {
+			Object.keys(vars).forEach(function(varName) {
+				result = result.replace(new RegExp('\\{' + varName + '\\}', 'g'), vars[varName]);
+			});
+		}
+		return result;
+	}
+	console.warn('[i18n] Missing JS translation: "' + phrase + '" — run extract_js_translations.php');
+	if (vars) {
+		var result = phrase;
+		Object.keys(vars).forEach(function(varName) {
+			result = result.replace(new RegExp('\\{' + varName + '\\}', 'g'), vars[varName]);
+		});
+		return result;
+	}
+	return phrase;
+}
 var aspenJQ = $;
 var AspenDiscovery = (function(){
 	
@@ -1233,7 +1255,7 @@ var AspenDiscovery = (function(){
 				return aspenJQ(this).attr('name') + "=" + aspenJQ(this).val();
 			}).get().join("&");
 			if (selectedTitles.length === 0 && promptForProcessingAll){
-				var ret = confirm('You have not selected any items, process all items?');
+				var ret = confirm(__('You have not selected any items, process all items?'));
 				if (ret === true){
 					AspenDiscovery.selectAllTitles();
 					selectedTitles = titleSelect.map(function() {
@@ -1257,7 +1279,7 @@ var AspenDiscovery = (function(){
 				return aspenJQ(this).attr('name') + "=" + aspenJQ(this).val();
 			}).get().join("&");
 			if (selectedCategories.length === 0){
-				var ret = confirm('No browse categories were selected');
+				var ret = confirm(__('No browse categories were selected'));
 			}
 			return selectedCategories;
 		},
@@ -1453,6 +1475,10 @@ var AspenDiscovery = (function(){
 					buttons += "<button id='confirmCancelBtn' class='tool btn btn-default' onclick='AspenDiscovery.closeLightbox()'>" + cancelButtonLabel + "</button>";
 					AspenDiscovery.showMessageWithButtons(messageTitle, messageBody, buttons, false, '', false, messageTitle.length === 0,true);
 				});
+			} else {
+				var buttons = "<button id='confirmOkBtn' class='tool btn " + confirmStyle + "' onclick='" + confirmFunctionAsString + "'><i class='fas fa-spinner fa-spin hidden' role='status' aria-hidden='true'></i> " + okButtonLabel + "</button>";
+				buttons += "<button id='confirmCancelBtn' class='tool btn btn-default' onclick='AspenDiscovery.closeLightbox()'>" + cancelButtonLabel + "</button>";
+				AspenDiscovery.showMessageWithButtons(messageTitle, messageBody, buttons, false, '', false, messageTitle.length === 0, true);
 			}
 
 		},
@@ -2403,7 +2429,7 @@ AspenDiscovery.Account = (function () {
 
 		followLinkIfLoggedIn: function (trigger, linkDestination) {
 			if (trigger === undefined) {
-				alert("You must provide the trigger to follow a link after logging in.");
+				alert(__('You must provide the trigger to follow a link after logging in.'));
 			}
 			var jqTrigger = $(trigger);
 			if (linkDestination === undefined) {
@@ -2974,7 +3000,7 @@ AspenDiscovery.Account = (function () {
 
 
 		removeLinkedUser: function (idToRemove) {
-			if (confirm("Are you sure you want to stop managing this account?")) {
+			if (confirm(__('Are you sure you want to stop managing this account?'))) {
 				var url = Globals.path + "/MyAccount/AJAX?method=removeAccountLink&idToRemove=" + idToRemove;
 				$.getJSON(url, function (data) {
 					if (data.success === true) {
@@ -2988,7 +3014,7 @@ AspenDiscovery.Account = (function () {
 		},
 
 		removeManagingAccount: function (idToRemove) {
-			if (confirm("Are you sure you want to break the link with this account?")) {
+			if (confirm(__('Are you sure you want to break the link with this account?'))) {
 				var url = Globals.path + "/MyAccount/AJAX?method=removeManagingAccount&idToRemove=" + idToRemove;
 				$.getJSON(url, function (data) {
 					if (data.success === true) {
@@ -3086,7 +3112,7 @@ AspenDiscovery.Account = (function () {
 
 		renewAll: function () {
 			if (Globals.loggedIn) {
-				if (confirm('Renew All Items?')) {
+				if (confirm(__('Renew All Items?'))) {
 					AspenDiscovery.loadingMessage();
 					// noinspection JSUnresolvedFunction
 					$.getJSON(Globals.path + "/MyAccount/AJAX?method=renewAll", function (data) {
@@ -3128,7 +3154,7 @@ AspenDiscovery.Account = (function () {
 			if (Globals.loggedIn) {
 				var selectedTitles = AspenDiscovery.getSelectedTitles();
 				if (selectedTitles) {
-					if (confirm('Renew selected Items?')) {
+					if (confirm(__('Renew selected Items?'))) {
 						AspenDiscovery.loadingMessage();
 						// noinspection JSUnresolvedFunction
 						$.getJSON(Globals.path + "/MyAccount/AJAX?method=renewSelectedItems&" + selectedTitles, function (data) {
@@ -3331,7 +3357,7 @@ AspenDiscovery.Account = (function () {
 		},
 
 		cancelVdxRequest: function (patronId, requestId, cancelId) {
-			if (confirm("Are you sure you want to cancel this request?")) {
+			if (confirm(__('Are you sure you want to cancel this request?'))) {
 				var ajaxUrl = Globals.path + "/MyAccount/AJAX?method=cancelVdxRequest&patronId=" + patronId + "&requestId=" + requestId + "&cancelId=" + cancelId;
 				$.ajax({
 					url: ajaxUrl,
@@ -3654,7 +3680,7 @@ AspenDiscovery.Account = (function () {
 				promptForSelectAll = true;
 			}
 			var selectedTitles = $("input.titleSelect:checked ");
-			if (selectedTitles.length === 0 && promptForSelectAll && confirm('You have not selected any items, process all items?')) {
+			if (selectedTitles.length === 0 && promptForSelectAll && confirm(__('You have not selected any items, process all items?'))) {
 				selectedTitles = $("input.titleSelect")
 					.attr('checked', 'checked');
 			}
@@ -4723,7 +4749,7 @@ AspenDiscovery.Account = (function () {
 		},
 
 		deleteSavedEvent: function (id, page, filter) {
-			if (confirm("Are you sure you want to remove this event?")) {
+			if (confirm(__('Are you sure you want to remove this event?'))) {
 				var url = Globals.path + '/MyAccount/AJAX?method=deleteSavedEvent&id=' + id;
 
 				$.getJSON(url, function (data) {
@@ -4840,7 +4866,7 @@ AspenDiscovery.Account = (function () {
 			return false;
 		},
 		deleteAllListTitles: function (id) {
-			AspenDiscovery.confirm("Delete All Titles?", "Are you sure you want to delete all items from this list? The titles will be permanently deleted.","Yes", "No", true, "AspenDiscovery.Account.doDeleteAllListTitles(" + id + ");", "btn-danger");
+			AspenDiscovery.confirm(__('Delete All Titles?'), __('Are you sure you want to delete all items from this list? The titles will be permanently deleted.'), __('Yes'), __('No'), false, "AspenDiscovery.Account.doDeleteAllListTitles(" + id + ");", "btn-danger");
 			return false;
 		},
 		doDeleteAllListTitles: function (id) {
@@ -4854,9 +4880,9 @@ AspenDiscovery.Account = (function () {
 		deleteSelectedListTitles: function (id) {
 			var selectedTitles = AspenDiscovery.getSelectedTitles(false);
 			if (selectedTitles) {
-				AspenDiscovery.confirm("Delete Selected Titles?", "Are you sure you want to delete the selected items from this list? The titles will be permanently deleted.","Yes", "No", true, "AspenDiscovery.Account.doDeleteSelectedListTitles(" + id + ");", "btn-danger");
+				AspenDiscovery.confirm(__('Delete Selected Titles?'), __('Are you sure you want to delete the selected items from this list? The titles will be permanently deleted.'), __('Yes'), __('No'), false, "AspenDiscovery.Account.doDeleteSelectedListTitles(" + id + ");", "btn-danger");
 			}else{
-				AspenDiscovery.confirm("Delete Selected Titles?", "No titles are selected, would you like to delete all titles on this page? The titles will be permanently deleted.","Yes", "No", true, "AspenDiscovery.selectAllTitles();AspenDiscovery.Account.doDeleteSelectedListTitles(" + id + ");", "btn-danger");
+				AspenDiscovery.confirm(__('Delete Selected Titles?'), __('No titles are selected, would you like to delete all titles on this page? The titles will be permanently deleted.'), __('Yes'), __('No'), false, "AspenDiscovery.selectAllTitles();AspenDiscovery.Account.doDeleteSelectedListTitles(" + id + ");", "btn-danger");
 			}
 			return false;
 		},
@@ -7613,7 +7639,7 @@ AspenDiscovery.Admin = (function () {
 
 		deleteNYTList: function (id) {
 			var listId = id;
-			if (confirm("Are you sure you want to delete this list?")) {
+			if (confirm(__('Are you sure you want to delete this list?'))) {
 				$.getJSON(Globals.path + '/Admin/AJAX?method=deleteNYTList&id=' + listId, function (data) {
 					AspenDiscovery.showMessage("Success", data.message, true, true);
 				})
@@ -8457,10 +8483,10 @@ AspenDiscovery.Admin = (function () {
 					).fail(AspenDiscovery.ajaxFail);
 					return false;
 				} else {
-					alert("Select at least one library to copy to");
+					alert(__('Select at least one library to copy to'));
 				}
 			} else {
-				alert("Select at least one menu link to copy");
+				alert(__('Select at least one menu link to copy'));
 			}
 			return false;
 		},
@@ -8748,23 +8774,23 @@ AspenDiscovery.Admin = (function () {
 
 			if (scope === 'selected') {
 				if (!selected.length) {
-					AspenDiscovery.showMessage('Failed to Delete Selected Objects', 'Please select at least one object to delete.');
+					AspenDiscovery.showMessage(__('Failed to Delete Selected Objects'), __('Please select at least one object to delete.'));
 					return false;
 				}
 			}
 			if (scope === 'all') {
-				title = 'Permanently Delete All';
-				body = 'Are you sure you want to permanently delete ALL objects? This action cannot be undone.';
-				okLabel = 'Delete All';
+				title = __('Permanently Delete All');
+				body = __('Are you sure you want to permanently delete ALL objects? This action cannot be undone.');
+				okLabel = __('Delete All');
 			} else {
-				title = 'Permanently Delete Selected';
-				body = 'Are you sure you want to permanently delete ' + count + ' object(s)? This action cannot be undone.';
-				okLabel = 'Delete';
+				title = __('Permanently Delete Selected');
+				body = __('Are you sure you want to permanently delete {count} object(s)? This action cannot be undone.', { count: count });
+				okLabel = __('Delete');
 			}
 
 			const confirmJs = "$(\"#objectAction\").val(\"batchHardDelete\"); $(\"#propertiesListForm\").trigger('submit');";
 
-			AspenDiscovery.confirm(title, body, okLabel, 'Cancel', true, confirmJs, 'btn-danger');
+			AspenDiscovery.confirm(title, body, okLabel, __('Cancel'), false, confirmJs, 'btn-danger');
 			return false;
 		},
 
@@ -9280,7 +9306,7 @@ AspenDiscovery.Axis360 = (function () {
 					dataType: 'json',
 					async: false,
 					error: function () {
-						alert("An error occurred processing your request in Boundless.  Please try again in a few minutes.");
+						alert(__('An error occurred processing your request in Boundless.  Please try again in a few minutes.'));
 						//alert("ajaxUrl = " + ajaxUrl);
 						AspenDiscovery.closeLightbox();
 					}
@@ -9334,7 +9360,7 @@ AspenDiscovery.Axis360 = (function () {
 				dataType: 'json',
 				async: true,
 				error: function () {
-					alert("An error occurred processing your request.  Please try again in a few minutes.");
+					alert(__('An error occurred processing your request.  Please try again in a few minutes.'));
 					AspenDiscovery.closeLightbox();
 					if (callback) callback(false);
 				}
@@ -9358,7 +9384,7 @@ AspenDiscovery.Axis360 = (function () {
 				dataType: 'json',
 				async: false,
 				error: function () {
-					alert("An error occurred processing your request in Boundless.  Please try again in a few minutes.");
+					alert(__('An error occurred processing your request in Boundless.  Please try again in a few minutes.'));
 					AspenDiscovery.closeLightbox();
 				}
 			});
@@ -10401,7 +10427,7 @@ AspenDiscovery.CloudLibrary = (function () {
 					dataType: 'json',
 					async: false,
 					error: function () {
-						alert("An error occurred processing your request in cloudLibrary.  Please try again in a few minutes.");
+						alert(__('An error occurred processing your request in cloudLibrary.  Please try again in a few minutes.'));
 						//alert("ajaxUrl = " + ajaxUrl);
 						AspenDiscovery.closeLightbox();
 					}
@@ -10452,7 +10478,7 @@ AspenDiscovery.CloudLibrary = (function () {
 				dataType: 'json',
 				async: true,
 				error: function () {
-					alert("An error occurred processing your request.  Please try again in a few minutes.");
+					alert(__('An error occurred processing your request.  Please try again in a few minutes.'));
 					AspenDiscovery.closeLightbox();
 					if (callback) callback(false);
 				}
@@ -10476,7 +10502,7 @@ AspenDiscovery.CloudLibrary = (function () {
 				dataType: 'json',
 				async: false,
 				error: function () {
-					alert("An error occurred processing your request in cloudLibrary.  Please try again in a few minutes.");
+					alert(__('An error occurred processing your request in cloudLibrary.  Please try again in a few minutes.'));
 					AspenDiscovery.closeLightbox();
 				}
 			});
@@ -10522,7 +10548,7 @@ AspenDiscovery.CloudLibrary = (function () {
 					dataType: 'json',
 					async: false,
 					error: function () {
-						alert("An error occurred processing your request.  Please try again in a few minutes.");
+						alert(__('An error occurred processing your request.  Please try again in a few minutes.'));
 						AspenDiscovery.closeLightbox();
 					}
 				});
@@ -10551,7 +10577,7 @@ AspenDiscovery.CloudLibrary = (function () {
 					dataType: 'json',
 					async: false,
 					error: function () {
-						alert("An error occurred processing your request.  Please try again in a few minutes.");
+						alert(__('An error occurred processing your request.  Please try again in a few minutes.'));
 						AspenDiscovery.closeLightbox();
 					}
 				});
@@ -12379,7 +12405,7 @@ AspenDiscovery.GroupedWork = (function(){
 		},
 
 		deleteReview: function(id, reviewId){
-			if (confirm("Are you sure you want to delete this review?")){
+			if (confirm(__('Are you sure you want to delete this review?'))){
 				var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=deleteUserReview';
 				$.getJSON(url, function(data){
 					if (data.result === true){
@@ -13752,7 +13778,7 @@ AspenDiscovery.Lists = (function () {
 		},
 
 		importListsFromClassic: function () {
-			AspenDiscovery.confirm("Import Lists?", "This will import any lists you had defined in the old catalog.  This may take several minutes depending on the size of your lists. Are you sure you want to continue?", "Yes", "No", true, "AspenDiscovery.Lists.doImportListsFromClassic()");
+			AspenDiscovery.confirm(__('Import Lists?'), __('This will import any lists you had defined in the old catalog.  This may take several minutes depending on the size of your lists. Are you sure you want to continue?'), __('Yes'), __('No'), false, "AspenDiscovery.Lists.doImportListsFromClassic()");
 			return false;
 		},
 		doImportListsFromClassic: function () {
@@ -14158,13 +14184,13 @@ AspenDiscovery.MaterialsRequest = (function(){
 		authorLabels: undefined,
 
 		cancelMaterialsRequest: function(id){
-			if (confirm("Are you sure you want to cancel this request?")){
+			if (confirm(__('Are you sure you want to cancel this request?'))){
 				var url = Globals.path + "/MaterialsRequest/AJAX?method=cancelRequest&id=" + id;
 				$.getJSON(
 						url,
 						function(data){
 							if (data.success){
-								alert("Your request was cancelled successfully.");
+								alert(__('Your request was cancelled successfully.'));
 								window.location.reload();
 							}else{
 								alert(data.error);
@@ -14198,7 +14224,7 @@ AspenDiscovery.MaterialsRequest = (function(){
 			var newStatus = $("#newStatus").val();
 			var newAssignee = $("#newAssignee").val();
 			if (newAssignee === "unselected" && newStatus === "unselected"){
-				alert("Please select a new assignee and/or status to update.");
+				alert(__('Please select a new assignee and/or status to update.'));
 				return false;
 			}
 			var selectedRequests = this.getSelectedRequests(false);
@@ -14218,7 +14244,7 @@ AspenDiscovery.MaterialsRequest = (function(){
 			console.log(selectedRequests);
 			if (selectedRequests.length === 0){
 				if (promptToSelectAll){
-					var ret = confirm('You have not selected any requests, process all requests?');
+					var ret = confirm(__('You have not selected any requests, process all requests?'));
 					if (ret === true){
 						selectedRequests = $("input.select").map(function() {
 							return $(this).attr('name') + "=on";
@@ -14226,7 +14252,7 @@ AspenDiscovery.MaterialsRequest = (function(){
 						$('.select').attr('checked', 'checked');
 					}
 				}else{
-					alert("Please select one or more requests to update");
+					alert(__('Please select one or more requests to update'));
 				}
 			}
 			return selectedRequests;
@@ -14421,15 +14447,15 @@ AspenDiscovery.MaterialsRequest = (function(){
 
 		validateManageRequestFilters: function () {
 			if ($('.statusFilter:checked').length === 0) {
-				alert("You must select at least one status to view.");
+				alert(__('You must select at least one status to view.'));
 				return false;
 			}
 			if ($('.formatFilter:checked').length === 0) {
-				alert("You must select at least one format to view.");
+				alert(__('You must select at least one format to view.'));
 				return false;
 			}
 			if ($('.assigneesFilter:checked').length === 0 && $('#showUnassigned:checked').length === 0) {
-				alert("You must select at least one assignee to view.");
+				alert(__('You must select at least one assignee to view.'));
 				return false;
 			}
 			return true;
@@ -14482,7 +14508,7 @@ AspenDiscovery.MaterialsRequest = (function(){
 			var newStatus = $("#newStatus").val();
 			var newAssignee = $("#newAssignee").val();
 			if (newAssignee === "unselected" && newStatus === "unselected"){
-				alert("Please select a new assignee and/or status to update.");
+				alert(__('Please select a new assignee and/or status to update.'));
 				return false;
 			}
 			var selectedRequests = this.getSelectedRequests(false, 'selectedObject');
@@ -14518,7 +14544,7 @@ AspenDiscovery.OverDrive = (function(){
 	// noinspection JSUnusedGlobalSymbols
 	return {
 		cancelOverDriveHold: function(patronId, overdriveId){
-			if (confirm("Are you sure you want to cancel this hold?")){
+			if (confirm(__('Are you sure you want to cancel this hold?'))){
 				var ajaxUrl = Globals.path + "/OverDrive/AJAX?method=cancelHold&patronId=" + patronId + "&overDriveId=" + overdriveId;
 				$.ajax({
 					url: ajaxUrl,
@@ -14795,7 +14821,7 @@ AspenDiscovery.OverDrive = (function(){
 		},
 
 		returnCheckout: function (patronId, overDriveId){
-			if (confirm('Are you sure you want to return this title?')){
+			if (confirm(__('Are you sure you want to return this title?'))){
 				AspenDiscovery.showMessage("Returning Title", "Returning your title in OverDrive.  This may take a minute.");
 				var ajaxUrl = Globals.path + "/OverDrive/AJAX?method=returnCheckout&patronId=" + patronId + "&overDriveId=" + overDriveId;
 				$.ajax({
@@ -14959,7 +14985,7 @@ AspenDiscovery.Hoopla = (function(){
 
 		returnCheckout(patronId, hooplaId) {
 			if (Globals.loggedIn) {
-				if (confirm('Are you sure you want to return this title?')) {
+				if (confirm(__('Are you sure you want to return this title?'))) {
 					AspenDiscovery.showMessage("Returning Title", "Returning your title in Hoopla.");
 					const url = Globals.path + "/Hoopla/" + hooplaId + "/AJAX",
 						params = {
@@ -15069,7 +15095,7 @@ AspenDiscovery.Hoopla = (function(){
 		},
 
 		cancelHold: function(patronId, recordId) {
-			if (confirm('Are you sure you want to cancel this hold?')) {
+			if (confirm(__('Are you sure you want to cancel this hold?'))) {
 				var url = Globals.path + "/Hoopla/AJAX?method=cancelHold&patronId=" + patronId + "&recordId=" + recordId;
 				$.ajax({
 					url: url,
@@ -15388,11 +15414,11 @@ AspenDiscovery.Account.ReadingHistory = (function(){
 
 		deleteEntry(patronId, id) {
 			AspenDiscovery.confirm(
-				'Delete Reading History Entry',
-				'The item will be irreversibly deleted from your reading history. Proceed?',
-				'Delete',
-				'Cancel',
-				true,
+				__('Delete Reading History Entry'),
+				__('The item will be irreversibly deleted from your reading history. Proceed?'),
+				__('Delete'),
+				__('Cancel'),
+				false,
 				`AspenDiscovery.Account.ReadingHistory.doDeleteEntry(${patronId}, ${id})`,
 				'btn-danger'
 			);
@@ -15425,11 +15451,11 @@ AspenDiscovery.Account.ReadingHistory = (function(){
 
 		deleteGroupedEntry(patronId, groupedWorkPermanentId, title, author, displayId) {
 			AspenDiscovery.confirm(
-				'Delete Reading History Entry',
-				'All checkout records for this title will be irreversibly deleted from your reading history. Proceed?',
-				'Delete',
-				'Cancel',
-				true,
+				__('Delete Reading History Entry'),
+				__('All checkout records for this title will be irreversibly deleted from your reading history. Proceed?'),
+				__('Delete'),
+				__('Cancel'),
+				false,
 				`AspenDiscovery.Account.ReadingHistory.doDeleteGroupedEntry(&quot;${patronId}&quot;, &quot;${groupedWorkPermanentId}&quot;, &quot;${title}&quot;, &quot;${author}&quot;, &quot;${displayId}&quot;)`,
 				'btn-danger'
 			);
@@ -15465,11 +15491,11 @@ AspenDiscovery.Account.ReadingHistory = (function(){
 
 		deleteIndividualEntry(patronId, entryId, groupId) {
 			AspenDiscovery.confirm(
-				'Delete Checkout Record',
-				'This checkout record will be irreversibly deleted from your reading history. Proceed?',
-				'Delete',
-				'Cancel',
-				true,
+				__('Delete Checkout Record'),
+				__('This checkout record will be irreversibly deleted from your reading history. Proceed?'),
+				__('Delete'),
+				__('Cancel'),
+				false,
 				`AspenDiscovery.Account.ReadingHistory.doDeleteIndividualEntry(&quot;${patronId}&quot;, &quot;${entryId}&quot;, &quot;${groupId}&quot;)`,
 				'btn-danger'
 			);
@@ -15521,16 +15547,16 @@ AspenDiscovery.Account.ReadingHistory = (function(){
 		deleteSelectedAction() {
 			const selectedItems = $('.titleSelect:checked');
 			if (selectedItems.length === 0) {
-				AspenDiscovery.showMessageWithButtons('Failed to Delete Reading History Entries', 'Please select one or more items to delete.', '', false, '', false, false, false);
+				AspenDiscovery.showMessageWithButtons(__('Failed to Delete Reading History Entries'), __('Please select one or more items to delete.'), '', false, '', false, false, false);
 				return false;
 			}
 
 			AspenDiscovery.confirm(
-				'Delete Selected Items',
-				`You have selected ${selectedItems.length} item(s) to delete from your reading history. This action is irreversible. Proceed?`,
-				'Delete',
-				'Cancel',
-				true,
+				__('Delete Selected Items'),
+				__('You have selected {count} item(s) to delete from your reading history. This action is irreversible. Proceed?', { count: selectedItems.length }),
+				__('Delete'),
+				__('Cancel'),
+				false,
 				'AspenDiscovery.Account.ReadingHistory.doDeleteSelected()',
 				'btn-danger'
 			);
@@ -15573,11 +15599,11 @@ AspenDiscovery.Account.ReadingHistory = (function(){
 
 		deleteAllAction() {
 			AspenDiscovery.confirm(
-				'Delete All Reading History',
-				'Your entire reading history will be irreversibly deleted. Proceed?',
-				'Delete All',
-				'Cancel',
-				true,
+				__('Delete All Reading History'),
+				__('Your entire reading history will be irreversibly deleted. Proceed?'),
+				__('Delete All'),
+				__('Cancel'),
+				false,
 				'AspenDiscovery.Account.ReadingHistory.doDeleteAllAction()',
 				'btn-danger'
 			);
@@ -15592,11 +15618,11 @@ AspenDiscovery.Account.ReadingHistory = (function(){
 
 		optOutAction() {
 			AspenDiscovery.confirm(
-				'Opt Out of Reading History',
-				'Opting out of Reading History will also delete your entire reading history irreversibly. Proceed?',
-				'Opt Out',
-				'Cancel',
-				true,
+				__('Opt Out of Reading History'),
+				__('Opting out of Reading History will also delete your entire reading history irreversibly. Proceed?'),
+				__('Opt Out'),
+				__('Cancel'),
+				false,
 				'AspenDiscovery.Account.ReadingHistory.doOptOutAction()',
 				'btn-danger'
 			);
@@ -15912,7 +15938,7 @@ AspenDiscovery.Record = (function () {
 				var acceptFeeField = $('#acceptFee');
 				if (acceptFeeField !== undefined && acceptFeeField.prop("required")) {
 					if (!acceptFeeField.prop('checked')) {
-						alert("You must agree to pay any fees associated with this requests before continuing.");
+						alert(__('You must agree to pay any fees associated with this requests before continuing.'));
 						return false;
 					}
 				}
@@ -16077,7 +16103,7 @@ AspenDiscovery.Record = (function () {
 				params['variationId'] = variationId.val();
 			}
 			if (params['pickupBranch'] === 'undefined') {
-				alert("Please select a location to pick up your hold when it is ready.");
+				alert(__('Please select a location to pick up your hold when it is ready.'));
 				return false;
 			}
 			if (numberOfCopies.length > 0) {
@@ -16087,12 +16113,12 @@ AspenDiscovery.Record = (function () {
 			if (holdType.length > 0) {
 				params['holdType'] = holdType.val();
 				if (holdType.val() === 'item' && selectedItem.val().length === 0) {
-					alert("Please select an item to place your hold on");
+					alert(__('Please select an item to place your hold on'));
 					AspenDiscovery.toggleButtonSpinner(requestTitleButton, false);
 					document.body.style.cursor = "pointer";
 					return false;
 				} else if (holdType.val() === 'volume' && volume.val().length === 0) {
-					alert("Please select a volume to place your hold on");
+					alert(__('Please select a volume to place your hold on'));
 					AspenDiscovery.toggleButtonSpinner(requestTitleButton, false);
 					document.body.style.cursor = "pointer";
 					return false;
@@ -16103,7 +16129,7 @@ AspenDiscovery.Record = (function () {
 				} else {
 					params['holdType'] = 'item';
 					if (selectedItem.val().length === 0) {
-						alert("Please select an item to place your hold on");
+						alert(__('Please select an item to place your hold on'));
 						AspenDiscovery.toggleButtonSpinner(requestTitleButton, false);
 						document.body.style.cursor = "pointer";
 						return false;
@@ -16273,7 +16299,7 @@ AspenDiscovery.Record = (function () {
 				params['volume'] = selectedVolume;
 			}
 			if (params['pickupBranch'] === 'undefined') {
-				alert("Please select a location to pick up your hold when it is ready.");
+				alert(__('Please select a location to pick up your hold when it is ready.'));
 				this.volumeHoldInProgress = false;
 				AspenDiscovery.toggleButtonSpinner(button, false);
 				return false;
@@ -16396,7 +16422,7 @@ AspenDiscovery.Record = (function () {
 		},
 
 		deleteUploadedFile: function (id, fileId) {
-			if (confirm("Are you sure you want to delete this file?")) {
+			if (confirm(__('Are you sure you want to delete this file?'))) {
 				var url = Globals.path + '/Record/' + id + '/AJAX?method=deleteUploadedFile&fileId=' + fileId;
 				$.getJSON(url, function (data) {
 					AspenDiscovery.showMessage(data.title, data.message, true, data.success);
@@ -17498,11 +17524,11 @@ AspenDiscovery.SideLoads = (() => {
 			 */
 			const fileNameHtmlSafe = fileName.replace(/'/g, "&#39;");
 			AspenDiscovery.confirm(
-				'Confirm Delete',
-				`Are you sure you want to delete this <strong>${fileName}</strong>?`,
-				'Delete',
-				'Cancel',
-				true,
+				__('Confirm Delete'),
+				__('Are you sure you want to delete this {fileName}?', { fileName: '<strong>' + fileName + '</strong>' }),
+				__('Delete'),
+				__('Cancel'),
+				false,
 				`AspenDiscovery.closeLightbox();AspenDiscovery.SideLoads.doDeleteMarc(${sideLoadId}, \"${fileNameHtmlSafe}\", ${fileIndex});`,
 				'btn-danger'
 			);
@@ -17521,7 +17547,7 @@ AspenDiscovery.SideLoads = (() => {
 				if (success){
 					$("#file" + fileIndex).hide();
 				} else {
-					AspenDiscovery.showMessage('Delete Failed', message, false);
+					AspenDiscovery.showMessage(__('Delete Failed'), message, false);
 				}
 			}).fail(AspenDiscovery.ajaxFail);
 
@@ -18212,7 +18238,7 @@ AspenDiscovery.WebBuilder = function () {
 		},
 
 		deleteCell(id) {
-			AspenDiscovery.confirm('Delete Cell', `Are you sure you want to delete this cell (ID: ${id})?`, 'Delete', 'Cancel', true, `AspenDiscovery.WebBuilder.deleteCellConfirmed("${id}")`, 'btn-danger');
+			AspenDiscovery.confirm(__('Delete Cell'), __('Are you sure you want to delete this cell (ID: {id})?', { id: id }), __('Delete'), __('Cancel'), false, `AspenDiscovery.WebBuilder.deleteCellConfirmed("${id}")`, 'btn-danger');
 			return false;
 		},
 
@@ -18239,7 +18265,7 @@ AspenDiscovery.WebBuilder = function () {
 		},
 
 		deleteRow(id) {
-			AspenDiscovery.confirm('Delete Row', `Are you sure you want to delete this row (ID: ${id})?`, 'Delete', 'Cancel', true, `AspenDiscovery.WebBuilder.deleteRowConfirmed("${id}")`, 'btn-danger');
+			AspenDiscovery.confirm(__('Delete Row'), __('Are you sure you want to delete this row (ID: {id})?', { id: id }), __('Delete'), __('Cancel'), false, `AspenDiscovery.WebBuilder.deleteRowConfirmed("${id}")`, 'btn-danger');
 			return false;
 		},
 
@@ -18818,7 +18844,7 @@ AspenDiscovery.PalaceProject = (function () {
 				dataType: 'json',
 				async: true,
 				error: function () {
-					alert("An error occurred processing your request.  Please try again in a few minutes.");
+					alert(__('An error occurred processing your request.  Please try again in a few minutes.'));
 					AspenDiscovery.closeLightbox();
 					if (callback) callback(false);
 				}
@@ -18865,7 +18891,7 @@ AspenDiscovery.PalaceProject = (function () {
 					dataType: 'json',
 					async: false,
 					error: function () {
-						alert("An error occurred processing your request in Palace Project.  Please try again in a few minutes.");
+						alert(__('An error occurred processing your request in Palace Project.  Please try again in a few minutes.'));
 						//alert("ajaxUrl = " + ajaxUrl);
 						AspenDiscovery.closeLightbox();
 					}
@@ -18937,7 +18963,7 @@ AspenDiscovery.PalaceProject = (function () {
 				dataType: 'json',
 				async: false,
 				error: function () {
-					alert("An error occurred processing your request in Palace Project.  Please try again in a few minutes.");
+					alert(__('An error occurred processing your request in Palace Project.  Please try again in a few minutes.'));
 					AspenDiscovery.closeLightbox();
 				}
 			});
@@ -19761,7 +19787,7 @@ AspenDiscovery.CommunityEngagement = function() {
 					}
 				},
 				error: function () {
-					alert('Error communicating with server.');
+					alert(__('Error communicating with server.'));
 				}
 			});
 		},

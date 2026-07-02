@@ -48,7 +48,7 @@ AspenDiscovery.PalaceProject = (function () {
 				dataType: 'json',
 				async: true,
 				error: function () {
-					alert("An error occurred processing your request.  Please try again in a few minutes.");
+					alert(__('An error occurred processing your request.  Please try again in a few minutes.'));
 					AspenDiscovery.closeLightbox();
 					if (callback) callback(false);
 				}
@@ -95,7 +95,7 @@ AspenDiscovery.PalaceProject = (function () {
 					dataType: 'json',
 					async: false,
 					error: function () {
-						alert("An error occurred processing your request in Palace Project.  Please try again in a few minutes.");
+						alert(__('An error occurred processing your request in Palace Project.  Please try again in a few minutes.'));
 						//alert("ajaxUrl = " + ajaxUrl);
 						AspenDiscovery.closeLightbox();
 					}
@@ -167,7 +167,7 @@ AspenDiscovery.PalaceProject = (function () {
 				dataType: 'json',
 				async: false,
 				error: function () {
-					alert("An error occurred processing your request in Palace Project.  Please try again in a few minutes.");
+					alert(__('An error occurred processing your request in Palace Project.  Please try again in a few minutes.'));
 					AspenDiscovery.closeLightbox();
 				}
 			});

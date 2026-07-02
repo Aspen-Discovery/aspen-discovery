@@ -66,7 +66,7 @@ AspenDiscovery.Hoopla = (function(){
 
 		returnCheckout(patronId, hooplaId) {
 			if (Globals.loggedIn) {
-				if (confirm('Are you sure you want to return this title?')) {
+				if (confirm(__('Are you sure you want to return this title?'))) {
 					AspenDiscovery.showMessage("Returning Title", "Returning your title in Hoopla.");
 					const url = Globals.path + "/Hoopla/" + hooplaId + "/AJAX",
 						params = {
@@ -176,7 +176,7 @@ AspenDiscovery.Hoopla = (function(){
 		},
 
 		cancelHold: function(patronId, recordId) {
-			if (confirm('Are you sure you want to cancel this hold?')) {
+			if (confirm(__('Are you sure you want to cancel this hold?'))) {
 				var url = Globals.path + "/Hoopla/AJAX?method=cancelHold&patronId=" + patronId + "&recordId=" + recordId;
 				$.ajax({
 					url: url,

@@ -4,13 +4,13 @@ AspenDiscovery.MaterialsRequest = (function(){
 		authorLabels: undefined,
 
 		cancelMaterialsRequest: function(id){
-			if (confirm("Are you sure you want to cancel this request?")){
+			if (confirm(__('Are you sure you want to cancel this request?'))){
 				var url = Globals.path + "/MaterialsRequest/AJAX?method=cancelRequest&id=" + id;
 				$.getJSON(
 						url,
 						function(data){
 							if (data.success){
-								alert("Your request was cancelled successfully.");
+								alert(__('Your request was cancelled successfully.'));
 								window.location.reload();
 							}else{
 								alert(data.error);
@@ -44,7 +44,7 @@ AspenDiscovery.MaterialsRequest = (function(){
 			var newStatus = $("#newStatus").val();
 			var newAssignee = $("#newAssignee").val();
 			if (newAssignee === "unselected" && newStatus === "unselected"){
-				alert("Please select a new assignee and/or status to update.");
+				alert(__('Please select a new assignee and/or status to update.'));
 				return false;
 			}
 			var selectedRequests = this.getSelectedRequests(false);
@@ -64,7 +64,7 @@ AspenDiscovery.MaterialsRequest = (function(){
 			console.log(selectedRequests);
 			if (selectedRequests.length === 0){
 				if (promptToSelectAll){
-					var ret = confirm('You have not selected any requests, process all requests?');
+					var ret = confirm(__('You have not selected any requests, process all requests?'));
 					if (ret === true){
 						selectedRequests = $("input.select").map(function() {
 							return $(this).attr('name') + "=on";
@@ -72,7 +72,7 @@ AspenDiscovery.MaterialsRequest = (function(){
 						$('.select').attr('checked', 'checked');
 					}
 				}else{
-					alert("Please select one or more requests to update");
+					alert(__('Please select one or more requests to update'));
 				}
 			}
 			return selectedRequests;
@@ -267,15 +267,15 @@ AspenDiscovery.MaterialsRequest = (function(){
 
 		validateManageRequestFilters: function () {
 			if ($('.statusFilter:checked').length === 0) {
-				alert("You must select at least one status to view.");
+				alert(__('You must select at least one status to view.'));
 				return false;
 			}
 			if ($('.formatFilter:checked').length === 0) {
-				alert("You must select at least one format to view.");
+				alert(__('You must select at least one format to view.'));
 				return false;
 			}
 			if ($('.assigneesFilter:checked').length === 0 && $('#showUnassigned:checked').length === 0) {
-				alert("You must select at least one assignee to view.");
+				alert(__('You must select at least one assignee to view.'));
 				return false;
 			}
 			return true;
@@ -328,7 +328,7 @@ AspenDiscovery.MaterialsRequest = (function(){
 			var newStatus = $("#newStatus").val();
 			var newAssignee = $("#newAssignee").val();
 			if (newAssignee === "unselected" && newStatus === "unselected"){
-				alert("Please select a new assignee and/or status to update.");
+				alert(__('Please select a new assignee and/or status to update.'));
 				return false;
 			}
 			var selectedRequests = this.getSelectedRequests(false, 'selectedObject');

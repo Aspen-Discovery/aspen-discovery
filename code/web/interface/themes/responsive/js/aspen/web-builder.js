@@ -259,7 +259,7 @@ AspenDiscovery.WebBuilder = function () {
 		},
 
 		deleteCell(id) {
-			AspenDiscovery.confirm('Delete Cell', `Are you sure you want to delete this cell (ID: ${id})?`, 'Delete', 'Cancel', true, `AspenDiscovery.WebBuilder.deleteCellConfirmed("${id}")`, 'btn-danger');
+			AspenDiscovery.confirm(__('Delete Cell'), __('Are you sure you want to delete this cell (ID: {id})?', { id: id }), __('Delete'), __('Cancel'), false, `AspenDiscovery.WebBuilder.deleteCellConfirmed("${id}")`, 'btn-danger');
 			return false;
 		},
 
@@ -286,7 +286,7 @@ AspenDiscovery.WebBuilder = function () {
 		},
 
 		deleteRow(id) {
-			AspenDiscovery.confirm('Delete Row', `Are you sure you want to delete this row (ID: ${id})?`, 'Delete', 'Cancel', true, `AspenDiscovery.WebBuilder.deleteRowConfirmed("${id}")`, 'btn-danger');
+			AspenDiscovery.confirm(__('Delete Row'), __('Are you sure you want to delete this row (ID: {id})?', { id: id }), __('Delete'), __('Cancel'), false, `AspenDiscovery.WebBuilder.deleteRowConfirmed("${id}")`, 'btn-danger');
 			return false;
 		},
 
