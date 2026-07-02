@@ -352,16 +352,8 @@ class EmailTemplate extends DataObject {
 		$text = str_ireplace('%user.userPreferredName%', $user->userPreferredName ?? '', $text);
 		$text = str_ireplace('%user.ils_barcode%', $user->ils_barcode ?? '', $text);
 
-		if ($this->templateType == 'campaignStart' || $this->templateType == 'campaignEnroll' || $this->templateType == 'campaignComplete' ||  $this->templateType == 'campaignEnding') {
-			$text = str_replace('%campaign.name%', $parameters['campaignName'] ?? '', $text);
-			$text = str_replace('%campaign.reward%', $parameters['campaignReward'] ?? '', $text);
-			$text = str_replace('%milestoneSummary%', $parameters['milestoneSummary'] ?? '', $text);
-		} elseif ($this->templateType == 'staffCampaignComplete') {
-			$text = str_replace('%campaign.name%', $parameters['campaignName'] ?? '', $text);
-		} elseif ($this->templateType == 'milestoneComplete') {
-			$text = str_replace('%campaign.name%', $parameters['campaignName'] ?? '', $text);
-			$text = str_replace('%milestone.name%', $parameters['milestoneName'] ?? '', $text);
-			$text = str_replace('%milestone.reward%', $parameters['milestoneReward'] ?? '', $text);
+		if($this->isCampaignEmail($this->templateType)) {
+			$text = $this->replaceCampaignParameters($text, $parameters);
 		} elseif ($this->templateType == 'savedSearchAlert') {
 			$text = str_replace('%searchHistory.url%', $parameters['searchHistory']['url'] ?? '', $text);
 			$text = str_replace('%searchHistory.updatedSearchesWithSampleTitlesHtml%', $parameters['searchHistory']['updatedSearchesWithSampleTitlesHtml'] ?? '', $text);
@@ -386,5 +378,39 @@ class EmailTemplate extends DataObject {
 			$text = str_replace('%eventInstances%', trim($instancesText), $text);
 		}
 		return $text;
+	}
+
+	private function replaceCampaignParameters(string $text, array $parameters) : string{ 
+		$dates = $parameters['campaignDates'];
+
+		$campaignParams = [
+			'%campaign.name%' => 'campaignName',
+			'%campaign.reward%' => 'campaignReward',
+			'%campaign.startDate' => $dates['startDate'],
+			'%campaign.endDate' => $dates['endDate'],
+			'%campaign.enrollmentStartDate' => $dates['enrollmentStartDate'],
+			'%campaign.enrollmentEndDate' => $dates['enrollmentEndDate'],
+			'%milestoneSummary%' => 'milestoneSummary',
+			'%milestone.name%' => 'milestoneName',
+			'%milestone.reward%' => 'milestoneReward'
+		];
+
+		foreach($campaignParams as $placeHolder => $paramKey) {
+			$text = str_replace($placeHolder, $parameters[$paramKey] ?? '', $text);
+		}
+		
+		return $text;
+	}
+
+	private function isCampaignEmail(string $templateType) : bool {
+		$campaignTerms = [
+			'campaignStart',
+			'campaignEnroll',
+			'campaignComplete',
+			'campaignEnding',
+			'staffCampaignComplete',
+			'milestoneComplete'
+		];
+		return array_key_exists($templateType, $campaignTerms);
 	}
 }

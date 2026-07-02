@@ -1399,6 +1399,12 @@ class Campaign extends DataObject {
 		}
 
 		$milestoneSummary = implode("\n", $milestoneSummaryLines);
+		$campaignDates = [
+			'enrollmentStartDate' => $campaign->enrollmentStartDate,
+			'enrollmentEndDate' => $campaign->enrollmentEndDate,
+			'startDate' => $campaign->startDate,
+			'endDate' => $campaign->endDate
+		];
 
 		return [
 			'user' => $user,
@@ -1406,6 +1412,7 @@ class Campaign extends DataObject {
 			'library' => $user->getHomeLibrary(),
 			'campaignReward' => $campaignReward,
 			'milestoneSummary' => $milestoneSummary,
+			'campaignDates' => $campaignDates
 		];
 	}
 
