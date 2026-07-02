@@ -9973,7 +9973,7 @@ class MyAccount_AJAX extends JSON_Action {
 		require_once ROOT_DIR . '/sys/TwoFactorAuthTOTPSecret.php';
 		$twoFactorAuth = new TwoFactorAuthCode();
 
-		if ($secretId !== null) {
+		if (!empty($secretId)) {
 			// TOTP enrollment verification
 			$totpValidated = $twoFactorAuth->validateCode($code, $authMethod, $secretId);
 			//If we don't validate we can return the message. If we do validate we need to continue with the login
