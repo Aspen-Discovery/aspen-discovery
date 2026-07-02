@@ -127,7 +127,7 @@
 											{/if}
 										</td>
 										<td>{$reg.dateRegistered|default:"-"}</td>
-										<td>{include file="Events/event-category-breakdown.tpl"}</td>
+										<td>{include file="Events/event-category-breakdown.tpl" item=$reg}</td>
 										<td style="text-align: center;">
 											<input type="checkbox" id="attended-{$reg.id}" {if $reg.attended}checked {/if}onchange="AspenDiscovery.Events.toggleAttendance({$reg.id}, this.checked);">
 										</td>

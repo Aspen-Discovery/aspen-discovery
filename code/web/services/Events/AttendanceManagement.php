@@ -70,6 +70,8 @@ class Events_AttendanceManagement extends Admin_Admin {
 				'registeredByStaff' => $registration->wasRegisteredByStaff(),
 				'staffName' => $staffUser ? $staffUser->getDisplayName() : null,
 				'dateRegistered' => $registration->createdAt ? date('Y-m-d H:i', strtotime($registration->createdAt)) : null,
+				'registrationCount' => 1,
+				'attendeeCategoryBreakdown' => EventRegistrationService::getAttendeeCategoryBreakdownForRegistration((int)$eventInstanceId, (int)$registration->id),
 			];
 		}
 		$interface->assign('registrations', $registrationData);
