@@ -1328,7 +1328,7 @@ class Evergreen extends AbstractIlsDriver {
 	/**
 	 * @inheritDoc
 	 */
-	function placeHold(User $patron, string $recordId, ?string $pickupBranch = null, ?string $cancelDate = null, ?string $pickupSublocation = null, ?int $numberOfCopies = 1) : array {
+	function placeHold(User $patron, mixed $recordId, ?string $pickupBranch = null, ?string $cancelDate = null, ?string $pickupSublocation = null, ?int $numberOfCopies = 1) : array {
 		$hold_result = [
 			'success' => false,
 			'message' => translate([
