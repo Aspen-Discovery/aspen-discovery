@@ -1726,7 +1726,16 @@ class UserAPI extends AbstractAPI {
 		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
 			if ($source == 'ils' || $source == null || $source == $library->interLibraryLoanName) {
-				$result = $user->renewCheckout($recordId, $itemBarcode);
+				$patronId = $_REQUEST['userId'] ?? $user->id;
+				$patron = $user->getUserReferredTo($patronId);
+				if (!$patron) {
+					return [
+						'success' => false,
+						'title' => 'Error',
+						'message' => 'Sorry, it looks like you don\'t have access to that patron.',
+					];
+				}
+				$result = $patron->renewCheckout($recordId, $itemBarcode);
 
 				if(isset($result['confirmRenewalFee']) && $result['confirmRenewalFee']) {
 					$action = $result['api']['action'] ?? null;
