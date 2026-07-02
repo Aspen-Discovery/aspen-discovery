@@ -86,7 +86,7 @@ class EventRegistrationService {
 		return self::publicErrorResult(translate(['text' => 'Failed to cancel registration.', 'isPublicFacing' => true]));
 	}
 
-	public static function getAttendeeCategoryBreakdown(int $eventInstanceId): array {
+	public static function getAttendeeCategoryBreakdownForInstance(int $eventInstanceId): array {
 		$categories = self::getEventTypeAttendeeCategories($eventInstanceId);
 		if (empty($categories)) {
 			return [];
@@ -94,7 +94,10 @@ class EventRegistrationService {
 
 		require_once ROOT_DIR . '/sys/Events/UserAspenEventInstanceRegistrationAttendee.php';
 		$countsByCategory = UserAspenEventInstanceRegistrationAttendee::getCategoryAttendeeCountsForInstance($eventInstanceId);
+		return self::generateCategoryBreakdown($categories, $countsByCategory);
+	}
 
+	private static function generateCategoryBreakdown(array $categories, array $countsByCategory): array {
 		$breakdown = [];
 		foreach ($categories as $eventTypeAttendeeCategory) {
 			$attendeeCategory = $eventTypeAttendeeCategory->getCategory();
