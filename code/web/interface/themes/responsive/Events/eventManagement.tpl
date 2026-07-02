@@ -108,6 +108,7 @@
 									<th>{translate text="Email" isAdminFacing=true}</th>
 									<th>{translate text="Registered By" isAdminFacing=true}</th>
 									<th>{translate text="Date Registered" isAdminFacing=true}</th>
+									<th>{translate text="Registrations" isAdminFacing=true}</th>
 									<th style="text-align: center;">{translate text="Attended" isAdminFacing=true}</th>
 									<th>{translate text="Actions" isAdminFacing=true}</th>
 								</tr>
@@ -126,6 +127,7 @@
 											{/if}
 										</td>
 										<td>{$reg.dateRegistered|default:"-"}</td>
+										<td>{include file="Events/event-category-breakdown.tpl"}</td>
 										<td style="text-align: center;">
 											<input type="checkbox" id="attended-{$reg.id}" {if $reg.attended}checked {/if}onchange="AspenDiscovery.Events.toggleAttendance({$reg.id}, this.checked);">
 										</td>
