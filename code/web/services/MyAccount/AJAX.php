@@ -8257,20 +8257,12 @@ class MyAccount_AJAX extends JSON_Action {
 			$interface->assign('linkedUsers', $linkedUsers);
 
 			$isRegistered = $aspenEventInstanceUserRegistration->status === 'registered';
-			$isEventFull = !EventRegistrationService::hasAvailableSeats($eventInstance);
-			$canRegister = $waitingListInfo['canRegister'];
-			$isWaitingListFull = EventRegistrationService::isWaitingListFull($eventInstance);
-			$registrationAction = EventRegistrationService::getRegistrationAction(
+			$registrationAction = EventRegistrationService::getRegistrationActionForUser(
+				$eventInstance,
 				$isRegistered,
-				$isEventFull,
-				$eventInstance->isWaitingListEnabled(),
 				$waitingListInfo['onWaitingList'],
-				$canRegister,
-				$isWaitingListFull
+				$waitingListInfo['canRegister']
 			);
-			if ($registrationAction === 'showPosition' && EventRegistrationService::hasUnregisteredLinkedUsers($eventInstance)) {
-				$registrationAction = 'joinWaitingList';
-			}
 			$interface->assign('userIsRegistered', $isRegistered);
 			$interface->assign('registrationAction', $registrationAction);
 
