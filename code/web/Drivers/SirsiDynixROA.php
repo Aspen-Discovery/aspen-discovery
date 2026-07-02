@@ -1405,7 +1405,7 @@ class SirsiDynixROA extends AbstractIlsDriver {
 		return $holds;
 	}
 
-	public function placeHold(User $patron, string $recordId, ?string $pickupBranch = null, ?string $cancelDate = null, ?string $pickupSublocation = null, ?int $numberOfCopies = 1) : array {
+	public function placeHold(User $patron, mixed $recordId, ?string $pickupBranch = null, ?string $cancelDate = null, ?string $pickupSublocation = null, ?int $numberOfCopies = 1) : array {
 		if ($numberOfCopies == 1) {
 			return $this->placeSirsiHold($patron, $recordId, null, false, $pickupBranch, $cancelDate);
 		}else{
