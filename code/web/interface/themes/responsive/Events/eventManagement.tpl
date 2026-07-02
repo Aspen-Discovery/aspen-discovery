@@ -32,30 +32,7 @@
 								<td>{$event.date|date_format:"%B %e, %Y"}</td>
 								<td>{$event.time}</td>
 								<td>{$event.location|escape}</td>
-								<td>
-									{if !empty($event.attendeeCategoryBreakdown)}
-										<table style="margin:0; border-collapse:collapse;">
-											{assign var=catTotal value=0}
-											{foreach from=$event.attendeeCategoryBreakdown item=cat}
-												<tr>
-													<td style="padding:0 8px 0 0;">{$cat.name|escape}:</td>
-													<td style="padding:0; text-align:right;" colspan="2">{$cat.count}</td>
-												</tr>
-												{assign var=catTotal value=$catTotal+$cat.count}
-											{/foreach}
-											<tr>
-												<td style="padding:2px 8px 0 0; border-top:1px solid #ddd;"><strong>{translate text="Total" isAdminFacing=true}:</strong></td>
-												<td style="padding:2px 0 0 0; text-align:right; border-top:1px solid #ddd;"><strong>{$catTotal}</strong></td>
-												<td style="padding:2px 0 0 0; border-top:1px solid #ddd;">{if $event.numberOfSeats}<strong> / {$event.numberOfSeats}</strong>{/if}</td>
-											</tr>
-										</table>
-									{else}
-										{$event.registrationCount}
-										{if $event.numberOfSeats}
-											/ {$event.numberOfSeats}
-										{/if}
-									{/if}
-								</td>
+								<td>{include file="Events/event-category-breakdown.tpl" item=$event}</td>
 								<td>
 									<a href="/Events/AttendanceManagement?eventInstanceId={$event.instanceId}" class="btn btn-sm btn-primary">
 										{translate text="Manage" isAdminFacing=true}
