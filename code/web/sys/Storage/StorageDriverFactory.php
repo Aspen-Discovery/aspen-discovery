@@ -21,14 +21,14 @@ class StorageDriverFactory {
 		self::$instance = null;
 	}
 
-	private static function create(): StorageDriver {
+	public static function resolveDataRoot(): string {
 		global $configArray, $serverName;
+		return $configArray['Site']['dataPath'] ?? '/data/aspen-discovery/' . $serverName;
+	}
 
-		$dataRoot = $configArray['Site']['dataPath']
-			?? '/data/aspen-discovery/' . $serverName;
-
+	private static function create(): StorageDriver {
 		// Phase 2 (cdn_storage_driver) extends this method to instantiate
 		// S3StorageDriver when the active StorageSetting has driver='s3'.
-		return new LocalStorageDriver($dataRoot);
+		return new LocalStorageDriver(self::resolveDataRoot());
 	}
 }

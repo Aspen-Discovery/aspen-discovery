@@ -4348,6 +4348,7 @@ class User extends DataObject {
 		$sections['system_admin']->addAction(new AdminAction('USPS Settings', 'Settings to allow Aspen Discovery to validate addresses via USPS API.', '/Admin/USPS'), 'Administer System Variables');
 		$sections['system_admin']->addAction(new AdminAction('Variables', 'Variables set by the Aspen Discovery itself as part of background processes.', '/Admin/Variables'), 'Administer System Variables');
 		$sections['system_admin']->addAction(new AdminAction('System Variables', 'Settings for Aspen Discovery that apply to all libraries on this installation.', '/Admin/SystemVariables'), 'Administer System Variables');
+		$sections['system_admin']->addAction(new AdminAction('Storage Settings', 'Configure the storage backend for uploaded files (local or S3-compatible).', '/Admin/StorageSettings'), 'Administer Storage Settings');
 		$sections['system_admin']->addAction(new AdminAction('Object Restorations', 'Restore soft-deleted objects from the recycle bin.', '/Admin/ObjectRestorations'), 'Administer Object Restoration');
 		$sections['system_admin']->addAction(new AdminAction('Manually Run Cron', 'Manually Start Cron Processes.', '/Admin/CronRunner'), 'Manually Run Cron Processes');
 		$sections['system_admin']->addAction(new AdminAction('Consolidate Reading History', 'Consolidate Reading History Entries to minimize database size.', '/Admin/ConsolidateReadingHistory'), 'Perform System Maintenance');
