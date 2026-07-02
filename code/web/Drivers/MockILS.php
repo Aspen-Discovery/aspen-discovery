@@ -37,7 +37,7 @@ class MockILS extends AbstractIlsDriver{
 		];
 	}
 
-	function placeHold(User $patron, string $recordId, ?string $pickupBranch = null, ?string $cancelDate = null, ?string $pickupSublocation = null, ?int $numberOfCopies = 1) : array {
+	function placeHold(User $patron, mixed $recordId, ?string $pickupBranch = null, ?string $cancelDate = null, ?string $pickupSublocation = null, ?int $numberOfCopies = 1) : array {
 		return [
 			'success' => 'false',
 			'message' => 'Place Hold not implemented for MockILS'

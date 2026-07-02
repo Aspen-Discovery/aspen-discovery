@@ -359,7 +359,7 @@ class PalaceProjectDriver extends AbstractEContentDriver {
 		return $this->holds[$patron->id];
 	}
 
-	function placeHold(User $patron, $recordId, $pickupBranch = null, $cancelDate = null) : array {
+	function placeHold(User $patron, mixed $recordId, $pickupBranch = null, $cancelDate = null) : array {
 		$result = [
 			'success' => false,
 			'message' => translate([

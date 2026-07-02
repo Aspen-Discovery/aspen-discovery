@@ -910,7 +910,7 @@ class HooplaDriver extends AbstractEContentDriver {
 	 *                                title - the title of the record the user is placing a hold on
 	 * @access  public
 	 */
-	function placeHold($patron, $recordId, $pickupBranch = null, $cancelDate = null) : array {
+	function placeHold($patron, mixed $recordId, $pickupBranch = null, $cancelDate = null) : array {
 		$result = [
 			'success' => false,
 			'message' => translate(['text' => 'Unknown error', 'isPublicFacing' => true])
