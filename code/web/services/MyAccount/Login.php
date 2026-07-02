@@ -1,7 +1,7 @@
 <?php
 
 class MyAccount_Login extends Action {
-	function launch($msg = null) {
+	function launch($msg = null) : void {
 		global $interface;
 		global $module;
 		global $action;
@@ -178,6 +178,17 @@ class MyAccount_Login extends Action {
 		$interface->assign('isLoginPage', true);
 
 		if (!empty($_SESSION['has2FA'])) {
+			$canUseTotp = false;
+			$canUseEmail = false;
+			$user = UserAccount::getActiveUserObj();
+			$authSetting = $user->getTwoFactorAuthenticationSetting();
+			if ($authSetting) {
+				$canUseTotp = $authSetting->allowTotp;
+				$canUseEmail = $authSetting->allowEmail;
+			}
+			$interface->assign('hasTotp', $canUseTotp);
+			$interface->assign('hasEmail', $canUseEmail);
+
 			$interface->assign('codeSent', !empty($_SESSION['codeSent']));
 			$interface->assign('authMethod', $_SESSION['authMethod']);
 			$interface->assign('setupMethods', UserAccount::get2FAMethodStatus());
@@ -185,9 +196,9 @@ class MyAccount_Login extends Action {
 		} elseif (!empty($_SESSION['enroll2FA'])) {
 			$canUseTotp = false;
 			$canUseEmail = false;
-			$authSetting = new TwoFactorAuthSetting();
-			$authSetting->id = $library->twoFactorAuthSettingId;
-			if ($authSetting->find(true)) {
+			$user = UserAccount::getActiveUserObj();
+			$authSetting = $user->getTwoFactorAuthenticationSetting();
+			if ($authSetting) {
 				$canUseTotp = $authSetting->allowTotp;
 				$canUseEmail = $authSetting->allowEmail;
 			}

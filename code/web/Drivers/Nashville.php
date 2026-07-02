@@ -327,7 +327,7 @@ class Nashville extends CarlX {
 	public function getFines(User $patron, $includeMessages = false, ?string $type = null): array {
 		$myFines = [];
 		if ($type == 'credit'){
-			return $fines;
+			return $myFines;
 		}
 		global $library;
 		if ($library->finePaymentType == 3){

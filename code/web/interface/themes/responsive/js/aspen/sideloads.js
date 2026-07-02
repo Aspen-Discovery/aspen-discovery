@@ -8,11 +8,11 @@ AspenDiscovery.SideLoads = (() => {
 			 */
 			const fileNameHtmlSafe = fileName.replace(/'/g, "&#39;");
 			AspenDiscovery.confirm(
-				'Confirm Delete',
-				`Are you sure you want to delete this <strong>${fileName}</strong>?`,
-				'Delete',
-				'Cancel',
-				true,
+				__('Confirm Delete'),
+				__('Are you sure you want to delete this {fileName}?', { fileName: '<strong>' + fileName + '</strong>' }),
+				__('Delete'),
+				__('Cancel'),
+				false,
 				`AspenDiscovery.closeLightbox();AspenDiscovery.SideLoads.doDeleteMarc(${sideLoadId}, \"${fileNameHtmlSafe}\", ${fileIndex});`,
 				'btn-danger'
 			);
@@ -31,7 +31,7 @@ AspenDiscovery.SideLoads = (() => {
 				if (success){
 					$("#file" + fileIndex).hide();
 				} else {
-					AspenDiscovery.showMessage('Delete Failed', message, false);
+					AspenDiscovery.showMessage(__('Delete Failed'), message, false);
 				}
 			}).fail(AspenDiscovery.ajaxFail);
 
