@@ -247,6 +247,21 @@ class EventRegistrationService {
 		return 'eventFull';
 	}
 
+	public static function getRegistrationActionForUser(EventInstance $instance, bool $isRegistered, bool $onWaitingList, bool $canRegister): string {
+		$registrationAction = self::getRegistrationAction(
+			$isRegistered,
+			!self::hasAvailableSeats($instance),
+			$instance->isWaitingListEnabled(),
+			$onWaitingList,
+			$canRegister,
+			self::isWaitingListFull($instance)
+		);
+		if ($registrationAction === 'showPosition' && self::hasUnregisteredLinkedUsers($instance)) {
+			$registrationAction = 'joinWaitingList';
+		}
+		return $registrationAction;
+	}
+
 	/**
 	 * Invite the next person on the waiting list for an event instance.
 	 */

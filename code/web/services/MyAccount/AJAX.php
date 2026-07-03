@@ -8257,20 +8257,12 @@ class MyAccount_AJAX extends JSON_Action {
 			$interface->assign('linkedUsers', $linkedUsers);
 
 			$isRegistered = $aspenEventInstanceUserRegistration->status === 'registered';
-			$isEventFull = !EventRegistrationService::hasAvailableSeats($eventInstance);
-			$canRegister = $waitingListInfo['canRegister'];
-			$isWaitingListFull = EventRegistrationService::isWaitingListFull($eventInstance);
-			$registrationAction = EventRegistrationService::getRegistrationAction(
+			$registrationAction = EventRegistrationService::getRegistrationActionForUser(
+				$eventInstance,
 				$isRegistered,
-				$isEventFull,
-				$eventInstance->isWaitingListEnabled(),
 				$waitingListInfo['onWaitingList'],
-				$canRegister,
-				$isWaitingListFull
+				$waitingListInfo['canRegister']
 			);
-			if ($registrationAction === 'showPosition' && EventRegistrationService::hasUnregisteredLinkedUsers($eventInstance)) {
-				$registrationAction = 'joinWaitingList';
-			}
 			$interface->assign('userIsRegistered', $isRegistered);
 			$interface->assign('registrationAction', $registrationAction);
 
@@ -8324,12 +8316,40 @@ class MyAccount_AJAX extends JSON_Action {
 			return $result;
 		}
 
+		require_once ROOT_DIR . '/sys/Events/UserAspenEventInstanceRegistration.php';
+		require_once ROOT_DIR . '/services/EventRegistrationService.php';
+
+		$registration = new UserAspenEventInstanceRegistration();
+		$registration->userId = (int)$userId;
+		$registration->eventInstanceId = $eventInstance->id;
+		$waitingListInfo = $registration->getWaitingListInfo();
+
+		$registrationAction = EventRegistrationService::getRegistrationActionForUser(
+			$eventInstance,
+			$registration->status === 'registered',
+			$waitingListInfo['onWaitingList'],
+			$waitingListInfo['canRegister']
+		);
+
+		$position = $waitingListInfo['position'];
+		$positionMessage = null;
+		if ($waitingListInfo['onWaitingList'] && $position !== null) {
+			$positionMessage = str_replace('%1%', $position, translate([
+				'text' => 'You are number %1% on the waiting list',
+				'isPublicFacing' => true,
+			]));
+		}
+
 		$result['success'] = true;
 		$result['message'] = translate([
 			'text' => 'Registration information found',
 			'isPublicFacing' => true,
 		]);
-		$result['body'] = $eventInstance->getUserEventRegistrationStatus((int)$userId);
+		$result['body'] = [
+			'isOnWaitingList' => $waitingListInfo['onWaitingList'],
+			'waitingListPositionMessage' => $positionMessage,
+			'registrationAction' => $registrationAction,
+		];
 		return $result;
 	}
 
