@@ -83,6 +83,7 @@
 				Globals.timeUntilSessionExpiration = {$timeUntilSessionExpiration};
 			{/if}
 			Globals.language = '{$userLang->code}';
+			Globals.jsTranslations = {jsTranslationsJson};
 		{literal}
 			});
 		{/literal}

@@ -602,6 +602,8 @@ class BookCoverProcessor {
 		} else {
 			$this->logTime("Added modification headers");
 		}
+		//Remove all cookies
+		header_remove("Set-Cookie");
 	}
 
 	private function getCoverFromProvider() : bool {

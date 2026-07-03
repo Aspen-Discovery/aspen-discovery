@@ -731,7 +731,7 @@ AspenDiscovery.CommunityEngagement = function() {
 					}
 				},
 				error: function () {
-					alert('Error communicating with server.');
+					alert(__('Error communicating with server.'));
 				}
 			});
 		},

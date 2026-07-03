@@ -296,7 +296,7 @@ var AspenDiscovery = (function(){
 				return aspenJQ(this).attr('name') + "=" + aspenJQ(this).val();
 			}).get().join("&");
 			if (selectedTitles.length === 0 && promptForProcessingAll){
-				var ret = confirm('You have not selected any items, process all items?');
+				var ret = confirm(__('You have not selected any items, process all items?'));
 				if (ret === true){
 					AspenDiscovery.selectAllTitles();
 					selectedTitles = titleSelect.map(function() {
@@ -320,7 +320,7 @@ var AspenDiscovery = (function(){
 				return aspenJQ(this).attr('name') + "=" + aspenJQ(this).val();
 			}).get().join("&");
 			if (selectedCategories.length === 0){
-				var ret = confirm('No browse categories were selected');
+				var ret = confirm(__('No browse categories were selected'));
 			}
 			return selectedCategories;
 		},
@@ -516,6 +516,10 @@ var AspenDiscovery = (function(){
 					buttons += "<button id='confirmCancelBtn' class='tool btn btn-default' onclick='AspenDiscovery.closeLightbox()'>" + cancelButtonLabel + "</button>";
 					AspenDiscovery.showMessageWithButtons(messageTitle, messageBody, buttons, false, '', false, messageTitle.length === 0,true);
 				});
+			} else {
+				var buttons = "<button id='confirmOkBtn' class='tool btn " + confirmStyle + "' onclick='" + confirmFunctionAsString + "'><i class='fas fa-spinner fa-spin hidden' role='status' aria-hidden='true'></i> " + okButtonLabel + "</button>";
+				buttons += "<button id='confirmCancelBtn' class='tool btn btn-default' onclick='AspenDiscovery.closeLightbox()'>" + cancelButtonLabel + "</button>";
+				AspenDiscovery.showMessageWithButtons(messageTitle, messageBody, buttons, false, '', false, messageTitle.length === 0, true);
 			}
 
 		},

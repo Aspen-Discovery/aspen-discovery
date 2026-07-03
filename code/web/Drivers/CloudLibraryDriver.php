@@ -324,7 +324,7 @@ class CloudLibraryDriver extends AbstractEContentDriver {
 	 * This is responsible for both placing holds as well as placing recalls.
 	 *
 	 * @param User $patron The User to place a hold for
-	 * @param string $recordId The id of the bib record
+	 * @param mixed $recordId The id of the bib record
 	 * @return  array                 An array with the following keys
 	 *                                result - true/false
 	 *                                message - the message to display (if item holds are required, this is a form to select the item).
@@ -332,7 +332,7 @@ class CloudLibraryDriver extends AbstractEContentDriver {
 	 *                                title - the title of the record the user is placing a hold on
 	 * @access  public
 	 */
-	function placeHold(User $patron, $recordId, $pickupBranch = null, $cancelDate = null) : array {
+	function placeHold(User $patron, mixed $recordId, $pickupBranch = null, $cancelDate = null) : array {
 		$result = [
 			'success' => false,
 			'message' => translate([

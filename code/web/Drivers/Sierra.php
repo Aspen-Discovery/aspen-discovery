@@ -1255,7 +1255,7 @@ class Sierra extends AbstractIlsDriver {
 		}
 	}
 
-	public function placeHold(User $patron, string $recordId, ?string $pickupBranch = null, ?string $cancelDate = null, ?string $pickupSublocation = null, ?int $numberOfCopies = 1) : array {
+	public function placeHold(User $patron, mixed $recordId, ?string $pickupBranch = null, ?string $cancelDate = null, ?string $pickupSublocation = null, ?int $numberOfCopies = 1) : array {
 		/** @noinspection PhpArrayIndexImmediatelyRewrittenInspection */
 		$hold_result = [
 			'success' => false,

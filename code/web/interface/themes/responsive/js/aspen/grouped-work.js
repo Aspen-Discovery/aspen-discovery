@@ -33,7 +33,7 @@ AspenDiscovery.GroupedWork = (function(){
 		},
 
 		deleteReview: function(id, reviewId){
-			if (confirm("Are you sure you want to delete this review?")){
+			if (confirm(__('Are you sure you want to delete this review?'))){
 				var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=deleteUserReview';
 				$.getJSON(url, function(data){
 					if (data.result === true){
