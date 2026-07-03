@@ -7549,7 +7549,7 @@ class Koha extends AbstractIlsDriver {
 		$response = $this->kohaApiUserAgent->get("/api/v1/patrons/$borrowerNumber/extended_attributes",'koha.getUserExtendedAttributes',[],[]);
 		$responseCode = $response['code'];
 		if ($responseCode == 200) {
-			$body = $response['body'] ?? [];
+			$body = $response['content'] ?? [];
 			foreach($body as $elem ) { 
 				$attribute = [
 					'id' => $elem['extended_attribute_id'],
