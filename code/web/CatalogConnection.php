@@ -1001,7 +1001,7 @@ class CatalogConnection {
 	 * The user object takes care of updating account summary etc.
 	 *
 	 * @param User $patron The User to place a hold for
-	 * @param string $recordId The id of the bib record
+	 * @param mixed $recordId The id of the bib record
 	 * @param string $pickupBranch The branch where the user wants to pick up the item when available
 	 * @param ?string $cancelDate
 	 * @param ?string $pickupSublocation The sublocation within the location where the user wants to pick up the item
@@ -1010,7 +1010,7 @@ class CatalogConnection {
 	 *                                If an error occurs, return an AspenError
 	 * @access  public
 	 */
-	function placeHold(User $patron, string $recordId, string $pickupBranch, ?string $cancelDate = null, ?string $pickupSublocation = null, ?int $numberOfCopies = 1) : array {
+	function placeHold(User $patron, mixed $recordId, string $pickupBranch, ?string $cancelDate = null, ?string $pickupSublocation = null, ?int $numberOfCopies = 1) : array {
 		$result = $this->driver->placeHold($patron, $recordId, $pickupBranch, $cancelDate, $pickupSublocation, $numberOfCopies);
 		if ($result['success']) {
 			$indexingProfileId = $this->driver->getIndexingProfile()->id;

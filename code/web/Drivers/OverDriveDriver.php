@@ -880,7 +880,7 @@ class OverDriveDriver extends AbstractEContentDriver {
 	 * If the library has multiple OverDrive collections available, the driver should have the active settings
 	 * set using a call to setSettings before calling this method.
 	 */
-	function placeHold(User $patron, $recordId, $pickupBranch = null, $cancelDate = null) : array {
+	function placeHold(User $patron, mixed $recordId, $pickupBranch = null, $cancelDate = null) : array {
 		require_once ROOT_DIR . '/RecordDrivers/OverDriveRecordDriver.php';
 		$recordDriver = new OverDriveRecordDriver($recordId);
 		if (!$recordDriver->isValid()) {

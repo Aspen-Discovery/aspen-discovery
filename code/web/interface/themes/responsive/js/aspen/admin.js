@@ -1747,7 +1747,7 @@ AspenDiscovery.Admin = (function () {
 
 		deleteNYTList: function (id) {
 			var listId = id;
-			if (confirm("Are you sure you want to delete this list?")) {
+			if (confirm(__('Are you sure you want to delete this list?'))) {
 				$.getJSON(Globals.path + '/Admin/AJAX?method=deleteNYTList&id=' + listId, function (data) {
 					AspenDiscovery.showMessage("Success", data.message, true, true);
 				})
@@ -2591,10 +2591,10 @@ AspenDiscovery.Admin = (function () {
 					).fail(AspenDiscovery.ajaxFail);
 					return false;
 				} else {
-					alert("Select at least one library to copy to");
+					alert(__('Select at least one library to copy to'));
 				}
 			} else {
-				alert("Select at least one menu link to copy");
+				alert(__('Select at least one menu link to copy'));
 			}
 			return false;
 		},
@@ -2882,23 +2882,23 @@ AspenDiscovery.Admin = (function () {
 
 			if (scope === 'selected') {
 				if (!selected.length) {
-					AspenDiscovery.showMessage('Failed to Delete Selected Objects', 'Please select at least one object to delete.');
+					AspenDiscovery.showMessage(__('Failed to Delete Selected Objects'), __('Please select at least one object to delete.'));
 					return false;
 				}
 			}
 			if (scope === 'all') {
-				title = 'Permanently Delete All';
-				body = 'Are you sure you want to permanently delete ALL objects? This action cannot be undone.';
-				okLabel = 'Delete All';
+				title = __('Permanently Delete All');
+				body = __('Are you sure you want to permanently delete ALL objects? This action cannot be undone.');
+				okLabel = __('Delete All');
 			} else {
-				title = 'Permanently Delete Selected';
-				body = 'Are you sure you want to permanently delete ' + count + ' object(s)? This action cannot be undone.';
-				okLabel = 'Delete';
+				title = __('Permanently Delete Selected');
+				body = __('Are you sure you want to permanently delete {count} object(s)? This action cannot be undone.', { count: count });
+				okLabel = __('Delete');
 			}
 
 			const confirmJs = "$(\"#objectAction\").val(\"batchHardDelete\"); $(\"#propertiesListForm\").trigger('submit');";
 
-			AspenDiscovery.confirm(title, body, okLabel, 'Cancel', true, confirmJs, 'btn-danger');
+			AspenDiscovery.confirm(title, body, okLabel, __('Cancel'), false, confirmJs, 'btn-danger');
 			return false;
 		},
 

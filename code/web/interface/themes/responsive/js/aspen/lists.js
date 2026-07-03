@@ -170,7 +170,7 @@ AspenDiscovery.Lists = (function () {
 		},
 
 		importListsFromClassic: function () {
-			AspenDiscovery.confirm("Import Lists?", "This will import any lists you had defined in the old catalog.  This may take several minutes depending on the size of your lists. Are you sure you want to continue?", "Yes", "No", true, "AspenDiscovery.Lists.doImportListsFromClassic()");
+			AspenDiscovery.confirm(__('Import Lists?'), __('This will import any lists you had defined in the old catalog.  This may take several minutes depending on the size of your lists. Are you sure you want to continue?'), __('Yes'), __('No'), false, "AspenDiscovery.Lists.doImportListsFromClassic()");
 			return false;
 		},
 		doImportListsFromClassic: function () {

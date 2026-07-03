@@ -70,6 +70,8 @@ class Events_AttendanceManagement extends Admin_Admin {
 				'registeredByStaff' => $registration->wasRegisteredByStaff(),
 				'staffName' => $staffUser ? $staffUser->getDisplayName() : null,
 				'dateRegistered' => $registration->createdAt ? date('Y-m-d H:i', strtotime($registration->createdAt)) : null,
+				'registrationCount' => 1,
+				'attendeeCategoryBreakdown' => EventRegistrationService::getAttendeeCategoryBreakdownForRegistration((int)$eventInstanceId, (int)$registration->id),
 			];
 		}
 		$interface->assign('registrations', $registrationData);
@@ -118,7 +120,7 @@ class Events_AttendanceManagement extends Admin_Admin {
 						'availableSeats' => EventRegistrationService::getAvailableSeats($eventInstance),
 						'numberOfSeats' => $eventInstance->getEffectiveNumberOfSeats(),
 						'registrationRequired' => (bool)$parentEvent->registrationRequired,
-						'attendeeCategoryBreakdown' => EventRegistrationService::getAttendeeCategoryBreakdown((int)$eventInstance->id),
+						'attendeeCategoryBreakdown' => EventRegistrationService::getAttendeeCategoryBreakdownForInstance((int)$eventInstance->id),
 					];
 				}
 			}
@@ -169,6 +171,11 @@ class Events_AttendanceManagement extends Admin_Admin {
 		$parentEvent = $eventInstance->getParentEvent();
 		$registrations = UserAspenEventInstanceRegistration::getRegistrationsForEvent($eventInstanceId);
 
+		$attendeeCategories = [];
+		if ($eventType = $eventInstance->getEventType()) {
+			$attendeeCategories = $eventType->getEventTypeAttendeeCategories();
+		}
+
 		header('Content-Type: text/plain');
 		header('Content-Disposition: attachment; filename="registrations_list_' . $eventInstanceId . '.txt"');
 
@@ -185,9 +192,16 @@ class Events_AttendanceManagement extends Admin_Admin {
 		 . str_pad("Date of Birth", 15)
 		 . str_pad("Registered By", 20)
 		 . str_pad("Date Registered", 20)
-		 . str_pad("Status", 15)
-		 . "Attended\n";
-		echo str_repeat("-", 200) . "\n";
+		 . str_pad("Status", 15);
+		foreach ($attendeeCategories as $eventTypeCategory) {
+			$category = $eventTypeCategory->getCategory();
+			if ($category !== null) {
+				echo str_pad($category->name . ' (attendees)', 25);
+			}
+		}
+		echo str_pad("Attended", 10);
+		echo "\n";
+		echo str_repeat("-", 200 + (count($attendeeCategories) * 25)) . "\n";
 
 		foreach ($registrations as $registration) {
 			if (!$user = $registration->getUser()) {
@@ -201,8 +215,16 @@ class Events_AttendanceManagement extends Admin_Admin {
 			 . str_pad($dateOfBirth, 15)
 			 . str_pad($registeredBy, 20)
 			 . str_pad($dateRegistered, 20)
-			 . str_pad($status, 15)
-			 . "[ ]\n";
+			 . str_pad($status, 15);
+			$attendeeCounts = $registration->getAttendeeCounts();
+			foreach ($attendeeCategories as $eventTypeCategory) {
+				$category = $eventTypeCategory->getCategory();
+				if ($category !== null) {
+					echo str_pad((string)($attendeeCounts[(int)$eventTypeCategory->attendeeCategoryId] ?? 0), 25);
+				}
+			}
+			echo str_pad("[ ]", 10);
+			echo "\n";
 		}
 		exit;
 	}
