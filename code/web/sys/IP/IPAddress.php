@@ -520,8 +520,10 @@ class IPAddress extends DataObject {
 			$ip = $_COOKIE['test_ip'];
 		} else {
 			$ip = IPAddress::getClientIP();
-			setcookie('test_ip', null, time() - 3600, '/');
-			unset($_COOKIE['test_ip']);
+			if (!empty($_COOKIE['test_ip'])) {
+				setcookie('test_ip', null, time() - 3600, '/');
+				unset($_COOKIE['test_ip']);
+			}
 		}
 		IPAddress::$activeIp = $ip;
 		$timer->logTime("getActiveIp");
