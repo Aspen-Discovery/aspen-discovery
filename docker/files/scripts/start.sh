@@ -59,20 +59,20 @@ fi
 
 # Sync environment variables to config files (runs every start)
 log_info "Syncing environment variables to config..."
-if ! php syncEnvToConfig.php ; then
+if ! php -d xdebug.mode=off syncEnvToConfig.php ; then
 	log_warn "Environment sync failed, using existing config"
 fi
 
 # Initialize Aspen database
 log_info "Initializing database"
-if ! php initDatabase.php ; then
+if ! php -d xdebug.mode=off initDatabase.php ; then
 	log_error "Database initialization failed"
 	exit 1
 fi
 
 # Create missing dirs and fix ownership and permissions if needed
 log_info "Setting up data and log directories"
-if ! php createDirs.php ; then
+if ! php -d xdebug.mode=off createDirs.php ; then
 	log_error "Directories creation and permission fixes failed"
 	exit 1
 fi
@@ -112,9 +112,9 @@ done
 
 # Run pending database updates
 log_info "Running pending database updates..."
-php updateDatabase.php "$SITE_NAME"
+php -d xdebug.mode=off updateDatabase.php "$SITE_NAME"
 
-sudo -u www-data php /usr/local/aspen-discovery/docker/files/cron/checkBackgroundProcessesDocker.php $SITE_NAME >/proc/1/fd/1 2>/proc/1/fd/2
+sudo -u www-data php -d xdebug.mode=off /usr/local/aspen-discovery/docker/files/cron/checkBackgroundProcessesDocker.php $SITE_NAME >/proc/1/fd/1 2>/proc/1/fd/2
 
 log_info "Starting PHP-FPM in foreground mode..."
 php-fpm8.4 --test && exec php-fpm8.4 -F

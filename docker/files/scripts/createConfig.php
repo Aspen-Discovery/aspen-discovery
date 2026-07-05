@@ -139,10 +139,9 @@ try {
 	replaceVariables($siteDir . "/conf/php-fpm.conf", $variables);
 	replaceVariables($siteDir . "/conf/crontab", $variables);
 
-	DockerLogger::info("Setting system timezone: {$variables['timezone']}");
-	
-	// Set timezone
-	exec('sudo timedatectl set-timezone "' . $variables['timezone'] . '"');
+	// Set timezone (Skip in Docker as it requires DBUS/systemd which are usually missing)
+	DockerLogger::info("Skipping system timezone setting (use TIMEZONE env var for PHP)");
+	// exec('sudo timedatectl set-timezone "' . $variables['timezone'] . '"');
 	
 	// Create temp directory
 	if (!file_exists('/tmp')) {

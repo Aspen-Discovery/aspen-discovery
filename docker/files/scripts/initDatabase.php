@@ -32,7 +32,9 @@ $databaseIsDown = true;
 while ($databaseIsDown) {
 	try {
 		$statement = 'SELECT libraryId FROM library LIMIT 1;';
-		$aspenDatabase = new PDO($databaseDsn, $databaseUser, $databasePassword);
+		$aspenDatabase = new PDO($databaseDsn, $databaseUser, $databasePassword, [
+			PDO::ATTR_TIMEOUT => 5,
+		]);
 		$updateUserStmt = $aspenDatabase->prepare($statement);
 		$databaseIsDown = false;
 	} catch (PDOException $e) {

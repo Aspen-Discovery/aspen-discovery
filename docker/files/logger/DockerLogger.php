@@ -57,8 +57,6 @@ class DockerLogger {
 		$recursive = is_dir($path) ? '-R ' : '';
 		exec("chown {$recursive}{$owner} {$path}");
 		exec("chmod {$recursive}{$permissions} {$path}");
-
-		self::info("Set permissions {$permissions} and owner {$owner} for: {$path}");
 	}
 }
 
