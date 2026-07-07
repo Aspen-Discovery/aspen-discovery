@@ -50,10 +50,29 @@ class StorageDriverFactory {
 	}
 
 	private static function create(): StorageDriver {
-		return self::getLocalDriver();
+		$setting = self::loadActiveSetting();
+		return self::buildDriver($setting);
 	}
 
 	private static function createFromId(int $id): StorageDriver {
+		$setting = self::loadSettingById($id);
+		return self::buildDriver($setting);
+	}
+
+	private static function buildDriver(?StorageSetting $setting): StorageDriver {
+		if ($setting !== null && $setting->driver === 's3' && !empty($setting->bucket)) {
+			require_once ROOT_DIR . '/sys/Storage/S3StorageDriver.php';
+
+			$client = new AsyncAws\S3\S3Client([
+				'accessKeyId'     => $setting->accessKeyId,
+				'accessKeySecret' => $setting->accessKeySecret,
+				'region'          => $setting->region ?: 'us-east-1',
+				'endpoint'        => $setting->endpoint ?: null,
+			]);
+
+			return new S3StorageDriver($client, $setting->bucket, $setting->baseUrl);
+		}
+
 		return self::getLocalDriver();
 	}
 
@@ -62,5 +81,19 @@ class StorageDriverFactory {
 			self::$localInstance = new LocalStorageDriver(self::resolveDataRoot());
 		}
 		return self::$localInstance;
+	}
+
+	private static function loadActiveSetting(): ?StorageSetting {
+		require_once ROOT_DIR . '/sys/Storage/StorageSetting.php';
+		$setting = new StorageSetting();
+		$setting->isActive = 1;
+		return $setting->find(true) ? $setting : null;
+	}
+
+	private static function loadSettingById(int $id): ?StorageSetting {
+		require_once ROOT_DIR . '/sys/Storage/StorageSetting.php';
+		$setting = new StorageSetting();
+		$setting->id = $id;
+		return $setting->find(true) ? $setting : null;
 	}
 }
