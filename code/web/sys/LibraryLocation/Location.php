@@ -82,6 +82,7 @@ class Location extends DataObject {
 	public $circulationUsername;
 	public $facetLabel;
 	public $groupedWorkDisplaySettingId;
+	public $searchSettingId;
 	public $browseCategoryGroupId;
 	public $restrictSearchByLocation;
 	public /** @noinspection PhpUnused */

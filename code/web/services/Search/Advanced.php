@@ -64,7 +64,7 @@ class Search_Advanced extends Search_AdvancedBase {
 //		$interface->assign('columnWidth', $columnWidth);
 
 		// Send search type settings to the template
-		$interface->assign('advSearchTypes', $searchObject->getAdvancedTypes());
+		$interface->assign('advSearchTypes', $searchObject->getAdvancedSearchIndexes());
 
 		// If we found a saved search, let's assign some details to the interface:
 		if ($savedSearch) {

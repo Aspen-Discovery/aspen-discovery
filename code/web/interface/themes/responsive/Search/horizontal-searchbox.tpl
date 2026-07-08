@@ -9,6 +9,17 @@
 			<input type="hidden" name="showCovers" value="{if !empty($showCovers)}on{else}off{/if}">
 		{/if}
 
+		{assign var="totalSearchOptions" value=$searchIndexes|@count}
+		{if (!empty($searchIndex) && $searchIndex == 'advanced') || $showAdvancedSearchbox}
+			{assign var="totalSearchOptions" value=$totalSearchOptions+1}
+		{/if}
+		{assign var="hiddenSearchType" value=false}
+
+		{* Switch sizing when no search type is to be displayed *}
+		{if empty($searchIndexes) || count($searchIndexes) == 1}
+			{assign var="hiddenSearchType" value=true}
+		{/if}
+
 		{assign var="hiddenSearchSource" value=false}
 		{* Switch sizing when no search source is to be displayed *}
 		{if empty($searchSources) || count($searchSources) == 1}
@@ -18,7 +29,7 @@
 
 		<div class="col-xs-12 col-sm-10 col-md-10 col-lg-10">
 			<div class="row">
-				<div class="{if !empty($hiddenSearchSource)}col-lg-10 col-md-10{else}col-lg-7 col-md-7{/if} col-sm-12 col-xs-12">
+				<div class="{if !empty($hiddenSearchSource)}col-lg-10 col-md-10{elseif !empty($hiddenSearchType)}col-lg-9 col-md-9{else}col-lg-7 col-md-7{/if} col-sm-12 col-xs-12">
 					<div class="input-group">
 						<span class="input-group-addon"><label for="lookfor" class="label" id="lookfor-label"><i class="fas fa-search fa-lg" role="presentation"></i><span class="sr-only" aria-label="{translate text="Look for" isPublicFacing=true inAttribute=true}" role="presentation">{translate text="Look for" isPublicFacing=true}</span></label></span>
 						{* Main Search Term Box *}
@@ -42,32 +53,44 @@
 				</div>
 
 				{* Search Type *}
-				<div class="col-lg-2 col-lg-offset-0 col-md-2 col-md-offset-0 {if !empty($hiddenSearchSource)} col-sm-12 col-sm-offset-0 col-xs-12 col-xs-offset-0 {else} col-sm-6 col-sm-offset-0 col-xs-6 col-xs-offset-0{/if}">
-					<select name="searchIndex" class="searchTypeHorizontal form-control catalogType" id="searchIndex" title="The method of searching." aria-label="Search Index">
-						<script type="text/javascript">
-							{literal}
-							$(document).ready(function() {
-								AspenDiscovery.Searches.loadSearchTypes();
-							});
-							{/literal}
-						</script>
-						{foreach from=$searchIndexes item=searchDesc key=searchVal}
-							{* The descriptions are already translated and do not need to be retranslated *}
-							<option value="{$searchVal}"{if !empty($searchIndex) && $searchIndex == $searchVal} selected="selected"{/if}>{$searchDesc}</option>
-						{/foreach}
+				{assign var="totalSearchOptions" value=$searchIndexes|@count}
+				{if (!empty($searchIndex) && $searchIndex == 'advanced') || $showAdvancedSearchbox}
+					{assign var="totalSearchOptions" value=$totalSearchOptions+1}
+				{/if}
 
-						{* Add Advanced Search *}
-						{if !empty($searchIndex) && $searchIndex == 'advanced'}*}
-							<option id="advancedSearchLink" value="editAdvanced" selected="selected">
-								{translate text='Edit Advanced Search' inAttribute=true isPublicFacing=true}
-							</option>
-						{elseif $showAdvancedSearchbox}
-							<option id="advancedSearchLink" value="advanced">
-								{translate text='Advanced Search' inAttribute=true isPublicFacing=true}
-							</option>
-						{/if}
-					</select>
+				{if $totalSearchOptions == 1}
+				{* Only one possible search type, no need for a dropdown *}
+				{foreach from=$searchIndexes item=searchDesc key=searchVal}
+					<input type="hidden" name="searchIndex" id="searchIndex" value="{$searchVal}" />
+				{/foreach}
+				{else}
+				<div class="col-lg-2 col-lg-offset-0 col-md-2 col-md-offset-0 {if !empty($hiddenSearchSource)} col-sm-12 col-sm-offset-0 col-xs-12 col-xs-offset-0 {else} col-sm-6 col-sm-offset-0 col-xs-6 col-xs-offset-0{/if}">
+						<select name="searchIndex" class="searchTypeHorizontal form-control catalogType" id="searchIndex" title="The method of searching." aria-label="Search Index">
+							<script type="text/javascript">
+								{literal}
+								$(document).ready(function() {
+									AspenDiscovery.Searches.loadSearchTypes();
+								});
+								{/literal}
+							</script>
+							{foreach from=$searchIndexes item=searchDesc key=searchVal}
+								{* The descriptions are already translated and do not need to be retranslated *}
+								<option value="{$searchVal}"{if !empty($searchIndex) && $searchIndex == $searchVal} selected="selected"{/if}>{$searchDesc}</option>
+							{/foreach}
+
+							{* Add Advanced Search *}
+							{if !empty($searchIndex) && $searchIndex == 'advanced'}
+								<option id="advancedSearchLink" value="editAdvanced" selected="selected">
+									{translate text='Edit Advanced Search' inAttribute=true isPublicFacing=true}
+								</option>
+							{elseif $showAdvancedSearchbox}
+								<option id="advancedSearchLink" value="advanced">
+									{translate text='Advanced Search' inAttribute=true isPublicFacing=true}
+								</option>
+							{/if}
+						</select>
 				</div>
+				{/if}
 
 				{if empty($hiddenSearchSource)}
 					<div class="col-lg-3 col-md-3 col-sm-6 col-xs-6">
