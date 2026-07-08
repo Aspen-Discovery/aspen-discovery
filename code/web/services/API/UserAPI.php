@@ -6195,6 +6195,15 @@ class UserAPI extends AbstractAPI {
 			$user = $this->getUserForApiCall($patronBarcode, $patronPassword);
 		}
 		if ($user && !($user instanceof AspenError)) {
+			$patronId = $_REQUEST['userId'] ?? $user->id;
+			$patron = $user->getUserReferredTo($patronId);
+			if (!$patron) {
+				return [
+					'success' => false,
+					'title' => 'Error',
+					'message' => 'Sorry, it looks like you don\'t have access to that patron.',
+				];
+			}
 			if ($itemBarcode == null) {
 				if (!empty($_REQUEST['barcode'])) {
 					$itemBarcode = $_REQUEST['barcode'];
@@ -6226,7 +6235,7 @@ class UserAPI extends AbstractAPI {
 					$scoSettings->id = $location->lidaSelfCheckSettingId;
 					if($scoSettings->find(true)) {
 						if($scoSettings->isEnabled) {
-							$result = $user->checkoutItem($itemBarcode, $location);
+							$result = $patron->checkoutItem($itemBarcode, $location);
 							return [
 								'success' => $result['success'],
 								'title' => $result['api']['title'],
