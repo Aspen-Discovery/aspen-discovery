@@ -93,7 +93,7 @@ class Donations_NewDonation extends Action {
 					'account_number' => $billerAccountId,
 				];
 
-				$url = $baseUrl . "/auth/v1/auth/token";
+				$url = $baseUrl . "/oauth/token";
 				$accessTokenResults = $serviceAccountAuthorization->curlPostPage($url, $postParams);
 				$accessTokenResults = json_decode($accessTokenResults, true);
 				$accessToken = "";

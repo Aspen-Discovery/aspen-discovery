@@ -275,7 +275,7 @@ class ACISpeedpaySetting extends DataObject {
 		];
 
 		$params = $this->buildQueryString($postParams);
-		$url = $this->appendQuery($baseUrl . '/auth/v1/auth/authorize', $params);
+		$url = $this->appendQuery($baseUrl . '/oauth/authorize', $params);
 		$authorizationResults = $authCodeRequest->curlGetPage($url);
 		$authCodeResults = json_decode($authorizationResults, true);
 		if (empty($authCodeResults['code'])) {
@@ -319,7 +319,7 @@ class ACISpeedpaySetting extends DataObject {
 			'code' => $code,
 			'code_verifier' => $codeVerifier
 		];
-		$url = $baseUrl . '/auth/v1/auth/token';
+		$url = $baseUrl . '/oauth/token';
 		$authCodeResults = $authCodeRequest->curlPostPage($url, $postParams);
 		$authCodeResults = json_decode($authCodeResults, true);
 		if (empty($authCodeResults['access_token'])) {
