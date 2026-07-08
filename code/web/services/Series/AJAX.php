@@ -206,16 +206,24 @@ class Series_AJAX extends JSON_Action {
 			$seriesToGroupWith = new Series();
 			$seriesToGroupWith->seriesPermanentId = $seriesToGroupWithId;
 			if (!empty($seriesToGroupWithId) && $seriesToGroupWith->find(true)) {
-				$originalSeries->getSeriesMembers();
-				$originalSeries->seriesToGroupWithId = $seriesToGroupWithId;
-				$originalSeries->isIndexed = 0;
-				$originalSeries->update();
+				if (empty($seriesToGroupWith->seriesToGroupWithId)){
+					$originalSeries->getSeriesMembers();
+					$originalSeries->seriesToGroupWithId = $seriesToGroupWithId;
+					$originalSeries->isIndexed = 0;
+					$originalSeries->update();
 
-				$results['success'] = true;
-				$results['message'] = translate([
-					'text' => "Your series have been grouped successfully, the index will update shortly.",
-					'isAdminFacing' => true,
-				]);
+					$results['success'] = true;
+					$results['message'] = translate([
+						'text' => "Your series have been grouped successfully, the index will update shortly.",
+						'isAdminFacing' => true,
+					]);
+				} else {
+					$results['message'] = translate([
+						'text' => "The series you are trying to group to is already grouped to another series. Please wait for the index to update.",
+						'isAdminFacing' => true,
+					]);
+				}
+
 			} else {
 				$results['message'] = translate([
 					'text' => "Could not find series to group with.",

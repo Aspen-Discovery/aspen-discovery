@@ -181,10 +181,9 @@ class Series extends DataObject {
 
 
 	public function update(string $context = '') : int|bool {
-
+		$this->__set('dateUpdated', time());
 		if (!empty($this->_changedFields)) {
 			$this->reloadCover();
-			$this->__set('dateUpdated', time());
 		}
 		$ret = parent::update();
 		if ($ret !== FALSE) {
