@@ -51,17 +51,27 @@ abstract class Admin_AbstractUsageGraphs extends Admin_Admin {
 		$interface->assign('profileName', $profileName);
 		$interface->assign('instance', $instanceName);
 		$interface->assign('timeframe', $timeframe);
-		$usage = new AspenUsage();
-		$interface->assign('earliestUsageDate', $usage->getEarliestUsageDate());
+
 		if ($timeframe === 'custom') {
+			$usage = new AspenUsage();
+			$earliestUsageDate = $usage->getEarliestUsageDate();
+			$interface->assign('earliestUsageDate', $earliestUsageDate);
 			$interface->assign('customUsagePeriodStart', $customUsagePeriodStart);
 			$interface->assign('customUsagePeriodDuration', $customUsagePeriodDuration);
+			$interface->assign('customPeriodStartWarning', $this->getCustomPeriodStartWarning($customUsagePeriodStart, $earliestUsageDate));
 		}
 
 		$this->assignGraphSpecificTitle($stat);
 		$this->getAndSetInterfaceDataSeries($stat, $instanceName, $this->setGroupBy($timeframe), $custom);
 		$graphTitle = $interface->getVariable('graphTitle');
 		$this->display('../Admin/usage-graph.tpl', $graphTitle);
+	}
+
+	private function getCustomPeriodStartWarning(?string $customPeriodStart, ?string $earliestUsageDate): ?string {
+		if (empty($customPeriodStart) || empty($earliestUsageDate) || strtotime($customPeriodStart) >= strtotime($earliestUsageDate)) {
+			return null;
+		}
+		return "The selected start date is before the earliest recorded usage ($earliestUsageDate). Periods before then will not be displayed.";
 	}
 
 	private function setGroupBy(string $timeframe): array {
