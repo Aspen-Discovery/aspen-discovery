@@ -27,11 +27,11 @@ abstract class AbstractUsage extends DataObject {
 		$customPeriodStartDay = date('d', strtotime($custom['customUsagePeriodStart']));
 		$this->selectAdd($selectPeriodStart);
 		$this->selectAdd($selectPeriodEnd);
-		$condition = 'year > ' .
+		$condition = '(year > ' .
 			$customPeriodStartYear .
 			' OR (year = ' .
 			$customPeriodStartYear .
-			' AND month >= ' .
+			' AND month > ' .
 			$customPeriodStartMonth .
 			')' .
 			' OR (year = ' .
@@ -40,7 +40,7 @@ abstract class AbstractUsage extends DataObject {
 			$customPeriodStartMonth .
 			' AND day >= ' .
 			$customPeriodStartDay .
-			')';
+			'))';
 		$this->whereAdd($condition);
 		$this->groupBy('periodStart');
 		$this->orderBy(['year', 'month', 'day']);
