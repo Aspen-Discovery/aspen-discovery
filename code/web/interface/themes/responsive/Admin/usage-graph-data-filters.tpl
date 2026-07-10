@@ -9,8 +9,11 @@
 				<option {if $timeframe == 'custom'}selected{/if} value='custom'>{translate text='Custom period' isAdminFacing=true}</option>
 			</select>
 			<div id='custom-usage-period-wrapper' {if $timeframe != 'custom'}hidden{/if}>
-				<label for='customUsagePeriodStart'>{translate text='Custom period start (date)' isAdminFacing=true}</label>
-				<input type='date' name='customUsagePeriodStart' id='customUsagePeriodStart' min='{$earliestUsageDate|default:"01-01-2019"}' value='{$customUsagePeriodStart|default:''}' class='form-control' {if $timeframe == 'custom'}required{/if}>				<label for='customUsagePeriodDuration'>{translate text='Custom period duration (days)' isAdminFacing=true}</label>
+				<div class="{if !empty($customPeriodStartWarning)}has-error{/if}">
+					<label for='customUsagePeriodStart' class="control-label">{translate text='Custom period start (date)' isAdminFacing=true}</label>
+					<input type='date' name='customUsagePeriodStart' id='customUsagePeriodStart' min='{$earliestUsageDate|default:"2019-01-01"}' value='{$customUsagePeriodStart|default:''}' class='form-control' {if $timeframe == 'custom'}required{/if}>
+				</div>
+				<label for='customUsagePeriodDuration'>{translate text='Custom period duration (days)' isAdminFacing=true}</label>
 				<input type='number' name='customUsagePeriodDuration' id='customUsagePeriodDuration' min='1' value='{$customUsagePeriodDuration|default:''}' class='form-control' {if $timeframe == 'custom'}required{/if}>			</div>
 			<input type="hidden" value="{$stat}" name="stat"/>
 			{if isset($sideloadId)}
