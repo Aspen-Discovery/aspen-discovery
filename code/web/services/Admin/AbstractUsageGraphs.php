@@ -1,5 +1,7 @@
 <?php
 require_once ROOT_DIR . '/services/Admin/Admin.php';
+require_once ROOT_DIR . '/sys/SystemLogging/AspenUsage.php';
+
 abstract class Admin_AbstractUsageGraphs extends Admin_Admin {
 
 	// method specific enough to be worth writing an implementation for per section
@@ -49,6 +51,8 @@ abstract class Admin_AbstractUsageGraphs extends Admin_Admin {
 		$interface->assign('profileName', $profileName);
 		$interface->assign('instance', $instanceName);
 		$interface->assign('timeframe', $timeframe);
+		$usage = new AspenUsage();
+		$interface->assign('earliestUsageDate', $usage->getEarliestUsageDate());
 		if ($timeframe === 'custom') {
 			$interface->assign('customUsagePeriodStart', $customUsagePeriodStart);
 			$interface->assign('customUsagePeriodDuration', $customUsagePeriodDuration);
