@@ -11,10 +11,12 @@ abstract class AbstractUsage extends DataObject {
 		}
 		return DateUtils::formatDateLocale("$this->year-$this->month-01", 'short', 'none', null, 'yMM'); // monthly is the default
 	}
+
 	public function getCustomPeriod(): string {
 		require_once ROOT_DIR . '/sys/Utils/DateUtils.php';
 		return DateUtils::formatDateLocale($this->periodStart, 'short') . ' - ' . DateUtils::formatDateLocale($this->periodEnd, 'short');
 	}
+
 	public function buildCustomPeriodQuery(array $custom): void {
 		$escapedPeriodDuration = $this->escape($custom['customUsagePeriodDuration']);
 		$escapedPeriodStart = $this->escape($custom['customUsagePeriodStart']);
