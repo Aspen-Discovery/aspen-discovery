@@ -14,6 +14,7 @@ abstract class Admin_AbstractUsageGraphs extends Admin_Admin {
 
 		$stat = $_REQUEST['stat'];
 		$timeframe = $_REQUEST['timeframe'] ?? 'month';
+		$custom = false;
 
 		if ($timeframe === 'custom') {
 			$customUsagePeriodStart = $_REQUEST['customUsagePeriodStart'] ?? null;
@@ -54,8 +55,7 @@ abstract class Admin_AbstractUsageGraphs extends Admin_Admin {
 		}
 
 		$this->assignGraphSpecificTitle($stat);
-		$this->getAndSetInterfaceDataSeries($stat, $instanceName, $this->setGroupBy($timeframe), $timeframe === 'custom' ? $custom : false);
-		
+		$this->getAndSetInterfaceDataSeries($stat, $instanceName, $this->setGroupBy($timeframe), $custom);
 		$graphTitle = $interface->getVariable('graphTitle');
 		$this->display('../Admin/usage-graph.tpl', $graphTitle);
 	}
