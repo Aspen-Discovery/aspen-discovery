@@ -17,6 +17,15 @@ abstract class AbstractUsage extends DataObject {
 		return DateUtils::formatDateLocale($this->periodStart, 'short') . ' - ' . DateUtils::formatDateLocale($this->periodEnd, 'short');
 	}
 
+	public function getEarliestUsageDate(): ?string {
+		$this->selectAdd();
+		$this->selectAdd("MIN(STR_TO_DATE(CONCAT(year, '-', month, '-', GREATEST(day, 1)), '%Y-%m-%d')) as earliestDate");
+		if ($this->find(true)) {
+			return $this->earliestDate;
+		}
+		return null;
+	}
+
 	public function buildCustomPeriodQuery(array $custom): void {
 		$escapedPeriodDuration = $this->escape($custom['customUsagePeriodDuration']);
 		$escapedPeriodStart = $this->escape($custom['customUsagePeriodStart']);
