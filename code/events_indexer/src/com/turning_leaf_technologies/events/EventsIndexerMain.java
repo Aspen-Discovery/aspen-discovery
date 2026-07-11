@@ -150,6 +150,7 @@ public class EventsIndexerMain {
 						eventsSitesRS.getString("name"),
 						eventsSitesRS.getString("baseUrl"),
 						eventsSitesRS.getInt("numberOfDaysToIndex"),
+						eventsSitesRS.getBoolean("useLocalHopImages"),
 						solrUpdateServer, aspenConn, logger);
 					indexer.indexEvents();
 				}
