@@ -29,6 +29,7 @@ class UserPayment extends DataObject {
 	public $pay360Timestamp;
 	public $requestingUrl;
 	public $receiptUrl;
+	public $editedStatus;
 
 	static $_objectStructure = [];
 	static function getObjectStructure(string $context = ''): array {
@@ -140,6 +141,20 @@ class UserPayment extends DataObject {
 				'label' => 'Error?',
 				'description' => 'Whether or not an error occurred during processing of the payment',
 				'readOnly' => true,
+			],
+			'editedStatus' => [
+				'property' => 'editedStatus',
+				'type' => 'enum',
+				'label' => 'Edited Status',
+				'description' => 'Manually updated status for reconciliation purposes',
+				'values' => [
+					'' => '',
+					'completed' => 'Completed',
+					'cancelled' => 'Cancelled',
+					'declined' => 'Declined',
+					'error' => 'Error',
+				],
+				'readOnly' => !UserAccount::userHasPermission('Edit Payment Status'),
 			],
 			'message' => [
 				'property' => 'message',

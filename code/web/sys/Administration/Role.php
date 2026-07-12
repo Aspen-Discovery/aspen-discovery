@@ -164,6 +164,7 @@ class Role extends DataObject {
 				'Block Patron Account Linking',
 				'Download MARC Records',
 				'Edit All Lists',
+				'Edit Payment Status',
 				'Force Reindexing of Records',
 				'Include Lists In Search Results',
 				'Import Materials Requests',
