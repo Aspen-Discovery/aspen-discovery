@@ -18,9 +18,13 @@ class InitializationTests extends TestCase {
 	}
 
 	public function test_solrRunning() {
+		global $configArray;
 		require_once __DIR__ . '/../../../code/web/sys/SolrUtils.php';
-		SolrUtils::startSolr();
-		sleep(45);
+		$solrIsLocal = in_array($configArray['Index']['solrHost'] ?? 'localhost', ['localhost', '127.0.0.1']);
+		if ($solrIsLocal) {
+			SolrUtils::startSolr();
+			sleep(45);
+		}
 
 		$solrSearcher = SearchObjectFactory::initSearchObject('GroupedWork');
 		$pingResult = $solrSearcher->ping(true);
