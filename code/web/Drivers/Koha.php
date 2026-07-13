@@ -9851,22 +9851,34 @@ class Koha extends AbstractIlsDriver {
 		];
 	}
 
-	private function getItemBookingBuffers(int $itemId, User $patron): array {
+	/**
+	 * Circulation-rule context (item type, home branch, patron category) for a
+	 * given item and patron. Returns null when the item can't be found.
+	 */
+	private function getItemCirculationContext(int $itemId, User $patron): ?array {
 		$this->initDatabaseConnection();
 		$row = mysqli_fetch_assoc(mysqli_query($this->dbConnection,
 			"SELECT homebranch, itype FROM items WHERE itemnumber = $itemId LIMIT 1"
 		));
 		if (!$row) {
-			return ['lead' => 0, 'trail' => 0];
+			return null;
 		}
-		$context = [
+		return [
 			'itemTypeId'       => $row['itype'],
 			'locationId'       => $row['homebranch'],
 			'patronCategoryId' => $patron->patronType,
 		];
+	}
+
+	private function getItemBookingBuffers(int $itemId, User $patron): array {
+		$context = $this->getItemCirculationContext($itemId, $patron);
+		if ($context === null) {
+			return ['lead' => 0, 'trail' => 0];
+		}
+		$rules = $this->getRawCirculationRules(['bookings_lead_period', 'bookings_trail_period'], $context);
 		return [
-			'lead'  => (int)($this->getRawCirculationRule('bookings_lead_period',  $context) ?? 0),
-			'trail' => (int)($this->getRawCirculationRule('bookings_trail_period', $context) ?? 0),
+			'lead'  => (int)($rules['bookings_lead_period']  ?? 0),
+			'trail' => (int)($rules['bookings_trail_period'] ?? 0),
 		];
 	}
 
