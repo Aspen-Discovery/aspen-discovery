@@ -9882,6 +9882,36 @@ class Koha extends AbstractIlsDriver {
 		];
 	}
 
+	/**
+	 * Maximum number of days a booking may span, from a rule set already fetched.
+	 *
+	 * Mirrors Koha's place_booking.js:
+	 *   issuelength + (renewalsallowed * renewalperiod)
+	 * renewalperiod falls back to issuelength when unset, matching CalcDateDue.
+	 *
+	 * @param array<string, string|null> $rules
+	 */
+	private function maxBookingPeriodFromRules(array $rules): int {
+		$issueLength     = (int)($rules['issuelength']     ?? 0);
+		$renewalsAllowed = (int)($rules['renewalsallowed'] ?? 0);
+		$renewalPeriod   = ($rules['renewalperiod'] ?? null) === null ? $issueLength : (int)$rules['renewalperiod'];
+
+		return $issueLength + ($renewalsAllowed * $renewalPeriod);
+	}
+
+	/**
+	 * Maximum number of days a booking may span for this item and patron.
+	 * Lead/trail buffers are excluded — see getItemBookingBuffers for those.
+	 */
+	private function calculateMaxBookingPeriod(int $itemId, User $patron): int {
+		$context = $this->getItemCirculationContext($itemId, $patron);
+		if ($context === null) {
+			return 0;
+		}
+		$rules = $this->getRawCirculationRules(['issuelength', 'renewalsallowed', 'renewalperiod'], $context);
+		return $this->maxBookingPeriodFromRules($rules);
+	}
+
 	public function getBookedRanges(int $itemId, User $patron): array {
 		['lead' => $lead, 'trail' => $trail] = $this->getItemBookingBuffers($itemId, $patron);
 		return $this->buildBookedRanges($this->getBookingsForItem($itemId, $patron), $lead, $trail);
