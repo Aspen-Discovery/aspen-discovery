@@ -9912,6 +9912,72 @@ class Koha extends AbstractIlsDriver {
 		return $this->maxBookingPeriodFromRules($rules);
 	}
 
+	/**
+	 * Cap a date at the hardduedate rule, matching Koha's CalcDateDue:
+	 * override when hardduedatecompare is 0 (exactly) or -1 (ceiling).
+	 * A compare of 1 is a floor (extends only) and never shortens.
+	 *
+	 * @param array<string, string|null> $rules
+	 */
+	private function applyHardDueDateCap(DateTime $date, array $rules): DateTime {
+		if (empty($rules['hardduedate'])) {
+			return $date;
+		}
+		$hard = new DateTime(substr($rules['hardduedate'], 0, 10));
+		$compare = (int)($rules['hardduedatecompare'] ?? 0);
+		// $hard <=> $date: -1 hard earlier, 0 equal, 1 hard later — mirrors DateTime->compare($hardduedate, $datedue).
+		$cmp = $hard <=> $date;
+		if ($compare === 0 || $compare === $cmp) {
+			return $hard;
+		}
+		return $date;
+	}
+
+	/**
+	 * Cap a date at the patron's expiry when ReturnBeforeExpiry is enabled,
+	 * matching Koha's CalcDateDue.
+	 */
+	private function applyReturnBeforeExpiryCap(DateTime $date, User $patron): DateTime {
+		if (!$this->getKohaSystemPreference('ReturnBeforeExpiry')) {
+			return $date;
+		}
+		$this->initDatabaseConnection();
+		$expiryRow = mysqli_fetch_assoc(mysqli_query($this->dbConnection,
+			"SELECT dateexpiry FROM borrowers WHERE borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->unique_ils_id) . "' LIMIT 1"
+		));
+		if ($expiryRow && !empty($expiryRow['dateexpiry'])) {
+			$expiry = new DateTime($expiryRow['dateexpiry']);
+			if ($expiry < $date) {
+				return $expiry;
+			}
+		}
+		return $date;
+	}
+
+	/**
+	 * Latest permissible booking end date for a given start, as Y-m-d:
+	 * the rule-based period ceiling, clipped by the hardduedate and expiry caps.
+	 */
+	private function calculateMaxBookingEndDate(int $itemId, User $patron, string $startDate): string {
+		$end = new DateTime(substr($startDate, 0, 10));
+
+		$context = $this->getItemCirculationContext($itemId, $patron);
+		if ($context === null) {
+			return $end->format('Y-m-d');
+		}
+
+		// One API call covers both the period and the hard-due-date cap.
+		$rules = $this->getRawCirculationRules(
+			['issuelength', 'renewalsallowed', 'renewalperiod', 'hardduedate', 'hardduedatecompare'],
+			$context
+		);
+		$end->modify('+' . $this->maxBookingPeriodFromRules($rules) . ' days');
+		$end = $this->applyHardDueDateCap($end, $rules);
+		$end = $this->applyReturnBeforeExpiryCap($end, $patron);
+
+		return $end->format('Y-m-d');
+	}
+
 	public function getBookedRanges(int $itemId, User $patron): array {
 		['lead' => $lead, 'trail' => $trail] = $this->getItemBookingBuffers($itemId, $patron);
 		return $this->buildBookedRanges($this->getBookingsForItem($itemId, $patron), $lead, $trail);
