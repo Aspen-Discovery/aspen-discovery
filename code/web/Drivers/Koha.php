@@ -9764,6 +9764,15 @@ class Koha extends AbstractIlsDriver {
 	}
 
 	public function placeBooking(User $patron, string $itemId, string $recordId, string $startDate, string $endDate, ?string $pickupBranch, ?string $notes): array {
+		$windowError = $this->enforceMaxBookingPeriod((int)$itemId, $patron, $startDate, $endDate);
+		if ($windowError !== null) {
+			return [
+				'success' => false,
+				'title'   => translate(['text' => 'Unable to place booking', 'isPublicFacing' => true]),
+				'message' => $windowError,
+			];
+		}
+
 		$params = [
 			'patron_id'  => (int)$patron->unique_ils_id,
 			'item_id'    => (int)$itemId,
@@ -9829,6 +9838,20 @@ class Koha extends AbstractIlsDriver {
 	}
 
 	public function updateBooking(User $patron, int $bookingId, string $startDate, string $endDate, ?string $pickupBranch): array {
+		$this->initDatabaseConnection();
+		$bookingRow = mysqli_fetch_assoc(mysqli_query($this->dbConnection,
+			"SELECT item_id FROM bookings WHERE booking_id = " . (int)$bookingId . " LIMIT 1"
+		));
+		if ($bookingRow && !empty($bookingRow['item_id'])) {
+			$windowError = $this->enforceMaxBookingPeriod((int)$bookingRow['item_id'], $patron, $startDate, $endDate);
+			if ($windowError !== null) {
+				return [
+					'success' => false,
+					'message' => $windowError,
+				];
+			}
+		}
+
 		$params = ['start_date' => $startDate . 'T00:00:00Z', 'end_date' => $endDate . 'T00:00:00Z'];
 		if ($pickupBranch !== null) {
 			$params['pickup_library_id'] = $pickupBranch;
@@ -9976,6 +9999,50 @@ class Koha extends AbstractIlsDriver {
 		$end = $this->applyReturnBeforeExpiryCap($end, $patron);
 
 		return $end->format('Y-m-d');
+	}
+
+	/**
+	 * Reject a booking whose end date exceeds the allowed window for its start.
+	 * Returns a public-facing error message, or null when the dates are in range.
+	 */
+	private function enforceMaxBookingPeriod(int $itemId, User $patron, string $startDate, string $endDate): ?string {
+		$maxEndDate = $this->calculateMaxBookingEndDate($itemId, $patron, $startDate);
+		if ($endDate > $maxEndDate) {
+			return translate([
+				'text' => 'The booking period is too long. For that start date the latest end date is %1%.',
+				1 => $maxEndDate,
+				'isPublicFacing' => true,
+			]);
+		}
+		return null;
+	}
+
+	/**
+	 * Selection limits for the booking date picker: the maximum span in days,
+	 * and the absolute latest selectable date from the hardduedate/expiry caps.
+	 * Both caps are independent of the chosen start, so the client can combine
+	 * them per selection as min(start + maxPeriod, maxDate) without a round trip.
+	 *
+	 * @return array{maxPeriod: int, maxDate: ?string}
+	 */
+	public function getBookingWindowConstraints(int $itemId, User $patron): array {
+		$context = $this->getItemCirculationContext($itemId, $patron);
+		if ($context === null) {
+			return ['maxPeriod' => 0, 'maxDate' => null];
+		}
+		$rules = $this->getRawCirculationRules(
+			['issuelength', 'renewalsallowed', 'renewalperiod', 'hardduedate', 'hardduedatecompare'],
+			$context
+		);
+
+		// Run the caps against a far-future sentinel to expose the absolute ceiling.
+		$sentinel = new DateTime('9999-12-31');
+		$capped = $this->applyReturnBeforeExpiryCap($this->applyHardDueDateCap($sentinel, $rules), $patron);
+
+		return [
+			'maxPeriod' => $this->maxBookingPeriodFromRules($rules),
+			'maxDate'   => $capped == $sentinel ? null : $capped->format('Y-m-d'),
+		];
 	}
 
 	public function getBookedRanges(int $itemId, User $patron): array {

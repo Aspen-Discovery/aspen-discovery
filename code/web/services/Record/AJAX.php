@@ -2798,9 +2798,13 @@ class Record_AJAX extends JSON_Action {
 			return ['success' => true, 'bookedDates' => []];
 		}
 
+		$itemId = (int)$_REQUEST['itemId'];
 		return [
 			'success'     => true,
-			'bookedDates' => $driver->getBookedRanges((int)$_REQUEST['itemId'], $user),
+			'bookedDates' => $driver->getBookedRanges($itemId, $user),
+			'constraints' => method_exists($driver, 'getBookingWindowConstraints')
+				? $driver->getBookingWindowConstraints($itemId, $user)
+				: ['maxPeriod' => 0, 'maxDate' => null],
 		];
 	}
 

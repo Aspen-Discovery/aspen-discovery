@@ -929,14 +929,14 @@ AspenDiscovery.Record = (function () {
 
 			$.getJSON(Globals.path + '/Record/AJAX?method=getItemBookedDates&itemId=' + encodeURIComponent(itemId), function (data) {
 				container.innerHTML = '';
-				R.initBookingCalendar(container, data.success ? data.bookedDates : []);
+				R.initBookingCalendar(container, data.success ? data.bookedDates : [], data.success ? data.constraints : null);
 			}).fail(function () {
 				container.innerHTML = '';
-				R.initBookingCalendar(container, []);
+				R.initBookingCalendar(container, [], null);
 			});
 		},
 
-		initBookingCalendar: function (container, bookedRanges) {
+		initBookingCalendar: function (container, bookedRanges, constraints) {
 			const R          = AspenDiscovery.Record;
 			const startInput = document.getElementById('startDate');
 			const endInput   = document.getElementById('endDate');
@@ -952,6 +952,9 @@ AspenDiscovery.Record = (function () {
 			tomorrow.setDate(tomorrow.getDate() + 1);
 			tomorrow.setHours(0, 0, 0, 0);
 
+			const maxPeriod  = constraints && constraints.maxPeriod ? parseInt(constraints.maxPeriod) : 0;
+			const absoluteMax = constraints && constraints.maxDate ? new Date(constraints.maxDate + 'T00:00:00') : null;
+
 			const anchor = document.createElement('input');
 			anchor.type  = 'hidden';
 			container.appendChild(anchor);
@@ -961,14 +964,26 @@ AspenDiscovery.Record = (function () {
 				inline:      true,
 				dateFormat:  'Y-m-d',
 				minDate:     tomorrow,
+				maxDate:     absoluteMax || undefined,
 				defaultDate: defaultDate.length === 2 ? defaultDate : undefined,
 				disable: [function (date) {
 					const ds = fmtDate(date);
 					return bookedRanges.some(function (r) { return ds >= r.start && ds <= r.end; });
 				}],
-				onChange: function (selectedDates) {
+				onChange: function (selectedDates, dateStr, instance) {
 					if (startInput) startInput.value = selectedDates[0] ? fmtDate(selectedDates[0]) : '';
 					if (endInput)   endInput.value   = selectedDates[1] ? fmtDate(selectedDates[1]) : '';
+
+					// While only the start is chosen, cap the selectable end at
+					// min(start + maxPeriod, absoluteMax). Reset to the absolute
+					// ceiling otherwise so the next start isn't stuck.
+					if (selectedDates.length === 1 && maxPeriod > 0) {
+						const limit = new Date(selectedDates[0].getTime());
+						limit.setDate(limit.getDate() + maxPeriod);
+						instance.set('maxDate', absoluteMax && absoluteMax < limit ? absoluteMax : limit);
+					} else if (selectedDates.length !== 1) {
+						instance.set('maxDate', absoluteMax || undefined);
+					}
 				},
 			});
 		},
