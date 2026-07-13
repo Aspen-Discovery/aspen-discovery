@@ -8,7 +8,7 @@ class InitializationTests extends TestCase {
 	}
 
 	public function test_rootDir() {
-		$this->assertEquals('C:\web\aspen-discovery\code\web', ROOT_DIR);
+		$this->assertEquals(realpath(__DIR__ . '/../../../code/web'), realpath(ROOT_DIR));
 	}
 
 	public function test_getAspenVersion() {
