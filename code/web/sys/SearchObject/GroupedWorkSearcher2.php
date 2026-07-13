@@ -423,7 +423,7 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 		if (preg_match('/^"[^\"]+?\"$/', $this->query)) {
 			if ($handler == 'Keyword') {
 				$handler = 'KeywordProper';
-			} elseif ($handler == 'Author') {
+			} elseif ($handler == 'Author' || $handler == 'PrimaryAuthor') {
 				$handler = 'AuthorProper';
 			} elseif ($handler == 'Subject') {
 				$handler = 'SubjectProper';
