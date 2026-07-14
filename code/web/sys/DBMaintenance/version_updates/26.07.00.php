@@ -67,7 +67,22 @@ function getUpdates26_07_00(): array {
 			'sql' => [
 				'ALTER TABLE series ADD COLUMN seriesToGroupWithId CHAR(40)',
 			]
-		],
+		], // series_to_group_with
+		'remove_duplicate_series_members' => [
+			'title' => 'Remove Duplicate Series Members',
+			'description' => 'Remove duplicate series members.',
+			'continueOnError' => false,
+			'sql' => [
+				'removeDuplicateSeriesMembers',
+			]
+		], //remove_duplicate_series_members
+		'unique_series_members' => [
+			'title' => 'Ensure Series Members Are Unique',
+			'description' => 'Ensure unique series members are unique by preventing duplicate matches on seriesId & groupedWorkPermanentId.',
+			'sql' => [
+				'ALTER TABLE series_member ADD UNIQUE (seriesId, groupedWorkPermanentId)'
+			]
+		], // unique_series_members
 
 		//yanjun
 		'add_user_agent_retention_months' => [
@@ -137,4 +152,27 @@ function getUpdates26_07_00(): array {
 		//other
 
 	];
+}
+
+function removeDuplicateSeriesMembers(): void {
+	global $aspen_db;
+
+	try {
+		$sql = "
+			DELETE sm1 FROM series_member sm1
+			INNER JOIN series_member sm2
+				ON sm1.seriesId = sm2.seriesId
+				AND sm1.groupedWorkPermanentId <=> sm2.groupedWorkPermanentId
+				AND sm1.id > sm2.id
+		";
+
+		$stmt = $aspen_db->prepare($sql);
+		$stmt->execute();
+
+	} catch (PDOException $e) {
+		global $logger;
+		if (isset($logger)) {
+			$logger->log('Error removing duplicate series_member rows: ' . $e->getMessage(), Logger::LOG_ERROR);
+		}
+	}
 }
