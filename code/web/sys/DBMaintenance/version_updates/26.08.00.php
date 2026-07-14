@@ -134,5 +134,15 @@ function getUpdates26_08_00(): array {
 
 		//other
 
+		//jacob - OpenFifth
+		'external_materials_request_url_length' => [
+			'title' => 'Increase External Materials Request URL length',
+			'description' => 'Allow External Materials Request URLs longer than 255 characters',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE library CHANGE COLUMN externalMaterialsRequestUrl externalMaterialsRequestUrl VARCHAR(512)',
+			]
+		], //external_materials_request_url_length
+
 	];
 }
