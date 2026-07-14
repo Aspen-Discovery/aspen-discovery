@@ -59,6 +59,12 @@ class Series extends DataObject {
 				'label' => 'Series Permanent Id',
 				'description' => 'The unique, permanent id for the series',
 			],
+			'seriesToGroupWithId' => [
+				'property' => 'seriesToGroupWithId',
+				'type' => 'label',
+				'label' => 'Grouped With Series Id',
+				'description' => 'The unique, permanent id for the series',
+			],
 			'seriesLanguage' => [
 				'property' => 'seriesLanguage',
 				'type' => 'label',
@@ -181,8 +187,8 @@ class Series extends DataObject {
 
 
 	public function update(string $context = '') : int|bool {
-		$this->__set('dateUpdated', time());
 		if (!empty($this->_changedFields)) {
+			$this->__set('dateUpdated', time());
 			$this->reloadCover();
 		}
 		$ret = parent::update();
