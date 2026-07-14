@@ -192,7 +192,7 @@ abstract class Action
 			$result = $curlWrapper->curlPostPage($systemVariables->greenhouseUrl . '/API/GreenhouseAPI?method=authenticateTokens', $postData);
 			if (!empty($result)) {
 				$data = json_decode($result, true);
-				$isValid = $data['success'];
+				$isValid = $data['result']['success'];
 
 				if($isValid) {
 					return true;
