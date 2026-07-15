@@ -57,6 +57,7 @@ class GroupedWorkFacet extends FacetSetting {
 			"accelerated_reader_reading_level" => "AR Reading Level",
 			"accelerated_reader_point_value" => "AR Point Value",
 			"duration" => "Audiobook Duration",
+			"narrator" => "Narrator",
 			"fountas_pinnell" => "Fountas &amp; Pinnell",
 			"series_facet" => "Series",
 			"publisherStr" => "Publisher",

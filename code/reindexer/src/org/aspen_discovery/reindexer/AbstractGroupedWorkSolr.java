@@ -24,6 +24,7 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 	protected String authAuthor;
 	protected HashMap<String, Long> primaryAuthors = new HashMap<>();
 	protected HashSet<String> authorAdditional = new HashSet<>();
+	protected HashSet<String> narrators = new HashSet<>();
 	protected String authorDisplay;
 	protected String authorFormat;
 	protected boolean authorFromOverriddenRecord = false;
@@ -756,6 +757,10 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 
 	void addAuthorAdditional(Set<String> fieldList) {
 		this.authorAdditional.addAll(AspenStringUtils.trimTrailingPunctuation(fieldList));
+	}
+
+	void addNarrators(Set<String> fieldList) {
+		this.narrators.addAll(AspenStringUtils.trimTrailingPunctuation(fieldList));
 	}
 
 	void addHoldings(int recordHoldings) {
