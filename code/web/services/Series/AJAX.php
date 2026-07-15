@@ -210,6 +210,7 @@ class Series_AJAX extends JSON_Action {
 					$originalSeries->getSeriesMembers();
 					$originalSeries->seriesToGroupWithId = $seriesToGroupWithId;
 					$originalSeries->isIndexed = 0;
+					$originalSeries->dateUpdated = time();
 					$originalSeries->update();
 
 					$results['success'] = true;
