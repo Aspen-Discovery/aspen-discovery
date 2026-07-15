@@ -1217,8 +1217,7 @@ class Polaris extends AbstractIlsDriver {
 				if (!$location->find(true)) {
 					$location = null;
 				}
-
-				if (empty($user->homeLocationId) || (isset($location) && $user->homeLocationId != $location->locationId)) { // When homeLocation isn't set or has changed
+				if (empty($user->homeLocationId) || (isset($location) && $user->homeLocationId != $location->locationId) || $user->pickupLocationId != $patronBasicData->RequestPickupBranchID) { // When homeLocation isn't set or has changed
 					if (empty($user->homeLocationId) && !isset($location)) {
 						// homeBranch Code not found in location table and the user doesn't have an assigned homelocation,
 						// try to find the main branch to assign to user
