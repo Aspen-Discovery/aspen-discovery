@@ -916,13 +916,6 @@ class UserAPI extends AbstractAPI {
 
 			//Add Interlibrary Loan
 			$userData->hasInterlibraryLoan = false;
-			if ($user->getInterlibraryLoanType() == 'vdx') {
-				$userData->hasInterlibraryLoan = true;
-				require_once ROOT_DIR . '/Drivers/VdxDriver.php';
-				$driver = new VdxDriver();
-				$vdxSummary = $driver->getAccountSummary($user);
-				$numHolds += (int)$vdxSummary->numUnavailableHolds;
-			}
 
 
 			$userData->numCheckedOut = $numCheckedOut;
@@ -3774,64 +3767,18 @@ class UserAPI extends AbstractAPI {
 
 	/** @noinspection PhpUnused */
 	function submitVdxRequest() : array {
-		$user = $this->getUserForApiCall();
-		if ($user && !($user instanceof AspenError)) {
-			require_once ROOT_DIR . '/Drivers/VdxDriver.php';
-			require_once ROOT_DIR . '/sys/VDX/VdxSetting.php';
-			require_once ROOT_DIR . '/sys/VDX/VdxForm.php';
-			$vdxSettings = new VdxSetting();
-			if ($vdxSettings->find(true)) {
-				$vdxDriver = new VdxDriver();
-				return $vdxDriver->submitRequest($vdxSettings, $user, $_REQUEST, false);
-			} else {
-				return [
-					'title' => translate([
-						'text' => 'Invalid Configuration',
-						'isPublicFacing' => true,
-					]),
-					'message' => translate([
-						'text' => "VDX Settings do not exist, please contact the library to make a request.",
-						'isPublicFacing' => true,
-					]),
-					'success' => false,
-				];
-			}
-		} else {
-			return [
-				'success' => false,
-				'message' => 'Login unsuccessful',
-			];
-		}
+		return [
+			'success' => false,
+			'message' => 'This method is no longer available',
+		];
 	}
 
 	/** @noinspection PhpUnused */
 	function cancelVdxRequest() : array {
-		$user = $this->getUserForApiCall();
-		$title = translate([
-			'text' => 'Error',
-			'isPublicFacing' => true,
-		]);
-		if ($user && !($user instanceof AspenError)) {
-			$sourceId = $_REQUEST['sourceId'] ?? null;
-			$cancelId = $_REQUEST['cancelId'] ?? null;
-			$result = $user->cancelVdxRequest($sourceId, $cancelId);
-			if ($result['success'] == true || $result['success'] == "true") {
-				$title = translate([
-					'text' => 'Success',
-					'isPublicFacing' => true,
-				]);
-			}
-			return [
-				'success' => $result['success'],
-				'title' => $title,
-				'message' => $result['message'],
-			];
-		} else {
-			return [
-				'success' => false,
-				'message' => 'Login unsuccessful',
-			];
-		}
+		return [
+			'success' => false,
+			'message' => 'This method is no longer available',
+		];
 	}
 
 	/** @noinspection PhpUnused */

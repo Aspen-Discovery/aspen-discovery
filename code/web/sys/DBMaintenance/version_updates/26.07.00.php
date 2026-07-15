@@ -24,6 +24,21 @@ function getUpdates26_07_00(): array {
 				'ALTER TABLE library ADD enableMultiCopyHolds TINYINT(1) NOT NULL DEFAULT 0',
 			],
 		], //multi_copy_holds_support
+		'remove_vdx_settings_and_permissions' => [
+			'title' => 'Remove VDX settings and permissions',
+			'description' => 'Remove VDX settings and permissions.',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE ptype DROP COLUMN vdxClientCategory',
+				'ALTER TABLE location DROP COLUMN vdxLocation',
+				'ALTER TABLE location DROP COLUMN vdxFormId',
+				'DROP TABLE user_vdx_request',
+				'DROP TABLE vdx_form',
+				'DROP TABLE vdx_settings',
+				"DELETE FROM role_permissions where permissionId IN (SELECT id from permissions where name IN ('Administer VDX Settings', 'Administer All VDX Forms', 'Administer Library VDX Forms'))",
+				"DELETE FROM permissions where name IN ('Administer VDX Settings', 'Administer All VDX Forms', 'Administer Library VDX Forms')",
+			]
+		], //remove_vdx_settings_and_permissions
 
 		//kirstien
 

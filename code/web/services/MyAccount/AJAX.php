@@ -641,38 +641,6 @@ class MyAccount_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function cancelVdxRequest(): array {
-		$this->requireLoggedInUser(null, 'You must be logged in to cancel a request.  Please close this dialog and login again.');
-		$result = $this->failureResult(null, 'Error cancelling request.');
-
-		//Determine which user the request is on so we can cancel it.
-		$patronId = $_REQUEST['patronId'];
-		$user = UserAccount::getLoggedInUser();
-		$patronOwningHold = $user->getUserReferredTo($patronId);
-
-		if ($patronOwningHold === false) {
-			$result['message'] = translate([
-				'text' => 'Sorry, you do not have access to cancel requests for the supplied user.',
-				'isPublicFacing' => true,
-			]);
-		} else {
-			//MDN 9/20/2015 The recordId can be empty for INN-Reach holds
-			if (empty($_REQUEST['requestId']) || !isset($_REQUEST['cancelId'])) {
-				$result['message'] = translate([
-					'text' => 'Information about the requests to be cancelled was not provided.',
-					'isPublicFacing' => true,
-				]);
-			} else {
-				$requestId = $_REQUEST['requestId'];
-				$cancelId = $_REQUEST['cancelId'];
-				$result = $patronOwningHold->cancelVdxRequest($requestId, $cancelId);
-			}
-		}
-
-		return $result;
-	}
-
-	/** @noinspection PhpUnused */
 	function confirmCancelHoldAll(): array {
 		$this->requireLoggedInUser();
 
@@ -2894,45 +2862,6 @@ class MyAccount_AJAX extends JSON_Action {
 				'text' => 'Unknown Error',
 				'isPublicFacing' => true,
 			]);
-		}
-		return $result;
-	}
-
-	/** @noinspection PhpUnused */
-	function getMenuDataInterlibraryLoan() : array {
-		$this->requireLoggedInUser(null, 'You must be logged in to get menu data');
-		global $timer;
-		$result = $this->failureResult(null, 'Unknown Error');
-
-		$user = UserAccount::getActiveUserObj();
-		if ($user->hasInterlibraryLoan()) {
-			require_once ROOT_DIR . '/Drivers/VdxDriver.php';
-			$driver = new VdxDriver();
-			$vdxSummary = $driver->getAccountSummary($user);
-			if ($user->getLinkedUsers() != null) {
-				/** @var User $user */
-				$selectedLinkedUser = $this->setFilterLinkedUser();
-				if ($selectedLinkedUser) {
-					$filterLinkedUser = new User();
-					$filterLinkedUser->id = $selectedLinkedUser;
-					if ($filterLinkedUser->find(true)) {
-						$filterLinkedUserSummary = $driver->getAccountSummary($filterLinkedUser);
-						$vdxSummary->numUnavailableHolds = $filterLinkedUserSummary->numUnavailableHolds;
-					}
-				} else {
-					foreach ($user->getLinkedUsers() as $linkedUser) {
-						$linkedUserSummary = $driver->getAccountSummary($linkedUser);
-						$vdxSummary->numUnavailableHolds += $linkedUserSummary->numUnavailableHolds;
-					}
-				}
-			}
-			$timer->logTime("Loaded VDX Summary for User and linked users");
-			$result = [
-				'success' => true,
-				'summary' => $vdxSummary->toArray(),
-			];
-		} else {
-			$result['message'] = 'Invalid for VDX';
 		}
 		return $result;
 	}
