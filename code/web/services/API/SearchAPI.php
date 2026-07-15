@@ -12,6 +12,7 @@ class SearchAPI extends AbstractAPI {
 		if (in_array($method, [
 			'getListWidget',
 			'getCollectionSpotlight',
+			'getEmbeddableEventsCalendar'
 		])) {
 			header('Content-type: text/html');
 			$output = $this->$method();

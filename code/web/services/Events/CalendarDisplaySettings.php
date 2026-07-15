@@ -98,11 +98,40 @@ class Events_CalendarDisplaySettings extends ObjectEditor {
 				'url' => '/Events/Calendar',
 				'target' => '_blank',
 			];
+			$actions[] = [
+				'text' => '<i class="fas fa-code" role="presentation"></i> Embed Calendar',
+				'url' => '/Events/CalendarDisplaySettings?objectAction=view&id=' . $existingObject->id,
+			];
 		}
 		return $actions;
 	}
 
 	public function getRequiredModule(): ?string {
 		return 'Events';
+	}
+
+	function launch(): void {
+		global $interface;
+
+		$objectAction = $_REQUEST['objectAction'] ?? 'list';
+
+		if ($objectAction === 'view') {
+			if (isset($_REQUEST['id'])) {
+				$object = new CalendarDisplaySetting();
+				$object->id = $_REQUEST['id'];
+				if ($object->find(true)) {
+					$interface->assign('object', $object);
+				}
+			}
+			$interface->assign('width', 900);
+			$interface->assign('height', 700);
+			$interface->assign('returnToListUrl', $this->getReturnToListUrl());
+			$interface->setTemplate('../Admin/embeddedEventCalendar.tpl');
+		} else {
+			parent::launch();
+			exit();
+		}
+
+		$this->display($interface->getTemplate(), 'Embeddable Calendar');
 	}
 }

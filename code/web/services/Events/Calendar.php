@@ -470,6 +470,17 @@ class Events_Calendar extends Action {
 		$calendarTitle = $this->getCalendarTitle($calendarDisplaySettingId);
 		$interface->assign('calendarTitle', $calendarTitle);
 
+		// Embedded Event Calendar
+		if (!empty($_REQUEST['embed'])) {
+			global $interface;
+			if (!empty($_REQUEST['resizeIframe'])) {
+				$interface->assign('resizeIframe', true);
+			}
+			header('Content-type: text/html');
+			echo $interface->fetch('Events/embeddedEventCalendar.tpl');
+			die();
+		}
+
 		if ($useWeek) {
 			$this->display('calendar.tpl', 'Events Calendar ' . $formattedWeekYear, '');
 		} else {
