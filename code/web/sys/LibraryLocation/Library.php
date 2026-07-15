@@ -2799,8 +2799,8 @@ class Library extends DataObject {
 							'enableBookings' => [
 								'property' => 'enableBookings',
 								'type' => 'checkbox',
-								'label' => 'Enable Bookings',
-								'description' => 'Whether or not patrons can place item-level bookings via Aspen. Requires the Koha Bookings module to be enabled in the ILS.',
+								'label' => 'Enable Booking Placement On Bookable Items Owned By This Library',
+								'description' => 'Whether or not patrons can place item-level bookings via Aspen. Requires the Koha Bookings module to be enabled in the ILS. Requires the item to be defined as bookable by the ILS.',
 								'hideInLists' => true,
 								'default' => 0,
 								'relatedIls' => ['koha'],
@@ -2808,8 +2808,8 @@ class Library extends DataObject {
 							'enableBookingUpdates' => [
 								'property' => 'enableBookingUpdates',
 								'type' => 'checkbox',
-								'label' => 'Enable Booking Updates',
-								'description' => 'Whether or not patrons can update item-level bookings via Aspen. Requires the Koha Bookings module to be enabled in the ILS.',
+								'label' => 'Enable Booking Updates On Bookable Items Owned By This Library',
+								'description' => 'Whether or not patrons can update item-level bookings via Aspen. Requires the Koha Bookings module to be enabled in the ILS. Requires the item to be defined as bookable by the ILS.',
 								'hideInLists' => true,
 								'default' => 0,
 								'relatedIls' => ['koha'],
@@ -2817,8 +2817,8 @@ class Library extends DataObject {
 							'enableBookingCancellations' => [
 								'property' => 'enableBookingCancellations',
 								'type' => 'checkbox',
-								'label' => 'Enable Booking Cancellations',
-								'description' => 'Whether or not patrons can cancel item-level bookings via Aspen. Requires the Koha Bookings module to be enabled in the ILS.',
+								'label' => 'Enable Booking Cancellations On Bookable Items Owned By This Library',
+								'description' => 'Whether or not patrons can cancel item-level bookings via Aspen. Requires the Koha Bookings module to be enabled in the ILS. Requires the item to be defined as bookable by the ILS.',
 								'hideInLists' => true,
 								'default' => 0,
 								'relatedIls' => ['koha'],
