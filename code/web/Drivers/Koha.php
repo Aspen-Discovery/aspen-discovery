@@ -9760,7 +9760,7 @@ class Koha extends AbstractIlsDriver {
 
 	public function hasBookingsSupport(): bool {
 		global $library;
-		return !empty($library) && $library->enableBookings;
+		return !empty($library) && $library->enableBookingDisplay;
 	}
 
 	public function placeBooking(User $patron, string $itemId, string $recordId, string $startDate, string $endDate, ?string $pickupBranch, ?string $notes): array {

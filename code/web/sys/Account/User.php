@@ -2722,7 +2722,7 @@ class User extends DataObject {
 
 	public function getBookings(): array {
 		global $library;
-		if (empty($library) || !$library->enableBookings) {
+		if (empty($library) || !$library->enableBookingDisplay) {
 			return [];
 		}
 		return $this->getCatalogDriver()->getBookingsForUser($this);
@@ -2730,7 +2730,7 @@ class User extends DataObject {
 
 	public function placeBooking(string $itemId, string $recordId, string $startDate, string $endDate, ?string $pickupBranch, ?string $notes): array {
 		global $library;
-		if (empty($library) || !$library->enableBookings) {
+		if (empty($library) || !$library->enableBookingDisplay) {
 			return ['success' => false, 'message' => translate(['text' => 'Bookings are not enabled for your library.', 'isPublicFacing' => true])];
 		}
 		return $this->getCatalogDriver()->placeBooking($this, $itemId, $recordId, $startDate, $endDate, $pickupBranch, $notes);
@@ -2738,7 +2738,7 @@ class User extends DataObject {
 
 	public function updateBooking(int $bookingId, string $startDate, string $endDate, ?string $pickupBranch): array {
 		global $library;
-		if (empty($library) || !$library->enableBookings) {
+		if (empty($library) || !$library->enableBookingDisplay) {
 			return ['success' => false, 'message' => translate(['text' => 'Bookings are not enabled for your library.', 'isPublicFacing' => true])];
 		}
 		return $this->getCatalogDriver()->updateBooking($this, $bookingId, $startDate, $endDate, $pickupBranch);
@@ -2746,7 +2746,7 @@ class User extends DataObject {
 
 	public function cancelBooking(int $bookingId): array {
 		global $library;
-		if (empty($library) || !$library->enableBookings) {
+		if (empty($library) || !$library->enableBookingDisplay) {
 			return ['success' => false, 'message' => translate(['text' => 'Bookings are not enabled for your library.', 'isPublicFacing' => true])];
 		}
 		return $this->getCatalogDriver()->cancelBooking($this, $bookingId);
