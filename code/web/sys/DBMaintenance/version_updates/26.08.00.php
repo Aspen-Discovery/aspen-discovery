@@ -153,10 +153,11 @@ function getUpdates26_08_00(): array {
 		], //add_minimal_self_registration_modal_setting
 		'add_booking_toggles_to_library' => [
 			'title' => 'Add Bookings Toggles to Library',
-			'description' => 'Adds enableBookings, enableBookingUpdates, and enableBookingCancellations flag to the library table to allow per-library-system control of the patron actions in the Koha Bookings integration.',
+			'description' => 'Adds enableBookingDisplay, enableBookingPlacement, enableBookingUpdates, and enableBookingCancellations flags to the library table to allow per-library-system control of the patron actions in the Koha Bookings integration.',
 			'continueOnError' => false,
 			'sql' => [
-				'ALTER TABLE library ADD COLUMN IF NOT EXISTS enableBookings tinyint(1) DEFAULT 0',
+				'ALTER TABLE library ADD COLUMN IF NOT EXISTS enableBookingDisplay tinyint(1) DEFAULT 0',
+				'ALTER TABLE library ADD COLUMN IF NOT EXISTS enableBookingPlacement tinyint(1) DEFAULT 0',
 				'ALTER TABLE library ADD COLUMN IF NOT EXISTS enableBookingUpdates tinyint(1) DEFAULT 0',
 				'ALTER TABLE library ADD COLUMN IF NOT EXISTS enableBookingCancellations tinyint(1) DEFAULT 0',
 			]
