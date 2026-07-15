@@ -108,7 +108,30 @@ function getUpdates26_07_00(): array {
 				'ALTER TABLE library ADD COLUMN showHoldFeeMessage TINYINT(1) DEFAULT 1',
 			]
 		], //library_show_hold_fee_message
-	
+		'create_table_palace_project_stats' => [
+			'title' => 'Record Palace Project Stats Separately',
+			'description' => 'Adds a Palace Project Stats table',
+			'continueOnError' => false,
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS palace_project_stats (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					instance varchar(100) DEFAULT NULL,
+					year int(11) NOT NULL,
+					month int(11) NOT NULL,
+					day int(11) NOT NULL,
+					numCheckouts int(11) NOT NULL DEFAULT 0,
+					numRenewals int(11) NOT NULL DEFAULT 0,
+					numEarlyReturns int(11) NOT NULL DEFAULT 0,
+					numHoldsPlaced int(11) NOT NULL DEFAULT 0,
+					numHoldsCancelled int(11) NOT NULL DEFAULT 0,
+					numHoldsFrozen int(11) NOT NULL DEFAULT 0,
+					numHoldsThawed int(11) NOT NULL DEFAULT 0,
+					numApiErrors int(11) NOT NULL DEFAULT 0,
+					numConnectionFailures int(11) NOT NULL DEFAULT 0
+				) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;'
+			]
+		], //create_table_palace_project_stats
+
 		//pedro
 
 		//mark j
