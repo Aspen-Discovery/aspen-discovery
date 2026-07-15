@@ -1741,7 +1741,16 @@ class UserAPI extends AbstractAPI {
 		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
 			if ($source == 'ils' || $source == null || $source == $library->interLibraryLoanName) {
-				$result = $user->renewCheckout($recordId, $itemBarcode);
+				$patronId = $_REQUEST['userId'] ?? $user->id;
+				$patron = $user->getUserReferredTo($patronId);
+				if (!$patron) {
+					return [
+						'success' => false,
+						'title' => 'Error',
+						'message' => 'Sorry, it looks like you don\'t have access to that patron.',
+					];
+				}
+				$result = $patron->renewCheckout($recordId, $itemBarcode);
 
 				if(isset($result['confirmRenewalFee']) && $result['confirmRenewalFee']) {
 					$action = $result['api']['action'] ?? null;
@@ -1929,29 +1938,27 @@ class UserAPI extends AbstractAPI {
 			}
 		}
 
-		$user = false;
-		//we send up userId from LiDA if we
-		//are requesting for a linked account
-		if (isset($_REQUEST['userId'])) {
-			$user = new User();
-			$user->id = $_REQUEST['userId'];
-			if (!$user->find(true)) {
-				$user = false;
-			}
-		} else {
-			$user = $this->getUserForApiCall();
-		}
+		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
 			global $library;
 			if ($library->showHoldButton) {
 				if ($source == 'ils' || $source == null) {
+					$patronId = $_REQUEST['userId'] ?? $user->id;
+					$patron = $user->getUserReferredTo($patronId);
+					if (!$patron) {
+						return [
+							'success' => false,
+							'title' => 'Error',
+							'message' => 'Sorry, it looks like you don\'t have access to that patron.',
+						];
+					}
 					if (isset($_REQUEST['pickupBranch']) || isset($_REQUEST['campus'])) {
 						if (isset($_REQUEST['pickupBranch'])) {
 							if (empty($_REQUEST['pickupBranch'])) {
 								$location = new Location();
-								$userPickupLocations = $location->getPickupBranches($user);
+								$userPickupLocations = $location->getPickupBranches($patron);
 								foreach ($userPickupLocations as $tmpLocation) {
-									if ($tmpLocation->code == $user->getPickupLocationCode()) {
+									if ($tmpLocation->code == $patron->getPickupLocationCode()) {
 										$pickupBranch = $tmpLocation->code;
 										break;
 									}
@@ -1962,7 +1969,7 @@ class UserAPI extends AbstractAPI {
 						} else {
 							$pickupBranch = trim($_REQUEST['campus']);
 						}
-						$locationValid = $user->validatePickupBranch($pickupBranch);
+						$locationValid = $patron->validatePickupBranch($pickupBranch);
 						if (!$locationValid) {
 							return [
 								'success' => false,
@@ -1973,20 +1980,20 @@ class UserAPI extends AbstractAPI {
 							];
 						}
 					} else {
-						$pickupBranch = $user->_homeLocationCode;
+						$pickupBranch = $patron->_homeLocationCode;
 					}
 
 					if (isset($_REQUEST['rememberHoldPickupLocation']) && $library->allowRememberPickupLocation) {
-						$user->setRememberHoldPickupLocation($_REQUEST['rememberHoldPickupLocation']);
+						$patron->setRememberHoldPickupLocation($_REQUEST['rememberHoldPickupLocation']);
 					}
 
-					if ($library->allowPickupLocationUpdates && $user->rememberHoldPickupLocation) {
+					if ($library->allowPickupLocationUpdates && $patron->rememberHoldPickupLocation) {
 						if (isset($_REQUEST['pickupBranch'])) {
 							$pickupLocation = new Location();
 							$pickupLocation->code = $_REQUEST['pickupBranch'];
 							if ($pickupLocation->find(true)) {
-								if ($pickupLocation->locationId != $user->pickupLocationId) {
-									$user->setPickupLocationId($pickupLocation->locationId);
+								if ($pickupLocation->locationId != $patron->pickupLocationId) {
+									$patron->setPickupLocationId($pickupLocation->locationId);
 								}
 							}
 
@@ -1996,18 +2003,18 @@ class UserAPI extends AbstractAPI {
 								$sublocation->id = $_REQUEST['pickupSublocation'];
 								if ($sublocation->find(true)) {
 									if ($pickupLocation->locationId == $sublocation->locationId) {
-										if ($sublocation->id != $user->pickupSublocationId) {
-											$user->setPickupSublocationId($sublocation->id);
+										if ($sublocation->id != $patron->pickupSublocationId) {
+											$patron->setPickupSublocationId($sublocation->id);
 										}
 									}
 								}
 							}
 						}
 
-						$user->update();
+						$patron->update();
 					}
 
-					$homeLibrary = $user->getHomeLibrary();
+					$homeLibrary = $patron->getHomeLibrary();
 
 					if (!empty($_REQUEST['cancelDate'])) {
 						$cancelDate = $_REQUEST['cancelDate'];
@@ -2038,7 +2045,7 @@ class UserAPI extends AbstractAPI {
 
 					$holdType = $_REQUEST['holdType'];
 					if ($holdType == 'item' && isset($_REQUEST['itemId'])) {
-						$result = $user->placeItemHold($shortId, $_REQUEST['itemId'], $pickupBranch, $cancelDate, $pickupSublocation);
+						$result = $patron->placeItemHold($shortId, $_REQUEST['itemId'], $pickupBranch, $cancelDate, $pickupSublocation);
 						$action = $result['api']['action'] ?? null;
 						$responseMessage = strip_tags($result['api']['message']);
 						$responseMessage = trim($responseMessage);
@@ -2054,7 +2061,7 @@ class UserAPI extends AbstractAPI {
 							'needsIllRequest' => $needsIllRequest
 						];
 					} elseif ($holdType == 'volume' && isset($_REQUEST['volumeId'])) {
-						$result = $user->placeVolumeHold($shortId, $_REQUEST['volumeId'], $pickupBranch, $pickupSublocation);
+						$result = $patron->placeVolumeHold($shortId, $_REQUEST['volumeId'], $pickupBranch, $pickupSublocation);
 						$action = $result['api']['action'] ?? null;
 						$responseMessage = strip_tags($result['api']['message']);
 						$responseMessage = trim($responseMessage);
@@ -2084,7 +2091,7 @@ class UserAPI extends AbstractAPI {
 								];
 							}
 						}
-						$result = $user->placeHold($bibId, $pickupBranch, $cancelDate, $pickupSublocation);
+						$result = $patron->placeHold($bibId, $pickupBranch, $cancelDate, $pickupSublocation);
 						$action = $result['api']['action'] ?? null;
 						$responseMessage = strip_tags($result['api']['message']);
 						$responseMessage = trim($responseMessage);
@@ -6203,6 +6210,15 @@ class UserAPI extends AbstractAPI {
 			$user = $this->getUserForApiCall($patronBarcode, $patronPassword);
 		}
 		if ($user && !($user instanceof AspenError)) {
+			$patronId = $_REQUEST['userId'] ?? $user->id;
+			$patron = $user->getUserReferredTo($patronId);
+			if (!$patron) {
+				return [
+					'success' => false,
+					'title' => 'Error',
+					'message' => 'Sorry, it looks like you don\'t have access to that patron.',
+				];
+			}
 			if ($itemBarcode == null) {
 				if (!empty($_REQUEST['barcode'])) {
 					$itemBarcode = $_REQUEST['barcode'];
@@ -6234,7 +6250,7 @@ class UserAPI extends AbstractAPI {
 					$scoSettings->id = $location->lidaSelfCheckSettingId;
 					if($scoSettings->find(true)) {
 						if($scoSettings->isEnabled) {
-							$result = $user->checkoutItem($itemBarcode, $location);
+							$result = $patron->checkoutItem($itemBarcode, $location);
 							return [
 								'success' => $result['success'],
 								'title' => $result['api']['title'],
