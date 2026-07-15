@@ -80,7 +80,7 @@ function getUpdates26_07_00(): array {
 			'title' => 'Ensure Series Members Are Unique',
 			'description' => 'Ensure unique series members are unique by preventing duplicate matches on seriesId & groupedWorkPermanentId.',
 			'sql' => [
-				'ALTER TABLE series_member ADD UNIQUE (seriesId, groupedWorkPermanentId)'
+				'ALTER TABLE series_member ADD UNIQUE (seriesId, groupedWorkPermanentId, volume)'
 			]
 		], // unique_series_members
 
@@ -161,10 +161,10 @@ function removeDuplicateSeriesMembers(): void {
 		$sql = "
 			DELETE sm1 FROM series_member sm1
 			INNER JOIN series_member sm2
-				ON sm1.seriesId = sm2.seriesId
-				AND sm1.groupedWorkPermanentId <=> sm2.groupedWorkPermanentId
-				AND sm1.id > sm2.id
-		";
+			ON sm1.seriesId = sm2.seriesId
+			AND sm1.groupedWorkPermanentId <=> sm2.groupedWorkPermanentId
+			AND sm1.volume <=> sm2.volume
+			AND sm1.id > sm2.id ";
 
 		$stmt = $aspen_db->prepare($sql);
 		$stmt->execute();
