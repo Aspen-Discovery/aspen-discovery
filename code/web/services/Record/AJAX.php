@@ -2742,12 +2742,7 @@ class Record_AJAX extends JSON_Action {
 		$this->requireLoggedInUser(null, 'You must be logged in to place a booking. Please close this dialog and login.');
 		$this->checkRequiredParameters(['id']);
 
-		global $library;
 		global $interface;
-
-		if (empty($library) || !$library->enableBookings) {
-			return $this->failureResult('Unable to place booking', 'Bookings are not enabled for your library.');
-		}
 
 		$recordId = $_REQUEST['id'];
 		$shortId = strpos($recordId, ':') > 0 ? explode(':', $recordId, 2)[1] : $recordId;
