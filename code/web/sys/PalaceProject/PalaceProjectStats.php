@@ -2,7 +2,7 @@
 
 
 class PalaceProjectStats extends DataObject {
-	public $__table = 'axis360_stats';
+	public $__table = 'palace_project_stats';
 	public $id;
 	public $instance;
 	public $year;
