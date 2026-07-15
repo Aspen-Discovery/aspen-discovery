@@ -705,7 +705,7 @@ class PalaceProjectDriver extends AbstractEContentDriver {
 							'isPublicFacing' => true,
 						]);
 						$result['checkedOut'] = false;
-						$this->incrementStat('numHolds');
+						$this->incrementStat('numHoldsPlaced');
 						$this->trackRecordHold($titleId);
 					}
 
