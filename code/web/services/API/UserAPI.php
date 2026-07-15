@@ -5283,7 +5283,7 @@ class UserAPI extends AbstractAPI {
 		}
 
 		global $library;
-		if (empty($library) || !$library->enableBookings) {
+		if (empty($library) || !$library->enableBookingDisplay) {
 			return $emptyOnDisabled
 				? ['success' => true, 'bookings' => []]
 				: [
