@@ -761,7 +761,9 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 		$formats = $this->getOverDriveMetaData()->getDecodedRawData()->formats ?? null;
 
 		if (!empty($formats) && isset($formats[0]->duration)) {
-			return StringUtils::extractTotalMinutes($formats[0]->duration);
+			if (in_array('Audio Books', $this->getGroupedWorkDriver()->getFormatCategories())) {
+				return StringUtils::extractTotalMinutes($formats[0]->duration);
+			}
 		}
 
 		return '';
