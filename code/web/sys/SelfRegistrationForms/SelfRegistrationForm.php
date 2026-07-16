@@ -236,10 +236,13 @@ class SelfRegistrationForm extends DataObject {
 		return $this->_municipalities;
 	}
 
-	public function getMunicipalitySettingsByName($name) : ?int {
+	public function getMunicipalitySettingsByNameAndType($name, $type = null) : ?int {
 		$municipalities = new SymphonySelfRegistrationMunicipalityValues();
 		$municipalities->selfRegistrationFormId = $this->id;
 		$municipalities->whereAdd("LEFT(municipality, 7) = " . $municipalities->escape(substr($name, 0, 7))); //ILS imported values only go up to 7 char
+		if ($type) {
+			$municipalities->municipalityType = $type;
+		}
 		if ($municipalities->find(true)) {
 			return $municipalities->id;
 		}

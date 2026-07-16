@@ -639,6 +639,8 @@ class SirsiDynixROA extends AbstractIlsDriver {
 			];
 
 			if ($formFields != null) {
+				$address = new stdClass();
+				$address->lines = [];
 				foreach ($formFields as $fieldObj){
 					$field = $fieldObj->ilsName;
 					//General Info
@@ -713,6 +715,7 @@ class SirsiDynixROA extends AbstractIlsDriver {
 					}
 					elseif ($field == 'street' && (!empty($_REQUEST['street']))) {
 						$this->setPatronUpdateField('STREET', $this->getPatronFieldValue($_REQUEST['street'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+						$address->lines[] = $this->getPatronFieldValue($_REQUEST['street'], $library->useAllCapsWhenSubmittingSelfRegistration);
 					}
 					elseif ($field == 'mailingaddr' && (!empty($_REQUEST['mailingaddr']))) {
 						$this->setPatronUpdateField('MAILNGADDR', $this->getPatronFieldValue($_REQUEST['mailingaddr'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
@@ -721,25 +724,6 @@ class SirsiDynixROA extends AbstractIlsDriver {
 						$this->setPatronUpdateField('APT/SUITE', $this->getPatronFieldValue($_REQUEST['apt_suite'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
 					}
 					elseif ($field == 'city' && (!empty($_REQUEST['city']) && (!empty($_REQUEST['state'])))) {
-						$matchId = $selfRegistrationForm->getMunicipalitySettingsByName($_REQUEST['city']);
-						if ($matchId) {
-							// Abort if self-registration is not allowed
-							if (!$municipalities[$matchId]->selfRegAllowed) {
-								return [
-									'success' => false,
-									'message' => translate([
-										'text' => "Your address is not within the library’s service area. Please contact the library for more information.",
-										'isPublicFacing' => true
-									])
-								];
-							}
-							if (!empty($municipalities[$matchId]->ilsMunicipality)) {
-								$createPatronInfoParameters['fields']['category01'] = [
-									'key' => $municipalities[$matchId]->ilsMunicipality,
-									'resource' => '/policy/patronCategory01',
-								];
-							}
-						}
 						if ($selfRegistrationForm->cityStateField == 1) {
 							$this->setPatronUpdateField('CITY', $this->getPatronFieldValue($_REQUEST['city'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
 							$this->setPatronUpdateField('STATE', $this->getPatronFieldValue($_REQUEST['state'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
@@ -748,9 +732,11 @@ class SirsiDynixROA extends AbstractIlsDriver {
 						} else {
 							$this->setPatronUpdateField('CITY/STATE', $this->getPatronFieldValue($_REQUEST['city'] . ' ' . $_REQUEST['state'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
 						}
+						$address->lines[] = $this->getPatronFieldValue($_REQUEST['city'] . ' ' . $_REQUEST['state'], $library->useAllCapsWhenSubmittingSelfRegistration);
 					}
 					elseif ($field == 'zip' && (!empty($_REQUEST['zip']))) {
 						$this->setPatronUpdateField('ZIP', $this->getPatronFieldValue($_REQUEST['zip'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+						$address->lines[] = $this->getPatronFieldValue($_REQUEST['zip'], $library->useAllCapsWhenSubmittingSelfRegistration);
 					}
 
 					//unsure about these
@@ -774,6 +760,59 @@ class SirsiDynixROA extends AbstractIlsDriver {
 					}
 					elseif ($field == 'primaryPhone' && (!empty($_REQUEST['primaryPhone']))) {
 						$this->setPatronUpdateField('primaryPhone', $this->getPatronFieldValue($_REQUEST['primaryPhone'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+					}
+				}
+				// Override with any municipality-specific settings
+				if (!empty($municipalities)) {
+					// Use Google Geocoding API to get patron's municipality
+					if (!empty($address->lines)) {
+						$address = implode(", ", $address->lines);
+						$address = str_replace("\r\n", ",", $address);
+						$address = str_replace(" ", "+", $address);
+						$address = str_replace("#", "", $address);
+
+						require_once ROOT_DIR . '/sys/Enrichment/GoogleApiSetting.php';
+						$googleSettings = new GoogleApiSetting();
+						if ($googleSettings->find(true)) {
+							if (!empty($googleSettings->googleMapsKey)) {
+								$apiKey = $googleSettings->googleMapsKey;
+								$data = SystemUtils::geocodeAddress($address, $apiKey);
+
+								if ($data) {
+									$location = $data['results'][0]['geometry']['location'];
+									$latitude = $location['lat'];
+									$longitude = $location['lng'];
+
+									$subdivisionInfo = SystemUtils::getCensusCountySubdivision($latitude, $longitude);
+
+									$matchId = null;
+									if ($subdivisionInfo['municipality_name'] != '') {
+										$matchId = $selfRegistrationForm->getMunicipalitySettingsByNameAndType($subdivisionInfo['municipality_name'], $subdivisionInfo['municipality_type']);
+									}
+									if (!$matchId) {
+										$matchId = $selfRegistrationForm->getMunicipalitySettingsByNameAndType('other');
+									}
+									if ($matchId) {
+										// Abort if self-registration is not allowed
+										if (!$municipalities[$matchId]->selfRegAllowed) {
+											return [
+												'success' => false,
+												'message' => translate([
+													'text' => "Your address is not within the library’s service area. Please contact the library for more information.",
+													'isPublicFacing' => true
+												])
+											];
+										}
+										if (!empty($municipalities[$matchId]->ilsMunicipality)) {
+											$createPatronInfoParameters['fields']['category01'] = [
+												'key' => $municipalities[$matchId]->ilsMunicipality,
+												'resource' => '/policy/patronCategory01',
+											];
+										}
+									}
+								}
+							}
+						}
 					}
 				}
 			}

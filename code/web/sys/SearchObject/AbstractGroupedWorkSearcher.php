@@ -1295,6 +1295,32 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 		return $this->facetConfig;
 	}
 
+	/**
+	 * @return array
+	 */
+	public function getFullFacetConfig() : array {
+		if ($this->fullFacetConfig == null) {
+			$facetConfig = [];
+			$searchLibrary = Library::getActiveLibrary();
+			global $locationSingleton;
+			$searchLocation = $locationSingleton->getActiveLocation();
+			if ($searchLocation != null) {
+				$facets = $searchLocation->getGroupedWorkDisplaySettings()->getFacets();
+			} else {
+				$facets = $searchLibrary->getGroupedWorkDisplaySettings()->getFacets();
+			}
+			foreach ($facets as $facet) {
+				//Adjust facet name for local scoping
+				$facet->facetName = $this->getScopedFieldName($facet->getFacetName($this->searchVersion));
+				$facetConfig[$facet->facetName] = $facet;
+
+			}
+			$this->fullFacetConfig = $facetConfig;
+		}
+
+		return $this->fullFacetConfig;
+	}
+
 	function getMoreLikeThis($id, $selectedAvailabilityToggle = 'global', $availableOnly = false, $limitFormat = true, $limit = null, $format = null) {
 		if ($this->indexEngine instanceof GroupedWorksSolrConnector ||  $this->indexEngine instanceof GroupedWorksSolrConnector2) {
 			return $this->indexEngine->getMoreLikeThis($id, $selectedAvailabilityToggle, $availableOnly, $limitFormat, $limit, $format, $this->getFieldsToReturn());
