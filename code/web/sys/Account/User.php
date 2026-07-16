@@ -1800,15 +1800,29 @@ class User extends DataObject {
 		$this->__set('allowAppRequestLogging', (isset($_POST['allowAppRequestLogging']) && $_POST['allowAppRequestLogging'] == 'on') ? 1 : 0);
 
 		$saveResult = $this->update();
+		if (isset($_REQUEST['profileLanguage'])) {
+			global $activeLanguage;
+			$selectedLanguage = new Language();
+			$selectedLanguage->code = $_REQUEST['profileLanguage'];
+			if ($selectedLanguage->find(true)) {
+				$activeLanguage = $selectedLanguage;
+			}
+		}
 		if ($saveResult === false) {
 			return [
 				'success' => false,
-				'message' => 'Could not save to the database.',
+				'message' => translate([
+					'text' => 'Could not save to the database.',
+					'isPublicFacing' => true,
+				]),
 			];
 		} else {
 			return [
 				'success' => true,
-				'message' => 'Your preferences were updated successfully.',
+				'message' => translate([
+					'text' => 'Your preferences were updated successfully.',
+					'isPublicFacing' => true,
+				]),
 			];
 		}
 	}
