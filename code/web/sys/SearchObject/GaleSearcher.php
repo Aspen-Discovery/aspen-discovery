@@ -622,5 +622,9 @@ class SearchObject_GaleSearcher extends SearchObject_BaseSearcher {
 			]);
 		}
 	}
-		
+
+	public function getAdvancedSearchIndexes()
+	{
+		// TODO: Implement getAdvancedSearchIndexes() method.
+	}
 }

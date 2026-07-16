@@ -990,4 +990,8 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	}
 
 
+	public function getAdvancedSearchIndexes()
+	{
+		// TODO: Implement getAdvancedSearchIndexes() method.
+	}
 }

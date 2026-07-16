@@ -29,20 +29,22 @@
 
 		<div class="col-xs-12 col-sm-10 col-md-10 col-lg-10">
 			<div class="row">
-				<div class="{if !empty($hiddenSearchSource)}col-lg-10 col-md-10{elseif !empty($hiddenSearchType)}col-lg-9 col-md-9{else}col-lg-7 col-md-7{/if} col-sm-12 col-xs-12">
+				<div id="searchTypeContainer"
+				     class="{if !empty($hiddenSearchSource)}col-lg-10 col-md-10{elseif !empty($hiddenSearchType) && !$showAdvancedSearchbox}col-lg-9 col-md-9{else}col-lg-7 col-md-7{/if} col-sm-12 col-xs-12"
+				     data-default-class="{if !empty($hiddenSearchSource)}col-lg-10 col-md-10{elseif !empty($hiddenSearchType) && !$showAdvancedSearchbox}col-lg-9 col-md-9{else}col-lg-7 col-md-7{/if}">
 					<div class="input-group">
 						<span class="input-group-addon"><label for="lookfor" class="label" id="lookfor-label"><i class="fas fa-search fa-lg" role="presentation"></i><span class="sr-only" aria-label="{translate text="Look for" isPublicFacing=true inAttribute=true}" role="presentation">{translate text="Look for" isPublicFacing=true}</span></label></span>
 						{* Main Search Term Box *}
 						<input type="text" class="form-control"{/strip}
-							id="lookfor"
-							name="lookfor"
-							title="{translate text="Enter one or more terms to search for.	Surrounding a term with quotes will limit result to only those that exactly match the term." isPublicFacing=true inAttribute=true}"
-							onfocus="$(this).trigger('select')"
-							autocomplete="off"
-							aria-labelledby="lookfor-label"
-							aria-required="true"
+						       id="lookfor"
+						       name="lookfor"
+						       title="{translate text="Enter one or more terms to search for.	Surrounding a term with quotes will limit result to only those that exactly match the term." isPublicFacing=true inAttribute=true}"
+						       onfocus="$(this).trigger('select')"
+						       autocomplete="off"
+						       aria-labelledby="lookfor-label"
+						       aria-required="true"
 							{if !empty($lookfor)}value="{$lookfor|escape:"html"}"{/if}
-						{strip}>
+							{strip}>
 						<button type="button" class="input-group-addon clear-search" onclick="AspenDiscovery.resetSearchBox();" title="{translate text="Clear search" isPublicFacing=true inAttribute=true}">
 							<span class="sr-only">{translate text="Clear search" isPublicFacing=true}</span>
 							<svg focusable="false" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -58,48 +60,46 @@
 					{assign var="totalSearchOptions" value=$totalSearchOptions+1}
 				{/if}
 
+				{assign var="hideSearchIndexDropdown" value=false}
 				{if $totalSearchOptions == 1}
-				{* Only one possible search type, no need for a dropdown *}
-				{foreach from=$searchIndexes item=searchDesc key=searchVal}
-					<input type="hidden" name="searchIndex" id="searchIndex" value="{$searchVal}" />
-				{/foreach}
-				{else}
-				<div class="col-lg-2 col-lg-offset-0 col-md-2 col-md-offset-0 {if !empty($hiddenSearchSource)} col-sm-12 col-sm-offset-0 col-xs-12 col-xs-offset-0 {else} col-sm-6 col-sm-offset-0 col-xs-6 col-xs-offset-0{/if}">
-						<select name="searchIndex" class="searchTypeHorizontal form-control catalogType" id="searchIndex" title="The method of searching." aria-label="Search Index">
-							<script type="text/javascript">
-								{literal}
-								$(document).ready(function() {
-									AspenDiscovery.Searches.loadSearchTypes();
-								});
-								{/literal}
-							</script>
-							{foreach from=$searchIndexes item=searchDesc key=searchVal}
-								{* The descriptions are already translated and do not need to be retranslated *}
-								<option value="{$searchVal}"{if !empty($searchIndex) && $searchIndex == $searchVal} selected="selected"{/if}>{$searchDesc}</option>
-							{/foreach}
-
-							{* Add Advanced Search *}
-							{if !empty($searchIndex) && $searchIndex == 'advanced'}
-								<option id="advancedSearchLink" value="editAdvanced" selected="selected">
-									{translate text='Edit Advanced Search' inAttribute=true isPublicFacing=true}
-								</option>
-							{elseif $showAdvancedSearchbox}
-								<option id="advancedSearchLink" value="advanced">
-									{translate text='Advanced Search' inAttribute=true isPublicFacing=true}
-								</option>
-							{/if}
-						</select>
-				</div>
+					{assign var="hideSearchIndexDropdown" value=true}
 				{/if}
+
+				<div id="searchIndexContainer" data-default-hidden="{if $hideSearchIndexDropdown}true{else}false{/if}" class="col-lg-2 col-lg-offset-0 col-md-2 col-md-offset-0 {if !empty($hiddenSearchSource)} col-sm-12 col-sm-offset-0 col-xs-12 col-xs-offset-0 {else} col-sm-6 col-sm-offset-0 col-xs-6 col-xs-offset-0{/if}"{if $hideSearchIndexDropdown} style="display: none;"{/if}>
+					<select name="searchIndex" class="searchTypeHorizontal form-control catalogType" id="searchIndex" title="The method of searching." aria-label="Search Index">
+						<script type="text/javascript">
+							{literal}
+							$(document).ready(function() {
+								AspenDiscovery.Searches.loadSearchTypes();
+							});
+							{/literal}
+						</script>
+						{foreach from=$searchIndexes item=searchDesc key=searchVal}
+							{* The descriptions are already translated and do not need to be retranslated *}
+							<option value="{$searchVal}"{if !empty($searchIndex) && $searchIndex == $searchVal} selected="selected"{/if}>{$searchDesc}</option>
+						{/foreach}
+
+						{* Add Advanced Search *}
+						{if !empty($searchIndex) && $searchIndex == 'advanced'}
+							<option id="advancedSearchLink" value="editAdvanced" selected="selected">
+								{translate text='Edit Advanced Search' inAttribute=true isPublicFacing=true}
+							</option>
+						{elseif $showAdvancedSearchbox}
+							<option id="advancedSearchLink" value="advanced">
+								{translate text='Advanced Search' inAttribute=true isPublicFacing=true}
+							</option>
+						{/if}
+					</select>
+				</div>
 
 				{if empty($hiddenSearchSource)}
 					<div class="col-lg-3 col-md-3 col-sm-6 col-xs-6">
-						<select name="searchSource" id="searchSource" title="{translate text="Select what to search. Items marked with a * will redirect you to one of our partner sites." isPublicFacing=true inAttribute=true}" onchange="AspenDiscovery.Searches.loadSearchTypes();" class="searchSourceHorizontal form-control" aria-label="{translate text="Collection to Search" isPublicFacing=true inAttribute=true}">
+						<select name="searchSource" id="searchSource" title="{translate text="Select what to search. Items marked with a * will redirect you to one of our partner sites." isPublicFacing=true inAttribute=true}" onchange="AspenDiscovery.Searches.loadSearchTypes(); AspenDiscovery.Searches.updateSearchTypeLayout();" class="searchSourceHorizontal form-control" aria-label="{translate text="Collection to Search" isPublicFacing=true inAttribute=true}">
 							{foreach from=$searchSources item=searchOption key=searchKey}
 								<option data-catalog_type="{$searchOption.catalogType}" value="{$searchKey}" title="{$searchOption.description|escape}" data-advanced_search="{$searchOption.hasAdvancedSearch}" data-advanced_search_label="{translate text="Advanced Search" inAttribute=true isPublicFacing=true}"
-										{if $searchKey == $searchSource} selected="selected"{/if}
-										{if $searchKey == $defaultSearchIndex} id="default_search_type"{/if}
-										>
+									{if $searchKey == $searchSource} selected="selected"{/if}
+									{if $searchKey == $defaultSearchIndex} id="default_search_type"{/if}
+								>
 									{translate text="in %1%" 1=$searchOption.name|escape inAttribute=true isPublicFacing=true translateParameters=true}{if !empty($searchOption.external)} *{/if}
 								</option>
 							{/foreach}
@@ -130,4 +130,11 @@
 
 	</form>
 </div>
+	<script type="text/javascript">
+		{literal}
+		$(document).ready(function() {
+			AspenDiscovery.Searches.updateSearchTypeLayout();
+		});
+		{/literal}
+	</script>
 {/strip}

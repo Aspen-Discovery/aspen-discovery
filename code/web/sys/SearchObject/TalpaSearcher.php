@@ -1675,4 +1675,8 @@ class SearchObject_TalpaSearcher extends SearchObject_BaseSearcher{
 	}
 
 
+	public function getAdvancedSearchIndexes()
+	{
+		// TODO: Implement getAdvancedSearchIndexes() method.
+	}
 }

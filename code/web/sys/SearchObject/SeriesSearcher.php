@@ -406,4 +406,9 @@ class SearchObject_SeriesSearcher extends SearchObject_SolrSearcher {
 		}
 		return $field;
 	}
+
+	public function getAdvancedSearchIndexes()
+	{
+		// TODO: Implement getAdvancedSearchIndexes() method.
+	}
 }

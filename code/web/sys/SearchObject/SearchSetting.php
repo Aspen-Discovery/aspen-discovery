@@ -112,7 +112,8 @@ class SearchSetting extends DataObject {
 						'Title'   => 'Title',
 						'StartOfTitle'  => 'Start of Title',
 						'Series' => 'Series',
-						'Author'    => 'Author',
+						'Primary Author'    => 'Author',
+						'Author' => 'Authors and Contributors',
 						'Subject' => 'Subject',
 						'LocalCallNumber' => 'Call Number',
 					];
