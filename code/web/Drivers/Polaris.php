@@ -1264,7 +1264,13 @@ class Polaris extends AbstractIlsDriver {
 							//reset the patrons preferred pickup location to their new home library
 							//unless we get preferred pickup location from api response
 							if (isset($patronBasicData->RequestPickupBranchID)) {
-								$user->setPickupLocationId($patronBasicData->RequestPickupBranchID);
+								$pickupLocation = new Location();
+								$pickupLocation->code = $patronBasicData->RequestPickupBranchID;
+								if ($pickupLocation->find(true)) {
+									$user->setPickupLocationId($pickupLocation->locationId);
+								} else {
+									$user->setPickupLocationId($user->homeLocationId);
+								}
 							} else {
 								$user->setPickupLocationId($user->homeLocationId);
 							}
