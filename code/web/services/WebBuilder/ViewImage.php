@@ -24,23 +24,22 @@ class WebBuilder_ViewImage extends Action {
 			die();
 		}
 
-		global $serverName;
-		$dataPath = '/data/aspen-discovery/' . $serverName . '/uploads/web_builder_image/';
 		$extension = pathinfo($this->uploadedImage->fullSizePath, PATHINFO_EXTENSION);
 		if ((isset($_REQUEST['size'])) && $extension != 'svg') {
 			$size = $_REQUEST['size'];
 		} else {
 			$size = 'full';
 		}
-		$dataPath .= $size . '/';
-		$fullPath = $dataPath . $this->uploadedImage->fullSizePath;
+		$storageKey = 'uploads/web_builder_image/' . $size . '/' . $this->uploadedImage->fullSizePath;
 
-		if ($file = @fopen($fullPath, 'r')) {
-			fclose($file);
-			set_time_limit(300);
-			$chunkSize = 2 * (1024 * 1024);
+		require_once ROOT_DIR . '/sys/Storage/StorageDriverFactory.php';
+		$storage = StorageDriverFactory::get();
 
-			$size = intval(sprintf("%u", filesize($fullPath)));
+		$directUrl = $storage->url($storageKey);
+		if ($directUrl !== '') {
+			header('Location: ' . $directUrl, true, 302);
+			die();
+		}
 
 			$mimeTypesByExtension = [
 				'svg' => 'image/svg+xml',
