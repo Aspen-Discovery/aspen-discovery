@@ -1714,13 +1714,15 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 	public function getDuration() {
 		if ($this->_duration == null) {
 			$this->_duration = '';
-			$durationFields = $this->getFields('300', true);
-			foreach ($durationFields as $field) {
-				$info = $this->getSubfieldArray($field, ['a'], true);
-				if (count($info) > 0) {
-					$durationInfo = $info[0];
-					$durationInfo = StringUtils::extractTotalMinutes($durationInfo);
-					$this->_duration = $durationInfo;
+			if (in_array('Audio Books', $this->getGroupedWorkDriver()->getFormatCategories())) {
+				$durationFields = $this->getFields('300', true);
+				foreach ($durationFields as $field) {
+					$info = $this->getSubfieldArray($field, ['a'], true);
+					if (count($info) > 0) {
+						$durationInfo = $info[0];
+						$durationInfo = StringUtils::extractTotalMinutes($durationInfo);
+						$this->_duration = $durationInfo;
+					}
 				}
 			}
 		}
