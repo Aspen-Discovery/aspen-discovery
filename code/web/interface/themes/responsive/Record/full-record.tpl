@@ -1,4 +1,4 @@
-{include file="GroupedWork/load-full-record-view-enrichment.tpl" recordType="marcRecord" recordId=$recordDriver->getId()}
+{include file="GroupedWork/load-full-record-view-enrichment.tpl" recordType="marcRecord" recordId=$recordDriver->getIdWithSource()}
 
 {strip}
 	<div class="col-xs-12">
