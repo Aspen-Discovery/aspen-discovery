@@ -8159,6 +8159,9 @@ class MyAccount_AJAX extends JSON_Action {
 
 			$user = UserAccount::getLoggedInUser();
 			if (empty($user)) {
+				$interface->assign('eventSourceId', $sourceId);
+				$interface->assign('vendor', $vendor);
+				$interface->assign('regLink', $eventUrl);
 				$result['success'] = true;
 				$result['buttons'] = $interface->fetch('AspenEvents/loginToRegisterButton.tpl');
 				$result['body'] = translate([
