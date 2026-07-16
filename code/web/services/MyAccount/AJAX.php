@@ -4463,7 +4463,7 @@ class MyAccount_AJAX extends JSON_Action {
 					'regModalBody' => $eventRecordDriver->getRegistrationModalBody(),
 					'location' => $entry->location,
 					'regRequired' => $entry->regRequired,
-					'isRegistered' => $registration,
+					'userIsRegistered' => $registration,
 					'eventDate' => $entry->eventDate,
 					'pastEvent' => false,
 					'vendor' => self::getVendor($entry->sourceId)
@@ -4477,7 +4477,7 @@ class MyAccount_AJAX extends JSON_Action {
 					'externalLink' => null,
 					'location' => $entry->location,
 					'regRequired' => $entry->regRequired,
-					'isRegistered' => $registration,
+					'userIsRegistered' => $registration,
 					'eventDate' => $entry->eventDate,
 					'pastEvent' => true,
 					'vendor' => self::getVendor($entry->sourceId)
@@ -8159,6 +8159,9 @@ class MyAccount_AJAX extends JSON_Action {
 
 			$user = UserAccount::getLoggedInUser();
 			if (empty($user)) {
+				$interface->assign('eventSourceId', $sourceId);
+				$interface->assign('vendor', $vendor);
+				$interface->assign('regLink', $eventUrl);
 				$result['success'] = true;
 				$result['buttons'] = $interface->fetch('AspenEvents/loginToRegisterButton.tpl');
 				$result['body'] = translate([
@@ -8185,14 +8188,14 @@ class MyAccount_AJAX extends JSON_Action {
 			}
 			$interface->assign('linkedUsers', $linkedUsers);
 
-			$isRegistered = $aspenEventInstanceUserRegistration->status === 'registered';
+			$userIsRegistered = $aspenEventInstanceUserRegistration->status === 'registered';
 			$registrationAction = EventRegistrationService::getRegistrationActionForUser(
 				$eventInstance,
-				$isRegistered,
+				$userIsRegistered,
 				$waitingListInfo['onWaitingList'],
 				$waitingListInfo['canRegister']
 			);
-			$interface->assign('userIsRegistered', $isRegistered);
+			$interface->assign('userIsRegistered', $userIsRegistered);
 			$interface->assign('registrationAction', $registrationAction);
 
 			// Generate registration form using custom fields

@@ -1021,7 +1021,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 				}
 			}
 		}
-		if ($useMarcSummary && $this->marcRecord != false) {
+		if ($useMarcSummary && $this->getMarcRecord()) {
 			if ($summaryFields = $this->marcRecord->getFields('520')) {
 				$summaries = [];
 				$summary = '';
