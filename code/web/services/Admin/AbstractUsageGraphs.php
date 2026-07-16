@@ -52,10 +52,12 @@ abstract class Admin_AbstractUsageGraphs extends Admin_Admin {
 		$interface->assign('instance', $instanceName);
 		$interface->assign('timeframe', $timeframe);
 
+		$usage = new AspenUsage();
+		// Only used by custom, but assign it always so it's in the DOM when custom fields render dynamically before reload.
+		$earliestUsageDate = $usage->getEarliestUsageDate();
+		$interface->assign('earliestUsageDate', $earliestUsageDate);
+
 		if ($timeframe === 'custom') {
-			$usage = new AspenUsage();
-			$earliestUsageDate = $usage->getEarliestUsageDate();
-			$interface->assign('earliestUsageDate', $earliestUsageDate);
 			$interface->assign('customUsagePeriodStart', $customUsagePeriodStart);
 			$interface->assign('customUsagePeriodDuration', $customUsagePeriodDuration);
 			$interface->assign('customPeriodStartWarning', $this->getCustomPeriodStartWarning($customUsagePeriodStart, $earliestUsageDate));
