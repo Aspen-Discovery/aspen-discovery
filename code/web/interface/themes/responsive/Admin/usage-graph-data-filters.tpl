@@ -10,7 +10,9 @@
 			</select>
 			<div id='custom-usage-period-wrapper' {if $timeframe != 'custom'}hidden{/if}>
 				<div class="{if !empty($customPeriodStartWarning)}has-error{/if}">
-					<label for='customUsagePeriodStart' class="control-label">{translate text='Custom period start (date)' isAdminFacing=true}</label>
+					<label for='customUsagePeriodStart' class="control-label">
+						{translate text="Custom period start (date) - available from %1%" 1={$earliestUsageDate|format_date_locale:'short'} isAdminFacing=true}
+					</label>
 					<input type='date' name='customUsagePeriodStart' id='customUsagePeriodStart' min='{$earliestUsageDate|default:"2019-01-01"}' value='{$customUsagePeriodStart|default:''}' class='form-control' {if $timeframe == 'custom'}required{/if}>
 				</div>
 				<label for='customUsagePeriodDuration'>{translate text='Custom period duration (days)' isAdminFacing=true}</label>
