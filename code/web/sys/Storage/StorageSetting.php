@@ -1,7 +1,7 @@
 <?php
 
 use AsyncAws\S3\S3Client;
-use AsyncAws\S3\Input\HeadBucketRequest;
+use AsyncAws\S3\Input\ListObjectsV2Request;
 
 class StorageSetting extends DataObject {
 	public $__table = 'storage_settings';
@@ -48,6 +48,17 @@ class StorageSetting extends DataObject {
 				'description' => 'The storage backend to use for uploaded files.',
 				'default' => 'local',
 				'required' => true,
+				'onchange' => 'AspenDiscovery.StorageSettings.toggleS3Fields(this.value)',
+			],
+			's3FieldToggle' => [
+				'property'               => 's3FieldToggle',
+				'type'                   => 'label',
+				'label'                  => '',
+				'description'            => '',
+				'hideInLists'            => true,
+				'suppressNotSetForEmpty' => true,
+				'doNotEscape'            => true,
+				'hiddenByDefault'        => true,
 			],
 			'isActive' => [
 				'property' => 'isActive',
@@ -64,53 +75,59 @@ class StorageSetting extends DataObject {
 				'hideInLists' => true,
 			],
 			'bucket' => [
-				'property' => 'bucket',
-				'type' => 'text',
-				'label' => 'Bucket',
-				'description' => 'The S3 bucket name.',
-				'default' => '',
-				'required' => true,
+				'property'        => 'bucket',
+				'type'            => 'text',
+				'label'           => 'Bucket',
+				'description'     => 'The S3 bucket name. The bucket must already exist on the provider; it is not created automatically.',
+				'default'         => '',
+				'required'        => true,
+				'hiddenByDefault' => true,
 			],
 			'accessKeyId' => [
-				'property' => 'accessKeyId',
-				'type' => 'text',
-				'label' => 'Access Key ID',
-				'description' => 'The access key ID for S3 authentication.',
-				'default' => '',
-				'required' => true,
+				'property'        => 'accessKeyId',
+				'type'            => 'text',
+				'label'           => 'Access Key ID',
+				'description'     => 'The access key ID for S3 authentication.',
+				'default'         => '',
+				'required'        => true,
+				'hiddenByDefault' => true,
 			],
 			'accessKeySecret' => [
-				'property' => 'accessKeySecret',
-				'type' => 'storedPassword',
-				'label' => 'Access Key Secret',
-				'description' => 'The secret access key for S3 authentication.',
-				'default' => '',
-				'required' => true,
-				'hideInLists' => true,
+				'property'        => 'accessKeySecret',
+				'type'            => 'storedPassword',
+				'label'           => 'Access Key Secret',
+				'description'     => 'The secret access key for S3 authentication.',
+				'default'         => '',
+				'required'        => true,
+				'hideInLists'     => true,
+				'hiddenByDefault' => true,
 			],
 			'region' => [
-				'property' => 'region',
-				'type' => 'text',
-				'label' => 'Region',
-				'description' => 'The S3 region (e.g. us-east-1). Required for AWS S3; optional for S3-compatible providers.',
-				'default' => 'us-east-1',
-				'required' => false,
+				'property'        => 'region',
+				'type'            => 'text',
+				'label'           => 'Region',
+				'description'     => 'The S3 region (e.g. us-east-1). Required for AWS S3; optional for S3-compatible providers.',
+				'default'         => 'us-east-1',
+				'required'        => false,
+				'hiddenByDefault' => true,
 			],
 			'endpoint' => [
-				'property' => 'endpoint',
-				'type' => 'text',
-				'label' => 'Endpoint URL',
-				'description' => 'Custom endpoint URL for S3-compatible providers (e.g. Cloudflare R2, MinIO). Leave empty for AWS S3.',
-				'default' => '',
-				'required' => false,
+				'property'        => 'endpoint',
+				'type'            => 'text',
+				'label'           => 'Endpoint URL',
+				'description'     => 'Custom endpoint URL for S3-compatible providers (e.g. Cloudflare R2, MinIO). Leave empty for AWS S3.',
+				'default'         => '',
+				'required'        => false,
+				'hiddenByDefault' => true,
 			],
 			'baseUrl' => [
-				'property' => 'baseUrl',
-				'type' => 'text',
-				'label' => 'Public Base URL',
-				'description' => 'The public URL prefix used to serve files (e.g. https://cdn.example.com). Required when using S3.',
-				'default' => '',
-				'required' => false,
+				'property'        => 'baseUrl',
+				'type'            => 'text',
+				'label'           => 'Public Base URL',
+				'description'     => 'Optional. The public URL that serves the bucket directly (a CDN domain in front of it, or the bucket\'s own public endpoint). When set, the browser is redirected straight there instead of the app proxying every file through itself. Leave empty to have the app proxy file bytes, the same way it does for local storage.',
+				'default'         => '',
+				'required'        => false,
+				'hiddenByDefault' => true,
 			],
 		];
 
@@ -145,21 +162,30 @@ class StorageSetting extends DataObject {
 			return true;
 		}
 		if (empty($this->bucket) || empty($this->accessKeyId) || empty($this->accessKeySecret)) {
-			$this->validationError = 'Bucket, Access Key ID, and Access Key Secret are required for S3 storage.';
+			$this->setLastError('Bucket, Access Key ID, and Access Key Secret are required for S3 storage.');
 			return false;
 		}
 		try {
-			$client = new S3Client([
-				'accessKeyId'     => $this->accessKeyId,
-				'accessKeySecret' => $this->accessKeySecret,
-				'region'          => $this->region ?: 'us-east-1',
-				'endpoint'        => $this->endpoint ?: null,
-			]);
-			$result = $client->headBucket(new HeadBucketRequest(['Bucket' => $this->bucket]));
+			$httpClient = new \Symfony\Component\HttpClient\CurlHttpClient();
+			$client = new S3Client(
+				[
+					'accessKeyId'      => $this->accessKeyId,
+					'accessKeySecret'  => $this->accessKeySecret,
+					'region'           => $this->region ?: 'us-east-1',
+					'endpoint'         => $this->endpoint ?: null,
+					'pathStyleEndpoint' => !empty($this->endpoint),
+				],
+				null,
+				$httpClient
+			);
+			$result = $client->listObjectsV2(new ListObjectsV2Request([
+				'Bucket'  => $this->bucket,
+				'MaxKeys' => 1,
+			]));
 			$result->resolve();
 			return true;
 		} catch (\Exception $e) {
-			$this->validationError = 'Could not connect to S3 bucket: ' . $e->getMessage();
+			$this->setLastError('Could not connect to S3 bucket: ' . $e->getMessage());
 			return false;
 		}
 	}
@@ -174,6 +200,21 @@ class StorageSetting extends DataObject {
 	public function __get($name) {
 		if ($name === 'effectiveDataRoot') {
 			return StorageDriverFactory::resolveDataRoot();
+		}
+		if ($name === 's3FieldToggle') {
+			return '<script>
+AspenDiscovery.StorageSettings = AspenDiscovery.StorageSettings || {};
+AspenDiscovery.StorageSettings.toggleS3Fields = function(driver) {
+	var s3Fields = ["bucket", "accessKeyId", "accessKeySecret", "region", "endpoint", "baseUrl"];
+	var isS3 = driver === "s3";
+	s3Fields.forEach(function(field) {
+		$("#propertyRow" + field).toggle(isS3);
+	});
+};
+$(document).ready(function() {
+	AspenDiscovery.StorageSettings.toggleS3Fields($("#driverSelect").val());
+});
+</script>';
 		}
 		return parent::__get($name);
 	}
