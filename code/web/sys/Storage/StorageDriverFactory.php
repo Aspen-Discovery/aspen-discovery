@@ -63,12 +63,18 @@ class StorageDriverFactory {
 		if ($setting !== null && $setting->driver === 's3' && !empty($setting->bucket)) {
 			require_once ROOT_DIR . '/sys/Storage/S3StorageDriver.php';
 
-			$client = new AsyncAws\S3\S3Client([
-				'accessKeyId'     => $setting->accessKeyId,
-				'accessKeySecret' => $setting->accessKeySecret,
-				'region'          => $setting->region ?: 'us-east-1',
-				'endpoint'        => $setting->endpoint ?: null,
-			]);
+			$httpClient = new Symfony\Component\HttpClient\CurlHttpClient();
+			$client = new AsyncAws\S3\S3Client(
+				[
+					'accessKeyId'      => $setting->accessKeyId,
+					'accessKeySecret'  => $setting->accessKeySecret,
+					'region'           => $setting->region ?: 'us-east-1',
+					'endpoint'         => $setting->endpoint ?: null,
+					'pathStyleEndpoint' => !empty($setting->endpoint),
+				],
+				null,
+				$httpClient
+			);
 
 			return new S3StorageDriver($client, $setting->bucket, $setting->baseUrl);
 		}
