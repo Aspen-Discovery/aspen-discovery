@@ -257,7 +257,7 @@ class Record_AJAX extends JSON_Action {
 			$interface->assign('enableMultiCopyHolds', $enableMultiCopyHolds);
 			if ($enableMultiCopyHolds) {
 				$statusSummary = $marcRecord->getGroupedWorkDriver()->getRelatedRecord($marcRecord->getIdWithSource());
-				$interface->assign('maxCopyHolds', $statusSummary->getAvailableCopies());
+				$interface->assign('maxCopyHolds', $statusSummary->getAvailableHoldableCopies());
 			}
 
 			if (!$this->setupHoldForm($recordSource, $rememberHoldPickupLocation, $marcRecord, $locations, $selectedVariationId, $promptForEdition)) {
