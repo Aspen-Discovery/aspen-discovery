@@ -66,7 +66,18 @@ AspenDiscovery.Series = (function(){
 		printAction: function (){
 			window.print();
 			return false;
-		}
+		},
 
+		ungroupSeries(id, groupedWithSeriesId) {
+			var url = Globals.path + "/Series/" + id + "/AJAX?method=ungroupSeries&groupedWithSeriesId=" + groupedWithSeriesId;
+			//AspenDiscovery.closeLightbox();
+			$.getJSON(url, function(data){
+				if (data.success){
+					AspenDiscovery.showMessage("Success", data.message, false, true);
+				}else{
+					AspenDiscovery.showMessage("An error occurred", data.message, false, false);
+				}
+			}).fail(AspenDiscovery.ajaxFail);
+		}
 	};
 }(AspenDiscovery.Series || {}));

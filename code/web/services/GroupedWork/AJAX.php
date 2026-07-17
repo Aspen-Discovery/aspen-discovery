@@ -140,7 +140,7 @@ class GroupedWork_AJAX extends JSON_Action {
 
 		if (isset($_REQUEST['recordType'])) {
 			$driverMap = [
-				'marcRecord'         => 'MarcRecordDriver',
+				'marcRecord'          => 'MarcRecordDriver',
 				'hooplaRecord'        => 'HooplaRecordDriver',
 				'libbyRecord'         => 'OverDriveRecordDriver',
 				'cloudLibraryRecord'  => 'CloudLibraryRecordDriver',

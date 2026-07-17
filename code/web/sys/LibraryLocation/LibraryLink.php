@@ -249,13 +249,15 @@ class LibraryLink extends DataObject {
 	}
 
 	public function getAccess() : array {
-		if (!isset($this->_allowAccess) && $this->id) {
+		if (!isset($this->_allowAccess)) {
 			$this->_allowAccess = [];
-			$patronTypeLink = new LibraryLinkAccess();
-			$patronTypeLink->libraryLinkId = $this->id;
-			$patronTypeLink->find();
-			while ($patronTypeLink->fetch()) {
-				$this->_allowAccess[$patronTypeLink->patronTypeId] = $patronTypeLink->patronTypeId;
+			if ($this->id) {
+				$patronTypeLink = new LibraryLinkAccess();
+				$patronTypeLink->libraryLinkId = $this->id;
+				$patronTypeLink->find();
+				while ($patronTypeLink->fetch()) {
+					$this->_allowAccess[$patronTypeLink->patronTypeId] = $patronTypeLink->patronTypeId;
+				}
 			}
 		}
 		return $this->_allowAccess;
@@ -284,20 +286,22 @@ class LibraryLink extends DataObject {
 	}
 
 	public function getLanguages() : array {
-		if (!isset($this->_languages) && $this->id) {
+		if (!isset($this->_languages)) {
 			$this->_languages = [];
-			try {
-				$language = new LibraryLinkLanguage();
-				$language->libraryLinkId = $this->id;
-				$language->find();
-				while ($language->fetch()) {
-					$this->_languages[$language->languageId] = $language->languageId;
-				}
-			} catch (Exception) {
-				//This happens when the table is not setup yet
-				$languageList = Language::getLanguageList();
-				foreach ($languageList as $languageId => $displayName) {
-					$this->_languages[$languageId] = $languageId;
+			if ($this->id) {
+				try {
+					$language = new LibraryLinkLanguage();
+					$language->libraryLinkId = $this->id;
+					$language->find();
+					while ($language->fetch()) {
+						$this->_languages[$language->languageId] = $language->languageId;
+					}
+				} catch (Exception) {
+					//This happens when the table is not setup yet
+					$languageList = Language::getLanguageList();
+					foreach ($languageList as $languageId => $displayName) {
+						$this->_languages[$languageId] = $languageId;
+					}
 				}
 			}
 		}
