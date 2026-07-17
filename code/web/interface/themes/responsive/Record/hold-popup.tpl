@@ -333,16 +333,11 @@
 							</label>
 						</div>
 					{/if}
-					{if $holdType == 'bib' && $enableMultiCopyHolds}
+					{if $holdType == 'bib' && $enableMultiCopyHolds && $maxCopyHolds > 1}
 						<div id="numberOfCopiesRow" class="form-group">
-							<div class="row">
-								<div class="col-tn-6">
-									<label for="numberOfCopies">{translate text="Number of Copies" isPublicFacing=true}</label>
-								</div>
-								<div class="col-tn-6">
-									<input type="number" name="numberOfCopies" id="numberOfCopies" value="1" min="1" max="{$maxCopyHolds}" class="form-control"/>
-								</div>
-							</div>
+							<label for="numberOfCopies" class="control-label">{translate text="Number of Copies" isPublicFacing=true}</label>
+							<input type="number" name="numberOfCopies" id="numberOfCopies" value="1" min="1" max="{$maxCopyHolds}" class="form-control"/>
+							<span id="numberOfCopiesHelpBlock" class="help-block"><small><i class="fas fa-info-circle"></i> {translate text="A maximum of %1% copies may be requested." 1=$maxCopyHolds isPublicFacing=true}</small></span>
 						</div>
 					{/if}
 					{if !empty($promptForHoldNotifications)}
