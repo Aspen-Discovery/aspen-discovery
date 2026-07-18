@@ -189,7 +189,7 @@ class SystemUtils {
 		$data = json_decode($response);
 		$curl->close_curl();
 
-		if ($data->status == 'OK') {
+		if (isset($data->status) && $data->status == 'OK') {
 			return $data;
 		}
 
@@ -227,7 +227,7 @@ class SystemUtils {
 		}
 
 		return [
-			'county_name' => $county['NAME'],
+			'county_name' => $county['BASENAME'],
 			'municipality_name' => $municipalityName,
 			'municipality_type' => $municipalityType,
 		];

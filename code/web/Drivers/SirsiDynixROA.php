@@ -787,7 +787,7 @@ class SirsiDynixROA extends AbstractIlsDriver {
 
 									$matchId = null;
 									if ($subdivisionInfo['municipality_name'] != '') {
-										$matchId = $selfRegistrationForm->getMunicipalitySettingsByNameAndType($subdivisionInfo['municipality_name'], $subdivisionInfo['municipality_type']);
+										$matchId = $selfRegistrationForm->getMunicipalitySettingsByNameAndType($subdivisionInfo['municipality_name'], $subdivisionInfo['municipality_type'], $subdivisionInfo['county_name']);
 									}
 									if (!$matchId) {
 										$matchId = $selfRegistrationForm->getMunicipalitySettingsByNameAndType('other');
