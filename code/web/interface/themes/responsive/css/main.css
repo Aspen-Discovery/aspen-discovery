@@ -11394,7 +11394,6 @@ td[data-entry-id]:has(.date-edit:focus)::after {
   display: flex;
   overflow: hidden;
   flex: 1;
-  scroll-behavior: smooth;
   cursor: grab;
   gap: 10px;
 }
