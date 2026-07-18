@@ -24,6 +24,21 @@ function getUpdates26_07_00(): array {
 				'ALTER TABLE library ADD enableMultiCopyHolds TINYINT(1) NOT NULL DEFAULT 0',
 			],
 		], //multi_copy_holds_support
+		'remove_vdx_settings_and_permissions' => [
+			'title' => 'Remove VDX settings and permissions',
+			'description' => 'Remove VDX settings and permissions.',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE ptype DROP COLUMN vdxClientCategory',
+				'ALTER TABLE location DROP COLUMN vdxLocation',
+				'ALTER TABLE location DROP COLUMN vdxFormId',
+				'DROP TABLE user_vdx_request',
+				'DROP TABLE vdx_form',
+				'DROP TABLE vdx_settings',
+				"DELETE FROM role_permissions where permissionId IN (SELECT id from permissions where name IN ('Administer VDX Settings', 'Administer All VDX Forms', 'Administer Library VDX Forms'))",
+				"DELETE FROM permissions where name IN ('Administer VDX Settings', 'Administer All VDX Forms', 'Administer Library VDX Forms')",
+			]
+		], //remove_vdx_settings_and_permissions
 
 		//kirstien
 
@@ -67,7 +82,22 @@ function getUpdates26_07_00(): array {
 			'sql' => [
 				'ALTER TABLE series ADD COLUMN seriesToGroupWithId CHAR(40)',
 			]
-		],
+		], // series_to_group_with
+		'remove_duplicate_series_members' => [
+			'title' => 'Remove Duplicate Series Members',
+			'description' => 'Remove duplicate series members.',
+			'continueOnError' => false,
+			'sql' => [
+				'removeDuplicateSeriesMembers',
+			]
+		], //remove_duplicate_series_members
+		'unique_series_members' => [
+			'title' => 'Ensure Series Members Are Unique',
+			'description' => 'Ensure unique series members are unique by preventing duplicate matches on seriesId & groupedWorkPermanentId.',
+			'sql' => [
+				'ALTER TABLE series_member ADD UNIQUE (seriesId, groupedWorkPermanentId, volume, displayName)'
+			]
+		], // unique_series_members
 
 		//yanjun
 		'add_user_agent_retention_months' => [
@@ -108,7 +138,30 @@ function getUpdates26_07_00(): array {
 				'ALTER TABLE library ADD COLUMN showHoldFeeMessage TINYINT(1) DEFAULT 1',
 			]
 		], //library_show_hold_fee_message
-	
+		'create_table_palace_project_stats' => [
+			'title' => 'Record Palace Project Stats Separately',
+			'description' => 'Adds a Palace Project Stats table',
+			'continueOnError' => false,
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS palace_project_stats (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					instance varchar(100) DEFAULT NULL,
+					year int(11) NOT NULL,
+					month int(11) NOT NULL,
+					day int(11) NOT NULL,
+					numCheckouts int(11) NOT NULL DEFAULT 0,
+					numRenewals int(11) NOT NULL DEFAULT 0,
+					numEarlyReturns int(11) NOT NULL DEFAULT 0,
+					numHoldsPlaced int(11) NOT NULL DEFAULT 0,
+					numHoldsCancelled int(11) NOT NULL DEFAULT 0,
+					numHoldsFrozen int(11) NOT NULL DEFAULT 0,
+					numHoldsThawed int(11) NOT NULL DEFAULT 0,
+					numApiErrors int(11) NOT NULL DEFAULT 0,
+					numConnectionFailures int(11) NOT NULL DEFAULT 0
+				) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;'
+			]
+		], //create_table_palace_project_stats
+
 		//pedro
 
 		//mark j
@@ -137,4 +190,28 @@ function getUpdates26_07_00(): array {
 		//other
 
 	];
+}
+
+function removeDuplicateSeriesMembers(): void {
+	global $aspen_db;
+
+	try {
+		$sql = "
+			DELETE sm1 FROM series_member sm1
+			INNER JOIN series_member sm2
+			ON sm1.seriesId = sm2.seriesId
+			AND sm1.groupedWorkPermanentId <=> sm2.groupedWorkPermanentId
+			AND sm1.volume <=> sm2.volume
+			AND sm1.displayName <=> sm2.displayName
+			AND sm1.id > sm2.id ";
+
+		$stmt = $aspen_db->prepare($sql);
+		$stmt->execute();
+
+	} catch (PDOException $e) {
+		global $logger;
+		if (isset($logger)) {
+			$logger->log('Error removing duplicate series_member rows: ' . $e->getMessage(), Logger::LOG_ERROR);
+		}
+	}
 }

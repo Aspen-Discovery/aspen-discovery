@@ -3283,6 +3283,7 @@ AspenDiscovery.Admin = (function () {
 							response.forEach(function (entry) {
 								var key = entry.key;
 								var municipalityType = getMunicipalityTypeFromKey(key);
+								var municipalityName = key.slice(2, -1);
 
 								if (municipalityType === null) {
 									return; // skip entries that don't end in C, T, or V
@@ -3292,6 +3293,7 @@ AspenDiscovery.Admin = (function () {
 
 								var $newRow = $('#municipalities tbody tr').last();
 
+								$newRow.find('input[name^="municipalities_municipality"]').val(municipalityName);
 								$newRow.find('input[name^="municipalities_ilsMunicipality"]').val(key);
 								$newRow.find('select[name^="municipalities_municipalityType"]').val(municipalityType);
 								$newRow.find('input[name^="municipalities_selfRegAllowed"]').prop('checked', true);

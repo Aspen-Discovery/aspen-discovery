@@ -9,7 +9,7 @@
 			<p class="text-info"><em>{translate text="You were registered for this event by a staff member." isPublicFacing=true}</em></p>
 		{/if}
 		{if $event.registrationAction  == 'registered' || $event.registrationAction  == 'registrationAvailable'}
-			{include file='AspenEvents/customRegistrationForm.tpl' eventSourceId=$event.sourceId isRegistered=$event.registrationAction == 'registered' savedRegistrationFieldValues=$event.savedRegistrationFieldValues savedAttendeeCounts=$event.savedAttendeeCounts}
+			{include file='AspenEvents/customRegistrationForm.tpl' eventSourceId=$event.sourceId userIsRegistered=$event.registrationAction == 'registered' savedRegistrationFieldValues=$event.savedRegistrationFieldValues savedAttendeeCounts=$event.savedAttendeeCounts}
 		{/if}
 		{include file='AspenEvents/registrationToggleButton.tpl' eventSourceId=$event.sourceId registrationAction=$event.registrationAction userWaitingListPosition=$event.userWaitingListPosition}
 	</section>
