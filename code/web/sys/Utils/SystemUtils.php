@@ -186,10 +186,10 @@ class SystemUtils {
 		// fetch google geocode data
 		$curl = new CurlWrapper();
 		$response = $curl->curlGetPage($url);
-		$data = json_decode($response);
+		$data = json_decode($response, true);
 		$curl->close_curl();
 
-		if (isset($data->status) && $data->status == 'OK') {
+		if (isset($data['status']) && $data['status'] === 'OK') {
 			return $data;
 		}
 
