@@ -19,6 +19,18 @@ class BookingService {
 		$booking->insert();
 	}
 
+	public static function filterBookableForPlacement(array $copies): array {
+		require_once ROOT_DIR . '/sys/LibraryLocation/Location.php';
+		$bookable = array_filter($copies, function ($item): bool {
+			if (empty($item['bookable']) || empty($item['isLibraryItem']) || empty($item['locationCode'])) {
+				return false;
+			}
+			$owningLibrary = Location::getLibraryForCode($item['locationCode']);
+			return !empty($owningLibrary) && !empty($owningLibrary->enableBookingPlacement);
+		});
+		return array_values($bookable);
+	}
+
 	/**
 	 * Diff live ILS bookings against Aspen's stored copies, update any that changed,
 	 * delete rows for bookings that no longer exist in Koha, and return a mapped array
