@@ -4,9 +4,7 @@ require_once ROOT_DIR . '/services/API/AbstractAPI.php';
 require_once ROOT_DIR . '/CatalogConnection.php';
 
 class UserAPI extends AbstractAPI {
-
-
-    /**
+	/**
      * Define required OAuth2 scopes for specific API methods
      * @param string $method The API method name
      * @return array Array of required scopes
@@ -1734,16 +1732,7 @@ class UserAPI extends AbstractAPI {
 		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
 			if ($source == 'ils' || $source == null || $source == $library->interLibraryLoanName) {
-				$patronId = $_REQUEST['userId'] ?? $user->id;
-				$patron = $user->getUserReferredTo($patronId);
-				if (!$patron) {
-					return [
-						'success' => false,
-						'title' => 'Error',
-						'message' => 'Sorry, it looks like you don\'t have access to that patron.',
-					];
-				}
-				$result = $patron->renewCheckout($recordId, $itemBarcode);
+				$result = $user->renewCheckout($recordId, $itemBarcode);
 
 				if(isset($result['confirmRenewalFee']) && $result['confirmRenewalFee']) {
 					$action = $result['api']['action'] ?? null;
@@ -1936,22 +1925,13 @@ class UserAPI extends AbstractAPI {
 			global $library;
 			if ($library->showHoldButton) {
 				if ($source == 'ils' || $source == null) {
-					$patronId = $_REQUEST['userId'] ?? $user->id;
-					$patron = $user->getUserReferredTo($patronId);
-					if (!$patron) {
-						return [
-							'success' => false,
-							'title' => 'Error',
-							'message' => 'Sorry, it looks like you don\'t have access to that patron.',
-						];
-					}
 					if (isset($_REQUEST['pickupBranch']) || isset($_REQUEST['campus'])) {
 						if (isset($_REQUEST['pickupBranch'])) {
 							if (empty($_REQUEST['pickupBranch'])) {
 								$location = new Location();
-								$userPickupLocations = $location->getPickupBranches($patron);
+								$userPickupLocations = $location->getPickupBranches($user);
 								foreach ($userPickupLocations as $tmpLocation) {
-									if ($tmpLocation->code == $patron->getPickupLocationCode()) {
+									if ($tmpLocation->code == $user->getPickupLocationCode()) {
 										$pickupBranch = $tmpLocation->code;
 										break;
 									}
@@ -1962,7 +1942,7 @@ class UserAPI extends AbstractAPI {
 						} else {
 							$pickupBranch = trim($_REQUEST['campus']);
 						}
-						$locationValid = $patron->validatePickupBranch($pickupBranch);
+						$locationValid = $user->validatePickupBranch($pickupBranch);
 						if (!$locationValid) {
 							return [
 								'success' => false,
@@ -1973,20 +1953,20 @@ class UserAPI extends AbstractAPI {
 							];
 						}
 					} else {
-						$pickupBranch = $patron->_homeLocationCode;
+						$pickupBranch = $user->_homeLocationCode;
 					}
 
 					if (isset($_REQUEST['rememberHoldPickupLocation']) && $library->allowRememberPickupLocation) {
-						$patron->setRememberHoldPickupLocation($_REQUEST['rememberHoldPickupLocation']);
+						$user->setRememberHoldPickupLocation($_REQUEST['rememberHoldPickupLocation']);
 					}
 
-					if ($library->allowPickupLocationUpdates && $patron->rememberHoldPickupLocation) {
+					if ($library->allowPickupLocationUpdates && $user->rememberHoldPickupLocation) {
 						if (isset($_REQUEST['pickupBranch'])) {
 							$pickupLocation = new Location();
 							$pickupLocation->code = $_REQUEST['pickupBranch'];
 							if ($pickupLocation->find(true)) {
-								if ($pickupLocation->locationId != $patron->pickupLocationId) {
-									$patron->setPickupLocationId($pickupLocation->locationId);
+								if ($pickupLocation->locationId != $user->pickupLocationId) {
+									$user->setPickupLocationId($pickupLocation->locationId);
 								}
 							}
 
@@ -1996,18 +1976,18 @@ class UserAPI extends AbstractAPI {
 								$sublocation->id = $_REQUEST['pickupSublocation'];
 								if ($sublocation->find(true)) {
 									if ($pickupLocation->locationId == $sublocation->locationId) {
-										if ($sublocation->id != $patron->pickupSublocationId) {
-											$patron->setPickupSublocationId($sublocation->id);
+										if ($sublocation->id != $user->pickupSublocationId) {
+											$user->setPickupSublocationId($sublocation->id);
 										}
 									}
 								}
 							}
 						}
 
-						$patron->update();
+						$user->update();
 					}
 
-					$homeLibrary = $patron->getHomeLibrary();
+					$homeLibrary = $user->getHomeLibrary();
 
 					if (!empty($_REQUEST['cancelDate'])) {
 						$cancelDate = $_REQUEST['cancelDate'];
@@ -2038,7 +2018,7 @@ class UserAPI extends AbstractAPI {
 
 					$holdType = $_REQUEST['holdType'];
 					if ($holdType == 'item' && isset($_REQUEST['itemId'])) {
-						$result = $patron->placeItemHold($shortId, $_REQUEST['itemId'], $pickupBranch, $cancelDate, $pickupSublocation);
+						$result = $user->placeItemHold($shortId, $_REQUEST['itemId'], $pickupBranch, $cancelDate, $pickupSublocation);
 						$action = $result['api']['action'] ?? null;
 						$responseMessage = strip_tags($result['api']['message']);
 						$responseMessage = trim($responseMessage);
@@ -2054,7 +2034,7 @@ class UserAPI extends AbstractAPI {
 							'needsIllRequest' => $needsIllRequest
 						];
 					} elseif ($holdType == 'volume' && isset($_REQUEST['volumeId'])) {
-						$result = $patron->placeVolumeHold($shortId, $_REQUEST['volumeId'], $pickupBranch, $pickupSublocation);
+						$result = $user->placeVolumeHold($shortId, $_REQUEST['volumeId'], $pickupBranch, $pickupSublocation);
 						$action = $result['api']['action'] ?? null;
 						$responseMessage = strip_tags($result['api']['message']);
 						$responseMessage = trim($responseMessage);
@@ -2084,7 +2064,7 @@ class UserAPI extends AbstractAPI {
 								];
 							}
 						}
-						$result = $patron->placeHold($bibId, $pickupBranch, $cancelDate, $pickupSublocation);
+						$result = $user->placeHold($bibId, $pickupBranch, $cancelDate, $pickupSublocation);
 						$action = $result['api']['action'] ?? null;
 						$responseMessage = strip_tags($result['api']['message']);
 						$responseMessage = trim($responseMessage);
@@ -2750,10 +2730,9 @@ class UserAPI extends AbstractAPI {
 		$user = $this->getUserForApiCall();
 
 		if ($user && !($user instanceof AspenError)) {
-			$patron = $user->getUserReferredTo($user->id);
 			require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 			$driver = new OverDriveDriver();
-			$accessLink = $driver->getDownloadLink($overDriveId, $patron);
+			$accessLink = $driver->getDownloadLink($overDriveId, $user);
 			return [
 				'success' => true,
 				'title' => 'Download Url',
@@ -2809,33 +2788,22 @@ class UserAPI extends AbstractAPI {
 	function updateOverDriveEmail(): array {
 		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
-			$patronId = $_REQUEST['patronId'];
-			$patron = $user->getUserReferredTo($patronId);
-			if ($patron) {
-				if (isset($_REQUEST['overdriveEmail'])) {
-					if ($_REQUEST['overdriveEmail'] != $patron->overdriveEmail) {
-						$patron->overdriveEmail = $_REQUEST['overdriveEmail'];
-						$patron->update();
-					}
+			if (isset($_REQUEST['overdriveEmail'])) {
+				if ($_REQUEST['overdriveEmail'] != $user->overdriveEmail) {
+					$user->overdriveEmail = $_REQUEST['overdriveEmail'];
+					$user->update();
 				}
-				if (isset($_REQUEST['promptForOverdriveEmail'])) {
-					if ($_REQUEST['promptForOverdriveEmail'] == 1 || $_REQUEST['promptForOverdriveEmail'] == 'yes' || $_REQUEST['promptForOverdriveEmail'] == 'on') {
-						$patron->promptForOverdriveEmail = 1;
-					} else {
-						$patron->promptForOverdriveEmail = 0;
-					}
-					$patron->update();
+			}
+			if (isset($_REQUEST['promptForOverdriveEmail'])) {
+				if ($_REQUEST['promptForOverdriveEmail'] == 1 || $_REQUEST['promptForOverdriveEmail'] == 'yes' || $_REQUEST['promptForOverdriveEmail'] == 'on') {
+					$user->promptForOverdriveEmail = 1;
+				} else {
+					$user->promptForOverdriveEmail = 0;
 				}
-
-				return $this->placeOverDriveHold();
-			} else {
-				return [
-					'success' => false,
-					'title' => 'Error',
-					'message' => 'Unable to validate user',
-				];
+				$user->update();
 			}
 
+			return $this->placeOverDriveHold();
 		} else {
 			return [
 				'success' => false,
@@ -2953,13 +2921,11 @@ class UserAPI extends AbstractAPI {
 		$user = $this->getUserForApiCall();
 
 		if ($user && !($user instanceof AspenError)) {
-			$patron = $user->getUserReferredTo($user->id);
-
 			require_once ROOT_DIR . '/RecordDrivers/CloudLibraryRecordDriver.php';
 			require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
 			$driver = new CloudLibraryRecordDriver($id);
 			$cloudLibrary = new CloudLibraryDriver();
-			$accessUrl = $cloudLibrary->getCloudLibraryUrl($patron, $driver);
+			$accessUrl = $cloudLibrary->getCloudLibraryUrl($user, $driver);
 
 			return [
 				'success' => true,
@@ -3302,7 +3268,6 @@ class UserAPI extends AbstractAPI {
 		$user = $this->getUserForApiCall();
 
 		if ($user && !($user instanceof AspenError)) {
-			$patron = $user->getUserReferredTo($user->id);
 			require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
 			$recordDriver = new Axis360RecordDriver($id);
 
@@ -3411,7 +3376,6 @@ class UserAPI extends AbstractAPI {
 		$user = $this->getUserForApiCall();
 
 		if ($user && !($user instanceof AspenError)) {
-			$patron = $user->getUserReferredTo($user->id);
 			require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
 			$recordDriver = new Axis360RecordDriver($id);
 
@@ -3491,10 +3455,9 @@ class UserAPI extends AbstractAPI {
 		$user = $this->getUserForApiCall();
 
 		if ($user && !($user instanceof AspenError)) {
-			$patron = $user->getUserReferredTo($user->id);
 			require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
 			$driver = new Axis360RecordDriver($id);
-			$accessUrl = $driver->getAccessOnlineLinkUrl($patron);
+			$accessUrl = $driver->getAccessOnlineLinkUrl($user);
 			return [
 				'success' => true,
 				'title' => 'Download Url',
@@ -3753,7 +3716,7 @@ class UserAPI extends AbstractAPI {
 	}
 
 	/** @noinspection PhpUnused */
-	function activateAllHolds() {
+	function activateAllHolds() : array {
 		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
 			return $user->thawAllHolds();
@@ -3795,6 +3758,7 @@ class UserAPI extends AbstractAPI {
 		}
 	}
 
+	/** @noinspection PhpUnused */
 	function submitLocalIllRequestEmail() : array {
 		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
@@ -4112,7 +4076,8 @@ class UserAPI extends AbstractAPI {
 		}
 	}
 
-	function getReadingHistorySortOptions() {
+	/** @noinspection PhpUnused */
+	function getReadingHistorySortOptions() : array {
 		return [
 			0 => [
 				'label' => translate([
@@ -4149,7 +4114,8 @@ class UserAPI extends AbstractAPI {
 		];
 	}
 
-	function getPaymentHistory() {
+	/** @noinspection PhpUnused */
+	function getPaymentHistory() : array {
 		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
 			$page = $_REQUEST['page'] ?? 1;
@@ -4185,7 +4151,8 @@ class UserAPI extends AbstractAPI {
 		}
 	}
 
-	function getPaymentDetails($paymentId = null) {
+	/** @noinspection PhpUnused */
+	function getPaymentDetails($paymentId = null) : array {
 		$result = [
 			'success' => false,
 			'message' => translate(['text'=>'Login unsuccessful','isPublicFacing'=>true,'inAttribute'=>$this->checkIfLiDA()]),
@@ -4945,25 +4912,31 @@ class UserAPI extends AbstractAPI {
 			if ($composerActive) {
 				$oauthUser = OAuth2Middleware::getAuthenticatedUser();
 				if ($oauthUser) {
-					if (empty($_REQUEST['language'])) {
-						global $activeLanguage;
-						global $translator;
-						$userLanguage = new Language();
-						$userLanguage->code = $oauthUser->interfaceLanguage;
-						if ($userLanguage->find(true)) {
-							if ($userLanguage->code != $activeLanguage->code) {
-								$activeLanguage = $userLanguage;
-								$translator = new Translator('lang', $userLanguage->code);
-							}
-						}
-					}
+					$this->setupTranslatorForUser($oauthUser);
 					return $oauthUser;
 				}
 			}
 			$user = false;
 
 			if ($this->checkIfLiDA()) {
-				return parent::getUserForApiCall();
+				$user = parent::getUserForApiCall();
+				//Check to see if we should be working with a linked account
+				if ($user !== false && !empty($_REQUEST['userId'])) {
+					$patronId = $_REQUEST['userId'];
+					$user = $user->getUserReferredTo($patronId);
+					if ($user === false) {
+						echo json_encode([
+							'success' => false,
+							'title' => 'Error',
+							'message' => 'Sorry, it looks like you don\'t have access to that patron.',
+						]);
+						die();
+					}
+				}
+				if ($user) {
+					$this->setupTranslatorForUser($user);
+				}
+				return $user;
 			}
 
 			if (isset($_REQUEST['patronId'])) {
@@ -4973,42 +4946,50 @@ class UserAPI extends AbstractAPI {
 				if (!$user->find(true)) {
 					$user = false;
 				}
-			} elseif (isset($_REQUEST['userId'])) {
-				$user = new User();
-				$user->id = $_REQUEST['userId'];
-				if (!$user->find(true)) {
-					$user = false;
-				}
-			} elseif (isset($_REQUEST['id']) && is_numeric($_REQUEST['id']) && $_REQUEST['id'] != 0) {
-				$user = new User();
-				$user->id = $_REQUEST['id'];
-				if (!$user->find(true)) {
-					$user = false;
-				}
 			}
 			if ($user === false) {
 				[
 					$username,
 					$password,
 				] = $this->loadUsernameAndPassword();
-				$user = UserAccount::validateAccount($username, $password);
+				if (!empty($username) || !empty($password)) {
+					$user = UserAccount::validateAccount($username, $password);
+					if ($user !== false && !empty($_REQUEST['userId'])) {
+						$patronId = $_REQUEST['userId'];
+						$user = $user->getUserReferredTo($patronId);
+						if ($user === false) {
+							echo json_encode([
+								'success' => false,
+								'title' => 'Error',
+								'message' => 'Sorry, it looks like you don\'t have access to that patron.',
+							]);
+							die();
+						}
+					}
+				}else{
+					if (isset($_REQUEST['userId'])) {
+						$user = new User();
+						$user->id = $_REQUEST['userId'];
+						if (!$user->find(true)) {
+							$user = false;
+						}
+					} elseif (isset($_REQUEST['id']) && is_numeric($_REQUEST['id']) && $_REQUEST['id'] != 0) {
+						$user = new User();
+						$user->id = $_REQUEST['id'];
+						if (!$user->find(true)) {
+							$user = false;
+						}
+					}
+				}
+
 			}
+			//Do not allow APIs to work with admin users
 			if ($user !== false && $user->source == 'admin') {
 				return false;
 			}
 			//Set translations up based on the active user's desired language
-			if (empty($_REQUEST['language']) && $user !== false) {
-				global $activeLanguage;
-				global $translator;
-				require_once ROOT_DIR . '/sys/Translation/Language.php';
-				$userLanguage = new Language();
-				$userLanguage->code = $user->interfaceLanguage;
-				if ($userLanguage->find(true)) {
-					if ($userLanguage->code != $activeLanguage->code) {
-						$activeLanguage = $userLanguage;
-						$translator = new Translator('lang', $userLanguage->code);
-					}
-				}
+			if ($user) {
+				$this->setupTranslatorForUser($user);
 			}
 			return $user;
 		}
@@ -5533,7 +5514,7 @@ class UserAPI extends AbstractAPI {
 							'isPublicFacing' => true,
 						]),
 						'message' => translate([
-							'text' => 'Sorry, we could save your notification preferences at this time.',
+							'text' => 'Sorry, we could not save your notification token at this time.',
 							'isPublicFacing' => true,
 						]),
 					];
@@ -5578,7 +5559,7 @@ class UserAPI extends AbstractAPI {
 							'isPublicFacing' => true,
 						]),
 						'message' => translate([
-							'text' => 'Sorry, we could save your notification preferences at this time.',
+							'text' => 'Sorry, we could not delete your notification token at this time.',
 							'isPublicFacing' => true,
 						]),
 					];
@@ -5738,7 +5719,7 @@ class UserAPI extends AbstractAPI {
 							'isPublicFacing' => true,
 						]),
 						'message' => translate([
-							'text' => 'Sorry, we could save your notification preferences at this time.',
+							'text' => 'Sorry, we could not save your notification preferences at this time.',
 							'isPublicFacing' => true,
 						]),
 					];
@@ -6157,15 +6138,6 @@ class UserAPI extends AbstractAPI {
 			$user = $this->getUserForApiCall($patronBarcode, $patronPassword);
 		}
 		if ($user && !($user instanceof AspenError)) {
-			$patronId = $_REQUEST['userId'] ?? $user->id;
-			$patron = $user->getUserReferredTo($patronId);
-			if (!$patron) {
-				return [
-					'success' => false,
-					'title' => 'Error',
-					'message' => 'Sorry, it looks like you don\'t have access to that patron.',
-				];
-			}
 			if ($itemBarcode == null) {
 				if (!empty($_REQUEST['barcode'])) {
 					$itemBarcode = $_REQUEST['barcode'];
@@ -6197,7 +6169,7 @@ class UserAPI extends AbstractAPI {
 					$scoSettings->id = $location->lidaSelfCheckSettingId;
 					if($scoSettings->find(true)) {
 						if($scoSettings->isEnabled) {
-							$result = $patron->checkoutItem($itemBarcode, $location);
+							$result = $user->checkoutItem($itemBarcode, $location);
 							return [
 								'success' => $result['success'],
 								'title' => $result['api']['title'],
