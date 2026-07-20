@@ -2755,7 +2755,8 @@ class Record_AJAX extends JSON_Action {
 			return $this->failureResult('Unable to place booking', 'Bookings are not supported for this record.');
 		}
 
-		$bookableItems = array_filter($marcRecord->getCopies(), fn($item) => !empty($item['bookable']) && !empty($item['isLibraryItem']));
+		require_once ROOT_DIR . '/services/BookingService.php';
+		$bookableItems = BookingService::filterBookableForPlacement($marcRecord->getCopies());
 		if (empty($bookableItems)) {
 			return $this->failureResult('Unable to place booking', 'No bookable items found for this record.');
 		}
