@@ -2892,6 +2892,15 @@ class Location extends DataObject {
 		return $this->_parentLibrary;
 	}
 
+	static function getLibraryForCode(string $code): ?Library {
+		$location = new Location();
+		$location->code = $code;
+		if (!$location->find(true)) {
+			return null;
+		}
+		return $location->getParentLibrary();
+	}
+
 	static $_locationList = [];
 	/**
 	 * @param boolean $restrictByHomeLibrary whether only locations for the patron's home library should be returned
