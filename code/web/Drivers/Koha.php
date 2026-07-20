@@ -9763,7 +9763,28 @@ class Koha extends AbstractIlsDriver {
 		return !empty($library) && $library->enableBookingDisplay;
 	}
 
+	private function getOwningLibraryForItem(int $itemId): ?Library {
+		$this->initDatabaseConnection();
+		$row = mysqli_fetch_assoc(mysqli_query($this->dbConnection,
+			"SELECT homebranch FROM items WHERE itemnumber = $itemId LIMIT 1"
+		));
+		if (!$row || empty($row['homebranch'])) {
+			return null;
+		}
+		require_once ROOT_DIR . '/sys/LibraryLocation/Location.php';
+		return Location::getLibraryForCode(strtolower($row['homebranch']));
+	}
+
 	public function placeBooking(User $patron, string $itemId, string $recordId, string $startDate, string $endDate, ?string $pickupBranch, ?string $notes): array {
+		$owningLibrary = $this->getOwningLibraryForItem((int)$itemId);
+		if (empty($owningLibrary) || !$owningLibrary->enableBookingPlacement) {
+			return [
+				'success' => false,
+				'title'   => translate(['text' => 'Unable to place booking', 'isPublicFacing' => true]),
+				'message' => translate(['text' => 'Booking placement is not enabled for the library that owns this item.', 'isPublicFacing' => true]),
+			];
+		}
+
 		$windowError = $this->enforceMaxBookingPeriod((int)$itemId, $patron, $startDate, $endDate);
 		if ($windowError !== null) {
 			return [
