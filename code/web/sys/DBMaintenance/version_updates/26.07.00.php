@@ -66,7 +66,7 @@ function getUpdates26_07_00(): array {
 					`selfRegistrationFormId` int(11) NOT NULL,
 					`countyCode` varchar(255) default '' NOT NULL,
 					`countyName` varchar(255) default '' NOT NULL,
-    				UNIQUE (countyCode)
+					UNIQUE (countyCode)
 				) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;"
 			]
 		], //symphony_county_codes

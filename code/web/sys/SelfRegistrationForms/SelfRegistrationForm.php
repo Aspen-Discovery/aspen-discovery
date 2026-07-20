@@ -302,6 +302,8 @@ class SelfRegistrationForm extends DataObject {
 			} else {
 				$municipalities->whereAdd("LEFT(municipality, 7) = " . $municipalities->escape(substr($name, 0, 7))); //ILS imported values only go up to 7 char
 			}
+		} else {
+			$municipalities->whereAdd("LEFT(municipality, 7) = " . $municipalities->escape(substr($name, 0, 7))); //ILS imported values only go up to 7 char
 		}
 
 		if ($type) {
