@@ -256,6 +256,7 @@ class Events_AttendanceManagement extends Admin_Admin {
 		$output = fopen('php://output', 'w');
 
 		$headers = [
+			'Event instance id',
 			'Event date',
 			'Event title',
 			'Event start time',
@@ -290,6 +291,7 @@ class Events_AttendanceManagement extends Admin_Admin {
 				continue;
 			}
 			$row = array_merge([
+					$eventInstance->id,
 					$eventInstance->date,
 					$parentEvent->title,
 					$eventInstance->time,
