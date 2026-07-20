@@ -296,14 +296,14 @@ class SelfRegistrationForm extends DataObject {
 
 		if ($county !== null) {
 			$countyCode = new SymphonySelfRegistrationCountyCodeValues();
-			$countyCode->countyName = $county;
-			if ($countyCode->find(true)) {
-				$municipalities->whereAdd("LEFT(ilsMunicipality, 9) = " . $municipalities->escape(substr($countyCode->countyCode . $name, 0, 9)));
+			$countyCode->whereAdd("UPPER(TRIM(countyName)) = " . $countyCode->escape(strtoupper(trim($county))));
+			if ($countyCode->find(true) && strlen($countyCode->countyCode) == 2) {
+				$municipalities->whereAdd("UPPER(LEFT(ilsMunicipality, 9)) = " . $municipalities->escape(strtoupper(substr($countyCode->countyCode . $name, 0, 9))));
 			} else {
-				$municipalities->whereAdd("LEFT(municipality, 7) = " . $municipalities->escape(substr($name, 0, 7))); //ILS imported values only go up to 7 char
+				$municipalities->whereAdd("UPPER(LEFT(municipality, 7)) = " . $municipalities->escape(strtoupper(substr($name, 0, 7)))); //ILS imported values only go up to 7 char
 			}
 		} else {
-			$municipalities->whereAdd("LEFT(municipality, 7) = " . $municipalities->escape(substr($name, 0, 7))); //ILS imported values only go up to 7 char
+			$municipalities->whereAdd("UPPER(LEFT(municipality, 7)) = " . $municipalities->escape(strtoupper(substr($name, 0, 7)))); //ILS imported values only go up to 7 char
 		}
 
 		if ($type) {
