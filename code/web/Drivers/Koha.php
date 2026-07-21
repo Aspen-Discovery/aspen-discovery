@@ -10121,7 +10121,15 @@ class Koha extends AbstractIlsDriver {
 		}
 
 		require_once ROOT_DIR . '/services/BookingService.php';
-		return BookingService::syncAndMapBookings($patron, $response['content']);
+		$bookings = BookingService::syncAndMapBookings($patron, $response['content']);
+		$owningLibraries = $this->getOwningLibrariesForItems(array_column($bookings, 'itemId'));
+		foreach ($bookings as &$booking) {
+			$owningLibrary = $owningLibraries[(int)$booking['itemId']] ?? null;
+			$booking['canUpdate'] = !empty($owningLibrary) && !empty($owningLibrary->enableBookingUpdates);
+			$booking['canCancel'] = !empty($owningLibrary) && !empty($owningLibrary->enableBookingCancellations);
+		}
+		unset($booking);
+		return $bookings;
 	}
 
 	private function isDisplayAddHoldGroupsEnabledInKoha(): bool {

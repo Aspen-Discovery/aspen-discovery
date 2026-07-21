@@ -80,13 +80,17 @@
 				</div>
 
 				{* Actions column *}
-				{if $section == 'active'}
+				{if $section == 'active' && ($record.canUpdate || $record.canCancel)}
 					<div class="col-xs-9 col-sm-8 col-md-4 col-lg-3">
 						<div class="btn-group btn-group-vertical btn-block">
-							<button onclick="return AspenDiscovery.Account.updateBookingForm('{$record.userId|escape}', '{$record.id|escape}');"
-									class="btn btn-sm btn-default btn-wrap">{translate text="Update Booking" isPublicFacing=true}</button>
-							<button onclick="return AspenDiscovery.Account.confirmCancelBooking('{$record.userId|escape}', '{$record.id|escape}');"
-									class="btn btn-sm btn-warning btn-wrap cancelButton">{translate text="Cancel Booking" isPublicFacing=true}</button>
+							{if $record.canUpdate}
+								<button onclick="return AspenDiscovery.Account.updateBookingForm('{$record.userId|escape}', '{$record.id|escape}');"
+										class="btn btn-sm btn-default btn-wrap">{translate text="Update Booking" isPublicFacing=true}</button>
+							{/if}
+							{if $record.canCancel}
+								<button onclick="return AspenDiscovery.Account.confirmCancelBooking('{$record.userId|escape}', '{$record.id|escape}');"
+										class="btn btn-sm btn-warning btn-wrap cancelButton">{translate text="Cancel Booking" isPublicFacing=true}</button>
+							{/if}
 						</div>
 					</div>
 				{/if}
