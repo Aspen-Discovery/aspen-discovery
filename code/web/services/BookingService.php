@@ -66,6 +66,44 @@ class BookingService {
 		return $bookings;
 	}
 
+	/**
+	 * Merge each live ILS booking with its locally stored metadata (notes, creation
+	 * time, patron-placed original values) and the record's display fields, and flag
+	 * whether the booking has already elapsed. Consumed by both the web account view
+	 * and the API.
+	 */
+	public static function enrichBookings(User $patron, array $liveBookings): array {
+		require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+		$storedById = self::loadStoredBookingsById($patron);
+		$today = date('Y-m-d');
+		$enriched = [];
+
+		foreach ($liveBookings as $booking) {
+			$stored = $storedById[$booking['id']] ?? null;
+			$booking['userId']                  = $patron->id;
+			$booking['notes']                   = $stored->ils_notes ?? null;
+			$booking['createdAt']               = $stored->createdAt ?? null;
+			$booking['originalStartDate']       = $stored->ils_start_date ?? null;
+			$booking['originalEndDate']         = $stored->ils_end_date ?? null;
+			$booking['originalPickupLibraryId'] = $stored->ils_pickup_library_id ?? null;
+
+			$driver = new MarcRecordDriver($patron->source . ':' . $booking['recordId']);
+			if ($driver->isValid()) {
+				$booking['title']    = $driver->getTitle();
+				$booking['author']   = $driver->getPrimaryAuthor();
+				$booking['coverUrl'] = $driver->getBookcoverUrl('medium', true);
+				$booking['linkUrl']  = $driver->getLinkUrl();
+			}
+
+			$booking['isPast'] = in_array($booking['status'], ['fulfilled', 'cancelled'], true)
+				|| (!empty($booking['endDate']) && $booking['endDate'] < $today);
+
+			$enriched[] = $booking;
+		}
+
+		return $enriched;
+	}
+
 	public static function deleteStoredBooking(User $patron, int $bookingId): void {
 		$booking = new Booking();
 		$booking->userId = $patron->id;

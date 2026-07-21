@@ -3754,47 +3754,10 @@ class UserAPI extends AbstractAPI {
 		$user = $this->requireBookingsApiUser(true);
 		if (is_array($user)) return $user;
 
-		require_once ROOT_DIR . '/sys/User/Booking.php';
-		require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
-
-		$storedBooking = new Booking();
-		$storedBooking->userId = $user->id;
-		$storedBooking->find();
-		$storedById = [];
-		while ($storedBooking->fetch()) {
-			$storedById[$storedBooking->ils_booking_id] = clone $storedBooking;
-		}
-
-		$liveBookings = $user->getBookings();
-		$today = date('Y-m-d');
-		$bookings = [];
-
-		foreach ($liveBookings as $booking) {
-			$booking['userId'] = $user->id;
-			$stored = $storedById[$booking['id']] ?? null;
-			$booking['notes'] = $stored->ils_notes ?? null;
-			$booking['createdAt'] = $stored->createdAt ?? null;
-			$booking['originalStartDate'] = $stored->ils_start_date ?? null;
-			$booking['originalEndDate'] = $stored->ils_end_date ?? null;
-			$booking['originalPickupLibraryId'] = $stored->ils_pickup_library_id ?? null;
-
-			$driver = new MarcRecordDriver($user->source . ':' . $booking['recordId']);
-			if ($driver->isValid()) {
-				$booking['title'] = $driver->getTitle();
-				$booking['author'] = $driver->getPrimaryAuthor();
-				$booking['coverUrl'] = $driver->getBookcoverUrl('medium', true);
-				$booking['linkUrl'] = $driver->getLinkUrl();
-			}
-
-			$booking['isPast'] = in_array($booking['status'], ['fulfilled', 'cancelled'], true)
-				|| (!empty($booking['endDate']) && $booking['endDate'] < $today);
-
-			$bookings[] = $booking;
-		}
-
+		require_once ROOT_DIR . '/services/BookingService.php';
 		return [
 			'success' => true,
-			'bookings' => $bookings,
+			'bookings' => BookingService::enrichBookings($user, $user->getBookings()),
 		];
 	}
 
