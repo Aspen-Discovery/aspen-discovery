@@ -9835,59 +9835,53 @@ class Koha extends AbstractIlsDriver {
 
 
 	public function cancelBooking(User $patron, int $bookingId): array {
-		$extraHeaders = ['Accept-Encoding: gzip, deflate', 'x-koha-library: ' . $patron->getHomeLocationCode()];
-		$response = $this->kohaApiUserAgent->delete("/api/v1/bookings/$bookingId", 'koha.cancelBooking', [], $extraHeaders);
+		$denied = $this->denyIfActionDisabled($this->getItemIdForBooking($bookingId), 'enableBookingCancellations', 'Booking cancellation is not enabled for the library that owns this item.');
+		if ($denied) {
+			return $denied;
+		}
+
+		$response = $this->kohaApiUserAgent->delete("/api/v1/bookings/$bookingId", 'koha.cancelBooking', [], $this->getBookingApiHeaders($patron));
 
 		if ($response && $response['code'] === 204) {
 			require_once ROOT_DIR . '/services/BookingService.php';
 			BookingService::deleteStoredBooking($patron, $bookingId);
-			return [
-				'success' => true,
-				'message' => translate(['text' => 'Your booking has been cancelled.', 'isPublicFacing' => true]),
-			];
+			return ['success' => true, 'message' => translate(['text' => 'Your booking has been cancelled.', 'isPublicFacing' => true])];
 		}
 
-		return [
-			'success' => false,
-			'message' => translate(['text' => 'Unable to cancel your booking.', 'isPublicFacing' => true]),
-		];
+		return ['success' => false, 'message' => translate(['text' => 'Unable to cancel your booking.', 'isPublicFacing' => true])];
 	}
 
 	public function updateBooking(User $patron, int $bookingId, string $startDate, string $endDate, ?string $pickupBranch): array {
-		$this->initDatabaseConnection();
-		$bookingRow = mysqli_fetch_assoc(mysqli_query($this->dbConnection,
-			"SELECT item_id FROM bookings WHERE booking_id = " . (int)$bookingId . " LIMIT 1"
-		));
-		if ($bookingRow && !empty($bookingRow['item_id'])) {
-			$windowError = $this->enforceMaxBookingPeriod((int)$bookingRow['item_id'], $patron, $startDate, $endDate);
-			if ($windowError !== null) {
-				return [
-					'success' => false,
-					'message' => $windowError,
-				];
-			}
+		$itemId = $this->getItemIdForBooking($bookingId);
+		$denied = $this->denyIfActionDisabled($itemId, 'enableBookingUpdates', 'Booking updates are not enabled for the library that owns this item.');
+		if ($denied) {
+			return $denied;
 		}
 
-		$params = ['start_date' => DateUtils::formatStartOfDayUtc($startDate), 'end_date' => DateUtils::formatStartOfDayUtc($endDate)];
+		$startDateUtc = DateUtils::formatStartOfDayUtc($startDate);
+		$endDateUtc = DateUtils::formatStartOfDayUtc($endDate);
+		if ($startDateUtc === false || $endDateUtc === false) {
+			return ['success' => false, 'message' => translate(['text' => 'Invalid booking dates.', 'isPublicFacing' => true])];
+		}
+
+		$windowError = $this->enforceMaxBookingPeriod($itemId, $patron, $startDate, $endDate);
+		if ($windowError !== null) {
+			return ['success' => false, 'message' => $windowError];
+		}
+
+		$params = ['start_date' => $startDateUtc, 'end_date' => $endDateUtc];
 		if ($pickupBranch !== null) {
 			$params['pickup_library_id'] = $pickupBranch;
 		}
-		$extraHeaders = ['Accept-Encoding: gzip, deflate', 'x-koha-library: ' . $patron->getHomeLocationCode()];
-		$response = $this->kohaApiUserAgent->patch("/api/v1/bookings/$bookingId", $params, 'koha.updateBooking', [], $extraHeaders);
+		$response = $this->kohaApiUserAgent->patch("/api/v1/bookings/$bookingId", $params, 'koha.updateBooking', [], $this->getBookingApiHeaders($patron));
 
 		if ($response && $response['code'] === 200) {
 			require_once ROOT_DIR . '/services/BookingService.php';
 			BookingService::updateStoredBooking($patron, $bookingId, $startDate, $endDate, $pickupBranch);
-			return [
-				'success' => true,
-				'message' => translate(['text' => 'Your booking has been updated.', 'isPublicFacing' => true]),
-			];
+			return ['success' => true, 'message' => translate(['text' => 'Your booking has been updated.', 'isPublicFacing' => true])];
 		}
 
-		return [
-			'success' => false,
-			'message' => translate(['text' => 'Unable to update your booking.', 'isPublicFacing' => true]),
-		];
+		return ['success' => false, 'message' => translate(['text' => 'Unable to update your booking.', 'isPublicFacing' => true])];
 	}
 
 	private function getItemIdForBooking(int $bookingId): ?int {
