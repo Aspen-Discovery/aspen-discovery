@@ -18379,12 +18379,7 @@ AspenDiscovery.WebBuilder = function () {
 
 				const openResource = () => {
 					if (openInNewTab) {
-						const newTab = window.open("", '_blank');
-						if (newTab == null) {
-							location.assign(resourceUrl);
-						} else {
-							newTab.location.href = resourceUrl;
-						}
+						window.open(resourceUrl, '_blank');
 					} else {
 						location.assign(resourceUrl);
 					}
@@ -18408,7 +18403,11 @@ AspenDiscovery.WebBuilder = function () {
 					} else if (Globals.loggedIn && !canView) {
 						AspenDiscovery.showMessage(userNoAccessTitle, userNoAccessMessage);
 					} else {
-						AspenDiscovery.Account.ajaxLogin(null, () => AspenDiscovery.WebBuilder.getWebResource(id, fromPlacard), true);
+						if (openInNewTab) {
+							AspenDiscovery.Account.ajaxLogin(null, () => AspenDiscovery.WebBuilder.promptContinueToResource(id, fromPlacard), false);
+						} else {
+							AspenDiscovery.Account.ajaxLogin(null, () => AspenDiscovery.WebBuilder.getWebResourceAfterLogin(id, fromPlacard), true);
+						}
 					}
 				} else {
 					trackUsage("none");
@@ -18416,6 +18415,39 @@ AspenDiscovery.WebBuilder = function () {
 			}).fail(AspenDiscovery.ajaxFail);
 
 			return false;
+		},
+
+		promptContinueToResource(id, fromPlacard = false) {
+			const message = `<p>You're logged in. Click below to continue to your resource.</p><button type="button" class="btn btn-primary" id="continueToResourceBtn">Continue</button>`;
+
+			AspenDiscovery.showMessage("Continue", message);
+
+			$('#continueToResourceBtn').off('click').on('click', () => {
+				setTimeout("AspenDiscovery.closeLightbox();", 3000);
+				AspenDiscovery.WebBuilder.getWebResourceAfterLogin(id, fromPlacard);
+			});
+		},
+
+		getWebResourceAfterLogin(id, fromPlacard = false) {
+			const url = `${Globals.path}/WebBuilder/AJAX`;
+			const params = { method: "getWebResource", resourceId: id };
+
+			$.getJSON(url, params, (data) => {
+				const { openInNewTab, url: resourceUrl } = data;
+
+				const trackParams = { method: "trackWebResourceUsage", id, authType: "user" };
+				if (fromPlacard) trackParams.fromPlacard = 1;
+
+				$.getJSON(url, trackParams, () => {
+					if (openInNewTab) {
+						window.open(resourceUrl, '_blank');
+					} else {
+						location.assign(resourceUrl);
+					}
+				});
+			}).fail(() => {
+				AspenDiscovery.ajaxFail();
+			});
 		},
 
 		placardClickHandler: function(placardId) {
