@@ -2829,16 +2829,6 @@ AspenDiscovery.Account = (function () {
 					}
 				});
 			}
-			if (Globals.hasInterlibraryLoanConnection) {
-				var interlibraryLoanUrl = Globals.path + "/MyAccount/AJAX?method=getMenuDataInterlibraryLoan&activeModule=" + Globals.activeModule + '&activeAction=' + Globals.activeAction;
-				$.getJSON(interlibraryLoanUrl, function (data) {
-					if (data.success) {
-						$(".interlibrary-loan-requests-placeholder").html(data.summary.numHolds);
-						totalHolds += parseInt(data.summary.numHolds);
-						$(".holds-placeholder").html(totalHolds);
-					}
-				});
-			}
 			var campaignsUrl = Globals.path + "/MyAccount/AJAX?method=getEnrolledCampaigns&activeModule=" + Globals.activeModule + '&activeAction=' + Globals.activeAction;
 			$.getJSON(campaignsUrl, function (data) {
 				if (data.success) {
@@ -3354,32 +3344,6 @@ AspenDiscovery.Account = (function () {
 			}
 
 			return false
-		},
-
-		cancelVdxRequest: function (patronId, requestId, cancelId) {
-			if (confirm(__('Are you sure you want to cancel this request?'))) {
-				var ajaxUrl = Globals.path + "/MyAccount/AJAX?method=cancelVdxRequest&patronId=" + patronId + "&requestId=" + requestId + "&cancelId=" + cancelId;
-				$.ajax({
-					url: ajaxUrl,
-					cache: false,
-					success: function (data) {
-						if (data.success) {
-							AspenDiscovery.showMessage("Request Cancelled", data.message, true);
-							//remove the row from the holds list
-							$("#vdxHold_" + requestId + "_" + cancelId).hide();
-							AspenDiscovery.Account.loadMenuData();
-						} else {
-							AspenDiscovery.showMessage("Error Cancelling Request", data.message, false);
-						}
-					},
-					dataType: 'json',
-					async: false,
-					error: function () {
-						AspenDiscovery.showMessage("Error Cancelling Request", "An error occurred processing your request.  Please try again in a few minutes.", false);
-					}
-				});
-			}
-			return false;
 		},
 
 		changeAccountSort: function (newSort, sortParameterName) {
@@ -9175,6 +9139,7 @@ AspenDiscovery.Admin = (function () {
 							response.forEach(function (entry) {
 								var key = entry.key;
 								var municipalityType = getMunicipalityTypeFromKey(key);
+								var municipalityName = key.slice(2, -1);
 
 								if (municipalityType === null) {
 									return; // skip entries that don't end in C, T, or V
@@ -9184,6 +9149,7 @@ AspenDiscovery.Admin = (function () {
 
 								var $newRow = $('#municipalities tbody tr').last();
 
+								$newRow.find('input[name^="municipalities_municipality"]').val(municipalityName);
 								$newRow.find('input[name^="municipalities_ilsMunicipality"]').val(key);
 								$newRow.find('select[name^="municipalities_municipalityType"]').val(municipalityType);
 								$newRow.find('input[name^="municipalities_selfRegAllowed"]').prop('checked', true);
@@ -15856,59 +15822,6 @@ AspenDiscovery.Record = (function () {
 			return false;
 		},
 
-		showVdxRequest: function (module, source, id) {
-			if (Globals.loggedIn) {
-				document.body.style.cursor = "wait";
-				var url = Globals.path + "/" + module + "/" + id + "/AJAX?method=getVdxRequestForm&recordSource=" + source;
-				$.getJSON(url, function (data) {
-					document.body.style.cursor = "default";
-					if (data.success) {
-						AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
-					} else {
-						AspenDiscovery.showMessage(data.title, data.message);
-					}
-				}).fail(AspenDiscovery.ajaxFail);
-			} else {
-				AspenDiscovery.Account.ajaxLogin(null, function () {
-					AspenDiscovery.Record.showVdxRequest(module, source, id);
-				}, false);
-			}
-			return false;
-		},
-
-		submitVdxRequest: function (module, id) {
-			if (Globals.loggedIn) {
-				document.body.style.cursor = "wait";
-				var params = {
-					'method': 'submitVdxRequest',
-					title: $('#title').val(),
-					author: $('#author').val(),
-					publisher: $('#publisher').val(),
-					isbn: $('#isbn').val(),
-					oclcNumber: $('#oclcNumber').val(),
-					maximumFeeAmount: $('#maximumFeeAmount').val(),
-					acceptFee: $('#acceptFee').prop('checked'),
-					pickupLocation: $('#pickupLocationSelect').val(),
-					catalogKey: $('#catalogKey').val(),
-					note: $('#note').val()
-				};
-				var url = Globals.path + "/" + module + "/" + id + "/AJAX?method=submitVdxRequest";
-				$.getJSON(url, params, function (data) {
-					document.body.style.cursor = "default";
-					if (data.success) {
-						AspenDiscovery.showMessage(data.title, data.message, false, false);
-					} else {
-						AspenDiscovery.showMessage(data.title, data.message, false, false);
-					}
-				}).fail(AspenDiscovery.ajaxFail);
-			} else {
-				AspenDiscovery.Account.ajaxLogin(null, function () {
-					AspenDiscovery.Record.showVdxRequest(module, source, id, volume);
-				}, false);
-			}
-			return false;
-		},
-
 		showLocalIllRequest: function (module, source, id, volume) {
 			if (Globals.loggedIn) {
 				document.body.style.cursor = "wait";
@@ -17549,8 +17462,19 @@ AspenDiscovery.Series = (function(){
 		printAction: function (){
 			window.print();
 			return false;
-		}
+		},
 
+		ungroupSeries(id, groupedWithSeriesId) {
+			var url = Globals.path + "/Series/" + id + "/AJAX?method=ungroupSeries&groupedWithSeriesId=" + groupedWithSeriesId;
+			//AspenDiscovery.closeLightbox();
+			$.getJSON(url, function(data){
+				if (data.success){
+					AspenDiscovery.showMessage("Success", data.message, false, true);
+				}else{
+					AspenDiscovery.showMessage("An error occurred", data.message, false, false);
+				}
+			}).fail(AspenDiscovery.ajaxFail);
+		}
 	};
 }(AspenDiscovery.Series || {}));
 AspenDiscovery.SideLoads = (() => {

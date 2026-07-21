@@ -643,6 +643,12 @@ class AJAX_JSON extends Action {
 				unset($_COOKIE['searchPreferenceLanguage']);
 			}
 		}
+		global $activeLanguage;
+		$selectedLanguage = new Language();
+		$selectedLanguage->code = $language;
+		if ($selectedLanguage->find(true)) {
+			$activeLanguage = $selectedLanguage;
+		}
 
 		$activeThemeId = $interface->getVariable('activeThemeId');
 		if (isset($_REQUEST['preferredTheme'])) {

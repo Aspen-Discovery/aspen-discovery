@@ -2438,22 +2438,7 @@ class Koha extends AbstractIlsDriver {
 				$curHold->status = 'Ready to Pickup';
 				$patronType = $patron->patronType;
 				$itemType = $curRow['itype'];
-				if ($circControl == 'PatronLibrary') {
-					$circBranch = $patron->getHomeLocationCode();
-				} else if ($circControl == 'PickupLibrary') {
-					$circBranch = $curRow['branchcode'];
-					if ($activeLibrary) {
-						$locations = $activeLibrary->getLocations();
-						if (!empty($locations)) {
-							$firstLocation = reset($locations);
-							if ($firstLocation != null && !empty($firstLocation->code)) {
-								$circBranch = $firstLocation->code;
-							}
-						}
-					}
-				} else {
-					$circBranch = $curRow['branchcode'];
-				}
+				$circBranch = $this->getCircControlBranch($patron, $curRow['branchcode']);
 				/** @noinspection SqlResolve */
 				$issuingRulesSql = "SELECT *  FROM circulation_rules where rule_name =  'waiting_hold_cancellation' AND (categorycode IN ('$patronType', '*') OR categorycode IS NULL) and (itemtype IN('$itemType', '*') OR itemtype is null) and (branchcode IN ('$circBranch', '*') OR branchcode IS NULL) order by branchcode desc, categorycode desc, itemtype desc limit 1";
 				$issuingRulesRS = mysqli_query($this->dbConnection, $issuingRulesSql);
@@ -2994,22 +2979,7 @@ class Koha extends AbstractIlsDriver {
 				while ($curRow = mysqli_fetch_assoc($renewResults)) {
 					$patronType = $patron->patronType;
 					$itemType = $curRow['itype'];
-					if ($circControl == 'PatronLibrary') {
-						$circBranch = $patron->getHomeLocationCode();
-					} else if ($circControl == 'PickupLibrary') {
-						$circBranch = $curRow['branchcode'];
-						if ($activeLibrary) {
-							$locations = $activeLibrary->getLocations();
-							if (!empty($locations)) {
-								$firstLocation = reset($locations);
-								if ($firstLocation != null && !empty($firstLocation->code)) {
-									$circBranch = $firstLocation->code;
-								}
-							}
-						}
-					} else {
-						$circBranch = $curRow['branchcode'];
-					}
+					$circBranch = $this->getCircControlBranch($patron, $curRow['branchcode']);
 					$renewCount = $curRow['renewals_count'];
 					/** @noinspection SqlResolve */
 					$issuingRulesSql = "SELECT *  FROM circulation_rules where rule_name =  'renewalsallowed' AND (categorycode IN ('$patronType', '*') OR categorycode IS NULL) and (itemtype IN('$itemType', '*') OR itemtype is null) and (branchcode IN ('$circBranch', '*') OR branchcode IS NULL) order by branchcode desc, categorycode desc, itemtype desc limit 1";

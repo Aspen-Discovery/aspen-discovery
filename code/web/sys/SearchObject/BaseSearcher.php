@@ -52,6 +52,7 @@ abstract class SearchObject_BaseSearcher {
 	protected $resultsAction = 'Results';
 	// Facets information
 	protected $facetConfig;    // Array of valid facet fields=>labels
+	protected $fullFacetConfig;
 	protected $facetOptions = [];
 	// Available sort options
 	protected $sortOptions = [];
@@ -277,6 +278,7 @@ abstract class SearchObject_BaseSearcher {
 		$shortField = $field;
 		$shortField = $this->getUnscopedFieldName($shortField);
 		$facetConfig = $this->getFacetConfig();
+		$fullFacetConfig = $this->getFullFacetConfig();
 		if (isset($facetConfig[$field])) {
 			$facetConfig = $facetConfig[$field];
 			if ($facetConfig instanceof FacetSetting) {
@@ -290,6 +292,13 @@ abstract class SearchObject_BaseSearcher {
 				return $facetConfig->displayName;
 			} else {
 				return $facetConfig;
+			}
+		} elseif (isset($fullFacetConfig[$field])) {
+			$fullFacetConfig = $fullFacetConfig[$field];
+			if ($fullFacetConfig instanceof FacetSetting) {
+				return $fullFacetConfig->displayName;
+			} else {
+				return $fullFacetConfig;
 			}
 		} else {
 			return ucwords(str_replace("_", " ", translate([
@@ -2792,6 +2801,10 @@ abstract class SearchObject_BaseSearcher {
 			$this->facetConfig = [];
 		}
 		return $this->facetConfig;
+	}
+
+	public function getFullFacetConfig() {
+		return $this->fullFacetConfig;
 	}
 
 	abstract function getSearchName();

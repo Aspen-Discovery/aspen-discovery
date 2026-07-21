@@ -1021,7 +1021,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 				}
 			}
 		}
-		if ($useMarcSummary && $this->marcRecord != false) {
+		if ($useMarcSummary && $this->getMarcRecord()) {
 			if ($summaryFields = $this->marcRecord->getFields('520')) {
 				$summaries = [];
 				$summary = '';
@@ -1403,10 +1403,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 							if (count($itemsWithoutVolumes) > 0) {
 								//Check to see if a title level request is possible, and if so show a request or hold button as appropriate
 								if ($itemsWithoutVolumesNeedIllRequest) {
-									if ($interLibraryLoanType == 'vdx') {
-										//VDX does not support volumes, we'll just prompt for a regular VDX
-										$this->_actions[$variationId][] = getVdxRequestAction($this->getModule(), $source, $id);
-									} elseif ($interLibraryLoanType == 'localIll') {
+									if ($interLibraryLoanType == 'localIll') {
 										$this->_actions[$variationId][] = getMultiVolumeRequestAction($this->getModule(), $source, $id, $this, count($itemsWithoutVolumes));
 									}
 								}else{
@@ -1426,10 +1423,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 						ksort($holdableVolumes);
 						foreach ($holdableVolumes as $volumeInfo) {
 							if ($volumeInfo['needsIllRequest']) {
-								if ($interLibraryLoanType == 'vdx') {
-									//VDX does not support volumes, we'll just prompt for a regular VDX
-									$this->_actions[$variationId][] = getVdxRequestAction($this->getModule(), $source, $id);
-								}elseif ($interLibraryLoanType == 'localIll') {
+								if ($interLibraryLoanType == 'localIll') {
 									$this->_actions[$variationId][] = getSpecificVolumeLocalIllRequestAction($this->getModule(), $source, $id, $volumeInfo, $this);
 								}
 							}else{
@@ -1440,9 +1434,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 				}else{
 					//No volumes, just get the proper action based on the interlibrary loan type required
 					if ($treatHoldAsInterLibraryLoanRequest) {
-						if ($interLibraryLoanType == 'vdx') {
-							$this->_actions[$variationId][] = getVdxRequestAction($this->getModule(), $source, $id);
-						} else if ($interLibraryLoanType == 'localIll') {
+						if ($interLibraryLoanType == 'localIll') {
 							$this->_actions[$variationId][] = getLocalIllRequestAction($this->getModule(), $source, $id);
 						}
 					} else {
@@ -1722,13 +1714,15 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 	public function getDuration() {
 		if ($this->_duration == null) {
 			$this->_duration = '';
-			$durationFields = $this->getFields('300', true);
-			foreach ($durationFields as $field) {
-				$info = $this->getSubfieldArray($field, ['a'], true);
-				if (count($info) > 0) {
-					$durationInfo = $info[0];
-					$durationInfo = StringUtils::extractTotalMinutes($durationInfo);
-					$this->_duration = $durationInfo;
+			if (in_array('Audio Books', $this->getGroupedWorkDriver()->getFormatCategories())) {
+				$durationFields = $this->getFields('300', true);
+				foreach ($durationFields as $field) {
+					$info = $this->getSubfieldArray($field, ['a'], true);
+					if (count($info) > 0) {
+						$durationInfo = $info[0];
+						$durationInfo = StringUtils::extractTotalMinutes($durationInfo);
+						$this->_duration = $durationInfo;
+					}
 				}
 			}
 		}
@@ -3470,7 +3464,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 					}
 
 					//Check to see if we have any items that are owned by any of the records in any of the groups.
-					//If we do, we don't need to use VDX
+					//If we do, we don't need to use an ILL system
 					if ($this->oneOrMoreHoldableItemsOwnedByPatronHoldGroups($relatedRecord->getItems(), $holdGroups, $variationId, $homeLocation->code)) {
 						$treatHoldAsInterLibraryLoanRequest = false;
 					}

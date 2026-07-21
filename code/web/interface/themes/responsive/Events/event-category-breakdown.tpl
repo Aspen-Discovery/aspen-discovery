@@ -11,12 +11,12 @@
 		<tr>
 			<td style="padding:2px 8px 0 0; border-top:1px solid #ddd;"><strong>{translate text="Total" isAdminFacing=true}:</strong></td>
 			<td style="padding:2px 0 0 0; text-align:right; border-top:1px solid #ddd;"><strong>{$catTotal}</strong></td>
-			<td style="padding:2px 0 0 0; border-top:1px solid #ddd;">{if $item.numberOfSeats}<strong> / {$item.numberOfSeats}</strong>{/if}</td>
+			<td style="padding:2px 0 0 0; border-top:1px solid #ddd;">{if $numberOfSeats}<strong> / {$numberOfSeats}</strong>{/if}</td>
 		</tr>
 	</table>
 {else}
 	{$item.registrationCount}
-	{if $item.numberOfSeats}
-		/ {$item.numberOfSeats}
+	{if $numberOfSeats}
+		/ {$numberOfSeats}
 	{/if}
 {/if}
