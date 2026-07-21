@@ -9764,16 +9764,23 @@ class Koha extends AbstractIlsDriver {
 		return !empty($library) && $library->enableBookingDisplay;
 	}
 
-	private function getOwningLibraryForItem(int $itemId): ?Library {
-		$this->initDatabaseConnection();
-		$row = mysqli_fetch_assoc(mysqli_query($this->dbConnection,
-			"SELECT homebranch FROM items WHERE itemnumber = $itemId LIMIT 1"
-		));
-		if (!$row || empty($row['homebranch'])) {
-			return null;
+	private function getOwningLibrariesForItems(array $itemIds): array {
+		$itemIds = array_unique(array_filter(array_map('intval', $itemIds)));
+		if (empty($itemIds)) {
+			return [];
 		}
 		require_once ROOT_DIR . '/sys/LibraryLocation/Location.php';
-		return Location::getLibraryForCode(strtolower($row['homebranch']));
+		$this->initDatabaseConnection();
+		$result = mysqli_query($this->dbConnection,
+			'SELECT itemnumber, homebranch FROM items WHERE itemnumber IN (' . implode(',', $itemIds) . ')'
+		);
+		$libraries = [];
+		while ($row = mysqli_fetch_assoc($result)) {
+			$libraries[(int)$row['itemnumber']] = empty($row['homebranch'])
+				? null
+				: Location::getLibraryForCode(strtolower($row['homebranch']));
+		}
+		return $libraries;
 	}
 
 	public function placeBooking(User $patron, string $itemId, string $recordId, string $startDate, string $endDate, ?string $pickupBranch, ?string $notes): array {
@@ -9893,7 +9900,7 @@ class Koha extends AbstractIlsDriver {
 	}
 
 	private function denyIfActionDisabled(?int $itemId, string $flag, string $message): ?array {
-		$owningLibrary = empty($itemId) ? null : $this->getOwningLibraryForItem($itemId);
+		$owningLibrary = empty($itemId) ? null : ($this->getOwningLibrariesForItems([$itemId])[$itemId] ?? null);
 		if (empty($owningLibrary) || empty($owningLibrary->$flag)) {
 			return ['success' => false, 'message' => translate(['text' => $message, 'isPublicFacing' => true])];
 		}
