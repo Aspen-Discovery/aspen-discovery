@@ -39,6 +39,16 @@ function getUpdates26_07_00(): array {
 				"DELETE FROM permissions where name IN ('Administer VDX Settings', 'Administer All VDX Forms', 'Administer Library VDX Forms')",
 			]
 		], //remove_vdx_settings_and_permissions
+		'remove_vdx_settings_and_permissions_2' => [
+			'title' => 'Remove VDX settings and permissions pt 2',
+			'description' => 'Removes additional permssion.',
+			'continueOnError' => true,
+			'sql' => [
+				"DELETE FROM role_permissions where permissionId IN (SELECT id from permissions where name IN ('Administer VDX Forms'))",
+				"DELETE FROM permissions where name IN ('Administer VDX Forms')",
+				"UPDATE permissions set description = 'Allows the user to define Hold Groups with Aspen' WHERE name = 'Administer Hold Groups'",
+			]
+		], //remove_vdx_settings_and_permissions_2
 
 		//kirstien
 
