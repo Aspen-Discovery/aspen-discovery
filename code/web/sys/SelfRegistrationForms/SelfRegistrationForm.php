@@ -301,7 +301,7 @@ class SelfRegistrationForm extends DataObject {
 			$countyCode = new SymphonySelfRegistrationCountyCodeValues();
 			$countyCode->whereAdd("UPPER(REPLACE(countyName, ' ', '')) = " . $countyCode->escape(strtoupper($normalizedCounty)));
 			if ($countyCode->find(true) && strlen($countyCode->countyCode) == 2) {
-				$municipalities->whereAdd("UPPER(LEFT(ilsMunicipality, LENGTH(ilsMunicipality) - 1)) = " . "UPPER(LEFT(" . $municipalities->escape(strtoupper($countyCode->countyCode . $name)) . ", LENGTH(ilsMunicipality) - 1))");
+				$municipalities->whereAdd("UPPER(LEFT(ilsMunicipality, LENGTH(ilsMunicipality) - 1)) = " . "UPPER(LEFT(" . $municipalities->escape(strtoupper($countyCode->countyCode . $normalizedName)) . ", LENGTH(ilsMunicipality) - 1))");
 			} else {
 				$municipalities->whereAdd("UPPER(LEFT(municipality, 7)) = " . $municipalities->escape(strtoupper(substr($normalizedName, 0, 7)))); //ILS imported values only go up to 7 char
 			}
