@@ -9777,30 +9777,29 @@ class Koha extends AbstractIlsDriver {
 	}
 
 	public function placeBooking(User $patron, string $itemId, string $recordId, string $startDate, string $endDate, ?string $pickupBranch, ?string $notes): array {
-		$owningLibrary = $this->getOwningLibraryForItem((int)$itemId);
-		if (empty($owningLibrary) || !$owningLibrary->enableBookingPlacement) {
-			return [
-				'success' => false,
-				'title'   => translate(['text' => 'Unable to place booking', 'isPublicFacing' => true]),
-				'message' => translate(['text' => 'Booking placement is not enabled for the library that owns this item.', 'isPublicFacing' => true]),
-			];
+		$title = translate(['text' => 'Unable to place booking', 'isPublicFacing' => true]);
+		$denied = $this->denyIfActionDisabled((int)$itemId, 'enableBookingPlacement', 'Booking placement is not enabled for the library that owns this item.');
+		if ($denied) {
+			return $denied + ['title' => $title];
+		}
+
+		$startDateUtc = DateUtils::formatStartOfDayUtc($startDate);
+		$endDateUtc = DateUtils::formatStartOfDayUtc($endDate);
+		if ($startDateUtc === false || $endDateUtc === false) {
+			return ['success' => false, 'title' => $title, 'message' => translate(['text' => 'Invalid booking dates.', 'isPublicFacing' => true])];
 		}
 
 		$windowError = $this->enforceMaxBookingPeriod((int)$itemId, $patron, $startDate, $endDate);
 		if ($windowError !== null) {
-			return [
-				'success' => false,
-				'title'   => translate(['text' => 'Unable to place booking', 'isPublicFacing' => true]),
-				'message' => $windowError,
-			];
+			return ['success' => false, 'title' => $title, 'message' => $windowError];
 		}
 
 		$params = [
 			'patron_id'  => (int)$patron->unique_ils_id,
 			'item_id'    => (int)$itemId,
 			'biblio_id'  => (int)$recordId,
-			'start_date' => DateUtils::formatStartOfDayUtc($startDate),
-			'end_date'   => DateUtils::formatStartOfDayUtc($endDate),
+			'start_date' => $startDateUtc,
+			'end_date'   => $endDateUtc,
 		];
 		if ($pickupBranch !== null) {
 			$params['pickup_library_id'] = $pickupBranch;
@@ -9809,8 +9808,7 @@ class Koha extends AbstractIlsDriver {
 			$params['notes'] = $notes;
 		}
 
-		$extraHeaders = ['Accept-Encoding: gzip, deflate', 'x-koha-library: ' . $patron->getHomeLocationCode()];
-		$response = $this->kohaApiUserAgent->post('/api/v1/bookings', $params, 'koha.placeBooking', [], $extraHeaders);
+		$response = $this->kohaApiUserAgent->post('/api/v1/bookings', $params, 'koha.placeBooking', [], $this->getBookingApiHeaders($patron));
 
 		if (!$response || $response['code'] !== 201) {
 			$message = translate([
@@ -9821,11 +9819,7 @@ class Koha extends AbstractIlsDriver {
 			if (!empty($response['content']['error'])) {
 				$message .= ' ' . $response['content']['error'];
 			}
-			return [
-				'success' => false,
-				'title'   => translate(['text' => 'Unable to place booking', 'isPublicFacing' => true]),
-				'message' => $message,
-			];
+			return ['success' => false, 'title' => $title, 'message' => $message];
 		}
 
 		require_once ROOT_DIR . '/services/BookingService.php';
@@ -9894,6 +9888,26 @@ class Koha extends AbstractIlsDriver {
 			'success' => false,
 			'message' => translate(['text' => 'Unable to update your booking.', 'isPublicFacing' => true]),
 		];
+	}
+
+	private function getItemIdForBooking(int $bookingId): ?int {
+		$this->initDatabaseConnection();
+		$row = mysqli_fetch_assoc(mysqli_query($this->dbConnection,
+			"SELECT item_id FROM bookings WHERE booking_id = " . (int)$bookingId . " LIMIT 1"
+		));
+		return empty($row['item_id']) ? null : (int)$row['item_id'];
+	}
+
+	private function denyIfActionDisabled(?int $itemId, string $flag, string $message): ?array {
+		$owningLibrary = empty($itemId) ? null : $this->getOwningLibraryForItem($itemId);
+		if (empty($owningLibrary) || empty($owningLibrary->$flag)) {
+			return ['success' => false, 'message' => translate(['text' => $message, 'isPublicFacing' => true])];
+		}
+		return null;
+	}
+
+	private function getBookingApiHeaders(User $patron): array {
+		return ['Accept-Encoding: gzip, deflate', 'x-koha-library: ' . $patron->getHomeLocationCode()];
 	}
 
 	/**
