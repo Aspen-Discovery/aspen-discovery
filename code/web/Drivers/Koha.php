@@ -5,6 +5,7 @@
 require_once ROOT_DIR . '/Drivers/KohaApiUserAgent.php';
 require_once ROOT_DIR . '/sys/CurlWrapper.php';
 require_once ROOT_DIR . '/Drivers/AbstractIlsDriver.php';
+require_once ROOT_DIR . '/sys/Utils/DateUtils.php';
 
 class Koha extends AbstractIlsDriver {
 	private mysqli|null $dbConnection = null;
@@ -9798,8 +9799,8 @@ class Koha extends AbstractIlsDriver {
 			'patron_id'  => (int)$patron->unique_ils_id,
 			'item_id'    => (int)$itemId,
 			'biblio_id'  => (int)$recordId,
-			'start_date' => $startDate . 'T00:00:00Z',
-			'end_date'   => $endDate . 'T00:00:00Z',
+			'start_date' => DateUtils::formatStartOfDayUtc($startDate),
+			'end_date'   => DateUtils::formatStartOfDayUtc($endDate),
 		];
 		if ($pickupBranch !== null) {
 			$params['pickup_library_id'] = $pickupBranch;
@@ -9873,7 +9874,7 @@ class Koha extends AbstractIlsDriver {
 			}
 		}
 
-		$params = ['start_date' => $startDate . 'T00:00:00Z', 'end_date' => $endDate . 'T00:00:00Z'];
+		$params = ['start_date' => DateUtils::formatStartOfDayUtc($startDate), 'end_date' => DateUtils::formatStartOfDayUtc($endDate)];
 		if ($pickupBranch !== null) {
 			$params['pickup_library_id'] = $pickupBranch;
 		}
