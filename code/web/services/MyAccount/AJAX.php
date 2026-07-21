@@ -4463,41 +4463,10 @@ class MyAccount_AJAX extends JSON_Action {
 		$user = UserAccount::getActiveUserObj();
 		$this->setShowCovers();
 
-		require_once ROOT_DIR . '/sys/User/Booking.php';
-		$storedBooking = new Booking();
-		$storedBooking->userId = $user->id;
-		$storedBooking->find();
-		$storedById = [];
-		while ($storedBooking->fetch()) {
-			$storedById[$storedBooking->ils_booking_id] = clone $storedBooking;
-		}
-
-		$liveBookings = $user->getBookings();
-
-		require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
-		$today = date('Y-m-d');
+		require_once ROOT_DIR . '/services/BookingService.php';
 		$recordList = ['active' => [], 'past' => []];
-
-		foreach ($liveBookings as $booking) {
-			$booking['userId'] = $user->id;
-			$stored = $storedById[$booking['id']] ?? null;
-			$booking['notes']                  = $stored->ils_notes ?? null;
-			$booking['createdAt']              = $stored->createdAt ?? null;
-			$booking['originalStartDate']      = $stored->ils_start_date ?? null;
-			$booking['originalEndDate']        = $stored->ils_end_date ?? null;
-			$booking['originalPickupLibraryId'] = $stored->ils_pickup_library_id ?? null;
-
-			$driver = new MarcRecordDriver($user->source . ':' . $booking['recordId']);
-			if ($driver->isValid()) {
-				$booking['title']    = $driver->getTitle();
-				$booking['coverUrl'] = $driver->getBookcoverUrl('medium', true);
-				$booking['linkUrl']  = $driver->getLinkUrl();
-			}
-
-			$isPast = in_array($booking['status'], ['fulfilled', 'cancelled'], true)
-				|| (!empty($booking['endDate']) && $booking['endDate'] < $today);
-
-			$recordList[$isPast ? 'past' : 'active'][] = $booking;
+		foreach (BookingService::enrichBookings($user, $user->getBookings()) as $booking) {
+			$recordList[$booking['isPast'] ? 'past' : 'active'][] = $booking;
 		}
 
 		$interface->assign('recordList', $recordList);
