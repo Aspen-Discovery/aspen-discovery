@@ -8140,7 +8140,6 @@ AspenDiscovery.Admin = (function () {
 					if (searchRegex.test(permissionSectionLabel)) {
 						curSection.show();
 						permissionsInSection.show();
-						console.log(permissionsInSection)
 					} else {
 						var numVisibleActions = 0;
 						permissionsInSection.each(function () {
@@ -8981,7 +8980,6 @@ AspenDiscovery.Admin = (function () {
 		},
 
 		getBatchUpdateHolidayForm: function (scope){
-			console.log(scope);
 			var url = Globals.path + "/Admin/AJAX?method=getBatchUpdateHolidayForm&scopeLevel=" + scope;
 			AspenDiscovery.Account.ajaxLightbox(url, true);
 		},
@@ -11294,7 +11292,6 @@ AspenDiscovery.Events = (function(){
 		},
 
 		calculateEndTime: function () {
-			console.log("Calculating end time");
 			var startDate = moment($("#startDate").val());
 			var startTime = $("#startTime").val();
 			var length = $("#eventLength").val();
@@ -11686,7 +11683,6 @@ AspenDiscovery.Events = (function(){
 
 			$.getJSON(url, params, function (data) {
 				if (data.success && data.icsFile.length > 0) {
-					console.log(data.icsFile);
 					var filename = eventId + ".ics";
 					var element = document.createElement('a');
 					element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(data.icsFile));
@@ -12494,9 +12490,6 @@ AspenDiscovery.GroupedWork = (function(){
 		},
 
 		loadDescription: function (id, recordType, recordId){
-			console.log("BEGIN");
-			console.log(recordType);
-			console.log(recordId);
 			var url = Globals.path + '/GroupedWork/' + id + '/AJAX',
 				params = {'method':'getDescription'};
 			if (recordType && recordId) {
@@ -14260,7 +14253,6 @@ AspenDiscovery.MaterialsRequest = (function(){
 			var selectedRequests = $("input." + selectName + ":checked").map(function() {
 				return $(this).attr('name') + "=" + $(this).val();
 			}).get().join("&");
-			console.log(selectedRequests);
 			if (selectedRequests.length === 0){
 				if (promptToSelectAll){
 					var ret = confirm(__('You have not selected any requests, process all requests?'));
@@ -16621,8 +16613,6 @@ AspenDiscovery.Record = (function () {
 			$('input[name="hyperholdRecord[]"]:checked').each(function () {
 				selected.push($(this).val());
 			});
-
-			console.log("SELECTED RECORDS:", selected);
 			
 			const pickupBranch = $('#hyperholdPickupBranch').val();
 
