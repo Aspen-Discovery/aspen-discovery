@@ -1,0 +1,22 @@
+.date-range-picker .flatpickr-input {
+	display: none;
+}
+
+.date-range-picker .flatpickr-calendar {
+	width: 100%;
+	box-shadow: none;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+}
+
+.date-range-picker .flatpickr-innerContainer {
+	justify-content: center;
+}
+
+.date-range-picker .flatpickr-day.flatpickr-disabled,
+.date-range-picker .flatpickr-day.flatpickr-disabled:hover {
+	background: #ffe8cc;
+	color: #b35a00;
+	text-decoration: line-through;
+	border-color: transparent;
+}

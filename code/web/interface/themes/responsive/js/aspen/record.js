@@ -895,97 +895,66 @@ AspenDiscovery.Record = (function () {
 			});
 		},
 
-		_bookingFlatpickr: null,
-
 		initBookingForm: function () {
 			const R          = AspenDiscovery.Record;
 			const itemSelect = document.getElementById('booking-item-select');
-			const hiddenItem = document.getElementById('current-item-id');
 
 			if (itemSelect) {
 				itemSelect.addEventListener('change', function () {
-					const startInput = document.getElementById('start-date');
-					const endInput   = document.getElementById('end-date');
-					if (startInput) startInput.value = '';
-					if (endInput)   endInput.value   = '';
-					R.loadItemAvailability(this.value);
+					R.clearBookingDateInputs();
+					R.loadItemBookingAvailability(this.value);
 				});
 			}
 
-			const itemId = itemSelect ? itemSelect.value : (hiddenItem ? hiddenItem.value : null);
-			if (itemId) R.loadItemAvailability(itemId);
+			const itemId = R.getSelectedBookingItemId();
+			if (itemId) R.loadItemBookingAvailability(itemId);
 		},
 
-		loadItemAvailability: function (itemId) {
+		getSelectedBookingItemId: function () {
+			const itemSelect = document.getElementById('booking-item-select');
+			if (itemSelect) return itemSelect.value;
+			const currentItem = document.getElementById('current-item-id');
+			return currentItem ? currentItem.value : null;
+		},
+
+		clearBookingDateInputs: function () {
+			const startInput = document.getElementById('start-date');
+			const endInput   = document.getElementById('end-date');
+			if (startInput) startInput.value = '';
+			if (endInput)   endInput.value   = '';
+		},
+
+		loadItemBookingAvailability: function (itemId) {
 			const R         = AspenDiscovery.Record;
 			const container = document.getElementById('booking-availability');
 			if (!container) return;
 
-			if (R._bookingFlatpickr) {
-				R._bookingFlatpickr.destroy();
-				R._bookingFlatpickr = null;
-			}
 			container.innerHTML = '<span class="text-muted"><em>Loading availability\u2026</em></span>';
 
 			$.getJSON(Globals.path + '/Record/AJAX?method=getItemBookedDates&itemId=' + encodeURIComponent(itemId), function (data) {
-				container.innerHTML = '';
-				R.initBookingCalendar(container, data.success ? data.bookedDates : [], data.success ? data.constraints : null);
+				R.showBookingCalendar(container, data.success ? data.bookedDates : [], data.success ? data.constraints : null);
 			}).fail(function () {
-				container.innerHTML = '';
-				R.initBookingCalendar(container, [], null);
+				R.showBookingCalendar(container, [], null);
 			});
 		},
 
-		initBookingCalendar: function (container, bookedRanges, constraints) {
-			const R          = AspenDiscovery.Record;
-			const startInput = document.getElementById('start-date');
-			const endInput   = document.getElementById('end-date');
-
-			function padTwo(n) { return n < 10 ? '0' + n : '' + n; }
-			function fmtDate(d) { return d.getFullYear() + '-' + padTwo(d.getMonth() + 1) + '-' + padTwo(d.getDate()); }
-
-			const defaultDate = [];
-			if (startInput && startInput.value) defaultDate.push(startInput.value);
-			if (endInput   && endInput.value)   defaultDate.push(endInput.value);
-
+		showBookingCalendar: async function (container, bookedRanges, constraints) {
 			const tomorrow = new Date();
 			tomorrow.setDate(tomorrow.getDate() + 1);
 			tomorrow.setHours(0, 0, 0, 0);
 
-			const maxPeriod  = constraints && constraints.maxPeriod ? parseInt(constraints.maxPeriod) : 0;
-			const absoluteMax = constraints && constraints.maxDate ? new Date(constraints.maxDate + 'T00:00:00') : null;
-
-			const anchor = document.createElement('input');
-			anchor.type  = 'hidden';
-			container.appendChild(anchor);
-
-			R._bookingFlatpickr = flatpickr(anchor, {
-				mode:        'range',
-				inline:      true,
-				dateFormat:  'Y-m-d',
-				minDate:     tomorrow,
-				maxDate:     absoluteMax || undefined,
-				defaultDate: defaultDate.length === 2 ? defaultDate : undefined,
-				disable: [function (date) {
-					const ds = fmtDate(date);
-					return bookedRanges.some(function (r) { return ds >= r.start && ds <= r.end; });
-				}],
-				onChange: function (selectedDates, dateStr, instance) {
-					if (startInput) startInput.value = selectedDates[0] ? fmtDate(selectedDates[0]) : '';
-					if (endInput)   endInput.value   = selectedDates[1] ? fmtDate(selectedDates[1]) : '';
-
-					// While only the start is chosen, cap the selectable end at
-					// min(start + maxPeriod, absoluteMax). Reset to the absolute
-					// ceiling otherwise so the next start isn't stuck.
-					if (selectedDates.length === 1 && maxPeriod > 0) {
-						const limit = new Date(selectedDates[0].getTime());
-						limit.setDate(limit.getDate() + maxPeriod);
-						instance.set('maxDate', absoluteMax && absoluteMax < limit ? absoluteMax : limit);
-					} else if (selectedDates.length !== 1) {
-						instance.set('maxDate', absoluteMax || undefined);
-					}
-				},
-			});
+			try {
+				await AspenDiscovery.DateRangePicker.render(container, {
+					startInput:     document.getElementById('start-date'),
+					endInput:       document.getElementById('end-date'),
+					minDate:        tomorrow,
+					maxDate:        constraints && constraints.maxDate ? new Date(constraints.maxDate + 'T00:00:00') : null,
+					maxRangeDays:   constraints && constraints.maxPeriod ? parseInt(constraints.maxPeriod, 10) : 0,
+					disabledRanges: bookedRanges,
+				});
+			} catch (e) {
+				container.innerHTML = '<span class="text-danger">Unable to load the availability calendar.</span>';
+			}
 		},
 	};
 }(AspenDiscovery.Record || {}));

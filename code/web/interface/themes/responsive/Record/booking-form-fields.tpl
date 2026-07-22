@@ -24,21 +24,30 @@
 		<textarea name="notes" id="notes" class="form-control" rows="3">{$notes|default:''|escape}</textarea>
 	</div>
 
-	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-	<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 	<script> $(function () { AspenDiscovery.Record.initBookingForm(); }); </script>
 
 	<style>
 		{literal}
-		.booking-date-range{display:flex;align-items:flex-end;gap:.75rem;flex-wrap:wrap;margin-bottom:1rem}
-		.booking-date-field{flex:1 1 140px;min-width:130px}
-		.booking-date-sep{padding-bottom:.45rem;color:#666;font-size:1.2em;line-height:2.2}
-		.booking-availability{margin:.5rem 0 1rem}
-		.booking-availability .flatpickr-input{display:none!important}
-		.booking-availability .flatpickr-calendar{width:100%!important;box-shadow:none;border:1px solid #ddd;border-radius:4px}
-		.booking-availability .flatpickr-innerContainer{justify-content:center}
-		.booking-availability .flatpickr-day.flatpickr-disabled{background:#ffe8cc!important;color:#b35a00!important;text-decoration:line-through;border-color:transparent}
-		.booking-availability .flatpickr-day.flatpickr-disabled:hover{background:#ffe8cc!important}
+		.booking-date-range{
+			display:flex;
+			align-items:flex-end;
+			gap:.75rem;
+			flex-wrap:wrap;
+			margin-bottom:1rem;
+		}
+		.booking-date-field{
+			flex:1 1 140px;
+			min-width:130px;
+		}
+		.booking-date-sep{
+			padding-bottom:.45rem;
+			color:#666;
+			font-size:1.2em;
+			line-height:2.2;
+		}
+		.booking-availability{
+			margin:.5rem 0 1rem;
+		}
 		{/literal}
 	</style>
 {/strip}
