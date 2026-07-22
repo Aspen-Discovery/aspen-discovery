@@ -69,7 +69,6 @@ AspenDiscovery.DateRangePicker = {
 	},
 
 	create: function (config) {
-		const D = AspenDiscovery.DateRangePicker;
 		const disabledRanges = config.disabledRanges || [];
 		const maxRangeDays = config.maxRangeDays || 0;
 		const absoluteMax = config.maxDate || null;
