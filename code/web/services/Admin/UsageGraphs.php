@@ -30,8 +30,6 @@ class Admin_UsageGraphs extends Admin_AbstractUsageGraphs {
 		$dataSeries = [];
 		$columnLabels = [];
 
-		$groupByTimeframe = implode(',', $timeframes);
-
 		// Default: AspenUsage
 		$userUsage = new AspenUsage();
 		$userUsage->selectAdd();
@@ -42,11 +40,7 @@ class Admin_UsageGraphs extends Admin_AbstractUsageGraphs {
 		if (is_array($custom)) {
 			$userUsage->buildCustomPeriodQuery($custom);
 		} else {
-			$userUsage->groupBy($groupByTimeframe);
-			foreach ($timeframes as $timeframe) {
-				$userUsage->selectAdd($timeframe);
-			}
-			$userUsage->orderBy($groupByTimeframe);
+			$userUsage->buildTimeframeQuery($timeframes);
 		}
 
 		//General Usage Stats

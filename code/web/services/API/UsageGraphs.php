@@ -25,7 +25,6 @@ class API_UsageGraphs extends Admin_AbstractUsageGraphs {
 	protected function getAndSetInterfaceDataSeries($stat, $instanceName, $timeframes = ['year', 'month'], $custom = false): void {
 		global $interface;
 
-		$groupByTimeframe = implode(',', $timeframes);
 		$dataSeries = [];
 		$columnLabels = [];
 		$usage = new APIUsage();
@@ -38,11 +37,7 @@ class API_UsageGraphs extends Admin_AbstractUsageGraphs {
 		if (is_array($custom)) {
 			$usage->buildCustomPeriodQuery($custom);
 		} else {
-			$usage->groupBy($groupByTimeframe);
-			foreach ($timeframes as $timeframe) {
-				$usage->selectAdd($timeframe);
-			}
-			$usage->orderBy($groupByTimeframe);
+			$usage->buildTimeframeQuery($timeframes);
 		}
 		
 		$dataSeries[$stat] = GraphingUtils::getDataSeriesArray(count($dataSeries));

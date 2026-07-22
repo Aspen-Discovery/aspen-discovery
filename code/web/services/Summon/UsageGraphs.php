@@ -46,11 +46,7 @@ class Summon_UsageGraphs extends Admin_AbstractUsageGraphs {
 			if (is_array($custom)) {
 				$userSummonUsage->buildCustomPeriodQuery($custom);
 			} else {
-				$userSummonUsage->groupBy($groupByTimeframe);
-				foreach ($timeframes as $timeframe) {
-					$userSummonUsage->selectAdd($timeframe);
-				}
-				$userSummonUsage->orderBy($groupByTimeframe);
+				$userSummonUsage->buildTimeframeQuery($timeframes);
 			}
 
 			$dataSeries['Active Users'] = GraphingUtils::getDataSeriesArray(count($dataSeries));
@@ -80,11 +76,7 @@ class Summon_UsageGraphs extends Admin_AbstractUsageGraphs {
 			if (is_array($custom)) {
 				$summonRecordUsage->buildCustomPeriodQuery($custom);
 			} else {
-				$summonRecordUsage->groupBy($groupByTimeframe);
-				foreach ($timeframes as $timeframe) {
-					$summonRecordUsage->selectAdd($timeframe);
-				}
-				$summonRecordUsage->orderBy($groupByTimeframe);
+				$summonRecordUsage->buildTimeframeQuery($timeframes);
 			}
 		
 			if ($stat == 'numRecordsViewed') {

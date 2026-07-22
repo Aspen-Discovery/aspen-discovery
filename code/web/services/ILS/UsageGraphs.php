@@ -35,7 +35,6 @@ class ILS_UsageGraphs extends Admin_AbstractUsageGraphs {
 		global $interface;
 		$dataSeries = [];
 		$columnLabels = [];
-		$groupByTimeframe = implode(',', $timeframes);
 
 		// for graphs displaying data retrieved from the user_ils_usage table
 		if (
@@ -55,11 +54,7 @@ class ILS_UsageGraphs extends Admin_AbstractUsageGraphs {
 			if (is_array($custom)) {
 				$userILSUsage->buildCustomPeriodQuery($custom);
 			} else {
-				$userILSUsage->groupBy($groupByTimeframe);
-				foreach ($timeframes as $timeframe) {
-					$userILSUsage->selectAdd($timeframe);
-				}
-				$userILSUsage->orderBy($groupByTimeframe);
+				$userILSUsage->buildTimeframeQuery($timeframes);
 			}
 			
 			if ($stat == 'userLogins') {
@@ -137,11 +132,7 @@ class ILS_UsageGraphs extends Admin_AbstractUsageGraphs {
 			if (is_array($custom)) {
 				$recordILSUsage->buildCustomPeriodQuery($custom);
 			} else {
-				$recordILSUsage->groupBy($groupByTimeframe);
-				foreach ($timeframes as $timeframe) {
-					$recordILSUsage->selectAdd($timeframe);
-				}
-				$recordILSUsage->orderBy($groupByTimeframe);
+				$recordILSUsage->buildTimeframeQuery($timeframes);
 			}
 
 			if ($stat == 'pdfsDownloaded') {
