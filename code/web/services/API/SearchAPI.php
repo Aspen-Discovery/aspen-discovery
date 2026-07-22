@@ -2062,6 +2062,15 @@ class SearchAPI extends AbstractAPI {
 						$formattedCategories[] = $categoryResponse;
 					} else {
 						$subCategories = $categoryInformation->getSubCategories();
+						//Add the main category even if there are subcategories
+						$categoryResponse = [
+							'key' => $categoryInformation->textId,
+							'title' => $categoryInformation->label,
+							'source' => $categoryInformation->source,
+							'isHidden' => $categoryInformation->isDismissed($appUser),
+						];
+						$formattedCategories[] = $categoryResponse;
+						//Now add subcategories
 						if (count($subCategories) > 0) {
 							foreach ($subCategories as $subCategory) {
 								$temp = new BrowseCategory();
@@ -2090,14 +2099,6 @@ class SearchAPI extends AbstractAPI {
 									}
 								}
 							}
-						} else {
-							$categoryResponse = [
-								'key' => $categoryInformation->textId,
-								'title' => $categoryInformation->label,
-								'source' => $categoryInformation->source,
-								'isHidden' => $categoryInformation->isDismissed($appUser),
-							];
-							$formattedCategories[] = $categoryResponse;
 						}
 					}
 				}

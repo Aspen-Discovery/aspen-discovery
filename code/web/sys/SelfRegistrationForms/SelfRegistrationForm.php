@@ -1,7 +1,10 @@
 <?php /** @noinspection PhpMissingFieldTypeInspection */
+
+
 require_once ROOT_DIR . '/sys/SelfRegistrationForms/SelfRegistrationFormValues.php';
 require_once ROOT_DIR . '/sys/SelfRegistrationForms/SelfRegistrationTerms.php';
 require_once ROOT_DIR . '/sys/SelfRegistrationForms/SymphonySelfRegistrationMunicipalityValues.php';
+require_once ROOT_DIR . '/sys/SelfRegistrationForms/SymphonySelfRegistrationCountyCodeValues.php';
 
 class SelfRegistrationForm extends DataObject {
 	public $__table = 'self_registration_form';
@@ -20,6 +23,7 @@ class SelfRegistrationForm extends DataObject {
 	private $_fields;
 	private $_libraries;
 	private $_municipalities;
+	private $_counties;
 
 	static $_objectStructure = [];
 	static function getObjectStructure(string $context = ''): array {
@@ -39,6 +43,7 @@ class SelfRegistrationForm extends DataObject {
 
 		$fieldValuesStructure = SelfRegistrationFormValues::getObjectStructure($context);
 		$symphonySelfRegistrationMunicipalityValuesStructure = SymphonySelfRegistrationMunicipalityValues::getObjectStructure($context);
+		$symphonySelfRegistrationCountyCodeValuesStructure = SymphonySelfRegistrationCountyCodeValues::getObjectStructure($context);
 		unset($fieldValuesStructure['weight']);
 		unset($fieldValuesStructure['selfRegistrationFormId']);
 
@@ -162,6 +167,32 @@ class SelfRegistrationForm extends DataObject {
 				],
 				'newCanDoAdditionalActions' => true,
 			],
+			'countyCodes' => [
+				'property' => 'countyCodes',
+				'type' => 'oneToMany',
+				'label' => 'County Codes',
+				'description' => 'County codes and full county names for lookup during self registration.',
+				'keyThis' => 'id',
+				'keyOther' => 'selfRegistrationFormId',
+				'subObjectType' => 'SymphonySelfRegistrationCountyCodeValues',
+				'structure' => $symphonySelfRegistrationCountyCodeValuesStructure,
+				'sortable' => false,
+				'storeDb' => true,
+				'allowEdit' => true,
+				'canEdit' => false,
+				'canAddNew' => true,
+				'canDelete' => true,
+				'hideInLists' => true,
+				'permissions' => ['Manage Self Registration Municipalities'],
+				'note' => "If left blank the county/county code will not be used for municipality matching.",
+				'additionalOneToManyActions' => [
+					0 => [
+						'text' => 'Populate from ILS',
+						'onclick' => "AspenDiscovery.Admin.populateFromILS('symphony', 'countyCodes');",
+					],
+				],
+				'newCanDoAdditionalActions' => true,
+			],
 			'libraries' => [
 				'property' => 'libraries',
 				'type' => 'multiSelect',
@@ -181,6 +212,7 @@ class SelfRegistrationForm extends DataObject {
 			$this->saveFields();
 			$this->saveLibraries();
 			$this->saveMunicipalities();
+			$this->saveCountyCodes();
 		}
 		return $ret;
 	}
@@ -191,6 +223,7 @@ class SelfRegistrationForm extends DataObject {
 			$this->saveFields();
 			$this->saveLibraries();
 			$this->saveMunicipalities();
+			$this->saveCountyCodes();
 		}
 		return $ret;
 	}
@@ -202,7 +235,9 @@ class SelfRegistrationForm extends DataObject {
 			return $this->getLibraries();
 		} if ($name == 'municipalities') {
 			return $this->getMunicipalities();
-		}else {
+		} if ($name == 'countyCodes') {
+			return $this->getCountyCodes();
+		} else {
 			return parent::__get($name);
 		}
 	}
@@ -214,6 +249,8 @@ class SelfRegistrationForm extends DataObject {
 			$this->_libraries = $value;
 		} if ($name == "municipalities") {
 			$this->_municipalities = $value;
+		} if ($name == "countyCodes") {
+			$this->_counties = $value;
 		} else {
 			parent::__set($name, $value);
 		}
@@ -236,10 +273,42 @@ class SelfRegistrationForm extends DataObject {
 		return $this->_municipalities;
 	}
 
-	public function getMunicipalitySettingsByNameAndType($name, $type = null) : ?int {
+	/**
+	 * @return SymphonySelfRegistrationCountyCodeValues[]|null
+	 */
+	public function getCountyCodes(): ?array {
+		if (!isset($this->_counties) && $this->id) {
+			$this->_counties = [];
+			$countyCode = new SymphonySelfRegistrationCountyCodeValues();
+			$countyCode->selfRegistrationFormId = $this->id;
+			$countyCode->orderBy('countyCode');
+			$countyCode->find();
+			while ($countyCode->fetch()) {
+				$this->_counties[$countyCode->id] = clone($countyCode);
+			}
+		}
+		return $this->_counties;
+	}
+
+	public function getMunicipalitySettingsByNameAndType($name, $type = null, $county = null) : ?int {
+		$normalizedName = preg_replace('/\s+/', '', $name);
+
 		$municipalities = new SymphonySelfRegistrationMunicipalityValues();
 		$municipalities->selfRegistrationFormId = $this->id;
-		$municipalities->whereAdd("LEFT(municipality, 7) = " . $municipalities->escape(substr($name, 0, 7))); //ILS imported values only go up to 7 char
+
+		if ($county !== null) {
+			$normalizedCounty = preg_replace('/\s+/', '', $county);
+			$countyCode = new SymphonySelfRegistrationCountyCodeValues();
+			$countyCode->whereAdd("UPPER(REPLACE(countyName, ' ', '')) = " . $countyCode->escape(strtoupper($normalizedCounty)));
+			if ($countyCode->find(true) && strlen($countyCode->countyCode) == 2) {
+				$municipalities->whereAdd("UPPER(LEFT(ilsMunicipality, LENGTH(ilsMunicipality) - 1)) = " . "UPPER(LEFT(" . $municipalities->escape(strtoupper($countyCode->countyCode . $normalizedName)) . ", LENGTH(ilsMunicipality) - 1))");
+			} else {
+				$municipalities->whereAdd("UPPER(LEFT(municipality, 7)) = " . $municipalities->escape(strtoupper(substr($normalizedName, 0, 7)))); //ILS imported values only go up to 7 char
+			}
+		} else {
+			$municipalities->whereAdd("UPPER(LEFT(municipality, 7)) = " . $municipalities->escape(strtoupper(substr($normalizedName, 0, 7)))); //ILS imported values only go up to 7 char
+		}
+
 		if ($type) {
 			$municipalities->municipalityType = $type;
 		}
@@ -253,6 +322,13 @@ class SelfRegistrationForm extends DataObject {
 		if (isset ($this->_municipalities) && is_array($this->_municipalities)) {
 			$this->saveOneToManyOptions($this->_municipalities, 'selfRegistrationFormId');
 			unset($this->_municipalities);
+		}
+	}
+
+	public function saveCountyCodes() : void {
+		if (isset ($this->_counties) && is_array($this->_counties)) {
+			$this->saveOneToManyOptions($this->_counties, 'selfRegistrationFormId');
+			unset($this->_counties);
 		}
 	}
 

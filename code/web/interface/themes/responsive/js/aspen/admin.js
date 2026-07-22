@@ -3306,6 +3306,39 @@ AspenDiscovery.Admin = (function () {
 							AspenDiscovery.showMessage('Error', 'Could not populate from ILS.');
 						}
 					});
+				} else if (objectType === "countyCodes") {
+					AspenDiscovery.Admin.showFullPageLoadingOverlay('Populating from ILS, this may take a while. Please wait...');
+
+					$.ajax({
+						url: Globals.path + "/Admin/AJAX",
+						type: 'GET',
+						data: {
+							method: 'getILSMetadata',
+						},
+						success: function (response) {
+							var seenCodes = new Set();
+
+							response.forEach(function (entry) {
+								seenCodes.add(entry.key.slice(0, 2));
+							});
+
+							var sortedCodes = Array.from(seenCodes).sort();
+
+							sortedCodes.forEach(function (countyCode) {
+								addNewcountyCodes(); // existing generated function
+
+								var $newRow = $('#countyCodes tbody tr').last();
+
+								$newRow.find('input[name^="countyCodes_countyCode"]').val(countyCode);
+							});
+
+							$('#aspenFullPageLoadingOverlay').remove();
+						},
+						error: function () {
+							$('#aspenFullPageLoadingOverlay').remove();
+							AspenDiscovery.showMessage('Error', 'Could not populate from ILS.');
+						}
+					});
 				}
 			}
 		},

@@ -162,6 +162,9 @@ class Grouping_Record {
 				$this->_statusInformation->setAvailable(true);
 			}
 			$this->_statusInformation->addAvailableCopies($item->numCopies);
+			if ($item->holdable) {
+				$this->_statusInformation->addAvailableHoldableCopies($item->numCopies);
+			}
 		}
 
 		if (!$item->inLibraryUseOnly) {
@@ -254,6 +257,10 @@ class Grouping_Record {
 	 */
 	public function getAvailableCopies(): int {
 		return $this->_statusInformation->getAvailableCopies();
+	}
+
+	public function getAvailableHoldableCopies(): int {
+		return $this->_statusInformation->getAvailableHoldableCopies();
 	}
 
 	/**
