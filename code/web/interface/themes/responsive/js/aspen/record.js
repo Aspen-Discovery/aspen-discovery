@@ -896,60 +896,54 @@ AspenDiscovery.Record = (function () {
 		},
 
 		initBookingForm: function () {
-			const R          = AspenDiscovery.Record;
-			const itemSelect = document.getElementById('booking-item-select');
-
-			if (itemSelect) {
-				itemSelect.addEventListener('change', function () {
-					R.clearBookingDateInputs();
-					R.loadItemBookingAvailability(this.value);
-				});
-			}
-
-			const itemId = R.getSelectedBookingItemId();
-			if (itemId) R.loadItemBookingAvailability(itemId);
+			document.getElementById('booking-item-select')?.addEventListener('change', function () {
+				AspenDiscovery.Record.clearBookingDateInputs();
+				AspenDiscovery.Record.loadItemBookingAvailability(this.value);
+			});
+			AspenDiscovery.Record.loadItemBookingAvailability(AspenDiscovery.Record.getSelectedBookingItemId());
 		},
 
 		getSelectedBookingItemId: function () {
-			const itemSelect = document.getElementById('booking-item-select');
-			if (itemSelect) return itemSelect.value;
-			const currentItem = document.getElementById('current-item-id');
-			return currentItem ? currentItem.value : null;
+			const source = document.getElementById('booking-item-select') ?? document.getElementById('current-item-id');
+			return source?.value ?? null;
+		},
+
+		bookingDateInputs: function () {
+			return [document.getElementById('start-date'), document.getElementById('end-date')];
 		},
 
 		clearBookingDateInputs: function () {
-			const startInput = document.getElementById('start-date');
-			const endInput   = document.getElementById('end-date');
-			if (startInput) startInput.value = '';
-			if (endInput)   endInput.value   = '';
+			AspenDiscovery.Record.bookingDateInputs().forEach(input => input && (input.value = ''));
 		},
 
 		loadItemBookingAvailability: function (itemId) {
-			const R         = AspenDiscovery.Record;
 			const container = document.getElementById('booking-availability');
-			if (!container) return;
+			if (!itemId || !container) {
+				return;
+			}
 
 			container.innerHTML = '<span class="text-muted"><em>Loading availability\u2026</em></span>';
 
 			$.getJSON(Globals.path + '/Record/AJAX?method=getItemBookedDates&itemId=' + encodeURIComponent(itemId), function (data) {
-				R.showBookingCalendar(container, data.success ? data.bookedDates : [], data.success ? data.constraints : null);
+				AspenDiscovery.Record.showBookingCalendar(container, data.success ? data.bookedDates : [], data.success ? data.constraints : null);
 			}).fail(function () {
-				R.showBookingCalendar(container, [], null);
+				AspenDiscovery.Record.showBookingCalendar(container, [], null);
 			});
 		},
 
 		showBookingCalendar: async function (container, bookedRanges, constraints) {
+			const [startInput, endInput] = AspenDiscovery.Record.bookingDateInputs();
 			const tomorrow = new Date();
 			tomorrow.setDate(tomorrow.getDate() + 1);
 			tomorrow.setHours(0, 0, 0, 0);
 
 			try {
 				await AspenDiscovery.DateRangePicker.render(container, {
-					startInput:     document.getElementById('start-date'),
-					endInput:       document.getElementById('end-date'),
+					startInput:     startInput,
+					endInput:       endInput,
 					minDate:        tomorrow,
-					maxDate:        constraints && constraints.maxDate ? new Date(constraints.maxDate + 'T00:00:00') : null,
-					maxRangeDays:   constraints && constraints.maxPeriod ? parseInt(constraints.maxPeriod, 10) : 0,
+					maxDate:        constraints?.maxDate ? new Date(constraints.maxDate + 'T00:00:00') : null,
+					maxRangeDays:   constraints?.maxPeriod ? parseInt(constraints.maxPeriod, 10) : 0,
 					disabledRanges: bookedRanges,
 				});
 			} catch (e) {
