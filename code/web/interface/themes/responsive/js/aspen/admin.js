@@ -2264,7 +2264,6 @@ AspenDiscovery.Admin = (function () {
 					if (searchRegex.test(permissionSectionLabel)) {
 						curSection.show();
 						permissionsInSection.show();
-						console.log(permissionsInSection)
 					} else {
 						var numVisibleActions = 0;
 						permissionsInSection.each(function () {
@@ -3105,7 +3104,6 @@ AspenDiscovery.Admin = (function () {
 		},
 
 		getBatchUpdateHolidayForm: function (scope){
-			console.log(scope);
 			var url = Globals.path + "/Admin/AJAX?method=getBatchUpdateHolidayForm&scopeLevel=" + scope;
 			AspenDiscovery.Account.ajaxLightbox(url, true);
 		},

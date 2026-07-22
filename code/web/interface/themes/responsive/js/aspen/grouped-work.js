@@ -103,9 +103,6 @@ AspenDiscovery.GroupedWork = (function(){
 		},
 
 		loadDescription: function (id, recordType, recordId){
-			console.log("BEGIN");
-			console.log(recordType);
-			console.log(recordId);
 			var url = Globals.path + '/GroupedWork/' + id + '/AJAX',
 				params = {'method':'getDescription'};
 			if (recordType && recordId) {
