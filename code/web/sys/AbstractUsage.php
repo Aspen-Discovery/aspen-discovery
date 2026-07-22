@@ -39,6 +39,11 @@ abstract class AbstractUsage extends DataObject {
 		return null;
 	}
 
+	public function hasMonthlyOnlyUsage(): bool {
+		$this->whereAdd('day = 0');
+		return $this->count() > 0;
+	}
+
 	public function buildCustomPeriodQuery(array $custom): void {
 		$escapedPeriodDuration = $this->escape($custom['customUsagePeriodDuration']);
 		$escapedPeriodStart = $this->escape($custom['customUsagePeriodStart']);
