@@ -1,21 +1,21 @@
 {strip}
 	<div class="booking-date-range form-group">
 		<div class="booking-date-field">
-			<label class="control-label" for="startDate">{translate text="From" isPublicFacing=true}</label>
-			<input type="text" name="startDate" id="startDate" class="form-control required" readonly value="{$startDate|default:''}">
+			<label class="control-label" for="start-date">{translate text="From" isPublicFacing=true}</label>
+			<input type="text" name="startDate" id="start-date" class="form-control required" readonly value="{$startDate|default:''}">
 		</div>
 		<span class="booking-date-sep" aria-hidden="true">&#8594;</span>
 		<div class="booking-date-field">
-			<label class="control-label" for="endDate">{translate text="To" isPublicFacing=true}</label>
-			<input type="text" name="endDate" id="endDate" class="form-control required" readonly value="{$endDate|default:''}">
+			<label class="control-label" for="end-date">{translate text="To" isPublicFacing=true}</label>
+			<input type="text" name="endDate" id="end-date" class="form-control required" readonly value="{$endDate|default:''}">
 		</div>
 	</div>
 
 	{if !empty($currentItemId)}
-		<input type="hidden" id="currentItemId" value="{$currentItemId|escape}">
+		<input type="hidden" id="current-item-id" value="{$currentItemId|escape}">
 	{/if}
 
-	<div id="bookingAvailability" class="booking-availability" aria-live="polite"></div>
+	<div id="booking-availability" class="booking-availability" aria-live="polite"></div>
 
 	{include file='Record/pickup-location-select.tpl'}
 
