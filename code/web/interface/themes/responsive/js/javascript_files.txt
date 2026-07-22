@@ -50,6 +50,7 @@ aspen/hoopla.js
 aspen/interlibraryLoan.js
 aspen/ratings.js
 aspen/reading-history.js
+aspen/date-range-picker.js
 aspen/record.js
 aspen/responsive.js
 aspen/results-list.js
