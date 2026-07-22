@@ -59,7 +59,7 @@ AspenDiscovery.Record = (function () {
 		},
 
 		submitBookingForm: function (button) {
-			const form = document.getElementById('placeBookingForm');
+			const form = document.getElementById('place-booking-form');
 			const data = $(form).serialize();
 			AspenDiscovery.toggleButtonSpinner(button, true);
 			$.getJSON(Globals.path + '/Record/AJAX?method=placeBooking&' + data, function (result) {
@@ -899,13 +899,13 @@ AspenDiscovery.Record = (function () {
 
 		initBookingForm: function () {
 			const R          = AspenDiscovery.Record;
-			const itemSelect = document.getElementById('itemId');
-			const hiddenItem = document.getElementById('currentItemId');
+			const itemSelect = document.getElementById('booking-item-select');
+			const hiddenItem = document.getElementById('current-item-id');
 
 			if (itemSelect) {
 				itemSelect.addEventListener('change', function () {
-					const startInput = document.getElementById('startDate');
-					const endInput   = document.getElementById('endDate');
+					const startInput = document.getElementById('start-date');
+					const endInput   = document.getElementById('end-date');
 					if (startInput) startInput.value = '';
 					if (endInput)   endInput.value   = '';
 					R.loadItemAvailability(this.value);
@@ -918,7 +918,7 @@ AspenDiscovery.Record = (function () {
 
 		loadItemAvailability: function (itemId) {
 			const R         = AspenDiscovery.Record;
-			const container = document.getElementById('bookingAvailability');
+			const container = document.getElementById('booking-availability');
 			if (!container) return;
 
 			if (R._bookingFlatpickr) {
@@ -938,8 +938,8 @@ AspenDiscovery.Record = (function () {
 
 		initBookingCalendar: function (container, bookedRanges, constraints) {
 			const R          = AspenDiscovery.Record;
-			const startInput = document.getElementById('startDate');
-			const endInput   = document.getElementById('endDate');
+			const startInput = document.getElementById('start-date');
+			const endInput   = document.getElementById('end-date');
 
 			function padTwo(n) { return n < 10 ? '0' + n : '' + n; }
 			function fmtDate(d) { return d.getFullYear() + '-' + padTwo(d.getMonth() + 1) + '-' + padTwo(d.getDate()); }

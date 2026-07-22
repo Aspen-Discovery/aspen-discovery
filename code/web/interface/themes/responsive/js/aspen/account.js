@@ -396,9 +396,9 @@ AspenDiscovery.Account = (function () {
 			$.getJSON(url, function (data) {
 				document.body.style.cursor = 'default';
 				if (data.success) {
-					$('#bookingsPlaceholder').html(data.bookings);
+					$('#bookings-placeholder').html(data.bookings);
 				} else {
-					$('#bookingsPlaceholder').html(data.message);
+					$('#bookings-placeholder').html(data.message);
 				}
 			}).fail(AspenDiscovery.ajaxFail);
 			return false;
@@ -413,7 +413,7 @@ AspenDiscovery.Account = (function () {
 		},
 
 		submitUpdateBooking: function () {
-			const form = document.getElementById('updateBookingForm');
+			const form = document.getElementById('update-booking-form');
 			if (!form) return false;
 			const params = $(form).serialize();
 			AspenDiscovery.loadingMessage();

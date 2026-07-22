@@ -1,13 +1,13 @@
 {strip}
 <div id="page-content" class="content">
-	<form name="placeBookingForm" id="placeBookingForm" method="post" class="form">
+	<form name="placeBookingForm" id="place-booking-form" method="post" class="form">
 		<input type="hidden" name="id" id="id" value="{$recordId}">
 		<fieldset>
-			<div id="bookingError" class="pageWarning" style="display: none"></div>
+			<div id="booking-error" class="pageWarning" style="display: none"></div>
 
 			<div class="form-group">
-				<label class="control-label" for="itemId">{translate text="Item" isPublicFacing=true}</label>
-				<select name="itemId" id="itemId" class="form-control">
+				<label class="control-label" for="booking-item-select">{translate text="Item" isPublicFacing=true}</label>
+				<select name="itemId" id="booking-item-select" class="form-control">
 					{foreach from=$bookableItems item=item}
 						<option value="{$item.itemId|escape}">{$item.shelfLocation|escape} &mdash; {$item.callNumber|escape}</option>
 					{/foreach}
@@ -17,7 +17,7 @@
 			{include file='Record/booking-form-fields.tpl'}
 		</fieldset>
 	</form>
-	<div id="placingBookingMessage" class="alert alert-info" style="display: none">
+	<div id="placing-booking-message" class="alert alert-info" style="display: none">
 		{translate text="Placing your booking, please wait." isPublicFacing=true}
 	</div>
 </div>
