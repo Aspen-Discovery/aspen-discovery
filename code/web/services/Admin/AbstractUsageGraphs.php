@@ -63,6 +63,11 @@ abstract class Admin_AbstractUsageGraphs extends Admin_Admin {
 			$interface->assign('customPeriodStartWarning', $this->getCustomPeriodStartWarning($customUsagePeriodStart, $earliestUsageDate));
 		}
 
+		if (in_array($timeframe, ['day', 'custom'])) {
+			$monthlyUsage = new AspenUsage();
+			$interface->assign('earlierUsageAvailable', $monthlyUsage->hasMonthlyOnlyUsage());
+		}
+
 		$this->assignGraphSpecificTitle($stat);
 		$this->getAndSetInterfaceDataSeries($stat, $instanceName, $this->setGroupBy($timeframe), $custom);
 		$graphTitle = $interface->getVariable('graphTitle');

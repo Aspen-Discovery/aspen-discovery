@@ -5,6 +5,9 @@
 		{if !empty($customPeriodStartWarning)}
 			<div class="alert alert-warning"><i class="fas fa-exclamation-triangle"></i> {translate text=$customPeriodStartWarning isAdminFacing=true}</div>
 		{/if}
+		{if !empty($earlierUsageAvailable)}
+			<div class="alert alert-info"><i class="fas fa-info-circle"></i> {translate text="Usage data recorded before your 26.07.00 upgrade is available to view per month and/or year only." isAdminFacing=true}</div>
+		{/if}
 		<div class="chart-container" style="position: relative; height:50%; width:100%">
 			<canvas id="chart"></canvas>
 		</div>
