@@ -277,14 +277,14 @@ class Pay360_Client  {
 			$amountInMinorUnits = $this->getMinorUnitsAmount($fineDetails['amountVal']);
 			$item = [
 				'itemSummary' =>[
-					'description' => $fineDetails['reason'],
+					'description' =>  mb_substr($fineDetails['reason'], 0, 100),
 					'amountInMinorUnits' => $amountInMinorUnits,
-					'displayableReference' => $fineDetails['reason'], 
+					'displayableReference' => mb_substr($fineDetails['reason'], 0, 50),
 				],
 				'lgItemDetails' => [
-					'additionalReference' => $fineDetails['reason'],
-					'narrative' => $fineDetails['reason'],
-					'customerInfo' => $fineDetails['message'],
+					'additionalReference' => mb_substr($fineDetails['reason'], 0, 50),
+					'narrative' => mb_substr($fineDetails['reason'], 0, 50),
+					'customerInfo' => mb_substr($fineDetails['message'], 0, 50),
 				],
 				'lineId' => $fineDetails['fineId']
 			];
