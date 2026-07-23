@@ -1636,6 +1636,10 @@ class CatalogConnection {
 					}
 				} else {
 					$result = $this->driver->processEmailResetPinForm();
+					if (empty($result['success']) && empty($result['foundPatron'])) {
+						$identifier = $_REQUEST['reset_username'] ?? ($_REQUEST['username'] ?? '');
+						$result['foundPatron'] = $this->findIlsUserForBarcode($accountProfileInfo, $identifier) !== false;
+					}
 				}
 			}elseif ($tmpAccountProfile->authenticationMethod == 'db') {
 				if (empty($_REQUEST['reset_username']) && empty($_REQUEST['username'])) {
