@@ -3862,7 +3862,6 @@ class Koha extends AbstractIlsDriver {
 	function processEmailResetPinForm() : array {
 		$result = [
 			'success' => false,
-			'patronFound' => false,
 			'error' => translate([
 				'text' => "Unknown error sending password reset.",
 				'isPublicFacing' => true,
