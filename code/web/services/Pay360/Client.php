@@ -281,7 +281,7 @@ class Pay360_Client  {
 					'amountInMinorUnits' => $amountInMinorUnits,
 					'displayableReference' => $fineDetails['reason'], 
 				],
-				'IgItemDetails' => [
+				'lgItemDetails' => [
 					'additionalReference' => $fineDetails['reason'],
 					'narrative' => $fineDetails['reason'],
 					'customerInfo' => $fineDetails['message'],
@@ -292,7 +292,7 @@ class Pay360_Client  {
 				$item['tax'] = $fineDetails['vatCode'];
 			}
 			if (isset($fineDetails['fundCode'])) {
-				$item['IgItemDetails']['fundCode'] = $fineDetails['fundCode'];
+				$item['lgItemDetails']['fundCode'] = $fineDetails['fundCode'];
 			}
 			if (isset($fineDetails['reference'])) {
 				$item['itemSummary']['reference'] = $fineDetails['reference'];
