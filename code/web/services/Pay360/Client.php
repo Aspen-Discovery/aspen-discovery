@@ -284,7 +284,9 @@ class Pay360_Client  {
 				'lgItemDetails' => [
 					'additionalReference' => mb_substr($fineDetails['reason'], 0, 50),
 					'narrative' => mb_substr($fineDetails['reason'], 0, 50),
-					'customerInfo' => mb_substr($fineDetails['message'], 0, 50),
+				],
+				'customerInfo' => [
+					'customerString1' => mb_substr($fineDetails['message'], 0, 50),
 				],
 				'lineId' => $fineDetails['fineId']
 			];
