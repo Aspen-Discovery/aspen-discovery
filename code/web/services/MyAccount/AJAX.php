@@ -1693,6 +1693,7 @@ class MyAccount_AJAX extends JSON_Action {
 		$interface->assign('isPrimaryAccountAuthenticationSSO', $isPrimaryAccountAuthenticationSSO);
 
 		$interface->assign('enableSelfRegistration', $library->enableSelfRegistration);
+		$interface->assign('useMinimalSelfRegistrationModal', $library->useMinimalSelfRegistrationModal);
 		$interface->assign('selfRegistrationUrl', $library->selfRegistrationUrl);
 		$interface->assign('checkRememberMe', 0);
 		if ($library->defaultRememberMe && !$locationSingleton->getOpacStatus()) {
