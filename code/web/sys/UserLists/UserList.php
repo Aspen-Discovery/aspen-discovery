@@ -768,29 +768,56 @@ class UserList extends DataObject {
 			$filteredIdsBySource[$listItemEntry['source']][] = $listItemEntry['sourceId'];
 		}
 
-		//Load the actual items from each source
-		$listResults = [];
-		foreach ($filteredIdsBySource as $sourceType => $sourceIds) {
-			if (!$forLiDA || ($forLiDA && in_array($sourceType, AbstractAPI::getValidSourcesForLiDA()))) {
+	// Load the actual items from each source
+	$listResults = [];
+	foreach ($filteredIdsBySource as $sourceType => $sourceIds) {
+		if (!$forLiDA || ($forLiDA && in_array($sourceType, AbstractAPI::getValidSourcesForLiDA()))) {
+			// Nested lists
+			if ($sourceType === 'Lists') {
+				require_once ROOT_DIR . '/RecordDrivers/ListsRecordDriver.php';
+				$records = [];
+				foreach ($sourceIds as $id) {
+					$userList = new UserList();
+					$userList->id = $id;
+					
+					if ($userList->find(true)) {
+						if ($userList->public) {
+							$records[] = new ListsRecordDriver([
+								'id' => $userList->id,
+								'title_display' => $userList->title,
+							]);
+						} else {
+							// Don't display private nested lists
+							foreach ($filteredListEntries as $key => $entry) {
+								if ($entry['sourceId'] === $id) {
+									unset($filteredListEntries[$key]);
+									break;
+								}
+							}
+						}
+					}
+				} 
+			} else {
 				$searchObject = SearchObjectFactory::initSearchObject($sourceType);
 				if ($searchObject === false) {
 					AspenError::raiseError("Unknown List Entry Source $sourceType");
 				} else {
 					$records = $searchObject->getRecords($sourceIds);
-					if ($format == 'html') {
-						$listResults = $listResults + $this->getResultListHTML($records, $filteredListEntries, $allowEdit, $start);
-					} elseif ($format == 'summary') {
-						$listResults = $listResults + $this->getResultListSummary($records, $filteredListEntries);
-					} elseif ($format == 'recordDrivers') {
-						$listResults = $listResults + $this->getResultListRecordDrivers($records, $filteredListEntries);
-					} elseif ($format == 'citations') {
-						$listResults = $listResults + $this->getResultListCitations($records, $filteredListEntries, $citationFormat);
-					} else {
-						AspenError::raiseError("Unknown display format $format in getListRecords");
-					}
 				}
 			}
+			if ($format == 'html') {
+				$listResults = $listResults + $this->getResultListHTML($records, $filteredListEntries, $allowEdit, $start);
+			} elseif ($format == 'summary') {
+				$listResults = $listResults + $this->getResultListSummary($records, $filteredListEntries);
+			} elseif ($format == 'recordDrivers') {
+				$listResults = $listResults + $this->getResultListRecordDrivers($records, $filteredListEntries);
+			} elseif ($format == 'citations') {
+				$listResults = $listResults + $this->getResultListCitations($records, $filteredListEntries, $citationFormat);
+			} else {
+				AspenError::raiseError("Unknown display format $format in getListRecords");
+			}
 		}
+	}
 
 		if ($format == 'html') {
 			//Add in non-owned results for anything that is left
