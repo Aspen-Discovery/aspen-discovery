@@ -911,10 +911,8 @@ abstract class MarcRecordProcessor {
 					|| subjectForm.equalsIgnoreCase("Humor, Juvenile")
 					|| subjectForm.equalsIgnoreCase("Humour")
 					){
-				addToMapWithCount(literaryFormsWithCount, "Fiction");
-				addToMapWithCount(literaryFormsFull, "Fiction");
 				addToMapWithCount(literaryFormsFull, "Humor, Satires, etc.");
-				if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Literary Form is fiction/humor based on 650v, 651v", 2);}
+				if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Literary Form is humor based on 650v, 651v", 2);}
 			}else if (subjectForm.equalsIgnoreCase("Correspondence")
 					){
 				addToMapWithCount(literaryFormsWithCount, "Non Fiction");
