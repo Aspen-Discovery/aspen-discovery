@@ -1892,6 +1892,121 @@ class MyAccount_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
+	function getMinimalSelfRegForm(): array {
+		global $library;
+		$result = [
+			'success' => false,
+			'title' => translate([
+				'text' => 'Register for a Library Card',
+				'isPublicFacing' => true,
+			]),
+			'message' => translate([
+				'text' => 'Self registration is not available.',
+				'isPublicFacing' => true,
+			]),
+		];
+
+		if ($library->enableSelfRegistration != 1 || empty($library->useMinimalSelfRegistrationModal)) {
+			return $result;
+		}
+
+		$catalog = CatalogFactory::getCatalogConnectionInstance();
+		if ($catalog == null || !$catalog->hasIlsRegistrationModeSupport(AbstractIlsDriver::ILS_REG_MODE_MINIMAL_SELF)) {
+			return $result;
+		}
+
+		require_once ROOT_DIR . '/services/MyAccount/SelfReg.php';
+		$formHtml = SelfReg::buildMinimalSelfRegForm($catalog, null, null, 'AspenDiscovery.Account.processMinimalSelfReg(objectEditorObject)');
+		if (empty($formHtml)) {
+			return $result;
+		}
+
+		return [
+			'success' => true,
+			'title' => translate([
+				'text' => 'Register for a Library Card',
+				'isPublicFacing' => true,
+			]),
+			'body' => $formHtml,
+			'buttons' => '',
+		];
+	}
+
+	/** @noinspection PhpUnused */
+	function processMinimalSelfReg(): array {
+		global $library;
+		$result = [
+			'success' => false,
+			'message' => translate([
+				'text' => 'Self registration is not available.',
+				'isPublicFacing' => true,
+			]),
+		];
+
+		if ($library->enableSelfRegistration != 1 || empty($library->useMinimalSelfRegistrationModal)) {
+			return $result;
+		}
+
+		$catalog = CatalogFactory::getCatalogConnectionInstance();
+		if ($catalog == null || !$catalog->hasIlsRegistrationModeSupport(AbstractIlsDriver::ILS_REG_MODE_MINIMAL_SELF)) {
+			return $result;
+		}
+
+		$selfRegFields = $catalog->getILSRegistrationFormStructure(AbstractIlsDriver::ILS_REG_MODE_MINIMAL_SELF);
+		require_once ROOT_DIR . '/services/MyAccount/SelfReg.php';
+		$outcome = SelfReg::validateAndRegister($catalog, $selfRegFields);
+
+		if (!empty($outcome['success'])) {
+			$registerResult = $outcome['result'] ?? [];
+			return [
+				'success' => !empty($registerResult['success']),
+				'title' => translate([
+					'text' => 'Registration',
+					'isPublicFacing' => true,
+				]),
+				'message' => $registerResult['message'] ?? translate([
+					'text' => 'Your registration was successful.',
+					'isPublicFacing' => true,
+				]),
+				'barcode' => $registerResult['barcode'] ?? null,
+			];
+		}
+
+		switch ($outcome['errorType'] ?? '') {
+			case 'email':
+				$result['message'] = translate([
+					'text' => 'Please enter a valid email address.',
+					'isPublicFacing' => true,
+				]);
+				break;
+			case 'phone':
+				$result['message'] = translate([
+					'text' => 'Please enter a valid phone number.',
+					'isPublicFacing' => true,
+				]);
+				break;
+			case 'address':
+				$result['message'] = translate([
+					'text' => 'The address you entered does not appear to be valid. Please check your address and try again.',
+					'isPublicFacing' => true,
+				]);
+				break;
+			case 'age':
+				$result['message'] = translate([
+					'text' => $outcome['ageText'] ?? 'Age not valid.',
+					'isPublicFacing' => true,
+				]);
+				break;
+			default:
+				$result['message'] = translate([
+					'text' => 'Registration could not be completed.',
+					'isPublicFacing' => true,
+				]);
+		}
+		return $result;
+	}
+
+	/** @noinspection PhpUnused */
 	function getMasqueradeAsForm() : array {
 		$this->requireLoggedInUser();
 		$user = UserAccount::getLoggedInUser();

@@ -164,7 +164,7 @@ class SelfReg extends Action {
 		}
 	}
 
-	public static function buildMinimalSelfRegForm(CatalogConnection $catalog, ?string $introText = null, ?string $footerText = null): string {
+	public static function buildMinimalSelfRegForm(CatalogConnection $catalog, ?string $introText = null, ?string $footerText = null, ?string $onSubmissionJS = null): string {
 		global $interface;
 		$selfRegFields = $catalog->getILSRegistrationFormStructure(AbstractIlsDriver::ILS_REG_MODE_MINIMAL_SELF);
 		if (empty($selfRegFields)) {
@@ -176,6 +176,7 @@ class SelfReg extends Action {
 		$interface->assign('isSelfRegistration', true);
 		$interface->assign('formLabel', 'Self Registration');
 		$interface->assign('structure', $selfRegFields);
+		$interface->assign('onSubmissionJS', $onSubmissionJS);
 		$interface->assign('minimalSelfRegForm', $interface->fetch('DataObjectUtil/objectEditForm.tpl'));
 		$interface->assign('introText', $introText);
 		$interface->assign('footerText', $footerText);

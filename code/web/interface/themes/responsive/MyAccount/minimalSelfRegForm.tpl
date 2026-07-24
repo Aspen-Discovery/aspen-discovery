@@ -1,5 +1,6 @@
 {strip}
     <section class="well">
+        <p class="alert alert-danger" id="minimalSelfRegError" style="display: none"></p>
         {if !empty($introText)}<p>{translate text=$introText isPublicFacing=true}</p>{/if}
     	<div id="selfRegistrationFormContainer">
     		{$minimalSelfRegForm}
