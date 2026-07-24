@@ -500,9 +500,13 @@ class DataObjectUtil {
 							}
 						}
 					}
-					//store the actual filename
-					$object->setProperty($propertyName, $destFileName, $property);
-					$logger->log("Set $propertyName to $destFileName", Logger::LOG_DEBUG);
+					//store the actual filename, but only if the file was actually written
+					if ($copyResult) {
+						$object->setProperty($propertyName, $destFileName, $property);
+						$logger->log("Set $propertyName to $destFileName", Logger::LOG_DEBUG);
+					} else {
+						$logger->log("Not setting $propertyName because the file write failed", Logger::LOG_ERROR);
+					}
 				}
 			}
 
