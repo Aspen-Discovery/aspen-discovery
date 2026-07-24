@@ -4049,6 +4049,16 @@ class SirsiDynixROA extends AbstractIlsDriver {
 							'isPublicFacing' => true,
 						]);
 					}
+				} elseif ($currentItemLocation == "INTRANSIT") {
+					$params = [
+						'itemBarcode' => $barcode
+					];
+					$additionalHeaders = [
+						'SD-Preferred-Role: STAFF',
+						'SD-Prompt-Return: CIRC_TRANSIT_OVRCD/Y;CKOBLOCKS/' . $this->accountProfile->overrideCode
+					];
+
+					$this->getWebServiceResponse('unTransit', $webServiceURL . '/circulation/transit/untransit', $params, $sessionToken, 'POST', $additionalHeaders);
 				}
 			}
 		}
