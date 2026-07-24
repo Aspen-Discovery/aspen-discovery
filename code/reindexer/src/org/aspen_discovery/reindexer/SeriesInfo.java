@@ -3,6 +3,7 @@ package org.aspen_discovery.reindexer;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import com.turning_leaf_technologies.strings.AspenStringUtils;
 import java.text.Normalizer;
 import java.util.HashSet;
 
@@ -154,6 +155,8 @@ public class SeriesInfo {
 	 * If the volume is blank, it will be combined with a non-blank volume if one exists.
 	 * If the volume is not blank it will override the blank volume.
 	 * We can get multiple volumes for the same record within a series
+	 * Volumes are deduped by their numeric value, so "1", "bk. 1", and "vol. 1"
+	 * are all treated as the same volume even though the text differs.
 	 */
 	public void addVolume(String volume) {
 		if (volume.isEmpty()) {
@@ -162,7 +165,8 @@ public class SeriesInfo {
 				seriesVolumes.add(volume);
 			}
 		}else{
-			seriesVolumes.add(volume);
+			String normalizedVolume = AspenStringUtils.normalizeVolume(volume);
+			seriesVolumes.add(normalizedVolume);
 			//Remove the blank entry if we have one
 			seriesVolumes.remove("");
 		}

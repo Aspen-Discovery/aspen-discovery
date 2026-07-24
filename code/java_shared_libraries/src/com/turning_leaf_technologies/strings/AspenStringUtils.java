@@ -14,6 +14,7 @@ public class AspenStringUtils {
 	private static final Pattern cleaner2Pattern = Pattern.compile(".*\\p{L}\\p{L}\\.$");
 	private static final Pattern cleaner3Pattern = Pattern.compile(".*\\w\\p{InCombiningDiacriticalMarks}?\\w\\p{InCombiningDiacriticalMarks}?\\.$");
 	private static final Pattern cleaner4Pattern = Pattern.compile(".*\\p{Punct}\\.$");
+	private static final Pattern VOLUME_NUMBER_PATTERN = Pattern.compile("(\\d+(?:\\.\\d+)?)");
 
 	/**
 	 * Removes trailing characters (space, comma, slash, semicolon, colon),
@@ -99,6 +100,25 @@ public class AspenStringUtils {
 		} else {
 			return "";
 		}
+	}
+
+	/**
+	 * Reduce a volume string down to just its numeric value so that
+	 * "1", "bk. 1", "bk 01", and "vol. 1" all normalize to the same key.
+	 */
+	public static String normalizeVolume(String volume) {
+		if (volume == null || volume.isEmpty()) {
+			return "";
+		}
+		Matcher matcher = VOLUME_NUMBER_PATTERN.matcher(volume);
+		if (matcher.find()) {
+			String number = matcher.group(1);
+			// strip leading zeros ("01" -> "1") without breaking "0"
+			number = number.replaceFirst("^0+(?=\\d)", "");
+			return number;
+		}
+		// No digits at all (e.g. "special edition") — fall back to trimmed/lowercased text
+		return volume.trim().toLowerCase();
 	}
 
 	public static char convertStringToChar(String subfieldString) {
