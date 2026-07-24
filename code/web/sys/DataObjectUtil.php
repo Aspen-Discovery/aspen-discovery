@@ -483,11 +483,15 @@ class DataObjectUtil {
 							require_once ROOT_DIR . '/sys/Covers/CoverImageUtils.php';
 
 							if (isset($property['thumbWidth'])) {
-								resizeImage($destFullPath, "$pathToThumbs/$destFileName", $property['thumbWidth'], $property['thumbWidth']);
+								if (!resizeImage($destFullPath, "$pathToThumbs/$destFileName", $property['thumbWidth'], $property['thumbWidth'])) {
+									$logger->log("Could not create thumbnail for $propertyName at $pathToThumbs/$destFileName", Logger::LOG_ERROR);
+								}
 							}
 							if (isset($property['mediumWidth'])) {
 								//Create a thumbnail if needed
-								resizeImage($destFullPath, "$pathToMedium/$destFileName", $property['mediumWidth'], $property['mediumWidth']);
+								if (!resizeImage($destFullPath, "$pathToMedium/$destFileName", $property['mediumWidth'], $property['mediumWidth'])) {
+									$logger->log("Could not create medium image for $propertyName at $pathToMedium/$destFileName", Logger::LOG_ERROR);
+								}
 							}
 							if (isset($property['maxWidth'])) {
 								//Create a thumbnail if needed
@@ -496,7 +500,9 @@ class DataObjectUtil {
 								if (isset($property['maxHeight'])) {
 									$height = $property['maxHeight'];
 								}
-								resizeImage($destFullPath, "$destFolder/$destFileName", $width, $height);
+								if (!resizeImage($destFullPath, "$destFolder/$destFileName", $width, $height)) {
+									$logger->log("Could not resize $propertyName to max dimensions at $destFolder/$destFileName", Logger::LOG_ERROR);
+								}
 							}
 						}
 					}
