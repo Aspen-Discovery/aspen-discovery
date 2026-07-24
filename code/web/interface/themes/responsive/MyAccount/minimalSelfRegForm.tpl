@@ -1,10 +1,10 @@
 {strip}
     <section class="well">
-        <p>{translate text="Interested in joining our library Events? Use the quick registration form below to sign up and become a library member." isPublicFacing=true}</p>
+        {if !empty($introText)}<p>{translate text=$introText isPublicFacing=true}</p>{/if}
     	<div id="selfRegistrationFormContainer">
     		{$minimalSelfRegForm}
     	</div>
-        <p>{translate text="Already a member? Log in below to register to this event." isPublicFacing=true}</p>
+        {if !empty($footerText)}<p>{translate text=$footerText isPublicFacing=true}</p>{/if}
     </section>
 
     <script type="text/javascript">

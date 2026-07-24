@@ -8169,12 +8169,37 @@ class MyAccount_AJAX extends JSON_Action {
 					'isPublicFacing' => true,
 				]);
 				$catalog = CatalogFactory::getCatalogConnectionInstance();
-				if (!$catalog->hasIlsRegistrationModeSupport(AbstractIlsDriver::ILS_REG_MODE_MINIMAL_SELF) || $library->enableSelfRegistration == 0) {
+
+				if ($library->enableSelfRegistration == 2 && !empty($library->selfRegistrationUrl)) {
+					$result['title'] = translate([
+						'text' => 'Join our library to register for events',
+						'isPublicFacing' => true,
+					]);
+					$result['body'] = translate([
+						'text' => 'You will be redirected to complete registration.',
+						'isPublicFacing' => true,
+					]);
+					$result['redirectUrl'] = $library->selfRegistrationUrl;
 					return $result;
 				}
 
-				require_once ROOT_DIR . '/services/MyAccount/SelfReg.php';
-				return SelfReg::buildMinimalSelfRegForm($result, $library, $catalog, $body);
+				if ($library->enableSelfRegistration == 1 && $library->useMinimalSelfRegistrationModal && $catalog->hasIlsRegistrationModeSupport(AbstractIlsDriver::ILS_REG_MODE_MINIMAL_SELF)) {
+					require_once ROOT_DIR . '/services/MyAccount/SelfReg.php';
+					$formHtml = SelfReg::buildMinimalSelfRegForm(
+						$catalog,
+						'Interested in joining our library Events? Use the quick registration form below to sign up and become a library member.',
+						'Already a member? Log in below to register to this event.'
+					);
+					if (!empty($formHtml)) {
+						$result['title'] = translate([
+							'text' => 'Join our library to register for events',
+							'isPublicFacing' => true,
+						]);
+						$result['body'] = $body . $formHtml;
+					}
+				}
+
+				return $result;
 			}
 
 			$interface->assign('eventSourceId', $sourceId);
