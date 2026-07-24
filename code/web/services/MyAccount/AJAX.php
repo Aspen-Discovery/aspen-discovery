@@ -8304,7 +8304,8 @@ class MyAccount_AJAX extends JSON_Action {
 					$formHtml = SelfReg::buildMinimalSelfRegForm(
 						$catalog,
 						'Interested in joining our library Events? Use the quick registration form below to sign up and become a library member.',
-						'Already a member? Log in below to register to this event.'
+						'Already a member? Log in below to register to this event.',
+						'AspenDiscovery.Account.processMinimalSelfReg(objectEditorObject)'
 					);
 					if (!empty($formHtml)) {
 						$result['title'] = translate([
