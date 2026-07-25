@@ -140,6 +140,11 @@ AspenDiscovery.DateRangePicker = {
 			maxDate: absoluteMax || undefined,
 			defaultDate: initialRange.length === 2 ? initialRange : undefined,
 			disable: [isWithinDisabledRange],
+			onDayCreate: (selectedDates, dateStr, instance, dayElem) => {
+				if (isWithinDisabledRange(dayElem.dateObj)) {
+					dayElem.classList.add('unavailable');
+				}
+			},
 			onChange: (selectedDates, dateStr, instance) => {
 				this.writeSelectionToInputs(config, selectedDates, formatDisplay);
 				this.capEndDateWhileSelecting(instance, selectedDates, maxRangeDays, absoluteMax);
