@@ -40,19 +40,15 @@ AspenDiscovery.DateRangePicker = {
 	},
 
 	readRangeFromInputs: function (startInput, endInput) {
-		const range = [];
-		if (startInput && startInput.value) range.push(startInput.value);
-		if (endInput && endInput.value) range.push(endInput.value);
-		return range;
+		return [startInput, endInput].filter(input => input && input.value).map(input => input.value);
 	},
 
 	writeSelectionToInputs: function (config, selectedDates) {
-		if (config.startInput) {
-			config.startInput.value = selectedDates[0] ? flatpickr.formatDate(selectedDates[0], 'Y-m-d') : '';
-		}
-		if (config.endInput) {
-			config.endInput.value = selectedDates[1] ? flatpickr.formatDate(selectedDates[1], 'Y-m-d') : '';
-		}
+		[config.startInput, config.endInput].forEach((input, i) => {
+			if (input) {
+				input.value = selectedDates[i] ? flatpickr.formatDate(selectedDates[i], 'Y-m-d') : '';
+			}
+		});
 	},
 
 	capEndDateWhileSelecting: function (instance, selectedDates, maxRangeDays, absoluteMax) {
