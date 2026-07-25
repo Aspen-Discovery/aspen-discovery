@@ -908,12 +908,17 @@ AspenDiscovery.Record = (function () {
 			return source?.value ?? null;
 		},
 
-		bookingDateInputs: function () {
+		bookingSubmitInputs: function () {
+			return [document.getElementById('start-date-value'), document.getElementById('end-date-value')];
+		},
+
+		bookingDisplayInputs: function () {
 			return [document.getElementById('start-date'), document.getElementById('end-date')];
 		},
 
 		clearBookingDateInputs: function () {
-			AspenDiscovery.Record.bookingDateInputs().forEach(input => input && (input.value = ''));
+			[...AspenDiscovery.Record.bookingSubmitInputs(), ...AspenDiscovery.Record.bookingDisplayInputs()]
+				.forEach(input => input && (input.value = ''));
 		},
 
 		loadItemBookingAvailability: function (itemId) {
@@ -937,19 +942,22 @@ AspenDiscovery.Record = (function () {
 		},
 
 		showBookingCalendar: async function (wrapper, bookedRanges, constraints) {
-			const [startInput, endInput] = AspenDiscovery.Record.bookingDateInputs();
+			const [startInput, endInput] = AspenDiscovery.Record.bookingSubmitInputs();
+			const [startDisplayInput, endDisplayInput] = AspenDiscovery.Record.bookingDisplayInputs();
 			const tomorrow = new Date();
 			tomorrow.setDate(tomorrow.getDate() + 1);
 			tomorrow.setHours(0, 0, 0, 0);
 
 			try {
 				await AspenDiscovery.DateRangePicker.render(wrapper, {
-					startInput:     startInput,
-					endInput:       endInput,
-					minDate:        tomorrow,
-					maxDate:        constraints?.maxDate ? new Date(constraints.maxDate + 'T00:00:00') : null,
-					maxRangeDays:   constraints?.maxPeriod ? parseInt(constraints.maxPeriod, 10) : 0,
-					disabledRanges: bookedRanges,
+					startInput:        startInput,
+					endInput:          endInput,
+					startDisplayInput: startDisplayInput,
+					endDisplayInput:   endDisplayInput,
+					minDate:           tomorrow,
+					maxDate:           constraints?.maxDate ? new Date(constraints.maxDate + 'T00:00:00') : null,
+					maxRangeDays:      constraints?.maxPeriod ? parseInt(constraints.maxPeriod, 10) : 0,
+					disabledRanges:    bookedRanges,
 				});
 			} catch (e) {
 				const error = document.createElement('span');
