@@ -11,13 +11,14 @@
  *                                        ISO (Y-m-d) — this is the wire format the
  *                                        server/Koha parses. Also the source the
  *                                        initial range is read back from.
- *   startDisplayInput / endDisplayInput  the VISIBLE, human-facing fields. Written
- *                                        per displayFormat and never submitted.
+ *   startDisplayInput / endDisplayInput  the VISIBLE, human-facing fields. Rendered
+ *                                        per displayLocale and never submitted.
  *                                        Omit them for a headless / ISO-only setup.
- *   displayFormat                        flatpickr token for the display fields;
- *                                        defaults to 'Y-m-d'. Safe to localise —
- *                                        it only touches the display fields, so it
- *                                        can never reach the submitted value.
+ *   displayLocale                        BCP-47 locale (e.g. 'en-GB') the display
+ *                                        fields are rendered with, via Intl (medium
+ *                                        style). Omit for ISO. Only touches the
+ *                                        display fields, so it can never reach the
+ *                                        submitted value.
  *   initialRange                         [start, end] (ISO) to preselect; falls
  *                                        back to the values in startInput/endInput.
  *   minDate / maxDate                    selectable window; minDate defaults to today.
@@ -78,16 +79,26 @@ AspenDiscovery.DateRangePicker = {
 		return [startInput, endInput].filter(input => input && input.value).map(input => input.value);
 	},
 
-	writeSelectionToInputs: function (config, selectedDates, displayFormat) {
-		const write = (input, date, format) => {
+	writeSelectionToInputs: function (config, selectedDates, formatDisplay) {
+		const write = (input, value) => {
 			if (input) {
-				input.value = date ? flatpickr.formatDate(date, format) : '';
+				input.value = value;
 			}
 		};
 		// Submitted fields always carry ISO — the wire contract. Display fields carry
-		// the locale-facing format and are never sent to the server.
-		[config.startInput, config.endInput].forEach((input, i) => write(input, selectedDates[i], 'Y-m-d'));
-		[config.startDisplayInput, config.endDisplayInput].forEach((input, i) => write(input, selectedDates[i], displayFormat));
+		// the locale-facing rendering and are never sent to the server.
+		[config.startInput, config.endInput].forEach((input, i) =>
+			write(input, selectedDates[i] ? flatpickr.formatDate(selectedDates[i], 'Y-m-d') : ''));
+		[config.startDisplayInput, config.endDisplayInput].forEach((input, i) =>
+			write(input, selectedDates[i] ? formatDisplay(selectedDates[i]) : ''));
+	},
+
+	displayFormatterFor: function (displayLocale) {
+		if (!displayLocale) {
+			return date => flatpickr.formatDate(date, 'Y-m-d');
+		}
+		const formatter = new Intl.DateTimeFormat(displayLocale, { dateStyle: 'medium' });
+		return date => formatter.format(date);
 	},
 
 	capEndDateWhileSelecting: function (instance, selectedDates, maxRangeDays, absoluteMax) {
@@ -106,7 +117,7 @@ AspenDiscovery.DateRangePicker = {
 		const disabledRanges = config.disabledRanges || [];
 		const maxRangeDays = config.maxRangeDays || 0;
 		const absoluteMax = config.maxDate || null;
-		const displayFormat = config.displayFormat || 'Y-m-d';
+		const formatDisplay = this.displayFormatterFor(config.displayLocale);
 		const initialRange = config.initialRange || this.readRangeFromInputs(config.startInput, config.endInput);
 
 		function isWithinDisabledRange(date) {
@@ -130,7 +141,7 @@ AspenDiscovery.DateRangePicker = {
 			defaultDate: initialRange.length === 2 ? initialRange : undefined,
 			disable: [isWithinDisabledRange],
 			onChange: (selectedDates, dateStr, instance) => {
-				this.writeSelectionToInputs(config, selectedDates, displayFormat);
+				this.writeSelectionToInputs(config, selectedDates, formatDisplay);
 				this.capEndDateWhileSelecting(instance, selectedDates, maxRangeDays, absoluteMax);
 			},
 		});
