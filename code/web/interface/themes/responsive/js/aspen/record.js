@@ -929,8 +929,10 @@ AspenDiscovery.Record = (function () {
 
 			$.getJSON(Globals.path + '/Record/AJAX?method=getItemBookedDates&itemId=' + encodeURIComponent(itemId), function (data) {
 				AspenDiscovery.Record.showBookingCalendar(wrapper, data.success ? data.bookedDates : [], data.success ? data.constraints : null);
-			}).fail(function () {
-				AspenDiscovery.Record.showBookingCalendar(wrapper, [], null);
+			}).fail(AspenDiscovery.ajaxFail).always(function () {
+				if (loading) {
+					loading.hidden = true;
+				}
 			});
 		},
 
@@ -939,8 +941,6 @@ AspenDiscovery.Record = (function () {
 			const tomorrow = new Date();
 			tomorrow.setDate(tomorrow.getDate() + 1);
 			tomorrow.setHours(0, 0, 0, 0);
-
-			const loading = document.getElementById('booking-availability-loading');
 
 			try {
 				await AspenDiscovery.DateRangePicker.render(wrapper, {
@@ -956,10 +956,6 @@ AspenDiscovery.Record = (function () {
 				error.className = 'text-danger';
 				error.textContent = 'Unable to load the availability calendar.';
 				wrapper.replaceChildren(error);
-			} finally {
-				if (loading) {
-					loading.hidden = true;
-				}
 			}
 		},
 	};
