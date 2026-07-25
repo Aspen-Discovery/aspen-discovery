@@ -956,6 +956,7 @@ AspenDiscovery.Record = (function () {
 					endInput:          endInput,
 					startDisplayInput: startDisplayInput,
 					endDisplayInput:   endDisplayInput,
+					displayLocale:     wrapper.dataset.displayLocale || null,
 					minDate:           tomorrow,
 					maxDate:           constraints?.maxDate ? new Date(constraints.maxDate + 'T00:00:00') : null,
 					maxRangeDays:      constraints?.maxPeriod ? parseInt(constraints.maxPeriod, 10) : 0,
