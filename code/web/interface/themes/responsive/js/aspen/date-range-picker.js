@@ -27,17 +27,16 @@ AspenDiscovery.DateRangePicker = {
 	},
 
 	loadLibrary: async function () {
-		const D = AspenDiscovery.DateRangePicker;
 		// flatpickr first so the component stylesheet wins on any equal-specificity tie.
-		D.ensureStylesheet(D.FLATPICKR_CSS_URL, 'data-flatpickr-css');
-		D.ensureStylesheet(D.COMPONENT_CSS_URL, 'data-date-range-picker-css');
+		this.ensureStylesheet(this.FLATPICKR_CSS_URL, 'data-flatpickr-css');
+		this.ensureStylesheet(this.COMPONENT_CSS_URL, 'data-date-range-picker-css');
 		if (typeof flatpickr !== 'undefined') {
 			return;
 		}
-		if (!D._libraryPromise) {
-			D._libraryPromise = D.loadScript(D.FLATPICKR_JS_URL);
+		if (!this._libraryPromise) {
+			this._libraryPromise = this.loadScript(this.FLATPICKR_JS_URL);
 		}
-		await D._libraryPromise;
+		await this._libraryPromise;
 	},
 
 	readRangeFromInputs: function (startInput, endInput) {
@@ -72,7 +71,7 @@ AspenDiscovery.DateRangePicker = {
 		const disabledRanges = config.disabledRanges || [];
 		const maxRangeDays = config.maxRangeDays || 0;
 		const absoluteMax = config.maxDate || null;
-		const initialRange = config.initialRange || D.readRangeFromInputs(config.startInput, config.endInput);
+		const initialRange = config.initialRange || this.readRangeFromInputs(config.startInput, config.endInput);
 
 		function isWithinDisabledRange(date) {
 			const iso = flatpickr.formatDate(date, 'Y-m-d');
@@ -94,22 +93,21 @@ AspenDiscovery.DateRangePicker = {
 			maxDate: absoluteMax || undefined,
 			defaultDate: initialRange.length === 2 ? initialRange : undefined,
 			disable: [isWithinDisabledRange],
-			onChange: function (selectedDates, dateStr, instance) {
-				D.writeSelectionToInputs(config, selectedDates);
-				D.capEndDateWhileSelecting(instance, selectedDates, maxRangeDays, absoluteMax);
+			onChange: (selectedDates, dateStr, instance) => {
+				this.writeSelectionToInputs(config, selectedDates);
+				this.capEndDateWhileSelecting(instance, selectedDates, maxRangeDays, absoluteMax);
 			},
 		});
 	},
 
 	render: async function (container, config) {
-		const D = AspenDiscovery.DateRangePicker;
-		await D.loadLibrary();
+		await this.loadLibrary();
 		if (container._dateRangePicker) {
 			container._dateRangePicker.destroy();
 		}
 		container.replaceChildren();
 		config.container = container;
-		container._dateRangePicker = D.create(config);
+		container._dateRangePicker = this.create(config);
 		return container._dateRangePicker;
 	},
 };
