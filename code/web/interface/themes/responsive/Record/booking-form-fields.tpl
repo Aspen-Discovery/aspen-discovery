@@ -2,12 +2,14 @@
 	<div class="booking-date-range form-group">
 		<div class="booking-date-field">
 			<label class="control-label" for="start-date">{translate text="From" isPublicFacing=true}</label>
-			<input type="text" name="startDate" id="start-date" class="form-control required" readonly value="{$startDate|default:''}">
+			<input type="text" id="start-date" class="form-control required" readonly value="{$startDate|default:''}">
+			<input type="hidden" name="startDate" id="start-date-value" value="{$startDate|default:''}">
 		</div>
 		<span class="booking-date-sep" aria-hidden="true">&#8594;</span>
 		<div class="booking-date-field">
 			<label class="control-label" for="end-date">{translate text="To" isPublicFacing=true}</label>
-			<input type="text" name="endDate" id="end-date" class="form-control required" readonly value="{$endDate|default:''}">
+			<input type="text" id="end-date" class="form-control required" readonly value="{$endDate|default:''}">
+			<input type="hidden" name="endDate" id="end-date-value" value="{$endDate|default:''}">
 		</div>
 	</div>
 

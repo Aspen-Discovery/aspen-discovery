@@ -7,12 +7,22 @@
  * lazy-loads the flatpickr library + stylesheets from a CDN on first use.
  *
  * config (all optional):
- *   startInput / endInput  inputs the selected range is written back to (as Y-m-d).
- *   initialRange           [start, end] to preselect; falls back to the values
- *                          already in startInput / endInput.
- *   minDate / maxDate      selectable window; minDate defaults to today.
- *   disabledRanges         [{start, end}, ...] (Y-m-d) that cannot be selected.
- *   maxRangeDays           cap on the length of a single selection.
+ *   startInput / endInput                the SUBMITTED fields. Always written in
+ *                                        ISO (Y-m-d) — this is the wire format the
+ *                                        server/Koha parses. Also the source the
+ *                                        initial range is read back from.
+ *   startDisplayInput / endDisplayInput  the VISIBLE, human-facing fields. Written
+ *                                        per displayFormat and never submitted.
+ *                                        Omit them for a headless / ISO-only setup.
+ *   displayFormat                        flatpickr token for the display fields;
+ *                                        defaults to 'Y-m-d'. Safe to localise —
+ *                                        it only touches the display fields, so it
+ *                                        can never reach the submitted value.
+ *   initialRange                         [start, end] (ISO) to preselect; falls
+ *                                        back to the values in startInput/endInput.
+ *   minDate / maxDate                    selectable window; minDate defaults to today.
+ *   disabledRanges                       [{start, end}, ...] (Y-m-d) that cannot be selected.
+ *   maxRangeDays                         cap on the length of a single selection.
  *
  * Limitations:
  *   - Client-side only. disabledRanges and maxRangeDays are UX guardrails, not
@@ -68,12 +78,16 @@ AspenDiscovery.DateRangePicker = {
 		return [startInput, endInput].filter(input => input && input.value).map(input => input.value);
 	},
 
-	writeSelectionToInputs: function (config, selectedDates) {
-		[config.startInput, config.endInput].forEach((input, i) => {
+	writeSelectionToInputs: function (config, selectedDates, displayFormat) {
+		const write = (input, date, format) => {
 			if (input) {
-				input.value = selectedDates[i] ? flatpickr.formatDate(selectedDates[i], 'Y-m-d') : '';
+				input.value = date ? flatpickr.formatDate(date, format) : '';
 			}
-		});
+		};
+		// Submitted fields always carry ISO — the wire contract. Display fields carry
+		// the locale-facing format and are never sent to the server.
+		[config.startInput, config.endInput].forEach((input, i) => write(input, selectedDates[i], 'Y-m-d'));
+		[config.startDisplayInput, config.endDisplayInput].forEach((input, i) => write(input, selectedDates[i], displayFormat));
 	},
 
 	capEndDateWhileSelecting: function (instance, selectedDates, maxRangeDays, absoluteMax) {
@@ -92,6 +106,7 @@ AspenDiscovery.DateRangePicker = {
 		const disabledRanges = config.disabledRanges || [];
 		const maxRangeDays = config.maxRangeDays || 0;
 		const absoluteMax = config.maxDate || null;
+		const displayFormat = config.displayFormat || 'Y-m-d';
 		const initialRange = config.initialRange || this.readRangeFromInputs(config.startInput, config.endInput);
 
 		function isWithinDisabledRange(date) {
@@ -115,7 +130,7 @@ AspenDiscovery.DateRangePicker = {
 			defaultDate: initialRange.length === 2 ? initialRange : undefined,
 			disable: [isWithinDisabledRange],
 			onChange: (selectedDates, dateStr, instance) => {
-				this.writeSelectionToInputs(config, selectedDates);
+				this.writeSelectionToInputs(config, selectedDates, displayFormat);
 				this.capEndDateWhileSelecting(instance, selectedDates, maxRangeDays, absoluteMax);
 			},
 		});
