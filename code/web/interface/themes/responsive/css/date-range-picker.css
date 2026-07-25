@@ -13,8 +13,8 @@
 	justify-content: center;
 }
 
-.date-range-picker .flatpickr-day.flatpickr-disabled,
-.date-range-picker .flatpickr-day.flatpickr-disabled:hover {
+.date-range-picker .flatpickr-day.unavailable,
+.date-range-picker .flatpickr-day.unavailable:hover {
 	background: #ffe8cc;
 	color: #b35a00;
 	text-decoration: line-through;
