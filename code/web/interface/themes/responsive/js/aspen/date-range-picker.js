@@ -107,7 +107,7 @@ AspenDiscovery.DateRangePicker = {
 		if (container._dateRangePicker) {
 			container._dateRangePicker.destroy();
 		}
-		container.innerHTML = '';
+		container.replaceChildren();
 		config.container = container;
 		container._dateRangePicker = D.create(config);
 		return container._dateRangePicker;

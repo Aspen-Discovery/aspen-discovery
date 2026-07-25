@@ -15,7 +15,9 @@
 		<input type="hidden" id="current-item-id" value="{$currentItemId|escape}">
 	{/if}
 
-	<div id="booking-availability" class="booking-availability" aria-live="polite"></div>
+	<div id="booking-availability-loading" class="booking-availability text-muted" aria-live="polite" hidden><em>{translate text="Loading availability…" isPublicFacing=true}</em></div>
+
+	<div id="booking-availability" class="booking-availability"></div>
 
 	{include file='Record/pickup-location-select.tpl'}
 
