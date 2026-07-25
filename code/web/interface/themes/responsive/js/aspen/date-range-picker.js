@@ -1,3 +1,28 @@
+/*
+ * Reusable inline date-range picker, wrapping flatpickr in "range" mode.
+ *
+ * Usage:
+ *   AspenDiscovery.DateRangePicker.render(wrapper, config)
+ * renders a monthly calendar inside `wrapper` (any block-level element) and
+ * lazy-loads the flatpickr library + stylesheets from a CDN on first use.
+ *
+ * config (all optional):
+ *   startInput / endInput  inputs the selected range is written back to (as Y-m-d).
+ *   initialRange           [start, end] to preselect; falls back to the values
+ *                          already in startInput / endInput.
+ *   minDate / maxDate      selectable window; minDate defaults to today.
+ *   disabledRanges         [{start, end}, ...] (Y-m-d) that cannot be selected.
+ *   maxRangeDays           cap on the length of a single selection.
+ *
+ * Limitations:
+ *   - Client-side only. disabledRanges and maxRangeDays are UX guardrails, not
+ *     access control: anyone can bypass them by editing the page or calling the
+ *     endpoint directly. The PHP handling the booking request is the real
+ *     authority and must re-validate availability and range limits server-side.
+ *   - Depends on the flatpickr CDN being reachable; render() rejects if it fails
+ *     to load, and callers are expected to surface that to the user.
+ *   - One picker instance per wrapper; re-rendering destroys the previous one.
+ */
 AspenDiscovery.DateRangePicker = {
 	COMPONENT_CSS_URL: '/interface/themes/responsive/css/date-range-picker.css',
 	FLATPICKR_CSS_URL: 'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css',
