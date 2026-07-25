@@ -919,28 +919,33 @@ AspenDiscovery.Record = (function () {
 		},
 
 		loadItemBookingAvailability: function (itemId) {
-			const container = document.getElementById('booking-availability');
-			if (!itemId || !container) {
+			const wrapper = document.getElementById('booking-availability');
+			if (!itemId || !wrapper) {
 				return;
 			}
 
-			container.innerHTML = '<span class="text-muted"><em>Loading availability\u2026</em></span>';
+			const loading = document.getElementById('booking-availability-loading');
+			if (loading) {
+				loading.hidden = false;
+			}
 
 			$.getJSON(Globals.path + '/Record/AJAX?method=getItemBookedDates&itemId=' + encodeURIComponent(itemId), function (data) {
-				AspenDiscovery.Record.showBookingCalendar(container, data.success ? data.bookedDates : [], data.success ? data.constraints : null);
+				AspenDiscovery.Record.showBookingCalendar(wrapper, data.success ? data.bookedDates : [], data.success ? data.constraints : null);
 			}).fail(function () {
-				AspenDiscovery.Record.showBookingCalendar(container, [], null);
+				AspenDiscovery.Record.showBookingCalendar(wrapper, [], null);
 			});
 		},
 
-		showBookingCalendar: async function (container, bookedRanges, constraints) {
+		showBookingCalendar: async function (wrapper, bookedRanges, constraints) {
 			const [startInput, endInput] = AspenDiscovery.Record.bookingDateInputs();
 			const tomorrow = new Date();
 			tomorrow.setDate(tomorrow.getDate() + 1);
 			tomorrow.setHours(0, 0, 0, 0);
 
+			const loading = document.getElementById('booking-availability-loading');
+
 			try {
-				await AspenDiscovery.DateRangePicker.render(container, {
+				await AspenDiscovery.DateRangePicker.render(wrapper, {
 					startInput:     startInput,
 					endInput:       endInput,
 					minDate:        tomorrow,
@@ -949,7 +954,14 @@ AspenDiscovery.Record = (function () {
 					disabledRanges: bookedRanges,
 				});
 			} catch (e) {
-				container.innerHTML = '<span class="text-danger">Unable to load the availability calendar.</span>';
+				const error = document.createElement('span');
+				error.className = 'text-danger';
+				error.textContent = 'Unable to load the availability calendar.';
+				wrapper.replaceChildren(error);
+			} finally {
+				if (loading) {
+					loading.hidden = true;
+				}
 			}
 		},
 	};
