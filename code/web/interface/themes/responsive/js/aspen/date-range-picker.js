@@ -63,7 +63,7 @@ AspenDiscovery.DateRangePicker = {
 		}
 	},
 
-	create: function (config) {
+	create: function (wrapper, config) {
 		const disabledRanges = config.disabledRanges || [];
 		const maxRangeDays = config.maxRangeDays || 0;
 		const absoluteMax = config.maxDate || null;
@@ -76,10 +76,10 @@ AspenDiscovery.DateRangePicker = {
 			});
 		}
 
-		config.wrapper.classList.add('date-range-picker');
+		wrapper.classList.add('date-range-picker');
 		const anchor = document.createElement('input');
 		anchor.type = 'hidden';
-		config.wrapper.appendChild(anchor);
+		wrapper.appendChild(anchor);
 
 		return flatpickr(anchor, {
 			mode: 'range',
@@ -102,8 +102,7 @@ AspenDiscovery.DateRangePicker = {
 			wrapper._dateRangePicker.destroy();
 		}
 		wrapper.replaceChildren();
-		config.wrapper = wrapper;
-		wrapper._dateRangePicker = this.create(config);
+		wrapper._dateRangePicker = this.create(wrapper, config);
 		return wrapper._dateRangePicker;
 	},
 };
