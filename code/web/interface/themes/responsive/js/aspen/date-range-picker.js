@@ -76,10 +76,10 @@ AspenDiscovery.DateRangePicker = {
 			});
 		}
 
-		config.container.classList.add('date-range-picker');
+		config.wrapper.classList.add('date-range-picker');
 		const anchor = document.createElement('input');
 		anchor.type = 'hidden';
-		config.container.appendChild(anchor);
+		config.wrapper.appendChild(anchor);
 
 		return flatpickr(anchor, {
 			mode: 'range',
@@ -96,14 +96,14 @@ AspenDiscovery.DateRangePicker = {
 		});
 	},
 
-	render: async function (container, config) {
+	render: async function (wrapper, config) {
 		await this.loadLibrary();
-		if (container._dateRangePicker) {
-			container._dateRangePicker.destroy();
+		if (wrapper._dateRangePicker) {
+			wrapper._dateRangePicker.destroy();
 		}
-		container.replaceChildren();
-		config.container = container;
-		container._dateRangePicker = this.create(config);
-		return container._dateRangePicker;
+		wrapper.replaceChildren();
+		config.wrapper = wrapper;
+		wrapper._dateRangePicker = this.create(config);
+		return wrapper._dateRangePicker;
 	},
 };
