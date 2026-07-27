@@ -900,18 +900,12 @@ AspenDiscovery.Record = (function () {
 			if (!calendar) {
 				return;
 			}
-			const [startInput, endInput] = AspenDiscovery.Record.bookingSubmitInputs();
-			const [startDisplayInput, endDisplayInput] = AspenDiscovery.Record.bookingDisplayInputs();
 			const tomorrow = new Date();
 			tomorrow.setDate(tomorrow.getDate() + 1);
 			tomorrow.setHours(0, 0, 0, 0);
 
 			AspenDiscovery.DateRangePicker.init(calendar, {
-				startInput:        startInput,
-				endInput:          endInput,
-				startDisplayInput: startDisplayInput,
-				endDisplayInput:   endDisplayInput,
-				minDate:           tomorrow,
+				minDate: tomorrow,
 			}).then(function () {
 				document.getElementById('booking-item-select')?.addEventListener('change', function () {
 					AspenDiscovery.Record.clearBookingDateInputs();
@@ -935,20 +929,10 @@ AspenDiscovery.Record = (function () {
 			return source?.value ?? null;
 		},
 
-		bookingSubmitInputs: function () {
-			return [document.getElementById('start-date-value'), document.getElementById('end-date-value')];
-		},
-
-		bookingDisplayInputs: function () {
-			return [document.getElementById('start-date'), document.getElementById('end-date')];
-		},
-
 		clearBookingDateInputs: function () {
-			[...AspenDiscovery.Record.bookingSubmitInputs(), ...AspenDiscovery.Record.bookingDisplayInputs()]
-				.forEach(input => input && (input.value = ''));
 			const calendar = AspenDiscovery.Record.getBookingCalendar();
 			if (calendar) {
-				calendar.value = '';
+				AspenDiscovery.DateRangePicker.clear(calendar);
 			}
 		},
 
