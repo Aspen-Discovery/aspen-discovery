@@ -23,11 +23,6 @@
 
 	{include file='Record/pickup-location-select.tpl'}
 
-	<div class="form-group">
-		<label class="control-label" for="notes">{translate text="Notes" isPublicFacing=true}</label>
-		<textarea name="notes" id="notes" class="form-control" rows="3">{$notes|default:''|escape}</textarea>
-	</div>
-
 	<script> $(function () { AspenDiscovery.Record.initBookingForm(); }); </script>
 
 	<style>

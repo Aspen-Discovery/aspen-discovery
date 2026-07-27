@@ -23,7 +23,6 @@ class BookingServiceTests extends TestCase {
 			ils_end_date date NOT NULL,
 			ils_pickup_library_id varchar(50) DEFAULT NULL,
 			ils_status varchar(50) DEFAULT NULL,
-			ils_notes text DEFAULT NULL,
 			createdAt int(11) NOT NULL,
 			PRIMARY KEY (id),
 			UNIQUE KEY userId (userId, ils_booking_id)
@@ -78,7 +77,6 @@ class BookingServiceTests extends TestCase {
 		$this->assertEquals('2026-06-07', $b->ils_end_date);
 		$this->assertEquals('CPL', $b->ils_pickup_library_id);
 		$this->assertEquals('confirmed', $b->ils_status);
-		$this->assertEquals('handle with care', $b->ils_notes);
 	}
 
 	public function testStoreBookingWithNullPickupAndNotes(): void {
@@ -96,7 +94,6 @@ class BookingServiceTests extends TestCase {
 		$b->ils_booking_id = $ilsId;
 		$this->assertTrue((bool)$b->find(true));
 		$this->assertNull($b->ils_pickup_library_id);
-		$this->assertNull($b->ils_notes);
 	}
 
 	// -------------------------------------------------------------------------

@@ -4,7 +4,7 @@ require_once ROOT_DIR . '/sys/User/Booking.php';
 
 class BookingService {
 
-	public static function storeBooking(User $patron, string $itemId, string $recordId, string $startDate, string $endDate, ?string $pickupBranch, ?string $notes, array $apiResponse): void {
+	public static function storeBooking(User $patron, string $itemId, string $recordId, string $startDate, string $endDate, ?string $pickupBranch, array $apiResponse): void {
 		$booking = new Booking();
 		$booking->userId                = $patron->id;
 		$booking->recordId              = $recordId;
@@ -14,7 +14,6 @@ class BookingService {
 		$booking->ils_end_date          = $endDate;
 		$booking->ils_pickup_library_id = $pickupBranch;
 		$booking->ils_status            = $apiResponse['status'] ?? null;
-		$booking->ils_notes             = $notes;
 		$booking->createdAt             = time();
 		$booking->insert();
 	}
@@ -67,7 +66,7 @@ class BookingService {
 	}
 
 	/**
-	 * Merge each live ILS booking with its locally stored metadata (notes, creation
+	 * Merge each live ILS booking with its locally stored metadata (creation
 	 * time, patron-placed original values) and the record's display fields, and flag
 	 * whether the booking has already elapsed. Consumed by both the web account view
 	 * and the API.
@@ -81,7 +80,6 @@ class BookingService {
 		foreach ($liveBookings as $booking) {
 			$stored = $storedById[$booking['id']] ?? null;
 			$booking['userId']                  = $patron->id;
-			$booking['notes']                   = $stored->ils_notes ?? null;
 			$booking['createdAt']               = $stored->createdAt ?? null;
 			$booking['originalStartDate']       = $stored->ils_start_date ?? null;
 			$booking['originalEndDate']         = $stored->ils_end_date ?? null;

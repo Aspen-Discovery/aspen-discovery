@@ -3810,9 +3810,8 @@ class UserAPI extends AbstractAPI {
 		$startDate = $_REQUEST['startDate'];
 		$endDate = $_REQUEST['endDate'];
 		$pickupBranch = !empty($_REQUEST['pickupBranch']) ? $_REQUEST['pickupBranch'] : null;
-		$notes = !empty($_REQUEST['notes']) ? $_REQUEST['notes'] : null;
 
-		return $user->placeBooking($itemId, $shortId, $startDate, $endDate, $pickupBranch, $notes);
+		return $user->placeBooking($itemId, $shortId, $startDate, $endDate, $pickupBranch);
 	}
 
 	/**
