@@ -1,61 +1,36 @@
 /*
- * Reusable inline date-range picker, wrapping flatpickr in "range" mode.
+ * Reusable inline date-range picker on the Cally web components. The shell is
+ * authored in Record/date-range-picker.tpl; this module lazy-loads Cally and
+ * drives the per-selection state. Cally was chosen over flatpickr for accessibility:
+ * an ARIA grid with roving tabindex, fully keyboard operable, screen-reader friendly
  *
  * Usage:
- *   AspenDiscovery.DateRangePicker.render(wrapper, config)
- * renders a monthly calendar inside `wrapper` (any block-level element) and
- * lazy-loads the flatpickr library + stylesheets from a CDN on first use.
+ *   const picker = await AspenDiscovery.DateRangePicker.init(rangeEl, config);
+ *   AspenDiscovery.DateRangePicker.update(picker, window);   // per selection
+ * init() wires the element once and reads its `locale` attribute; update()
+ * mutates the selectable window in place — no teardown/re-render.
  *
- * config (all optional):
- *   startInput / endInput                the SUBMITTED fields. Always written in
- *                                        ISO (Y-m-d) — this is the wire format the
- *                                        server/Koha parses. Also the source the
- *                                        initial range is read back from.
- *   startDisplayInput / endDisplayInput  the VISIBLE, human-facing fields. Rendered
- *                                        per displayLocale and never submitted.
- *                                        Omit them for a headless / ISO-only setup.
- *   displayLocale                        BCP-47 locale (e.g. 'en-GB') the display
- *                                        fields are rendered with, via Intl (medium
- *                                        style). Omit for ISO. Only touches the
- *                                        display fields, so it can never reach the
- *                                        submitted value.
- *   initialRange                         [start, end] (ISO) to preselect; falls
- *                                        back to the values in startInput/endInput.
- *   minDate / maxDate                    selectable window; minDate defaults to today.
- *   disabledRanges                       [{start, end}, ...] (Y-m-d) that cannot be selected.
- *   maxRangeDays                         cap on the length of a single selection.
+ * init(config):   startInput / endInput          submitted, always ISO (Y-m-d)
+ *                 start/endDisplayInput          visible, locale-formatted, never sent
+ *                 minDate                        earliest selectable (Date|ISO); default today
+ * update(window): maxDate                        latest selectable (Date|ISO)
+ *                 disabledRanges                 [{start, end}] (Y-m-d), unavailable
+ *                 maxRangeDays                   cap on a single selection's length
  *
- * Limitations:
- *   - Client-side only. disabledRanges and maxRangeDays are UX guardrails, not
- *     access control: anyone can bypass them by editing the page or calling the
- *     endpoint directly. The PHP handling the booking request is the real
- *     authority and must re-validate availability and range limits server-side.
- *   - Depends on the flatpickr CDN being reachable; render() rejects if it fails
- *     to load, and callers are expected to surface that to the user.
- *   - One picker instance per wrapper; re-rendering destroys the previous one.
+ * disabledRanges / maxRangeDays are client-side UX guardrails only — the server
+ * must re-validate. maxRangeDays is a commit-time backstop, not a live cap.
+ * init() rejects if the Cally CDN is unreachable; callers surface that.
  */
 AspenDiscovery.DateRangePicker = {
-	COMPONENT_CSS_URL: '/interface/themes/responsive/css/date-range-picker.css',
-	FLATPICKR_CSS_URL: 'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css',
-	FLATPICKR_JS_URL: 'https://cdn.jsdelivr.net/npm/flatpickr',
+	CALLY_JS_URL: 'https://unpkg.com/cally',
 
 	_libraryPromise: null,
-
-	ensureStylesheet: function (url, marker) {
-		if (document.querySelector('link[' + marker + ']')) {
-			return;
-		}
-		const link = document.createElement('link');
-		link.rel = 'stylesheet';
-		link.href = url;
-		link.setAttribute(marker, 'true');
-		document.head.appendChild(link);
-	},
 
 	loadScript: function (url) {
 		return new Promise(function (resolve, reject) {
 			const script = document.createElement('script');
 			script.src = url;
+			script.type = 'module';
 			script.onload = resolve;
 			script.onerror = reject;
 			document.head.appendChild(script);
@@ -63,23 +38,46 @@ AspenDiscovery.DateRangePicker = {
 	},
 
 	loadLibrary: async function () {
-		// flatpickr first so the component stylesheet wins on any equal-specificity tie.
-		this.ensureStylesheet(this.FLATPICKR_CSS_URL, 'data-flatpickr-css');
-		this.ensureStylesheet(this.COMPONENT_CSS_URL, 'data-date-range-picker-css');
-		if (typeof flatpickr !== 'undefined') {
-			return;
+		if (!customElements.get('calendar-range')) {
+			if (!this._libraryPromise) {
+				this._libraryPromise = this.loadScript(this.CALLY_JS_URL);
+			}
+			await this._libraryPromise;
 		}
-		if (!this._libraryPromise) {
-			this._libraryPromise = this.loadScript(this.FLATPICKR_JS_URL);
+		await customElements.whenDefined('calendar-range');
+		await customElements.whenDefined('calendar-month');
+	},
+
+	toIsoDate: function (value) {
+		if (!value) {
+			return '';
 		}
-		await this._libraryPromise;
+		const date = value instanceof Date ? value : new Date(value);
+		if (Number.isNaN(date.getTime())) {
+			return '';
+		}
+		const month = String(date.getMonth() + 1).padStart(2, '0');
+		const day = String(date.getDate()).padStart(2, '0');
+		return date.getFullYear() + '-' + month + '-' + day;
+	},
+
+	parseIsoDate: function (iso) {
+		return new Date(iso + 'T00:00:00');
 	},
 
 	readRangeFromInputs: function (startInput, endInput) {
 		return [startInput, endInput].filter(input => input && input.value).map(input => input.value);
 	},
 
-	writeSelectionToInputs: function (config, selectedDates, formatDisplay) {
+	displayFormatterFor: function (displayLocale) {
+		if (!displayLocale) {
+			return date => this.toIsoDate(date);
+		}
+		const formatter = new Intl.DateTimeFormat(displayLocale, { dateStyle: 'medium' });
+		return date => formatter.format(date);
+	},
+
+	writeSelectionToInputs: function (config, startIso, endIso, formatDisplay) {
 		const write = (input, value) => {
 			if (input) {
 				input.value = value;
@@ -87,78 +85,80 @@ AspenDiscovery.DateRangePicker = {
 		};
 		// Submitted fields always carry ISO — the wire contract. Display fields carry
 		// the locale-facing rendering and are never sent to the server.
-		[config.startInput, config.endInput].forEach((input, i) =>
-			write(input, selectedDates[i] ? flatpickr.formatDate(selectedDates[i], 'Y-m-d') : ''));
-		[config.startDisplayInput, config.endDisplayInput].forEach((input, i) =>
-			write(input, selectedDates[i] ? formatDisplay(selectedDates[i]) : ''));
+		write(config.startInput, startIso || '');
+		write(config.endInput, endIso || '');
+		write(config.startDisplayInput, startIso ? formatDisplay(this.parseIsoDate(startIso)) : '');
+		write(config.endDisplayInput, endIso ? formatDisplay(this.parseIsoDate(endIso)) : '');
 	},
 
-	displayFormatterFor: function (displayLocale) {
-		if (!displayLocale) {
-			return date => flatpickr.formatDate(date, 'Y-m-d');
+	clampRangeEnd: function (startIso, endIso, maxRangeDays) {
+		if (maxRangeDays <= 0 || !startIso || !endIso) {
+			return endIso;
 		}
-		const formatter = new Intl.DateTimeFormat(displayLocale, { dateStyle: 'medium' });
-		return date => formatter.format(date);
-	},
-
-	capEndDateWhileSelecting: function (instance, selectedDates, maxRangeDays, absoluteMax) {
-		// While only the start is chosen, cap the selectable end at min(start + maxRangeDays,
-		// absoluteMax); restore the ceiling once the range completes so the next start isn't stuck.
-		if (selectedDates.length === 1 && maxRangeDays > 0) {
-			const limit = new Date(selectedDates[0].getTime());
-			limit.setDate(limit.getDate() + maxRangeDays);
-			instance.set('maxDate', absoluteMax && absoluteMax < limit ? absoluteMax : limit);
-		} else if (selectedDates.length !== 1) {
-			instance.set('maxDate', absoluteMax || undefined);
+		const start = this.parseIsoDate(startIso);
+		const spanDays = Math.round((this.parseIsoDate(endIso) - start) / 86400000);
+		if (spanDays <= maxRangeDays) {
+			return endIso;
 		}
+		const capped = new Date(start.getTime());
+		capped.setDate(capped.getDate() + maxRangeDays);
+		return this.toIsoDate(capped);
 	},
 
-	create: function (wrapper, config) {
-		const disabledRanges = config.disabledRanges || [];
-		const maxRangeDays = config.maxRangeDays || 0;
-		const absoluteMax = config.maxDate || null;
-		const formatDisplay = this.displayFormatterFor(config.displayLocale);
-		const initialRange = config.initialRange || this.readRangeFromInputs(config.startInput, config.endInput);
-
-		function isWithinDisabledRange(date) {
-			const iso = flatpickr.formatDate(date, 'Y-m-d');
-			return disabledRanges.some(function (range) {
-				return iso >= range.start && iso <= range.end;
-			});
-		}
-
-		wrapper.classList.add('date-range-picker');
-		const anchor = document.createElement('input');
-		anchor.type = 'hidden';
-		wrapper.appendChild(anchor);
-
-		return flatpickr(anchor, {
-			mode: 'range',
-			inline: true,
-			dateFormat: 'Y-m-d',
-			minDate: config.minDate || 'today',
-			maxDate: absoluteMax || undefined,
-			defaultDate: initialRange.length === 2 ? initialRange : undefined,
-			disable: [isWithinDisabledRange],
-			onDayCreate: (selectedDates, dateStr, instance, dayElem) => {
-				if (isWithinDisabledRange(dayElem.dateObj)) {
-					dayElem.classList.add('unavailable');
-				}
-			},
-			onChange: (selectedDates, dateStr, instance) => {
-				this.writeSelectionToInputs(config, selectedDates, formatDisplay);
-				this.capEndDateWhileSelecting(instance, selectedDates, maxRangeDays, absoluteMax);
-			},
-		});
-	},
-
-	render: async function (wrapper, config) {
+	init: async function (range, config) {
 		await this.loadLibrary();
-		if (wrapper._dateRangePicker) {
-			wrapper._dateRangePicker.destroy();
+
+		range._dateRangeConfig = {
+			startInput: config.startInput,
+			endInput: config.endInput,
+			startDisplayInput: config.startDisplayInput,
+			endDisplayInput: config.endDisplayInput,
+			formatDisplay: this.displayFormatterFor(range.getAttribute('locale')),
+			disabledRanges: [],
+			maxRangeDays: 0,
+		};
+
+		range.setAttribute('min', this.toIsoDate(config.minDate) || this.toIsoDate(new Date()));
+		range.isDateDisallowed = () => false;
+
+		const initialRange = this.readRangeFromInputs(config.startInput, config.endInput);
+		if (initialRange.length === 2) {
+			range.value = initialRange.join('/');
 		}
-		wrapper.replaceChildren();
-		wrapper._dateRangePicker = this.create(wrapper, config);
-		return wrapper._dateRangePicker;
+
+		range.addEventListener('change', () => this.onChange(range));
+		return range;
+	},
+
+	update: function (range, availability) {
+		const config = range._dateRangeConfig;
+		if (!config) {
+			return;
+		}
+		const disabledRanges = availability.disabledRanges || [];
+		config.disabledRanges = disabledRanges;
+		config.maxRangeDays = availability.maxRangeDays || 0;
+
+		// Reassigning the property re-runs Cally's disable check and re-renders.
+		range.isDateDisallowed = (date) => {
+			const iso = this.toIsoDate(date);
+			return disabledRanges.some(disabled => iso >= disabled.start && iso <= disabled.end);
+		};
+
+		if (availability.maxDate) {
+			range.setAttribute('max', this.toIsoDate(availability.maxDate));
+		} else {
+			range.removeAttribute('max');
+		}
+	},
+
+	onChange: function (range) {
+		const config = range._dateRangeConfig;
+		const [startIso, rawEndIso] = range.value ? range.value.split('/') : [];
+		const endIso = this.clampRangeEnd(startIso, rawEndIso, config.maxRangeDays);
+		if (endIso !== rawEndIso) {
+			range.value = startIso + '/' + endIso;
+		}
+		this.writeSelectionToInputs(config, startIso, endIso, config.formatDisplay);
 	},
 };

@@ -1,22 +1,39 @@
-.date-range-picker .flatpickr-input {
-	display: none;
+.date-range-picker calendar-range {
+	display: block;
+	width: 100%;
+	container-type: inline-size;
 }
 
-.date-range-picker .flatpickr-calendar {
-	width: 100%;
-	box-shadow: none;
+.date-range-picker calendar-range::part(container) {
 	border: 1px solid #ddd;
 	border-radius: 4px;
+	padding: .75rem;
 }
 
-.date-range-picker .flatpickr-innerContainer {
-	justify-content: center;
+.date-range-picker calendar-range::part(months) {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1.5rem;
 }
 
-.date-range-picker .flatpickr-day.unavailable,
-.date-range-picker .flatpickr-day.unavailable:hover {
+.date-range-picker calendar-month {
+	flex: 1 1 0;
+	min-width: 0;
+}
+
+.date-range-picker calendar-month::part(table) {
+	width: 100%;
+	table-layout: fixed;
+}
+
+.date-range-picker calendar-month::part(button) {
+	width: 100%;
+	aspect-ratio: 1;
+	font-size: 3cqi;
+}
+
+.date-range-picker calendar-month::part(disallowed) {
 	background: #ffe8cc;
 	color: #b35a00;
 	text-decoration: line-through;
-	border-color: transparent;
 }
