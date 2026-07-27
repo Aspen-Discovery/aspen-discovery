@@ -19,7 +19,10 @@
 
 	<div id="booking-availability-loading" class="booking-availability text-muted" aria-live="polite" hidden><em>{translate text="Loading availability…" isPublicFacing=true}</em></div>
 
-	<div id="booking-availability" class="booking-availability" data-display-locale="{$userLang->locale|default:'en-US'|replace:'_':'-'}"></div>
+	{assign var="bookingCalendarLocale" value=$userLang->locale|default:'en-US'|replace:'_':'-'}
+	<div id="booking-availability" class="booking-availability">
+		{include file="Record/date-range-picker.tpl" rangeId="booking-calendar" months=1 locale=$bookingCalendarLocale}
+	</div>
 
 	{include file='Record/pickup-location-select.tpl'}
 

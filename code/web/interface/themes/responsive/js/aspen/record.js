@@ -898,11 +898,38 @@ AspenDiscovery.Record = (function () {
 		},
 
 		initBookingForm: function () {
-			document.getElementById('booking-item-select')?.addEventListener('change', function () {
-				AspenDiscovery.Record.clearBookingDateInputs();
-				AspenDiscovery.Record.loadItemBookingAvailability(this.value);
+			const calendar = AspenDiscovery.Record.getBookingCalendar();
+			if (!calendar) {
+				return;
+			}
+			const [startInput, endInput] = AspenDiscovery.Record.bookingSubmitInputs();
+			const [startDisplayInput, endDisplayInput] = AspenDiscovery.Record.bookingDisplayInputs();
+			const tomorrow = new Date();
+			tomorrow.setDate(tomorrow.getDate() + 1);
+			tomorrow.setHours(0, 0, 0, 0);
+
+			AspenDiscovery.DateRangePicker.init(calendar, {
+				startInput:        startInput,
+				endInput:          endInput,
+				startDisplayInput: startDisplayInput,
+				endDisplayInput:   endDisplayInput,
+				minDate:           tomorrow,
+			}).then(function () {
+				document.getElementById('booking-item-select')?.addEventListener('change', function () {
+					AspenDiscovery.Record.clearBookingDateInputs();
+					AspenDiscovery.Record.loadItemBookingAvailability(this.value);
+				});
+				AspenDiscovery.Record.loadItemBookingAvailability(AspenDiscovery.Record.getSelectedBookingItemId());
+			}).catch(function () {
+				const error = document.createElement('span');
+				error.className = 'text-danger';
+				error.textContent = 'Unable to load the availability calendar.';
+				calendar.replaceWith(error);
 			});
-			AspenDiscovery.Record.loadItemBookingAvailability(AspenDiscovery.Record.getSelectedBookingItemId());
+		},
+
+		getBookingCalendar: function () {
+			return document.getElementById('booking-calendar');
 		},
 
 		getSelectedBookingItemId: function () {
@@ -921,11 +948,15 @@ AspenDiscovery.Record = (function () {
 		clearBookingDateInputs: function () {
 			[...AspenDiscovery.Record.bookingSubmitInputs(), ...AspenDiscovery.Record.bookingDisplayInputs()]
 				.forEach(input => input && (input.value = ''));
+			const calendar = AspenDiscovery.Record.getBookingCalendar();
+			if (calendar) {
+				calendar.value = '';
+			}
 		},
 
 		loadItemBookingAvailability: function (itemId) {
-			const wrapper = document.getElementById('booking-availability');
-			if (!itemId || !wrapper) {
+			const calendar = AspenDiscovery.Record.getBookingCalendar();
+			if (!itemId || !calendar) {
 				return;
 			}
 
@@ -935,39 +966,17 @@ AspenDiscovery.Record = (function () {
 			}
 
 			$.getJSON(Globals.path + '/Record/AJAX?method=getItemBookedDates&itemId=' + encodeURIComponent(itemId), function (data) {
-				AspenDiscovery.Record.showBookingCalendar(wrapper, data.success ? data.bookedDates : [], data.success ? data.constraints : null);
+				const constraints = data.success ? data.constraints : null;
+				AspenDiscovery.DateRangePicker.update(calendar, {
+					maxDate:        constraints?.maxDate ? new Date(constraints.maxDate + 'T00:00:00') : null,
+					maxRangeDays:   constraints?.maxPeriod ? parseInt(constraints.maxPeriod, 10) : 0,
+					disabledRanges: data.success ? data.bookedDates : [],
+				});
 			}).fail(AspenDiscovery.ajaxFail).always(function () {
 				if (loading) {
 					loading.hidden = true;
 				}
 			});
-		},
-
-		showBookingCalendar: async function (wrapper, bookedRanges, constraints) {
-			const [startInput, endInput] = AspenDiscovery.Record.bookingSubmitInputs();
-			const [startDisplayInput, endDisplayInput] = AspenDiscovery.Record.bookingDisplayInputs();
-			const tomorrow = new Date();
-			tomorrow.setDate(tomorrow.getDate() + 1);
-			tomorrow.setHours(0, 0, 0, 0);
-
-			try {
-				await AspenDiscovery.DateRangePicker.render(wrapper, {
-					startInput:        startInput,
-					endInput:          endInput,
-					startDisplayInput: startDisplayInput,
-					endDisplayInput:   endDisplayInput,
-					displayLocale:     wrapper.dataset.displayLocale || null,
-					minDate:           tomorrow,
-					maxDate:           constraints?.maxDate ? new Date(constraints.maxDate + 'T00:00:00') : null,
-					maxRangeDays:      constraints?.maxPeriod ? parseInt(constraints.maxPeriod, 10) : 0,
-					disabledRanges:    bookedRanges,
-				});
-			} catch (e) {
-				const error = document.createElement('span');
-				error.className = 'text-danger';
-				error.textContent = 'Unable to load the availability calendar.';
-				wrapper.replaceChildren(error);
-			}
 		},
 	};
 }(AspenDiscovery.Record || {}));
