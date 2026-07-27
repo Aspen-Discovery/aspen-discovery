@@ -9783,7 +9783,7 @@ class Koha extends AbstractIlsDriver {
 		return $libraries;
 	}
 
-	public function placeBooking(User $patron, string $itemId, string $recordId, string $startDate, string $endDate, ?string $pickupBranch, ?string $notes): array {
+	public function placeBooking(User $patron, string $itemId, string $recordId, string $startDate, string $endDate, ?string $pickupBranch): array {
 		$title = translate(['text' => 'Unable to place booking', 'isPublicFacing' => true]);
 		$denied = $this->denyIfActionDisabled((int)$itemId, 'enableBookingPlacement', 'Booking placement is not enabled for the library that owns this item.');
 		if ($denied) {
@@ -9811,9 +9811,6 @@ class Koha extends AbstractIlsDriver {
 		if ($pickupBranch !== null) {
 			$params['pickup_library_id'] = $pickupBranch;
 		}
-		if ($notes !== null) {
-			$params['notes'] = $notes;
-		}
 
 		$response = $this->kohaApiUserAgent->post('/api/v1/bookings', $params, 'koha.placeBooking', [], $this->getBookingApiHeaders($patron));
 
@@ -9830,7 +9827,7 @@ class Koha extends AbstractIlsDriver {
 		}
 
 		require_once ROOT_DIR . '/services/BookingService.php';
-		BookingService::storeBooking($patron, $itemId, $recordId, $startDate, $endDate, $pickupBranch, $notes, $response['content']);
+		BookingService::storeBooking($patron, $itemId, $recordId, $startDate, $endDate, $pickupBranch, $response['content']);
 
 		return [
 			'success'    => true,

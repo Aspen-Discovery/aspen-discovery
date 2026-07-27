@@ -185,7 +185,6 @@ function getUpdates26_08_00(): array {
 					ils_end_date date NOT NULL,
 					ils_pickup_library_id varchar(50) DEFAULT NULL,
 					ils_status varchar(50) DEFAULT NULL,
-					ils_notes text DEFAULT NULL,
 					createdAt int(11) NOT NULL,
 					PRIMARY KEY (id),
 					UNIQUE KEY userId (userId, ils_booking_id)
