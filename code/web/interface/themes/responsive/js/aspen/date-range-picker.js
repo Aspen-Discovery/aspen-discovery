@@ -108,11 +108,14 @@ AspenDiscovery.DateRangePicker = {
 	init: async function (range, config) {
 		await this.loadLibrary();
 
+		const root = range.closest('.date-range-picker');
+		const startInput = root.querySelector('[data-date-role="start-value"]');
+		const endInput = root.querySelector('[data-date-role="end-value"]');
 		range._dateRangeConfig = {
-			startInput: config.startInput,
-			endInput: config.endInput,
-			startDisplayInput: config.startDisplayInput,
-			endDisplayInput: config.endDisplayInput,
+			startInput: startInput,
+			endInput: endInput,
+			startDisplayInput: root.querySelector('[data-date-role="start"]'),
+			endDisplayInput: root.querySelector('[data-date-role="end"]'),
 			formatDisplay: this.displayFormatterFor(range.getAttribute('locale')),
 			disabledRanges: [],
 			maxRangeDays: 0,
@@ -121,13 +124,23 @@ AspenDiscovery.DateRangePicker = {
 		range.setAttribute('min', this.toIsoDate(config.minDate) || this.toIsoDate(new Date()));
 		range.isDateDisallowed = () => false;
 
-		const initialRange = this.readRangeFromInputs(config.startInput, config.endInput);
+		const initialRange = this.readRangeFromInputs(startInput, endInput);
 		if (initialRange.length === 2) {
 			range.value = initialRange.join('/');
 		}
 
 		range.addEventListener('change', () => this.onChange(range));
 		return range;
+	},
+
+	clear: function (range) {
+		const config = range._dateRangeConfig;
+		if (!config) {
+			return;
+		}
+		range.value = '';
+		[config.startInput, config.endInput, config.startDisplayInput, config.endDisplayInput]
+			.forEach(input => input && (input.value = ''));
 	},
 
 	update: function (range, availability) {

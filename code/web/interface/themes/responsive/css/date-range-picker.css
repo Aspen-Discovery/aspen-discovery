@@ -10,6 +10,26 @@
 	padding: .75rem;
 }
 
+.date-range-picker-fields {
+	display: flex;
+	align-items: flex-end;
+	gap: .75rem;
+	flex-wrap: wrap;
+	margin-bottom: 1rem;
+}
+
+.date-range-picker-field {
+	flex: 1 1 140px;
+	min-width: 130px;
+}
+
+.date-range-picker-sep {
+	padding-bottom: .45rem;
+	color: #666;
+	font-size: 1.2em;
+	line-height: 2.2;
+}
+
 .date-range-picker calendar-range::part(months) {
 	display: flex;
 	flex-wrap: wrap;
