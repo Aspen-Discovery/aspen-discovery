@@ -127,6 +127,16 @@ function getUpdates26_08_00(): array {
 			],
 		], //storage_settings
 
+		//lucas
+		'image_uploads_storage_setting_id' => [
+			'title' => 'Track storage backend per image upload',
+			'description' => 'Add storageSettingId to image_uploads so each file remembers which storage backend it was actually written to. NULL means Local Storage, since that was the only backend before this feature existed.',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE image_uploads ADD COLUMN storageSettingId INT NULL DEFAULT NULL",
+			],
+		], //image_uploads_storage_setting_id
+
 		//tomas
 
 		// stephen

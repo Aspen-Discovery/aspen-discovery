@@ -31,6 +31,10 @@ class ImageUpload extends DataObject {
 	public $pageLink;
 	public $startDate;
 	public $endDate;
+	// Which storage_settings row this upload's files actually live on.
+	// NULL means Local Storage; not part of the admin edit form, set only
+	// by the storage write path.
+	public $storageSettingId;
 
 	static $xLargeSize = 1100;
 	static $largeSize = 600;
@@ -47,6 +51,7 @@ class ImageUpload extends DataObject {
 			'aspectRatioHeight',
 			'startDate',
 			'endDate',
+			'storageSettingId',
 		];
 	}
 
