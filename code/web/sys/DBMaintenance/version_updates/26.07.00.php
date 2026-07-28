@@ -104,7 +104,7 @@ function getUpdates26_07_00(): array {
 			'description' => 'Create permissions for DP.LA Exclusions',
 			'sql' => [
 				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Third Party Enrichment', 'Administer DP.LA Exclusions', '', 0, 'Allows the user to define DP.LA results exclusions for all libraries.')",
-				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer DP.LA Exclusions'))",
+				"INSERT INTO role_permissions (roleId, permissionId) SELECT r.roleId, p.id FROM roles r JOIN permissions p ON p.name = 'Administer DP.LA Exclusions' WHERE r.name = 'opacAdmin'",
 			],
 		],
 		// permissions_create_events_localhop
