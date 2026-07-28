@@ -319,7 +319,7 @@ class ImageUpload extends DataObject {
 
 	private function calculateAspectRatio() : void {
 		if ($this->type === 'hero_slider' && !empty($this->fullSizePath)) {
-			$contents = StorageDriverFactory::get()->read('uploads/web_builder_image/full/' . $this->fullSizePath);
+			$contents = StorageDriverFactory::getById($this->storageSettingId)->read('uploads/web_builder_image/full/' . $this->fullSizePath);
 			if ($contents !== false) {
 				$imageInfo = getimagesizefromstring($contents);
 				if ($imageInfo !== false) {
@@ -360,7 +360,7 @@ class ImageUpload extends DataObject {
 		global $logger;
 		if (!empty($this->fullSizePath) && !empty($this->id)) {
 			require_once ROOT_DIR . '/sys/Covers/CoverImageUtils.php';
-			$storage = StorageDriverFactory::get();
+			$storage = StorageDriverFactory::getById($this->storageSettingId);
 
 			$sourceContents = $storage->read('uploads/web_builder_image/full/' . $this->fullSizePath);
 			if ($sourceContents === false) {
@@ -455,7 +455,7 @@ class ImageUpload extends DataObject {
 
 	public function delete(bool $useWhere = false, bool $hardDelete = false) : bool|int {
 		if ($hardDelete) {
-			$storage = StorageDriverFactory::get();
+			$storage = StorageDriverFactory::getById($this->storageSettingId);
 			foreach ([
 				'full'    => $this->fullSizePath,
 				'x-large' => $this->xLargeSizePath,
@@ -482,7 +482,6 @@ class ImageUpload extends DataObject {
 	 * @return int
 	 */
 	public static function purgeExpired(int $olderThanSecs = 2592000): int {
-		$storage = StorageDriverFactory::get();
 		$cutOff = time() - $olderThanSecs;
 		$expiredIds = [];
 		$fetchObj = new static();
@@ -491,6 +490,7 @@ class ImageUpload extends DataObject {
 		$fetchObj->whereAdd("dateDeleted > 0 AND dateDeleted < $cutOff");
 		$fetchObj->find();
 		while ($fetchObj->fetch()) {
+			$storage = StorageDriverFactory::getById($fetchObj->storageSettingId);
 			foreach ([
 				'full'    => $fetchObj->fullSizePath,
 				'x-large' => $fetchObj->xLargeSizePath,

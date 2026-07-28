@@ -33,7 +33,7 @@ class WebBuilder_ViewImage extends Action {
 		$storageKey = 'uploads/web_builder_image/' . $size . '/' . $this->uploadedImage->fullSizePath;
 
 		require_once ROOT_DIR . '/sys/Storage/StorageDriverFactory.php';
-		$storage = StorageDriverFactory::get();
+		$storage = StorageDriverFactory::getById($this->uploadedImage->storageSettingId);
 
 		$directUrl = $storage->url($storageKey);
 		if ($directUrl !== '') {
