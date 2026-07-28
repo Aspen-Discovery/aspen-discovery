@@ -10,7 +10,9 @@
 
 			{* page container *}
 			<h1>{translate text='My Bookings' isPublicFacing=true}</h1>
-			<div id="bookings-placeholder" aria-label="{translate text='Loading bookings' inAttribute=true isPublicFacing=true}" aria-live="polite">{translate text="Loading bookings" isPublicFacing=true}</div>
+			<div id="bookings-list" aria-live="polite">
+				<div id="bookings-placeholder">{translate text="Loading bookings" isPublicFacing=true}</div>
+			</div>
 			<script type="text/javascript">
 				$(document).ready(function() {
 					AspenDiscovery.Account.loadBookings();

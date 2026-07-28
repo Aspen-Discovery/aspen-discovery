@@ -396,9 +396,9 @@ AspenDiscovery.Account = (function () {
 			$.getJSON(url, function (data) {
 				document.body.style.cursor = 'default';
 				if (data.success) {
-					$('#bookings-placeholder').html(data.bookings);
+					$('#bookings-list').html(data.bookings);
 				} else {
-					$('#bookings-placeholder').html(data.message);
+					$('#bookings-list').html(data.message);
 				}
 			}).fail(AspenDiscovery.ajaxFail);
 			return false;
