@@ -27,6 +27,14 @@ class LocalStorageDriver implements StorageDriver {
 		return file_get_contents($path);
 	}
 
+	public function readStream(string $key) {
+		$path = $this->fullPath($key);
+		if (!file_exists($path)) {
+			return false;
+		}
+		return fopen($path, 'rb');
+	}
+
 	public function write(string $key, string $tmpPath, string $mimeType = ''): bool {
 		$dest = $this->fullPath($key);
 		$dir = dirname($dest);

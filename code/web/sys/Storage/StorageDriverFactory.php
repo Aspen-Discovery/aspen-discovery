@@ -8,9 +8,11 @@ class StorageDriverFactory {
 	private static array $instancesById = [];
 
 	public static function get(): StorageDriver {
+		global $logger;
 		if (self::$instance === null) {
 			self::$instance = self::create();
 		}
+		$logger->log('StorageDriverFactory::get() resolved active driver ' . get_class(self::$instance), Logger::LOG_DEBUG);
 		return self::$instance;
 	}
 
@@ -19,12 +21,15 @@ class StorageDriverFactory {
 	// storage_settings.id; null means Local Storage, since that was the only
 	// backend before per-file tracking existed.
 	public static function getById(?int $id): StorageDriver {
+		global $logger;
 		if ($id === null) {
+			$logger->log('StorageDriverFactory::getById(null) resolved LocalStorageDriver', Logger::LOG_DEBUG);
 			return self::getLocalDriver();
 		}
 		if (!isset(self::$instancesById[$id])) {
 			self::$instancesById[$id] = self::createFromId($id);
 		}
+		$logger->log("StorageDriverFactory::getById($id) resolved " . get_class(self::$instancesById[$id]), Logger::LOG_DEBUG);
 		return self::$instancesById[$id];
 	}
 

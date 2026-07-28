@@ -6,12 +6,11 @@ class WebBuilder_ViewImage extends Action {
 	private $uploadedImage;
 
 	function launch() {
-		global $interface;
+		global $interface, $logger;
 
 		$id = strip_tags($_REQUEST['id']);
 		$interface->assign('id', $id);
 
-		require_once ROOT_DIR . '/sys/File/ImageUpload.php';
 		$this->uploadedImage = new ImageUpload();
 		$this->uploadedImage->id = $id;
 		if (!$this->uploadedImage->find(true)) {
@@ -25,7 +24,16 @@ class WebBuilder_ViewImage extends Action {
 		}
 
 		$extension = pathinfo($this->uploadedImage->fullSizePath, PATHINFO_EXTENSION);
-		if ((isset($_REQUEST['size'])) && $extension != 'svg') {
+		$mimeTypesByExtension = [
+			'svg' => 'image/svg+xml',
+			'gif' => 'image/gif',
+			'jpg' => 'image/jpeg',
+			'jpeg' => 'image/jpeg',
+			'png' => 'image/png',
+		];
+		$contentType = $mimeTypesByExtension[strtolower($extension)] ?? 'application/octet-stream';
+
+		if ((isset($_REQUEST['size'])) && $contentType != 'image/svg+xml') {
 			$size = $_REQUEST['size'];
 		} else {
 			$size = 'full';
@@ -34,45 +42,37 @@ class WebBuilder_ViewImage extends Action {
 
 		require_once ROOT_DIR . '/sys/Storage/StorageDriverFactory.php';
 		$storage = StorageDriverFactory::getById($this->uploadedImage->storageSettingId);
+		$logger->log("ViewImage: serving image id=$id size=$size key=$storageKey storageSettingId=" . var_export($this->uploadedImage->storageSettingId, true), Logger::LOG_DEBUG);
 
 		$directUrl = $storage->url($storageKey);
 		if ($directUrl !== '') {
+			$logger->log("ViewImage: redirecting image id=$id to $directUrl", Logger::LOG_DEBUG);
 			header('Location: ' . $directUrl, true, 302);
 			die();
 		}
 
-			$mimeTypesByExtension = [
-				'svg' => 'image/svg+xml',
-				'gif' => 'image/gif',
-				'jpg' => 'image/jpeg',
-				'jpeg' => 'image/jpeg',
-				'png' => 'image/png',
-			];
-			header('Content-Type: ' . ($mimeTypesByExtension[strtolower($extension)] ?? 'application/octet-stream'));
+		$stream = $storage->readStream($storageKey);
+
+		if ($stream !== false) {
+			$logger->log("ViewImage: proxied image id=$id key=$storageKey", Logger::LOG_DEBUG);
+
+			header('Content-Type: ' . $contentType);
 			header('Content-Transfer-Encoding: binary');
-			header('Content-Length: ' . $size);
 
-			if ($size > $chunkSize) {
-				$handle = fopen($fullPath, 'rb');
-
-				while (!feof($handle)) {
-					set_time_limit(300);
-					print(@fread($handle, $chunkSize));
-
-					ob_flush();
-					flush();
-				}
-
-				fclose($handle);
-			} else {
-				$readResult = readfile($fullPath);
+			set_time_limit(300);
+			$chunkSize = 2 * (1024 * 1024);
+			while (!feof($stream)) {
+				set_time_limit(300);
+				echo fread($stream, $chunkSize);
+				ob_flush();
+				flush();
 			}
-
+			fclose($stream);
 			die();
 		} else {
+			$logger->log("ViewImage: failed to read image id=$id key=$storageKey from storageSettingId=" . var_export($this->uploadedImage->storageSettingId, true), Logger::LOG_ERROR);
 			AspenError::raiseError(new AspenError("Image $id does not exist"));
 		}
-
 	}
 
 	function getBreadcrumbs(): array {

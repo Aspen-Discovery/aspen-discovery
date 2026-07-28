@@ -361,9 +361,11 @@ class ImageUpload extends DataObject {
 		if (!empty($this->fullSizePath) && !empty($this->id)) {
 			require_once ROOT_DIR . '/sys/Covers/CoverImageUtils.php';
 			$storage = StorageDriverFactory::getById($this->storageSettingId);
+			$logger->log("generateDerivatives: image id=$this->id storageSettingId=" . var_export($this->storageSettingId, true), Logger::LOG_DEBUG);
 
 			$sourceContents = $storage->read('uploads/web_builder_image/full/' . $this->fullSizePath);
 			if ($sourceContents === false) {
+				$logger->log("generateDerivatives: could not read source for image id=$this->id fullSizePath=$this->fullSizePath", Logger::LOG_ERROR);
 				return;
 			}
 			$srcTmp = tempnam(sys_get_temp_dir(), 'aspen_src_');
@@ -388,6 +390,7 @@ class ImageUpload extends DataObject {
 				if (resizeImage($srcTmp, $destTmp, $cfg['size'], $cfg['size'])) {
 					if ($storage->write('uploads/web_builder_image/' . $variant . '/' . $this->fullSizePath, $destTmp)) {
 						$this->{$cfg['prop']} = $this->fullSizePath;
+						$logger->log("generateDerivatives: wrote $variant derivative for image id=$this->id", Logger::LOG_DEBUG);
 					} else {
 						$logger->log('Failed to write ' . $variant . ' derivative image to storage for fullSizePath ' . $this->fullSizePath, Logger::LOG_ERROR);
 					}
@@ -455,7 +458,9 @@ class ImageUpload extends DataObject {
 
 	public function delete(bool $useWhere = false, bool $hardDelete = false) : bool|int {
 		if ($hardDelete) {
+			global $logger;
 			$storage = StorageDriverFactory::getById($this->storageSettingId);
+			$logger->log("ImageUpload::delete: hard deleting image id=$this->id storageSettingId=" . var_export($this->storageSettingId, true), Logger::LOG_DEBUG);
 			foreach ([
 				'full'    => $this->fullSizePath,
 				'x-large' => $this->xLargeSizePath,
@@ -482,6 +487,7 @@ class ImageUpload extends DataObject {
 	 * @return int
 	 */
 	public static function purgeExpired(int $olderThanSecs = 2592000): int {
+		global $logger;
 		$cutOff = time() - $olderThanSecs;
 		$expiredIds = [];
 		$fetchObj = new static();
@@ -491,6 +497,7 @@ class ImageUpload extends DataObject {
 		$fetchObj->find();
 		while ($fetchObj->fetch()) {
 			$storage = StorageDriverFactory::getById($fetchObj->storageSettingId);
+			$logger->log("ImageUpload::purgeExpired: purging image id=$fetchObj->id storageSettingId=" . var_export($fetchObj->storageSettingId, true), Logger::LOG_DEBUG);
 			foreach ([
 				'full'    => $fetchObj->fullSizePath,
 				'x-large' => $fetchObj->xLargeSizePath,

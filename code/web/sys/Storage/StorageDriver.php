@@ -24,6 +24,14 @@ interface StorageDriver {
 	public function read(string $key): string|false;
 
 	/**
+	 * Returns a readable stream resource for the given key, or false if not
+	 * found. Callers serving the bytes directly to an HTTP response (e.g.
+	 * proxying an image) should use this instead of read() to avoid buffering
+	 * the entire file in memory.
+	 */
+	public function readStream(string $key);
+
+	/**
 	 * Stores the file at $tmpPath under $key.
 	 * $mimeType is required for remote backends (e.g. S3 Content-Type header).
 	 * Returns true on success.
