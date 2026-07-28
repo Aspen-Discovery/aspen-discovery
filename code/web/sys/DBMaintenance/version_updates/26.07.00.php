@@ -132,6 +132,15 @@ function getUpdates26_07_00(): array {
 		], // unique_series_members
 
 		//yanjun
+		'user_agent_cleanup_2607' => [
+			'title' => 'User Agent Cleanup',
+			'description' => 'Clean up user agent data to keep only recent usage history for 26.07 upgrade.',
+			'continueOnError' => false,
+			'sql' => [
+				"DELETE FROM usage_by_user_agent WHERE year < 2026 OR (year = 2026 AND month < 5)",
+				"DELETE ua FROM user_agent ua LEFT JOIN usage_by_user_agent u ON u.userAgentId = ua.id WHERE u.userAgentId IS NULL",
+			],
+		],
 		'add_user_agent_retention_months' => [
 			'title' => 'Add User Agent Retention Months',
 			'description' => 'Add userAgentRetentionMonths column to system_variables',
