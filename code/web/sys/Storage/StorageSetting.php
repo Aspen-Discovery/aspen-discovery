@@ -90,4 +90,16 @@ class StorageSetting extends DataObject {
 	function canActiveUserEdit(): bool {
 		return UserAccount::userHasPermission('Administer Storage Settings');
 	}
+
+	public function getLinkedObjectStructure(): array {
+		return [
+			[
+				'object' => 'ImageUpload',
+				'class' => ROOT_DIR . '/sys/File/ImageUpload.php',
+				'linkingProperty' => 'storageSettingId',
+				'objectName' => 'Image Upload',
+				'objectNamePlural' => 'Image Uploads',
+			],
+		];
+	}
 }
