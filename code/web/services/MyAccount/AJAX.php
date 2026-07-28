@@ -4152,11 +4152,9 @@ class MyAccount_AJAX extends JSON_Action {
 
 	/** Hold Filtering Functions */
 	private function getHoldFilterValue(Hold|array $hold, string $field): ?array {
-		if (is_array($hold)) {
-			$fieldValue = isset($hold[$field]) ? (string)$hold[$field] : null;
-		}else{
-			$fieldValue = $hold->$field;
-		}
+		$fieldValue = is_array($hold)
+			? (string)($hold[$field] ?? '')
+			: (string)($hold->$field ?? '');
 
 		$label = $fieldValue;
 		//Do special processing of some fields
