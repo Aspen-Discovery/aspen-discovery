@@ -54,6 +54,15 @@ class StorageDriverFactory {
 		global $configArray;
 		return $configArray['Site']['local'];
 	}
+	
+	// The storage_settings.id a new write should be recorded against,
+	// including the Local Storage row's id. Never null while a setting is
+	// active: DataObject::update() skips null values, so a replacement
+	// written locally could not clear an S3 id left from a previous upload.
+	public static function getActiveSettingId(): ?int {
+		$setting = self::loadActiveSetting();
+		return $setting?->id;
+	}
 
 	private static function create(): StorageDriver {
 		$setting = self::loadActiveSetting();
