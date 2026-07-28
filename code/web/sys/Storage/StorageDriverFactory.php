@@ -49,6 +49,17 @@ class StorageDriverFactory {
 		return $configArray['Site']['dataPath'] ?? '/data/aspen-discovery/' . $serverName;
 	}
 
+	// The storage_settings.id a new write should be recorded against. Null
+	// whenever the active backend is Local Storage, matching the
+	// null-means-local convention getById() relies on.
+	public static function getActiveSettingId(): ?int {
+		$setting = self::loadActiveSetting();
+		if ($setting === null || $setting->driver !== 's3') {
+			return null;
+		}
+		return $setting->id;
+	}
+
 	private static function create(): StorageDriver {
 		$setting = self::loadActiveSetting();
 		return self::buildDriver($setting);
