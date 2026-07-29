@@ -30,6 +30,14 @@ function getUpdates26_07_01(): array {
 				'ALTER TABLE system_variables ADD COLUMN checkRemoteAddr TINYINT(1) NOT NULL DEFAULT 1',
 			],
 		], //ip_address_headers_to_check
+		'reading_history_base_url' => [
+			'title' => 'Reading History Base URLs',
+			'description' => 'Add the ability to determine how reading history URLs are constructed when updating from cron.',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE system_variables ADD COLUMN readingHistoryBaseUrl TINYINT(1) NOT NULL DEFAULT 0',
+			],
+		], //reading_history_base_url
 
 		//kirstien
 
