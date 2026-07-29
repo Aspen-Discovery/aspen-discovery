@@ -53,6 +53,13 @@ class SystemVariables extends DataObject {
 	public $googleBucket;
 	public $trackIpAddresses;
 	public $disableIpSpammyControl;
+	public $checkClientIP;
+	public $checkXForwardedFor;
+	public $checkXForwarded;
+	public $checkForwardedFor;
+	public $checkForwarded;
+	public $checkRemoteHost;
+	public $checkRemoteAddr;
 	public $monitorAntivirus;
 	public $monitorWaitTime;
 	public $useOriginalCoverUrls;
@@ -482,6 +489,55 @@ class SystemVariables extends DataObject {
 						'label' => 'Disable IPs Spammy Control',
 						'description' => "Prevent Aspen from internally checking and blocking spam IP addresses",
 						'default' => false,
+					],
+					'checkClientIP' => [
+						'property' => 'checkClientIP',
+						'type' => 'checkbox',
+						'label' => 'Check HTTP_CLIENT_IP for user IP address',
+						'description' => 'Whether the HTTP_CLIENT_IP is checked for the user IP address',
+						'default' => false,
+					],
+					'checkXForwardedFor' => [
+						'property' => 'checkXForwardedFor',
+						'type' => 'checkbox',
+						'label' => 'Check HTTP_X_FORWARDED_FOR for user IP address',
+						'description' => 'Whether the HTTP_X_FORWARDED_FOR is checked for the user IP address',
+						'default' => false,
+					],
+					'checkXForwarded' => [
+						'property' => 'checkXForwarded',
+						'type' => 'checkbox',
+						'label' => 'Check HTTP_X_FORWARDED for user IP address',
+						'description' => 'Whether the HTTP_X_FORWARDED is checked for the user IP address',
+						'default' => false,
+					],
+					'checkForwardedFor' => [
+						'property' => 'checkForwardedFor',
+						'type' => 'checkbox',
+						'label' => 'Check HTTP_FORWARDED_FOR for user IP address',
+						'description' => 'Whether the HTTP_FORWARDED_FOR is checked for the user IP address',
+						'default' => false,
+					],
+					'checkForwarded' => [
+						'property' => 'checkForwarded',
+						'type' => 'checkbox',
+						'label' => 'Check HTTP_FORWARDED for user IP address',
+						'description' => 'Whether the HTTP_FORWARDED is checked for the user IP address',
+						'default' => false,
+					],
+					'checkRemoteHost' => [
+						'property' => 'checkRemoteHost',
+						'type' => 'checkbox',
+						'label' => 'Check REMOTE_HOST for user IP address',
+						'description' => 'Whether the REMOTE_HOST is checked for the user IP address',
+						'default' => false,
+					],
+					'checkRemoteAddr' => [
+						'property' => 'checkRemoteAddr',
+						'type' => 'checkbox',
+						'label' => 'Check REMOTE_ADDR for user IP address',
+						'description' => 'Whether the REMOTE_ADDR is checked for the user IP address',
+						'default' => true,
 					]
 				],
 			],
