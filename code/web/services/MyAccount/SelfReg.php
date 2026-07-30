@@ -153,11 +153,7 @@ class SelfReg extends Action {
 				$selfRegistrationFormMessage = $library->selfRegistrationFormMessage;
 			}
 			$interface->assign('selfRegistrationFormMessage', $selfRegistrationFormMessage);
-			$selfRegistrationSuccessMessage = $library->getTextBlockTranslation('selfRegistrationSuccessMessage', $languageCode);
-			if (empty($selfRegistrationSuccessMessage)) {
-				$selfRegistrationSuccessMessage = $library->selfRegistrationSuccessMessage;
-			}
-			$interface->assign('selfRegistrationSuccessMessage', $selfRegistrationSuccessMessage);
+			$interface->assign('selfRegistrationSuccessMessage', self::getSelfRegistrationSuccessMessage($library));
 			$interface->assign('promptForBirthDateInSelfReg', $library->promptForBirthDateInSelfReg);
 
 			$this->display('selfReg.tpl', 'Register for a Library Card', '');
@@ -181,6 +177,19 @@ class SelfReg extends Action {
 		$interface->assign('introText', $introText);
 		$interface->assign('footerText', $footerText);
 		return $interface->fetch('MyAccount/minimalSelfRegForm.tpl');
+	}
+
+	public static function getSelfRegistrationSuccessMessage(Library $library): string {
+		global $activeLanguage;
+		$languageCode = 'en';
+		if (isset($activeLanguage) && !empty($activeLanguage->code)) {
+			$languageCode = $activeLanguage->code;
+		}
+		$message = $library->getTextBlockTranslation('selfRegistrationSuccessMessage', $languageCode);
+		if (empty($message)) {
+			$message = $library->selfRegistrationSuccessMessage;
+		}
+		return $message;
 	}
 
 	public static function validateAndRegister(CatalogConnection $catalog, array $selfRegFields): array {
