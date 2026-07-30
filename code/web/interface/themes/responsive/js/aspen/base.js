@@ -1161,3 +1161,23 @@ jQuery.validator.addMethod("strongPassword", function(value, element) {
 
 	return '<ul class="password-error-list" style="margin-top:5px; margin-bottom:0; padding-left:1.25em; list-style-type:disc"><li>' + errors.join('</li><li>') + '</li></ul>';
 });
+
+document.addEventListener('blur', (e) => {
+	if (e.target && e.target.type === 'number') {
+		const input = e.target;
+		const value = parseInt(input.value, 10);
+
+		if (input.hasAttribute('min')) {
+			const min = parseInt(input.min, 10);
+			if (isNaN(value) || value < min) {
+				input.value = min;
+			}
+		}
+		if (input.hasAttribute('max')) {
+			const max = parseInt(input.max, 10);
+			if (isNaN(value) || value > max) {
+				input.value = max;
+			}
+		}
+	}
+}, true);

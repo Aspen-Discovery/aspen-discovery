@@ -39,151 +39,6 @@ class Record_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function getVdxRequestForm(): array {
-		$this->requireLoggedInUser(null, "You must be logged in.  Please close this dialog and login before placing your request.");
-		$this->checkRequiredParameters(['id']);
-		global $interface;
-
-		$user = UserAccount::getLoggedInUser();
-		$id = $_REQUEST['id'];
-		if (strpos($id, ':') > 0) {
-			[
-				,
-				$id,
-			] = explode(':', $id);
-		}
-		$recordSource = $_REQUEST['recordSource'];
-		$interface->assign('recordSource', $recordSource);
-		require_once ROOT_DIR . '/sys/VDX/VdxSetting.php';
-		require_once ROOT_DIR . '/sys/VDX/VdxForm.php';
-		$vdxSettings = new VdxSetting();
-		if ($vdxSettings->find(true)) {
-			$homeLocation = Location::getDefaultLocationForUser();
-			if ($homeLocation != null) {
-				//Get configuration for the form.
-				$vdxForm = new VdxForm();
-				$vdxForm->id = $homeLocation->vdxFormId;
-				if ($vdxForm->find(true)) {
-					//Check to see if the patron is eligible to place holds
-					$accountSummary = $user->getAccountSummary();
-					if ($accountSummary->isExpired()) {
-						$results = [
-							'title' => translate([
-								'text' => 'Request Title',
-								'isPublicFacing' => true,
-							]),
-							'modalBody' => translate([
-								'text' => 'Your account is not eligible to request titles from other libraries.  Please visit the library to renew your account.',
-								'isPublicFacing' => true,
-							]),
-							'modalButtons' => '',
-							'success' => true,
-						];
-					} elseif ($user->isBlockedFromIllRequests()) {
-						$results = [
-							'title' => translate([
-								'text' => 'Request Title',
-								'isPublicFacing' => true,
-							]),
-							'modalBody' => translate([
-								'text' => 'Your account is not eligible to request titles from other libraries.  Please visit the library to update your account.',
-								'isPublicFacing' => true,
-							]),
-							'modalButtons' => '',
-							'success' => true,
-						];
-					} else {
-						$marcRecord = new MarcRecordDriver($id);
-
-						$interface->assign('vdxForm', $vdxForm);
-						$vdxFormFields = $vdxForm->getFormFields($marcRecord);
-						$interface->assign('structure', $vdxFormFields);
-						$interface->assign('vdxFormFields', $interface->fetch('DataObjectUtil/ajaxForm.tpl'));
-
-						$results = [
-							'title' => translate([
-								'text' => 'Request Title',
-								'isPublicFacing' => true,
-							]),
-							'modalBody' => $interface->fetch("Record/vdx-request-popup.tpl"),
-							'modalButtons' => '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.submitVdxRequest(\'Record\', \'' . $id . '\')">' . translate([
-									'text' => 'Place Request',
-									'isPublicFacing' => true,
-								]) . '</a>',
-							'success' => true,
-						];
-					}
-				} else {
-					$results = [
-						'title' => translate([
-							'text' => 'Invalid Configuration',
-							'isPublicFacing' => true,
-						]),
-						'message' => translate([
-							'text' => "Unable to find the specified form.",
-							'isPublicFacing' => true,
-						]),
-						'success' => false,
-					];
-				}
-			} else {
-				$results = [
-					'title' => translate([
-						'text' => 'Invalid Configuration',
-						'isPublicFacing' => true,
-					]),
-					'message' => translate([
-						'text' => "Unable to determine home library to place request from.",
-						'isPublicFacing' => true,
-					]),
-					'success' => false,
-				];
-			}
-		} else {
-			$results = [
-				'title' => translate([
-					'text' => 'Invalid Configuration',
-					'isPublicFacing' => true,
-				]),
-				'message' => translate([
-					'text' => "VDX Settings do not exist, please contact the library to make a request.",
-					'isPublicFacing' => true,
-				]),
-				'success' => false,
-			];
-		}
-		return $results;
-	}
-
-	/** @noinspection PhpUnused */
-	function submitVdxRequest(): array {
-		$this->requireLoggedInUser(null, "You must be logged in.  Please close this dialog and login before placing your request.");
-		$this->checkRequiredParameters(['id']);
-
-		require_once ROOT_DIR . '/Drivers/VdxDriver.php';
-		require_once ROOT_DIR . '/sys/VDX/VdxSetting.php';
-		require_once ROOT_DIR . '/sys/VDX/VdxForm.php';
-		$vdxSettings = new VdxSetting();
-		if ($vdxSettings->find(true)) {
-			$vdxDriver = new VdxDriver();
-			$results = $vdxDriver->submitRequest($vdxSettings, UserAccount::getActiveUserObj(), $_REQUEST);
-		} else {
-			$results = [
-				'title' => translate([
-					'text' => 'Invalid Configuration',
-					'isPublicFacing' => true,
-				]),
-				'message' => translate([
-					'text' => "VDX Settings do not exist, please contact the library to make a request.",
-					'isPublicFacing' => true,
-				]),
-				'success' => false,
-			];
-		}
-		return $results;
-	}
-
-	/** @noinspection PhpUnused */
 	function getLocalIllRequestForm(): array {
 		$this->requireLoggedInUser(null, "You must be logged in.  Please close this dialog and login before placing your request.");
 		$this->checkRequiredParameters(['id']);
@@ -402,7 +257,7 @@ class Record_AJAX extends JSON_Action {
 			$interface->assign('enableMultiCopyHolds', $enableMultiCopyHolds);
 			if ($enableMultiCopyHolds) {
 				$statusSummary = $marcRecord->getGroupedWorkDriver()->getRelatedRecord($marcRecord->getIdWithSource());
-				$interface->assign('maxCopyHolds', $statusSummary->getAvailableCopies());
+				$interface->assign('maxCopyHolds', $statusSummary->getAvailableHoldableCopies());
 			}
 
 			if (!$this->setupHoldForm($recordSource, $rememberHoldPickupLocation, $marcRecord, $locations, $selectedVariationId, $promptForEdition)) {
@@ -1254,33 +1109,7 @@ class Record_AJAX extends JSON_Action {
 
 								$homeLocation = Location::getDefaultLocationForUser();
 								if ($homeLocation != null) {
-									if ($illLoanType == 'vdx') {
-										require_once ROOT_DIR . '/sys/VDX/VdxForm.php';
-
-										//Get configuration for the form.
-										$vdxForm = new VdxForm();
-										$vdxForm->id = $homeLocation->vdxFormId;
-										if ($vdxForm->find(true)) {
-											$interface->assign('vdxForm', $vdxForm);
-
-											$vdxFormFields = $vdxForm->getFormFields($marcRecord, $volumeLabel);
-											$interface->assign('structure', $vdxFormFields);
-											$interface->assign('vdxFormFields', $interface->fetch('DataObjectUtil/ajaxForm.tpl'));
-											return [
-												'title' => translate([
-													'text' => 'Hold Failed, Request Title?',
-													'isPublicFacing' => true,
-												]),
-												'modalBody' => $interface->fetch("Record/vdx-request-popup.tpl"),
-												'modalButtons' => '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.submitVdxRequest(\'Record\', \'' . $recordId . '\')">' . translate([
-														'text' => 'Place Request',
-														'isPublicFacing' => true,
-													]) . '</a>',
-												'success' => true,
-												'needsIllRequest' => true,
-											];
-										}
-									} elseif ($illLoanType == 'localIll') {
+									if ($illLoanType == 'localIll') {
 										require_once ROOT_DIR . '/sys/InterLibraryLoan/LocalIllForm.php';
 										//Get configuration for the form.
 										$localIllForm = new LocalIllForm();
