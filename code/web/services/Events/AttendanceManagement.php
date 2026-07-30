@@ -246,7 +246,8 @@ class Events_AttendanceManagement extends Admin_Admin {
 			return;
 		}
 
-		$customFields = $eventType->getFieldSetFieldsByUse(2);
+		$customFields = $eventType->getFieldSetFieldsByUse(1) + $eventType->getFieldSetFieldsByUse(2);
+		$informationFieldValues = $parentEvent->getAllTypeFields();
 		$attendeeCategories = $eventType->getEventTypeAttendeeCategories();
 
 		header('Content-Type: text/csv');
@@ -255,6 +256,7 @@ class Events_AttendanceManagement extends Admin_Admin {
 		$output = fopen('php://output', 'w');
 
 		$headers = [
+			'Event instance id',
 			'Event date',
 			'Event title',
 			'Event start time',
@@ -289,6 +291,7 @@ class Events_AttendanceManagement extends Admin_Admin {
 				continue;
 			}
 			$row = array_merge([
+					$eventInstance->id,
 					$eventInstance->date,
 					$parentEvent->title,
 					$eventInstance->time,
@@ -298,7 +301,7 @@ class Events_AttendanceManagement extends Admin_Admin {
 				[...$this->buildBaseRegistrationRow($registration, $user), $registration->attended ? 'Yes' : 'No']
 			);
 
-			$customFieldValues = $registration->getCustomFieldValues();
+			$customFieldValues = $registration->getCustomFieldValues() + $informationFieldValues;
 			foreach ($customFields as $fieldId => $field) {
 				$raw = $customFieldValues[(int)$fieldId] ?? '';
 				if (($field['type'] ?? '') === 'enum' && isset($field['values'][$raw])) {

@@ -139,6 +139,22 @@ AuthorProper:
     - author_additional:
       - [onephrase, 25]
 
+PrimaryAuthor:
+  QueryFields:
+    - author_exact:
+      - [ localized_callnumber, 2200 ]
+    - author_left:
+      - [ text_left, 1400 ]
+    - author:
+      - [ onephrase, 350 ]
+      - [ proximal, 200 ]
+
+
+PrimaryAuthorProper:
+  QueryFields:
+    - author_exact:
+      - [ localized_callnumber, 2200 ]
+
 ISN:
   QueryFields:
     - issn:
