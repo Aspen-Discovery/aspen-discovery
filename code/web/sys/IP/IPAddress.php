@@ -535,30 +535,10 @@ class IPAddress extends DataObject {
 	 */
 	public static function getClientIP(): mixed
 	{
-		$systemVariables = SystemVariables::getSystemVariables();
-		if (($systemVariables === false || $systemVariables->checkClientIP) && isset($_SERVER["HTTP_CLIENT_IP"])) {
-			$ip = $_SERVER["HTTP_CLIENT_IP"];
-		} elseif (($systemVariables === false || $systemVariables->checkXForwardedFor) && isset($_SERVER["HTTP_X_FORWARDED_FOR"])) {
-			$ip = $_SERVER["HTTP_X_FORWARDED_FOR"];
-		} elseif (($systemVariables === false || $systemVariables->checkXForwarded) && isset($_SERVER["HTTP_X_FORWARDED"])) {
-			$ip = $_SERVER["HTTP_X_FORWARDED"];
-		} elseif (($systemVariables === false || $systemVariables->checkForwardedFor) && isset($_SERVER["HTTP_FORWARDED_FOR"])) {
-			$ip = $_SERVER["HTTP_FORWARDED_FOR"];
-		} elseif (($systemVariables === false || $systemVariables->checkForwarded) && isset($_SERVER["HTTP_FORWARDED"])) {
-			$ip = $_SERVER["HTTP_FORWARDED"];
-		} elseif (($systemVariables === false || $systemVariables->checkRemoteHost) && isset($_SERVER['REMOTE_HOST']) && strlen($_SERVER['REMOTE_HOST']) > 0) {
-			$ip = $_SERVER['REMOTE_HOST'];
-		} elseif (($systemVariables === false || $systemVariables->checkRemoteAddr) && isset($_SERVER['REMOTE_ADDR']) && strlen($_SERVER['REMOTE_ADDR']) > 0) {
+		if (isset($_SERVER['REMOTE_ADDR']) && strlen($_SERVER['REMOTE_ADDR']) > 0) {
 			$ip = $_SERVER['REMOTE_ADDR'];
 		} else {
 			$ip = '';
-		}
-
-		// Handle X-Forwarded-For with multiple IPs.
-		if (str_contains($ip, ',')) {
-			// X-Forwarded-For may contain multiple IPs; take the first one (client).
-			$ipList = explode(',', $ip);
-			$ip = trim($ipList[0]);
 		}
 
 		// Convert IPv6 localhost to IPv4 localhost for backward compatibility.
