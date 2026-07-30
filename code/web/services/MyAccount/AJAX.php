@@ -1959,17 +1959,30 @@ class MyAccount_AJAX extends JSON_Action {
 
 		if (!empty($outcome['success'])) {
 			$registerResult = $outcome['result'] ?? [];
+			if (empty($registerResult['success'])) {
+				$result['message'] = $registerResult['message'] ?? translate([
+					'text' => 'Registration could not be completed.',
+					'isPublicFacing' => true,
+				]);
+				return $result;
+			}
+
+			global $interface;
+			$interface->assign('selfRegistrationSuccessMessage', SelfReg::getSelfRegistrationSuccessMessage($library));
+			$interface->assign('selfRegResult', $registerResult);
+
 			return [
-				'success' => !empty($registerResult['success']),
+				'success' => true,
 				'title' => translate([
-					'text' => 'Registration',
+					'text' => 'Register for a Library Card',
 					'isPublicFacing' => true,
 				]),
-				'message' => $registerResult['message'] ?? translate([
+				'message' => translate([
 					'text' => 'Your registration was successful.',
 					'isPublicFacing' => true,
 				]),
-				'barcode' => $registerResult['barcode'] ?? null,
+				'body' => $interface->fetch('MyAccount/selfRegResult.tpl'),
+				'buttons' => '',
 			];
 		}
 
