@@ -3283,6 +3283,7 @@ AspenDiscovery.Admin = (function () {
 							response.forEach(function (entry) {
 								var key = entry.key;
 								var municipalityType = getMunicipalityTypeFromKey(key);
+								var municipalityName = key.slice(2, -1);
 
 								if (municipalityType === null) {
 									return; // skip entries that don't end in C, T, or V
@@ -3292,9 +3293,43 @@ AspenDiscovery.Admin = (function () {
 
 								var $newRow = $('#municipalities tbody tr').last();
 
+								$newRow.find('input[name^="municipalities_municipality"]').val(municipalityName);
 								$newRow.find('input[name^="municipalities_ilsMunicipality"]').val(key);
 								$newRow.find('select[name^="municipalities_municipalityType"]').val(municipalityType);
 								$newRow.find('input[name^="municipalities_selfRegAllowed"]').prop('checked', true);
+							});
+
+							$('#aspenFullPageLoadingOverlay').remove();
+						},
+						error: function () {
+							$('#aspenFullPageLoadingOverlay').remove();
+							AspenDiscovery.showMessage('Error', 'Could not populate from ILS.');
+						}
+					});
+				} else if (objectType === "countyCodes") {
+					AspenDiscovery.Admin.showFullPageLoadingOverlay('Populating from ILS, this may take a while. Please wait...');
+
+					$.ajax({
+						url: Globals.path + "/Admin/AJAX",
+						type: 'GET',
+						data: {
+							method: 'getILSMetadata',
+						},
+						success: function (response) {
+							var seenCodes = new Set();
+
+							response.forEach(function (entry) {
+								seenCodes.add(entry.key.slice(0, 2));
+							});
+
+							var sortedCodes = Array.from(seenCodes).sort();
+
+							sortedCodes.forEach(function (countyCode) {
+								addNewcountyCodes(); // existing generated function
+
+								var $newRow = $('#countyCodes tbody tr').last();
+
+								$newRow.find('input[name^="countyCodes_countyCode"]').val(countyCode);
 							});
 
 							$('#aspenFullPageLoadingOverlay').remove();

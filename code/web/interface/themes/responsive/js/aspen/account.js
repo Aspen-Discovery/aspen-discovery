@@ -599,16 +599,6 @@ AspenDiscovery.Account = (function () {
 					}
 				});
 			}
-			if (Globals.hasInterlibraryLoanConnection) {
-				var interlibraryLoanUrl = Globals.path + "/MyAccount/AJAX?method=getMenuDataInterlibraryLoan&activeModule=" + Globals.activeModule + '&activeAction=' + Globals.activeAction;
-				$.getJSON(interlibraryLoanUrl, function (data) {
-					if (data.success) {
-						$(".interlibrary-loan-requests-placeholder").html(data.summary.numHolds);
-						totalHolds += parseInt(data.summary.numHolds);
-						$(".holds-placeholder").html(totalHolds);
-					}
-				});
-			}
 			var campaignsUrl = Globals.path + "/MyAccount/AJAX?method=getEnrolledCampaigns&activeModule=" + Globals.activeModule + '&activeAction=' + Globals.activeAction;
 			$.getJSON(campaignsUrl, function (data) {
 				if (data.success) {
@@ -1124,32 +1114,6 @@ AspenDiscovery.Account = (function () {
 			}
 
 			return false
-		},
-
-		cancelVdxRequest: function (patronId, requestId, cancelId) {
-			if (confirm(__('Are you sure you want to cancel this request?'))) {
-				var ajaxUrl = Globals.path + "/MyAccount/AJAX?method=cancelVdxRequest&patronId=" + patronId + "&requestId=" + requestId + "&cancelId=" + cancelId;
-				$.ajax({
-					url: ajaxUrl,
-					cache: false,
-					success: function (data) {
-						if (data.success) {
-							AspenDiscovery.showMessage("Request Cancelled", data.message, true);
-							//remove the row from the holds list
-							$("#vdxHold_" + requestId + "_" + cancelId).hide();
-							AspenDiscovery.Account.loadMenuData();
-						} else {
-							AspenDiscovery.showMessage("Error Cancelling Request", data.message, false);
-						}
-					},
-					dataType: 'json',
-					async: false,
-					error: function () {
-						AspenDiscovery.showMessage("Error Cancelling Request", "An error occurred processing your request.  Please try again in a few minutes.", false);
-					}
-				});
-			}
-			return false;
 		},
 
 		changeAccountSort: function (newSort, sortParameterName) {

@@ -180,6 +180,59 @@ class SystemUtils {
 		return false;
 	}
 
+	static function geocodeAddress($address, $apiKey): ?array {
+		$url = 'https://maps.googleapis.com/maps/api/geocode/json?address=' . $address . '&key=' . $apiKey;
+
+		// fetch google geocode data
+		$curl = new CurlWrapper();
+		$response = $curl->curlGetPage($url);
+		$data = json_decode($response, true);
+		$curl->close_curl();
+
+		if (isset($data['status']) && $data['status'] === 'OK') {
+			return $data;
+		}
+
+		return null;
+	}
+
+	static function getCensusCountySubdivision($latitude, $longitude): ?array {
+		$url = "https://geocoding.geo.census.gov/geocoder/geographies/coordinates?" . http_build_query([
+				'x' => $longitude,
+				'y' => $latitude,
+				'benchmark' => 'Public_AR_Current',
+				'vintage' => 'Current_Current',
+				'layers' => 'County Subdivisions,Counties',
+				'format' => 'json',
+			]);
+
+		$response = json_decode(file_get_contents($url), true);
+		$geographies = $response['result']['geographies'] ?? [];
+
+		$subdivision = $geographies['County Subdivisions'][0] ?? null;
+		$county = $geographies['Counties'][0] ?? null;
+
+		if (!$subdivision || !$county) {
+			return null;
+		}
+
+		preg_match('/^(.*)\s+(city|town|village)$/i', trim($subdivision['NAME']), $matches);
+
+		if (!$matches) {
+			$municipalityName = $subdivision['NAME'];
+			$municipalityType = null;
+		} else {
+			$municipalityName = trim($matches[1]);
+			$municipalityType = strtolower($matches[2]);
+		}
+
+		return [
+			'county_name' => $county['BASENAME'],
+			'municipality_name' => $municipalityName,
+			'municipality_type' => $municipalityType,
+		];
+	}
+
 	static function startBackgroundProcess($processName, $additionalArguments = null) : array {
 		if (file_exists(ROOT_DIR . "/cron/$processName.php")) {
 			if (!UserAccount::isLoggedIn()) {

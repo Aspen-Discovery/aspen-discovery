@@ -26,6 +26,7 @@ if ($databasePort != "3306") {
 DockerLogger::info("Checking database connection to: {$databaseHost}:{$databasePort}");
 
 //Check if aspen database has already been initialized
+$maxTries = 5;
 $tries = 0;
 $databaseIsDown = true;
 
@@ -36,12 +37,12 @@ while ($databaseIsDown) {
 		$updateUserStmt = $aspenDatabase->prepare($statement);
 		$databaseIsDown = false;
 	} catch (PDOException $e) {
-		if ($tries == 5){
-			DockerLogger::error("Database connection failed: " . $e->getMessage());
-		}
-		DockerLogger::warn("Database not ready, retrying... (attempt " . ($tries + 1) . "/5)");
-		sleep(5);
 		$tries++;
+		if ($tries >= $maxTries) {
+			DockerLogger::error("Database connection failed after {$maxTries} attempts: " . $e->getMessage());
+		}
+		DockerLogger::warn("Database not ready, retrying... (attempt {$tries}/{$maxTries})");
+		sleep(5);
 	}
 }
 

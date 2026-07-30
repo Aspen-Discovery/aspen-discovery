@@ -1,5 +1,7 @@
 <?php
 require_once ROOT_DIR . '/services/Admin/Admin.php';
+require_once ROOT_DIR . '/sys/SystemLogging/AspenUsage.php';
+
 abstract class Admin_AbstractUsageGraphs extends Admin_Admin {
 
 	// method specific enough to be worth writing an implementation for per section
@@ -14,6 +16,7 @@ abstract class Admin_AbstractUsageGraphs extends Admin_Admin {
 
 		$stat = $_REQUEST['stat'];
 		$timeframe = $_REQUEST['timeframe'] ?? 'month';
+		$custom = false;
 
 		if ($timeframe === 'custom') {
 			$customUsagePeriodStart = $_REQUEST['customUsagePeriodStart'] ?? null;
@@ -48,16 +51,29 @@ abstract class Admin_AbstractUsageGraphs extends Admin_Admin {
 		$interface->assign('profileName', $profileName);
 		$interface->assign('instance', $instanceName);
 		$interface->assign('timeframe', $timeframe);
+
+		$usage = new AspenUsage();
+		// Only used by custom, but assign it always so it's in the DOM when custom fields render dynamically before reload.
+		$earliestUsageDate = $usage->getEarliestUsageDate();
+		$interface->assign('earliestUsageDate', $earliestUsageDate);
+
 		if ($timeframe === 'custom') {
 			$interface->assign('customUsagePeriodStart', $customUsagePeriodStart);
 			$interface->assign('customUsagePeriodDuration', $customUsagePeriodDuration);
+			$interface->assign('customPeriodStartWarning', $this->getCustomPeriodStartWarning($customUsagePeriodStart, $earliestUsageDate));
 		}
 
 		$this->assignGraphSpecificTitle($stat);
-		$this->getAndSetInterfaceDataSeries($stat, $instanceName, $this->setGroupBy($timeframe), $timeframe === 'custom' ? $custom : false);
-		
+		$this->getAndSetInterfaceDataSeries($stat, $instanceName, $this->setGroupBy($timeframe), $custom);
 		$graphTitle = $interface->getVariable('graphTitle');
 		$this->display('../Admin/usage-graph.tpl', $graphTitle);
+	}
+
+	private function getCustomPeriodStartWarning(?string $customPeriodStart, ?string $earliestUsageDate): ?string {
+		if (empty($customPeriodStart) || empty($earliestUsageDate) || strtotime($customPeriodStart) >= strtotime($earliestUsageDate)) {
+			return null;
+		}
+		return "The selected start date is before the earliest recorded usage ($earliestUsageDate). Periods before then will not be displayed.";
 	}
 
 	private function setGroupBy(string $timeframe): array {

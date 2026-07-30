@@ -337,21 +337,6 @@ function getLocalIllNotAllowedAction($id) :array {
 		'btnType' => 'btn-local-ill-request btn-action'
 	];
 }
-//VDX Requests
-function getVdxRequestAction($module, $source, $id) : array {
-	return [
-		'title' => translate([
-			'text' => 'Request',
-			'isPublicFacing' => true,
-		]),
-		'url' => '',
-		'id' => "actionButton$id",
-		'onclick' => "return AspenDiscovery.Record.showVdxRequest('$module', '$source', '$id');",
-		'requireLogin' => false,
-		'type' => 'vdx_request',
-		'btnType' => 'btn-vdx-request btn-action'
-	];
-}
 
 //PDF Actions
 function getViewSinglePdfAction($fileId) : array {

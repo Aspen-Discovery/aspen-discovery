@@ -219,8 +219,8 @@ class EventRegistrationService {
 		return "Registration unavailable";
 	}
 
-	public static function getRegistrationAction(bool $isRegistered, bool $isEventFull, bool $waitingListEnabled, bool $userOnWaitingList, bool $canRegister, bool $isWaitingListFull): string {
-		if ($isRegistered) {
+	public static function getRegistrationAction(bool $userIsRegistered, bool $isEventFull, bool $waitingListEnabled, bool $userOnWaitingList, bool $canRegister, bool $isWaitingListFull): string {
+		if ($userIsRegistered) {
 			return 'registered';
 		}
 
@@ -247,9 +247,9 @@ class EventRegistrationService {
 		return 'eventFull';
 	}
 
-	public static function getRegistrationActionForUser(EventInstance $instance, bool $isRegistered, bool $onWaitingList, bool $canRegister): string {
+	public static function getRegistrationActionForUser(EventInstance $instance, bool $userIsRegistered, bool $onWaitingList, bool $canRegister): string {
 		$registrationAction = self::getRegistrationAction(
-			$isRegistered,
+			$userIsRegistered,
 			!self::hasAvailableSeats($instance),
 			$instance->isWaitingListEnabled(),
 			$onWaitingList,

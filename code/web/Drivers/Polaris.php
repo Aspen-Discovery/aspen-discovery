@@ -1217,8 +1217,7 @@ class Polaris extends AbstractIlsDriver {
 				if (!$location->find(true)) {
 					$location = null;
 				}
-
-				if (empty($user->homeLocationId) || (isset($location) && $user->homeLocationId != $location->locationId)) { // When homeLocation isn't set or has changed
+				if (empty($user->homeLocationId) || (isset($location) && $user->homeLocationId != $location->locationId) || $user->pickupLocationId != $patronBasicData->RequestPickupBranchID) { // When homeLocation isn't set or has changed
 					if (empty($user->homeLocationId) && !isset($location)) {
 						// homeBranch Code not found in location table and the user doesn't have an assigned homelocation,
 						// try to find the main branch to assign to user
@@ -1261,11 +1260,17 @@ class Polaris extends AbstractIlsDriver {
 							}
 						}
 
-						if ($homeLocationChanged) {
+						if ($homeLocationChanged || $user->pickupLocationId != $patronBasicData->RequestPickupBranchID) {
 							//reset the patrons preferred pickup location to their new home library
 							//unless we get preferred pickup location from api response
 							if (isset($patronBasicData->RequestPickupBranchID)) {
-								$user->setPickupLocationId($patronBasicData->RequestPickupBranchID);
+								$pickupLocation = new Location();
+								$pickupLocation->code = $patronBasicData->RequestPickupBranchID;
+								if ($pickupLocation->find(true)) {
+									$user->setPickupLocationId($pickupLocation->locationId);
+								} else {
+									$user->setPickupLocationId($user->homeLocationId);
+								}
 							} else {
 								$user->setPickupLocationId($user->homeLocationId);
 							}

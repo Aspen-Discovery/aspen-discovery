@@ -11,10 +11,21 @@ abstract class AbstractUsage extends DataObject {
 		}
 		return DateUtils::formatDateLocale("$this->year-$this->month-01", 'short', 'none', null, 'yMM'); // monthly is the default
 	}
+
 	public function getCustomPeriod(): string {
 		require_once ROOT_DIR . '/sys/Utils/DateUtils.php';
 		return DateUtils::formatDateLocale($this->periodStart, 'short') . ' - ' . DateUtils::formatDateLocale($this->periodEnd, 'short');
 	}
+
+	public function getEarliestUsageDate(): ?string {
+		$this->selectAdd();
+		$this->selectAdd("MIN(STR_TO_DATE(CONCAT(year, '-', month, '-', GREATEST(day, 1)), '%Y-%m-%d')) as earliestDate");
+		if ($this->find(true)) {
+			return $this->earliestDate;
+		}
+		return null;
+	}
+
 	public function buildCustomPeriodQuery(array $custom): void {
 		$escapedPeriodDuration = $this->escape($custom['customUsagePeriodDuration']);
 		$escapedPeriodStart = $this->escape($custom['customUsagePeriodStart']);
@@ -25,11 +36,11 @@ abstract class AbstractUsage extends DataObject {
 		$customPeriodStartDay = date('d', strtotime($custom['customUsagePeriodStart']));
 		$this->selectAdd($selectPeriodStart);
 		$this->selectAdd($selectPeriodEnd);
-		$condition = 'year > ' .
+		$condition = '(year > ' .
 			$customPeriodStartYear .
 			' OR (year = ' .
 			$customPeriodStartYear .
-			' AND month >= ' .
+			' AND month > ' .
 			$customPeriodStartMonth .
 			')' .
 			' OR (year = ' .
@@ -38,7 +49,7 @@ abstract class AbstractUsage extends DataObject {
 			$customPeriodStartMonth .
 			' AND day >= ' .
 			$customPeriodStartDay .
-			')';
+			'))';
 		$this->whereAdd($condition);
 		$this->groupBy('periodStart');
 		$this->orderBy(['year', 'month', 'day']);
