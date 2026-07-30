@@ -70,8 +70,8 @@ function getUpdates26_08_00(): array {
 			'title' => 'Search Settings Id',
 			'description' => 'Add searchSettingId column to library and location tables',
 			'sql' => [
-				'ALTER TABLE library ADD COLUMN searchSettingId int(11)',
-				'ALTER TABLE location ADD COLUMN searchSettingId int(11)',
+				'ALTER TABLE library ADD COLUMN searchSettingId int(11) NOT NULL DEFAULT -1',
+				'ALTER TABLE location ADD COLUMN searchSettingId int(11) NOT NULL DEFAULT -1',
 			]
 		], //search_settings_library_location_id
 

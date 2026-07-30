@@ -1251,8 +1251,13 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 					'isPublicFacing' => true,
 					'inAttribute' => true,
 				]),
-				'Author' => translate([
+				'PrimaryAuthor' => translate([
 					'text' => 'Author',
+					'isPublicFacing' => true,
+					'inAttribute' => true,
+				]),
+				'Author' => translate([
+					'text' => 'Authors and Contributors',
 					'isPublicFacing' => true,
 					'inAttribute' => true,
 				]),
