@@ -522,7 +522,7 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 	public function getSearchSuggestions($searchTerm, $searchIndex) : array {
 		if ($searchIndex == 'Title' || $searchIndex == 'AllTitles' || $searchIndex == 'StartOfTitle' || $searchIndex == 'Series') {
 			$suggestionHandler = 'title_suggest';
-		} elseif ($searchIndex == 'Author') {
+		} elseif ($searchIndex == 'Author' || $searchIndex == 'PrimaryAuthor') {
 			$suggestionHandler = 'author_suggest';
 		} elseif ($searchIndex == 'Subject') {
 			$suggestionHandler = 'subject_suggest';
@@ -1399,6 +1399,48 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 				]),
 			];
 		}
+		return [
+			'Keyword' => translate([
+				'text' => 'Keyword',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			$titleSearch => translate([
+				'text' => 'Title',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'StartOfTitle' => translate([
+				'text' => 'Start of Title',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'Series' => translate([
+				'text' => 'Series',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'PrimaryAuthor' => translate([
+				'text' => 'Author',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'Author' => translate([
+				'text' => 'Authors and Contributors',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'Subject' => translate([
+				'text' => 'Subject',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'LocalCallNumber' => translate([
+				'text' => 'Call Number',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+		];
 	}
 
 	public function getRecordDriverForResult($record) : GroupedWorkDriver {

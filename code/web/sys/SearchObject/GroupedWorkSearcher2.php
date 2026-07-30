@@ -450,6 +450,8 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 				$handler = 'KeywordProper';
 			} elseif ($handler == 'Author') {
 				$handler = 'AuthorProper';
+			} elseif ($handler == 'PrimaryAuthor') {
+				$handler = 'PrimaryAuthorProper';
 			} elseif ($handler == 'Subject') {
 				$handler = 'SubjectProper';
 			} elseif ($handler == 'AllFields') {
