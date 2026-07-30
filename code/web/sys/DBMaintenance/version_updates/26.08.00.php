@@ -82,7 +82,7 @@ function getUpdates26_08_00(): array {
 		//galen
 
 		//chloe
-	
+
 		//pedro
 
 		//mark j
