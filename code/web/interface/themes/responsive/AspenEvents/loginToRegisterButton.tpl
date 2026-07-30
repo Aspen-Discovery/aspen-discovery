@@ -1,5 +1,5 @@
 {strip}
-    <a id="aspen-events-login-redirect" href="/MyAccount/Login" class="btn btn-primary">
+    <a id="aspen-events-login-redirect" href="#" class="btn btn-primary" onclick="return AspenDiscovery.Account.ajaxLogin(null, function(){ AspenDiscovery.Account.regInfoModal(null, 'Events', '{$eventSourceId|escape}', '{$vendor|escape}', '{$regLink|escape}'); });">
     	{translate text="Login To Register" isPublicFacing=true}
     </a>
 {/strip}

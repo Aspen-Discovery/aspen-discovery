@@ -819,7 +819,7 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 			// When this occurs, the more specific series (longer or with a volume) will be preserved.
 			// This logic only applies if the series module is NOT active.
 			// First Check the traced series
-			seriesInfo = getPreferredSeriesWithPartialMatching(seriesNameLower);
+			seriesInfo = getPreferredSeriesWithPartialMatching(normalizedSeriesName);
 		}else if (groupedWorkIndexer.getSeriesVersion() == 1) {
 			seriesInfo = new SeriesInfo(seriesName);
 		}else{ //version 2
@@ -836,9 +836,10 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 		seriesInfo.addVolume(volume);
 	}
 
-	private SeriesInfo getPreferredSeriesWithPartialMatching(String seriesNameLower) {
+	private SeriesInfo getPreferredSeriesWithPartialMatching(String seriesName) {
+		String seriesNameLower = seriesName.toLowerCase();
 		if (series.isEmpty()) {
-			return new SeriesInfo(seriesNameLower);
+			return new SeriesInfo(seriesName);
 		}
 		Iterator<String> iterator = series.keySet().iterator();
 
@@ -851,7 +852,7 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 				iterator.remove();
 			}
 		}
-		return new SeriesInfo(seriesNameLower);
+		return new SeriesInfo(seriesName);
 	}
 
 	private void addSeriesInfoToField(String seriesInfo, HashMap<String, String> seriesField) {

@@ -1133,6 +1133,30 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		return "";
 	}
 
+	public function getFormatCategories(): array {
+		global $solrScope;
+		require_once ROOT_DIR . '/sys/SystemVariables.php';
+		$systemVariables = SystemVariables::getSystemVariables();
+		if ($systemVariables->searchVersion == 1) {
+			if (isset($this->fields['format_category_' . $solrScope])) {
+				if (is_array($this->fields['format_category_' . $solrScope])) {
+					return $this->fields['format_category_' . $solrScope];
+				} else {
+					return [$this->fields['format_category_' . $solrScope]];
+				}
+			}
+		} else {
+			if (isset($this->fields['format_category'])) {
+				if (is_array($this->fields['format_category'])) {
+					return $this->fields['format_category'];
+				} else {
+					return [$this->fields['format_category']];
+				}
+			}
+		}
+		return "";
+	}
+
 	protected array|null|false $_indexedSeries = false;
 	protected ?array $_eContentSeriesTitles = null;
 

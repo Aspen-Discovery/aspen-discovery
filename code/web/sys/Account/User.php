@@ -1053,16 +1053,6 @@ class User extends DataObject {
 							}
 						}
 					}
-					//Local ILL is not available, check to see if VDX is available.
-					require_once ROOT_DIR . '/sys/VDX/VdxSetting.php';
-					require_once ROOT_DIR . '/sys/VDX/VdxForm.php';
-					$vdxSettings = new VdxSetting();
-					if ($vdxSettings->find(true)) {
-						//Get configuration for the form.
-						if ($homeLocation->vdxFormId != -1) {
-							$this->_hasInterlibraryLoan = true;
-						}
-					}
 				}
 			} catch (Exception $e) {
 				//This happens if the tables aren't setup, ignore
@@ -1800,15 +1790,29 @@ class User extends DataObject {
 		$this->__set('allowAppRequestLogging', (isset($_POST['allowAppRequestLogging']) && $_POST['allowAppRequestLogging'] == 'on') ? 1 : 0);
 
 		$saveResult = $this->update();
+		if (isset($_REQUEST['profileLanguage'])) {
+			global $activeLanguage;
+			$selectedLanguage = new Language();
+			$selectedLanguage->code = $_REQUEST['profileLanguage'];
+			if ($selectedLanguage->find(true)) {
+				$activeLanguage = $selectedLanguage;
+			}
+		}
 		if ($saveResult === false) {
 			return [
 				'success' => false,
-				'message' => 'Could not save to the database.',
+				'message' => translate([
+					'text' => 'Could not save to the database.',
+					'isPublicFacing' => true,
+				]),
 			];
 		} else {
 			return [
 				'success' => true,
-				'message' => 'Your preferences were updated successfully.',
+				'message' => translate([
+					'text' => 'Your preferences were updated successfully.',
+					'isPublicFacing' => true,
+				]),
 			];
 		}
 	}
@@ -2067,16 +2071,6 @@ class User extends DataObject {
 				$driver = new PalaceProjectDriver();
 				$palaceProjectHolds = $driver->getHolds($this);
 				$holdsToReturn = array_merge_recursive($holdsToReturn, $palaceProjectHolds);
-			}
-		}
-
-		if ($source == 'all' || $source == 'interlibrary_loan') {
-			if ($this->hasInterlibraryLoan()) {
-				// For now, this is just VDX.
-				require_once ROOT_DIR . '/Drivers/VdxDriver.php';
-				$driver = new VdxDriver();
-				$vdxRequests = $driver->getRequests($this);
-				$holdsToReturn = array_merge_recursive($holdsToReturn, $vdxRequests);
 			}
 		}
 
@@ -2760,15 +2754,6 @@ class User extends DataObject {
 	 */
 	function cancelHold(string $recordId, ?string $cancelId, ?bool $isIll): array {
 		return $this->getCatalogDriver()->cancelHold($this, $recordId, $cancelId, $isIll);
-	}
-
-	function cancelVdxRequest($requestId, $cancelId) {
-		//For now, this is just VDX
-		require_once ROOT_DIR . '/Drivers/VdxDriver.php';
-		$driver = new VdxDriver();
-		$result = $driver->cancelRequest($this, $requestId, $cancelId);
-
-		return $result;
 	}
 
 	function changeHoldPickUpLocation(string $holdId, string $newPickupLocation, ?string $newPickupSublocation): array {
@@ -4747,11 +4732,6 @@ class User extends DataObject {
 		$sections['ill_integration']->addAction(new AdminAction('Local ILL Forms', 'Configure Forms for submitting Local ILL requests.', '/InterLibraryLoan/LocalIllForms'), [
 			'Administer All Local ILL Forms',
 			'Administer Library Local ILL Forms',
-		]);
-		$sections['ill_integration']->addAction(new AdminAction('VDX Settings', 'Define Settings for VDX Integration', '/VDX/VDXSettings'), ['Administer VDX Settings']);
-		$sections['ill_integration']->addAction(new AdminAction('VDX Forms', 'Configure Forms for submitting VDX information.', '/VDX/VDXForms'), [
-			'Administer All VDX Forms',
-			'Administer Library VDX Forms',
 		]);
 
 		$sections['circulation_reports'] = new AdminSection('Circulation Reports');
