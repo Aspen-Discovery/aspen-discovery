@@ -15,6 +15,7 @@ class OAuthAuthentication extends Action {
 	protected $resourceOwner;
 	protected $redirectUri;
 	protected $matchpoints;
+	protected $staffOnly; //True if all users in the IdP are staff users
 	protected $staffPType;
 	protected $staffPTypeAttr;
 	protected $staffPTypeAttrValue;
@@ -39,9 +40,9 @@ class OAuthAuthentication extends Action {
 			$this->redirectUri = $ssoSettings->getRedirectUrl();
 			$this->matchpoints = $ssoSettings->getMatchpoints();
 			$this->grantType = $ssoSettings->getAuthenticationGrantType();
+			$this->staffOnly = $ssoSettings->staffOnly;
 			$this->staffPTypeAttr = $ssoSettings->oAuthStaffPTypeAttr ?? null;
 			$this->staffPTypeAttrValue = $ssoSettings->oAuthStaffPTypeAttrValue ?? null;
-			$this->updateAccount = $ssoSettings->updateAccount ?? false;
 
 			if($ssoSettings->staffOnly === 1 || $ssoSettings->staffOnly === '1') {
 				$this->staffPType = $ssoSettings->oAuthStaffPType;
@@ -242,7 +243,7 @@ class OAuthAuthentication extends Action {
 				$newUser['cat_username'] = $this->getUserId();
 				$newUser['ils_barcode'] = $this->getUserId();
 				$newUser['category_id'] = null;
-				if ($this->staffPType && $this->isStaffUser()) {
+				if (!empty($this->staffPType) && $this->isStaffUser()) {
 					$newUser['category_id'] = $this->staffPType;
 				}
 				$selfReg = $catalogConnection->selfRegister(true, $newUser);
@@ -316,6 +317,9 @@ class OAuthAuthentication extends Action {
 	}
 
 	private function isStaffUser(): bool {
+		if ($this->staffOnly) {
+			return true;
+		}
 		if($this->staffPTypeAttr && $this->staffPTypeAttrValue) {
 			if($this->getStaffAttribute() === $this->staffPTypeAttrValue) {
 				return true;
@@ -334,7 +338,11 @@ class OAuthAuthentication extends Action {
 		$tmpUser->unique_ils_id = "";
 		$tmpUser->phone = '';
 		$tmpUser->displayName = '';
-		$tmpUser->patronType = '';
+		if ($this->isStaffUser() && !empty($this->staffPType)) {
+			$tmpUser->patronType = $this->staffPType;
+		}else{
+			$this->staffPType = '';
+		}
 		$tmpUser->trackReadingHistory = false;
 
 		$location = new Location();
