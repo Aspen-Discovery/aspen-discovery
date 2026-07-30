@@ -3116,7 +3116,7 @@ AspenDiscovery.Account = (function () {
 					return;
 				}
 
-				AspenDiscovery.showMessage(response.title, response.message, false, true);
+				AspenDiscovery.showMessageWithButtons(response.title, response.body, response.buttons, true);
 			}, 'json').fail(function () {
 				errorElem.text(__("There was an error processing your registration, please try again.")).show();
 			});
