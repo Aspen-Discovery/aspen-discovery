@@ -16,20 +16,14 @@ function getUpdates26_07_01(): array {
 		 ], //name*/
 
 		//mark n
-		'ip_address_headers_to_check' => [
-			'title' => 'IPAddress Headers To Check',
-			'description' => 'Add the ability to configure what headers should be checked when loading the active IP.',
+		'reading_history_base_url' => [
+			'title' => 'Reading History Base URLs',
+			'description' => 'Add the ability to determine how reading history URLs are constructed when updating from cron.',
 			'continueOnError' => false,
 			'sql' => [
-				'ALTER TABLE system_variables ADD COLUMN checkClientIP TINYINT(1) NOT NULL DEFAULT 0',
-				'ALTER TABLE system_variables ADD COLUMN checkXForwardedFor TINYINT(1) NOT NULL DEFAULT 0',
-				'ALTER TABLE system_variables ADD COLUMN checkXForwarded TINYINT(1) NOT NULL DEFAULT 0',
-				'ALTER TABLE system_variables ADD COLUMN checkForwardedFor TINYINT(1) NOT NULL DEFAULT 0',
-				'ALTER TABLE system_variables ADD COLUMN checkForwarded TINYINT(1) NOT NULL DEFAULT 0',
-				'ALTER TABLE system_variables ADD COLUMN checkRemoteHost TINYINT(1) NOT NULL DEFAULT 0',
-				'ALTER TABLE system_variables ADD COLUMN checkRemoteAddr TINYINT(1) NOT NULL DEFAULT 1',
+				'ALTER TABLE system_variables ADD COLUMN readingHistoryBaseUrl TINYINT(1) NOT NULL DEFAULT 0',
 			],
-		], //ip_address_headers_to_check
+		], //reading_history_base_url
 
 		//kirstien
 
