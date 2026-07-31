@@ -281,7 +281,6 @@ AspenDiscovery.Events = (function(){
 		},
 
 		calculateEndTime: function () {
-			console.log("Calculating end time");
 			var startDate = moment($("#startDate").val());
 			var startTime = $("#startTime").val();
 			var length = $("#eventLength").val();
@@ -673,7 +672,6 @@ AspenDiscovery.Events = (function(){
 
 			$.getJSON(url, params, function (data) {
 				if (data.success && data.icsFile.length > 0) {
-					console.log(data.icsFile);
 					var filename = eventId + ".ics";
 					var element = document.createElement('a');
 					element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(data.icsFile));

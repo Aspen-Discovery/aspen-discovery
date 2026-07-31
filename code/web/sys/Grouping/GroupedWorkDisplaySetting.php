@@ -88,6 +88,7 @@ class GroupedWorkDisplaySetting extends DataObject {
 	public $maxPopularityBoost;
 	public $maxFormatBoost;
 	public $maxHoldingsBoost;
+	public $displaySortTermValue;
 
 	// Item details
 	public $showItemDueDates;
@@ -723,6 +724,14 @@ class GroupedWorkDisplaySetting extends DataObject {
 						'hideInLists' => true,
 						'expandByDefault' => true,
 						'default' => 0,
+					],
+					'displaySortTermValue' => [
+						'property' => 'displaySortTermValue',
+						'type' => 'checkbox',
+						'label' => 'Display Sort Term Values',
+						'description' => 'Whether or not the values of certain sort terms will be displayed (i.e. total checkouts, date added, etc.).',
+						'hideInLists' => true,
+						'default' => 1,
 					],
 				],
 			],

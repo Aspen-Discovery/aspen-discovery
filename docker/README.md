@@ -3,8 +3,8 @@
 ## Quick Start
 
 ```bash
-curl -O https://raw.githubusercontent.com/Aspen-Discovery/aspen-discovery/26.05.00/docker/docker-compose.yml
-curl -O https://raw.githubusercontent.com/Aspen-Discovery/aspen-discovery/26.05.00/docker/files/env/default.env
+curl -O https://raw.githubusercontent.com/Aspen-Discovery/aspen-discovery/26.07.00/docker/docker-compose.yml
+curl -O https://raw.githubusercontent.com/Aspen-Discovery/aspen-discovery/26.07.00/docker/files/env/default.env
 cp default.env .env
 ```
 
@@ -32,9 +32,10 @@ Access Aspen at http://localhost:85 (default credentials: `aspen_admin` / `secre
 | `URL` | `http://localhost:85` | Public URL |
 | `TITLE` | `Aspen Discovery` | Library title |
 | `LIBRARY` | `Test Library` | Library name |
-| `TIMEZONE` | `America/Argentina/Cordoba` | PHP timezone |
+| `TZ` | `America/Argentina/Cordoba` | Container and PHP timezone |
 | `ASPEN_ADMIN_PASSWORD` | `secretPass123` | Admin password — **change before going live** |
 | `ASPEN_HOME` | `./aspen` | Directory where instance files are stored (conf, data, logs) |
+| `ASPEN_ADMIN_PASSWORD` | `secretPass123` | Admin password |
 | `SUPPORTING_COMPANY` | `ByWater Solutions` | Support company name |
 
 ### Database
@@ -77,7 +78,7 @@ Environment variables are synced to configuration files on every container start
 
 **Supported variables for runtime updates:**
 - `DATABASE_HOST`, `DATABASE_PORT`, `DATABASE_NAME`, `DATABASE_USER`, `DATABASE_PASSWORD`
-- `TIMEZONE`, `URL`, `TITLE`, `LIBRARY`
+- `TZ`, `URL`, `TITLE`, `LIBRARY`
 - `SOLR_HOST`, `SOLR_PORT`
 
 **Note:** Changing database credentials requires the MariaDB user to already exist. MariaDB only creates users on first initialization.
