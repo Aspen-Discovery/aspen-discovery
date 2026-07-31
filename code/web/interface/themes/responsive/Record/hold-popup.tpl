@@ -276,17 +276,26 @@
 							<div class="alert alert-info">{translate text=$holdEditionPromptMessage isPublicFacing=true}</div>
 						{/if}
 						<div id="editionSelectionOptions" class="form-group">
-							<label class="control-label" for="selectedEditionOption">{translate text="Do you want to place a hold on the suggested edition or a specific edition?" isPublicFacing=true}</label>
-							<select name="selectedEditionOption" id="selectedEditionOption" class="form-control"  onchange="AspenDiscovery.GroupedWork.showEditionSwiper()">
-								<option value="1" {if $holdPromptForEditions == 1}selected{/if}>{translate text="Place hold on suggested edition" isPublicFacing=true}</option>
-								<option value="2" {if $holdPromptForEditions == 2}selected{/if}>{translate text="Place hold on specific edition" isPublicFacing=true}</option>
-							</select>
+							<label class="control-label">{translate text="Do you want to place a hold on the suggested edition or a specific edition?" isPublicFacing=true}</label>
+							<div class="btn-group btn-group-toggle edition-option-toggle" role="group" aria-label="{translate text="Edition hold option" isPublicFacing=true}">
+								<button type="button" class="btn btn-primary edition-option-btn{if $holdPromptForEditions == 2} active{/if}"
+										aria-pressed="{if $holdPromptForEditions == 2}true{else}false{/if}"
+										onclick="AspenDiscovery.GroupedWork.selectEditionOption(this, 2)">
+									{translate text="Place hold on specific edition" isPublicFacing=true}
+								</button>
+								<button type="button" class="btn btn-primary edition-option-btn{if $holdPromptForEditions == 1} active{/if}"
+										aria-pressed="{if $holdPromptForEditions == 1}true{else}false{/if}"
+										onclick="AspenDiscovery.GroupedWork.selectEditionOption(this, 1)">
+									{translate text="Place hold on suggested edition" isPublicFacing=true}
+								</button>
+							</div>
+							<input type="hidden" name="selectedEditionOption" id="selectedEditionOption" value="{$holdPromptForEditions|default:1}">
 						</div>
 						<div id="editionSelectionSlider" class="horizontalSliders" {if $holdPromptForEditions == 1}style="display: none"{/if}>
 							<div class="row horizontalEditionSelector">
 								<div class="col-xs-12">
-									<div class="slider-container" role="region" id="slider-edition">
-										<button type="button" class="slider-button slider-button-prev btn btn-editions" id="slider-prev-edition"></button>
+									<div class="slider-container" role="region" id="slider-edition" style="width: 0; min-width: 100%;">
+										<button type="button" class="slider-button slider-button-prev btn btn-editions" id="slider-prev-edition"><i class="fas fa-chevron-left"></i></button>
 										<div class="slider-wrapper" role="listbox" aria-activedescendant="slide-edition-0">
 											{assign var=firstEdition value=""}
 											{foreach from=$editionOptions item=edition name=editions}
@@ -305,13 +314,13 @@
 														<div class="edition-data">
 															{$edition->publicationDate}. {$edition->publisher}. {$edition->physical}.<br/>
 															{include file='GroupedWork/statusIndicator.tpl' statusInformation=$edition->getStatusInformation() viewingIndividualRecord=1}
-															<span>{$current} of {count($editionOptions)}</span>
+															<span>{$current} of {count($editionOptions)} editions</span>
 														</div>
 													</label>
 												</div>
 											{/foreach}
 										</div>
-										<button type="button" class="slider-button slider-button-next btn btn-editions" id="slider-next-edition"></button>
+										<button type="button" class="slider-button slider-button-next btn btn-editions" id="slider-next-edition"><i class="fas fa-chevron-right"></i></button>
 								</div>
 									<script>
 										$(document).ready(function(){ldelim}
