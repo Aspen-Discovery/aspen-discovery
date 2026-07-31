@@ -897,7 +897,7 @@ public class MarcRecordFormatClassifier {
 								break;
 							case 'D':
 								if (formatField.getData().length() >= 5) {
-									if (formatField.getData().toUpperCase().charAt(4).equals("T")) {
+									if (formatField.getData().toUpperCase().charAt(4) == 'T') {
 										if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Adding bib level format 4KBlu-ray based on 007", 2);}
 										resultsFrom007.add("4KBlu-ray");
 									}
