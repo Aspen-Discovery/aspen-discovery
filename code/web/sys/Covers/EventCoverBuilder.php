@@ -76,7 +76,6 @@ class EventCoverBuilder extends AbstractCoverBuilder {
 		$y = addCenteredWrappedTextToImage($imageCanvas, $this->titleFont, $dayOfMonth, $title_font_size * 5, $title_font_size * .15 * 5, $x, $y, $this->imageWidth - 30, $textColor);
 
 		if (!empty($branch) && $displayBranchOnThumbnail) {
-			$y += 15;
 			$branch = StringUtils::trimStringToLengthAtWordBoundary($branch, 150, true);
 			$branch_font_size = $title_font_size * 1.0;
 
@@ -84,9 +83,9 @@ class EventCoverBuilder extends AbstractCoverBuilder {
 				$branchTotalHeight,
 				$branchLines,
 				$branch_font_size_final,
-			] = wrapTextForDisplay($this->titleFont, $branch, $branch_font_size, $branch_font_size * .15, $width, 100);
+			] = wrapTextForDisplay($this->titleFont, $branch, $branch_font_size, $branch_font_size * .15, $width, 30);
 			$y = addCenteredWrappedTextToImage($imageCanvas, $this->titleFont, $branchLines, $branch_font_size_final, $branch_font_size_final * .15, $x, $y, $this->imageWidth - 30, $textColor);
-			$y += 30; 
+			$y += 45;
 		}
 
 		$title = StringUtils::trimStringToLengthAtWordBoundary($title, 60, true);
@@ -95,8 +94,8 @@ class EventCoverBuilder extends AbstractCoverBuilder {
 			$totalHeight,
 			$lines,
 			$font_size,
-		] = wrapTextForDisplay($this->titleFont, $title, $title_font_size, $title_font_size * .15, $width, $this->imageHeight - $this->imageWidth - 20);
-		$y = $this->imageWidth + 5;
+		] = wrapTextForDisplay($this->titleFont, $title, $title_font_size, $title_font_size * .15, $width, $this->imageHeight - $this->imageWidth - 25);
+		$y = $this->imageWidth + 10;
 		addCenteredWrappedTextToImage($imageCanvas, $this->titleFont, $lines, $font_size, $font_size * .15, $x, $y, $this->imageWidth - 30, $textColor);
 	}
 }
