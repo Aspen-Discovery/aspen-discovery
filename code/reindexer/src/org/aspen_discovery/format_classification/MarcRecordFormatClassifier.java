@@ -896,8 +896,15 @@ public class MarcRecordFormatClassifier {
 								resultsFrom007.add("VideoCartridge");
 								break;
 							case 'D':
-								if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Adding bib level format VideoDisc based on 007", 2);}
-								resultsFrom007.add("VideoDisc");
+								if (formatField.getData().length() >= 5) {
+									if (formatField.getData().toUpperCase().charAt(4).equals("T")) {
+										if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Adding bib level format 4KBlu-ray based on 007", 2);}
+										resultsFrom007.add("4KBlu-ray");
+									}
+								} else {
+									if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Adding bib level format VideoDisc based on 007", 2);}
+									resultsFrom007.add("VideoDisc");
+								}
 								break;
 							case 'F':
 								if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Adding bib level format VideoCassette based on 007", 2);}
