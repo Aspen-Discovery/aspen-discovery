@@ -1026,8 +1026,8 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 		return $libKeyDriver->getLibKeyResult($uniqueIdentifier);
 	}
 
-	public function getAdvancedSearchIndexes()
-	{
+	public function getAdvancedSearchIndexes() : array {
 		// TODO: Implement getAdvancedSearchIndexes() method.
+		return [];
 	}
 }

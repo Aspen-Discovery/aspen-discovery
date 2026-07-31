@@ -343,8 +343,8 @@ class SearchObject_ListsSearcher extends SearchObject_SolrSearcher {
 		return $field;
 	}
 
-	public function getAdvancedSearchIndexes()
-	{
+	public function getAdvancedSearchIndexes() : array {
 		// TODO: Implement getAdvancedSearchIndexes() method.
+		return [];
 	}
 }

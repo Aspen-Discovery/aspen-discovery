@@ -616,8 +616,8 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher {
 		return 'GenealogyKeyword';
 	}
 
-	public function getAdvancedSearchIndexes()
-	{
+	public function getAdvancedSearchIndexes() : array {
 		// TODO: Implement getAdvancedSearchIndexes() method.
+		return [];
 	}
 }

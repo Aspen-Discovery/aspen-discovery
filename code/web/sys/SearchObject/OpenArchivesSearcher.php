@@ -192,8 +192,8 @@ class SearchObject_OpenArchivesSearcher extends SearchObject_SolrSearcher {
 		return 'OpenArchivesKeyword';
 	}
 
-	public function getAdvancedSearchIndexes()
-	{
+	public function getAdvancedSearchIndexes() : array {
 		// TODO: Implement getAdvancedSearchIndexes() method.
+		return [];
 	}
 }

@@ -455,8 +455,8 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher {
 		return 'EventsKeyword';
 	}
 
-	public function getAdvancedSearchIndexes()
-	{
+	public function getAdvancedSearchIndexes() : array {
 		// TODO: Implement getAdvancedSearchIndexes() method.
+		return [];
 	}
 }

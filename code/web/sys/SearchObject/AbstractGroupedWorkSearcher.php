@@ -1277,7 +1277,8 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 
 	public function getAdvancedSearchIndexes() : array {
 		global $library;
-		global $location;
+		global $locationSingleton;
+		$location = $locationSingleton->getActiveLocation();
 
 		$searchIndexes = [];
 
