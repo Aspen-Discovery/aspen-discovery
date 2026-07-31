@@ -23,7 +23,7 @@ function getUpdates26_07_01(): array {
 			'sql' => [
 				'ALTER TABLE system_variables ADD COLUMN readingHistoryBaseUrl TINYINT(1) NOT NULL DEFAULT 0',
 			],
-		], //multi_copy_holds_support
+		], //reading_history_base_url
 
 		//kirstien
 
