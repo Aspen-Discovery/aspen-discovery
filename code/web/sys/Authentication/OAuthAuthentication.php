@@ -15,9 +15,11 @@ class OAuthAuthentication extends Action {
 	protected $resourceOwner;
 	protected $redirectUri;
 	protected $matchpoints;
+	protected $staffOnly; //True if all users in the IdP are staff users
 	protected $staffPType;
 	protected $staffPTypeAttr;
 	protected $staffPTypeAttrValue;
+	protected $accountProfileName = 'ils';
 	/** @var CurlWrapper */
 	private $curlWrapper;
 
@@ -38,9 +40,9 @@ class OAuthAuthentication extends Action {
 			$this->redirectUri = $ssoSettings->getRedirectUrl();
 			$this->matchpoints = $ssoSettings->getMatchpoints();
 			$this->grantType = $ssoSettings->getAuthenticationGrantType();
+			$this->staffOnly = $ssoSettings->staffOnly;
 			$this->staffPTypeAttr = $ssoSettings->oAuthStaffPTypeAttr ?? null;
 			$this->staffPTypeAttrValue = $ssoSettings->oAuthStaffPTypeAttrValue ?? null;
-			$this->updateAccount = $ssoSettings->updateAccount ?? false;
 
 			if($ssoSettings->staffOnly === 1 || $ssoSettings->staffOnly === '1') {
 				$this->staffPType = $ssoSettings->oAuthStaffPType;
@@ -54,8 +56,9 @@ class OAuthAuthentication extends Action {
 
 			require_once ROOT_DIR . '/sys/Account/AccountProfile.php';
 			$accountProfile = new AccountProfile();
-			$accountProfile->id = $library->accountProfileId;
+			$accountProfile->ssoSettingId = $ssoSettings->id;
 			if($accountProfile->find(true)) {
+				$this->accountProfileName = $accountProfile->name;
 				if($accountProfile->authenticationMethod === 'sso') {
 					$this->ssoAuthOnly = true;
 				} else {
@@ -146,18 +149,20 @@ class OAuthAuthentication extends Action {
 	}
 
 	public function getAccessToken($accessTokenUrl, array $options = [], $returnToken = false) {
-		$queryString = $this->buildQueryString($options);
-		$url = $this->appendQuery($accessTokenUrl, $queryString);
 		$this->initCurlWrapper();
-		$response = $this->curlWrapper->curlPostPage($url, '');
-		$options = json_decode($response, true);
-		if (!empty($options['access_token'])) {
-			$this->accessToken = $options['access_token'];
-			if (!empty($options['refresh_token'])) {
-				$this->refreshToken = $options['refresh_token'];
+		$headers = [
+			'Content-Type: application/x-www-form-urlencoded',
+		];
+		$this->curlWrapper->addCustomHeaders($headers, false);
+		$response = $this->curlWrapper->curlPostPage($accessTokenUrl, $options);
+		$decodedResponse = json_decode($response, true);
+		if (!empty($decodedResponse['access_token'])) {
+			$this->accessToken = $decodedResponse['access_token'];
+			if (!empty($decodedResponse['refresh_token'])) {
+				$this->refreshToken = $decodedResponse['refresh_token'];
 			}
 			if ($returnToken) {
-				return $options['access_token'];
+				return $decodedResponse['access_token'];
 			}
 			return true;
 		}
@@ -190,20 +195,35 @@ class OAuthAuthentication extends Action {
 	}
 
 	private function getResourceOwner($resourceOwnerDetailsUrl): bool {
-		$url = $resourceOwnerDetailsUrl . "?access_token=" . $this->accessToken;
+		global $logger;
 		$this->initCurlWrapper();
+		if ($this->gateway == 'google') {
+			$url = $resourceOwnerDetailsUrl . "?access_token=" . $this->accessToken;
+		}else{
+			$url = $resourceOwnerDetailsUrl;
+			$this->curlWrapper->addCustomHeaders([
+				"Authorization: Bearer " . $this->accessToken,
+			], true);
+		}
 		$response = $this->curlWrapper->curlGetPage($url);
 		$options = json_decode($response, true);
 		if (is_array($options)) {
+			if (IPAddress::showDebuggingInformation()){
+				$logger->log('Resource Owner Information', Logger::LOG_DEBUG);
+				$logger->log($options, Logger::LOG_DEBUG);
+			}
 			$this->resourceOwner = $options;
 			return true;
+		}else{
+			$logger->log('Error getting resource owner, options were not an array', Logger::LOG_ERROR);
 		}
 		return false;
 	}
 
 	private function validateAccount(): bool {
 		global $logger;
-		if($this->ssoAuthOnly === false) {
+		if ($this->ssoAuthOnly === false) {
+
 			$catalogConnection = CatalogFactory::getCatalogConnectionInstance();
 
 			if ($this->getUserId()) {
@@ -223,7 +243,7 @@ class OAuthAuthentication extends Action {
 				$newUser['cat_username'] = $this->getUserId();
 				$newUser['ils_barcode'] = $this->getUserId();
 				$newUser['category_id'] = null;
-				if ($this->staffPType && $this->isStaffUser()) {
+				if (!empty($this->staffPType) && $this->isStaffUser()) {
 					$newUser['category_id'] = $this->staffPType;
 				}
 				$selfReg = $catalogConnection->selfRegister(true, $newUser);
@@ -232,7 +252,6 @@ class OAuthAuthentication extends Action {
 					$logger->log('Error self registering user ' . print_r($this->getUserId(), true), Logger::LOG_ERROR);
 					return false;
 				}
-				$user = $catalogConnection->findNewUser($this->getUserId(), '');
 			} else {
 				$user->oAuthAccessToken = $this->accessToken;
 				$user->oAuthRefreshToken = $this->refreshToken;
@@ -240,24 +259,23 @@ class OAuthAuthentication extends Action {
 				if($this->updateAccount) {
 					$user->updatePatronInfo(true);
 				}
-				$user = $catalogConnection->findNewUser($this->getUserId(), '');
 			}
-			return $this->login($user);
+			$user = $catalogConnection->findNewUser($this->getUserId(), '');
 		} else {
 			// we only want to authenticate the user via SSO as determined by the account profile
-			$user = UserAccount::findNewAspenUser('user_id', $this->getUserId());
+			$user = UserAccount::findNewAspenUser('username', $this->getUserId(), $this->accountProfileName);
 			if (!$user instanceof User) {
 				$logger->log('No user found in Aspen, creating a new one...', Logger::LOG_ERROR);
 				$tmpUser = $this->createNewAspenUser();
 				if($tmpUser) {
-					$user = UserAccount::findNewAspenUser('user_id', $this->getUserId());
+					$user = UserAccount::findNewAspenUser('username', $this->getUserId(), $this->accountProfileName);
 				} else {
 					$logger->log('Error creating Aspen user ' . print_r($this->getUserId(), true), Logger::LOG_ERROR);
 					return false;
 				}
 			}
-			return $this->login($user);
 		}
+		return $this->login($user);
 	}
 
 	private function getUserId() {
@@ -266,7 +284,7 @@ class OAuthAuthentication extends Action {
 
 	public function searchArray($array, $needle) {
 		$result = false;
-		foreach ($array as $obj) {
+		foreach ($array as $key => $obj) {
 			if (is_array($obj)) {
 				foreach ($obj as $n) {
 					if (array_key_exists($needle, $n)) {
@@ -274,11 +292,9 @@ class OAuthAuthentication extends Action {
 						break;
 					}
 				}
-			} else {
-				if (array_key_exists($needle, $obj)) {
-					$result = $obj[$needle];
-					break;
-				}
+			} else if ($key == $needle) {
+				$result = $obj;
+				break;
 			}
 		}
 		return $result;
@@ -301,6 +317,9 @@ class OAuthAuthentication extends Action {
 	}
 
 	private function isStaffUser(): bool {
+		if ($this->staffOnly) {
+			return true;
+		}
 		if($this->staffPTypeAttr && $this->staffPTypeAttrValue) {
 			if($this->getStaffAttribute() === $this->staffPTypeAttrValue) {
 				return true;
@@ -316,10 +335,14 @@ class OAuthAuthentication extends Action {
 		$tmpUser->firstname = $this->getFirstName();
 		$tmpUser->lastname = $this->getLastName() ?? '';
 		$tmpUser->username = $this->getUserId();
-		$tmpUser->unique_ils_id = $this->getUserId();
+		$tmpUser->unique_ils_id = "";
 		$tmpUser->phone = '';
 		$tmpUser->displayName = '';
-		$tmpUser->patronType = '';
+		if ($this->isStaffUser() && !empty($this->staffPType)) {
+			$tmpUser->patronType = $this->staffPType;
+		}else{
+			$this->staffPType = '';
+		}
 		$tmpUser->trackReadingHistory = false;
 
 		$location = new Location();
@@ -333,6 +356,7 @@ class OAuthAuthentication extends Action {
 		$tmpUser->myLocation1Id = 0;
 		$tmpUser->myLocation2Id = 0;
 		$tmpUser->created = date('Y-m-d');
+		$tmpUser->source = $this->accountProfileName;
 		if($tmpUser->insert()) {
 			return true;
 		}

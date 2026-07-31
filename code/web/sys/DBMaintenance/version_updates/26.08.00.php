@@ -16,6 +16,14 @@ function getUpdates26_08_00(): array {
 		 ], //name*/
 
 		//mark n
+		'increase_user_username_column' => [
+			'title' => 'Increase username column in user table',
+			'description' => 'Increase username column in user table',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE user CHANGE COLUMN username username VARCHAR(255) NOT NULL',
+			]
+		], //name
 
 		//kirstien
 
