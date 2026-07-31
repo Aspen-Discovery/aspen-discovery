@@ -236,9 +236,6 @@
 		<field name="author_additional" type="searchable_text" indexed="true" stored="true" multiValued="true"/>
 		<field name="author_additionalStr" type="unchanged_string" indexed="true" stored="false" multiValued="true"/>
 
-		<!-- OTHER CONTRIBUTOR INFORMATION -->
-		<field name="narrator" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
-
 		<!-- TITLE/AUTHOR -->
 		<field name="title_author" type="searchable_text" indexed="true" stored="false" multiValued="true"/>
 

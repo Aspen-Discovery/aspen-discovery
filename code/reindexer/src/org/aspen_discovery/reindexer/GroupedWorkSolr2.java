@@ -73,8 +73,6 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 			doc.addField("author_additional", authorAdditional);
 			doc.addField("author_display", authorDisplay);
 
-			doc.addField("narrator", narrators);
-
 			//title auth
 			HashSet<String> titleAuthors = new HashSet<>();
 			titleAuthors.add(fullTitle + " " + getPrimaryAuthor());

@@ -1624,7 +1624,6 @@ abstract class MarcRecordProcessor {
 		//Load contributors with role
 		List<DataField> contributorFields = MarcUtil.getDataFields(record, new int[]{700,710});
 		HashSet<String> contributors = new HashSet<>();
-		HashSet<String> narrators = new HashSet<>();
 		for (DataField contributorField : contributorFields){
 			StringBuilder contributor = MarcUtil.getSpecifiedSubfieldsAsString(contributorField, "abcd", "");
 			if (contributor.length() == 0){
@@ -1636,15 +1635,15 @@ abstract class MarcRecordProcessor {
 			StringBuilder roles = MarcUtil.getSpecifiedSubfieldsAsString(contributorField, "e4", ",");
 			if (roles.length() > 0){
 				if (roles.toString().contains("nrt")) {
-					narrators.add(contributor.toString());
+					contributor.append("|Narrator");
+				} else {
+					contributor.append("|").append(roles.toString().replaceAll(",,", ","));
 				}
-				contributor.append("|").append(roles.toString().replaceAll(",,", ","));
 			}
 			contributors.add(contributor.toString());
 		}
 
 		groupedWork.addAuthor2Role(contributors);
-		groupedWork.addNarrators(narrators);
 
 		RecordInfo recordInfo = groupedWork.getRecordInfo(profileType, identifier);
 		groupedWork.setAuthorDisplay(displayAuthor, formatCategory, recordInfo);

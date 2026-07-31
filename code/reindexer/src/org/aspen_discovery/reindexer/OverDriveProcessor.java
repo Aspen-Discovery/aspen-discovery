@@ -215,18 +215,13 @@ class OverDriveProcessor implements AutoCloseable {
 									JSONArray creators = rawMetadataDecoded.getJSONArray("creators");
 									HashSet<String> authors = new HashSet<>();
 									HashSet<String> authorsWithRole = new HashSet<>();
-									HashSet<String> narrators = new HashSet<>();
 									for (int i = 0; i < creators.length(); i++) {
 										JSONObject creator = creators.getJSONObject(i);
 										authors.add(creator.getString("fileAs"));
-										if (creator.getString("role").toLowerCase().equals("narrator")) {
-											narrators.add(creator.getString("fileAs"));
-										}
 										authorsWithRole.add(creator.getString("fileAs") + "|" + creator.getString("role"));
 									}
 									groupedWork.addAuthor2(authors);
 									groupedWork.addAuthor2Role(authorsWithRole);
-									groupedWork.addNarrators(narrators);
 									//Get format durations
 									if (rawMetadataDecoded.has("formats")) {
 										JSONArray formats = rawMetadataDecoded.getJSONArray("formats");

@@ -407,13 +407,12 @@ class HooplaProcessor2 {
 					JSONArray artists = rawResponse.getJSONArray("artists");
 					HashSet<String> artistsToAdd = new HashSet<>();
 					HashSet<String> artistsWithRoleToAdd = new HashSet<>();
-					HashSet<String> narratorsToAdd = new HashSet<>();
 					for (int i = 0; i < artists.length(); i++) {
 						JSONObject curArtist = artists.getJSONObject(i);
 						String artistName = AspenStringUtils.swapFirstLastNames(curArtist.getString("name"));
 						artistsToAdd.add(artistName);
 						if (curArtist.getString("relationship").toLowerCase().equals("reader")) {
-							narratorsToAdd.add(artistName);
+							artistsToAdd.add(artistName);
 							artistsWithRoleToAdd.add(artistName + "|Narrator");
 						} else {
 							artistsWithRoleToAdd.add(artistName + "|" + StringUtils.capitalize(curArtist.getString("relationship").toLowerCase()));
@@ -422,7 +421,6 @@ class HooplaProcessor2 {
 					groupedWork.addAuthor2(artistsToAdd);
 					groupedWork.addAuthor2Role(artistsWithRoleToAdd);
 					groupedWork.addKeywords(artistsToAdd);
-					groupedWork.addNarrators(narratorsToAdd);
 				}
 				JSONArray genres = rawResponse.has("genres") ? rawResponse.getJSONArray("genres") : new JSONArray();
 				HashSet<String> genresToAdd = new HashSet<>();
