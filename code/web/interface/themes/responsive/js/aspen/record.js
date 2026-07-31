@@ -805,8 +805,6 @@ AspenDiscovery.Record = (function () {
 				selected.push($(this).val());
 			});
 
-			console.log("SELECTED RECORDS:", selected);
-			
 			const pickupBranch = $('#hyperholdPickupBranch').val();
 
 			const params = {

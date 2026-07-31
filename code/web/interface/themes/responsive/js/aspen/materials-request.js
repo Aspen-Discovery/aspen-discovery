@@ -61,7 +61,6 @@ AspenDiscovery.MaterialsRequest = (function(){
 			var selectedRequests = $("input." + selectName + ":checked").map(function() {
 				return $(this).attr('name') + "=" + $(this).val();
 			}).get().join("&");
-			console.log(selectedRequests);
 			if (selectedRequests.length === 0){
 				if (promptToSelectAll){
 					var ret = confirm(__('You have not selected any requests, process all requests?'));
