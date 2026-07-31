@@ -57,6 +57,21 @@
 		</div>
 	{/if}
 {/if}
+{if !empty($sortValue) && $displaySortTermValues}
+	{if $sortValue == "popularity desc"}
+		<div class="result-label col-sm-4 col-xs-12">{translate text="Total Checkouts" isPublicFacing=true} </div>
+		<div class="result-value col-sm-8 col-xs-12">{$totalCheckouts}</div>
+	{elseif $sortValue =="days_since_added asc"}
+		<div class="result-label col-sm-4 col-xs-12">{translate text="Date Purchased" isPublicFacing=true} </div>
+		<div class="result-value col-sm-8 col-xs-12">{$datePurchased|date_format:"%m/%d/%Y"}</div>
+	{elseif $sortValue =="callnumber_sort"}
+		<div class="result-label col-sm-4 col-xs-12">{translate text="Call Number" isPublicFacing=true} </div>
+		<div class="result-value col-sm-8 col-xs-12">{$callNumber}</div>
+	{elseif $sortValue =="total_holds desc"}
+		<div class="result-label col-sm-4 col-xs-12">{translate text="Number of Holds" isPublicFacing=true} </div>
+		<div class="result-value col-sm-8 col-xs-12">{$totalHolds}</div>
+	{/if}
+{/if}
 {if !empty($showEditions)}
 	{if $alwaysShowSearchResultsMainDetails || $summEdition}
 		<div class="result-label col-sm-4 col-xs-12">{translate text="Edition" isPublicFacing=true} </div>

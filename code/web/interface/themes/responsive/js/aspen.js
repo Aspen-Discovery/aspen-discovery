@@ -1855,9 +1855,16 @@ var AspenDiscovery = (function(){
 			var wrapper = container.querySelector('.slider-wrapper');
 			var prevBtn = container.querySelector('.slider-button-prev');
 			var nextBtn = container.querySelector('.slider-button-next');
-			var slideWidth = wrapper.querySelector('.slider-slide').offsetWidth + 12;
 			var slides = wrapper.querySelectorAll('.slider-slide');
 			let currentIndex = 0;
+
+			// Compute slide width fresh each time instead of caching it once at init,
+			// since offsetWidth is 0 while this is inside a display:none modal.
+			function getSlideWidth() {
+				var slide = wrapper.querySelector('.slider-slide');
+				return (slide ? slide.offsetWidth : 0) + 12;
+			}
+
 			// --- Accessibility ARIA setup ---
 			wrapper.setAttribute('role', 'listbox');
 			slides.forEach(function (slide, idx) {
@@ -1883,12 +1890,12 @@ var AspenDiscovery = (function(){
 				currentIndex = index;
 			}
 
-			// Only scroll on button click, do not select/focus next slide
+			// Animated scroll on button click
 			prevBtn.addEventListener('click', function () {
-				wrapper.scrollLeft -= slideWidth;
+				wrapper.scrollTo({ left: wrapper.scrollLeft - getSlideWidth(), behavior: 'smooth' });
 			});
 			nextBtn.addEventListener('click', function () {
-				wrapper.scrollLeft += slideWidth;
+				wrapper.scrollTo({ left: wrapper.scrollLeft + getSlideWidth(), behavior: 'smooth' });
 			});
 
 			// Keyboard support for prev/next buttons
@@ -1907,6 +1914,9 @@ var AspenDiscovery = (function(){
 
 			slides.forEach(function (slide, i) {
 				slide.addEventListener('click', function (e) {
+					// If this click is the tail end of a real drag gesture, ignore it
+					if (wrapper.dataset.dragMoved === 'true') return;
+
 					slides.forEach(function (s) {
 						s.classList.remove('active');
 						s.setAttribute('aria-selected', 'false');
@@ -1914,6 +1924,7 @@ var AspenDiscovery = (function(){
 					slide.classList.add('active');
 					slide.setAttribute('aria-selected', 'true');
 					wrapper.setAttribute('aria-activedescendant', slide.id);
+					slide.focus(); // keep keyboard nav anchored on the clicked slide
 					currentIndex = i;
 					onSlideClick(slide);
 				});
@@ -1922,77 +1933,138 @@ var AspenDiscovery = (function(){
 				slide.addEventListener('keydown', function (e) {
 					if (e.key === 'ArrowRight') {
 						if (i < slides.length - 1) {
+							e.preventDefault();
 							focusSlide(i + 1, true, true);
 						}
 					} else if (e.key === 'ArrowLeft') {
 						if (i > 0) {
+							e.preventDefault();
 							focusSlide(i - 1, true, true);
 						}
 					} else if (e.key === 'Enter' || e.key === ' ') {
+						e.preventDefault();
 						slide.click();
 					}
 				});
 			});
 
-			function updateButtonState() {
-				const hasOverflow = wrapper.scrollWidth > wrapper.clientWidth;
-				const atStart = wrapper.scrollLeft <= 0;
-				const atEnd = wrapper.scrollLeft + wrapper.clientWidth >= wrapper.scrollWidth - 1;
-
-				prevBtn.disabled = !hasOverflow || atStart;
-				nextBtn.disabled = !hasOverflow || atEnd;
-
-				prevBtn.classList.toggle('slider-button-disabled', !hasOverflow || atStart);
-				nextBtn.classList.toggle('slider-button-disabled', !hasOverflow || atEnd);
-			}
-
-			updateButtonState();
-			window.addEventListener('resize', updateButtonState);
-			wrapper.addEventListener('scroll', updateButtonState);
-
-			// --- Touch/drag support ---
-			let isDown = false;
-			let startX;
-			let scrollLeft;
-
-			wrapper.addEventListener('mousedown', (e) => {
-				isDown = true;
-				wrapper.classList.add('active');
-				startX = e.pageX - wrapper.offsetLeft;
-				scrollLeft = wrapper.scrollLeft;
-			});
-			wrapper.addEventListener('mouseleave', () => {
-				isDown = false;
-				wrapper.classList.remove('active');
-			});
-			wrapper.addEventListener('mouseup', () => {
-				isDown = false;
-				wrapper.classList.remove('active');
-			});
-			wrapper.addEventListener('mousemove', (e) => {
-				if (!isDown) return;
+			// Prevent native image/link drag from hijacking pointer gestures
+			wrapper.addEventListener('dragstart', function (e) {
 				e.preventDefault();
-				const x = e.pageX - wrapper.offsetLeft;
-				const walk = (x - startX) * 1.5;
-				wrapper.scrollLeft = scrollLeft - walk;
-			});
-			wrapper.addEventListener('touchstart', (e) => {
-				isDown = true;
-				startX = e.touches[0].pageX - wrapper.offsetLeft;
-				scrollLeft = wrapper.scrollLeft;
-			});
-			wrapper.addEventListener('touchend', () => {
-				isDown = false;
-			});
-			wrapper.addEventListener('touchmove', (e) => {
-				if (!isDown) return;
-				const x = e.touches[0].pageX - wrapper.offsetLeft;
-				const walk = (x - startX) * 1.5;
-				wrapper.scrollLeft = scrollLeft - walk;
 			});
 
-			// Initialize focus and ARIA
-			focusSlide(currentIndex, false, false);
+			// --- Pointer-based drag-to-scroll with momentum (mouse, touch, and pen) ---
+			(function enableDragScroll() {
+				var isDown = false;
+				var pointerId = null;
+				var startX = 0;
+				var startScrollLeft = 0;
+				var DRAG_THRESHOLD = 10; // px before a press counts as a drag, not a click
+
+				// Velocity tracking
+				var lastX = 0;
+				var lastTime = 0;
+				var velocity = 0; // px per ms
+
+				// Momentum animation
+				var momentumRAF = null;
+				var FRICTION = 0.95;      // lower = stops sooner, higher = coasts longer
+				var MIN_VELOCITY = 0.02;  // px/ms threshold to stop the animation
+
+				function stopMomentum() {
+					if (momentumRAF) {
+						cancelAnimationFrame(momentumRAF);
+						momentumRAF = null;
+					}
+				}
+
+				function runMomentum() {
+					wrapper.scrollLeft -= velocity * 16; // approximate px for a ~16ms frame
+					velocity *= FRICTION;
+
+					// Stop at the natural scroll boundaries too, rather than fighting them
+					if (wrapper.scrollLeft <= 0 || wrapper.scrollLeft >= wrapper.scrollWidth - wrapper.clientWidth) {
+						velocity = 0;
+					}
+
+					if (Math.abs(velocity) > MIN_VELOCITY) {
+						momentumRAF = requestAnimationFrame(runMomentum);
+					} else {
+						momentumRAF = null;
+					}
+				}
+
+				wrapper.addEventListener('pointerdown', function (e) {
+					if (e.button !== undefined && e.button !== 0) return;
+					stopMomentum(); // grabbing mid-coast should kill the momentum immediately
+
+					isDown = true;
+					pointerId = e.pointerId;
+					wrapper.dataset.dragMoved = 'false';
+					startX = e.clientX;
+					startScrollLeft = wrapper.scrollLeft;
+
+					lastX = e.clientX;
+					lastTime = performance.now();
+					velocity = 0;
+
+					// Do NOT capture the pointer yet — only once a real drag is confirmed,
+					// otherwise click events on slides stop firing entirely.
+				});
+
+				wrapper.addEventListener('pointermove', function (e) {
+					if (!isDown || e.pointerId !== pointerId) return;
+
+					var dx = e.clientX - startX;
+
+					if (Math.abs(dx) > DRAG_THRESHOLD && wrapper.dataset.dragMoved !== 'true') {
+						wrapper.dataset.dragMoved = 'true';
+						wrapper.classList.add('dragging');
+						wrapper.setPointerCapture(pointerId); // capture only now that it's a real drag
+					}
+
+					if (wrapper.dataset.dragMoved === 'true') {
+						wrapper.scrollLeft = startScrollLeft - dx;
+					}
+
+					var now = performance.now();
+					var dt = now - lastTime;
+					if (dt > 0) {
+						// px/ms since the last move event, smoothed slightly against the previous reading
+						var instVelocity = (e.clientX - lastX) / dt;
+						velocity = velocity * 0.7 + instVelocity * 0.3;
+					}
+					lastX = e.clientX;
+					lastTime = now;
+				});
+
+				function endDrag(e) {
+					if (!isDown || (pointerId !== null && e.pointerId !== pointerId)) return;
+					isDown = false;
+					wrapper.classList.remove('dragging');
+					if (pointerId !== null && wrapper.hasPointerCapture(pointerId)) {
+						wrapper.releasePointerCapture(pointerId);
+					}
+					pointerId = null;
+
+					if (Math.abs(velocity) > MIN_VELOCITY) {
+						momentumRAF = requestAnimationFrame(runMomentum);
+					}
+
+					setTimeout(function () { wrapper.dataset.dragMoved = 'false'; }, 0);
+				}
+
+				wrapper.addEventListener('pointerup', endDrag);
+				wrapper.addEventListener('pointercancel', endDrag);
+
+				// --- Mouse wheel / trackpad horizontal scroll ---
+				wrapper.addEventListener('wheel', function (e) {
+					var delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+					stopMomentum();
+					wrapper.scrollLeft += delta;
+					e.preventDefault();
+				}, { passive: false });
+			})();
 		},
 
 		/**
@@ -8140,7 +8212,6 @@ AspenDiscovery.Admin = (function () {
 					if (searchRegex.test(permissionSectionLabel)) {
 						curSection.show();
 						permissionsInSection.show();
-						console.log(permissionsInSection)
 					} else {
 						var numVisibleActions = 0;
 						permissionsInSection.each(function () {
@@ -8981,7 +9052,6 @@ AspenDiscovery.Admin = (function () {
 		},
 
 		getBatchUpdateHolidayForm: function (scope){
-			console.log(scope);
 			var url = Globals.path + "/Admin/AJAX?method=getBatchUpdateHolidayForm&scopeLevel=" + scope;
 			AspenDiscovery.Account.ajaxLightbox(url, true);
 		},
@@ -11294,7 +11364,6 @@ AspenDiscovery.Events = (function(){
 		},
 
 		calculateEndTime: function () {
-			console.log("Calculating end time");
 			var startDate = moment($("#startDate").val());
 			var startTime = $("#startTime").val();
 			var length = $("#eventLength").val();
@@ -11686,7 +11755,6 @@ AspenDiscovery.Events = (function(){
 
 			$.getJSON(url, params, function (data) {
 				if (data.success && data.icsFile.length > 0) {
-					console.log(data.icsFile);
 					var filename = eventId + ".ics";
 					var element = document.createElement('a');
 					element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(data.icsFile));
@@ -12494,9 +12562,6 @@ AspenDiscovery.GroupedWork = (function(){
 		},
 
 		loadDescription: function (id, recordType, recordId){
-			console.log("BEGIN");
-			console.log(recordType);
-			console.log(recordId);
 			var url = Globals.path + '/GroupedWork/' + id + '/AJAX',
 				params = {'method':'getDescription'};
 			if (recordType && recordId) {
@@ -13381,6 +13446,22 @@ AspenDiscovery.GroupedWork = (function(){
 				}
 			}
 		},
+		selectEditionOption: function (btn, value) {
+			var group = btn.closest('.edition-option-toggle');
+			var buttons = group.querySelectorAll('.edition-option-btn');
+
+			buttons.forEach(function (b) {
+				b.classList.remove('active');
+				b.setAttribute('aria-pressed', 'false');
+			});
+			btn.classList.add('active');
+			btn.setAttribute('aria-pressed', 'true');
+
+			document.getElementById('selectedEditionOption').value = value;
+
+			// Preserve existing behavior that ran on the select's onchange
+			AspenDiscovery.GroupedWork.showEditionSwiper();
+		},
 		showEditionSwiper: function () {
 			var option = $('#selectedEditionOption').val();
 			if (option === '2') {
@@ -14260,7 +14341,6 @@ AspenDiscovery.MaterialsRequest = (function(){
 			var selectedRequests = $("input." + selectName + ":checked").map(function() {
 				return $(this).attr('name') + "=" + $(this).val();
 			}).get().join("&");
-			console.log(selectedRequests);
 			if (selectedRequests.length === 0){
 				if (promptToSelectAll){
 					var ret = confirm(__('You have not selected any requests, process all requests?'));
@@ -16621,8 +16701,6 @@ AspenDiscovery.Record = (function () {
 			$('input[name="hyperholdRecord[]"]:checked').each(function () {
 				selected.push($(this).val());
 			});
-
-			console.log("SELECTED RECORDS:", selected);
 			
 			const pickupBranch = $('#hyperholdPickupBranch').val();
 
@@ -18459,38 +18537,37 @@ AspenDiscovery.WebBuilder = function () {
 			});
 		},
 
-		getWebResource(id, fromPlacard = false) {
+		getWebResource(id, fromPlacard = false, existingTab = null) {
 			const url = `${Globals.path}/WebBuilder/AJAX`;
-			const params = {
-				method: "getWebResource",
-				resourceId: id
-			};
+			const params = { method: "getWebResource", resourceId: id };
+
+			// Open the tab synchronously on the ORIGINAL click, while we still have
+			// a user gesture. On the retry-after-login call we reuse the same tab
+			// instead of opening a new one (which would be blocked by most browsers).
+			let newTab = existingTab;
+			if (newTab === null) {
+				newTab = window.open("", '_blank');
+			}
 
 			$.getJSON(url, params, (data) => {
 				const { requireLogin, canView, openInNewTab, url: resourceUrl, userNoAccessTitle, userNoAccessMessage } = data;
 
 				const openResource = () => {
 					if (openInNewTab) {
-						const newTab = window.open("", '_blank');
-						if (newTab == null) {
-							location.assign(resourceUrl);
-						} else {
+						if (newTab) {
 							newTab.location.href = resourceUrl;
+						} else {
+							location.assign(resourceUrl); // popup was blocked even on first click
 						}
 					} else {
+						if (newTab) newTab.close(); // we speculatively opened one but don't need it
 						location.assign(resourceUrl);
 					}
 				};
 
 				const trackUsage = (authType) => {
-					const trackParams = {
-						method: "trackWebResourceUsage",
-						id,
-						authType
-					};
-					if (fromPlacard) {
-						trackParams.fromPlacard = 1;
-					}
+					const trackParams = { method: "trackWebResourceUsage", id, authType };
+					if (fromPlacard) trackParams.fromPlacard = 1;
 					$.getJSON(url, trackParams, () => openResource());
 				};
 
@@ -18498,14 +18575,18 @@ AspenDiscovery.WebBuilder = function () {
 					if (Globals.loggedIn && canView) {
 						trackUsage(Globals.loggedIn ? "user" : "library");
 					} else if (Globals.loggedIn && !canView) {
+						if (newTab) newTab.close();
 						AspenDiscovery.showMessage(userNoAccessTitle, userNoAccessMessage);
 					} else {
-						AspenDiscovery.Account.ajaxLogin(null, () => AspenDiscovery.WebBuilder.getWebResource(id, fromPlacard), true);
+						AspenDiscovery.Account.ajaxLogin(null, () => AspenDiscovery.WebBuilder.getWebResource(id, fromPlacard, newTab), true);
 					}
 				} else {
 					trackUsage("none");
 				}
-			}).fail(AspenDiscovery.ajaxFail);
+			}).fail(() => {
+				if (newTab) newTab.close();
+				AspenDiscovery.ajaxFail();
+			});
 
 			return false;
 		},

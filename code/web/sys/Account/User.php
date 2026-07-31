@@ -6680,7 +6680,7 @@ class User extends DataObject {
 					$this->_yearInReviewResults = $userYearInReview;
 					$yearInReviewSetting = new YearInReviewSetting();
 					$yearInReviewSetting->id = $userYearInReview->settingId;
-					if ($yearInReviewSetting->find(true)) {
+					if ($yearInReviewSetting->find(true) && $yearInReviewSetting->endDate > time()) {
 						$this->_yearInReviewSetting = $yearInReviewSetting;
 						global $interface;
 						$interface->assign('yearInReviewName', $yearInReviewSetting->name);

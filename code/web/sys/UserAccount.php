@@ -682,7 +682,7 @@ class UserAccount {
 			if(!$localAuthOnly) {
 				$tempUser = $authN->authenticate($validatedViaSSO, $accountProfile);
 			} else {
-				$tempUser = UserAccount::findNewAspenUser('username', $_POST['username']);
+				$tempUser = UserAccount::findNewAspenUser('username', $_POST['username'], $accountProfile->name);
 			}
 
 			// If we authenticated, store the user in the session:
@@ -1141,12 +1141,16 @@ class UserAccount {
 	 *
 	 * @param string $key The column in the User table to search
 	 * @param string $value Value needed to match the given key to find the user
+	 * @param ?string $source the source of the user (from account profile name)
 	 *
 	 * @return false|User
 	 */
-	public static function findNewAspenUser(string $key, string $value) {
+	public static function findNewAspenUser(string $key, string $value, ?string $source = null) : User|false {
 		$newUser = new User();
 		$newUser->$key = $value;
+		if ($source != null) {
+			$newUser->source = $source;
+		}
 		if($newUser->find(true)) {
 			return $newUser;
 		}
