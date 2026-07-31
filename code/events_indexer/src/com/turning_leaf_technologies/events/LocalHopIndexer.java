@@ -33,6 +33,7 @@ class LocalHopIndexer {
 	private final String name;
 	private final String baseUrl;
 	private final int numberOfDaysToIndex;
+	private final boolean useLocalHopImages;
 	private final Connection aspenConn;
 	private final EventsIndexerLogEntry logEntry;
 	private final HashMap<String, LocalHopEvent> existingEvents = new HashMap<>();
@@ -43,10 +44,11 @@ class LocalHopIndexer {
 	private PreparedStatement addEventStmt;
 	private PreparedStatement deleteEventStmt;
 
-	LocalHopIndexer(long settingsId, String name, String baseUrl, int numberOfDaysToIndex, ConcurrentUpdateHttp2SolrClient solrUpdateServer, Connection aspenConn, Logger logger) {
+	LocalHopIndexer(long settingsId, String name, String baseUrl, int numberOfDaysToIndex, boolean useLocalHopImages, ConcurrentUpdateHttp2SolrClient solrUpdateServer, Connection aspenConn, Logger logger) {
 		this.settingsId = settingsId;
 		this.name = name;
 		this.baseUrl = baseUrl;
+		this.useLocalHopImages = useLocalHopImages;
 		this.aspenConn = aspenConn;
 		this.solrUpdateServer = solrUpdateServer;
 		this.numberOfDaysToIndex = numberOfDaysToIndex;
@@ -145,6 +147,10 @@ class LocalHopIndexer {
 							continue;
 						}
 
+						if (useLocalHopImages) {
+							solrDocument.addField("image_url", getCustomElement(customElements, "LHEvent:photo"));
+						}
+
 						solrDocument.addField("start_date_sort", startDate.getTime() / 1000);
 						Date endDate = getDate(curEvent, getCustomElement(customElements, "LHEvent:ed"));
 						solrDocument.addField("end_date", endDate);
@@ -201,9 +207,6 @@ class LocalHopIndexer {
 							eventType = "Online";
 						}
 						solrDocument.addField("event_type", AspenStringUtils.trimTrailingPunctuation(eventType));
-
-
-						solrDocument.addField("image_url", getCustomElement(customElements, "LHEvent:photo"));
 
 						solrDocument.addField("age_group", getCustomElementAsSet(customElements, "LHEvent:ageGroup"));
 
