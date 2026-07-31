@@ -23,6 +23,7 @@ class LocalHopSetting extends DataObject
 	public $username;
 	public $password;
 	public $numberOfDaysToIndex;
+	public $useLocalHopImages;
 
 	private $_libraries;
 	private $_locationMap;
@@ -83,6 +84,13 @@ class LocalHopSetting extends DataObject
 				'type' => 'checkbox',
 				'label' => 'Bypass event pages in Aspen',
 				'description' => 'Whether or not a user will be redirected to an Aspen event page or the page for the native event platform.',
+				'default' => 0,
+			],
+			'useLocalHopImages' => [
+				'property' => 'useLocalHopImages',
+				'type' => 'checkbox',
+				'label' => 'Use LocalHop Images',
+				'description' => 'Whether or not images from LocalHop will be used for event covers.',
 				'default' => 0,
 			],
 			'registrationModalBody' => [

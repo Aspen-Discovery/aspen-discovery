@@ -1360,9 +1360,9 @@ class SystemAPI extends AbstractAPI {
 										$searchEntry->propertyName = $existingProperty;
 										$searchEntry->delete(true);
 									}
-								}catch (Exception $e) {
+								}catch (Throwable $e) {
 									global $logger;
-									$logger->log("Error processing $serviceClassName\n", $e);
+									$logger->log("Error processing $serviceClassName: " . $e->getMessage(), Logger::LOG_WARNING);
 								}
 							}else{
 								//echo("Skipping $serviceDirectory/$serviceFile\n");

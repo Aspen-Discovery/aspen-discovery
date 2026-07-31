@@ -2269,6 +2269,14 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		$groupedWorkDisplaySettings = $library->getGroupedWorkDisplaySettings();
 		$interface->assign('formatDisplayStyle', $groupedWorkDisplaySettings->formatDisplayStyle);
 		$interface->assign('hideManifestationsInMobileView', $groupedWorkDisplaySettings->hideManifestationsInMobileView);
+		$interface->assign('displaySortTermValues', $groupedWorkDisplaySettings->displaySortTermValue);
+
+		// Sort variables to show
+		$interface->assign('sortValue', $_REQUEST['sort'] ?? null);
+		$interface->assign('datePurchased', $this->getDatePurchased());
+		$interface->assign('callNumber', $this->getCallNumber());
+		$interface->assign('totalCheckouts', $this->getTotalCheckouts());
+		$interface->assign('totalHolds', $this->getNumberOfHolds());
 
 		//Get Rating
 		$interface->assign('summRating', $this->getRatingData());
@@ -3992,5 +4000,26 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		$manualGroupedWork = new ManualGroupedWork();
 		$manualGroupedWork->grouped_work_permanent_id = $this->permanentId;
 		return $manualGroupedWork->find(true) !== false;
+	}
+
+	private function getCallNumber() {
+		foreach (array_keys(($this->fields)) as $key) {
+			if (str_contains($key, 'callnumber')) {
+				return $this->fields[$key][0] ?? null;
+			}
+		}
+		return null;
+	}
+
+	private function getDatePurchased() {
+		return $this->fields['date_added'] ?? null;
+	}
+
+	private function getTotalCheckouts() {
+		return $this->fields['popularity'] ?? null;
+	}
+
+	private function getNumberOfHolds() {
+		return $this->fields['total_holds'] ?? null;
 	}
 }
