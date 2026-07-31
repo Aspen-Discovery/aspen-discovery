@@ -407,6 +407,19 @@ class CatalogConnection {
 		return $this->driver->processBasicRegistrationForm($addressValidated);
 	}
 
+	private function findIlsUserForBarcode(array $accountProfileInfo, mixed $barcode) {
+		$accountProfile = $accountProfileInfo['accountProfile'];
+		$userToResetPin = new User();
+		$userToResetPin->source = $accountProfile->name;
+		$userToResetPin->ils_barcode = $barcode;
+		if ($userToResetPin->find(true)) {
+			return $userToResetPin;
+		}
+		require_once ROOT_DIR . '/CatalogFactory.php';
+		$catalogConnectionInstance = CatalogFactory::getCatalogConnectionInstance($accountProfileInfo['driver'], $accountProfile);
+		return $catalogConnectionInstance->findNewUser($barcode, '');
+	}
+
 	/**
 	 * @param mixed $barcode
 	 * @return array
@@ -426,15 +439,7 @@ class CatalogConnection {
 		$accountProfile = $accountProfileInfo['accountProfile'];
 		if ($library->accountProfileId == $accountProfile->id) {
 			//Check the ILS we are connected to
-			$userToResetPin = new User();
-			$userToResetPin->source = $accountProfile->name;
-			$userToResetPin->ils_barcode = $barcode;
-			if (!$userToResetPin->find(true)) {
-				$accountProfileDriver = $accountProfileInfo['driver'];
-				require_once ROOT_DIR . '/CatalogFactory.php';
-				$catalogConnectionInstance = CatalogFactory::getCatalogConnectionInstance($accountProfileDriver, $accountProfile);
-				$userToResetPin = $catalogConnectionInstance->findNewUser($barcode, '');
-			}
+			$userToResetPin = $this->findIlsUserForBarcode($accountProfileInfo, $barcode);
 		}elseif ($accountProfile->authenticationMethod == 'db') {
 			//Check anything we do database authentication for
 			$userToResetPin = new User();
@@ -1631,6 +1636,10 @@ class CatalogConnection {
 					}
 				} else {
 					$result = $this->driver->processEmailResetPinForm();
+					if (empty($result['success']) && empty($result['foundPatron'])) {
+						$identifier = $_REQUEST['reset_username'] ?? ($_REQUEST['username'] ?? '');
+						$result['foundPatron'] = $this->findIlsUserForBarcode($accountProfileInfo, $identifier) !== false;
+					}
 				}
 			}elseif ($tmpAccountProfile->authenticationMethod == 'db') {
 				if (empty($_REQUEST['reset_username']) && empty($_REQUEST['username'])) {

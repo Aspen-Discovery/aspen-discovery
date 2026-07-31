@@ -414,9 +414,11 @@ abstract class MarcRecordProcessor {
 		seriesFields = MarcUtil.getDataFields(record, seriesFieldsToIndexWith800);
 		for (DataField seriesField : seriesFields){
 			String subfields;
-			if (seriesField.getNumericTag() == 800 || seriesField.getNumericTag() == 896) {
+			if (seriesField.getNumericTag() == 800) {
 				subfields = "npt";
-			}else{
+			} else if (seriesField.getNumericTag() == 896) {
+				subfields = "anpt";
+			} else {
 				subfields = "abcdfnpt";
 			}
 			String series = AspenStringUtils.trimTrailingPunctuation(MarcUtil.getSpecifiedSubfieldsAsString(seriesField, subfields," ")).toString();

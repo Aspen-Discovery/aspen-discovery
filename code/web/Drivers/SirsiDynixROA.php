@@ -4049,6 +4049,30 @@ class SirsiDynixROA extends AbstractIlsDriver {
 							'isPublicFacing' => true,
 						]);
 					}
+				} elseif ($currentItemLocation == "INTRANSIT") {
+					$params = [
+						'itemBarcode' => $barcode
+					];
+					$additionalHeaders = [
+						'SD-Preferred-Role: STAFF',
+						'SD-Prompt-Return: CIRC_TRANSIT_OVRCD/Y;CKOBLOCKS/' . $this->accountProfile->overrideCode
+					];
+
+					$this->getWebServiceResponse('unTransit', $webServiceURL . '/circulation/transit/untransit', $params, $sessionToken, 'POST', $additionalHeaders);
+        }
+				//unblock user from checking out when they have another hold ready for pickup
+				if ($currentItemLocation != 'HOLDS' && !empty($patronHoldsAndCheckouts->fields->holdRecordList)) {
+					//Get holds for the patron
+					if ($patronHoldsAndCheckouts && isset($patronHoldsAndCheckouts->fields)) {
+						foreach ($patronHoldsAndCheckouts->fields->holdRecordList as $hold) {
+							if (isset($hold->fields->status)) {
+								$holdStatus = strtolower($hold->fields->status);
+								if ($holdStatus == "being_held") {
+									$addOverrideCode = true;
+								}
+							}
+						}
+					}
 				}
 			}
 		}
