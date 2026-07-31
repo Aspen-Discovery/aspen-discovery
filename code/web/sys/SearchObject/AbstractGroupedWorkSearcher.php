@@ -522,7 +522,7 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 	public function getSearchSuggestions($searchTerm, $searchIndex) : array {
 		if ($searchIndex == 'Title' || $searchIndex == 'AllTitles' || $searchIndex == 'StartOfTitle' || $searchIndex == 'Series') {
 			$suggestionHandler = 'title_suggest';
-		} elseif ($searchIndex == 'Author') {
+		} elseif ($searchIndex == 'Author' || $searchIndex == 'PrimaryAuthor') {
 			$suggestionHandler = 'author_suggest';
 		} elseif ($searchIndex == 'Subject') {
 			$suggestionHandler = 'subject_suggest';
@@ -1210,8 +1210,13 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 				'isPublicFacing' => true,
 				'inAttribute' => true,
 			]),
-			'Author' => translate([
+			'PrimaryAuthor' => translate([
 				'text' => 'Author',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'Author' => translate([
+				'text' => 'Authors and Contributors',
 				'isPublicFacing' => true,
 				'inAttribute' => true,
 			]),

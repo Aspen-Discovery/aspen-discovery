@@ -2192,6 +2192,26 @@ jQuery.validator.addMethod("strongPassword", function(value, element) {
 
 	return '<ul class="password-error-list" style="margin-top:5px; margin-bottom:0; padding-left:1.25em; list-style-type:disc"><li>' + errors.join('</li><li>') + '</li></ul>';
 });
+
+document.addEventListener('blur', (e) => {
+	if (e.target && e.target.type === 'number') {
+		const input = e.target;
+		const value = parseInt(input.value, 10);
+
+		if (input.hasAttribute('min')) {
+			const min = parseInt(input.min, 10);
+			if (isNaN(value) || value < min) {
+				input.value = min;
+			}
+		}
+		if (input.hasAttribute('max')) {
+			const max = parseInt(input.max, 10);
+			if (isNaN(value) || value > max) {
+				input.value = max;
+			}
+		}
+	}
+}, true);
 AspenDiscovery.ToastNotifications = (function () {
   const debug = false;
   const POLL_INTERVAL = 10000; // 10 seconds
@@ -9225,6 +9245,39 @@ AspenDiscovery.Admin = (function () {
 								$newRow.find('input[name^="municipalities_ilsMunicipality"]').val(key);
 								$newRow.find('select[name^="municipalities_municipalityType"]').val(municipalityType);
 								$newRow.find('input[name^="municipalities_selfRegAllowed"]').prop('checked', true);
+							});
+
+							$('#aspenFullPageLoadingOverlay').remove();
+						},
+						error: function () {
+							$('#aspenFullPageLoadingOverlay').remove();
+							AspenDiscovery.showMessage('Error', 'Could not populate from ILS.');
+						}
+					});
+				} else if (objectType === "countyCodes") {
+					AspenDiscovery.Admin.showFullPageLoadingOverlay('Populating from ILS, this may take a while. Please wait...');
+
+					$.ajax({
+						url: Globals.path + "/Admin/AJAX",
+						type: 'GET',
+						data: {
+							method: 'getILSMetadata',
+						},
+						success: function (response) {
+							var seenCodes = new Set();
+
+							response.forEach(function (entry) {
+								seenCodes.add(entry.key.slice(0, 2));
+							});
+
+							var sortedCodes = Array.from(seenCodes).sort();
+
+							sortedCodes.forEach(function (countyCode) {
+								addNewcountyCodes(); // existing generated function
+
+								var $newRow = $('#countyCodes tbody tr').last();
+
+								$newRow.find('input[name^="countyCodes_countyCode"]').val(countyCode);
 							});
 
 							$('#aspenFullPageLoadingOverlay').remove();

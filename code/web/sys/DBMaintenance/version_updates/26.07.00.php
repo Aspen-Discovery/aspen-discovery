@@ -39,6 +39,25 @@ function getUpdates26_07_00(): array {
 				"DELETE FROM permissions where name IN ('Administer VDX Settings', 'Administer All VDX Forms', 'Administer Library VDX Forms')",
 			]
 		], //remove_vdx_settings_and_permissions
+		'remove_vdx_settings_and_permissions_2' => [
+			'title' => 'Remove VDX settings and permissions pt 2',
+			'description' => 'Removes additional permission.',
+			'continueOnError' => true,
+			'sql' => [
+				"DELETE FROM role_permissions where permissionId IN (SELECT id from permissions where name IN ('Administer VDX Forms'))",
+				"DELETE FROM permissions where name IN ('Administer VDX Forms')",
+				"UPDATE permissions set description = 'Allows the user to define Hold Groups with Aspen' WHERE name = 'Administer Hold Groups'",
+			]
+		], //remove_vdx_settings_and_permissions_2
+		'remove_vdx_permission_group' => [
+			'title' => 'Remove VDX permission group',
+			'description' => 'Removes permission group for VDX.',
+			'continueOnError' => true,
+			'sql' => [
+				"DELETE FROM permission_group_permissions where groupId = (SELECT id from permission_groups where groupKey = 'adminVdxForms')",
+				"DELETE FROM permission_groups where groupKey = 'adminVdxForms'",
+			]
+		], //remove_vdx_permission_group
 
 		//kirstien
 
@@ -57,6 +76,19 @@ function getUpdates26_07_00(): array {
 				) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;"
 			]
 		], //symphony_municipalities
+		'symphony_county_codes' => [
+			'title' => 'Add new table for County Codes',
+			'description' => 'Add new table for symphony county codes for self registration.',
+			'sql' => [
+				"CREATE TABLE IF NOT EXISTS self_reg_county_code_values_symphony (
+					`id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					`selfRegistrationFormId` int(11) NOT NULL,
+					`countyCode` varchar(255) default '' NOT NULL,
+					`countyName` varchar(255) default '' NOT NULL,
+					UNIQUE (countyCode)
+				) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;"
+			]
+		], //symphony_county_codes
 		'dpla_exclusions' => [
 			'title' => 'Add Table for DP.LA Excluded Titles',
 			'description' => 'Add table for DP.LA excluded titles.',
