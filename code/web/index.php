@@ -1,4 +1,9 @@
 <?php
+if (basename($_SERVER['REQUEST_URI']) == 'favicon.ico') {
+	header('Content-Type: image/x-icon');
+	header('HTTP/1.1 204 No Content');
+	exit;
+}
 require_once 'bootstrap.php';
 require_once ROOT_DIR . '/sys/BotChecker.php';
 if (file_exists('bootstrap_aspen.php')) {
