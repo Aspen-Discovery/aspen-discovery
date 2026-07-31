@@ -69,7 +69,7 @@ function getUpdates26_08_00(): array {
 					searchSettingId INT NOT NULL,
 					type varchar(255) NOT NULL,
 					label varchar(255) NOT NULL,
-    				defaultLabel varchar(255) NOT NULL,
+					defaultLabel varchar(255) NOT NULL,
 					enabled tinyint(1) NOT NULL DEFAULT 1
 				)',
 			],
