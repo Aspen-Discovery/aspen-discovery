@@ -3881,6 +3881,12 @@ class UserAPI extends AbstractAPI {
 				'message' => 'Circulation system is offline',
 			];
 		} else {
+			if (empty($_REQUEST['username'])) {
+				return [
+					'success' => false,
+					'message' => 'No username provided',
+				];
+			}
 			$username = $_REQUEST['username'];
 			$user = new User();
 			$user->ils_barcode = $username;
