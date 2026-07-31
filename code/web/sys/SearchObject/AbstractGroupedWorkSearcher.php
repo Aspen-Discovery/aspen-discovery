@@ -1306,34 +1306,6 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 						]);
 					}
 				}
-				$searchIndexes2 = [
-					'ISN' => translate([
-						'text' => 'ISBN/ISSN/UPC',
-						'isPublicFacing' => true,
-						'inAttribute' => true,
-					]),
-					'Publisher' => translate([
-						'text' => 'Publisher',
-						'isPublicFacing' => true,
-						'inAttribute' => true,
-					]),
-					'year' => translate([
-						'text' => 'Year of Publication',
-						'isPublicFacing' => true,
-						'inAttribute' => true,
-					]),
-					'toc' => translate([
-						'text' => 'Table of Contents',
-						'isPublicFacing' => true,
-						'inAttribute' => true,
-					]),
-					'id' => translate([
-						'text' => 'Record Number',
-						'isPublicFacing' => true,
-						'inAttribute' => true,
-					]),
-				];
-				$searchIndexes = array_merge($searchIndexes, $searchIndexes2);
 			}
 			return $searchIndexes;
 		} else {

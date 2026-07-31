@@ -116,7 +116,14 @@ class SearchSetting extends DataObject {
 						'Author' => 'Authors and Contributors',
 						'Subject' => 'Subject',
 						'LocalCallNumber' => 'Call Number',
+						'ISN' => 'ISBN/ISSN/UPC',
+						'Publisher' => 'Publisher',
+						'year' => 'Year of Publication',
+						'toc' => 'Table of Contents',
+						'id' => 'Record Number',
 					];
+					$defaultAdvancedOnly = ['ISN', 'Publisher', 'year', 'toc', 'id'];
+
 					$tempId = -1;
 					foreach ($defaults as $type => $label) {
 						$searchType = new SearchTypes();
@@ -124,7 +131,7 @@ class SearchSetting extends DataObject {
 						$searchType->type = $type;
 						$searchType->label = $label;
 						$searchType->defaultLabel = $label;
-						$searchType->enabled = 1;
+						$searchType->enabled = in_array($type, $defaultAdvancedOnly) ? 2 : 1;
 						$this->_searchTypes[$searchType->id] = $searchType;
 					}
 				}
