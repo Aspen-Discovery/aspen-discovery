@@ -187,7 +187,6 @@ class SystemVariables extends DataObject {
 						'property' => 'indexVersion',
 						'type' => 'enum',
 						'values' => [
-							1 => 'Version 1 (No edition information)',
 							2 => 'Version 2 (Edition information)',
 						],
 						'label' => 'Grouped Work Indexing Version',
@@ -199,7 +198,6 @@ class SystemVariables extends DataObject {
 						'property' => 'searchVersion',
 						'type' => 'enum',
 						'values' => [
-							1 => 'Version 1 (No edition information)',
 							2 => 'Version 2 (Edition information)',
 						],
 						'label' => 'Grouped Work Search Version',
