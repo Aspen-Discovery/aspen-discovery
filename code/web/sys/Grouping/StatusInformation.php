@@ -17,6 +17,7 @@ class Grouping_StatusInformation {
 	private int $_localCopies = 0;
 	private int $_localAvailableCopies = 0;
 	private int $_holdableCopies = 0;
+	private int $_availableHoldableCopies = 0;
 	private bool $_isEContent = false;
 	private bool $_isShowStatus = false;
 	private bool $_isLocallyOwned = false;
@@ -66,6 +67,7 @@ class Grouping_StatusInformation {
 		$this->_copies += $statusInformation->getCopies();
 		$this->_availableCopies += $statusInformation->getAvailableCopies();
 		$this->_holdableCopies += $statusInformation->getHoldableCopies();
+		$this->_availableHoldableCopies += $statusInformation->getAvailableHoldableCopies();
 		if ($statusInformation->getLocalCopies() > 0) {
 			$this->_localCopies += $statusInformation->getLocalCopies();
 			$this->_localAvailableCopies += $statusInformation->getLocalAvailableCopies();
@@ -167,6 +169,10 @@ class Grouping_StatusInformation {
 		return $this->_holdableCopies;
 	}
 
+	public function getAvailableHoldableCopies() : int {
+		return $this->_availableHoldableCopies;
+	}
+
 	/**
 	 * @return int
 	 */
@@ -208,6 +214,10 @@ class Grouping_StatusInformation {
 
 	function addHoldableCopies(int $numCopies): void {
 		$this->_holdableCopies += $numCopies;
+	}
+
+	function addAvailableHoldableCopies(int $numCopies): void {
+		$this->_availableHoldableCopies += $numCopies;
 	}
 
 	/**

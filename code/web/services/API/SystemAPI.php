@@ -913,85 +913,11 @@ class SystemAPI extends AbstractAPI {
 
 	/** @noinspection PhpUnused */
 	function getVdxForm() : array {
-		$result = [
+		return [
 			'success' => false,
 			'title' => 'Error',
-			'message' => 'Unable to load VDX form',
+			'message' => 'This method is no longer available',
 		];
-
-		require_once ROOT_DIR . '/sys/VDX/VdxSetting.php';
-		require_once ROOT_DIR . '/sys/VDX/VdxForm.php';
-
-		if (isset($_REQUEST['formId'])) {
-			$formId = $_REQUEST['formId'];
-		} else {
-			return [
-				'success' => false,
-				'title' => translate([
-					'text' => 'Invalid Configuration',
-					'isPublicFacing' => true,
-				]),
-				'message' => translate([
-					'text' => 'A VDX form id was not given.',
-					'isPublicFacing' => true,
-				]),
-			];
-		}
-
-		$vdxSettings = new VdxSetting();
-		if ($vdxSettings->find(true)) {
-			$vdxForm = new VdxForm();
-			$vdxForm->id = $formId;
-			if ($vdxForm->find(true)) {
-				$vdxFormFields = $vdxForm->getFormFieldsForApi();
-				$result = [
-					'success' => true,
-					'title' => translate([
-						'text' => 'Request Title',
-						'isPublicFacing' => true,
-					]),
-					'message' => translate([
-						'text' => 'If you cannot find a title in our catalog, you can request the title via this form. Please enter as much information as possible so we can find the exact title you are looking for. For example, if you are looking for a specific season of a TV show, please include that information.',
-						'isPublicFacing' => true,
-					]),
-					'buttonLabel' => translate([
-						'text' => 'Place Request',
-						'isPublicFacing' => true,
-					]),
-					'buttonLabelProcessing' => translate([
-						'text' => 'Placing Request',
-						'isPublicFacing' => true,
-					]),
-					'fields' => $vdxFormFields,
-				];
-			} else {
-				return [
-					'success' => false,
-					'title' => translate([
-						'text' => 'Invalid Configuration',
-						'isPublicFacing' => true,
-					]),
-					'message' => translate([
-						'text' => 'Unable to find the specified form.',
-						'isPublicFacing' => true,
-					]),
-				];
-			}
-		} else {
-			return [
-				'success' => false,
-				'title' => translate([
-					'text' => 'Invalid Configuration',
-					'isPublicFacing' => true,
-				]),
-				'message' => translate([
-					'text' => 'VDX Settings do not exist, please contact the library to make a request.',
-					'isPublicFacing' => true,
-				]),
-			];
-		}
-
-		return $result;
 	}
 
 	/** @noinspection PhpUnused */
@@ -999,7 +925,7 @@ class SystemAPI extends AbstractAPI {
 		$result = [
 			'success' => false,
 			'title' => 'Error',
-			'message' => 'Unable to load VDX form',
+			'message' => 'Unable to load Local ILL form',
 		];
 
 		require_once ROOT_DIR . '/sys/InterLibraryLoan/LocalIllForm.php';
@@ -1434,9 +1360,9 @@ class SystemAPI extends AbstractAPI {
 										$searchEntry->propertyName = $existingProperty;
 										$searchEntry->delete(true);
 									}
-								}catch (Exception $e) {
+								}catch (Throwable $e) {
 									global $logger;
-									$logger->log("Error processing $serviceClassName\n", $e);
+									$logger->log("Error processing $serviceClassName: " . $e->getMessage(), Logger::LOG_WARNING);
 								}
 							}else{
 								//echo("Skipping $serviceDirectory/$serviceFile\n");

@@ -1,8 +1,7 @@
 <?php /** @noinspection PhpMissingFieldTypeInspection */
 require_once ROOT_DIR . '/Drivers/SirsiDynixROA.php';
 
-class SymphonySelfRegistrationMunicipalityValues extends DataObject
-{
+class SymphonySelfRegistrationMunicipalityValues extends DataObject {
 	public $__table = 'self_reg_municipality_values_symphony';
 	public $id;
 	public $selfRegistrationFormId;

@@ -32,7 +32,7 @@
 								<td>{$event.date|date_format:"%B %e, %Y"}</td>
 								<td>{$event.time}</td>
 								<td>{$event.location|escape}</td>
-								<td>{include file="Events/event-category-breakdown.tpl" item=$event}</td>
+								<td>{include file="Events/event-category-breakdown.tpl" item=$event numberOfSeats=$event.numberOfSeats}</td>
 								<td>
 									<a href="/Events/AttendanceManagement?eventInstanceId={$event.instanceId}" class="btn btn-sm btn-primary">
 										{translate text="Manage" isAdminFacing=true}
@@ -127,7 +127,7 @@
 											{/if}
 										</td>
 										<td>{$reg.dateRegistered|default:"-"}</td>
-										<td>{include file="Events/event-category-breakdown.tpl" item=$reg}</td>
+										<td>{include file="Events/event-category-breakdown.tpl" item=$reg numberOfSeats=$numberOfSeats}</td>
 										<td style="text-align: center;">
 											<input type="checkbox" id="attended-{$reg.id}" {if $reg.attended}checked {/if}onchange="AspenDiscovery.Events.toggleAttendance({$reg.id}, this.checked);">
 										</td>

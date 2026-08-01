@@ -194,7 +194,12 @@ class SeriesIndexer {
 			int isIndexed = allSeriesRS.getInt("isIndexed");
 			boolean indexed = false;
 			if (!fullReindex && (deleted == 1 || isIndexed == 0)) {
-				updateServer.deleteByQuery("id:" + seriesId);
+				if (seriesVersion == 1) {
+					updateServer.deleteByQuery("id:" + seriesId);
+				} else {
+					updateServer.deleteByQuery("id:" + permanentId);
+				}
+
 				logEntry.incDeleted();
 			} else {
 				if (seriesVersion == 1) {

@@ -616,7 +616,9 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 	public function getDuration() {
 		$duration = '';
 		if (!empty($this->hooplaRawMetadata->duration)) {
-			$duration = StringUtils::extractTotalMinutes($this->hooplaRawMetadata->duration);
+			if (in_array('Audio Books', $this->getGroupedWorkDriver()->getFormatCategories())) {
+				$duration = StringUtils::extractTotalMinutes($this->hooplaRawMetadata->duration);
+			}
 		}
 		return $duration;
 	}

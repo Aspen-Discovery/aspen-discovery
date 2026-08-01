@@ -45,7 +45,7 @@ class EventAPI extends AbstractAPI {
 			return $this->getAssabetEventDetails();
 		} else if ($source == 'localhop') {
 			return $this->getLocalHopEventDetails();
-		} else if ($source == 'aspenEvents') {
+		} else if ($source == 'aspenEvent') {
 			return $this->getAspenEventDetails();
 		} else {
 			return [
@@ -518,7 +518,7 @@ class EventAPI extends AbstractAPI {
 					$userEventsEntry->location = $recordDriver->getBranch();
 					$externalUrl = $recordDriver->getExternalUrl();
 				}
-			} elseif (str_starts_with($id, 'aspenEvents')) {
+			} elseif (str_starts_with($id, 'aspenEvent')) {
 				require_once ROOT_DIR . '/RecordDrivers/AspenEventRecordDriver.php';
 				$recordDriver = new AspenEventRecordDriver($id);
 				if ($recordDriver->isValid()) {
@@ -716,7 +716,7 @@ class EventAPI extends AbstractAPI {
 				} else if(str_starts_with($eventId, 'assabet')) {
 					$sourceFull = 'assabet';
 					$source = 'assabet';
-				} else if(str_starts_with($eventId, 'aspenEvents')) {
+				} else if(str_starts_with($eventId, 'aspenEvent')) {
 					$sourceFull = 'aspenEvents';
 					$source = 'aspenEvents';
 				} else {
@@ -733,7 +733,7 @@ class EventAPI extends AbstractAPI {
 						$details = $this->getSpringshareEventDetails();
 					} else if(str_starts_with($eventId, 'assabet')) {
 						$details = $this->getAssabetEventDetails();
-					} else if(str_starts_with($eventId, 'aspenEvents')) {
+					} else if(str_starts_with($eventId, 'aspenEvent')) {
 						$details = $this->getAspenEventDetails();
 					} else {
 						// something went wrong

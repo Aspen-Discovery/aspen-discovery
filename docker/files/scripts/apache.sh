@@ -26,20 +26,6 @@ log_info "Starting Apache initialization"
 
 export CONFIG_DIRECTORY="/usr/local/aspen-discovery/sites/${SITE_NAME}"
 
-# Function to handle shutdown signals
-shutdown_handler() {
-    log_info "Received shutdown signal, stopping Apache gracefully..."
-    if [ -n "$APACHE_PID" ]; then
-        kill -TERM "$APACHE_PID" 2>/dev/null || true
-        wait "$APACHE_PID" 2>/dev/null || true
-    fi
-    log_info "Apache stopped"
-    exit 0
-}
-
-# Set up signal handlers for graceful shutdown
-trap shutdown_handler SIGTERM SIGINT SIGQUIT
-
 # Check if site configuration exists
 apacheConfFile="$CONFIG_DIRECTORY/httpd-${SITE_NAME}.conf"
 log_info "Waiting for site configuration: $apacheConfFile"
@@ -98,7 +84,7 @@ fi
 log_info "Apache configuration is valid"
 
 
-# Start Apache and capture its PID
+# Apache runs as PID 1 via exec — Docker signals it directly for graceful shutdown
 log_info "Starting Apache in foreground mode..."
 exec apache2 -D FOREGROUND
 
