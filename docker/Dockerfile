@@ -66,6 +66,7 @@ RUN apt -y update \
 	  php8.4-ssh2 \
 	  php8.4-ldap \
 	  php8.4-mysql \
+	  php8.4-xdebug \
 	&& rm -rf /var/cache/apt/archives/* \
 	&& rm -rf /var/lib/apt/lists/*
 
@@ -84,11 +85,10 @@ COPY docker/files/scripts/apache.sh      /apache.sh
 COPY . /usr/local/aspen-discovery
 
 # Delete sites
-RUN cd /usr/local/aspen-discovery/sites \
-	&& rm -rf *local* \
-	&& rm -rf *prod*  \
-	&& rm -rf *dev*   \
-	&& rm -rf template.windows
+WORKDIR /usr/local/aspen-discovery/sites
+RUN rm -rf *local* *prod* *dev* template.windows
+WORKDIR /
 
+RUN phpenmod xdebug
 
 ENTRYPOINT ["/entrypoint.sh"]
