@@ -1637,7 +1637,11 @@ abstract class MarcRecordProcessor {
 			}
 			StringBuilder roles = MarcUtil.getSpecifiedSubfieldsAsString(contributorField, "e4", ",");
 			if (roles.length() > 0){
-				contributor.append("|").append(roles.toString().replaceAll(",,", ","));
+				if (roles.toString().contains("nrt")) {
+					contributor.append("|Narrator");
+				} else {
+					contributor.append("|").append(roles.toString().replaceAll(",,", ","));
+				}
 			}
 			contributors.add(contributor.toString());
 		}
