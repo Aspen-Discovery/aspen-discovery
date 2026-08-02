@@ -479,7 +479,8 @@ abstract class MarcRecordProcessor {
 		List<DataField> upcFields = MarcUtil.getDataFields(record, 24);
 		for (DataField upcField : upcFields){
 			if (upcField.getSubfield('a') != null){
-				groupedWork.addUpc(upcField.getSubfield('a').getData());
+				String upc = upcField.getSubfield('a').getData().trim().replaceAll("[^0-9]+$", "");
+				groupedWork.addUpc(upc);
 			}
 		}
 
