@@ -1482,6 +1482,8 @@ abstract class SearchObject_BaseSearcher {
 
 	public abstract function getSearchIndexes();
 
+	public abstract function getAdvancedSearchIndexes();
+
 	public function getFilters() {
 		return $this->filterList;
 	}

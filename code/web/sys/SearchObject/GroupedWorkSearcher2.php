@@ -24,6 +24,8 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 		// Call base class constructor
 		parent::__construct(2);
 
+		global $library;
+		global $location;
 		global $configArray;
 		global $timer;
 		// Initialise the index
@@ -55,20 +57,43 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 			$this->advancedTypes = $searchSettings['Advanced_Searches'];
 		}
 
-		// Load sort preferences (or defaults if none in .ini file):
-		$this->sortOptions = [
-			'relevance' => 'Best Match',
-			'year desc,title asc' => "Publication Year Desc",
-			'year asc,title asc' => "Publication Year Asc",
-			'author asc,title asc' => "Author",
-			'title' => 'Title',
-			'days_since_added asc' => "Date Purchased Desc",
-			'callnumber_sort' => 'sort_callnumber',
-			'popularity desc' => 'sort_popularity',
-			'rating asc' => 'User Rating (Ascending)',
-			'rating desc' => 'User Rating (Descending)',
-			'total_holds desc' => "Number of Holds",
-		];
+		if ($location && $location->searchSettingId != -1 || $library->searchSettingId != -1) {
+			require_once ROOT_DIR . '/sys/SearchObject/SearchSetting.php';
+			$searchSetting = new SearchSetting();
+			if ($location && $location->searchSettingId != -1) {
+				$searchSetting->id = $location->searchSettingId;
+			} else {
+				$searchSetting->id = $library->searchSettingId;
+			}
+			if ($searchSetting->find(true)) {
+				require_once ROOT_DIR . '/sys/SearchObject/SortOptions.php';
+				$sortOptions = new SortOptions();
+				$sortOptions->searchSettingId = $searchSetting->id;
+				$sortOptions->enabled = 1;
+				$sortOptions->find();
+				while ($sortOptions->fetch()) {
+					$this->sortOptions[$sortOptions->type] = $sortOptions->label;
+				}
+				if (empty($this->sortOptions)) {
+					$this->sortOptions['relevance'] = 'Best Match';
+				}
+			}
+		} else {
+			// Load sort preferences (or defaults if none in .ini file):
+			$this->sortOptions = [
+				'relevance' => 'Best Match',
+				'year desc,title asc' => "Publication Year Desc",
+				'year asc,title asc' => "Publication Year Asc",
+				'author asc,title asc' => "Author",
+				'title' => 'Title',
+				'days_since_added asc' => "Date Purchased Desc",
+				'callnumber_sort' => 'sort_callnumber',
+				'popularity desc' => 'sort_popularity',
+				'rating asc' => 'User Rating (Ascending)',
+				'rating desc' => 'User Rating (Descending)',
+				'total_holds desc' => "Number of Holds",
+			];
+		}
 
 		$this->indexEngine->debug = $this->debug;
 		$this->indexEngine->debugSolrQuery = $this->debugSolrQuery;
