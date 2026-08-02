@@ -33,6 +33,7 @@ class LocalHopIndexer {
 	private final String name;
 	private final String baseUrl;
 	private final int numberOfDaysToIndex;
+	private final boolean useLocalHopImages;
 	private final Connection aspenConn;
 	private final EventsIndexerLogEntry logEntry;
 	private final HashMap<String, LocalHopEvent> existingEvents = new HashMap<>();
@@ -43,10 +44,11 @@ class LocalHopIndexer {
 	private PreparedStatement addEventStmt;
 	private PreparedStatement deleteEventStmt;
 
-	LocalHopIndexer(long settingsId, String name, String baseUrl, int numberOfDaysToIndex, ConcurrentUpdateHttp2SolrClient solrUpdateServer, Connection aspenConn, Logger logger) {
+	LocalHopIndexer(long settingsId, String name, String baseUrl, int numberOfDaysToIndex, boolean useLocalHopImages, ConcurrentUpdateHttp2SolrClient solrUpdateServer, Connection aspenConn, Logger logger) {
 		this.settingsId = settingsId;
 		this.name = name;
 		this.baseUrl = baseUrl;
+		this.useLocalHopImages = useLocalHopImages;
 		this.aspenConn = aspenConn;
 		this.solrUpdateServer = solrUpdateServer;
 		this.numberOfDaysToIndex = numberOfDaysToIndex;
@@ -99,7 +101,7 @@ class LocalHopIndexer {
 		if (rssFeed != null){
 
 			try {
-				solrUpdateServer.deleteByQuery("type:event AND source:" + this.settingsId);
+				solrUpdateServer.deleteByQuery("type:event_localhop AND source:" + this.settingsId);
 			} catch (BaseHttpSolrClient.RemoteSolrException rse) {
 				logEntry.incErrors("Solr is not running properly, try restarting " + rse);
 				System.exit(-1);
@@ -143,6 +145,10 @@ class LocalHopIndexer {
 						solrDocument.addField("start_date", startDate);
 						if (startDate == null || startDate.after(lastDateToIndex)) {
 							continue;
+						}
+
+						if (useLocalHopImages) {
+							solrDocument.addField("image_url", getCustomElement(customElements, "LHEvent:photo"));
 						}
 
 						solrDocument.addField("start_date_sort", startDate.getTime() / 1000);
@@ -201,9 +207,6 @@ class LocalHopIndexer {
 							eventType = "Online";
 						}
 						solrDocument.addField("event_type", AspenStringUtils.trimTrailingPunctuation(eventType));
-
-
-						solrDocument.addField("image_url", getCustomElement(customElements, "LHEvent:photo"));
 
 						solrDocument.addField("age_group", getCustomElementAsSet(customElements, "LHEvent:ageGroup"));
 

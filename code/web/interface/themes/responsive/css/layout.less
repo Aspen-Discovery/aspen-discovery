@@ -1026,10 +1026,16 @@ a.placard-image-link{
 /* "Make Content Full Width" in theme settings */
 body.fullWidthContent {
 
-  .container,
+  /* Header and footer containers */
   .container-fluid {
-    max-width: 1900px;
     width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* Main container with a small amount of padding */
+  .container {
+    width: 98%;
     margin-left: auto;
     margin-right: auto;
   }
@@ -1037,10 +1043,10 @@ body.fullWidthContent {
 
   @media (min-width: @screen-lg-min) {
     #side-bar {
-      width: 13%;
+      width: 16%;
     }
     #main-content-with-sidebar {
-      width: 87%;
+      width: 84%;
     }
   }
 
@@ -1169,4 +1175,34 @@ body.fullWidthContent {
     margin-left: 30px;
   }
 
+  /* Adjust rating layout on homepage*/
+  .browse-rating {
+    display: block !important;
+    width: 100%;
+    clear: both;
+    position: absolute;
+    bottom: 0;
+  }
+
+  @media screen and (min-width: 768px) {
+    /* adjust spacing for information under title in results */
+    .result-label {
+      display: inline-block !important;
+      width: auto !important;
+      min-width: 140px !important;
+      float: left !important;
+      clear: left !important;
+      text-align: left !important;
+      margin-right: 10px !important;
+      padding-right: 0 !important;
+    }
+  }
+
+  /* Center Format Categories in full width */
+  div#categoryValues.row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+  }
 }

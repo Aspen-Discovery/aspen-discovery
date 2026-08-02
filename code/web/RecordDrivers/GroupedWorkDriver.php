@@ -1133,6 +1133,30 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		return "";
 	}
 
+	public function getFormatCategories(): array {
+		global $solrScope;
+		require_once ROOT_DIR . '/sys/SystemVariables.php';
+		$systemVariables = SystemVariables::getSystemVariables();
+		if ($systemVariables->searchVersion == 1) {
+			if (isset($this->fields['format_category_' . $solrScope])) {
+				if (is_array($this->fields['format_category_' . $solrScope])) {
+					return $this->fields['format_category_' . $solrScope];
+				} else {
+					return [$this->fields['format_category_' . $solrScope]];
+				}
+			}
+		} else {
+			if (isset($this->fields['format_category'])) {
+				if (is_array($this->fields['format_category'])) {
+					return $this->fields['format_category'];
+				} else {
+					return [$this->fields['format_category']];
+				}
+			}
+		}
+		return "";
+	}
+
 	protected array|null|false $_indexedSeries = false;
 	protected ?array $_eContentSeriesTitles = null;
 
@@ -2245,6 +2269,14 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		$groupedWorkDisplaySettings = $library->getGroupedWorkDisplaySettings();
 		$interface->assign('formatDisplayStyle', $groupedWorkDisplaySettings->formatDisplayStyle);
 		$interface->assign('hideManifestationsInMobileView', $groupedWorkDisplaySettings->hideManifestationsInMobileView);
+		$interface->assign('displaySortTermValues', $groupedWorkDisplaySettings->displaySortTermValue);
+
+		// Sort variables to show
+		$interface->assign('sortValue', $_REQUEST['sort'] ?? null);
+		$interface->assign('datePurchased', $this->getDatePurchased());
+		$interface->assign('callNumber', $this->getCallNumber());
+		$interface->assign('totalCheckouts', $this->getTotalCheckouts());
+		$interface->assign('totalHolds', $this->getNumberOfHolds());
 
 		//Get Rating
 		$interface->assign('summRating', $this->getRatingData());
@@ -3968,5 +4000,26 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		$manualGroupedWork = new ManualGroupedWork();
 		$manualGroupedWork->grouped_work_permanent_id = $this->permanentId;
 		return $manualGroupedWork->find(true) !== false;
+	}
+
+	private function getCallNumber() {
+		foreach (array_keys(($this->fields)) as $key) {
+			if (str_contains($key, 'callnumber')) {
+				return $this->fields[$key][0] ?? null;
+			}
+		}
+		return null;
+	}
+
+	private function getDatePurchased() {
+		return $this->fields['date_added'] ?? null;
+	}
+
+	private function getTotalCheckouts() {
+		return $this->fields['popularity'] ?? null;
+	}
+
+	private function getNumberOfHolds() {
+		return $this->fields['total_holds'] ?? null;
 	}
 }

@@ -84,6 +84,7 @@ class Library extends DataObject {
 	public $_themes;
 	public $layoutSettingId;  //Link to LayoutSetting
 	public $groupedWorkDisplaySettingId; //Link to GroupedWorkDisplaySettings
+	public $searchSettingId;
 
 	public $browseCategoryGroupId;
 
@@ -698,6 +699,10 @@ class Library extends DataObject {
 			'-1' => 'None',
 		];
 		$loral->orderBy('name');
+		$loral->find();
+		while ($loral->fetch()) {
+			$availableLoralSettings[$loral->id] = $loral->name;
+		}
 
 		$materialsRequestOptions = [
 			0 => 'None',

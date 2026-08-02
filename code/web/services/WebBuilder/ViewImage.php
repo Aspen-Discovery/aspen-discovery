@@ -42,11 +42,14 @@ class WebBuilder_ViewImage extends Action {
 
 			$size = intval(sprintf("%u", filesize($fullPath)));
 
-			if ($extension == 'svg') {
-				header('Content-Type: image/svg+xml');
-			} else {
-				header('Content-Type: image/png');
-			}
+			$mimeTypesByExtension = [
+				'svg' => 'image/svg+xml',
+				'gif' => 'image/gif',
+				'jpg' => 'image/jpeg',
+				'jpeg' => 'image/jpeg',
+				'png' => 'image/png',
+			];
+			header('Content-Type: ' . ($mimeTypesByExtension[strtolower($extension)] ?? 'application/octet-stream'));
 			header('Content-Transfer-Encoding: binary');
 			header('Content-Length: ' . $size);
 

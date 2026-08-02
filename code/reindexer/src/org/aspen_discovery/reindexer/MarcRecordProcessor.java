@@ -414,9 +414,11 @@ abstract class MarcRecordProcessor {
 		seriesFields = MarcUtil.getDataFields(record, seriesFieldsToIndexWith800);
 		for (DataField seriesField : seriesFields){
 			String subfields;
-			if (seriesField.getNumericTag() == 800 || seriesField.getNumericTag() == 896) {
+			if (seriesField.getNumericTag() == 800) {
 				subfields = "npt";
-			}else{
+			} else if (seriesField.getNumericTag() == 896) {
+				subfields = "anpt";
+			} else {
 				subfields = "abcdfnpt";
 			}
 			String series = AspenStringUtils.trimTrailingPunctuation(MarcUtil.getSpecifiedSubfieldsAsString(seriesField, subfields," ")).toString();
@@ -901,6 +903,7 @@ abstract class MarcRecordProcessor {
 			}else if (subjectForm.equalsIgnoreCase("Poetry")
 					|| subjectForm.equalsIgnoreCase("Juvenile Poetry")
 					){
+				addToMapWithCount(literaryFormsWithCount, "Fiction");
 				addToMapWithCount(literaryFormsWithCount, "Non Fiction");
 				addToMapWithCount(literaryFormsFull, "Poetry");
 				if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Literary Form is non fiction/poetry based on 'poetry' in 650v, 651v", 2);}
@@ -912,10 +915,8 @@ abstract class MarcRecordProcessor {
 					|| subjectForm.equalsIgnoreCase("Humor, Juvenile")
 					|| subjectForm.equalsIgnoreCase("Humour")
 					){
-				addToMapWithCount(literaryFormsWithCount, "Fiction");
-				addToMapWithCount(literaryFormsFull, "Fiction");
 				addToMapWithCount(literaryFormsFull, "Humor, Satires, etc.");
-				if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Literary Form is fiction/humor based on 650v, 651v", 2);}
+				if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Literary Form is humor based on 650v, 651v", 2);}
 			}else if (subjectForm.equalsIgnoreCase("Correspondence")
 					){
 				addToMapWithCount(literaryFormsWithCount, "Non Fiction");
@@ -984,6 +985,7 @@ abstract class MarcRecordProcessor {
 			subjectForm = AspenStringUtils.trimTrailingPunctuation(subjectForm).toLowerCase();
 			if (subjectForm.startsWith("instructional film")
 					|| subjectForm.startsWith("educational film")
+					|| subjectForm.startsWith("nonfiction film")
 					) {
 				addToMapWithCount(literaryFormsWithCount, "Non Fiction");
 				addToMapWithCount(literaryFormsFull, "Non Fiction");

@@ -240,6 +240,8 @@ class HooplaDriver extends AbstractEContentDriver {
 						global $logger;
 						$errorMessage = empty($holdsResponse['body']->message) ? '' : ' Hoopla Message: ' . $holdsResponse['body']->message;
 						$logger->log('Error retrieving holds from Hoopla. User ID: ' . $user->id . $errorMessage, Logger::LOG_NOTICE);
+						$summary->numAvailableHolds = 0;
+						$summary->numUnavailableHolds = 0;
 					}
 				} else {
 					$summary->numAvailableHolds = 0;

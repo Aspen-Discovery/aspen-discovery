@@ -8923,6 +8923,8 @@ a.placard-image-link {
 }
 /* "Make Content Full Width" in theme settings */
 body.fullWidthContent {
+  /* Header and footer containers */
+  /* Main container with a small amount of padding */
   /* Make series or you might like covers bigger */
   /* Reduce space between tabs and what changes */
   /* Deal with large covers on homepage-standard browse categories*/
@@ -8941,20 +8943,25 @@ body.fullWidthContent {
   /* Narrow Events Filter*/
   /* Limit width of preferences / contact information forms*/
   /* Limit the Width of Forms*/
+  /* Adjust rating layout on homepage*/
+  /* Center Format Categories in full width */
 }
-body.fullWidthContent .container,
 body.fullWidthContent .container-fluid {
-  max-width: 1900px;
   width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+body.fullWidthContent .container {
+  width: 98%;
   margin-left: auto;
   margin-right: auto;
 }
 @media (min-width: 1200px) {
   body.fullWidthContent #side-bar {
-    width: 13%;
+    width: 16%;
   }
   body.fullWidthContent #main-content-with-sidebar {
-    width: 87%;
+    width: 84%;
   }
 }
 body.fullWidthContent #more-details-accordion {
@@ -9039,6 +9046,34 @@ body.fullWidthContent #newUsername,
 body.fullWidthContent #overdriveEmail {
   max-width: 300px;
   margin-left: 30px;
+}
+body.fullWidthContent .browse-rating {
+  display: block !important;
+  width: 100%;
+  clear: both;
+  position: absolute;
+  bottom: 0;
+}
+@media screen and (min-width: 768px) {
+  body.fullWidthContent {
+    /* adjust spacing for information under title in results */
+  }
+  body.fullWidthContent .result-label {
+    display: inline-block !important;
+    width: auto !important;
+    min-width: 140px !important;
+    float: left !important;
+    clear: left !important;
+    text-align: left !important;
+    margin-right: 10px !important;
+    padding-right: 0 !important;
+  }
+}
+body.fullWidthContent div#categoryValues.row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
 }
 .swiper {
   width: 100%;
@@ -11359,7 +11394,6 @@ td[data-entry-id]:has(.date-edit:focus)::after {
   display: flex;
   overflow: hidden;
   flex: 1;
-  scroll-behavior: smooth;
   cursor: grab;
   gap: 10px;
 }

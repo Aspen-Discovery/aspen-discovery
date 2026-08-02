@@ -4458,86 +4458,10 @@
       "post": {
         "tags": ["Interlibrary Loan"],
         "summary": "Submit VDX ILL request",
-        "description": "Submits a VDX interlibrary loan request.",
+        "description": "This method has been removed",
         "parameters": [
-          {
-            "in": "query",
-            "name": "catalogKey",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "query",
-            "name": "title",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "query",
-            "name": "pickupLocation",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "query",
-            "name": "author",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "query",
-            "name": "publisher",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "query",
-            "name": "isbn",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "query",
-            "name": "acceptFee",
-            "required": false,
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "in": "query",
-            "name": "note",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "query",
-            "name": "language",
-            "required": false,
-            "schema": {
-              "type": "string"
-            },
-            "example": "es",
-            "description": "If applicable translates the response to the provided language."
-          }
         ],
-        "requestBody": {
-          "$ref": "#/components/parameters/BasicUserAuth"
-        },
+        "requestBody": { },
         "responses": {
           "200": {
             "description": "Response for creating a VDX ILL request.",

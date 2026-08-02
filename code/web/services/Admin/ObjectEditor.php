@@ -1048,7 +1048,7 @@ abstract class ObjectEditor extends Admin_Admin {
 						]);
 					}
 				}
-			} else if ($_REQUEST['action'] == 'Placards') {
+			} elseif ($_REQUEST['action'] == 'Placards') {
 				require_once ROOT_DIR . '/sys/LocalEnrichment/Placard.php';
 				$placard = new Placard();
 				$placard->id = $_REQUEST['id'];
@@ -1069,6 +1069,29 @@ abstract class ObjectEditor extends Admin_Admin {
 										'isAdminFacing' => true,
 									]);
 							}
+						}
+					}
+				}
+			} elseif ($_REQUEST['action'] == 'AdministerSeries') {
+				require_once ROOT_DIR . '/sys/Series/Series.php';
+				$series = new Series();
+				$series->id = $_REQUEST['id'];
+				if ($series->find(true)) {
+					if ($series->seriesToGroupWithId != null) {
+						$mainSeries = new Series();
+						$mainSeries->seriesPermanentId = $series->seriesToGroupWithId;
+						if ($mainSeries->find(true)) {
+							$url = "/Series/AdministerSeries?objectAction=edit&id=" . $mainSeries->id;
+							$result = "<div style='display:flex; justify-content:space-between; align-items:center;'>" .
+								"<span>" . translate([
+									'text' => 'This series is grouped onto: ',
+									'isAdminFacing' => true,
+								]) . "<a href='$url'>$mainSeries->displayName</a></span>" .
+								"<a onclick='AspenDiscovery.Series.ungroupSeries(\"$series->seriesPermanentId\", \"$mainSeries->seriesPermanentId\")' class='btn btn-warning'>" . translate([
+									'text' => 'Ungroup',
+									'isAdminFacing' => true,
+								]) . "</a>" .
+								"</div>";
 						}
 					}
 				}
@@ -1352,7 +1375,7 @@ abstract class ObjectEditor extends Admin_Admin {
 		$filterFields = $this->getFilterFields($object::getObjectStructure($this->getContext()));
 		$appliedFilters = $this->getAppliedFilters($filterFields);
 		foreach ($appliedFilters as $fieldName => $filter) {
-			if ($filter['field']['type'] != "calculatedInteger" || !empty($filter->filterValue)) {
+			if (!empty($filter['filterValue']) || !empty($filter['filterValue2'])) {
 				$this->applyFilter($object, $fieldName, $filter);
 			}
 		}

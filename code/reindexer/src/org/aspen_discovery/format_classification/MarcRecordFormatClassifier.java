@@ -896,8 +896,15 @@ public class MarcRecordFormatClassifier {
 								resultsFrom007.add("VideoCartridge");
 								break;
 							case 'D':
-								if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Adding bib level format VideoDisc based on 007", 2);}
-								resultsFrom007.add("VideoDisc");
+								if (formatField.getData().length() >= 5) {
+									if (formatField.getData().toUpperCase().charAt(4) == 'T') {
+										if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Adding bib level format 4KBlu-ray based on 007", 2);}
+										resultsFrom007.add("4KBlu-ray");
+									}
+								} else {
+									if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Adding bib level format VideoDisc based on 007", 2);}
+									resultsFrom007.add("VideoDisc");
+								}
 								break;
 							case 'F':
 								if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Adding bib level format VideoCassette based on 007", 2);}
@@ -1530,6 +1537,7 @@ public class MarcRecordFormatClassifier {
 		}
 		if (printFormats.contains("Manga")){
 			printFormats.remove("GraphicNovel");
+			printFormats.remove("Book");
 		}
 		if (printFormats.contains("MusicalScore")){
 			printFormats.remove("Book");

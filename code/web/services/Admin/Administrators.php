@@ -107,27 +107,32 @@ class Admin_Administrators extends ObjectEditor {
 					if($numResults == 0) {
 						$newAdmin = UserAccount::findNewUser('', $login);
 						if ($newAdmin === false) {
-							// Try searching by username field for admin_sso users.
-							$newAdmin = new User();
-							$newAdmin->username = $login;
-							$newAdmin->source = 'admin_sso';
-							$newAdmin->find();
-							$numResults = $newAdmin->getNumResults();
-							if($numResults == 0) {
-								$newAdmin = false;
-								$errors[$login] = translate([
-									'text' => 'Could not find a user with that barcode or username.',
-									'isAdminFacing' => true,
-								]);
-							} elseif ($numResults == 1) {
-								$newAdmin->fetch();
-							} elseif ($numResults > 1) {
-								$newAdmin = false;
-								$errors[$login] = translate([
-									'text' => 'Found multiple (%1%) users with that username. (The database needs to be cleaned up.)',
-									'1' => $numResults,
-									'isAdminFacing' => true,
-								]);
+							// Check to see if this is an SSO account. If so we will check all Account profiles that authenticate with SSO
+							$ssoAccountProfiles = new AccountProfile();
+							$ssoAccountProfiles->authenticationMethod = 'sso';
+							$ssoAccountProfiles->find();
+							while ($ssoAccountProfiles->fetch()) {
+								$newAdmin = new User();
+								$newAdmin->username = $login;
+								$newAdmin->source = $ssoAccountProfiles->name;
+								$newAdmin->find();
+								$numResults = $newAdmin->getNumResults();
+								if($numResults == 0) {
+									$newAdmin = false;
+									$errors[$login] = translate([
+										'text' => 'Could not find a user with that barcode or username.',
+										'isAdminFacing' => true,
+									]);
+								} elseif ($numResults == 1) {
+									$newAdmin->fetch();
+								} elseif ($numResults > 1) {
+									$newAdmin = false;
+									$errors[$login] = translate([
+										'text' => 'Found multiple (%1%) users with that username. (The database needs to be cleaned up.)',
+										'1' => $numResults,
+										'isAdminFacing' => true,
+									]);
+								}
 							}
 						}
 					} elseif ($numResults == 1) {

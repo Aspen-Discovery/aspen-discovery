@@ -522,7 +522,7 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 	public function getSearchSuggestions($searchTerm, $searchIndex) : array {
 		if ($searchIndex == 'Title' || $searchIndex == 'AllTitles' || $searchIndex == 'StartOfTitle' || $searchIndex == 'Series') {
 			$suggestionHandler = 'title_suggest';
-		} elseif ($searchIndex == 'Author') {
+		} elseif ($searchIndex == 'Author' || $searchIndex == 'PrimaryAuthor') {
 			$suggestionHandler = 'author_suggest';
 		} elseif ($searchIndex == 'Subject') {
 			$suggestionHandler = 'subject_suggest';
@@ -1184,10 +1184,193 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 	}
 
 	public function getSearchIndexes() : array {
+		global $library;
+		global $location;
+
 		$titleSearch = 'Title';
 		$systemVariables = SystemVariables::getSystemVariables();
 		if ($systemVariables && (int)$systemVariables->titleSearchBehavior == 2) {
 			$titleSearch = 'AllTitles';
+		}
+
+		$searchIndexes = [];
+
+		if ($location && $location->searchSettingId != -1 || $library->searchSettingId != -1) {
+			require_once ROOT_DIR . '/sys/SearchObject/SearchSetting.php';
+			$searchSetting = new SearchSetting();
+			if ($location && $location->searchSettingId != -1) {
+				$searchSetting->id = $location->searchSettingId;
+			} else {
+				$searchSetting->id = $library->searchSettingId;
+			}
+			if ($searchSetting->find(true)) {
+				require_once ROOT_DIR . '/sys/SearchObject/SearchTypes.php';
+				$searchTypes = new SearchTypes();
+				$searchTypes->searchSettingId = $searchSetting->id;
+				$searchTypes->enabled = 1;
+				$searchTypes->find();
+				while ($searchTypes->fetch()) {
+					$searchType = $searchTypes->type;
+					if ($searchType == 'Title') {
+						$searchType = $titleSearch;
+					}
+					$searchIndexes[$searchType] = translate([
+						'text' => $searchTypes->label,
+						'isPublicFacing' => true,
+						'inAttribute' => true,
+					]);
+				}
+				if (empty($searchIndexes)) {
+					$searchIndexes['Keyword'] = translate([
+						'text' => 'Keyword',
+						'isPublicFacing' => true,
+						'inAttribute' => true,
+					]);
+				}
+			}
+			return $searchIndexes;
+		} else {
+			return [
+				'Keyword' => translate([
+					'text' => 'Keyword',
+					'isPublicFacing' => true,
+					'inAttribute' => true,
+				]),
+				$titleSearch => translate([
+					'text' => 'Title',
+					'isPublicFacing' => true,
+					'inAttribute' => true,
+				]),
+				'StartOfTitle' => translate([
+					'text' => 'Start of Title',
+					'isPublicFacing' => true,
+					'inAttribute' => true,
+				]),
+				'Series' => translate([
+					'text' => 'Series',
+					'isPublicFacing' => true,
+					'inAttribute' => true,
+				]),
+				'PrimaryAuthor' => translate([
+					'text' => 'Author',
+					'isPublicFacing' => true,
+					'inAttribute' => true,
+				]),
+				'Author' => translate([
+					'text' => 'Authors and Contributors',
+					'isPublicFacing' => true,
+					'inAttribute' => true,
+				]),
+				'Subject' => translate([
+					'text' => 'Subject',
+					'isPublicFacing' => true,
+					'inAttribute' => true,
+				]),
+				'LocalCallNumber' => translate([
+					'text' => 'Call Number',
+					'isPublicFacing' => true,
+					'inAttribute' => true,
+				]),
+			];
+		}
+	}
+
+	public function getAdvancedSearchIndexes() : array {
+		global $library;
+		global $locationSingleton;
+		$location = $locationSingleton->getActiveLocation();
+
+		$searchIndexes = [];
+
+
+		if ($location && $location->searchSettingId != -1 || $library->searchSettingId != -1) {
+			require_once ROOT_DIR . '/sys/SearchObject/SearchSetting.php';
+			$searchSetting = new SearchSetting();
+			if ($location && $location->searchSettingId != -1) {
+				$searchSetting->id = $location->searchSettingId;
+			} else {
+				$searchSetting->id = $library->searchSettingId;
+			}
+			if ($searchSetting->find(true)) {
+				require_once ROOT_DIR . '/sys/SearchObject/SearchTypes.php';
+				$searchTypes = new SearchTypes();
+				$searchTypes->searchSettingId = $searchSetting->id;
+				$searchTypes->find();
+				while ($searchTypes->fetch()) {
+					if ($searchTypes->enabled != 0) {
+						$searchType = $searchTypes->type;
+						$searchIndexes[$searchType] = translate([
+							'text' => $searchTypes->label,
+							'isPublicFacing' => true,
+							'inAttribute' => true,
+						]);
+					}
+				}
+			}
+			return $searchIndexes;
+		} else {
+			return [
+				'Keyword' => translate([
+					'text' => 'Keyword',
+					'isPublicFacing' => true,
+					'inAttribute' => true,
+				]),
+				'Title' => translate([
+					'text' => 'Title',
+					'isPublicFacing' => true,
+					'inAttribute' => true,
+				]),
+				'StartOfTitle' => translate([
+					'text' => 'Start of Title',
+					'isPublicFacing' => true,
+					'inAttribute' => true,
+				]),
+				'Author' => translate([
+					'text' => 'Author',
+					'isPublicFacing' => true,
+					'inAttribute' => true,
+				]),
+				'Subject' => translate([
+					'text' => 'Subject',
+					'isPublicFacing' => true,
+					'inAttribute' => true,
+				]),
+				'ISN' => translate([
+					'text' => 'ISBN/ISSN/UPC',
+					'isPublicFacing' => true,
+					'inAttribute' => true,
+				]),
+				'publisher' => translate([
+					'text' => 'Publisher',
+					'isPublicFacing' => true,
+					'inAttribute' => true,
+				]),
+				'year' => translate([
+					'text' => 'Year of Publication',
+					'isPublicFacing' => true,
+					'inAttribute' => true,
+				]),
+				'Series' => translate([
+					'text' => 'Series',
+					'isPublicFacing' => true,
+					'inAttribute' => true,
+				]),
+				'toc' => translate([
+					'text' => 'Table of Contents',
+					'isPublicFacing' => true,
+					'inAttribute' => true,
+				]),
+				'id' => translate([
+					'text' => 'Record Number',
+					'isPublicFacing' => true,
+					'inAttribute' => true,
+				]),
+				'LocalCallNumber' => translate([
+					'text' => 'Call Number',
+					'isPublicFacing' => true,
+					'inAttribute' => true,
+				]),
+			];
 		}
 		return [
 			'Keyword' => translate([
@@ -1210,8 +1393,13 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 				'isPublicFacing' => true,
 				'inAttribute' => true,
 			]),
-			'Author' => translate([
+			'PrimaryAuthor' => translate([
 				'text' => 'Author',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'Author' => translate([
+				'text' => 'Authors and Contributors',
 				'isPublicFacing' => true,
 				'inAttribute' => true,
 			]),
@@ -1293,6 +1481,32 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 		}
 
 		return $this->facetConfig;
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getFullFacetConfig() : array {
+		if ($this->fullFacetConfig == null) {
+			$facetConfig = [];
+			$searchLibrary = Library::getActiveLibrary();
+			global $locationSingleton;
+			$searchLocation = $locationSingleton->getActiveLocation();
+			if ($searchLocation != null) {
+				$facets = $searchLocation->getGroupedWorkDisplaySettings()->getFacets();
+			} else {
+				$facets = $searchLibrary->getGroupedWorkDisplaySettings()->getFacets();
+			}
+			foreach ($facets as $facet) {
+				//Adjust facet name for local scoping
+				$facet->facetName = $this->getScopedFieldName($facet->getFacetName($this->searchVersion));
+				$facetConfig[$facet->facetName] = $facet;
+
+			}
+			$this->fullFacetConfig = $facetConfig;
+		}
+
+		return $this->fullFacetConfig;
 	}
 
 	function getMoreLikeThis($id, $selectedAvailabilityToggle = 'global', $availableOnly = false, $limitFormat = true, $limit = null, $format = null) {
