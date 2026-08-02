@@ -1,6 +1,6 @@
 {strip}
 <div id="horizontal-search-box" class="row {if !empty($fullWidthTheme)}row-no-gutters{/if}">
-	<form method="get" action="/Union/Search" id="searchForm" class="form-inline">
+	<form method="get" action="/Union/Search" id="searchForm" class="form-inline" {if $simplifiedSearchBox}onsubmit="AspenDiscovery.Searches.handleSimplifiedSearchSubmit(this);"{/if}>
 
 		{* Hidden Inputs *}
 		<input type="hidden" name="view" id="view" value="{if !empty($displayMode)}{$displayMode}{/if}">
@@ -16,11 +16,15 @@
 			<input type="hidden" name="searchSource" value="{if !empty($searchSource)}{$searchSource}{/if}">
 		{/if}
 
-		<div class="col-xs-12 col-sm-10 col-md-10 col-lg-10">
+		<div class="col-xs-12 {if $simplifiedSearchBox}col-sm-10 col-sm-offset-1 col-md-10 col-md-offset-1 col-lg-10 col-lg-offset-1{else}col-sm-10 col-md-10 col-lg-10{/if}">
 			<div class="row">
-				<div class="{if !empty($hiddenSearchSource)}col-lg-10 col-md-10{else}col-lg-7 col-md-7{/if} col-sm-12 col-xs-12">
+				<div class="{if $simplifiedSearchBox}{if !empty($hiddenSearchSource)}col-lg-12 col-md-12{else}col-lg-9 col-md-9{/if}{else}{if !empty($hiddenSearchSource)}col-lg-10 col-md-10{else}col-lg-7 col-md-7{/if}{/if} col-sm-12 col-xs-12">
 					<div class="input-group">
-						<span class="input-group-addon"><label for="lookfor" class="label" id="lookfor-label"><i class="fas fa-search fa-lg" role="presentation"></i><span class="sr-only" aria-label="{translate text="Look for" isPublicFacing=true inAttribute=true}" role="presentation">{translate text="Look for" isPublicFacing=true}</span></label></span>
+						{if $simplifiedSearchBox}
+							<label for="lookfor" class="sr-only" id="lookfor-label">{translate text="Look for" isPublicFacing=true}</label>
+						{else}
+							<span class="input-group-addon"><label for="lookfor" class="label" id="lookfor-label"><i class="fas fa-search fa-lg" role="presentation"></i><span class="sr-only" aria-label="{translate text="Look for" isPublicFacing=true inAttribute=true}" role="presentation">{translate text="Look for" isPublicFacing=true}</span></label></span>
+						{/if}
 						{* Main Search Term Box *}
 						<input type="text" class="form-control"{/strip}
 							id="lookfor"
@@ -38,40 +42,52 @@
 								<path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
 							</svg>
 						</button>
+						{if $simplifiedSearchBox}
+							<span class="input-group-btn">
+								<button class="btn btn-default" type="submit">
+									<i class="fas fa-search fas-lg" role="presentation"></i>
+									<span id="horizontal-search-box-submit-text">&nbsp;{translate text='Search' isPublicFacing=true}</span>
+								</button>
+							</span>
+						{/if}
 					</div>
 				</div>
 
 				{* Search Type *}
-				<div class="col-lg-2 col-lg-offset-0 col-md-2 col-md-offset-0 {if !empty($hiddenSearchSource)} col-sm-12 col-sm-offset-0 col-xs-12 col-xs-offset-0 {else} col-sm-6 col-sm-offset-0 col-xs-6 col-xs-offset-0{/if}">
-					<select name="searchIndex" class="searchTypeHorizontal form-control catalogType" id="searchIndex" title="The method of searching." aria-label="Search Index">
-						<script type="text/javascript">
-							{literal}
-							$(document).ready(function() {
-								AspenDiscovery.Searches.loadSearchTypes();
-							});
-							{/literal}
-						</script>
-						{foreach from=$searchIndexes item=searchDesc key=searchVal}
-							{* The descriptions are already translated and do not need to be retranslated *}
-							<option value="{$searchVal}"{if !empty($searchIndex) && $searchIndex == $searchVal} selected="selected"{/if}>{$searchDesc}</option>
-						{/foreach}
+				{if $simplifiedSearchBox}
+					<input type="hidden" name="searchIndex" value="Keyword">
+				{else}
+					<div class="col-lg-2 col-lg-offset-0 col-md-2 col-md-offset-0 {if !empty($hiddenSearchSource)} col-sm-12 col-sm-offset-0 col-xs-12 col-xs-offset-0 {else} col-sm-6 col-sm-offset-0 col-xs-6 col-xs-offset-0{/if}">
+						<select name="searchIndex" class="searchTypeHorizontal form-control catalogType" id="searchIndex" title="The method of searching." aria-label="Search Index">
+							<script type="text/javascript">
+								{literal}
+								$(document).ready(function() {
+									AspenDiscovery.Searches.loadSearchTypes();
+								});
+								{/literal}
+							</script>
+							{foreach from=$searchIndexes item=searchDesc key=searchVal}
+								{* The descriptions are already translated and do not need to be retranslated *}
+								<option value="{$searchVal}"{if !empty($searchIndex) && $searchIndex == $searchVal} selected="selected"{/if}>{$searchDesc}</option>
+							{/foreach}
 
-						{* Add Advanced Search *}
-						{if !empty($searchIndex) && $searchIndex == 'advanced'}*}
-							<option id="advancedSearchLink" value="editAdvanced" selected="selected">
-								{translate text='Edit Advanced Search' inAttribute=true isPublicFacing=true}
-							</option>
-						{elseif $showAdvancedSearchbox}
-							<option id="advancedSearchLink" value="advanced">
-								{translate text='Advanced Search' inAttribute=true isPublicFacing=true}
-							</option>
-						{/if}
-					</select>
-				</div>
+							{* Add Advanced Search *}
+							{if !empty($searchIndex) && $searchIndex == 'advanced'}*}
+								<option id="advancedSearchLink" value="editAdvanced" selected="selected">
+									{translate text='Edit Advanced Search' inAttribute=true isPublicFacing=true}
+								</option>
+							{elseif $showAdvancedSearchbox}
+								<option id="advancedSearchLink" value="advanced">
+									{translate text='Advanced Search' inAttribute=true isPublicFacing=true}
+								</option>
+							{/if}
+						</select>
+					</div>
+				{/if}
 
 				{if empty($hiddenSearchSource)}
-					<div class="col-lg-3 col-md-3 col-sm-6 col-xs-6">
-						<select name="searchSource" id="searchSource" title="{translate text="Select what to search. Items marked with a * will redirect you to one of our partner sites." isPublicFacing=true inAttribute=true}" onchange="AspenDiscovery.Searches.loadSearchTypes();" class="searchSourceHorizontal form-control" aria-label="{translate text="Collection to Search" isPublicFacing=true inAttribute=true}">
+					<div class="{if $simplifiedSearchBox}col-lg-3 col-md-3 col-sm-12 col-xs-12{else}col-lg-3 col-md-3 col-sm-6 col-xs-6{/if}">
+						<select name="searchSource" id="searchSource" title="{translate text="Select what to search. Items marked with a * will redirect you to one of our partner sites." isPublicFacing=true inAttribute=true}" onchange="{if $simplifiedSearchBox}AspenDiscovery.Searches.handleSimplifiedSourceChange(this);{else}AspenDiscovery.Searches.loadSearchTypes();{/if}" class="searchSourceHorizontal form-control" aria-label="{translate text="Collection to Search" isPublicFacing=true inAttribute=true}">
 							{foreach from=$searchSources item=searchOption key=searchKey}
 								<option data-catalog_type="{$searchOption.catalogType}" value="{$searchKey}" title="{$searchOption.description|escape}" data-advanced_search="{$searchOption.hasAdvancedSearch}" data-advanced_search_label="{translate text="Advanced Search" inAttribute=true isPublicFacing=true}"
 										{if $searchKey == $searchSource} selected="selected"{/if}
@@ -80,6 +96,11 @@
 									{translate text="in %1%" 1=$searchOption.name|escape inAttribute=true isPublicFacing=true translateParameters=true}{if !empty($searchOption.external)} *{/if}
 								</option>
 							{/foreach}
+							{if $simplifiedSearchBox && $showAdvancedSearchbox}
+								<option id="advancedSearchLink" value="advanced">
+									{translate text='Advanced Search' inAttribute=true isPublicFacing=true}
+								</option>
+							{/if}
 						</select>
 					</div>
 				{/if}
@@ -87,14 +108,17 @@
 		</div>
 
 		{* GO Button & Search Links*}
+		{if !$simplifiedSearchBox || (!empty($recordCount) || !empty($sideRecommendations))}
 		<div id="horizontal-search-button-container" class="col-xs-12 col-sm-2 col-md-2">
 			<div class="row">
-				<div class="col-tn-6 col-xs-6 col-sm-12 col-md-12 text-center">
-					<button class="btn btn-default" type="submit" style="width: 95%">
-						<i class="fas fa-search fas-lg" role="presentation"></i>
-						<span id="horizontal-search-box-submit-text">&nbsp;{translate text='Search' isPublicFacing=true}</span>
-					</button>
-				</div>
+				{if !$simplifiedSearchBox}
+					<div class="col-tn-6 col-xs-6 col-sm-12 col-md-12 text-center">
+						<button class="btn btn-default" type="submit" style="width: 95%">
+							<i class="fas fa-search fas-lg" role="presentation"></i>
+							<span id="horizontal-search-box-submit-text">&nbsp;{translate text='Search' isPublicFacing=true}</span>
+						</button>
+					</div>
+				{/if}
 
 				{* Show/Hide Search Facets & Sort Options *}
 				{if !empty($recordCount) || !empty($sideRecommendations)}
@@ -104,6 +128,7 @@
 				{/if}
 			</div>
 		</div>
+		{/if}
 
 	</form>
 </div>

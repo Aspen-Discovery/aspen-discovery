@@ -553,7 +553,30 @@ AspenDiscovery.Searches = (function(){
 				$select.val(filterValue);
 			}
 			$select.data('prevVal', filterValue);
-			aspenJQ('#modalDialog').modal('hide');
+		    aspenJQ('#modalDialog').modal('hide');
+		},
+
+		handleSimplifiedSourceChange: function(select) {
+			if (select.value === 'advanced') {
+				var searchIndexInput = document.querySelector('[name="searchIndex"]');
+				if (searchIndexInput) {
+					searchIndexInput.value = 'advanced';
+				}
+			} else {
+				select.setAttribute('data-prev', select.value);
+				var searchIndexInput = document.querySelector('[name="searchIndex"]');
+				if (searchIndexInput) {
+					searchIndexInput.value = 'Keyword';
+				}
+				AspenDiscovery.Searches.loadSearchTypes();
+			}
+		},
+
+		handleSimplifiedSearchSubmit: function(form) {
+			var sourceSelect = form.querySelector('#searchSource');
+			if (sourceSelect && sourceSelect.value === 'advanced') {
+				sourceSelect.value = sourceSelect.getAttribute('data-prev') || 'local';
+			}
 		}
 	}
 }(AspenDiscovery.Searches || {}));

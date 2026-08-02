@@ -397,6 +397,10 @@
     display: block;
   }
 }
+.input-group:has(.input-group-btn) .input-group-addon.clear-search {
+  right: 95px;
+  z-index: 3;
+}
 .input-group-addon.clear-search {
   position: absolute;
   top: 50%;

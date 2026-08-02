@@ -307,6 +307,15 @@ function getUpdates26_04_00(): array {
 
 		//other
 
+		'add_simplified_search_box' => [
+			'title' => 'Add Simplified Search Box setting',
+			'description' => 'Adds a toggle to enable the simplified search box UI per library',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN simplifiedSearchBox TINYINT(1) NOT NULL DEFAULT 0',
+			]
+		], //add_simplified_search_box
+
 	];
 }
 
