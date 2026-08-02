@@ -92,7 +92,6 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 	protected TreeSet<String> targetAudience = new TreeSet<>();
 	protected String title;
 	protected HashSet<String> titleAlt = new HashSet<>();
-	protected HashSet<String> titleOld = new HashSet<>();
 	protected HashSet<String> titleNew = new HashSet<>();
 	protected String titleSort;
 	protected String titleFormat = "";
@@ -218,8 +217,6 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 		clonedWork.targetAudience = (TreeSet<String>) targetAudience.clone();
 		// noinspection unchecked
 		clonedWork.titleAlt = (HashSet<String>) titleAlt.clone();
-		// noinspection unchecked
-		clonedWork.titleOld = (HashSet<String>) titleOld.clone();
 		// noinspection unchecked
 		clonedWork.titleNew = (HashSet<String>) titleNew.clone();
 		// noinspection unchecked
@@ -586,10 +583,6 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 
 	void addAlternateTitles(Set<String> altTitles) {
 		this.titleAlt.addAll(altTitles);
-	}
-
-	void addOldTitles(Set<String> oldTitles) {
-		this.titleOld.addAll(oldTitles);
 	}
 
 	void addNewTitles(Set<String> newTitles) {

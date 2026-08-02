@@ -188,9 +188,10 @@ class SystemVariables extends DataObject {
 						'type' => 'enum',
 						'values' => [
 							2 => 'Version 2 (Edition information)',
+							3 => 'Version 3 (Optimization of solr fields)'
 						],
 						'label' => 'Grouped Work Indexing Version',
-						'description' => 'The Solr Core Version to index with.  In 22.06 and above this should be version 2 in most cases.',
+						'description' => 'The Solr Core Version to index with.  In 26.08 and above this should be version 3 in most cases.',
 						'required' => true,
 						'default' => 2,
 					],
@@ -199,9 +200,10 @@ class SystemVariables extends DataObject {
 						'type' => 'enum',
 						'values' => [
 							2 => 'Version 2 (Edition information)',
+							3 => 'Version 3 (Optimization of solr fields)'
 						],
 						'label' => 'Grouped Work Search Version',
-						'description' => 'The Solr Core Version to search with.  In 22.06 and above this should be version 2 in most cases.',
+						'description' => 'The Solr Core Version to search with.  In 22.08 and above this should be version 3 in most cases.',
 						'required' => true,
 						'default' => 2,
 					],
