@@ -88,6 +88,9 @@
      <lib path="../a-jar-that-does-not-exist.jar" />
   -->
 
+  <!-- Load additional analysis modules for ICU -->
+  <module>analysis-extras</module>
+
   <!-- Data Directory
 
        Used to specify an alternate directory to hold all index data
