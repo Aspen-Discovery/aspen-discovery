@@ -3819,6 +3819,15 @@ class Library extends DataObject {
 						'description' => 'The Loral Settings to use',
 						'default' => '-1',
 						'hideInLists' => true,
+					],
+					'bdsSettingId' => [
+						'property' => 'bdsSettingId',
+						'type' => 'enum',
+						'values' => $availableBdsSettings,
+						'label' => 'BDS Setting',
+						'description' => 'The BDS Settings to use for cover images',
+						'default' => '-1',
+						'hideInLists' => true,
 					]
 				],
 			],
