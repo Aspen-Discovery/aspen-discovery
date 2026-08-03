@@ -4,6 +4,7 @@ import com.turning_leaf_technologies.cron.CronLogEntry;
 import com.turning_leaf_technologies.cron.CronProcessLogEntry;
 import com.turning_leaf_technologies.cron.IProcessHandler;
 import com.turning_leaf_technologies.encryption.EncryptionUtils;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
 import org.ini4j.Profile.Section;
@@ -16,6 +17,8 @@ import java.util.concurrent.*;
 
 @SuppressWarnings("unused")
 public class UpdateReadingHistory implements IProcessHandler {
+
+	private static final Logger log = LogManager.getLogger(UpdateReadingHistory.class);
 
 	public void doCronProcess(String servername, Ini configIni, Section processSettings, Connection dbConn, CronLogEntry cronEntry, Logger logger) {
 		CronProcessLogEntry processLog = new CronProcessLogEntry(cronEntry, "Update Reading History", dbConn, logger);
@@ -56,6 +59,19 @@ public class UpdateReadingHistory implements IProcessHandler {
 			}
 		} catch (Exception e) {
 			logger.error("Error parsing batch size configuration, using default: ", e);
+		}
+
+		//Determine how we should process base URLs
+		int readingHistoryBaseUrlType = 0; //0 = Use Localhost, 1 = Use Server URL
+		try {
+			PreparedStatement getReadingHistoryBaseUrlStmt = dbConn.prepareStatement("SELECT readingHistoryBaseUrl from system_variables", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			ResultSet getReadingHistoryBaseUrlRS = getReadingHistoryBaseUrlStmt.executeQuery();
+			if (getReadingHistoryBaseUrlRS.next()) {
+				readingHistoryBaseUrlType = getReadingHistoryBaseUrlRS.getInt("readingHistoryBaseUrl");
+			}
+		} catch (Exception e) {
+			processLog.addNote("Unable to determine how base urls should be constructed");
+			processLog.addNote(e.toString());
 		}
 
 		int numSkipped = 0;
@@ -120,7 +136,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 							continue;
 						}
 
-						UpdateReadingHistoryTask newTask = new UpdateReadingHistoryTask(aspenUrl, ilsBarcode, ilsPassword, processLog, logger);
+						UpdateReadingHistoryTask newTask = new UpdateReadingHistoryTask(aspenUrl, readingHistoryBaseUrlType, ilsBarcode, ilsPassword, processLog, logger);
 						executor.execute(newTask);
 					}
 

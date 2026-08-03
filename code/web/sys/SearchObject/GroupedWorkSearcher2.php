@@ -799,13 +799,18 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 				if ($isScopedField && str_contains($facetValue, '#')) {
 					$facetValue = substr($facetValue, strpos($facetValue, '#') + 1);
 				}
+				if ($field == 'author2-role') {
+					$facetDisplay = preg_replace('/\s*\|\s*/', ' - ', $facetValue);
+				}
+				$displayValue = $facetDisplay ?? $facetValue;
+
 				$currentSettings['value'] = $facetValue;
 				$currentSettings['display'] = $translate ? translate([
-					'text' => $facetValue,
+					'text' => $displayValue,
 					'isPublicFacing' => true,
 					'isMetadata' => true,
 					'escape' => true,
-				]) : htmlentities($facetValue);
+				]) : htmlentities($displayValue);
 				$currentSettings['count'] = $facet[1];
 				$currentSettings['isApplied'] = false;
 				$currentSettings['url'] = $this->renderLinkWithFilter($field, $facetValue);
