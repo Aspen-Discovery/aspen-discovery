@@ -386,6 +386,8 @@ abstract class SearchObject_BaseSearcher {
 					$startValue = $rangeValues[1] == '*' ? '*' : $rangeValues[1] / 60;
 					$endValue = $rangeValues[2] == '*' ? '*' : $rangeValues[2] / 60;
 					$display = translate(['text' => $facetLabel, 'isPublicFacing' => true]) . ' ' . "[$startValue TO $endValue]";
+				} elseif ($field == 'author2-role') {
+					$display = preg_replace('/\s*\|\s*/', ' - ', $value);
 				} else {
 					$display = $translate ? translate([
 						'text' => $value,
@@ -1481,6 +1483,8 @@ abstract class SearchObject_BaseSearcher {
 	}
 
 	public abstract function getSearchIndexes();
+
+	public abstract function getAdvancedSearchIndexes();
 
 	public function getFilters() {
 		return $this->filterList;
