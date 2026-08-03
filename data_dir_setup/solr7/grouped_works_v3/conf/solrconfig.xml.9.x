@@ -914,11 +914,13 @@
         corporate_name_facet^50
         content_rating
         accelerated_reader_interest_level
+        mpaa_rating
       </str>
       <str name="mlt.mintf">1</str>
       <str name="mlt.mindf">2</str>
       <str name="mlt.maxdf">10000</str>
       <str name="mlt.boost">true</str>
+      <str name="mlt.useDocValuesForFields">true</str>
     </lst>
   </requestHandler>
 

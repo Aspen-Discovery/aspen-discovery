@@ -1,9 +1,4 @@
 <?xml version="1.0" ?>
-<!--
-TODO:
-- Version 25.10 introduced docValues for several fields. To preserve search capability while reindexing records,
-  the indexed attribute was left at true. This can be set to false in 25.11 or later to clear index space.
--->
 <schema name="Aspen Grouped Work Index" version="3.0">
 	<types>
 		<fieldType name="unchanged_string" class="StrField"/>
@@ -235,10 +230,10 @@ TODO:
 		<!-- This is returned -->
 		<!-- The author to display to the user -->
 		<field name="author_display" type="unchanged_string" indexed="false" stored="true" multiValued="false"/>
-		<!-- This is used for facet values and in the mlt handler. There are too many unique values for docValues to be useful -->
-		<field name="authorStr" type="unchanged_string" indexed="true" stored="false" termVectors="true"/>
+		<!-- This is used for facet values and in the mlt handler -->
+		<field name="authorStr" type="unchanged_string" docValues="true" indexed="true" stored="false" />
 		<!-- author for sorting -->
-		<field name="author_sort" type="alphaOnlySort" indexed="true" stored="true"/>
+		<field name="author_sort" type="alphaOnlySort" indexed="true" stored="false"/>
 		<field name="author_exact" type="text-exact" indexed="true" stored="false" />
 		<field name="author_left" type="text-left" indexed="true" stored="false" />
 		<field name="auth_author" type="textProper" indexed="true" stored="false"/>
@@ -257,8 +252,8 @@ TODO:
 		<!-- SERIES Fields -->
 		<!-- This is returned -->
 		<field name="series" type="searchable_text" indexed="true" stored="true" multiValued="true"/>
-		<!-- This is used as a facet. There are too many values for docValues to be useful. -->
-		<field name="series_facet" type="unchanged_string" indexed="true" stored="false" multiValued="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<!-- This is used as a facet. -->
+		<field name="series_facet" type="unchanged_string" docValues="true" indexed="false" stored="false" multiValued="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 		<field name="series_proper" type="textProper" indexed="true" stored="false" multiValued="true"/>
 		<!-- This is returned -->
 		<field name="series_with_volume" type="textProper" indexed="false" stored="true" multiValued="true"/>
@@ -266,142 +261,142 @@ TODO:
 		<field name="series_author" type="searchable_text" indexed="true" stored="false" multiValued="true"/>
 
 		<!-- The popularity of a title in terms of circulation activity -->
-		<!-- This is used for sorting and boost function - todo set indexed to false -->
-		<field name="popularity" type="integer" indexed="true" stored="false" default="0" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
-		<!-- This is used for sorting and boost function - todo set indexed to false -->
-		<field name="total_holds" type="integer" indexed="true" stored="false" default="0" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<!-- This is used for sorting and boost function -->
+		<field name="popularity" type="integer" indexed="false" stored="false" default="0" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<!-- This is used for sorting and boost function -->
+		<field name="total_holds" type="integer" indexed="false" stored="false" default="0" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 
-		<!-- Format information - todo set indexed to false -->
-		<field name="grouping_category" type="unchanged_string" indexed="true" stored="false" multiValued="false" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<!-- Format information -->
+		<field name="grouping_category" type="unchanged_string" indexed="false" stored="false" multiValued="false" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 		<!-- This is returned and used as a facet -->
-		<field name="format" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
-		<!-- Used for boosting functions - todo set indexed to false -->
-		<field name="format_boost" type="integer" indexed="true" stored="false" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<field name="format" type="unchanged_string" indexed="false" stored="false" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<!-- Used for boosting functions -->
+		<field name="format_boost" type="integer" indexed="false" stored="false" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 		<!-- This is returned and used as a facet -->
-		<field name="format_category" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<field name="format_category" type="unchanged_string" indexed="false" stored="false" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 
 		<!-- Fields to determine ownership and location based on location codes -->
 		<!-- This is returned and used as a facet -->
-		<field name="owning_library" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<field name="owning_library" type="unchanged_string" indexed="false" stored="false" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 		<!-- This is returned and used as a facet -->
-		<field name="owning_location" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<field name="owning_location" type="unchanged_string" indexed="false" stored="false" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 		<!-- This is returned and used as a facet -->
-		<field name="collection" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<field name="collection" type="unchanged_string" indexed="false" stored="false" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 		<!-- This is returned and used as a facet -->
-		<field name="detailed_location" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<field name="detailed_location" type="unchanged_string" indexed="false" stored="false" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 		<!-- This is returned and used as a facet -->
-		<field name="shelf_location" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<field name="shelf_location" type="unchanged_string" indexed="false" stored="true" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 
 		<!-- Fields to determine availability -->
 		<!-- This is returned and used as a facet -->
-		<field name="available_at" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<field name="available_at" type="unchanged_string" indexed="false" stored="false" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 		<!-- This is returned and used as a facet -->
-		<field name="availability_toggle" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<field name="availability_toggle" type="unchanged_string" indexed="false" stored="true" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 		<!-- This is used for sorting titles within lists -->
-		<dynamicField name="available_copies_*" type="integer" indexed="true" docValues="true" stored="false" multiValued="true"/>
+		<dynamicField name="available_copies_*" type="integer" indexed="false" docValues="true" stored="false" multiValued="true"/>
 
 		<!-- Language Related Fields -->
 		<!-- This is used as a facet -->
-		<field name="all_languages" type="unchanged_string" indexed="true" stored="true" multiValued="true" omitNorms="true" docValues="true"/>
+		<field name="all_languages" type="unchanged_string" indexed="false" stored="false" multiValued="true" omitNorms="true" docValues="true"/>
 		<!-- This is returned and used as a facet and in mlt handler -->
-		<field name="language" type="unchanged_string" indexed="true" stored="true" multiValued="true" omitNorms="true" docValues="true" termVectors="true"/>
+		<field name="language" type="unchanged_string" indexed="false" stored="false" multiValued="true" omitNorms="true" docValues="true" omitTermFreqAndPositions="true"/>
 		<!-- This is used as a facet -->
-		<field name="translation" type="unchanged_string" indexed="true" stored="true" multiValued="true" omitNorms="true" docValues="true" omitTermFreqAndPositions="true"/>
+		<field name="translation" type="unchanged_string" indexed="false" stored="true" multiValued="true" omitNorms="true" docValues="true" omitTermFreqAndPositions="true"/>
 		<!-- This is used for boost functions -->
-		<field name="language_boost" type="integer" indexed="false" stored="false" multiValued="false" omitNorms="true" default="1" omitTermFreqAndPositions="true"/>
-		<field name="language_boost_es" type="integer" indexed="false" stored="false" multiValued="false" omitNorms="true" default="1" omitTermFreqAndPositions="true"/>
+		<field name="language_boost" type="integer" indexed="false" stored="false" multiValued="false" omitNorms="true" docValues="true" default="1" omitTermFreqAndPositions="true"/>
+		<field name="language_boost_es" type="integer" indexed="false" stored="false" multiValued="false" omitNorms="true" docValues="true" default="1" omitTermFreqAndPositions="true"/>
 
 		<!-- Publication information -->
 		<!-- This is used for searching by publisher only -->
-		<field name="publisher" type="searchable_text_minimal_stem" indexed="true" stored="true" multiValued="true"/>
-		<!-- This is returned and used as a facet. There are too many valued for docValues to be useful -->
-		<field name="publisherStr" type="unchanged_string" indexed="true" stored="true" multiValued="true" omitNorms="true" omitTermFreqAndPositions="true"/>
-		<!-- This is returned, can be used for searching, and is used for facets -->
-		<field name="publishDate" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true"/>
-		<!-- This is returned and used as a facet. It is the earliest publication date -->
-		<field name="publishDateSort" type="unchanged_string" indexed="true" stored="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<field name="publisher" type="searchable_text_minimal_stem" indexed="true" stored="false" multiValued="true"/>
 		<!-- This is returned and used as a facet. -->
-		<field name="placeOfPublication" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<field name="publisherStr" type="unchanged_string" indexed="false" stored="true" multiValued="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<!-- This is returned, can be used for searching, and is used for facets -->
+		<field name="publishDate" type="unchanged_string" indexed="false" stored="false" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<!-- This is returned and used as a facet. It is the earliest publication date -->
+		<field name="publishDateSort" type="unchanged_string" indexed="false" stored="false" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<!-- This is returned and used as a facet. -->
+		<field name="placeOfPublication" type="unchanged_string" indexed="false" stored="false" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 
 		<!-- Facets -->
 		<!-- This is returned, but just for ItemAPI and AnodeAPI -->
 		<field name="physical" type="unchanged_string" indexed="false" stored="true" multiValued="true"/>
 		<!-- This is used for the audiobook duration facet -->
-		<field name="duration" type="pints" indexed="true" stored="true" multiValued="true" default="0" docValues="true"/>
+		<field name="duration" type="pints" indexed="true" stored="false" multiValued="true" default="0" docValues="true"/>
 		<!-- This is used in the grouped work driver -->
 		<field name="edition" type="unchanged_string" indexed="false" stored="true" multiValued="true"/>
 		<!-- This does not seem to be used and can likely be deleted -->
 		<field name="dateSpan" type="unchanged_string" indexed="false" stored="false" multiValued="true"/>
 		<!-- This is returned and used as a facet. -->
-		<field name="econtent_source" type="unchanged_string" indexed="true" stored="false" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
-		<!-- This is returned, used as a facet, and in the mlt handler. There are too many values for docValues to be useful. -->
-		<field name="subject_facet" type="unchanged_string" indexed="true" stored="true" multiValued="true" termVectors="true"/>
+		<field name="econtent_source" type="unchanged_string" indexed="false" stored="false" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<!-- This is returned, used as a facet, and in the mlt handler. -->
+		<field name="subject_facet" type="unchanged_string" docValues="true" indexed="false" stored="false" multiValued="true"/>
 		<field name="subject" type="searchable_text_minimal_stem" indexed="true" stored="false" multiValued="true"/>
 		<field name="subject_proper" type="textProper" indexed="true" stored="false" multiValued="true"/>
 		<field name="topic" type="searchable_text_minimal_stem" indexed="true" stored="false" multiValued="true"/>
 		<field name="topic_proper" type="textProper" indexed="true" stored="false" multiValued="true"/>
-		<!-- This is returned, used as a facet, and in the mlt handler. There are too many values for docValues to be useful. -->
-		<field name="topic_facet" type="unchanged_string" indexed="true" stored="true" multiValued="true" termVectors="true" omitNorms="true" omitTermFreqAndPositions="true"/>
-		<!-- This is returned and used as a facet. There are too many values for docValues to be useful. -->
-		<field name="lc_subject" type="unchanged_string" indexed="true" stored="true" multiValued="true" omitNorms="true" omitTermFreqAndPositions="true"/>
-		<!-- This is returned and used as a facet. There are too many values for docValues to be useful. -->
-		<field name="bisac_subject" type="unchanged_string" indexed="true" stored="true" multiValued="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<!-- This is returned, used as a facet, and in the mlt handler. -->
+		<field name="topic_facet" type="unchanged_string" docValues="true" indexed="false" stored="false" multiValued="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<!-- This is returned and used as a facet. -->
+		<field name="lc_subject" type="unchanged_string" docValues="true" indexed="false" stored="false" multiValued="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<!-- This is returned and used as a facet. -->
+		<field name="bisac_subject" type="unchanged_string" docValues="true" indexed="false" stored="false" multiValued="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 		<!-- This is returned for ItemAPI and Talpa -->
 		<field name="genre" type="searchable_text_minimal_stem" indexed="true" stored="true" multiValued="true"/>
 		<field name="genre_proper" type="textProper" indexed="true" stored="false" multiValued="true"/>
-		<!-- This is returned, used as a facet, and in the mlt handler. There are too many values for docValues to be useful. -->
-		<field name="genre_facet" type="unchanged_string" indexed="true" stored="false" multiValued="true" termVectors="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<!-- This is returned, used as a facet, and in the mlt handler. -->
+		<field name="genre_facet" type="unchanged_string" docValues="true" indexed="false" stored="false" multiValued="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 		<field name="geographic" type="searchable_text_minimal_stem" indexed="true" stored="false" multiValued="true"/>
 		<field name="geographic_proper" type="textProper" indexed="true" stored="false" multiValued="true"/>
 		<!-- This is returned, used as a facet, and in the mlt handler. -->
-		<field name="geographic_facet" type="unchanged_string" indexed="true" stored="false" multiValued="true" docValues="true" termVectors="true"/>
-		<!-- This is returned, used as a facet, and in the mlt handler. There are too many values for docValues to be useful. -->
-		<field name="personal_name_facet" type="unchanged_string" indexed="true" stored="false" multiValued="true" termVectors="true"/>
-		<!-- This is returned, used as a facet, and in the mlt handler. There are too many values for docValues to be useful. -->
-		<field name="corporate_name_facet" type="unchanged_string" indexed="true" stored="false" multiValued="true" termVectors="true"/>
+		<field name="geographic_facet" type="unchanged_string" indexed="true" stored="false" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<!-- This is returned, used as a facet, and in the mlt handler. -->
+		<field name="personal_name_facet" type="unchanged_string" docValues="true" indexed="false" stored="false" multiValued="true" />
+		<!-- This is returned, used as a facet, and in the mlt handler. -->
+		<field name="corporate_name_facet" type="unchanged_string" docValues="true" indexed="false" stored="false" multiValued="true" />
 		<!-- This is returned and used as a facet, and in the mlt handler. -->
-		<field name="era" type="unchanged_string" indexed="true" stored="false" multiValued="true" docValues="true" termVectors="true"/>
+		<field name="era" type="unchanged_string" indexed="true" stored="false" multiValued="true" docValues="true" omitNorms="true" />
 		<field name="era_proper" type="textProper" indexed="true" stored="false" multiValued="true"/>
 		<!-- This is returned and used as a facet. -->
-		<field name="literary_form_full" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<field name="literary_form_full" type="unchanged_string" indexed="false" stored="false" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 		<!-- This is returned and used as a facet. -->
-		<field name="literary_form" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<field name="literary_form" type="unchanged_string" indexed="false" stored="false" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 		<!-- This is returned for suggestions and used as a facet. -->
-		<field name="target_audience_full" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<field name="target_audience_full" type="unchanged_string" indexed="false" stored="true" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 		<!-- This is used as a facet -->
-		<field name="target_audience" type="unchanged_string" indexed="true" stored="false" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<field name="target_audience" type="unchanged_string" indexed="false" stored="false" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 		<field name="date_added" type="date" indexed="true" stored="false" multiValued="false"/>
 		<!-- This is used as a facet -->
-		<field name="time_since_added" type="unchanged_string" indexed="true" stored="false" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<field name="time_since_added" type="unchanged_string" indexed="false" stored="false" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 		<!-- This is returned -->
-		<field name="days_since_added" type="integer" indexed="true" stored="true" multiValued="false" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<field name="days_since_added" type="integer" indexed="true" stored="false" multiValued="false" omitNorms="true" omitTermFreqAndPositions="true"/>
 		<!-- This is returned -->
 		<dynamicField name="local_time_since_added_*" type="unchanged_string" indexed="true" stored="true" multiValued="true" sortMissingLast="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 		<!-- This is returned -->
 		<dynamicField name="local_days_since_added_*" type="integer" indexed="true" stored="true" multiValued="false" sortMissingLast="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 		<!-- This is returned and used as a facet -->
-		<field name="itype" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<field name="itype" type="unchanged_string" indexed="true" stored="false" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 		<field name="barcode" type="unchanged_string" indexed="true" stored="false" multiValued="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 
 		<!-- awards and ratings -->
-		<!-- This is returned and used as a facet -->
-		<field name="content_rating" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true"/>
+		<!-- This is not returned, it is used as a facet -->
+		<field name="content_rating" type="unchanged_string" indexed="true" stored="false" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 		<!-- This is returned, used as a facet, and in the mlt handler -->
-		<field name="mpaa_rating" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true" termVectors="true"/>
+		<field name="mpaa_rating" type="unchanged_string" indexed="true" stored="false" multiValued="true" docValues="true" omitNorms="true" />
 		<!-- This is used as a facet and in the mlt handler -->
-		<field name="awards_facet" type="unchanged_string" indexed="true" stored="false" multiValued="true" docValues="true" termVectors="true"/>
+		<field name="awards_facet" type="unchanged_string" indexed="true" stored="false" multiValued="true" docValues="true" />
 		<!-- This is returned and used as a facet -->
-		<field name="lexile_score" type="integer" indexed="true" stored="true" multiValued="false" default="-1" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<field name="lexile_score" type="integer" indexed="true" stored="false" multiValued="false" default="-1" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 		<!-- This is returned and used as a facet -->
-		<field name="lexile_code" type="unchanged_string" indexed="true" stored="true" multiValued="false" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<field name="lexile_code" type="unchanged_string" indexed="true" stored="false" multiValued="false" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 		<!-- This is returned and used as a facet -->
-		<field name="fountas_pinnell" type="unchanged_string" indexed="true" stored="true" multiValued="false" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<field name="fountas_pinnell" type="unchanged_string" indexed="true" stored="false" multiValued="false" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 		<!-- This is returned, used as a facet, and in the mlt handler -->
-		<field name="accelerated_reader_interest_level" type="unchanged_string" indexed="true" stored="true" multiValued="false" docValues="true" termVectors="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<field name="accelerated_reader_interest_level" type="unchanged_string" indexed="true" stored="false" multiValued="false" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 		<!-- This is returned and used as a facet -->
-		<field name="accelerated_reader_reading_level" type="float" indexed="true" stored="true" multiValued="false" default="0" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<field name="accelerated_reader_reading_level" type="float" indexed="true" stored="false" multiValued="false" default="0" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 		<!-- This is returned and used as a facet -->
-		<field name="accelerated_reader_point_value" type="float" indexed="true" stored="true" multiValued="false" default="0" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<field name="accelerated_reader_point_value" type="float" indexed="true" stored="false" multiValued="false" default="0" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 
 		<!-- Identifiers -->
 		<!-- This is returned -->
@@ -449,10 +444,10 @@ TODO:
 		<!-- End user rating for a work 2.5 if not set -->
 		<field name="rating" type="float" indexed="true" stored="false" multiValued="false" default="2.5" omitNorms="true" omitTermFreqAndPositions="true"/>
 		<!-- This is used as a facet -->
-		<field name="rating_facet" type="unchanged_string" indexed="true" stored="false" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<field name="rating_facet" type="unchanged_string" indexed="false" stored="false" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 
 		<!-- Custom facets -->
-		<dynamicField name="custom_facet_*" type="unchanged_string" indexed="true" stored="false" multiValued="true" docValues="true"/>
+		<dynamicField name="custom_facet_*" type="unchanged_string" indexed="false" stored="false" multiValued="true" docValues="true"/>
 
 		<!-- spelling -->
 		<field name="spelling" type="textSpelling" indexed="true" stored="false" multiValued="true"/>
@@ -469,6 +464,7 @@ TODO:
 		<!-- Edition -->
 		<!-- This contains information about scope, format, format category, availability -->
 		<field name="edition_info" type="unchanged_string" indexed="true" stored="false" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<!-- This is used for Context Filter Query when loading suggestions -->
 		<field name="suggestions_context_filter" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 
 		<!-- Boosts -->

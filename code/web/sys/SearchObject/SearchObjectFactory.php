@@ -26,6 +26,9 @@ class SearchObjectFactory {
 			if ($systemVariables->searchVersion == 2) {
 				require_once ROOT_DIR . '/sys/SearchObject/GroupedWorkSearcher2.php';
 				return new SearchObject_GroupedWorkSearcher2();
+			}else if ($systemVariables->searchVersion == 3) {
+				require_once ROOT_DIR . '/sys/SearchObject/GroupedWorkSearcher3.php';
+				return new SearchObject_GroupedWorkSearcher3();
 			}
 		} else {
 			require_once $path;
@@ -89,6 +92,9 @@ class SearchObjectFactory {
 				if ($systemVariables->searchVersion == 2) {
 					require_once ROOT_DIR . '/sys/SearchObject/GroupedWorkSearcher2.php';
 					return new SearchObject_GroupedWorkSearcher2();
+				}elseif ($systemVariables->searchVersion == 3) {
+					require_once ROOT_DIR . '/sys/SearchObject/GroupedWorkSearcher3.php';
+					return new SearchObject_GroupedWorkSearcher3();
 				}
 				break;
 		}
