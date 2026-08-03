@@ -13459,7 +13459,6 @@ AspenDiscovery.GroupedWork = (function(){
 
 			document.getElementById('selectedEditionOption').value = value;
 
-			// Preserve existing behavior that ran on the select's onchange
 			AspenDiscovery.GroupedWork.showEditionSwiper();
 		},
 		showEditionSwiper: function () {
@@ -16701,7 +16700,7 @@ AspenDiscovery.Record = (function () {
 			$('input[name="hyperholdRecord[]"]:checked').each(function () {
 				selected.push($(this).val());
 			});
-			
+
 			const pickupBranch = $('#hyperholdPickupBranch').val();
 
 			const params = {
@@ -18537,17 +18536,12 @@ AspenDiscovery.WebBuilder = function () {
 			});
 		},
 
-		getWebResource(id, fromPlacard = false, existingTab = null) {
+		getWebResource(id, fromPlacard = false) {
 			const url = `${Globals.path}/WebBuilder/AJAX`;
-			const params = { method: "getWebResource", resourceId: id };
-
-			// Open the tab synchronously on the ORIGINAL click, while we still have
-			// a user gesture. On the retry-after-login call we reuse the same tab
-			// instead of opening a new one (which would be blocked by most browsers).
-			let newTab = existingTab;
-			if (newTab === null) {
-				newTab = window.open("", '_blank');
-			}
+			const params = {
+				method: "getWebResource",
+				resourceId: id
+			};
 
 			$.getJSON(url, params, (data) => {
 				const { requireLogin, canView, openInNewTab, url: resourceUrl, userNoAccessTitle, userNoAccessMessage } = data;
@@ -18556,14 +18550,19 @@ AspenDiscovery.WebBuilder = function () {
 					if (openInNewTab) {
 						window.open(resourceUrl, '_blank');
 					} else {
-						if (newTab) newTab.close(); // we speculatively opened one but don't need it
 						location.assign(resourceUrl);
 					}
 				};
 
 				const trackUsage = (authType) => {
-					const trackParams = { method: "trackWebResourceUsage", id, authType };
-					if (fromPlacard) trackParams.fromPlacard = 1;
+					const trackParams = {
+						method: "trackWebResourceUsage",
+						id,
+						authType
+					};
+					if (fromPlacard) {
+						trackParams.fromPlacard = 1;
+					}
 					$.getJSON(url, trackParams, () => openResource());
 				};
 
@@ -18571,7 +18570,6 @@ AspenDiscovery.WebBuilder = function () {
 					if (Globals.loggedIn && canView) {
 						trackUsage(Globals.loggedIn ? "user" : "library");
 					} else if (Globals.loggedIn && !canView) {
-						if (newTab) newTab.close();
 						AspenDiscovery.showMessage(userNoAccessTitle, userNoAccessMessage);
 					} else {
 						if (openInNewTab) {
@@ -18583,10 +18581,7 @@ AspenDiscovery.WebBuilder = function () {
 				} else {
 					trackUsage("none");
 				}
-			}).fail(() => {
-				if (newTab) newTab.close();
-				AspenDiscovery.ajaxFail();
-			});
+			}).fail(AspenDiscovery.ajaxFail);
 
 			return false;
 		},
@@ -18619,9 +18614,7 @@ AspenDiscovery.WebBuilder = function () {
 						location.assign(resourceUrl);
 					}
 				});
-			}).fail(() => {
-				AspenDiscovery.ajaxFail();
-			});
+			}).fail(AspenDiscovery.ajaxFail);
 		},
 
 		placardClickHandler: function(placardId) {
