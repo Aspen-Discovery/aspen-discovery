@@ -161,6 +161,22 @@
 			},
 			"{/literal}{translate text="Please check your input." isAdminFacing=true inAttribute=true}{literal}"
 		);
+		$.validator.addMethod(
+			"validRegex",
+			function (value, element) {
+				if (this.optional(element)) {
+					return true;
+				}
+				try {
+					new RegExp(value);
+				} catch (e) {
+					return false;
+				}
+				return true;
+			},
+			"{/literal}{translate text="This is not a valid regular expression." isAdminFacing=true inAttribute=true}{literal}"
+		);
+		$.validator.addClassRules("regex-field", {validRegex: true});
 		$(() => {
 			let objectEditorObject = $('#objectEditor-{/literal}{if !empty($id)}{$id}{else}-1{/if}{literal}');
 
