@@ -2227,6 +2227,47 @@ ul.account-submenu {
   margin-right: 60px !important;
 }
 
+body.fullWidthContent .container-fluid {
+  margin-right: auto;
+  margin-left: auto;
+}
+
+body.fullWidthContent .container {
+  margin-right: auto;
+  margin-left: auto;
+}
+
+body.fullWidthContent #more-details-accordion {
+  margin-right: auto;
+  margin-left: auto;
+}
+
+body.fullWidthContent #library-barcode {
+  text-align: right;
+  padding-right: 100px;
+}
+
+body.fullWidthContent .exploreMoreBar {
+  margin-right: auto;
+  margin-left: auto;
+}
+
+body.fullWidthContent #pin,
+body.fullWidthContent #pin1,
+body.fullWidthContent #pin2,
+body.fullWidthContent #newUsername,
+body.fullWidthContent #overdriveEmail {
+  margin-right: 30px;
+}
+
+body.fullWidthContent .result-label {
+  float: right !important;
+  clear: right !important;
+  text-align: right !important;
+  margin-left: 10px !important;
+  padding-left: 0 !important;
+}
+
 .swiper-button-next,
 .swiper-button-prev {
   padding-right: 1em;
@@ -2615,10 +2656,6 @@ td[data-entry-id]::after {
 
 .horizDisplayShowEditionsRow .horiz-line-right {
   margin-right: 16px;
-}
-
-.horizDisplayShelfLocations .col-tn-4:last-child {
-  padding-left: 0;
 }
 
 #multiple-variations-column.formatDisplayHorizontal .horizDisplayShelfLocations .col-tn-4:first-child {
@@ -3650,6 +3687,16 @@ input[type="radio"][name="colorScheme"]:checked + label::after {
 @media (min-width: 768px) {
 #side-bar.collapsed + #main-content-with-sidebar .breadcrumbs {
   margin-right: 60px !important;
+}
+}
+
+@media screen and (min-width: 768px) {
+body.fullWidthContent .result-label {
+  float: right !important;
+  clear: right !important;
+  text-align: right !important;
+  margin-left: 10px !important;
+  padding-left: 0 !important;
 }
 }
 

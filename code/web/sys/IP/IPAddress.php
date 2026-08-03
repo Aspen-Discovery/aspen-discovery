@@ -535,29 +535,10 @@ class IPAddress extends DataObject {
 	 */
 	public static function getClientIP(): mixed
 	{
-		if (isset($_SERVER["HTTP_CLIENT_IP"])) {
-			$ip = $_SERVER["HTTP_CLIENT_IP"];
-		} elseif (isset($_SERVER["HTTP_X_FORWARDED_FOR"])) {
-			$ip = $_SERVER["HTTP_X_FORWARDED_FOR"];
-		} elseif (isset($_SERVER["HTTP_X_FORWARDED"])) {
-			$ip = $_SERVER["HTTP_X_FORWARDED"];
-		} elseif (isset($_SERVER["HTTP_FORWARDED_FOR"])) {
-			$ip = $_SERVER["HTTP_FORWARDED_FOR"];
-		} elseif (isset($_SERVER["HTTP_FORWARDED"])) {
-			$ip = $_SERVER["HTTP_FORWARDED"];
-		} elseif (isset($_SERVER['REMOTE_HOST']) && strlen($_SERVER['REMOTE_HOST']) > 0) {
-			$ip = $_SERVER['REMOTE_HOST'];
-		} elseif (isset($_SERVER['REMOTE_ADDR']) && strlen($_SERVER['REMOTE_ADDR']) > 0) {
+		if (isset($_SERVER['REMOTE_ADDR']) && strlen($_SERVER['REMOTE_ADDR']) > 0) {
 			$ip = $_SERVER['REMOTE_ADDR'];
 		} else {
 			$ip = '';
-		}
-
-		// Handle X-Forwarded-For with multiple IPs.
-		if (str_contains($ip, ',')) {
-			// X-Forwarded-For may contain multiple IPs; take the first one (client).
-			$ipList = explode(',', $ip);
-			$ip = trim($ipList[0]);
 		}
 
 		// Convert IPv6 localhost to IPv4 localhost for backward compatibility.

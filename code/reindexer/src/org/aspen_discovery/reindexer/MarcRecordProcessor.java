@@ -479,7 +479,8 @@ abstract class MarcRecordProcessor {
 		List<DataField> upcFields = MarcUtil.getDataFields(record, 24);
 		for (DataField upcField : upcFields){
 			if (upcField.getSubfield('a') != null){
-				groupedWork.addUpc(upcField.getSubfield('a').getData());
+				String upc = upcField.getSubfield('a').getData().trim().replaceAll("[^0-9]+$", "");
+				groupedWork.addUpc(upc);
 			}
 		}
 
@@ -1636,7 +1637,11 @@ abstract class MarcRecordProcessor {
 			}
 			StringBuilder roles = MarcUtil.getSpecifiedSubfieldsAsString(contributorField, "e4", ",");
 			if (roles.length() > 0){
-				contributor.append("|").append(roles.toString().replaceAll(",,", ","));
+				if (roles.toString().contains("nrt")) {
+					contributor.append("|Narrator");
+				} else {
+					contributor.append("|").append(roles.toString().replaceAll(",,", ","));
+				}
 			}
 			contributors.add(contributor.toString());
 		}
