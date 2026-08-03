@@ -623,4 +623,8 @@ class SearchObject_CloudSourceSearcher extends SearchObject_BaseSearcher{
 	}
 
 
+	public function getAdvancedSearchIndexes() : array {
+		// TODO: Implement getAdvancedSearchIndexes() method.
+		return [];
+	}
 }

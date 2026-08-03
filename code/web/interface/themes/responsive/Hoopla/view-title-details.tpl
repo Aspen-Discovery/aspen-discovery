@@ -10,6 +10,37 @@
 		</div>
 	{/if}
 
+	{if $recordDriver->getDetailedContributors()}
+		<div class="row">
+			<div class="result-label col-sm-4 col-xs-12">{translate text='Contributors' isPublicFacing=true}</div>
+			<div class="result-value col-sm-8 col-xs-12">
+				{foreach from=$recordDriver->getDetailedContributors() item=contributor name=loop}
+				{if $smarty.foreach.loop.index == 5}
+				<div id="showAdditionalContributorsLink">
+					<a onclick="AspenDiscovery.Record.moreContributors(); return false;" href="#">{translate text='more' isPublicFacing=true} ...</a>
+				</div>
+				{*create hidden div*}
+				<div id="additionalContributors" style="display:none">
+					{/if}
+					<a href='/Author/Home?author="{$contributor.name|trim|escape:"url"}"'>{$contributor.name|escape}</a>
+					{if !empty($contributor.role)}
+						&nbsp;{implode subject=$contributor.role glue=", " translate=true isPublicFacing=true}
+					{/if}
+					{if !empty($contributor.title)}
+						&nbsp;<a href="/Search/Results?lookfor={$contributor.title}&amp;searchIndex=Title">{$contributor.title}</a>
+					{/if}
+					<br/>
+					{/foreach}
+					{if $smarty.foreach.loop.index >= 5}
+					<div>
+						<a href="#" onclick="AspenDiscovery.Record.lessContributors(); return false;">{translate text='less' isPublicFacing=true} ...</a>
+					</div>
+				</div>{* closes hidden div *}
+				{/if}
+			</div>
+		</div>
+	{/if}
+
 	{if !empty($showSeries)}
 		<div class="series row" id="seriesPlaceholder{$recordDriver->getPermanentId()}"></div>
 	{/if}

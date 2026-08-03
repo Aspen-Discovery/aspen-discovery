@@ -239,4 +239,9 @@ class SearchObject_CourseReservesSearcher extends SearchObject_SolrSearcher {
 	public function getDefaultIndex() {
 		return 'CourseReservesKeyword';
 	}
+
+	public function getAdvancedSearchIndexes() : array {
+		// TODO: Implement getAdvancedSearchIndexes() method.
+		return [];
+	}
 }
