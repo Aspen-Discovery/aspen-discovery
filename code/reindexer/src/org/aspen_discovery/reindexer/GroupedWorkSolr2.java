@@ -106,7 +106,6 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 			doc.addField("physical", physicals);
 			doc.addField("duration", durations);
 			doc.addField("edition", editions);
-			doc.addField("dateSpan", dateSpans);
 			//series.values().removeAll(GroupedWorkIndexer.hideSeries);
 			//Get series names from the series
 			SeriesInfo[] sortedSeriesWithVolume = series.values().stream()
@@ -199,7 +198,6 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 			if (this.isDebugEnabled()) {this.addDebugMessage("Final target audience is " + targetAudience, 1);}
 			if (this.isDebugEnabled()) {this.addDebugMessage("Final full target audience is " + targetAudienceFull, 1);}
 			doc.addField("target_audience", targetAudience);
-			doc.addField("system_list", systemLists);
 			//Date added to catalog
 			Date dateAdded = getDateAdded();
 			doc.addField("date_added", dateAdded);

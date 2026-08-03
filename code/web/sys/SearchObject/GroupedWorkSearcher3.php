@@ -357,25 +357,12 @@ class SearchObject_GroupedWorkSearcher3 extends SearchObject_AbstractGroupedWork
 			}
 
 			$this->facetOptions["f.series_facet.facet.mincount"] = 2;
-			$this->facetOptions["f.target_audience_full.facet.method"] = 'enum';
-			$this->facetOptions["f.target_audience.facet.method"] = 'enum';
-			$this->facetOptions["f.literary_form_full.facet.method"] = 'enum';
-			$this->facetOptions["f.literary_form.facet.method"] = 'enum';
-			$this->facetOptions["f.lexile_code.facet.method"] = 'enum';
-			$this->facetOptions["f.content_rating.facet.method"] = 'enum';
-			$this->facetOptions["f.rating_facet.facet.method"] = 'enum';
-			$this->facetOptions["f.format_category.facet.method"] = 'enum';
-			$this->facetOptions["f.format.facet.method"] = 'enum';
 			$this->setPerFacetLimits();
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWorkFacet.php';
 			$this->facetOptions["f.format.facet.limit"] = GroupedWorkFacet::calculateDynamicFacetLimit('format');
 			$numLocations = GroupedWorkFacet::calculateDynamicFacetLimit('available_at');
 			$this->facetOptions["f.available_at.facet.limit"] = $numLocations;
 			$this->facetOptions["f.owning_location.facet.limit"] = $numLocations;
-			$this->facetOptions["f.availability_toggle.facet.method"] = 'enum';
-			$this->facetOptions["f.local_time_since_added_$solrScope.facet.method"] = 'enum';
-			$this->facetOptions["f.owning_library.facet.method"] = 'enum';
-			$this->facetOptions["f.owning_location.facet.method"] = 'enum';
 			foreach (SearchObject_GroupedWorkSearcher3::$scopedFields as $facetName) {
 				$this->facetOptions["f.$facetName.facet.prefix"] = "$solrScope#";
 			}
