@@ -8,7 +8,7 @@ class GroupedWorksSolrConnector3 extends Solr
 {
 	function __construct($host, $index = '')
 	{
-		parent::__construct($host, 'grouped_works_v2');
+		parent::__construct($host, 'grouped_works_v3');
 	}
 
 	function getSearchSpecs()
