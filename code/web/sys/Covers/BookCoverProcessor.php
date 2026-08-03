@@ -652,6 +652,10 @@ class BookCoverProcessor {
 				}
 			}
 
+			if ($this->tryBds()) {
+				return true;
+			}
+
 			require_once ROOT_DIR . '/sys/Enrichment/CoceServerSetting.php';
 			$coceServerSettings = new CoceServerSetting();
 			if ($coceServerSettings->find(true)) {
