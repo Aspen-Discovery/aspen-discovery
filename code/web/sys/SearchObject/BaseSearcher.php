@@ -378,7 +378,7 @@ abstract class SearchObject_BaseSearcher {
 					}else{
 						$display = translate(['text'=>'Between %1% and %2%', 1=>$startDate, 2=>$endDate, 'isPublicFacing'=>true]);
 					}
-				} elseif ($field == "accelerated_reader_point_value" || $field == "accelerated_reader_reading_level" || $field == "lexile_score"){
+				} elseif ($field == "accelerated_reader_point_value" || $field == "accelerated_reader_reading_level" || $field == "lexile_score" || $field == "publishDateSort"){
 					$display = translate(['text' => $facetLabel, 'isPublicFacing' => true])  . ' ' . $value ;
 				} elseif ($field == 'duration') {
 					//Update the Display value to be in hours rather than minutes
@@ -1481,6 +1481,8 @@ abstract class SearchObject_BaseSearcher {
 	}
 
 	public abstract function getSearchIndexes();
+
+	public abstract function getAdvancedSearchIndexes();
 
 	public function getFilters() {
 		return $this->filterList;

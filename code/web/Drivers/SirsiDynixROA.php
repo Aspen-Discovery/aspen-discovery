@@ -787,7 +787,7 @@ class SirsiDynixROA extends AbstractIlsDriver {
 
 									$matchId = null;
 									if ($subdivisionInfo['municipality_name'] != '') {
-										$matchId = $selfRegistrationForm->getMunicipalitySettingsByNameAndType($subdivisionInfo['municipality_name'], $subdivisionInfo['municipality_type']);
+										$matchId = $selfRegistrationForm->getMunicipalitySettingsByNameAndType($subdivisionInfo['municipality_name'], $subdivisionInfo['municipality_type'], $subdivisionInfo['county_name']);
 									}
 									if (!$matchId) {
 										$matchId = $selfRegistrationForm->getMunicipalitySettingsByNameAndType('other');
@@ -1450,18 +1450,20 @@ class SirsiDynixROA extends AbstractIlsDriver {
 		}else{
 			//Determine which items to place holds on
 			require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
-			$itemsToHold = [];
 
 			$marcRecordDriver = RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $recordId);
 			$relatedRecord = $marcRecordDriver->getRelatedRecord();
 			//Get hold groups for the user so we can prefer
 			$holdGroups = $this->getHoldGroupsForUser($patron);
 			$itemsForRecord = $relatedRecord->getItems();
+			//Randomize the items so one library does not get all the holds
+			shuffle($itemsForRecord);
+
 			$holdableItemsAtHomeLocation = [];
 			$holdableItemsInHoldGroup = [];
 			$remainingHoldableItems = [];
 			foreach ($itemsForRecord as $item) {
-				if ($item->holdable) {
+				if ($item->holdable && $item->available) {
 					if ($item->atUserHomeLocation) {
 						$holdableItemsAtHomeLocation[] = $item->itemId;
 					}else{
@@ -1482,23 +1484,56 @@ class SirsiDynixROA extends AbstractIlsDriver {
 				}
 			}
 			$itemsToHold = array_slice($holdableItemsAtHomeLocation, 0, $numberOfCopies);
-			if (count($itemsToHold) < $numberOfCopies) {
-				$itemsToHold = array_merge($itemsToHold, array_slice($holdableItemsInHoldGroup, 0, $numberOfCopies - count($itemsToHold)));
-				if (count($itemsToHold) < $numberOfCopies) {
-					$itemsToHold = array_merge($itemsToHold, array_slice($remainingHoldableItems, 0, $numberOfCopies - count($itemsToHold)));
-				}
-			}
+			$itemsToHold = array_merge($itemsToHold, $holdableItemsInHoldGroup);
+			$itemsToHold = array_merge($itemsToHold, $remainingHoldableItems);
 			$holdResults = [];
+			$numHoldsPlaced = 0;
+			$webServiceURL = $this->getWebServiceURL();
+			$staffSessionToken = $this->getStaffSessionToken();
 			foreach ($itemsToHold as $itemId) {
-
+				//Check that the item is available
+				$lookupItemResponse = $this->getWebServiceResponse('lookupItem', $webServiceURL . '/catalog/item/barcode/' . $itemId, null, $staffSessionToken);
+				//Make sure the item is not currently checked out or on the hold shelf
+				if (in_array($lookupItemResponse->fields->currentLocation->key, ['CHECKEDOUT', 'HOLDS'])) {
+					continue;
+				}
+				//Check for holds on the item (this query isn't working now, but would be nice to know if another item level hold has been placed).
+				//$holdsForItem = $this->getWebServiceResponse('holdsForItem', $webServiceURL . '/circulation/holdRecord/query?where=EQ(item.arcode," . $itemId . ")', null, $staffSessionToken);
 				$holdResult = $this->placeSirsiHold($patron, $recordId, $itemId, false, $pickupBranch, $cancelDate);
 				if ($holdResult['success'] === false) {
-					return $holdResult;
+					//Just skip this and move on to the next
+				}else {
+					$numHoldsPlaced++;
 				}
+				//Sleep for 20ms
+				usleep(20 * 1000);
 				$holdResults[] = $holdResult;
+				if ($numHoldsPlaced == $numberOfCopies) {
+					break;
+				}
 			}
-			//Just return the first result since it's representative of all the holds
-			return reset($holdResults);
+
+
+			//Update the first result since it's representative of all the holds
+			$firstResult = reset($holdResults);
+			if ($numHoldsPlaced === 0 || $numHoldsPlaced < $numberOfCopies) {
+				$firstResult['success'] = false;
+			}
+			if ($numHoldsPlaced < $numberOfCopies) {
+				$firstResult['message'] = translate([
+					'text' => "Placed %1% of %2% holds for you.",
+					'1' => $numHoldsPlaced,
+					'2' => $numberOfCopies,
+					'isPublicFacing' => true,
+				]);
+			}else{
+				$firstResult['message'] = translate([
+					'text' => "Placed %1% holds for you.",
+					'1' => $numHoldsPlaced,
+					'isPublicFacing' => true,
+				]);
+			}
+			return $firstResult;
 		}
 	}
 
@@ -4013,6 +4048,30 @@ class SirsiDynixROA extends AbstractIlsDriver {
 							'text' => 'This title is on hold for another user or is not available yet and cannot be checked out.',
 							'isPublicFacing' => true,
 						]);
+					}
+				} elseif ($currentItemLocation == "INTRANSIT") {
+					$params = [
+						'itemBarcode' => $barcode
+					];
+					$additionalHeaders = [
+						'SD-Preferred-Role: STAFF',
+						'SD-Prompt-Return: CIRC_TRANSIT_OVRCD/Y;CKOBLOCKS/' . $this->accountProfile->overrideCode
+					];
+
+					$this->getWebServiceResponse('unTransit', $webServiceURL . '/circulation/transit/untransit', $params, $sessionToken, 'POST', $additionalHeaders);
+        }
+				//unblock user from checking out when they have another hold ready for pickup
+				if ($currentItemLocation != 'HOLDS' && !empty($patronHoldsAndCheckouts->fields->holdRecordList)) {
+					//Get holds for the patron
+					if ($patronHoldsAndCheckouts && isset($patronHoldsAndCheckouts->fields)) {
+						foreach ($patronHoldsAndCheckouts->fields->holdRecordList as $hold) {
+							if (isset($hold->fields->status)) {
+								$holdStatus = strtolower($hold->fields->status);
+								if ($holdStatus == "being_held") {
+									$addOverrideCode = true;
+								}
+							}
+						}
 					}
 				}
 			}

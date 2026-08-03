@@ -64,7 +64,11 @@ class LocalHopEventRecordDriver extends IndexRecordDriver
 		global $interface;
 
 		$interface->assign('id', $this->getId());
-		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('medium'));
+		if (!empty($this->getEventCoverUrl())){
+			$interface->assign('bookCoverUrl', $this->getEventCoverUrl());
+		} else {
+			$interface->assign('bookCoverUrl', $this->getBookcoverUrl('medium'));
+		}
 		$interface->assign('eventUrl', $this->getLinkUrl());
 		$interface->assign('title', $this->getTitle());
 		if (isset($this->fields['description'])) {
@@ -275,9 +279,8 @@ class LocalHopEventRecordDriver extends IndexRecordDriver
 
 	function getEventCoverUrl()
 	{
-		$decodedData = $this->getEventObject()->getDecodedData();
-		if (!empty($decodedData->image->url)) {
-			return $decodedData->image->url;
+		if (isset($this->fields['image_url'])) {
+			return $this->fields['image_url'];
 		}
 		return null;
 	}

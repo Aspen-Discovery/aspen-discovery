@@ -1025,4 +1025,9 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 		$libKeyDriver = new LibKeyDriver();
 		return $libKeyDriver->getLibKeyResult($uniqueIdentifier);
 	}
+
+	public function getAdvancedSearchIndexes() : array {
+		// TODO: Implement getAdvancedSearchIndexes() method.
+		return [];
+	}
 }
