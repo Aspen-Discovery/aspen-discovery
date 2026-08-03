@@ -1127,6 +1127,18 @@ class BookCoverProcessor {
 		return false;
 	}
 
+	private function tryBds() : bool {
+		global $library;
+		require_once ROOT_DIR . '/sys/Enrichment/BDSSetting.php';
+		$settings = new BDSSetting();
+		$settings->id = $library->bdsSettingId;
+		$configured = $settings->find(true) && $settings->enabled;
+		if (!$configured) {
+			return false;
+		}
+		return $this->bds($settings);
+	}
+
 	function bds(BDSSetting $settings) : bool {
 		$hasRequiredInputs = !empty($this->isn) && !empty($settings->dbmCode);
 		if (!$hasRequiredInputs) {
