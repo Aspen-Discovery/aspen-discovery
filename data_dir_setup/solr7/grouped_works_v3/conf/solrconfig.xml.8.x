@@ -1035,12 +1035,13 @@
   <searchComponent name="suggest" class="solr.SuggestComponent">
     <lst name="suggester">
       <str name="name">title_suggestions</str>
-      <str name="lookupImpl">FuzzyLookupFactory</str>
+      <str name="lookupImpl">BlendedInfixLookupFactory</str>
       <str name="dictionaryImpl">DocumentDictionaryFactory</str>
       <str name="field">title_suggestions</str>
       <str name="weightField">popularity</str>
+      <str name="contextField">suggestions_context_filter</str>
       <str name="suggestAnalyzerFieldType">textSuggest</str>
-      <str name="unicodeAware">true</str>
+      <str name="blenderType">position_linear</str>
       <str name="buildOnStartup">false</str>
     </lst>
     <lst name="suggester">
@@ -1050,17 +1051,19 @@
       <str name="dictionaryImpl">DocumentDictionaryFactory</str>
       <str name="field">title_suggestions</str>
       <str name="weightField">popularity</str>
+      <str name="contextField">suggestions_context_filter</str>
       <str name="suggestAnalyzerFieldType">textSuggest</str>
       <str name="buildOnStartup">false</str>
     </lst>
     <lst name="suggester">
       <str name="name">author_suggestions</str>
-      <str name="lookupImpl">FuzzyLookupFactory</str>
+      <str name="lookupImpl">BlendedInfixLookupFactory</str>
       <str name="dictionaryImpl">DocumentDictionaryFactory</str>
       <str name="field">author_suggestions</str>
       <str name="weightField">popularity</str>
+      <str name="contextField">suggestions_context_filter</str>
       <str name="suggestAnalyzerFieldType">textSuggest</str>
-      <str name="unicodeAware">true</str>
+      <str name="blenderType">position_linear</str>
       <str name="buildOnStartup">false</str>
     </lst>
     <lst name="suggester">
@@ -1070,17 +1073,19 @@
       <str name="dictionaryImpl">DocumentDictionaryFactory</str>
       <str name="field">author_suggestions</str>
       <str name="weightField">popularity</str>
+      <str name="contextField">suggestions_context_filter</str>
       <str name="suggestAnalyzerFieldType">textSuggest</str>
       <str name="buildOnStartup">false</str>
     </lst>
     <lst name="suggester">
       <str name="name">subject_suggestions</str>
-      <str name="lookupImpl">FuzzyLookupFactory</str>
+      <str name="lookupImpl">BlendedInfixLookupFactory</str>
       <str name="dictionaryImpl">DocumentDictionaryFactory</str>
       <str name="field">subject_suggestions</str>
       <str name="weightField">popularity</str>
+      <str name="contextField">suggestions_context_filter</str>
       <str name="suggestAnalyzerFieldType">textSuggest</str>
-      <str name="unicodeAware">true</str>
+      <str name="blenderType">position_linear</str>
       <str name="buildOnStartup">false</str>
     </lst>
     <lst name="suggester">
@@ -1090,6 +1095,7 @@
       <str name="dictionaryImpl">DocumentDictionaryFactory</str>
       <str name="field">subject_suggestions</str>
       <str name="weightField">popularity</str>
+      <str name="contextField">suggestions_context_filter</str>
       <str name="suggestAnalyzerFieldType">textSuggest</str>
       <str name="buildOnStartup">false</str>
     </lst>
