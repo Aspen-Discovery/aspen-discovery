@@ -249,6 +249,7 @@ class Library extends DataObject {
 	public $novelistSettingId;
 	public $syndeticsSettingId;
 	public $loralSettingId;
+	public $bdsSettingId;
 	public $allowAutomaticSearchReplacements;
 	public $enableSearchInterpreter;
 
