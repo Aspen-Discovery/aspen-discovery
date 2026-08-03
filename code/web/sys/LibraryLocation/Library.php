@@ -705,6 +705,17 @@ class Library extends DataObject {
 			$availableLoralSettings[$loral->id] = $loral->name;
 		}
 
+		require_once ROOT_DIR . '/sys/Enrichment/BDSSetting.php';
+		$bds = new BDSSetting();
+		$availableBdsSettings = [
+			'-1' => 'None',
+		];
+		$bds->orderBy('name');
+		$bds->find();
+		while ($bds->fetch()) {
+			$availableBdsSettings[$bds->id] = $bds->name;
+		}
+
 		$materialsRequestOptions = [
 			0 => 'None',
 			1 => 'Aspen Request System',
