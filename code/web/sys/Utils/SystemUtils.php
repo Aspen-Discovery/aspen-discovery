@@ -23,6 +23,10 @@ class SystemUtils {
 		return $max_size;
 	}
 
+	static function file_upload_max_size_mb(): float {
+		return self::file_upload_max_size() / (1024 * 1024);
+	}
+
 	static function parse_size($size) {
 		$unit = preg_replace('/[^bkmgtpezy]/i', '', $size); // Remove the non-unit characters from the size.
 		/** @noinspection RegExpRedundantEscape */
@@ -33,6 +37,45 @@ class SystemUtils {
 		} else {
 			return round($size);
 		}
+	}
+
+	static function getUploadErrorMessage(int $uploadError): string {
+		return translate(match ($uploadError) {
+			UPLOAD_ERR_FORM_SIZE => [
+				'text' => 'The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form.',
+				'isAdminFacing' => true,
+			],
+			UPLOAD_ERR_INI_SIZE => [
+				'text' => 'The uploaded file exceeds the maximum file size of %1%.',
+				1 => round(self::file_upload_max_size_mb(), 2) . ' MB',
+				'isAdminFacing' => true,
+			],
+			UPLOAD_ERR_PARTIAL => [
+				'text' => 'The file was only partially uploaded. Please try again.',
+				'isAdminFacing' => true,
+			],
+			UPLOAD_ERR_NO_FILE => [
+				'text' => 'No file was uploaded.',
+				'isAdminFacing' => true,
+			],
+			UPLOAD_ERR_NO_TMP_DIR => [
+				'text' => 'The server is missing a temporary folder for uploads.',
+				'isAdminFacing' => true,
+			],
+			UPLOAD_ERR_CANT_WRITE => [
+				'text' => 'Failed to write the uploaded file to disk.',
+				'isAdminFacing' => true,
+			],
+			UPLOAD_ERR_EXTENSION => [
+				'text' => 'A PHP extension blocked the upload.',
+				'isAdminFacing' => true,
+			],
+			default => [
+				'text' => 'An unknown error occurred during upload (code %1%).',
+				1 => $uploadError,
+				'isAdminFacing' => true,
+			],
+		});
 	}
 
 	static function recursive_rmdir($dir): bool {
@@ -135,6 +178,59 @@ class SystemUtils {
 		}
 
 		return false;
+	}
+
+	static function geocodeAddress($address, $apiKey): ?array {
+		$url = 'https://maps.googleapis.com/maps/api/geocode/json?address=' . $address . '&key=' . $apiKey;
+
+		// fetch google geocode data
+		$curl = new CurlWrapper();
+		$response = $curl->curlGetPage($url);
+		$data = json_decode($response, true);
+		$curl->close_curl();
+
+		if (isset($data['status']) && $data['status'] === 'OK') {
+			return $data;
+		}
+
+		return null;
+	}
+
+	static function getCensusCountySubdivision($latitude, $longitude): ?array {
+		$url = "https://geocoding.geo.census.gov/geocoder/geographies/coordinates?" . http_build_query([
+				'x' => $longitude,
+				'y' => $latitude,
+				'benchmark' => 'Public_AR_Current',
+				'vintage' => 'Current_Current',
+				'layers' => 'County Subdivisions,Counties',
+				'format' => 'json',
+			]);
+
+		$response = json_decode(file_get_contents($url), true);
+		$geographies = $response['result']['geographies'] ?? [];
+
+		$subdivision = $geographies['County Subdivisions'][0] ?? null;
+		$county = $geographies['Counties'][0] ?? null;
+
+		if (!$subdivision || !$county) {
+			return null;
+		}
+
+		preg_match('/^(.*)\s+(city|town|village)$/i', trim($subdivision['NAME']), $matches);
+
+		if (!$matches) {
+			$municipalityName = $subdivision['NAME'];
+			$municipalityType = null;
+		} else {
+			$municipalityName = trim($matches[1]);
+			$municipalityType = strtolower($matches[2]);
+		}
+
+		return [
+			'county_name' => $county['BASENAME'],
+			'municipality_name' => $municipalityName,
+			'municipality_type' => $municipalityType,
+		];
 	}
 
 	static function startBackgroundProcess($processName, $additionalArguments = null) : array {

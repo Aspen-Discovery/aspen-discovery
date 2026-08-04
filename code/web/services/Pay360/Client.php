@@ -33,13 +33,14 @@ class Pay360_Client  {
 		$this->_setDigest();
 	}
 
-	public function completeFineInIls(): void {
+	public function completeFineInIls(): bool {
 		$patron = new User;
 		$patron->id = $this->payment->userId;
 		if(!$patron->find(true)) {
-			return;
+			return false;
 		}
-		$patron->completeFinePayment($this->payment);
+		$result = $patron->completeFinePayment($this->payment);
+		return $result['success'];
 	}
 
 	public function setSettings($settingsId): void {
@@ -83,7 +84,7 @@ class Pay360_Client  {
 	}
 
 	public function setSoapClient() {
-		$this->_soapClient = new SoapClient($this->_pay360Settings->wsldUrl, ['features' => SOAP_SINGLE_ELEMENT_ARRAYS]);
+		$this->_soapClient = new SoapClient($this->_pay360Settings->wsdlUrl, ['features' => SOAP_SINGLE_ELEMENT_ARRAYS]);
 	}
 	
 	public function setTimeStamp() {
@@ -171,7 +172,12 @@ class Pay360_Client  {
 			if ($transactionStatus['status'] === 'SUCCESS') {
 				$this->payment->message = 'This payment was successful.';
 				$this->payment->pay360TransactionStateMessage = 'Payment successful.';
-				$this->completeFineInIls();
+				if (!$this->completeFineInIls()) {
+					$this->payment->error = true;
+					$this->payment->message = 'Payment was received by Pay360 but could not be applied in the ILS. Please contact your library.';
+					$this->payment->pay360TransactionStateMessage = 'Payment received but ILS update failed.';
+				}
+				$this->payment->update();
 				return false;
 			}
 
@@ -378,21 +384,8 @@ class Pay360_Client  {
 	}
 
 	private function getMinorUnitsAmount(string $totalAmount): string {
-		$numDec = strlen($totalAmount) - strpos($totalAmount, '.') - 1;
-
-		if ($numDec == 1) {
-			return str_replace('.', '', $totalAmount .= "0");
-		}
-		
-		if ( $numDec == 0 ) {
-			return str_replace('.', '', $totalAmount .= "00");
-		}
-		
-		if ( $numDec == 6 ) {
-			// Handle discrete fine item amount format
-			return str_replace(['.', '0000'], '', $totalAmount);
-		}
-
-		return str_replace('.', '', $totalAmount);
-	} 
+		$amount = (float)$totalAmount;
+		$amountInMinorUnits = (int)round($amount * 100);
+		return (string)$amountInMinorUnits;
+	}
 }

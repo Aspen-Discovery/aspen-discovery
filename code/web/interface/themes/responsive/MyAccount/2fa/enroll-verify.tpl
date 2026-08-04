@@ -20,15 +20,37 @@
 
 		<div class="row">
 			<div class="col-md-10 col-md-offset-1 text-center">
-			<h3>{translate text="Verify email" isPublicFacing=true}</h3>
-			<p>{translate text="Enter the code sent to your email to make sure everything works." isPublicFacing=true}</p>
+            {if $twoFactorMethod === 'totp'}
+				<h3>{translate text="Verify Your Authenticator App" isPublicFacing=true}</h3>
+				<p>{translate text="Enter the 6-digit code from your authenticator app to verify that it's set up correctly." isPublicFacing=true}</p>
+            {else}
+				<h3>{translate text="Verify email" isPublicFacing=true}</h3>
+				<p>{translate text="Enter the code sent to your email to make sure everything works." isPublicFacing=true}</p>
+			{/if}
 			<div class="form-group text-left">
 				<label for="code">{translate text="6-digit code" isPublicFacing=true}</label>
 				<input type="text" class="form-control" id="code" name="code" maxlength="6" spellcheck="false" autocomplete="false">
+				<script type="text/javascript">
+					{literal}
+					$(document).ready(function () {
+						$("#code").on('keydown', function (e) {
+							if (e.which === 13) {
+								{/literal}
+								AspenDiscovery.Account.verify2FA("{$mandatoryEnrollment}", "{$method}", "{$secretId}"); return false;
+								{literal}
+								e.preventDefault();
+							}
+						});
+
+					});
+					{/literal}
+				</script>
 			</div>
 			<div class="alert alert-danger" id="codeVerificationFailedPlaceholder" style="display: none;"></div>
-			<button class="btn btn-xs btn-link" style="margin-top: 2em" onclick="return AspenDiscovery.Account.new2FACode();">{translate text="Code expired? Send another" isPublicFacing=true}</button>
-			<div id="newCodeSentPlaceholder" class="alert alert-info" style="display: none;"></div>
+            {if $twoFactorMethod !== 'totp'}
+				<button class="btn btn-xs btn-link" style="margin-top: 2em" onclick="return AspenDiscovery.Account.new2FACode();">{translate text="Code expired? Send another" isPublicFacing=true}</button>
+				<div id="newCodeSentPlaceholder" class="alert alert-info" style="display: none;"></div>
+            {/if}
 			</div>
 		</div>
 	</form>

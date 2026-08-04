@@ -352,6 +352,14 @@
 							display: none;
 						}
 
+						.start-meridiem {
+							display: none;
+						}
+
+						.can-hide-end-time .start-meridiem {
+							display: inline;
+						}
+
 						.show-end-time {
 							white-space: nowrap;
 						}
@@ -359,6 +367,10 @@
 						@media (min-width: @screen-lg-min) { // Larger than landscape letter paper
 							.can-hide-end-time .end-time {
 								display: inline;
+							}
+
+							.can-hide-end-time .start-meridiem {
+								display: none;
 							}
 						}
 

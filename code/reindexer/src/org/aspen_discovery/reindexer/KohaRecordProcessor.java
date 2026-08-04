@@ -448,10 +448,6 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 			suppressed = true;
 			suppressionNotes.append("Item had no identifier, suppressing<br/>");
 		}
-		if (curItem.getSubfield('i') != null) {
-			suppressed = curItem.getSubfield('i').getData().equals("1");
-			if (suppressed) suppressionNotes.append("Item ").append(itemIdentifier).append(" subfield i set to 1<br/>");
-		}
 		if (!suppressed && curItem.getSubfield(settings.getITypeSubfield()) != null) {
 			suppressed = curItem.getSubfield(settings.getITypeSubfield()).getData().equalsIgnoreCase("ill");
 			if (suppressed) suppressionNotes.append("Item ").append(itemIdentifier).append(" iType is ILL<br/>");

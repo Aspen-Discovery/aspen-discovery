@@ -1881,7 +1881,9 @@ public class SierraExportAPIMain {
 						"/" + databaseName +
 						"?user=" + user +
 						"&password=" + password +
-						"&ssl=true&sslfactory=org.postgresql.ssl.NonValidatingFactory";
+						"&ssl=true&sslfactory=org.postgresql.ssl.NonValidatingFactory" +
+						"&connectTimeout=30" +
+						"&socketTimeout=900";
 
 				sierraInstanceInformation = new SierraInstanceInformation();
 				sierraInstanceInformation.indexingProfileName = accountProfileRS.getString("recordSource");

@@ -43,7 +43,7 @@
 			<div class="horizontalSliders"><div class="row horizontalFormatSelector">
 				<div class="col-xs-12">
 					<div class="slider-container" role="region" id="slider-{$summId|escape}">
-						<button type="button" class="slider-button slider-button-prev btn btn-editions" id="slider-prev-{$summId|escape}"><i class="fas fa-chevron-left"></i></button>
+						<button type="button" class="slider-button slider-button-prev btn btn-editions" id="slider-prev-{$summId|escape}" aria-label="{translate text="Previous Format" isPublicFacing=true inAttribute=true}"><i class="fas fa-chevron-left"></i></button>
 						<div class="slider-wrapper" role="listbox" aria-activedescendant="slide-{$summId|escape}-0">
 	                        {assign var=firstFormat value=""}
 	                        {foreach from=$relatedManifestations item=$manifestation name=manifestations}
@@ -52,12 +52,12 @@
 	                            {/if}
 								<div role="option" tabindex="0" class="slider-slide horizontal-format-button{if $smarty.foreach.manifestations.index == 0} active{/if}"
 								     data-workId="{$summId|escape}" data-format="{$manifestation->format}" data-cleanedWorkId="{$summId|regex_replace:"/-/" : ""}" aria-selected="{if $smarty.foreach.manifestations.index == 0}true{else}false{/if}">
-										<div class="horizontal-format-button-format">{$manifestation->format}</div>
+										<div class="horizontal-format-button-format">{translate text=$manifestation->format isPublicFacing=true}</div>
 	                                    {include file='GroupedWork/statusIndicator.tpl' statusInformation=$manifestation->getStatusInformation() viewingIndividualRecord=0 applyColors=false hideCopiesLine=true}
 								</div>
 	                        {/foreach}
 						</div>
-						<button type="button" class="slider-button slider-button-next btn btn-editions" id="slider-next-{$summId|escape}"><i class="fas fa-chevron-right"></i></button>
+						<button type="button" class="slider-button slider-button-next btn btn-editions" id="slider-next-{$summId|escape}" aria-label="{translate text="Next Format" isPublicFacing=true inAttribute=true}"><i class="fas fa-chevron-right"></i></button>
 					</div>
 					<script>
 						$(document).ready(function(){ldelim}
@@ -76,11 +76,11 @@
 			<div class="row variationsInfo">
 				<div class="col-xs-12">
 					<div role="region" class="slider-container variations" id="variationsInfo_{$summId|escape}" style="display: none;">
-						<button type="button" class="slider-button slider-button-prev btn btn-editions" id="slider-prev-{$summId|escape}"><i class="fas fa-chevron-left"></i></button>
+						<button type="button" class="slider-button slider-button-prev btn btn-editions" id="slider-prev-{$summId|escape}" aria-label="{translate text="Previous Edition" isPublicFacing=true inAttribute=true}"><i class="fas fa-chevron-left"></i></button>
 						<div role="listbox" class="slider-wrapper" id="slider-variations-{$summId|escape}" aria-activedescendant="slide-{$summId|escape}-0">
 
 						</div>
-						<button type="button" class="slider-button slider-button-next btn btn-editions" id="slider-next-{$summId|escape}"><i class="fas fa-chevron-right"></i></button>
+						<button type="button" class="slider-button slider-button-next btn btn-editions" id="slider-next-{$summId|escape}" aria-label="{translate text="Next Edition" isPublicFacing=true inAttribute=true}"><i class="fas fa-chevron-right"></i></button>
 					</div>
 				</div>
 			</div>

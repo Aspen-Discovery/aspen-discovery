@@ -627,8 +627,68 @@
 			</div>
 		</div>
 
+		{if $placardUsage|@count > 0}
+			<h2>{translate text="Placard Usage" isAdminFacing=true}</h2>
+			<div class="row">
+				{foreach from=$placardUsage item=placard name="placardUsageLoop"}
+					<div class="dashboardCategory col-sm-6">
+						<div class="row">
+							<div class="col-sm-10 col-sm-offset-1">
+								<h3 class="dashboardCategoryLabel">{$placard.name} <a href="/Admin/UsageGraphs?stat=placardUsage&placardId={$placard.placardId}{if $selectedInstance != ''}&instance={$selectedInstance}{/if}" title="{translate text='Show Placard Usage Graph' inAttribute='true' isAdminFacing=true}"><i class="fas fa-chart-line"></i></a></h3>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-tn-12">
+								<table class="table table-condensed dashboard-metric-table">
+									<thead>
+										<tr>
+										<th></th>
+										<th>{translate text="This Month" isAdminFacing=true}</th>
+										<th>{translate text="Last Month" isAdminFacing=true}</th>
+										<th>{translate text="This Year" isAdminFacing=true}</th>
+										<th>{translate text="All Time" isAdminFacing=true}</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td class="dashboardLabel">{translate text="Times Shown" isAdminFacing=true}</td>
+										<td class="dashboardValue">{$placard.thisMonth.timesShown|number_format}</td>
+										<td class="dashboardValue">{$placard.lastMonth.timesShown|number_format}</td>
+										<td class="dashboardValue">{$placard.thisYear.timesShown|number_format}</td>
+										<td class="dashboardValue">{$placard.allTime.timesShown|number_format}</td>
+									</tr>
+									<tr>
+										<td class="dashboardLabel">{translate text="Clicks" isAdminFacing=true}</td>
+										<td class="dashboardValue">{$placard.thisMonth.pageViews|number_format}</td>
+										<td class="dashboardValue">{$placard.lastMonth.pageViews|number_format}</td>
+										<td class="dashboardValue">{$placard.thisYear.pageViews|number_format}</td>
+										<td class="dashboardValue">{$placard.allTime.pageViews|number_format}</td>
+									</tr>
+									<tr>
+										<td class="dashboardLabel">{translate text="Clicks by Authenticated Users" isAdminFacing=true}</td>
+										<td class="dashboardValue">{$placard.thisMonth.pageViewsByAuthenticatedUsers|number_format}</td>
+										<td class="dashboardValue">{$placard.lastMonth.pageViewsByAuthenticatedUsers|number_format}</td>
+										<td class="dashboardValue">{$placard.thisYear.pageViewsByAuthenticatedUsers|number_format}</td>
+										<td class="dashboardValue">{$placard.allTime.pageViewsByAuthenticatedUsers|number_format}</td>
+									</tr>
+									<tr>
+										<td class="dashboardLabel">{translate text="Clicks in Library" isAdminFacing=true}</td>
+										<td class="dashboardValue">{$placard.thisMonth.pageViewsInLibrary|number_format}</td>
+										<td class="dashboardValue">{$placard.lastMonth.pageViewsInLibrary|number_format}</td>
+										<td class="dashboardValue">{$placard.thisYear.pageViewsInLibrary|number_format}</td>
+										<td class="dashboardValue">{$placard.allTime.pageViewsInLibrary|number_format}</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+						</div>
+					</div>
+				{/foreach}
+			</div>
+		{/if}
+
 		{if $webResourceUsage|@count > 0}
-		<h2>{translate text="Web Resources" isAdminFacing=true}</h2>
+		<h2>{translate text="Web Resource Usage" isAdminFacing=true}</h2>
 			<div class="row">
 			    {foreach from=$webResourceUsage item=resource name="webResourceLoop"}
 			        <div class="dashboardCategory col-sm-6">
@@ -651,6 +711,13 @@
 										<td>{$resource.lastMonth.totalViews|number_format}</td>
 										<td>{$resource.thisYear.totalViews|number_format}</td>
 										<td>{$resource.allTime.totalViews|number_format}</td>
+									</tr>
+									<tr>
+										<th scope="row">{translate text="Views from Placards" isAdminFacing=true}</th>
+										<td>{$resource.thisMonth.totalPageViewsFromPlacard|number_format}</td>
+										<td>{$resource.lastMonth.totalPageViewsFromPlacard|number_format}</td>
+										<td>{$resource.thisYear.totalPageViewsFromPlacard|number_format}</td>
+										<td>{$resource.allTime.totalPageViewsFromPlacard|number_format}</td>
 									</tr>
 									<tr>
 										<th scope="row">{translate text="Views by Authenticated Users" isAdminFacing=true}</th>

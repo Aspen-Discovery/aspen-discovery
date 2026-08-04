@@ -51,6 +51,7 @@ class Testing_GenerateReadingHistory extends Admin_Admin {
 	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Greenhouse/Home', 'Greenhouse Home');
+		$breadcrumbs[] = new Breadcrumb('/Greenhouse/Home#greenhouse-testing-tools', 'Testing Tools');
 		$breadcrumbs[] = new Breadcrumb('/Testing/GenerateReadingHistory', 'Generate Reading History', true);
 		return $breadcrumbs;
 	}

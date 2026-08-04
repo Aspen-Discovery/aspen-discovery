@@ -166,4 +166,160 @@ class SquareSetting extends DataObject {
 			unset($this->_libraries);
 		}
 	}
+
+	public function submitTransaction(UserPayment $payment, string $paymentToken, string $squareOrderId, array $amountMoney): array {
+		require_once ROOT_DIR . '/sys/CurlWrapper.php';
+
+		$paymentRequest = new CurlWrapper();
+
+		$paymentRequest->addCustomHeaders([
+			'Content-Type: application/json',
+			'Square-Version: 2023-06-08',
+			"Authorization: Bearer $this->accessToken",
+		], true);
+
+		$baseUrl = 'https://connect.squareup.com';
+
+		if ($this->sandboxMode == 1) {
+			$baseUrl = 'https://connect.squareupsandbox.com';
+		}
+
+		$body = [
+			'idempotency_key' => strval($payment->id),
+			'amount_money' => $amountMoney,
+			'source_id' => $paymentToken,
+			'order_id' => $squareOrderId,
+			'location_id' => strval($this->locationId),
+		];
+
+		$paymentUrl = $baseUrl . '/v2/payments';
+
+		$paymentRequestResults = $paymentRequest->curlPostBodyData($paymentUrl, $body);
+
+		ExternalRequestLogEntry::logRequest(
+			'fine_payment.completeSquareOrder',
+			'POST',
+			$paymentUrl,
+			$paymentRequest->getHeaders(),
+			json_encode($body),
+			$paymentRequest->getResponseCode(),
+			$paymentRequestResults,
+			[]
+		);
+
+		$decodedPaymentRequestResults = json_decode($paymentRequestResults);
+
+		if (!isset($decodedPaymentRequestResults->payment)) {
+			$error = $decodedPaymentRequestResults->errors[0] ?? null;
+
+			$errorMessage =
+				$error->detail ??
+				$error->code ??
+				'Unknown Square payment error';
+
+			return [
+				'success' => false,
+				'message' => $errorMessage,
+			];
+		}
+
+		return [
+			'success' => true,
+			'payment' => $decodedPaymentRequestResults->payment,
+		];
+	}
+
+	public function createLineItems(UserPayment $payment): array {
+		require_once ROOT_DIR . '/sys/CurlWrapper.php';
+		require_once ROOT_DIR . '/sys/Account/UserPaymentLine.php';
+
+		$paymentRequest = new CurlWrapper();
+
+		$paymentRequest->addCustomHeaders([
+			'Content-Type: application/json',
+			'Square-Version: 2023-06-08',
+			"Authorization: Bearer $this->accessToken",
+		], true);
+
+		$baseUrl = 'https://connect.squareup.com';
+
+		if ($this->sandboxMode == 1) {
+			$baseUrl = 'https://connect.squareupsandbox.com';
+		}
+
+		$userPaymentLine = new UserPaymentLine();
+		$userPaymentLine->paymentId = $payment->id;
+
+		$lineItems = [];
+
+		if ($userPaymentLine->find()) {
+			while ($userPaymentLine->fetch()) {
+				$lineItems[] = [
+					'name' => $userPaymentLine->description,
+					'quantity' => '1',
+					'base_price_money' => [
+						'amount' => (int)round($userPaymentLine->amountPaid * 100),
+						'currency' => 'USD'
+					]
+				];
+			}
+		}
+
+		if (empty($lineItems)) {
+			return [
+				'success' => false,
+				'message' => 'No payment line items were found.',
+			];
+		}
+
+		$orderUrl = $baseUrl . '/v2/orders';
+
+		$orderBody = [
+			'idempotency_key' => strval($payment->id) . '-order',
+			'order' => [
+				'location_id' => strval($this->locationId),
+				'line_items' => $lineItems
+			]
+		];
+
+		$orderResponse = $paymentRequest->curlPostBodyData($orderUrl, $orderBody);
+
+		ExternalRequestLogEntry::logRequest(
+			'fine_payment.createSquareOrder',
+			'POST',
+			$orderUrl,
+			$paymentRequest->getHeaders(),
+			json_encode($orderBody),
+			$paymentRequest->getResponseCode(),
+			$orderResponse,
+			[]
+		);
+
+		$decodedOrder = json_decode($orderResponse);
+
+		$squareOrderId = $decodedOrder->order->id ?? null;
+
+		if ($squareOrderId === null) {
+			$error = $decodedOrder->errors[0] ?? null;
+
+			$errorMessage =
+				$error->detail ??
+				$error->code ??
+				'Unknown Square order error';
+
+			return [
+				'success' => false,
+				'message' => $errorMessage,
+			];
+		}
+
+		return [
+			'success' => true,
+			'orderId' => $squareOrderId,
+			'amountMoney' => [
+				'amount' => $decodedOrder->order->total_money->amount,
+				'currency' => $decodedOrder->order->total_money->currency
+			],
+		];
+	}
 }

@@ -30,6 +30,28 @@ var Globals = (function () {
 		cookiePolicyHTML: '',
 		timeUntilSessionExpiration: 0,
 		modalCloseDestination: '',
-		language: 'en'
+		language: 'en',
+		jsTranslations: {}
 	}
 })(Globals || {});
+
+function __(phrase, vars) {
+	if (Globals.jsTranslations[phrase] !== undefined) {
+		var result = Globals.jsTranslations[phrase];
+		if (vars) {
+			Object.keys(vars).forEach(function(varName) {
+				result = result.replace(new RegExp('\\{' + varName + '\\}', 'g'), vars[varName]);
+			});
+		}
+		return result;
+	}
+	console.warn('[i18n] Missing JS translation: "' + phrase + '" — run extract_js_translations.php');
+	if (vars) {
+		var result = phrase;
+		Object.keys(vars).forEach(function(varName) {
+			result = result.replace(new RegExp('\\{' + varName + '\\}', 'g'), vars[varName]);
+		});
+		return result;
+	}
+	return phrase;
+}

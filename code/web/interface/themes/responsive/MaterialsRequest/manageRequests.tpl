@@ -144,6 +144,7 @@
 							{foreach from=$columnsToDisplay item=label}
 								<th>{translate text=$label isAdminFacing=true}</th>
 							{/foreach}
+							<th>{translate text="Has Duplicates?" isAdminFacing=true}</th>
 							{if $showExistingTitleInformation}
 								<th>{translate text="Exists In Catalog?" isAdminFacing=true}</th>
 							{/if}
@@ -206,6 +207,9 @@
 										<td>{$request->$column}</td>
 									{/if}
 								{/foreach}
+								<td id="hasDuplicates{$request->id}">
+									{if $request->hasDuplicates()}{translate text="Yes" isAdminFacing=true}{else}{translate text="No" isAdminFacing=true}{/if}
+								</td>
 								{if $showExistingTitleInformation}
 									<td id="existingTitleInformation{$request->id}">
 										{if $request->hasExistingRecord == 0}

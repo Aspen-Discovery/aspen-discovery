@@ -141,7 +141,38 @@ class UInterface extends Smarty {
 		require_once ROOT_DIR . '/sys/SystemVariables.php';
 		$systemVariables = SystemVariables::getSystemVariables();
 		if (!empty($systemVariables)) {
-			if ($systemVariables->catalogStatus == 2) {
+			$now = time();
+			$scheduledStart = $systemVariables->scheduledOfflineStart ?? 0;
+			$scheduledEnd   = $systemVariables->scheduledOfflineEnd   ?? 0;
+
+			if ($scheduledEnd != 0) {
+				$inScheduledWindow = $scheduledStart && $scheduledEnd
+					&& $now >= $scheduledStart
+					&& $now <= $scheduledEnd;
+			} else {
+				$inScheduledWindow = $scheduledStart && $now >= $scheduledStart;
+			}
+
+			if (!empty($scheduledStart)) {
+				if ($inScheduledWindow) {
+					$systemVariables->catalogStatus = 1;
+					if ($systemVariables->scheduledEcontentAccess) {
+						$systemVariables->catalogStatus = 2;
+						$loginAllowedWhileOffline = true;
+					}
+					$offlineMode = true;
+					$this->assign('enableEContentWhileOffline', $loginAllowedWhileOffline);
+					$this->assign('offlineMessage', $systemVariables->offlineMessage);
+				} else {
+					//Offline time has finished, reset
+					if ($scheduledEnd <= $now && $scheduledStart <= $now) {
+						$systemVariables->scheduledOfflineStart = 0;
+						$systemVariables->scheduledOfflineEnd = 0;
+						$systemVariables->catalogStatus = 0;
+					}
+				}
+				$systemVariables->update();
+			} elseif ($systemVariables->catalogStatus == 2) {
 				$offlineMode = true;
 				$loginAllowedWhileOffline = true;
 				$this->assign('enableEContentWhileOffline', true);
@@ -413,6 +444,7 @@ class UInterface extends Smarty {
 			}
 
 			$this->assign('fullWidthTheme', $theme->fullWidth);
+			$this->assign('fullWidthContent', $theme->fullWidthContent);
 			$this->assign('coverStyle', $theme->coverStyle);
 
 			$browseCategoryLayoutStyle = "masonry";
@@ -774,6 +806,11 @@ class UInterface extends Smarty {
 		}
 		$this->assign('allowAccountLinking', ($library->allowLinkedAccounts == 1));
 		$this->assign('librarySystemName', $library->displayName);
+		global $enabledModules;
+		$pwaEnabled = array_key_exists('Aspen Progressive Web Application(PWA)', $enabledModules);
+		$pwaEnabled = $pwaEnabled && $library->AspenPWASettingId != -1;
+		$this->assign('AspenPWAEnabled', $pwaEnabled);
+
 		$this->assign('showLibraryHoursAndLocationsLink', $library->getLayoutSettings()->showLibraryHoursAndLocationsLink);
 		//Check to see if we should just call it library location
 		$numLocations = $library->getNumLocationsForLibrary();
@@ -1075,6 +1112,7 @@ class UInterface extends Smarty {
 
 			$this->assign('parentTheme', $theme->getParentTheme());
 			$this->assign('fullWidthTheme', $theme->fullWidth);
+			$this->assign('fullWidthContent', $theme->fullWidthContent);
 			$this->assign('coverStyle', $theme->coverStyle);
 
 			$browseCategoryLayoutStyle = 'masonry';

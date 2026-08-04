@@ -1,6 +1,7 @@
 <?php
 	require_once __DIR__ . '/../bootstrap.php';
 	require_once __DIR__ . '/../bootstrap_aspen.php';
+	global $enabledModules;
 	if (array_key_exists('Community Engagement', $enabledModules)) {
 		require_once ROOT_DIR . '/sys/CronLogEntry.php';
 		$cronLogEntry = new CronLogEntry();

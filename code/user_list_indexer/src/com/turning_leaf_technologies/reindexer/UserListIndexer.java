@@ -173,13 +173,13 @@ class UserListIndexer {
 				clearDeletedListsTrackingTable(logEntry);
 				// Get a list of all public lists.
 				numListsStmt = dbConn.prepareStatement("SELECT COUNT(id) AS numLists FROM user_list WHERE public = 1 AND searchable = 1");
-				listsStmt = dbConn.prepareStatement("SELECT user_list.id AS id, deleted, public, searchable, title, description, user_list.created, dateUpdated, username, firstname, lastname, IF(user_list.displayListAuthor=0, 'Library Staff', displayName) AS displayName, homeLocationId, user_id FROM user_list INNER JOIN user on user_id = user.id WHERE public = 1 AND searchable = 1 AND deleted = 0");
+				listsStmt = dbConn.prepareStatement("SELECT user_list.id AS id, deleted, public, searchable, title, description, user_list.created, dateUpdated, username, firstname, lastname, IF(user_list.displayListAuthor=0, 'Library Staff', IF(customAuthorName is null OR customAuthorName = '',displayName,customAuthorName)) AS displayName, homeLocationId, user_id FROM user_list INNER JOIN user on user_id = user.id WHERE public = 1 AND searchable = 1 AND deleted = 0");
 			} else {
 				cleanupDeletedLists(logEntry);
 				// Get a list of all lists that were changed since the last update.
 				numListsStmt = dbConn.prepareStatement("SELECT COUNT(id) AS numLists FROM user_list WHERE dateUpdated >= ?");
 				numListsStmt.setLong(1, lastReindexTime);
-				listsStmt = dbConn.prepareStatement("SELECT user_list.id AS id, deleted, public, searchable, title, description, user_list.created, dateUpdated, username, firstname, lastname, IF(user_list.displayListAuthor=0, 'Library Staff', displayName) AS displayName, homeLocationId, user_id from user_list INNER JOIN user on user_id = user.id WHERE dateUpdated >= ?");
+				listsStmt = dbConn.prepareStatement("SELECT user_list.id AS id, deleted, public, searchable, title, description, user_list.created, dateUpdated, username, firstname, lastname, IF(user_list.displayListAuthor=0, 'Library Staff', IF(customAuthorName is null OR customAuthorName = '',displayName,customAuthorName)) AS displayName, homeLocationId, user_id from user_list INNER JOIN user on user_id = user.id WHERE dateUpdated >= ?");
 				listsStmt.setLong(1, lastReindexTime);
 			}
 

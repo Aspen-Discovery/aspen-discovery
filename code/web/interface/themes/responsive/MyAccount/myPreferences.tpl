@@ -1,6 +1,8 @@
 {strip}
 	<div id="main-content">
 		{if !empty($loggedIn)}
+
+			<h1>{translate text='Preferences' isPublicFacing=true}</h1>
 			{if !empty($profile->_web_note)}
 				<div class="row">
 					<div id="web_note" class="alert alert-info text-center col-xs-12">{$profile->_web_note}</div>
@@ -13,7 +15,6 @@
 				{include file='ilsMessages.tpl' messages=$ilsMessages}
 			{/if}
 
-			<h1>{translate text='Preferences' isPublicFacing=true}</h1>
 			{if !empty($profileUpdateErrors)}
 				{foreach from=$profileUpdateErrors item=errorMsg}
 					<div class="alert alert-danger">{$errorMsg}</div>
@@ -192,6 +193,26 @@
 												<input type="checkbox" class="form-control" name="optInToAllCampaignLeaderboards" id="optInToAllCampaignLeaderboards" {if $profile->optInToAllCampaignLeaderboards==1}checked='checked'{/if} data-switch="">
 											</div>
 										{/if}
+									</div>
+								</div>
+							</div>
+						{/if}
+
+						{if $aspenNativeEventsEnabled}
+							<div class="panel" id="eventsNotificationsPreferencesPanel">
+								<a data-toggle="collapse" href="#eventsNotificationsPreferencesPanel" class="active">
+									<div class="panel-heading">
+										<div class="panel-title">
+											<h2>{translate text="Events Notifications"  isPublicFacing=true}</h2>
+										</div>
+									</div>
+								</a>
+								<div id="eventsNotificationsPreferencesPanelBody" class="panel-collapse collapse in">
+									<div class="panel-body">
+										<div class="form-group propertyRow">
+											<label for="eventRegistrationNotificationsByEmail" class="control-label">{translate text="Get Registration Updates By Email" isPublicFacing=true}</label>&nbsp;
+											<input type="checkbox" class="form-control" name="eventRegistrationNotificationsByEmail" id="eventRegistrationNotificationsByEmail" {if $profile->eventRegistrationNotificationsByEmail==1}checked='checked'{/if} data-switch="">
+										</div>
 									</div>
 								</div>
 							</div>
@@ -447,7 +468,7 @@
 											{else}
 												&nbsp;{if $profile->notifySavedSearches==0} {translate text='No' isPublicFacing=true}{else} {translate text='Yes' isPublicFacing=true}{/if}
 											{/if}
-									</div> 
+									</div>
 
 									{* Course Reserves *}
 									{if !empty($validCourseReservesSorts)}

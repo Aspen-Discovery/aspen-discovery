@@ -34,7 +34,7 @@
 					{else}
 						{* Display custom instructions popover when in instruction lead window or ready. *}
 						{if $pickup['isReady'] || $pickup['withinTime'] || $timeAllowedBeforeCheckIn == -1}
-							<a role="button" tabindex="0" class="btn btn-primary btn-sm curbside-checkin-btn mb-1" data-toggle="popover" data-trigger="focus" data-placement="left" data-title="{translate text='Check-In Instructions' isPublicFacing=true}" data-content="{translate text=$pickupInstructions isPublicFacing=true isAdminEnteredData=true}" data-html="true" data-container="body">
+							<a role="button" tabindex="0" class="btn btn-primary btn-sm curbside-checkin-btn mb-1" data-toggle="popover" data-trigger="focus" data-placement="left" data-title="{translate text='Check-In Instructions' isPublicFacing=true}" data-content="{translate text=$pickupInstructions isPublicFacing=true isAdminEnteredData=true}" data-html="true">
 								<i class="fas fa-info-circle mr-1"></i> {translate text="View Instructions" isPublicFacing=true inAttribute=true}
 							</a>
 						{else}

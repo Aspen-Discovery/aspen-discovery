@@ -235,6 +235,8 @@ class IndexingProfile extends DataObject {
 
 	public /** @noinspection PhpUnused */
 		$displayTitleStripRegex;
+	public /** @noinspection PhpUnused */
+		$loadLibrariesAndLocationsFromIls;
 
 	private $_translationMaps;
 	private $_timeToReshelve;
@@ -265,7 +267,8 @@ class IndexingProfile extends DataObject {
 			'numMillisecondsToPauseAfterBibLookups',
 			'numExtractionThreads',
 			'prioritizeAvailableRecordsForTitleSelection',
-			'use650ForPictureBooks'
+			'use650ForPictureBooks',
+			'loadLibrariesAndLocationsFromIls'
 		];
 	}
 
@@ -578,6 +581,23 @@ class IndexingProfile extends DataObject {
 						'description' => 'Controls the number of concurrent threads that can be used while extracting bibs from Evergreen ',
 						'forcesReindex' => false,
 						'default' => 10
+					],
+				],
+			];
+
+			$structure['polarisSection'] = [
+				'property' => 'polarisSection',
+				'type' => 'section',
+				'label' => 'Polaris Settings',
+				'hideInLists' => true,
+				'relatedIls' => ['polaris'],
+				'properties' => [
+					'loadLibrariesAndLocationsFromIls' => [
+						'property' => 'loadLibrariesAndLocationsFromIls',
+						'type' => 'checkbox',
+						'label' => 'Load Libraries and Locations from the ILS',
+						'default' => 1,
+						'forcesReindex' => true,
 					],
 				],
 			];

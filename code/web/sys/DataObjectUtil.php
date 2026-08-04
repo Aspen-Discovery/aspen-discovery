@@ -62,6 +62,10 @@ class DataObjectUtil {
 				}
 				continue;
 			}
+			if ($property['type'] == 'oneToMany' && isset($property['structure'])) {
+				DataObjectUtil::validateSubObjectRegexes($property, $object, $validationResults['errors']);
+				continue;
+			}
 			$value = $_REQUEST[$property['property']] ?? null;
 			if (isset($property['required']) && $property['required']) {
 				if ($value == null && strlen($value) > 0) {
@@ -74,6 +78,7 @@ class DataObjectUtil {
 					$validationResults['errors'][] = $property['property'] . ' does not match ' . $property['property'] . 'Repeat';
 				}
 			}
+			DataObjectUtil::validateRegexPropertyIfApplicable($value, $property, $validationResults['errors']);
 
 			//Check to see if there is a custom validation routine
 			if (isset($property['serverValidation'])) {
@@ -90,6 +95,41 @@ class DataObjectUtil {
 			$validationResults['validatedOk'] = false;
 		}
 		return $validationResults;
+	}
+
+	private static function validateSubObjectRegexes(array $property, $object, array &$errors) : void {
+		$subObjects = $object->{$property['property']} ?? [];
+		foreach ($subObjects as $subObject) {
+			if ($subObject->_deleteOnSave ?? false) {
+				continue;
+			}
+			foreach ($property['structure'] as $subProperty) {
+				$subValue = $subObject->{$subProperty['property']} ?? null;
+				DataObjectUtil::validateRegexPropertyIfApplicable($subValue, $subProperty, $errors);
+			}
+		}
+	}
+
+	private static function validateRegexPropertyIfApplicable(mixed $value, array $property, array &$errors) : void {
+		if (!DataObjectUtil::isRegularExpressionProperty($property)) {
+			return;
+		}
+		if (!DataObjectUtil::isValidRegularExpression($value)) {
+			DataObjectUtil::addRegularExpressionError($property, $errors);
+		}
+	}
+
+	private static function isRegularExpressionProperty(array $property) : bool {
+		return in_array($property['type'], ['regularExpression', 'multilineRegularExpression']);
+	}
+
+	private static function addRegularExpressionError(array $property, array &$errors) : void {
+		$errors[] = ($property['label'] ?? $property['property']) . ' is not a valid regular expression.';
+	}
+
+	static function isValidRegularExpression(mixed $value) : bool {
+		// preg_match returns false on compile failure, 0 on no-match — strict compare required
+		return is_string($value) && (@preg_match('~' . str_replace('~', '\~', $value) . '~', '') !== false);
 	}
 
 	static function updateFromUI($object, $structure, $fieldLocks) : void {
@@ -343,8 +383,10 @@ class DataObjectUtil {
 					$logger->log("No file was uploaded for $propertyName", Logger::LOG_DEBUG);
 					//No image supplied, use the existing value
 				} elseif (isset($_FILES[$propertyName]["error"]) && $_FILES[$propertyName]["error"] > 0) {
-					//return an error to the browser
-					$logger->log("Error in file upload for $propertyName", Logger::LOG_ERROR);
+					require_once ROOT_DIR . '/sys/Utils/SystemUtils.php';
+					$uploadError = $_FILES[$propertyName]["error"];
+					$logger->log("Error in file upload for $propertyName (code $uploadError)", Logger::LOG_ERROR);
+					AspenError::raiseError(SystemUtils::getUploadErrorMessage($uploadError));
 				} elseif ((!empty($property['validTypes']) && !in_array($_FILES[$propertyName]["type"], $property['validTypes'])) ||
 					(empty($property['validTypes']) && !in_array($_FILES[$propertyName]["type"], ['image/gif', 'image/jpeg', 'image/png', 'image/svg+xml']))) {
 					$allowedTypes = !empty($property['validTypes']) ? implode(', ', $property['validTypes']) : 'image/gif, image/jpeg, image/png, image/svg+xml';
@@ -658,9 +700,12 @@ class DataObjectUtil {
 									'regularExpression',
 									'multilineRegularExpression',
 									'hidden',
+									'storedPassword'
 								])) {
 									$oldValue = $subObject->$subPropertyName;
-									$changed = $subObject->setProperty($subPropertyName, $_REQUEST[$requestKey][$id], $subProperty);
+									$isCheckboxList = $subProperty['type'] == 'multiSelect' && ($subProperty['listStyle'] ?? '') == 'checkboxList';
+									$newValue = $_REQUEST[$requestKey][$id] ?? ($isCheckboxList ? [] : null);
+									$changed = $subObject->setProperty($subPropertyName, $newValue, $subProperty);
 									if ($changed && !empty($object->{$object->__primaryKey}) && $object->objectHistoryEnabled()) {
 										require_once ROOT_DIR . '/sys/DB/DataObjectHistory.php';
 										$history = new DataObjectHistory();

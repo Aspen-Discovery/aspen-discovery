@@ -6,6 +6,7 @@ class API_HeroSliderAPI extends Action {
 	function launch(): void {
 		$method = $_REQUEST['method'] ?? '';
 
+		//These do not need additional authentication
 		if ($method == 'getSlides') {
 			header('Content-type: application/json');
 			header('Cache-Control: no-cache, must-revalidate');

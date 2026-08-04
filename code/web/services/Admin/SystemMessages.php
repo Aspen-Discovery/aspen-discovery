@@ -33,17 +33,26 @@ class Admin_SystemMessages extends ObjectEditor {
 		$userHasExistingMessages = true;
 		if (!UserAccount::userHasPermission('Administer All System Messages')) {
 			$libraries = Library::getLibraryList(true);
-			$systemMessagesForLibrary = [];
+			$systemMessagesToShow = [];
 			foreach ($libraries as $libraryId => $displayName) {
 				$librarySystemMessage = new SystemMessageLibrary();
 				$librarySystemMessage->libraryId = $libraryId;
 				$librarySystemMessage->find();
 				while ($librarySystemMessage->fetch()) {
-					$systemMessagesForLibrary[] = $librarySystemMessage->systemMessageId;
+					$systemMessagesToShow[] = $librarySystemMessage->systemMessageId;
 				}
 			}
-			if (count($systemMessagesForLibrary) > 0) {
-				$object->whereAddIn('id', $systemMessagesForLibrary, false);
+			$locations = Location::getLocationList(true);
+			foreach ($locations as $locationId => $displayName) {
+				$locationSystemMessage = new SystemMessageLocation();
+				$locationSystemMessage->locationId = $locationId;
+				$locationSystemMessage->find();
+				while ($locationSystemMessage->fetch()) {
+					$systemMessagesToShow[] = $locationSystemMessage->systemMessageId;
+				}
+			}
+			if (count($systemMessagesToShow) > 0) {
+				$object->whereAddIn('id', $systemMessagesToShow, false);
 			} else {
 				$userHasExistingMessages = false;
 			}
@@ -75,7 +84,7 @@ class Admin_SystemMessages extends ObjectEditor {
 	}
 
 	function getInstructions(): string {
-		return 'https://help.aspendiscovery.org/help/admin/systemmessages';
+		return 'https://aspen-discovery.atlassian.net/wiki/spaces/Help/pages/275185665/System+Messages';
 	}
 
 	function getBreadcrumbs(): array {

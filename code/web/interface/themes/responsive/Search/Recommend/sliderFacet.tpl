@@ -5,11 +5,11 @@
 		{/if}
 		<div class="form-group">
 			<label for="{$title}from" class="yearboxlabel sr-only control-label">{$cluster.label} from</label>
-			<input type="text" size="4" maxlength="4" class="yearbox form-control" placeholder="from" name="{$title}from" id="{$title}from" value="">
+			<input type="text" size="5" maxlength="5" class="yearbox form-control" placeholder="from" name="{$title}from" id="{$title}from" value="" oninput="this.value = this.value.replace(/[^0-9.]/g, '')">
 		</div>
 		<div class="form-group">
 			<label for="{$title}to" class="yearboxlabel sr-only control-label">{$cluster.label} to</label>
-			<input type="text" size="4" maxlength="4" class="yearbox form-control" placeholder="to" name="{$title}to" id="{$title}to" value="">
+			<input type="text" size="5" maxlength="5" class="yearbox form-control" placeholder="to" name="{$title}to" id="{$title}to" value="" oninput="this.value = this.value.replace(/[^0-9.]/g, '')">
 		</div>
 		{* To make sure that applying this filter does not remove existing filters we need to copy the get variables as hidden variables *}
 		{foreach from=$smarty.get item=parmValue key=paramName}

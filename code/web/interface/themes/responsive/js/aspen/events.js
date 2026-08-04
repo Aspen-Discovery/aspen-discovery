@@ -17,6 +17,82 @@ AspenDiscovery.Events = (function(){
 		},
 
 		//For Aspen Events
+		displayFieldOptionsForSelectedUse: function(selectedFieldUse) {
+			const fieldUse = selectedFieldUse ?? document.getElementById('fieldSetUseSelect')?.value;
+			if (!fieldUse || fieldUse === "0") {
+				return;
+			}
+	
+			const fieldSetId = document.getElementById('id').value;
+
+			// handle new fieldset creation
+			if (!fieldSetId) {
+				AspenDiscovery.Events.getFieldOptionsByUse(fieldUse)
+				return;
+			}
+
+			// loads existing fieldset
+			const url = Globals.path + '/Events/AJAX';
+			const params = {
+				method: 'getFieldSetFields',
+				fieldSetId
+			};
+
+			$.getJSON(url, params, function (data) {
+				if (!data.success) {
+					AspenDiscovery.showMessage('An error occurred ', data.message);
+					return;
+				}
+				AspenDiscovery.Events.getFieldOptionsByUse(fieldUse, data.selectedFields)
+				return;
+			});	
+		},
+
+		getFieldOptionsByUse: function(fieldUse, selectedFields = null) {
+			const url = Globals.path + '/Events/AJAX';
+			const params = {
+				method: 'getFieldsByUse',
+				fieldUse
+			};
+
+			$.getJSON(url, params, function (data) {
+				if (!data.success) {
+					AspenDiscovery.showMessage('An error occurred ', data.message);
+					return;
+				}
+
+				const propertyRoweventFields = $("#propertyRoweventFields");
+				const checkboxWrapper = $("#propertyRoweventFields > .controls > .checkbox:not(.form-group)");
+				checkboxWrapper.addClass('eventFieldWrapper');
+				checkboxWrapper.empty();
+
+				if (data.useFields && Object.keys(data.useFields).length > 0) {
+					propertyRoweventFields.show();
+				} else {
+					propertyRoweventFields.hide();
+				}
+				
+				$.each(data.useFields, (index, fieldName) => {
+						const checkboxLabel = $('<label />', {
+							for: 'eventFields_' + index,
+						}).appendTo(checkboxWrapper);
+						$('<input />', {
+							type: 'checkbox',
+							id: 'eventFields_' + index, 
+							value: index,
+							class: 'eventFields',
+							name: 'eventFields[]',
+							checked: !!selectedFields?.includes(parseInt(index))
+						}).appendTo(checkboxLabel);
+						$('<strong></strong>', {
+							text: ' ' + fieldName 
+						}).appendTo(checkboxLabel);
+						$('<br>').appendTo(checkboxLabel);
+					}
+				)
+			})
+		},
+
 		getEventTypesForLocation: function(locationId) {
 			var url = Globals.path + '/Events/AJAX';
 			var params = {
@@ -142,6 +218,23 @@ AspenDiscovery.Events = (function(){
 						}
 						$("#accordion_body_Fields_for_this_Event_Type .panel-body").html(data.typeFields);
 						$('#accordion_body_Fields_for_this_Event_Type [data-toggle="tooltip"]').tooltip();
+				
+						// Wait a tick for the DOM to render before running the display logic
+						setTimeout(function() {
+							AspenDiscovery.Events.displayRegistrationNumberOfSeats();
+							AspenDiscovery.Events.displayWaitingListEnable();
+							AspenDiscovery.Events.displayWaitingListNumberOfSeats();
+
+							$('#registrationRequired').off('change').on('change', function() {
+								AspenDiscovery.Events.displayRegistrationNumberOfSeats();
+								AspenDiscovery.Events.displayWaitingListEnable();
+								AspenDiscovery.Events.displayWaitingListNumberOfSeats();
+							});
+							$('#waitingList').off('change').on('change', function() {
+								AspenDiscovery.Events.displayWaitingListNumberOfSeats();
+							});
+						}, 0);
+
 						$("#propertyRowtitle").show();
 						$("#propertyRowinfoSection").show();
 						$("#propertyRowscheduleSection").show();
@@ -722,6 +815,56 @@ AspenDiscovery.Events = (function(){
 				}
 			})
 		},
+		handleRegistrationEnabledToggle: function () {
+			AspenDiscovery.Events.displayRegistrationNumberOfSeats();
+			AspenDiscovery.Events.displayWaitingListEnable();
+			AspenDiscovery.Events.displayWaitingListNumberOfSeats();
+		},
+		displayRegistrationNumberOfSeats: function () {
+			const requireEventRegistration = document.getElementById('registrationRequired');
+			if (!requireEventRegistration) {
+				return;
+			}
+
+			let registrationNumberOfSeats = document.getElementById('propertyRownumberOfSeats');
+			if (!registrationNumberOfSeats) {
+				return;
+			}
+			
+			if (requireEventRegistration.checked) {
+				registrationNumberOfSeats.style.display = '';
+				return;
+			}
+			AspenDiscovery.Events.unsetNumberOfSeats();
+			registrationNumberOfSeats.style.display = 'none';
+		},
+		displayWaitingListEnable: function () {
+			let requireEventRegistration = document.getElementById('registrationRequired');
+			let waitingListEnabled = document.getElementById('propertyRowwaitingList');
+
+			if (requireEventRegistration && requireEventRegistration.checked) {
+				waitingListEnabled.style.display = '';
+			} else {
+				waitingListEnabled.style.display = 'none';
+			}
+		},
+		displayWaitingListNumberOfSeats: function () {
+			let waitingList = document.getElementById('waitingList');
+			let waitingListNumberOfSeats = document.getElementById('propertyRowwaitingListNumberOfSeats');
+
+			if (waitingList && waitingList.checked) {
+				waitingListNumberOfSeats.style.display = '';
+			} else {
+				waitingListNumberOfSeats.style.display = 'none';
+			}
+		},
+		unsetNumberOfSeats: function () {
+			let numberofSeats = document.getElementById('numberOfSeats');
+			if (!numberofSeats) {
+				return;
+			}
+			numberofSeats.value = null;
+		},
 		saveEventsForType: function(doFullSave){
 			if (doFullSave) {
 				var titleCustomizable = $("#titleCustomizable").is(':checked');
@@ -758,6 +901,168 @@ AspenDiscovery.Events = (function(){
 			}else{
 				AspenDiscovery.Events.saveEventsObjCallback();
 			}
+		},
+
+		showStaffRegistrationModal: function(eventInstanceId) {
+			var url = Globals.path + "/Events/AJAX";
+			var params = {
+				method: 'getStaffRegistrationModal',
+				eventInstanceId: eventInstanceId
+			};
+			$.getJSON(url, params, function(data) {
+				if (data.success) {
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+				} else {
+					AspenDiscovery.showMessage(data.title, data.message);
+				}
+			}).fail(AspenDiscovery.ajaxFail);
+		},
+
+		lookupPatronForRegistration: function() {
+			var barcode = $("#patronBarcodeInput").val().trim();
+			if (!barcode) {
+				$("#patronLookupError").text("Please enter a barcode.").show();
+				$("#patronLookupResult").hide();
+				return;
+			}
+
+			var url = Globals.path + "/Events/AJAX";
+			var params = {
+				method: 'lookupPatronByBarcode',
+				barcode: barcode
+			};
+
+			$.getJSON(url, params, function(data) {
+				if (data.success) {
+					$("#foundPatronId").val(data.user.id);
+					$("#foundPatronName").text(data.user.displayName);
+					$("#foundPatronBarcode").text(data.user.barcode);
+					$("#foundPatronEmail").text(data.user.email || '-');
+					$("#foundPatronLocation").text(data.user.homeLocation || '-');
+					$("#patronLookupResult").show();
+					$("#patronLookupError").hide();
+				} else {
+					$("#patronLookupError").text(data.message).show();
+					$("#patronLookupResult").hide();
+				}
+			}).fail(function() {
+				$("#patronLookupError").text("Error looking up patron.").show();
+				$("#patronLookupResult").hide();
+			});
+		},
+
+		confirmStaffRegistration: function() {
+			const eventInstanceId = $("#staffRegEventInstanceId").val();
+			const userId = $("#foundPatronId").val();
+
+			if (!eventInstanceId || !userId) {
+				AspenDiscovery.showMessage("Error", "Missing event or patron information.");
+				return;
+			}
+
+			const url = Globals.path + "/Events/AJAX";
+			const params = {
+				method: 'staffRegisterUserForEvent',
+				eventInstanceId: eventInstanceId,
+				userId: userId
+			};
+
+			const attendeeCategoryInputs = document.querySelectorAll('#staffRegistrationModal input[name^="attendeeCategory["]');
+			for (const input of attendeeCategoryInputs) {
+				const count = parseInt(input.value, 10) || 0;
+				if (count > 0) {
+					params[input.name] = count;
+				}
+			}
+
+			$.getJSON(url, params, function(data) {
+				AspenDiscovery.showMessage(data.title, data.message, !data.success);
+				if (data.success) {
+					setTimeout(function() {
+						location.reload();
+					}, 1500);
+				}
+			}).fail(AspenDiscovery.ajaxFail);
+		},
+
+		staffUnregisterUser: function(eventInstanceId, userId) {
+			if (!confirm("Are you sure you want to cancel this registration?")) {
+				return;
+			}
+
+			var url = Globals.path + "/Events/AJAX";
+			var params = {
+				method: 'staffUnregisterUserFromEvent',
+				eventInstanceId: eventInstanceId,
+				userId: userId
+			};
+
+			$.getJSON(url, params, function(data) {
+				AspenDiscovery.showMessage(data.title, data.message, !data.success);
+				if (data.success) {
+					setTimeout(function() {
+						location.reload();
+					}, 1500);
+				}
+			}).fail(AspenDiscovery.ajaxFail);
+		},
+
+		staffReregisterUser: function(eventInstanceId, userId) {
+			var url = Globals.path + "/Events/AJAX";
+			var params = {
+				method: 'staffRegisterUserForEvent',
+				eventInstanceId: eventInstanceId,
+				userId: userId
+			};
+
+			$.getJSON(url, params, function(data) {
+				AspenDiscovery.showMessage(data.title, data.message, !data.success);
+				if (data.success) {
+					setTimeout(function() {
+						location.reload();
+					}, 1500);
+				}
+			}).fail(AspenDiscovery.ajaxFail);
+		},
+
+		toggleAttendance: function(registrationId, attended) {
+			var url = Globals.path + "/Events/AJAX";
+			var params = {
+				method: 'markAttendance',
+				registrationId: registrationId,
+				attended: attended ? 1 : 0
+			};
+
+			var checkbox = $("#attended-" + registrationId);
+			var cell = checkbox.closest('td');
+			checkbox.prop('disabled', true);
+
+			$.getJSON(url, params, function(data) {
+				checkbox.prop('disabled', false);
+				if (data.success) {
+					cell.css('background-color', '#dff0d8');
+					setTimeout(function() { cell.css('background-color', ''); }, 800);
+				} else {
+					cell.css('background-color', '#f2dede');
+					setTimeout(function() { cell.css('background-color', ''); }, 1200);
+					checkbox.prop('checked', !attended);
+				}
+			}).fail(function() {
+				checkbox.prop('disabled', false);
+				cell.css('background-color', '#f2dede');
+				setTimeout(function() { cell.css('background-color', ''); }, 1200);
+				checkbox.prop('checked', !attended);
+			});
+		},
+
+		lessEventDates: function() {
+			document.getElementById("moreEventDates").style.display = "block";
+			document.getElementById("narrowGroupHidden_eventDates").style.display = "none";
+		},
+
+		moreEventDates: function() {
+			document.getElementById("moreEventDates").style.display = "none";
+			document.getElementById("narrowGroupHidden_eventDates").style.display = "block";
 		}
 	};
 }(AspenDiscovery.Events || {}));

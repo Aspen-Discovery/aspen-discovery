@@ -1,6 +1,7 @@
 package org.aspen_discovery.grouping;
 
 import com.opencsv.CSVReader;
+import com.turning_leaf_technologies.hoopla.HooplaUtils;
 import com.turning_leaf_technologies.indexing.RecordIdentifier;
 import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
 import com.turning_leaf_technologies.marc.MarcUtil;
@@ -23,7 +24,7 @@ import java.sql.*;
 import java.util.*;
 import java.util.Date;
 
-public class RecordGroupingProcessor {
+public class RecordGroupingProcessor implements AutoCloseable {
 	protected BaseIndexingLogEntry logEntry;
 	protected Logger logger;
 	protected String serverName;
@@ -49,9 +50,10 @@ public class RecordGroupingProcessor {
 
 	private PreparedStatement getAuthoritativeAuthorStmt;
 	private PreparedStatement getTitleAuthorityStmt;
-	private boolean lookupAuthorAuthoritiesInDB = true;
-	private boolean lookupTitleAuthoritiesInDB = true;
-	private final HashMap<String, String> titleAuthorities = new HashMap<>();
+	private static boolean lookupAuthorAuthoritiesInDB = true;
+	private static boolean lookupTitleAuthoritiesInDB = true;
+	private static boolean authoritiesLoaded = false;
+	private static final HashMap<String, String> titleAuthorities = new HashMap<>();
 
 	private PreparedStatement markWorkAsNeedingReindexStmt;
 
@@ -91,7 +93,7 @@ public class RecordGroupingProcessor {
 
 		loadTranslationMaps(serverName);
 
-		loadAuthorities(dbConnection);
+		loadAuthorities(dbConnection, logger, logEntry);
 	}
 
 	public void close(){
@@ -582,7 +584,7 @@ public class RecordGroupingProcessor {
 						}
 					}
 
-					logger.debug("Updated " + numUpdatedRatings + " ratings, " + numUpdatedListEntries + " list entries, " + numUpdatedReadingHistory + " reading history entries, " + numUpdatedNotInterested + " not interested entries, " + numUpdatedNovelist + " novelist entries, " + numUpdatedDisplayInfo + " display info entries, " + uploadedCoverInfo + " uploaded covers");
+					logger.debug("Updated {} ratings, {} list entries, {} reading history entries, {} not interested entries, {} novelist entries, {} display info entries, {} uploaded covers", numUpdatedRatings, numUpdatedListEntries, numUpdatedReadingHistory, numUpdatedNotInterested, numUpdatedNovelist, numUpdatedDisplayInfo, uploadedCoverInfo);
 				}
 			}else{
 				logEntry.incErrors("Could not find the id of the work when merging enrichment " + oldPermanentId);
@@ -654,7 +656,7 @@ public class RecordGroupingProcessor {
 			}
 		} else {
 			if (!formatsWarned.contains(format)) {
-				logger.warn("Could not find format category for format " + format + " setting to book");
+				logger.warn("Could not find format category for format {} setting to book", format);
 				groupedWork.setGroupingCategory("book");
 				formatsWarned.add(format);
 			}
@@ -732,7 +734,7 @@ public class RecordGroupingProcessor {
 				} else {
 					String concatenatedValue = mapName + ":" + value;
 					if (!unableToTranslateWarnings.contains(concatenatedValue)) {
-						logger.warn("Could not translate '" + concatenatedValue + "'");
+						logger.warn("Could not translate '{}'", concatenatedValue);
 						unableToTranslateWarnings.add(concatenatedValue);
 					}
 					translatedValue = value;
@@ -748,87 +750,93 @@ public class RecordGroupingProcessor {
 		return translatedValue;
 	}
 
-	void loadAuthorities(Connection dbConn) {
-		logger.info("Loading authorities");
-		try {
-			//Get the count of authorities in the database
-			boolean reloadAuthorAuthorities = true;
-			PreparedStatement authorityStmt = dbConn.prepareStatement("SELECT count(*) as numAuthorities from author_authorities");
-			ResultSet numAuthorAuthorities = authorityStmt.executeQuery();
-			if (numAuthorAuthorities.next()) {
-				if (numAuthorAuthorities.getInt("numAuthorities") > 0) {
-					reloadAuthorAuthorities = false;
+	static synchronized void loadAuthorities(Connection dbConn, Logger logger, BaseIndexingLogEntry logEntry) {
+		if (!authoritiesLoaded) {
+			authoritiesLoaded = true;
+			try {
+				//Get the count of authorities in the database
+				boolean reloadAuthorAuthorities = true;
+				boolean reloadTitleAuthorities;
+				try (PreparedStatement authorityStmt = dbConn.prepareStatement("SELECT count(*) as numAuthorities from author_authorities")) {
+					try (ResultSet numAuthorAuthorities = authorityStmt.executeQuery()) {
+						if (numAuthorAuthorities.next()) {
+							if (numAuthorAuthorities.getInt("numAuthorities") > 0) {
+								reloadAuthorAuthorities = false;
+							}
+						}
+					}
+					if (reloadAuthorAuthorities) {
+						try (PreparedStatement addAuthorAuthorityStmt = dbConn.prepareStatement("INSERT into author_authorities (originalName, authoritativeName) VALUES (?, ?)")) {
+							try {
+								try (CSVReader csvReader = new CSVReader(new FileReader("../reindexer/author_authorities.properties"))) {
+									loadDefaultAuthorityFile(addAuthorAuthorityStmt, csvReader, logEntry);
+								}
+							} catch (IOException e) {
+								logEntry.incErrors("Unable to load author authorities", e);
+							}
+						}
+					}
 				}
-			}
-			numAuthorAuthorities.close();
-			if (reloadAuthorAuthorities) {
-				PreparedStatement addAuthorAuthorityStmt = dbConn.prepareStatement("INSERT into author_authorities (originalName, authoritativeName) VALUES (?, ?)");
-				try {
-					CSVReader csvReader = new CSVReader(new FileReader("../reindexer/author_authorities.properties"));
-					loadDefaultAuthorityFile(addAuthorAuthorityStmt, csvReader);
-				} catch (IOException e) {
-					logEntry.incErrors("Unable to load author authorities", e);
+				//Get the count of authorities in the database
+				reloadTitleAuthorities = true;
+				try (PreparedStatement titleAuthorityStmt = dbConn.prepareStatement("SELECT count(*) as numAuthorities from title_authorities")) {
+					try (ResultSet numTitleAuthorities = titleAuthorityStmt.executeQuery()) {
+						if (numTitleAuthorities.next()) {
+							if (numTitleAuthorities.getInt("numAuthorities") > 0) {
+								reloadTitleAuthorities = false;
+							}
+						}
+					}
 				}
+				if (reloadTitleAuthorities) {
+					try (PreparedStatement addTitleAuthorityStmt = dbConn.prepareStatement("INSERT into title_authorities (originalName, authoritativeName) VALUES (?, ?)")) {
+						try (CSVReader csvReader = new CSVReader(new FileReader("../reindexer/title_authorities.properties"))) {
+							loadDefaultAuthorityFile(addTitleAuthorityStmt, csvReader, logEntry);
+						}
+					} catch (IOException e) {
+						logEntry.incErrors("Unable to load title authorities", e);
+					}
+				}
+			} catch (SQLException e) {
+				logEntry.incErrors("Error loading authorities", e);
 			}
 
-			//Get the count of authorities in the database
-			boolean reloadTitleAuthorities = true;
-			authorityStmt = dbConn.prepareStatement("SELECT count(*) as numAuthorities from title_authorities");
-			ResultSet numTitleAuthorities = authorityStmt.executeQuery();
-			if (numTitleAuthorities.next()) {
-				if (numTitleAuthorities.getInt("numAuthorities") > 0) {
-					reloadTitleAuthorities = false;
+			//Normalize any authorities that have not been normalized yet.
+			try {
+				try (PreparedStatement getNonNormalizedAuthorsStmt = dbConn.prepareStatement("SELECT id, author FROM author_authority where normalized IS NULL or normalized = ''", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)) {
+					try (PreparedStatement setNormalizedAuthorStmt = dbConn.prepareStatement("UPDATE author_authority set normalized = ? where id = ?")) {
+						try (ResultSet getNonNormalizedAuthorsRS = getNonNormalizedAuthorsStmt.executeQuery()) {
+							while (getNonNormalizedAuthorsRS.next()) {
+								String author = getNonNormalizedAuthorsRS.getString("author");
+								String normalizedAuthor = AuthorNormalizer.getNormalizedName(author);
+								setNormalizedAuthorStmt.setString(1, normalizedAuthor);
+								setNormalizedAuthorStmt.setLong(2, getNonNormalizedAuthorsRS.getLong("id"));
+								setNormalizedAuthorStmt.executeUpdate();
+							}
+						}
+					}
 				}
-			}
-			numTitleAuthorities.close();
-			if (reloadTitleAuthorities) {
-				PreparedStatement addTitleAuthorityStmt = dbConn.prepareStatement("INSERT into title_authorities (originalName, authoritativeName) VALUES (?, ?)");
-				try {
-					CSVReader csvReader = new CSVReader(new FileReader("../reindexer/title_authorities.properties"));
-					loadDefaultAuthorityFile(addTitleAuthorityStmt, csvReader);
-				} catch (IOException e) {
-					logEntry.incErrors("Unable to load title authorities", e);
+				try (PreparedStatement getNonNormalizedAuthorAlternativesStmt = dbConn.prepareStatement("SELECT id, alternativeAuthor FROM author_authority_alternative where normalized IS NULL or normalized = ''", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)) {
+					try (PreparedStatement setNormalizedAlternativeAuthorStmt = dbConn.prepareStatement("UPDATE author_authority_alternative set normalized = ? where id = ?")) {
+						try (ResultSet getNonNormalizedAuthorAlternativesRS = getNonNormalizedAuthorAlternativesStmt.executeQuery()) {
+							while (getNonNormalizedAuthorAlternativesRS.next()) {
+								String alternativeAuthor = getNonNormalizedAuthorAlternativesRS.getString("alternativeAuthor");
+								String normalizedAuthor = AuthorNormalizer.getNormalizedName(alternativeAuthor);
+								setNormalizedAlternativeAuthorStmt.setString(1, normalizedAuthor);
+								setNormalizedAlternativeAuthorStmt.setLong(2, getNonNormalizedAuthorAlternativesRS.getLong("id"));
+								setNormalizedAlternativeAuthorStmt.executeUpdate();
+							}
+						}
+					}
 				}
+			} catch (SQLException e) {
+				logEntry.incErrors("Error normalizing authorities", e);
 			}
-		} catch (SQLException e) {
-			logEntry.incErrors("Error loading authorities", e);
+			logger.info("Done loading authorities");
 		}
-
-		//Normalize any authorities that have not been normalized yet.
-		try{
-			PreparedStatement getNonNormalizedAuthorsStmt = dbConn.prepareStatement("SELECT id, author FROM author_authority where normalized IS NULL or normalized = ''", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			PreparedStatement setNormalizedAuthorStmt = dbConn.prepareStatement("UPDATE author_authority set normalized = ? where id = ?");
-			ResultSet getNonNormalizedAuthorsRS = getNonNormalizedAuthorsStmt.executeQuery();
-			while (getNonNormalizedAuthorsRS.next()){
-				String author = getNonNormalizedAuthorsRS.getString("author");
-				String normalizedAuthor = AuthorNormalizer.getNormalizedName(author);
-				setNormalizedAuthorStmt.setString(1, normalizedAuthor);
-				setNormalizedAuthorStmt.setLong(2, getNonNormalizedAuthorsRS.getLong("id"));
-				setNormalizedAuthorStmt.executeUpdate();
-			}
-			getNonNormalizedAuthorsRS.close();
-			getNonNormalizedAuthorsStmt.close();
-			setNormalizedAuthorStmt.close();
-			PreparedStatement getNonNormalizedAuthorAlternativesStmt = dbConn.prepareStatement("SELECT id, alternativeAuthor FROM author_authority_alternative where normalized IS NULL or normalized = ''", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			PreparedStatement setNormalizedAlternativeAuthorStmt = dbConn.prepareStatement("UPDATE author_authority_alternative set normalized = ? where id = ?");
-			ResultSet getNonNormalizedAuthorAlternativesRS = getNonNormalizedAuthorAlternativesStmt.executeQuery();
-			while (getNonNormalizedAuthorAlternativesRS.next()){
-				String alternativeAuthor = getNonNormalizedAuthorAlternativesRS.getString("alternativeAuthor");
-				String normalizedAuthor = AuthorNormalizer.getNormalizedName(alternativeAuthor);
-				setNormalizedAlternativeAuthorStmt.setString(1, normalizedAuthor);
-				setNormalizedAlternativeAuthorStmt.setLong(2, getNonNormalizedAuthorAlternativesRS.getLong("id"));
-				setNormalizedAlternativeAuthorStmt.executeUpdate();
-			}
-			getNonNormalizedAuthorAlternativesRS.close();
-			getNonNormalizedAuthorAlternativesStmt.close();
-			setNormalizedAlternativeAuthorStmt.close();
-		} catch (SQLException e) {
-			logEntry.incErrors("Error normalizing authorities", e);
-		}
-		logger.info("Done loading authorities");
 	}
 
-	private void loadDefaultAuthorityFile(PreparedStatement addAuthorityStmt, CSVReader defaultAuthorityCsvReader) throws IOException {
+	private static void loadDefaultAuthorityFile(PreparedStatement addAuthorityStmt, CSVReader defaultAuthorityCsvReader, BaseIndexingLogEntry logEntry) throws IOException {
 		String[] curLine = defaultAuthorityCsvReader.readNext();
 		while (curLine != null) {
 			try {
@@ -840,7 +848,6 @@ public class RecordGroupingProcessor {
 			}
 			curLine = defaultAuthorityCsvReader.readNext();
 		}
-		defaultAuthorityCsvReader.close();
 	}
 
 	String getAuthoritativeAuthor(String originalAuthor) {
@@ -908,7 +915,27 @@ public class RecordGroupingProcessor {
 			}
 		}
 		if (activeLanguage == null || activeLanguage.equals("|||") || activeLanguage.equals("   ") || activeLanguage.contains(" ")){
-			activeLanguage = "unk";
+			String secondaryLanguageField = "041a";
+			activeLanguage = null;
+			languages = MarcUtil.getFieldList(marcRecord, secondaryLanguageField);
+			for (String language : languages){
+				language = language.replaceAll("^[^a-zA-Z]+|[^a-zA-Z]+$|\\p{Punct}", "");
+				language = translateValue("language_to_three_letter_code", language);
+				if (language == null || language.length() != 3 || language.contains(" ")) {
+					continue;
+				}
+				if (activeLanguage == null){
+					activeLanguage = language;
+				}else{
+					if (!activeLanguage.equals(language)){
+						activeLanguage = "mul";
+						break;
+					}
+				}
+			}
+			if (activeLanguage == null) {
+				activeLanguage = "unk";
+			}
 		}
 		return activeLanguage;
 	}
@@ -995,7 +1022,7 @@ public class RecordGroupingProcessor {
 				}
 			}
 		} catch (Exception e) {
-			logger.error("Error grouping CloudLibrary record " + (cloudLibraryId != null ? cloudLibraryId : "NULL") + ":", e);
+			logger.error("Error grouping CloudLibrary record {}:", cloudLibraryId != null ? cloudLibraryId : "NULL", e);
 			logEntry.incErrors("Error grouping CloudLibrary record " + cloudLibraryId + ":", e);
 		}
 		return null;
@@ -1116,17 +1143,11 @@ public class RecordGroupingProcessor {
 				primaryFormat = "Binge Pass";
 				break;
 			default:
-				logger.error("Unhandled hoopla mediaType " + mediaType);
+				logger.error("Unhandled hoopla mediaType {}", mediaType);
 				primaryFormat = mediaType;
 				break;
 		}
-		String author = "";
-		if (itemDetails.has("artist")) {
-			author = itemDetails.getString("artist");
-			author = AspenStringUtils.swapFirstLastNames(author);
-		} else if (itemDetails.has("publisher")) {
-			author = itemDetails.getString("publisher");
-		}
+		String author = HooplaUtils.getPrimaryAuthor(itemDetails, mediaType);
 
 		RecordIdentifier primaryIdentifier = new RecordIdentifier("hoopla", Long.toString(hooplaId));
 
@@ -1177,8 +1198,15 @@ public class RecordGroupingProcessor {
 		JSONObject titleMetadata = titleDetails.getJSONObject("metadata");
 
 		title = titleMetadata.getString("title");
+		title = GroupedWork.removeComplexSubtitlesFromTitle(title);
+
 		if (titleMetadata.has("subtitle")){
 			subTitle = titleMetadata.getString("subtitle");
+			String subtitleLower = subTitle.toLowerCase(Locale.ROOT);
+			if (subtitleLower.contains("book club") || subtitleLower.contains("award winner") || subtitleLower.contains("read with jenna")
+				|| subtitleLower.contains("number one bestseller")) {
+				subTitle = "";
+			}
 		}else{
 			subTitle = "";
 		}
@@ -1204,15 +1232,19 @@ public class RecordGroupingProcessor {
 		switch (type) {
 			//noinspection HttpUrlsUsage
 			case "http://bib.schema.org/Audiobook":
+				//noinspection HttpUrlsUsage
+			case "http://schema.org/Audiobook":
 				primaryFormat = "eAudiobook";
 				break;
 			//noinspection HttpUrlsUsage
 			case "http://schema.org/EBook":
+				//noinspection HttpUrlsUsage
+			case "http://schema.org/Book":
 				//TODO: May need to check the subjects to determine if this is a comic/graphic novel
 				primaryFormat = "eBook";
 				break;
 			default:
-				logger.error("Unhandled Palace Project type " + type);
+				logger.error("Unhandled Palace Project type {}", type);
 				primaryFormat = type;
 				break;
 		}

@@ -31,22 +31,27 @@ class Summon_UsageGraphs extends Admin_AbstractUsageGraphs {
 		return $breadcrumbs;
 	}
 
-	protected function getAndSetInterfaceDataSeries($stat, $instanceName): void {
+	protected function getAndSetInterfaceDataSeries($stat, $instanceName, $timeframes = ['year', 'month'], $custom = false): void {
 		global $interface;
 		$dataSeries = [];
 		$columnLabels = [];
+		$groupByTimeframe = implode(',', $timeframes);
 
 		// gets data from from user_summon_usage
 		if ($stat == 'activeUsers') {
 			$userSummonUsage = new UserSummonUsage();
-			$userSummonUsage->groupBy('year, month');
 			if (!empty($instanceName)) {
 				$userSummonUsage->instance = $instanceName;
 			}
-			$userSummonUsage->selectAdd();
-			$userSummonUsage->selectAdd('year');
-			$userSummonUsage->selectAdd('month');
-			$userSummonUsage->orderBy('year, month');
+			if (is_array($custom)) {
+				$userSummonUsage->buildCustomPeriodQuery($custom);
+			} else {
+				$userSummonUsage->groupBy($groupByTimeframe);
+				foreach ($timeframes as $timeframe) {
+					$userSummonUsage->selectAdd($timeframe);
+				}
+				$userSummonUsage->orderBy($groupByTimeframe);
+			}
 
 			$dataSeries['Active Users'] = GraphingUtils::getDataSeriesArray(count($dataSeries));
 			$userSummonUsage->selectAdd('COUNT(DISTINCT userId) as activeUsers');
@@ -54,7 +59,7 @@ class Summon_UsageGraphs extends Admin_AbstractUsageGraphs {
 			// Collects results
 			$userSummonUsage->find();
 			while($userSummonUsage->fetch()) {
-				$curPeriod = "{$userSummonUsage->month}-{$userSummonUsage->year}";
+				$curPeriod = $custom ? $userSummonUsage->getCustomPeriod() : $userSummonUsage->getCurPeriod($timeframes);
 				$columnLabels[] = $curPeriod;
 				/** @noinspection PhpUndefinedFieldInspection */
 				$dataSeries['Active Users']['data'][$curPeriod] = $userSummonUsage->activeUsers;
@@ -68,14 +73,19 @@ class Summon_UsageGraphs extends Admin_AbstractUsageGraphs {
 			$stat == 'totalClicks'
 		){
 			$summonRecordUsage = new SummonRecordUsage();
-			$summonRecordUsage->groupBy('year, month');
+			$summonRecordUsage->groupBy($groupByTimeframe);
 			if (!empty($instanceName)) {
 				$summonRecordUsage->instance = $instanceName;
 			}
-			$summonRecordUsage->selectAdd();
-			$summonRecordUsage->selectAdd('year');
-			$summonRecordUsage->selectAdd('month');
-			$summonRecordUsage->orderBy('year, month');
+			if (is_array($custom)) {
+				$summonRecordUsage->buildCustomPeriodQuery($custom);
+			} else {
+				$summonRecordUsage->groupBy($groupByTimeframe);
+				foreach ($timeframes as $timeframe) {
+					$summonRecordUsage->selectAdd($timeframe);
+				}
+				$summonRecordUsage->orderBy($groupByTimeframe);
+			}
 		
 			if ($stat == 'numRecordsViewed') {
 				$dataSeries['Number of Records Viewed'] = GraphingUtils::getDataSeriesArray(count($dataSeries));
@@ -92,7 +102,7 @@ class Summon_UsageGraphs extends Admin_AbstractUsageGraphs {
 			// Collect results
 			$summonRecordUsage->find();
 			while ($summonRecordUsage->fetch()) {
-				$curPeriod = "{$summonRecordUsage->month}-{$summonRecordUsage->year}";
+				$curPeriod = $custom ? $summonRecordUsage->getCustomPeriod() : $summonRecordUsage->getCurPeriod($timeframes);
 				$columnLabels[] = $curPeriod;
 				if ($stat == 'numRecordsViewed') {
 					/** @noinspection PhpUndefinedFieldInspection */

@@ -280,11 +280,31 @@ class Grouping_Variation {
 				$recordSummary = $record->getItemSummary($this->databaseId);
 				$itemSummary = mergeItemSummary($itemSummary, $recordSummary);
 			}
+			ksort($itemSummary);
 			$this->_itemSummary = $itemSummary;
 			$timer->logTime("Got item summary for variation");
 		}
-		ksort($itemSummary);
 		return $this->_itemSummary;
+	}
+
+	protected ?array $_itemDetails = null;
+
+	/**
+	 * @return array
+	 */
+	function getItemDetails() : array {
+		if ($this->_itemDetails == null) {
+			global $timer;
+			require_once ROOT_DIR . '/sys/Utils/GroupingUtils.php';
+			$itemDetails = [];
+			foreach ($this->_records as $record) {
+				$itemDetails += $record->getItemDetails($this->databaseId);
+			}
+			ksort($itemDetails);
+			$this->_itemDetails = $itemDetails;
+			$timer->logTime("Got item details for variation");
+		}
+		return $this->_itemDetails;
 	}
 
 	protected ?array $_itemsDisplayedByDefault = null;

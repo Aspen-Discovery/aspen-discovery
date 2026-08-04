@@ -115,7 +115,7 @@
 								{assign var=propName value=$property.property}
 								{assign var=propValue value=$dataItem->$propName}
 								<td aria-label="{if !empty($dataItem) && !is_array($dataItem)}{$dataItem|escape} {/if}{$propName}{if empty($propValue)} - empty{/if}">
-								{if $property.type == 'label'}
+								{if $property.type == 'label' || $property.type == 'calculatedInteger'}
 									{if empty($dataItem->class) || $dataItem->class != 'objectDeleted'}
 										{if $dataItem->canActiveUserEdit()}
 											{if $propName == $dataItem->getPrimaryKey()}<a class="btn btn-default btn-sm" href='/{$module}/{$toolName}?objectAction=edit&amp;id={$id}{if !empty($contextParams)}{$contextParams}{/if}'>
@@ -198,7 +198,7 @@
 									{else}
 										{translate text="Not set" isAdminFacing='true'}
 									{/if}
-								{elseif $property.type == 'checkbox'}
+								{elseif $property.type == 'checkbox' || $property.type == 'calculatedBoolean'}
 									{if ($propValue == 1)}{translate text="Yes" isAdminFacing=true}{elseif ($propValue == 0)}{translate text="No" isAdminFacing=true}{else}{$propValue}{/if}
 								{elseif $property.type == 'image'}
 									<img src="{$property.displayUrl}{$dataItem->id}" class="img-responsive" alt="{$propName}">

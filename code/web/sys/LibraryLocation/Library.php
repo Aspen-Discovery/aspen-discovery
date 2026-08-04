@@ -106,11 +106,13 @@ class Library extends DataObject {
 	public $allowCancellingAvailableHolds;
 	public $allowCancellingInTransitHolds;
 	public $allowFreezeHolds;   //tinyint(4)
+	public $allowHoldsToBeGrouped;
 	public $maxDaysToFreeze;
 	public $offerImmediateHoldFreeze;
 	public $showHoldButton;
 	public $showHoldButtonInSearchResults;
 	public $showHoldButtonForUnavailableOnly;
+	public $enableMultiCopyHolds;
 	public $allowRememberPickupLocation;
 	public $treatBibOrItemHoldsAs;
 	public $showVolumesWithLocalCopiesFirst;
@@ -166,6 +168,7 @@ class Library extends DataObject {
 	public $ncrSettingId;
 	public $usernameField;
 	public $eventsDefaultCalendarView;
+	public $allowEventRegistration;
 
 	public /** @noinspection PhpUnused */
 		$repeatSearchOption;
@@ -201,8 +204,10 @@ class Library extends DataObject {
 	public $showHoldCancelDate;
 	public $showHoldPosition;
 	public $showLogMeOutAfterPlacingHolds;
+	public $showHoldFeeMessage;
 	public $displayItemBarcode;
 	public $displayHoldsOnCheckout;
+	public $showCheckoutRenewalFeeMessage;
 	public /** @noinspection PhpUnused */
 		$displayCallNumberInCheckoutHistory;
 	public /** @noinspection PhpUnused */
@@ -354,6 +359,7 @@ class Library extends DataObject {
 		$includeDplaResults;
 	public $showWhileYouWait;
 	public $showYouMightAlsoLike;
+	public $moreLikeThisSettings;
 
 	public $messageBeeSettingId;
 	public $useAllCapsWhenSubmittingSelfRegistration;
@@ -399,6 +405,7 @@ class Library extends DataObject {
 	public $optInToReadingHistoryUpdatesILS;
 	public $optOutOfReadingHistoryUpdatesILS;
 	public $enableCostSavings;
+	public $forceReadingHistoryOptIn;
 	/** @noinspection PhpUnused */
 	protected $_costSavingsExplanationEnabled;
 	/** @noinspection PhpUnused */
@@ -416,6 +423,7 @@ class Library extends DataObject {
 	public $localIllRequestType;
 	public $maximumLocalIllRequests;
 	public $includeRemoteCheckoutsInMaxLocalIllRequests;
+	public $allowToRenewILL;
 	public $localIllEmail;
 	/** @noinspection PhpUnused */
 	public $_localIllEmailSuccessMessage;
@@ -504,7 +512,6 @@ class Library extends DataObject {
 	public $campaignCompletionNewEmail;
 	public $displayCampaignLeaderboard;
 	/** @noinspection PhpUnused */
-	public $communityEngagementAdminUserSelect;
 	public $displayOnlyUsersForLocationInUserAdmin;
 	public $allowAdminToEnrollUsersInAdminView;
 	public $displayDigitalRewardOnlyWhenAwarded;
@@ -527,6 +534,10 @@ class Library extends DataObject {
 	// Aspen Events
 	/** @noinspection PhpUnused */
 	public $aspenEventsToInclude;
+	public $displayEventNotificationsInAccount;
+
+	/** @noinspection PhpUnused */
+	public $allowStaffToRegisterUsersForEvents;
 
 	/** @noinspection PhpUnused */
 	public $allowUpdatingHolidaysFromILS;
@@ -544,6 +555,9 @@ class Library extends DataObject {
 
 	// Gale Settings
 	public $galeSettingsId;
+
+	// Aspen Progressive Web Application(PWA) Settings
+	public $AspenPWASettingId;
 
 	/** @var Holiday[] */
 	private $_holidays;
@@ -684,6 +698,10 @@ class Library extends DataObject {
 			'-1' => 'None',
 		];
 		$loral->orderBy('name');
+		$loral->find();
+		while ($loral->fetch()) {
+			$availableLoralSettings[$loral->id] = $loral->name;
+		}
 
 		$materialsRequestOptions = [
 			0 => 'None',
@@ -1067,6 +1085,16 @@ class Library extends DataObject {
 			$galeSettingsList[$galeSettings->id] = $galeSettings->name;
 		}
 
+		require_once ROOT_DIR . '/sys/AspenPWA/Setting.php';
+		$AspenPWASetting = new AspenPWASetting();
+		$AspenPWASetting->orderBy('name');
+		$AspenPWASettings = [];
+		$AspenPWASetting->find();
+		$AspenPWASettings[-1] = 'none';
+		while ($AspenPWASetting->fetch()) {
+			$AspenPWASettings[$AspenPWASetting->id] = $AspenPWASetting->name;
+		}
+
 		$barcodeTypes = [
 			'none' => 'Do not show the barcode',
 			'CODE128' => 'CODE128 (automatic mode switching)',
@@ -1090,9 +1118,14 @@ class Library extends DataObject {
 
 		$validCardRenewalOptions = [
 			0 => 'No Card Renewal',
-			//1 => 'ILS Based Card Renewal',
+			1 => 'ILS Based Card Renewal',
 			2 => 'Redirect to Card Renewal URL',
 		];
+
+		if ($catalog == null || !$catalog->hasCardRenewalSupport()) {
+			unset($validCardRenewalOptions[2]);
+		}
+
 		require_once ROOT_DIR . '/sys/Enrichment/QuipuECardSetting.php';
 		$quipuECardSettings = new QuipuECardSetting();
 		if (!$quipuECardSettings->find(true)) {
@@ -1279,7 +1312,7 @@ class Library extends DataObject {
 						'values' => $layoutSettings,
 						'label' => 'Layout Settings',
 						'description' => 'Layout Settings to apply to this interface',
-						'permissions' => ['Library Theme Configuration'],
+						'permissions' => ['Administer Library Layout Settings','Administer All Layout Settings'],
 					],
 					'homeLink' => [
 						'property' => 'homeLink',
@@ -1562,6 +1595,21 @@ class Library extends DataObject {
 						],
 						'label' => 'Show You Might Also Like',
 						'description' => 'Whether or not the user should be shown suggestions of other titles they might like.',
+						'hideInLists' => true,
+						'default' => 1,
+						'permissions' => ['Library ILS Options'],
+					],
+					'moreLikeThisSettings' => [
+						'property' => 'moreLikeThisSettings',
+						'type' => 'enum',
+						'values' => [
+							'1' => 'Include materials in global scope in any format.',
+							'4' => 'Include materials in global scope in the same format only.',
+							'2' => 'Include materials in local scope in any format.',
+							'3' => 'Include materials in local scope in the same format only.'
+						],
+						'label' => 'More Like This Settings',
+						'description' => 'Scoping settings for More Like This feature.',
 						'hideInLists' => true,
 						'default' => 1,
 						'permissions' => ['Library ILS Options'],
@@ -2217,6 +2265,13 @@ class Library extends DataObject {
 								'hideInLists' => true,
 								'default' => 0,
 							],
+							'enableMultiCopyHolds' => [
+								'property' => 'enableMultiCopyHolds',
+								'type' => 'checkbox',
+								'label' => 'Enable Multi-Copy Holds',
+								'description' => 'Whether the user can place multiple copies of a hold on the same item.',
+								'default' => 0,
+							],
 							'hidePickupLocationPrompt' => [
 								'property' => 'hidePickupLocationPrompt',
 								'type' => 'checkbox',
@@ -2492,6 +2547,24 @@ class Library extends DataObject {
 								'hideInLists' => true,
 								'default' => '0',
 								'permissions' => ['Library ILS Connection'],
+							],
+							'showCheckoutRenewalFeeMessage' => [
+								'property' => 'showCheckoutRenewalFeeMessage',
+								'type' => 'checkbox',
+								'label' => 'Show Checkout Renewal Fee Message',
+								'description' => 'Whether or not to display a fee message to patrons before renewing checkouts. Requires ILS support.',
+								'note' => 'Applies to Koha Only.',
+								'hideInLists' => true,
+								'default' => 1,
+							],
+							'showHoldFeeMessage' => [
+								'property' => 'showHoldFeeMessage',
+								'type' => 'checkbox',
+								'label' => 'Show Hold Fee Message',
+								'description' => 'Whether or not to display a fee message to patrons when placing holds. Requires ILS support.',
+								'note' => 'Applies to Koha Only. Requires the hold_fee circulation rule',
+								'hideInLists' => true,
+								'default' => 1,
 							],
 						],
 					],
@@ -3024,6 +3097,15 @@ class Library extends DataObject {
 								'permissions' => ['Library ILS Connection'],
 								'relatedIls' => ['evergreen', 'koha'],
 							],
+							'forceReadingHistoryOptIn' => [
+								'property' => 'forceReadingHistoryOptIn',
+								'type' => 'checkbox',
+								'label' => 'Force patrons to opt-in to Reading History',
+								'description' => 'Whether patrons logging in for the first time should be forced to opt-in to Reading History in Aspen and ignore ILS settings.',
+								'hideInLists' => true,
+								'permissions' => ['Library ILS Options'],
+								'relatedIls' => ['koha'],
+							]
 						],
 					],
 				],
@@ -3741,10 +3823,11 @@ class Library extends DataObject {
 						'label' => 'Aspen Events to Include',
 						'description' => 'Which events to include when searching this library',
 						'values' => [
+							'0' => 'Do not show the option to search Events',
 							'1' => 'All events at all locations',
 							'2' => "Events that occur at one of this library's locations",
 						],
-						'default' => '2',
+						'default' => '0',
 					],
 					'eventsDefaultCalendarView' => [
 						'property' => 'eventsDefaultCalendarView',
@@ -3760,7 +3843,69 @@ class Library extends DataObject {
 						'description' => 'The default page your events calendar will load to',
 						'hideInLists' => true,
 					],
+					'allowEventRegistration' => [
+						'property' => 'allowEventRegistration',
+						'type' =>'checkbox',
+						'default' => '0',
+						'label' => 'Allow Event Registration',
+						'description' => 'Whether to allow staff with Event administration permissions to enable registration on a per event basis',
+						'hideInLists' => true,
+					],
+					'displayEventNotificationsInAccount' => [
+						'property' => 'displayEventNotificationsInAccount',
+						'type' => 'checkbox',
+						'label' => 'Display Event Notifications in Account',
+						'description' => 'Whether or not to display a notification banner in the user\' account when they are eligible to register for an event for which they were on the waiting list',
+						'hideInLists' => true,
+						'default' => 1,
+					],
+					'allowStaffToRegisterUsersForEvents' => [
+						'property' => 'allowStaffToRegisterUsersForEvents',
+						'type' => 'checkbox',
+						'label' => 'Allow Staff to Register Users for Events',
+						'description' => 'Allow staff with appropriate permissions to register patrons for Aspen native events',
+						'default' => 0,
+						'hideInLists' => true,
+					],
 				]
+			],
+
+			// Holidays and Special Hours Display //
+			'holidaysSection' => [
+				'property' => 'holidaysSection',
+				'type' => 'section',
+				'label' => 'Holidays and Special Hours',
+				'hideInLists' => true,
+				'helpLink' => '',
+				'renderAsHeading' => false,
+				'permissions' => ['Library ILS Connection', 'Library Holidays'],
+				'properties' => [
+					'allowUpdatingHolidaysFromILS' => [
+						'property' => 'allowUpdatingHolidaysFromILS',
+						'type' => 'checkbox',
+						'label' => 'Automatically Update Holidays from the ILS',
+						'description' => 'Whether holidays should be automatically updated from the ILS.',
+						'hideInLists' => true,
+						'default' => 1,
+						'permissions' => ['Library ILS Connection'],
+					],
+					'holidays' => [
+						'property' => 'holidays',
+						'type' => 'oneToMany',
+						'label' => 'Holidays and Special Hours',
+						'renderAsHeading' => false,
+						'description' => 'Holidays (automatically loaded from Koha)',
+						'keyThis' => 'libraryId',
+						'keyOther' => 'libraryId',
+						'subObjectType' => 'Holiday',
+						'structure' => $holidaysStructure,
+						'sortable' => false,
+						'storeDb' => true,
+						'permissions' => ['Library Holidays'],
+						'canAddNew' => true,
+						'canDelete' => true,
+					],
+				],
 			],
 
 			// Full Record Display //
@@ -4152,6 +4297,15 @@ class Library extends DataObject {
 						'note' => "Remote checkouts are checkouts that were picked up from the item's owning home group (but that are not owned by the patron's home group)",
 						'default' => 1
 					],
+					'allowToRenewILL' => [
+						'property' => 'allowToRenewILL',
+						'type' => 'checkbox',
+						'label' => 'Allow ILL Renewals',
+						'description' => 'Whether or not patrons can renew ILL items.',
+						'note' => 'Applies to Sierra Only',
+						'default' => 1,
+						'relatedIls' => ['sierra'],
+					],
 					'ILLSystem' => [
 						'property' => 'ILLSystem',
 						'type' => 'enum',
@@ -4380,17 +4534,6 @@ class Library extends DataObject {
 						'description' => 'Allow admin to enroll users via the admin view page',
 						'default' => 0,
 						'hideInLists'=> true,
-					],
-					'communityEngagementAdminUserSelect' => [
-						'property' => 'communityEngagementAdminUserSelect',
-						'type' => 'enum',
-						'label' => 'Admin View User Select',
-						'description' => 'Whether to use a dropdown or a search bar to select users in the Community Engagement Admin View section',
-						'values' => [
-							'dropdown' => 'Dropdown',
-							'searchbar' => 'Search bar',
-						],
-						'default' => 'dropdown',
 					],
 					'displayOnlyUsersForLocationInUserAdmin' => [
 						'property' => 'displayOnlyUsersForLocationInUserAdmin',
@@ -4723,7 +4866,7 @@ class Library extends DataObject {
 				'label' => 'Talpa Search',
 				'hideInLists' => true,
 				'renderAsHeading' => true,
-//				'permissions' => ['Library Web Builder Options'],
+				//'permissions' => ['Library Web Builder Options'],
 				'properties' => [
 					'enableTalpaSearch' => [
 						'property' => 'enableTalpaSearch',
@@ -4809,43 +4952,6 @@ class Library extends DataObject {
 						'type' => 'enum',
 						'values' => $galeSettingsList,
 						'label' => 'Gale Settings',
-					],
-				],
-			],
-
-			'holidaysSection' => [
-				'property' => 'holidaysSection',
-				'type' => 'section',
-				'label' => 'Holidays',
-				'hideInLists' => true,
-				'helpLink' => '',
-				'renderAsHeading' => false,
-				'permissions' => ['Library ILS Connection', 'Library Holidays'],
-				'properties' => [
-					'allowUpdatingHolidaysFromILS' => [
-						'property' => 'allowUpdatingHolidaysFromILS',
-						'type' => 'checkbox',
-						'label' => 'Automatically Update Holidays from the ILS',
-						'description' => 'Whether holidays should be automatically updated from the ILS.',
-						'hideInLists' => true,
-						'default' => 1,
-						'permissions' => ['Library ILS Connection'],
-					],
-					'holidays' => [
-						'property' => 'holidays',
-						'type' => 'oneToMany',
-						'label' => 'Holidays',
-						'renderAsHeading' => false,
-						'description' => 'Holidays (automatically loaded from Koha)',
-						'keyThis' => 'libraryId',
-						'keyOther' => 'libraryId',
-						'subObjectType' => 'Holiday',
-						'structure' => $holidaysStructure,
-						'sortable' => false,
-						'storeDb' => true,
-						'permissions' => ['Library Holidays'],
-						'canAddNew' => true,
-						'canDelete' => true,
 					],
 				],
 			],
@@ -4972,7 +5078,53 @@ class Library extends DataObject {
 					],
 				],
 			],
+
+			'AspenPWASection' => [
+				'property' => 'AspenPWASection',
+				'type' => 'section',
+				'label' => 'Aspen Progressive Web Application(PWA)',
+				'hideInLists' => true,
+				'renderAsHeading' => true,
+				'permissions' => ['Administer Aspen Progressive Web Application(PWA) Settings'],
+				'properties' => [
+					'AspenPWASettingId' => [
+						'property' => 'AspenPWASettingId',
+						'type' => 'enum',
+						'values' => $AspenPWASettings,
+						'label' => 'Aspen Progressive Web Application(PWA) Settings',
+						'description' => 'The General Settings to use for Aspen Progressive Web Application(PWA)',
+						'hideInLists' => true,
+						'default' => -1,
+					],
+				],
+			],
 		];
+
+		$catalogDriver = CatalogFactory::getCatalogConnectionInstance();
+		if ($catalogDriver && $catalogDriver->supportsHyperholdsGrouping()) {
+			$newField = [
+				'property' => 'allowHoldsToBeGrouped',
+				'type' => 'checkbox',
+				'label' => 'Allow Grouping Holds',
+				'description' => 'Whether or not the user can group their holds.',
+				'hideInLists' => true,
+				'default' => 0,
+				'permissions' => ['Library ILS Connection'],
+				'note' => 'Applies to Koha Only'
+			];
+
+			$holdsProps = $structure['ilsSection']['properties']['holdsSection']['properties'] ?? [];
+			$insertAfter = 'maxDaysToFreeze';
+			$newHoldsProps = [];
+
+			foreach ($holdsProps as $key => $value) {
+				$newHoldsProps[$key] = $value;
+				if ($key === $insertAfter) {
+					$newHoldsProps['allowHoldsToBeGrouped'] = $newField;
+				}
+			}
+			$structure['ilsSection']['properties']['holdsSection']['properties'] = $newHoldsProps;
+		}
 
 		//Update settings based on what we have access to
 		$hasCourseReserves = false;
@@ -5836,12 +5988,44 @@ class Library extends DataObject {
 		if (!isset($this->_holidays)) {
 			$this->_holidays = [];
 			if (!empty($this->libraryId)) {
+				$allLocationIds = array_map('intval', array_keys(Holiday::getHolidayLocationsList($this->libraryId)));
 				$holiday = new Holiday();
 				$holiday->libraryId = $this->libraryId;
-				$holiday->orderBy('date');
+				$holiday->orderBy('date, closed');
 				$holiday->find();
+				$groupedHolidays = [];
+				$index = -1;
 				while ($holiday->fetch()) {
-					$this->_holidays[$holiday->id] = clone($holiday);
+					$groupKey = implode('|', [
+						$holiday->date ?? '',
+						$holiday->name ?? '',
+						$holiday->closed ?? 0,
+						$holiday->open ?? '',
+						$holiday->close ?? '',
+					]);
+					if (!isset($groupedHolidays[$groupKey])) {
+						$groupedHoliday = new Holiday();
+						$groupedHoliday->id = $index;
+						$groupedHoliday->libraryId = $this->libraryId;
+						$groupedHoliday->date = $holiday->date;
+						$groupedHoliday->name = $holiday->name;
+						$groupedHoliday->closed = $holiday->closed;
+						$groupedHoliday->open = $holiday->open;
+						$groupedHoliday->close = $holiday->close;
+						$groupedHoliday->locationIds = [];
+						$groupedHolidays[$groupKey] = $groupedHoliday;
+						$index--;
+					}
+					$locationId = $holiday->locationId;
+					if (in_array($locationId, $allLocationIds)) {
+						$groupedHolidays[$groupKey]->locationIds[$locationId] = $locationId;
+					}
+				}
+				// Ignore holidays with invalid locationIds
+				foreach ($groupedHolidays as $groupedHoliday) {
+					if (!empty($groupedHoliday->locationIds)) {
+						$this->_holidays[$groupedHoliday->id] = $groupedHoliday;
+					}
 				}
 			}
 		}
@@ -5850,7 +6034,28 @@ class Library extends DataObject {
 
 	public function saveHolidays() : void {
 		if (isset ($this->_holidays) && is_array($this->_holidays)) {
-			$this->saveOneToManyOptions($this->_holidays, 'libraryId');
+			// We can delete and reinsert holiday rows on library save because library updates are infrequent
+			$existingHoliday = new Holiday();
+			$existingHoliday->libraryId = $this->libraryId;
+			$existingHoliday->delete(true);
+
+			foreach ($this->_holidays as $groupedHoliday) {
+				if (!empty($groupedHoliday->_deleteOnSave)) {
+					continue;
+				}
+				$locationIds = $groupedHoliday->locationIds ?? [];
+				foreach ($locationIds as $locationId) {
+					$holiday = new Holiday();
+					$holiday->libraryId = $this->libraryId;
+					$holiday->locationId = $locationId;
+					$holiday->date = $groupedHoliday->date;
+					$holiday->name = $groupedHoliday->name;
+					$holiday->closed = $groupedHoliday->closed ?? 0;
+					$holiday->open = $groupedHoliday->open ?? null;
+					$holiday->close = $groupedHoliday->close ?? null;
+					$holiday->insert();
+				}
+			}
 			unset($this->_holidays);
 		}
 	}
@@ -6779,6 +6984,32 @@ class Library extends DataObject {
 		if (!empty($structure['ilsSection']['properties']['thirdPartyRegistrationSection']['properties']['thirdPartyRegistrationLocation'])) {
 			$structure['ilsSection']['properties']['thirdPartyRegistrationSection']['properties']['thirdPartyRegistrationLocation']['values'] = $thirdPartyRegistrationLocations;
 		}
+
+		//Update combined results
+		$combinedResultsSectionStructure = $structure['combinedResultsSection']['properties']['combinedResultSections']['structure'];
+		if ($this->ebscohostSearchSettingId == -1) {
+			unset($combinedResultsSectionStructure['source']['values']['ebscohost']);
+		}
+		if ($this->edsSettingsId == -1) {
+			unset($combinedResultsSectionStructure['source']['values']['ebsco_eds']);
+		}
+		if ($this->summonSettingsId == -1) {
+			unset($combinedResultsSectionStructure['source']['values']['summon']);
+		}
+		if ($this->galeSettingsId == -1) {
+			unset($combinedResultsSectionStructure['source']['values']['gale']);
+		}
+		if ($this->getCloudSourceSettingId() == -1) {
+			unset($combinedResultsSectionStructure['source']['values']['cloudsource']);
+		}
+		if (!$this->enableInnReachIntegration) {
+			unset($combinedResultsSectionStructure['source']['values']['innReach']);
+		}
+		if (!$this->ILLSystem != 3) {
+			unset($combinedResultsSectionStructure['source']['values']['shareIt']);
+		}
+		$structure['combinedResultsSection']['properties']['combinedResultSections']['structure'] = $combinedResultsSectionStructure;
+
 		return $structure;
 	}
 
@@ -6992,5 +7223,49 @@ class Library extends DataObject {
 			}
 		}
 		return $this->_cloudSourceSettingId;
+	}
+
+	private null|bool|PalaceProjectSetting $_palaceProjectSettings = false;
+	public function getPalaceProjectSettings() : ?PalaceProjectSetting {
+		if ($this->_palaceProjectSettings === false) {
+			$this->_palaceProjectSettings = null;
+			if ($this->palaceProjectScopeId > 0) {
+				require_once ROOT_DIR . '/sys/PalaceProject/PalaceProjectScope.php';
+				$palaceProjectScope = new PalaceProjectScope();
+				$palaceProjectScope->id = $this->palaceProjectScopeId;
+				if ($palaceProjectScope->find(true)){
+					$this->_palaceProjectSettings = $palaceProjectScope->getSettings();
+				}
+			}
+		}
+		return $this->_palaceProjectSettings;
+	}
+
+	public function getCardRenewalConfig() : array {
+		$config = [
+			'useILSFlow' => false,
+			'externalLink' => null,
+		];
+
+		if ($this->enableCardRenewal == 1) {
+			$config['useILSFlow'] = true;
+			return $config;
+		}
+		
+		if ($this->enableCardRenewal == 2) {
+			if (!empty($this->cardRenewalUrl)) {
+				$config['externalLink'] = $this->cardRenewalUrl;
+			}
+			return $config;
+		}
+		
+		if ($this->enableCardRenewal == 3) {
+			require_once ROOT_DIR . '/sys/Enrichment/QuipuECardSetting.php';
+			$quipuECardSettings = new QuipuECardSetting();
+			if ($quipuECardSettings->find(true) && $quipuECardSettings->hasERenew) {
+				$config['externalLink'] = '/MyAccount/eRENEW';
+			}
+		}
+		return $config;
 	}
 }

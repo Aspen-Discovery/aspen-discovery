@@ -65,6 +65,7 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 		$adminStickyFilter->userId = $user->id;
 		$adminStickyFilter->filterFor = "MaterialsRequest_Status";
 		if ($adminStickyFilter->find()) {
+			$statusesToShow = [];
 			while ($adminStickyFilter->fetch()) {
 				$statusesToShow[] = $adminStickyFilter->filterValue;
 			}
@@ -389,7 +390,7 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 				}
 			}
 			if($materialsRequestsPerPage == 'all') {
-				$materialsRequestsPerPage = $materialsRequests->count();
+				$materialsRequestsPerPage = max(1, $materialsRequests->count());
 				$interface->assign('showingAllRequests', true);
 			} else {
 				$interface->assign('showingAllRequests', false);
@@ -397,7 +398,7 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 			$interface->assign('materialsRequestsPerPage', $materialsRequestsPerPage);
 			$page = $_REQUEST['page'] ?? 1;
 			if (!isset($_REQUEST['exportAll'])) {
-				$materialsRequests->limit(($page - 1) * $materialsRequestsPerPage, $materialsRequestsPerPage);
+				$materialsRequests->limit(((int)$page - 1) * (int)$materialsRequestsPerPage,(int)$materialsRequestsPerPage);
 			}
 			$materialsRequestCount = $materialsRequests->count();
 

@@ -10,6 +10,7 @@ class UserNotificationToken extends DataObject {
 	public $notifyCustom;
 	public $notifyAccount;
 	public $onboardAppNotifications;
+	public $tokenType; //Expo or Firebase
 
 	function getNumericColumnNames(): array {
 		return ['id, userId, notifySavedSearch, notifyCustom, notifyAccount, onboardAppNotifications'];

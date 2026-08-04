@@ -9,17 +9,28 @@
 			</div>
 		</div>
 		{/if}
+		<script type="text/javascript">
+			AspenDiscovery.WebBuilder.trackPlacardView('{$placard->id}');
+		</script>
 		<div class="row">
 			<div class="col-xs-12">
 				{* If body has no anchor tags, wrap entire placard content with link. *}
 				{if $placard->link && !$placard->bodyHasAnchor()}
-					<a href="{$placard->link}" target="_blank" class="placard-link" aria-label="{translate text=$placard->title inAttribute=true isAdminEnteredData=true isPublicFacing=true} ({translate text='opens in new window' isPublicFacing=true inAttribute=true})">
+					{if $placard->sourceType == 'web_resource'}
+						<a href="javascript:;" onclick="AspenDiscovery.WebBuilder.placardClickHandler('{$placard->id}'); AspenDiscovery.WebBuilder.getWebResource('{$placard->sourceId}', true);" class="placard-link" aria-label="{translate text=$placard->title inAttribute=true isAdminEnteredData=true isPublicFacing=true} ({translate text='opens in new window' isPublicFacing=true inAttribute=true})">
+					{else}
+						<a href="{$placard->link}" target="_blank" class="placard-link" aria-label="{translate text=$placard->title inAttribute=true isAdminEnteredData=true isPublicFacing=true} ({translate text='opens in new window' isPublicFacing=true inAttribute=true})" onclick="AspenDiscovery.WebBuilder.placardClickHandler('{$placard->id}');">
+					{/if}
 				{/if}
 
 				{if !empty($placard->image)}
 					{* If body has anchor tags, only make the image clickable. *}
 					{if $placard->link && $placard->bodyHasAnchor()}
-						<a href="{$placard->link}" target="_blank" class="placard-image-link" aria-label="{translate text=$placard->title inAttribute=true isAdminEnteredData=true isPublicFacing=true} ({translate text='opens in new window' isPublicFacing=true inAttribute=true})">
+						{if $placard->sourceType == 'web_resource'}
+							<a href="javascript:;" onclick="AspenDiscovery.WebBuilder.placardClickHandler('{$placard->id}'); AspenDiscovery.WebBuilder.getWebResource('{$placard->sourceId}', true);" class="placard-link" aria-label="{translate text=$placard->title inAttribute=true isAdminEnteredData=true isPublicFacing=true} ({translate text='opens in new window' isPublicFacing=true inAttribute=true})">
+						{else}
+							<a href="{$placard->link}" target="_blank" class="placard-image-link" aria-label="{translate text=$placard->title inAttribute=true isAdminEnteredData=true isPublicFacing=true} ({translate text='opens in new window' isPublicFacing=true inAttribute=true})" onclick="AspenDiscovery.WebBuilder.placardClickHandler('{$placard->id}');">
+						{/if}
 					{/if}
 					<img src="/files/original/{$placard->image}" class="placard-image" alt="{if (empty($placard->altText))}{translate text=$placard->title inAttribute=true isPublicFacing=true isAdminEnteredData=true}{else}{translate text=$placard->altText inAttribute=true isPublicFacing=true isAdminEnteredData=true}{/if}">
 					{if $placard->link && $placard->bodyHasAnchor()}

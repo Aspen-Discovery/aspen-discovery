@@ -48,7 +48,7 @@ AspenDiscovery.PalaceProject = (function () {
 				dataType: 'json',
 				async: true,
 				error: function () {
-					alert("An error occurred processing your request.  Please try again in a few minutes.");
+					alert(__('An error occurred processing your request.  Please try again in a few minutes.'));
 					AspenDiscovery.closeLightbox();
 					if (callback) callback(false);
 				}
@@ -88,23 +88,14 @@ AspenDiscovery.PalaceProject = (function () {
 								AspenDiscovery.Account.loadMenuData();
 							});
 						} else {
-							// noinspection JSUnresolvedVariable
-							if (data.noCopies === true) {
-								AspenDiscovery.closeLightbox(function (){
-									var ret = confirm(data.message);
-									if (ret === true) {
-										AspenDiscovery.PalaceProject.doHold(patronId, id);
-									}
-								});
-							} else {
-								AspenDiscovery.showMessage(data.title, data.message, false);
-							}
+							// Palace project will automatically place th hold if no titles are available
+							AspenDiscovery.showMessage(data.title, data.message, false);
 						}
 					},
 					dataType: 'json',
 					async: false,
 					error: function () {
-						alert("An error occurred processing your request in Palace Project.  Please try again in a few minutes.");
+						alert(__('An error occurred processing your request in Palace Project.  Please try again in a few minutes.'));
 						//alert("ajaxUrl = " + ajaxUrl);
 						AspenDiscovery.closeLightbox();
 					}
@@ -176,7 +167,7 @@ AspenDiscovery.PalaceProject = (function () {
 				dataType: 'json',
 				async: false,
 				error: function () {
-					alert("An error occurred processing your request in Palace Project.  Please try again in a few minutes.");
+					alert(__('An error occurred processing your request in Palace Project.  Please try again in a few minutes.'));
 					AspenDiscovery.closeLightbox();
 				}
 			});
@@ -194,7 +185,7 @@ AspenDiscovery.PalaceProject = (function () {
 						if (data.availableForCheckout) {
 							AspenDiscovery.PalaceProject.doCheckOut(patronId, id);
 						} else {
-							AspenDiscovery.showMessage("Placed Hold", data.message, !data.hasWhileYouWait);
+							AspenDiscovery.showMessage(data.title, data.message, !data.hasWhileYouWait);
 							AspenDiscovery.Account.loadMenuData();
 						}
 					});

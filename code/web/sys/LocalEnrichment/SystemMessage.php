@@ -82,6 +82,13 @@ class SystemMessage extends DB_LibraryLocationLinkedObject {
 					3 => 'Holds Page',
 					4 => 'Fines Page',
 					5 => 'Contact Information Page',
+					6 => 'Events',
+					7 => 'Your Searches' ,
+					8 => 'Preferences',
+					9 => 'Libby Options',
+					10 => 'Hoopla Options',
+					11 => 'Your Lists',
+					12 => 'Home Page'
 				],
 				'label' => 'Show On',
 				'description' => 'The pages this message should be shown on',
@@ -215,6 +222,12 @@ class SystemMessage extends DB_LibraryLocationLinkedObject {
 	public function insert(string $context = '') : int|bool {
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
+			if (empty($this->_locations) && empty($this->_libraries)) {
+				//Nothing was selected, default it on for all locations
+				$this->_libraries = array_keys(Library::getLibraryList(!UserAccount::userHasPermission('Administer All System Messages')));
+				$this->_locations = array_keys(Location::getLocationList(!UserAccount::userHasPermission('Administer All System Messages')));
+			}
+
 			$this->saveLibraries();
 			$this->saveLocations();
 		}
@@ -255,7 +268,7 @@ class SystemMessage extends DB_LibraryLocationLinkedObject {
 		}
 	}
 
-	public function saveLocations() : void {
+	public function saveLocations(bool $forceLocationSelection = false) : void {
 		if (isset ($this->_locations) && is_array($this->_locations)) {
 			$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All System Messages'));
 			foreach ($locationList as $locationId => $displayName) {

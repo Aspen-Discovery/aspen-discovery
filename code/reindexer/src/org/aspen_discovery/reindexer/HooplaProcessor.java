@@ -1,5 +1,6 @@
 package org.aspen_discovery.reindexer;
 
+import com.turning_leaf_technologies.hoopla.HooplaUtils;
 import com.turning_leaf_technologies.indexing.HooplaScope;
 import com.turning_leaf_technologies.indexing.Scope;
 import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
@@ -18,6 +19,7 @@ import java.sql.SQLException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Locale;
 
 class HooplaProcessor {
 	private final GroupedWorkIndexer indexer;
@@ -130,28 +132,18 @@ class HooplaProcessor {
 				groupedWork.addFullTitle(fullTitle);
 
 
-				String primaryAuthor = "";
-				if (rawResponse.has("artist")){
-					primaryAuthor = rawResponse.getString("artist");
-					//Don't swap artist names for music since these are typically group names.
-					if (!kind.equals("MUSIC")) {
-						primaryAuthor = AspenStringUtils.swapFirstLastNames(primaryAuthor);
-					}
-				}else if (rawResponse.has("publisher")){
-					primaryAuthor = rawResponse.getString("publisher");
-				}
+				String primaryAuthor = HooplaUtils.getPrimaryAuthor(rawResponse, kind);
 				groupedWork.setAuthor(primaryAuthor);
 				groupedWork.setAuthAuthor(primaryAuthor);
 				groupedWork.setAuthorDisplay(primaryAuthor, formatCategory, hooplaRecord);
 
 				if (rawResponse.has("series")){
 					String series = rawResponse.getString("series");
-					groupedWork.addSeries(series);
 					String volume = "";
 					if (rawResponse.has("episode")){
 						volume = rawResponse.get("episode").toString();
 					}
-					groupedWork.addSeriesWithVolume(series, volume, 2, false);
+					groupedWork.addSeriesWithVolume(series, primaryAuthor, volume, 2, false);
 				}
 
 				boolean children = rawResponse.getBoolean("children");
@@ -452,6 +444,10 @@ class HooplaProcessor {
 				boolean pa = productRS.getBoolean("pa");
 				boolean profanity = productRS.getBoolean("profanity");
 				String rating = productRS.getString("rating");
+				String normalizedRating = normalizeHooplaContentRating(rating);
+				if (normalizedRating != null) {
+					groupedWork.addContentRating(normalizedRating);
+				}
 
 				for (Scope scope : indexer.getScopes()) {
 					boolean okToAdd;
@@ -497,6 +493,43 @@ class HooplaProcessor {
 		doubleDecodeRawResponseRS.close();
 
 		return null;
+	}
+
+	private String normalizeHooplaContentRating(String rating) {
+		if (rating == null) {
+			return null;
+		}
+
+		String normalizedRating = rating.toUpperCase(Locale.ROOT).replaceAll("[-\\s]", "");
+		if (normalizedRating.isEmpty()) {
+			return null;
+		}
+		if (normalizedRating.startsWith("NR")) {
+			return "Not Rated";
+		}
+
+		switch (normalizedRating) {
+			case "UNK":
+				return "Unknown";
+			case "PG13":
+				return "PG-13 Rated";
+			case "NC17":
+				return "NC-17 Rated";
+			case "TVY7":
+				return "TV-Y7 Rated";
+			case "TVY":
+				return "TV-Y Rated";
+			case "TVG":
+				return "TV-G Rated";
+			case "TVPG":
+				return "TV-PG Rated";
+			case "TV14":
+				return "TV-14 Rated";
+			case "TVMA":
+				return "TV-MA Rated";
+			default:
+				return normalizedRating + " Rated";
+		}
 	}
 
 }

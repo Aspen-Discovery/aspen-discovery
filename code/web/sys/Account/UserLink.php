@@ -64,6 +64,17 @@ class UserLink extends DataObject {
 		return $links;
 	}
 
+	public static function getPrimaryAccount(int $linkedUserId): ?User {
+		$linkedUser = new UserLink();
+		$linkedUser->linkedAccountId = $linkedUserId;
+		if (!$linkedUser->find(true)) {
+			return null;
+		}
+		$primary = new User();
+		$primary->id = $linkedUser->primaryAccountId;
+		return $primary->find(true) ? $primary : null;
+	}
+
 	public function loadEmbeddedLinksFromJSON($jsonData, $mappings, string $overrideExisting = 'keepExisting') : void {
 		parent::loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting);
 		if (isset($jsonData['primaryAccount'])) {

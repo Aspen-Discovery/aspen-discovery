@@ -70,6 +70,7 @@ class Greenhouse_AspenLiDASiteListingCache extends Admin_Admin {
 	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Greenhouse/Home', 'Greenhouse Home');
+		$breadcrumbs[] = new Breadcrumb('/Greenhouse/Home#greenhouse-lida-tools', 'Aspen LiDA');
 		$breadcrumbs[] = new Breadcrumb('/Greenhouse/AspenLiDASiteListingCache', 'Aspen LiDA Site Listing Cache');
 		return $breadcrumbs;
 	}

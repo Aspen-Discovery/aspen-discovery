@@ -50,7 +50,7 @@ class Admin_HeyCentricSettings extends ObjectEditor {
 	}
 
 	function getInstructions(): string {
-		return 'https://help.aspendiscovery.org/help/admin/ecommerce';
+		return 'https://aspen-discovery.atlassian.net/wiki/spaces/Help/pages/305102858/eCommerce';
 	}
 
 	function getBreadcrumbs(): array {

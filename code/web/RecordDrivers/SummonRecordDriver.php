@@ -126,6 +126,7 @@ class SummonRecordDriver extends RecordInterface {
 		$recordUsage->summonId = $this->getUniqueID();
 		$recordUsage->year = date('Y');
 		$recordUsage->month = date('n');
+		$recordUsage->day = date('d');
 		if ($recordUsage->find(true)) {
 			$recordUsage->timesViewedInSearch++;
 			$recordUsage->update();
@@ -324,8 +325,8 @@ class SummonRecordDriver extends RecordInterface {
 		return $description;
 	}
 		
-	public function getMoreDetailsOptions() {
-		// TODO: Implement getMoreDetailsOptions() method.
+	public function getMoreDetailsOptions() : array {
+		return [];
 	}
 
 	public function getFormats() {

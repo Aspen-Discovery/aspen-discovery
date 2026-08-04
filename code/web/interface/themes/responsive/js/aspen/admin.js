@@ -1747,7 +1747,7 @@ AspenDiscovery.Admin = (function () {
 
 		deleteNYTList: function (id) {
 			var listId = id;
-			if (confirm("Are you sure you want to delete this list?")) {
+			if (confirm(__('Are you sure you want to delete this list?'))) {
 				$.getJSON(Globals.path + '/Admin/AJAX?method=deleteNYTList&id=' + listId, function (data) {
 					AspenDiscovery.showMessage("Success", data.message, true, true);
 				})
@@ -1805,6 +1805,9 @@ AspenDiscovery.Admin = (function () {
 		createRecovery2FACode: function () {
 			var username = $("#username").val();
 			if (Globals.loggedIn) {
+				$("#error").html("").hide();
+				$("#generatedCode").html("").hide();
+
 				$.getJSON(Globals.path + "/Admin/AJAX?method=createRecoveryCode&user=" + username, function (data) {
 					// update #codeVerificationFailedPlaceholder with failed verification status, otherwise move onto next step
 					if (data.success) {
@@ -1824,11 +1827,24 @@ AspenDiscovery.Admin = (function () {
 			return false;
 		},
 		setDateFilterFieldVisibility: function (propertyName) {
-			var selectedValue = $('#filterType_' + propertyName).val();
+			let selectedValue = $('#filterType_' + propertyName).val();
 			if (selectedValue === 'afterTime') {
 				$('#filterValue_' + propertyName).show();
 				$('#filterValue2_' + propertyName).val('').hide();
 			} else if (selectedValue === 'beforeTime') {
+				$('#filterValue_' + propertyName).val('').hide();
+				$('#filterValue2_' + propertyName).show();
+			} else {
+				$('#filterValue_' + propertyName).show();
+				$('#filterValue2_' + propertyName).show();
+			}
+		},
+		setIntegerFilterFieldVisibility: function (propertyName) {
+			let selectedValue = $('#filterType_' + propertyName).val();
+			if (selectedValue === 'equals' || selectedValue === 'greaterThan' || selectedValue === 'greaterThanOrEqual') {
+				$('#filterValue_' + propertyName).show();
+				$('#filterValue2_' + propertyName).val('').hide();
+			} else if (selectedValue === 'lessThan' || selectedValue === 'lessThanOrEqual') {
 				$('#filterValue_' + propertyName).val('').hide();
 				$('#filterValue2_' + propertyName).show();
 			} else {
@@ -2575,10 +2591,10 @@ AspenDiscovery.Admin = (function () {
 					).fail(AspenDiscovery.ajaxFail);
 					return false;
 				} else {
-					alert("Select at least one library to copy to");
+					alert(__('Select at least one library to copy to'));
 				}
 			} else {
-				alert("Select at least one menu link to copy");
+				alert(__('Select at least one menu link to copy'));
 			}
 			return false;
 		},
@@ -2866,30 +2882,30 @@ AspenDiscovery.Admin = (function () {
 
 			if (scope === 'selected') {
 				if (!selected.length) {
-					AspenDiscovery.showMessage('Failed to Delete Selected Objects', 'Please select at least one object to delete.');
+					AspenDiscovery.showMessage(__('Failed to Delete Selected Objects'), __('Please select at least one object to delete.'));
 					return false;
 				}
 			}
 			if (scope === 'all') {
-				title = 'Permanently Delete All';
-				body = 'Are you sure you want to permanently delete ALL objects? This action cannot be undone.';
-				okLabel = 'Delete All';
+				title = __('Permanently Delete All');
+				body = __('Are you sure you want to permanently delete ALL objects? This action cannot be undone.');
+				okLabel = __('Delete All');
 			} else {
-				title = 'Permanently Delete Selected';
-				body = 'Are you sure you want to permanently delete ' + count + ' object(s)? This action cannot be undone.';
-				okLabel = 'Delete';
+				title = __('Permanently Delete Selected');
+				body = __('Are you sure you want to permanently delete {count} object(s)? This action cannot be undone.', { count: count });
+				okLabel = __('Delete');
 			}
 
 			const confirmJs = "$(\"#objectAction\").val(\"batchHardDelete\"); $(\"#propertiesListForm\").trigger('submit');";
 
-			AspenDiscovery.confirm(title, body, okLabel, 'Cancel', true, confirmJs, 'btn-danger');
+			AspenDiscovery.confirm(title, body, okLabel, __('Cancel'), false, confirmJs, 'btn-danger');
 			return false;
 		},
 
-		getNotificationDevicesForUser: function () {
+		getNotificationDevicesForUser: function (tokenType="expo") {
 			const barcode = $("#testPatronBarcode").val();
 			if (barcode) {
-				$.getJSON(Globals.path + "/Admin/AJAX?method=getNotificationDevicesForUser&user=" + barcode, function (data) {
+				$.getJSON(Globals.path + "/Admin/AJAX?method=getNotificationDevicesForUser&user=" + barcode + "&tokenType=" + tokenType, function (data) {
 					if (data.success) {
 						$("#error").html(data.message).hide();
 						$("#patronDevices").html(data.message).show();
@@ -3114,5 +3130,235 @@ AspenDiscovery.Admin = (function () {
 			});
 			return false;
 		},
+		showPaymentDetails: function (paymentId) {
+			var url = Globals.path + "/Admin/AJAX";
+			var params = {
+				method: 'getPaymentDetails',
+				paymentId: paymentId
+			};
+
+			// noinspection JSUnresolvedFunction
+			$.getJSON(url, params, function (data) {
+				AspenDiscovery.showMessage(data.title, data.modalBody);
+			}).fail(AspenDiscovery.ajaxFail);
+			return false;
+		},
+		toggle2FATOTPOptions: function () {
+			var allowTOTP = $("#allowTotp").prop("checked");
+			if (allowTOTP) {
+				$('#propertyRowissuerTOTP').show();
+			} else {
+				$('#propertyRowissuerTOTP').hide();
+			}
+		},
+		configureRateLimits: function () {
+			var url = Globals.path + "/OAuth2/RateLimitingAJAX";
+			var params = {
+				method: 'configureRateLimits'
+			};
+
+			$.getJSON(url, params)
+				.done(function (data) {
+					if (data.success) {
+						AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+					} else {
+						AspenDiscovery.showMessage("Error", data.message);
+					}
+				})
+				.fail(function () {
+					AspenDiscovery.showMessage("Error", "An error occurred while retrieving rate limit configuration.");
+				});
+
+			return false;
+		},
+		updateOAuth2GrantType: function () {
+			var clientType = $("#client_typeSelect").val();
+			// Show/hide redirect_uri fields based on client_type
+			if (clientType === "web_application") {
+				$("#propertyRowredirect_uri").show();
+			} else {
+				$("#propertyRowredirect_uri").hide();
+			}
+		},
+		updateOAuth2Scopes: function (element) {
+			const dependencies = {
+				'user:write': ['user:read'],
+				'list:write': ['list:read'],
+				'event:write': ['event:read'],
+				'community:write': ['community:read'],
+			};
+
+			if (element.checked) {
+				const scope = element.value;
+
+				if (dependencies[scope]) {
+					dependencies[scope].forEach(function (dependency) {
+						const dependencyCheckbox = document.querySelector('input[value="' + dependency + '"]');
+						if (dependencyCheckbox && !dependencyCheckbox.checked) {
+							dependencyCheckbox.checked = true;
+						}
+					});
+				}
+			} else {
+				const scope = element.value;
+				for (const [writeScope, readDependencies] of Object.entries(dependencies)) {
+					if (readDependencies.includes(scope)) {
+						const writeScopeCheckbox = document.querySelector('input[value="' + writeScope + '"]');
+						if (writeScopeCheckbox && writeScopeCheckbox.checked) {
+							writeScopeCheckbox.checked = false;
+						}
+					}
+				}
+			}
+		},
+		maskOAuth2ClientSecret: function () {
+			var clientSecretField = $("#client_secret");
+
+			if (clientSecretField.length === 0) {
+				return;
+			}
+
+			var originalSecret = clientSecretField.text().trim();
+			if (!originalSecret || originalSecret.match(/^\*+$/)) {
+				return;
+			}
+
+			clientSecretField.data('actual-secret', originalSecret);
+
+			var maskedSecret = Array(Math.min(originalSecret.length + 1, 33)).join('*');
+			clientSecretField.text(maskedSecret);
+			clientSecretField.addClass('masked');
+			clientSecretField.css({
+				'font-family': 'monospace',
+				'word-break': 'break-all'
+			});
+
+			var toggleButton = $('<button type="button" class="btn btn-sm btn-default" id="toggleClientSecret" title="Show or hide the client secret"><i class="fas fa-eye"></i> Show Secret</button>');
+			clientSecretField.after(toggleButton);
+			$("#toggleClientSecret").on("click", function (e) {
+				e.preventDefault();
+				AspenDiscovery.Admin.toggleMaskOAuth2ClientSecret();
+			});
+		},
+		toggleMaskOAuth2ClientSecret: function () {
+			var clientSecretField = $("#client_secret");
+			var toggleButton = $("#toggleClientSecret");
+			var isVisible = clientSecretField.data('visible') === true;
+
+			if (isVisible) {
+				var actualSecret = clientSecretField.data('actual-secret');
+				var maskedSecret = Array(Math.min(actualSecret.length + 1, 33)).join('*');
+				clientSecretField.text(maskedSecret);
+				clientSecretField.addClass('masked').removeClass('unmasked');
+				toggleButton.html('<i class="fas fa-eye"></i> Show Secret');
+				clientSecretField.data('visible', false);
+			} else {
+				var actualSecret = clientSecretField.data('actual-secret');
+				clientSecretField.text(actualSecret);
+				clientSecretField.addClass('unmasked').removeClass('masked');
+				toggleButton.html('<i class="fas fa-eye-slash"></i> Hide Secret');
+				clientSecretField.data('visible', true);
+			}
+		},
+		populateFromILS: function (ils, objectType) {
+			function getMunicipalityTypeFromKey(key) {
+				var lastChar = key.charAt(key.length - 1);
+				if (lastChar === 'C') return 'city';
+				if (lastChar === 'T') return 'town';
+				if (lastChar === 'V') return 'village';
+				return null;
+			}
+
+			if (ils === "symphony") {
+				if (objectType === "municipalities") {
+					AspenDiscovery.Admin.showFullPageLoadingOverlay('Populating from ILS, this may take a while. Please wait...');
+
+					$.ajax({
+						url: Globals.path + "/Admin/AJAX",
+						type: 'GET',
+						data: {
+							method: 'getILSMetadata',
+						},
+						success: function (response) {
+							response.forEach(function (entry) {
+								var key = entry.key;
+								var municipalityType = getMunicipalityTypeFromKey(key);
+								var municipalityName = key.slice(2, -1);
+
+								if (municipalityType === null) {
+									return; // skip entries that don't end in C, T, or V
+								}
+
+								addNewmunicipalities(); // existing generated function
+
+								var $newRow = $('#municipalities tbody tr').last();
+
+								$newRow.find('input[name^="municipalities_municipality"]').val(municipalityName);
+								$newRow.find('input[name^="municipalities_ilsMunicipality"]').val(key);
+								$newRow.find('select[name^="municipalities_municipalityType"]').val(municipalityType);
+								$newRow.find('input[name^="municipalities_selfRegAllowed"]').prop('checked', true);
+							});
+
+							$('#aspenFullPageLoadingOverlay').remove();
+						},
+						error: function () {
+							$('#aspenFullPageLoadingOverlay').remove();
+							AspenDiscovery.showMessage('Error', 'Could not populate from ILS.');
+						}
+					});
+				} else if (objectType === "countyCodes") {
+					AspenDiscovery.Admin.showFullPageLoadingOverlay('Populating from ILS, this may take a while. Please wait...');
+
+					$.ajax({
+						url: Globals.path + "/Admin/AJAX",
+						type: 'GET',
+						data: {
+							method: 'getILSMetadata',
+						},
+						success: function (response) {
+							var seenCodes = new Set();
+
+							response.forEach(function (entry) {
+								seenCodes.add(entry.key.slice(0, 2));
+							});
+
+							var sortedCodes = Array.from(seenCodes).sort();
+
+							sortedCodes.forEach(function (countyCode) {
+								addNewcountyCodes(); // existing generated function
+
+								var $newRow = $('#countyCodes tbody tr').last();
+
+								$newRow.find('input[name^="countyCodes_countyCode"]').val(countyCode);
+							});
+
+							$('#aspenFullPageLoadingOverlay').remove();
+						},
+						error: function () {
+							$('#aspenFullPageLoadingOverlay').remove();
+							AspenDiscovery.showMessage('Error', 'Could not populate from ILS.');
+						}
+					});
+				}
+			}
+		},
+		showFullPageLoadingOverlay: function (message) {
+			if ($('#aspenFullPageLoadingOverlay').length) {
+				return; // already showing, don't stack multiple overlays
+			}
+			var $overlay = $(
+				'<div id="aspenFullPageLoadingOverlay" style="' +
+				'position: fixed; top: 0; left: 0; width: 100%; height: 100%; ' +
+				'background: rgba(0, 0, 0, 0.5); z-index: 99999; ' +
+				'display: flex; align-items: center; justify-content: center; ' +
+				'flex-direction: column;">' +
+				'<i class="fas fa-spinner fa-spin fa-3x" style="color: #fff;"></i>' +
+				'<div style="color: #fff; margin-top: 15px; font-size: 1.1em;">' +
+				(message || 'Loading...') +
+				'</div>' +
+				'</div>'
+			);
+			$('body').append($overlay);
+		}
 	};
 }(AspenDiscovery.Admin || {}));

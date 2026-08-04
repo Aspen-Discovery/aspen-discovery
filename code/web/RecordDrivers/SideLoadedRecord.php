@@ -24,7 +24,7 @@ class SideLoadedRecord extends BaseEContentDriver {
 		return "/{$indexingProfile->recordUrlComponent}/$recordId";
 	}
 
-	public function getMoreDetailsOptions() {
+	public function getMoreDetailsOptions() : array {
 		global $interface;
 
 		$isbn = $this->getCleanISBN();

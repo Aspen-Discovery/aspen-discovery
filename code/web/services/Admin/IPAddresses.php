@@ -47,7 +47,7 @@ class Admin_IPAddresses extends ObjectEditor {
 	}
 
 	function getInstructions(): string {
-		return 'https://help.aspendiscovery.org/ipaddresses';
+		return 'https://aspen-discovery.atlassian.net/wiki/spaces/Help/pages/168624130/IP+Addresses';
 	}
 
 	function getBreadcrumbs(): array {

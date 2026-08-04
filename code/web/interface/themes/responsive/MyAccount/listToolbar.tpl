@@ -15,6 +15,13 @@
 				</ul>
 			</div>
 
+			{if !empty($userCanTransfer) && $userCanTransfer}
+				&ensp;
+				<div class="btn-group btn-group-sm">
+					<button value="transferList" id="transferList" class="btn btn-sm btn-default listTransferButton" onclick="return AspenDiscovery.Lists.listTransferAction({$userList->id})">{translate text='Transfer List' isPublicFacing=true}</button>
+				</div>
+			{/if}
+
 			{if !empty($allowEdit)}
 				&ensp;
 				<div class="btn-group btn-group-sm">

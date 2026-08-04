@@ -15,7 +15,9 @@ function getUntitledVolumeHoldAction($module, $source, $id, $variationId) : arra
 	];
 }
 //Regular ILS holds
-function getHoldRequestAction($module, $source, $id, $variationId) : array {
+function getHoldRequestAction($module, $source, $id, $variationId, $format) : array {
+	// Account for formats which might contain special characters
+	$format = addslashes($format);
 	return [
 		'title' => translate([
 			'text' => 'Place Hold',
@@ -23,7 +25,7 @@ function getHoldRequestAction($module, $source, $id, $variationId) : array {
 		]),
 		'url' => '',
 		'id' => "actionButton$id",
-		'onclick' => "return AspenDiscovery.Record.showPlaceHold('$module', '$source', '$id', '', '$variationId', this);",
+		'onclick' => "return AspenDiscovery.Record.showPlaceHold('$module', '$source', '$id', '', '$variationId', this, true, '$format');",
 		'requireLogin' => false,
 		'type' => 'ils_hold',
 		'subtype' => 'standard_ils_hold',
@@ -333,21 +335,6 @@ function getLocalIllNotAllowedAction($id) :array {
 		'requireLogin' => false,
 		'type' => 'local_ill_request',
 		'btnType' => 'btn-local-ill-request btn-action'
-	];
-}
-//VDX Requests
-function getVdxRequestAction($module, $source, $id) : array {
-	return [
-		'title' => translate([
-			'text' => 'Request',
-			'isPublicFacing' => true,
-		]),
-		'url' => '',
-		'id' => "actionButton$id",
-		'onclick' => "return AspenDiscovery.Record.showVdxRequest('$module', '$source', '$id');",
-		'requireLogin' => false,
-		'type' => 'vdx_request',
-		'btnType' => 'btn-vdx-request btn-action'
 	];
 }
 

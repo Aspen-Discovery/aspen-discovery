@@ -131,6 +131,7 @@ class Greenhouse_AspenLiDABuildTracker extends Admin_Admin {
 	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Greenhouse/Home', 'Greenhouse Home');
+		$breadcrumbs[] = new Breadcrumb('/Greenhouse/Home#greenhouse-lida-tools', 'Aspen LiDA');
 		$breadcrumbs[] = new Breadcrumb('/Greenhouse/AspenLiDABuildTracker', 'Aspen LiDA Build Tracker');
 		return $breadcrumbs;
 	}

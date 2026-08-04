@@ -15,4 +15,5 @@ class WebsiteIndexLogEntry extends BaseLogEntry {
 	public $numUpdated;
 	/** @noinspection PhpUnused */
 	public $numInvalidPages;
+	public $numSkipped;
 }

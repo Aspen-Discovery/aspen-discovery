@@ -1080,6 +1080,82 @@ pre a{ldelim}
 {rdelim}
 {/if}
 
+.ms-choice{ldelim}
+    border-color: {$bodyTextColor};
+    color: {$bodyTextColor};
+    background-color: {$bodyBackgroundColor};
+{rdelim}
+
+.ms-choice.disabled{ldelim}
+    background-color: {$bodyBackgroundColor};
+    border-color: {$bodyTextColor};
+{rdelim}
+
+.ms-choice > span.ms-placeholder{ldelim}
+    color: {$bodyTextColor};
+{rdelim}
+
+.ms-choice > div.icon-close:before{ldelim}
+    color: {$bodyTextColor};
+{rdelim}
+
+.ms-choice > div.icon-close:hover:before{ldelim}
+    color: {$linkColor};
+{rdelim}
+
+.ms-choice > div.icon-caret{ldelim}
+    border-color: {$bodyTextColor} transparent transparent transparent;
+{rdelim}
+
+.ms-choice > div.icon-caret.open{ldelim}
+    border-color: transparent transparent {$bodyTextColor} transparent;
+{rdelim}
+
+.ms-drop{ldelim}
+    background: {$bodyBackgroundColor};
+    color: {$bodyTextColor};
+    border-color: {$bodyTextColor};
+{rdelim}
+
+.ms-search input{ldelim}
+    border-color: {$bodyTextColor};
+{rdelim}
+
+.ms-filter-options{ldelim}
+    border-bottom-color: {$bodyTextColor};
+    background-color: {$bodyBackgroundColor};
+{rdelim}
+
+.ms-filter-option{ldelim}
+    color: {$bodyTextColor};
+    background-color: {$bodyBackgroundColor};
+    border-color: {$bodyTextColor};
+{rdelim}
+
+.ms-filter-option:hover{ldelim}
+    background-color: {$bodyBackgroundColor};
+    border-color: {$bodyTextColor};
+{rdelim}
+
+.ms-filter-option.active{ldelim}
+    background-color: {$bodyBackgroundColor};
+    color: {$linkColor};
+    border-color: {$linkColor};
+{rdelim}
+
+.ms-drop ul > li.hide-radio:focus, .ms-drop ul > li.hide-radio:hover{ldelim}
+    background-color: {$bodyBackgroundColor};
+{rdelim}
+
+.ms-drop ul > li.hide-radio.selected{ldelim}
+    color: {$bodyTextColor};
+    background-color: {$bodyBackgroundColor};
+{rdelim}
+
+.ms-drop ul > li.option-divider{ldelim}
+    border-top-color: {$bodyTextColor};
+{rdelim}
+
 {$additionalCSS}
 </style>
 {/strip}

@@ -24,19 +24,64 @@ class SlowPage extends DataObject {
 
 	function setSlowness(float $elapsedTime) : void {
 		if ($elapsedTime < 0.5) {
-			$this->__set('timesFast', $this->timesFast++);
+			$this->__set('timesFast', ++$this->timesFast);
 		} elseif ($elapsedTime < 1) {
-			$this->__set('timesAcceptable', $this->timesAcceptable++);
+			$this->__set('timesAcceptable', ++$this->timesAcceptable);
 		} elseif ($elapsedTime < 2) {
-			$this->__set('timesSlow', $this->timesSlow++);
+			$this->__set('timesSlow', ++$this->timesSlow);
 		} elseif ($elapsedTime < 4) {
-			$this->__set('timesSlower', $this->timesSlower++);
+			$this->__set('timesSlower', ++$this->timesSlower);
 		} else {
-			$this->__set('timesVerySlow', $this->timesVerySlow++);
+			$this->__set('timesVerySlow', ++$this->timesVerySlow);
 		}
 	}
 
 	public function okToExport(array $selectedFilters): bool {
 		return true;
 	}
+
+	public function setMonth(string $date) : void {
+		$this->__set('month', $date);
+	}
+
+	public function setYear(string $date) : void {
+		$this->__set('year', $date);
+	}
+
+	public function setModule(?string $module) : void {
+		$this->__set('module', $module);
+	}
+
+	public function setAction(?string $action) : void {
+		$this->__set('action', $action);
+	}
+
+	public function getModule() : string {
+		return $this->module;
+	}
+
+	public function getAction() : string {
+		return $this->action;
+	}
+
+	public function getTimesFast() : int {
+		return $this->timesFast ?? 0;
+	}
+
+	public function getTimesAcceptable() : int {
+		return $this->timesAcceptable ?? 0;
+	}
+
+	public function getTimesSlow() : int {
+		return $this->timesSlow ?? 0;
+	}
+
+	public function getTimesSlower() : int {
+		return $this->timesSlower ?? 0;
+	}
+
+	public function getTimesVerySlow() : int {
+		return $this->timesVerySlow ?? 0;
+	}
+
 }

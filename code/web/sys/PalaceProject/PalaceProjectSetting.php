@@ -15,6 +15,8 @@ class PalaceProjectSetting extends DataObject {
 	/** @noinspection PhpUnused */
 	public $lastUpdateOfAllRecords;
 
+	public $showPalaceProjectLinks;
+
 	private $_scopes;
 	private $_collections;
 	/** @noinspection PhpUnused */
@@ -75,6 +77,22 @@ class PalaceProjectSetting extends DataObject {
 				'description' => 'Whether or not a full update of all records should be done on the next pass of indexing',
 				'default' => 0,
 			],
+			'showPalaceProjectLinks' => [
+				'property' => 'showPalaceProjectLinks',
+				'type' => 'checkbox',
+				'label' => 'Show Access in Palace Project for other eContent',
+				'description' => 'Show Access in Palace Project link for OverDrive and Cloud Library titles',
+				'default' => 1
+			],
+			'instructionsForUsage' => [
+				'property' => 'instructionsForUsage',
+				'type' => 'translatableTextBlock',
+				'label' => 'Instructions For Using Palace Project',
+				'description' => 'Provide instructions for how to use the Palace Project to read titles',
+				'defaultTextFile' => 'PalaceProjectSetting_instructionsForUsage.MD',
+				'hideInLists' => true,
+			],
+
 			'lastUpdateOfChangedRecords' => [
 				'property' => 'lastUpdateOfChangedRecords',
 				'type' => 'timestamp',
@@ -88,14 +106,6 @@ class PalaceProjectSetting extends DataObject {
 				'label' => 'Last Update of All Records',
 				'description' => 'The timestamp when all records were loaded',
 				'default' => 0,
-			],
-			'instructionsForUsage' => [
-				'property' => 'instructionsForUsage',
-				'type' => 'translatableTextBlock',
-				'label' => 'Instructions For Using Palace Project',
-				'description' => 'Provide instructions for how to use the Palace Project to read titles',
-				'defaultTextFile' => 'PalaceProjectSetting_instructionsForUsage.MD',
-				'hideInLists' => true,
 			],
 
 			'scopes' => [

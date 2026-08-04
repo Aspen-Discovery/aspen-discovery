@@ -18,6 +18,7 @@ class SearchInterpreterSetting extends DataObject {
 	public $processFictionNonFiction;
 	public $processNew;
 	public $processAvailable;
+	public $triggerSeriesSearch;
 
 	public $_termsToSkip;
 	public $_specialTerms;
@@ -36,6 +37,7 @@ class SearchInterpreterSetting extends DataObject {
 
 		$termsToSkipStructure = SearchInterpreterTermsToSkip::getObjectStructure($context);
 		$specialTermsStructure = SearchInterpreterSpecialTerms::getObjectStructure($context);
+		unset($specialTermsStructure['weight']);
 
 		$structure = [
 			'id' => [
@@ -220,6 +222,23 @@ class SearchInterpreterSetting extends DataObject {
 					],
 				],
 			],
+			'additionalSection' => [
+				'property' => 'additionalSection',
+				'type' => 'section',
+				'label' => 'Additional Settings',
+				'hideInLists' => true,
+				'expandByDefault' => true,
+				'properties' => [
+					'triggerSeriesSearch' => [
+						'property' => 'triggerSeriesSearch',
+						'type' => 'checkbox',
+						'label' => 'Trigger Series Search',
+						'description' => 'Whether the search interpreter should default to a series search when the keyword &ldquo;series&rdquo; is used.',
+						'hideInLists' => true,
+						'default' => 0,
+					],
+				],
+			],
 			'specialTerms' => [
 				'property' => 'specialTerms',
 				'type' => 'oneToMany',
@@ -237,7 +256,7 @@ class SearchInterpreterSetting extends DataObject {
 				'keyOther' => 'settingId',
 				'subObjectType' => 'SearchInterpreterSpecialTerms',
 				'structure' => $specialTermsStructure,
-				'sortable' => false,
+				'sortable' => true,
 				'storeDb' => true,
 				'allowEdit' => false,
 				'canEdit' => false,
@@ -301,6 +320,7 @@ class SearchInterpreterSetting extends DataObject {
 			if ($this->id) {
 				$obj = new SearchInterpreterSpecialTerms();
 				$obj->settingId = $this->id;
+				$obj->orderBy('weight');
 				$obj->find();
 				while ($obj->fetch()) {
 					$this->_specialTerms[$obj->id] = clone $obj;

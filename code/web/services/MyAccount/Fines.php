@@ -42,8 +42,10 @@ class MyAccount_Fines extends MyAccount {
 				}
 
 				$fines = $user->getFines();
+				$credits = $user->getCredits();
 				$useOutstanding = $user->getCatalogDriver()->showOutstandingFines();
 				$interface->assign('showOutstanding', $useOutstanding);
+				$interface->assign('supportsCredits', $user->supportsCredits());
 
 				//PayPal
 				if ($paymentLibrary->finePaymentType == 2) {
@@ -311,6 +313,7 @@ class MyAccount_Fines extends MyAccount {
 
 				$interface->assign('finesToPay', $paymentLibrary->finesToPay);
 				$interface->assign('userFines', $fines);
+				$interface->assign('userCredits', $credits);
 
 				$termsOfService = null;
 				$convenienceFee = 0.00;
@@ -325,9 +328,12 @@ class MyAccount_Fines extends MyAccount {
 
 				$userAccountLabel = [];
 				$fineTotalsVal = [];
+				$creditTotalsVal = [];
 				$outstandingTotalVal = [];
+				$creditOutstandingTotalVal = [];
 				$grandTotalVal = [];
 				$outstandingGrandTotalVal = [];
+				$creditOutstandingGrandTotalVal = [];
 				// Get Account Labels, Add Up Totals
 				foreach ($fines as $userId => $finesDetails) {
 					$userAccountLabel[$userId] = $user->getUserReferredTo($userId)->getNameAndLibraryLabel();
@@ -359,12 +365,43 @@ class MyAccount_Fines extends MyAccount {
 					}
 				}
 
+				foreach ($credits as $userId => $creditsDetails) {
+					if (!isset($userAccountLabel[$userId])) {
+						$userAccountLabel[$userId] = $user->getUserReferredTo($userId)->getNameAndLibraryLabel();
+					}
+					$total = $totalOutstanding = 0;
+					foreach ($creditsDetails as $credit) {
+						$amount = $credit['amountVal'];
+						if (is_numeric($amount)) {
+							$total += $amount;
+						}
+						if ($useOutstanding && $credit['amountOutstandingVal']) {
+							$outstanding = $credit['amountOutstandingVal'];
+							if (is_numeric($outstanding)) {
+								$totalOutstanding += $outstanding;
+							}
+						}
+						if (!empty($credit['system'])) {
+							$showSystem = true;
+						}
+					}
+
+					$creditTotalsVal[$userId] = $total;
+					if ($useOutstanding) {
+						$creditOutstandingTotalVal[$userId] = $totalOutstanding;
+						$creditOutstandingGrandTotalVal[$userId] = $totalOutstanding + $convenienceFee;
+					}
+				}
+
 
 				$interface->assign('userAccountLabel', $userAccountLabel);
 				$interface->assign('fineTotalsVal', $fineTotalsVal);
+				$interface->assign('creditTotalsVal', $creditTotalsVal);
 				if ($useOutstanding) {
 					$interface->assign('outstandingTotalVal', $outstandingTotalVal);
+					$interface->assign('creditOutstandingTotalVal', $creditOutstandingTotalVal);
 					$interface->assign('outstandingGrandTotalVal', $outstandingGrandTotalVal);
+					$interface->assign('creditOutstandingGrandTotalVal', $creditOutstandingGrandTotalVal);
 				}
 				$interface->assign('grandTotalVal', $grandTotalVal);
 

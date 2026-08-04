@@ -11,18 +11,14 @@ class SystemAPI extends AbstractAPI {
 		header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 
-		global $activeLanguage;
-		if (isset($_GET['language'])) {
-			$language = new Language();
-			$language->code = $_GET['language'];
-			if ($language->find(true)) {
-				$activeLanguage = $language;
-			}
-		}
+		$this->setLanguage();
 
 		if ($method === 'getLogoFile') {
 			$this->$method();
-		}else if ($method === 'getTranslation' || $method === 'getTranslationWithValues' || $method === 'getBulkTranslations') {
+		}else if ($method === 'getTranslation'
+			|| $method === 'getTranslationWithValues'
+			|| $method === 'getBulkTranslations'
+			|| $method === 'getFirebaseMessagingConfig') {// TODO determine if firebase methods need authentication
 			//These methods don't need additional authentication, just return the data.
 			$result = [
 				'result' => $this->$method(),
@@ -32,64 +28,7 @@ class SystemAPI extends AbstractAPI {
 			die();
 		}
 
-		if (isset($_SERVER['PHP_AUTH_USER'])) {
-			if ($this->grantTokenAccess()) {
-				if (in_array($method, [
-					'getLibraryInfo',
-					'getLocationInfo',
-					'getThemeInfo',
-					'getAppSettings',
-					'getLocationAppSettings',
-					'getLanguages',
-					'getVdxForm',
-					'getLocalIllForm',
-					'getSelfCheckSettings',
-					'getSystemMessages',
-					'dismissSystemMessage',
-					'getLibraryLinks',
-					'getCatalogStatus',
-					'getLocations',
-					'getMaterialsRequestForm',
-					'getHomeScreenLinks',
-				])) {
-					$result = [
-						'result' => $this->$method(),
-					];
-					$output = json_encode($result);
-					header("Cache-Control: max-age=10800");
-					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
-					APIUsage::incrementStat('SystemAPI', $method);
-				} else {
-					$output = json_encode(['error' => 'invalid_method']);
-				}
-			} else {
-				header('HTTP/1.0 401 Unauthorized');
-				$output = json_encode(['error' => 'unauthorized_access']);
-			}
-			ExternalRequestLogEntry::logRequest('SystemAPI.' . $method, $_SERVER['REQUEST_METHOD'], $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], getallheaders(), '', $_SERVER['REDIRECT_STATUS'], $output, []);
-			echo $output;
-		} elseif (IPAddress::allowAPIAccessForClientIP()) {
-			if (!in_array($method, [
-					'getCatalogConnection',
-					'getUserForApiCall',
-					'checkWhichUpdatesHaveRun',
-					'getPendingDatabaseUpdates',
-					'runSQLStatement',
-					'markUpdateAsRun',
-				]) && method_exists($this, $method)) {
-				$result = [
-					'result' => $this->$method(),
-				];
-				$output = json_encode($result);
-				require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
-				APIUsage::incrementStat('SystemAPI', $method);
-			} else {
-				$output = json_encode(['error' => 'invalid_method']);
-			}
-			echo $output;
-		} else {
-			$this->forbidAPIAccess();
-		}
+		$this->handleAPIRequestAuto($method, 'system_api');
 	}
 
 	/** @noinspection PhpUnused */
@@ -375,6 +314,14 @@ class SystemAPI extends AbstractAPI {
 		];
 	}
 
+	/**
+	 * Gets an array of all available database updates
+	 * @oauth false
+	 * @token false
+	 * @public false
+	 *
+	 * @return array
+	 */
 	public function getDatabaseUpdates(): array {
 		require_once ROOT_DIR . '/sys/DBMaintenance/library_location_updates.php';
 		$library_location_updates = getLibraryLocationUpdates();
@@ -396,8 +343,32 @@ class SystemAPI extends AbstractAPI {
 		$pay360Updates = getPay360Updates();
 		require_once ROOT_DIR . '/sys/DBMaintenance/gale_updates.php';
 		$galeUpdates = getGaleUpdates();
+		require_once ROOT_DIR . '/sys/DBMaintenance/aspen_event_registration_updates.php';
+		$aspenEventRegistrationUpdates = getAspenEventRegistrationUpdates();
+		require_once ROOT_DIR . '/sys/DBMaintenance/aspen_event_waiting_list_updates.php';
+		$aspenEventWaitingListUpdates = getAspenEventWaitingListUpdates();
+		require_once ROOT_DIR . '/sys/DBMaintenance/aspen_event_notification_updates.php';
+		$aspenEventNotificationUpdates = getAspenEventNotificationUpdates();
+		require_once ROOT_DIR . '/sys/DBMaintenance/daily_usage_updates.php';
+		$dailyUsageUpdates = getDailyUsageUpdates();
 
-		$baseUpdates = array_merge($library_location_updates, $summonUpdates, $cloudLibraryUpdates, $grapesWebBuilderUpdates, $communityEngagementUpdates, $talpaUpdates, $heycentricUpdates, $hooplaVersion2Updates, $pay360Updates, $galeUpdates);
+		//having these on separate lines should make merges easier to manage
+		$baseUpdates = array_merge(
+			$library_location_updates, 
+			$summonUpdates, 
+			$cloudLibraryUpdates, 
+			$grapesWebBuilderUpdates, 
+			$communityEngagementUpdates, 
+			$talpaUpdates, 
+			$heycentricUpdates,
+			$hooplaVersion2Updates,
+			$pay360Updates,
+			$galeUpdates,
+			$aspenEventRegistrationUpdates,
+			$aspenEventWaitingListUpdates,
+			$aspenEventNotificationUpdates,
+			$dailyUsageUpdates
+		);
 
 		//Get version updates
 		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
@@ -414,14 +385,38 @@ class SystemAPI extends AbstractAPI {
 			}
 		}
 
+		//Get Plugin Updates
+		global $plugins;
+		if (!empty($plugins)) {
+			foreach ($plugins as $plugin) {
+				$baseUpdates = array_merge($baseUpdates, $plugin->getDatabaseUpdates());
+			}
+		}
+
 		return $baseUpdates;
 	}
 
+	/**
+	 * Returns whether there are pending updates for the system
+	 *
+	 * @oauth false
+	 * @token false
+	 * @public false
+	 * @return bool
+	 */
 	public function hasPendingDatabaseUpdates() : bool {
 		$availableUpdates = $this->getPendingDatabaseUpdates();
 		return count($availableUpdates) > 0;
 	}
 
+	/**
+	 * Returns a list of database updates that have not been run.
+	 *
+	 * @oauth false
+	 * @token false
+	 * @public false
+	 * @return array
+	 */
 	public function getPendingDatabaseUpdates() : array {
 		$availableUpdates = $this->getDatabaseUpdates();
 		$availableUpdates = $this->checkWhichUpdatesHaveRun($availableUpdates);
@@ -430,6 +425,15 @@ class SystemAPI extends AbstractAPI {
 		});
 	}
 
+	/**
+	 * Runs a specific database update
+	 * @oauth false
+	 * @token false
+	 * @public false
+	 * @param $availableUpdates - An array of all available updates
+	 * @param $updateName - The name of the update to run
+	 * @return array
+	 */
 	public function runDatabaseUpdate(&$availableUpdates, $updateName) : array {
 		if ($availableUpdates == null) {
 			$availableUpdates = $this->getDatabaseUpdates();
@@ -468,6 +472,16 @@ class SystemAPI extends AbstractAPI {
 		}
 	}
 
+	/**
+	 * Runs a sql statement for a database update
+	 *
+	 * @oauth false
+	 * @token false
+	 * @public false
+	 * @param $update - Information about the update to be run
+	 * @param $sql - The specific SQL statement to run
+	 * @return bool
+	 */
 	private function runSQLStatement(&$update, $sql) : bool {
 		global $aspen_db;
 		set_time_limit(500);
@@ -498,6 +512,15 @@ class SystemAPI extends AbstractAPI {
 		return $updateOk;
 	}
 
+	/**
+	 * Updates that an update has been run within the database.
+	 *
+	 * @oauth false
+	 * @token false
+	 * @public false
+	 * @param $update_key - The name of the update that was run
+	 * @return void
+	 */
 	private function markUpdateAsRun($update_key) : void {
 		global $aspen_db;
 		$result = $aspen_db->query("SELECT * from db_update where update_key = " . $aspen_db->quote($update_key));
@@ -509,6 +532,11 @@ class SystemAPI extends AbstractAPI {
 		}
 	}
 
+	/**
+	 * Runs all pending database updates
+	 *
+	 * @return array
+	 */
 	public function runPendingDatabaseUpdates() : array {
 		$pendingUpdates = $this->getPendingDatabaseUpdates();
 		$numRun = 0;
@@ -550,7 +578,17 @@ class SystemAPI extends AbstractAPI {
 		];
 	}
 
-	public function checkWhichUpdatesHaveRun($availableUpdates) {
+	/**
+	 * Returns a list of updates that have been run. Not for use within APIs
+	 *
+	 * @param array $availableUpdates
+	 * @oauth false
+	 * @token false
+	 * @public false
+	 *
+	 * @return mixed
+	 */
+	public function checkWhichUpdatesHaveRun(array $availableUpdates) : array {
 		global $aspen_db;
 		foreach ($availableUpdates as $key => $update) {
 			$update['alreadyRun'] = false;
@@ -811,14 +849,14 @@ class SystemAPI extends AbstractAPI {
 					'message' => 'Invalid language code provided.',
 				];
 			}
-			if (isset($_REQUEST['terms']) || file_get_contents('php://input')) {
-				if (isset($_REQUEST['terms'])) {
-					$terms['terms'] = $_REQUEST['terms'];
-				}else{
-					$data = file_get_contents('php://input');
-					$terms = json_decode($data, true);
-				}
-
+			$terms = null;
+			if (isset($_REQUEST['terms'])) {
+				$terms['terms'] = $_REQUEST['terms'];
+			} else {
+				$data = file_get_contents('php://input');
+				$terms = json_decode($data, true);
+			}
+			if (!empty($terms) && !empty($terms['terms'])) {
 				$fromLiDA = $this->checkIfLiDA() && $this->grantTokenAccess();
 
 				$logger->log("Preparing to translate " . count($terms['terms']), Logger::LOG_DEBUG);
@@ -875,85 +913,11 @@ class SystemAPI extends AbstractAPI {
 
 	/** @noinspection PhpUnused */
 	function getVdxForm() : array {
-		$result = [
+		return [
 			'success' => false,
 			'title' => 'Error',
-			'message' => 'Unable to load VDX form',
+			'message' => 'This method is no longer available',
 		];
-
-		require_once ROOT_DIR . '/sys/VDX/VdxSetting.php';
-		require_once ROOT_DIR . '/sys/VDX/VdxForm.php';
-
-		if (isset($_REQUEST['formId'])) {
-			$formId = $_REQUEST['formId'];
-		} else {
-			return [
-				'success' => false,
-				'title' => translate([
-					'text' => 'Invalid Configuration',
-					'isPublicFacing' => true,
-				]),
-				'message' => translate([
-					'text' => 'A VDX form id was not given.',
-					'isPublicFacing' => true,
-				]),
-			];
-		}
-
-		$vdxSettings = new VdxSetting();
-		if ($vdxSettings->find(true)) {
-			$vdxForm = new VdxForm();
-			$vdxForm->id = $formId;
-			if ($vdxForm->find(true)) {
-				$vdxFormFields = $vdxForm->getFormFieldsForApi();
-				$result = [
-					'success' => true,
-					'title' => translate([
-						'text' => 'Request Title',
-						'isPublicFacing' => true,
-					]),
-					'message' => translate([
-						'text' => 'If you cannot find a title in our catalog, you can request the title via this form. Please enter as much information as possible so we can find the exact title you are looking for. For example, if you are looking for a specific season of a TV show, please include that information.',
-						'isPublicFacing' => true,
-					]),
-					'buttonLabel' => translate([
-						'text' => 'Place Request',
-						'isPublicFacing' => true,
-					]),
-					'buttonLabelProcessing' => translate([
-						'text' => 'Placing Request',
-						'isPublicFacing' => true,
-					]),
-					'fields' => $vdxFormFields,
-				];
-			} else {
-				return [
-					'success' => false,
-					'title' => translate([
-						'text' => 'Invalid Configuration',
-						'isPublicFacing' => true,
-					]),
-					'message' => translate([
-						'text' => 'Unable to find the specified form.',
-						'isPublicFacing' => true,
-					]),
-				];
-			}
-		} else {
-			return [
-				'success' => false,
-				'title' => translate([
-					'text' => 'Invalid Configuration',
-					'isPublicFacing' => true,
-				]),
-				'message' => translate([
-					'text' => 'VDX Settings do not exist, please contact the library to make a request.',
-					'isPublicFacing' => true,
-				]),
-			];
-		}
-
-		return $result;
 	}
 
 	/** @noinspection PhpUnused */
@@ -961,7 +925,7 @@ class SystemAPI extends AbstractAPI {
 		$result = [
 			'success' => false,
 			'title' => 'Error',
-			'message' => 'Unable to load VDX form',
+			'message' => 'Unable to load Local ILL form',
 		];
 
 		require_once ROOT_DIR . '/sys/InterLibraryLoan/LocalIllForm.php';
@@ -1217,6 +1181,26 @@ class SystemAPI extends AbstractAPI {
 		];
 	}
 
+	//only returns the portion of settings needed by
+	//the front end to get a token
+	function getFirebaseMessagingConfig() {
+		require_once ROOT_DIR . '/sys/AspenPWA/Setting.php';
+		$settings = AspenPWASetting::getSettingsForCurrentLibrary();
+		if($settings)
+		{
+			return [
+				'success' => true,
+				'settings' => $settings->getFirebaseSettings(),
+			];
+		}
+		
+		http_response_code(404);
+		return [
+			'success' => false,
+			'error' => 'no settings found'
+		];
+	}
+
 	/** @noinspection PhpUnused */
 	public function getHomeScreenLinks(): array {
 		if (isset($_REQUEST['locationId']) || isset($_REQUEST['libraryId'])) {
@@ -1438,7 +1422,6 @@ class SystemAPI extends AbstractAPI {
 			}
 		}
 	}
-
 	function getBreadcrumbs(): array {
 		return [];
 	}

@@ -3,6 +3,7 @@
 		<input type="hidden" name="holdId" value="{$holdId}" id="holdId"/>
 		<input type="hidden" name="patronId" value="{$patronId}" id="patronId"/>
 		<input type="hidden" name="currentLocation" value="{$currentLocation}" id="currentLocation"/>
+		<input type="hidden" name="currentSublocation" value="{$currentSublocation}" id="currentSublocation"/>
 		<div class="rateTitle form-group">
 			<label for="newPickupLocation">{translate text="Select a new branch to pickup your hold" isPublicFacing=true}</label>
 			<select name="newPickupLocation" id="newPickupLocation" class="form-control" onchange="AspenDiscovery.Account.generateChangeSublocationSelect();">
@@ -23,7 +24,7 @@
 			</div>
 		</div>
 		<script>
-			AspenDiscovery.Account.generateChangeSublocationSelect();
+			AspenDiscovery.Account.generateChangeSublocationSelect({$currentSublocation});
 		</script>
 	</form>
 {/strip}

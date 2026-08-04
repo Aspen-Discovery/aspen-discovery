@@ -30,7 +30,7 @@ class CommunityEngagement_CampaignTable extends Admin_Dashboard {
 				$interface->assign('campaign', $campaign);
 				
 				//Retrieve milestones for the campaign
-				$milestones = CampaignMilestone::getMilestoneByCampaign($campaignId);
+				$campaignMilestones = CampaignMilestone::getCampaignMilestoneByCampaign($campaignId);
 
 				$extraCreditActivities = CampaignExtraCredit::getExtraCreditByCampaign($campaignId);
 				//Get users for campaign
@@ -50,20 +50,20 @@ class CommunityEngagement_CampaignTable extends Admin_Dashboard {
 							'milestones' => []
 						];
 						//Get milestone completion status
-						$milestoneCompletionStatus = $userCampaign->checkMilestoneCompletionStatus();
+						$milestoneCompletionStatus = $userCampaign->checkCampaignMilestoneCompletionStatus();
 
-                        foreach ($milestones as $milestone) {
-                            $milestoneComplete = $milestoneCompletionStatus[$milestone->id] ?? false;
-                            $userProgress = CampaignMilestoneUsersProgress::getProgressByMilestoneId($milestone->id, $campaignId, $user->id);
-                            $totalGoals = CampaignMilestone::getMilestoneGoalCountByCampaign($campaignId, $milestone->id);
-                            $milestoneRewardGiven = CampaignMilestoneUsersProgress::getRewardGivenForMilestone($milestone->id, $user->id, $campaignId);
-                            $milestoneType = $milestone->milestoneType;
-							$milestoneAwardAutomatically = $milestone->awardAutomatically;
+                        foreach ($campaignMilestones as $campaignMilestone) {
+                            $milestoneComplete = $milestoneCompletionStatus[$campaignMilestone->id] ?? false;
+                            $userProgress = CampaignMilestoneUsersProgress::getProgressByCampaignMilestoneId($campaignMilestone->id, $user->id);
+                            $totalGoals = CampaignMilestone::getCampaignMilestoneGoalCountByCampaign($campaignMilestone->id);
+                            $milestoneRewardGiven = CampaignMilestoneUsersProgress::getRewardGivenForCampaignMilestone($campaignMilestone->id, $user->id);
+                            $milestoneType = $campaignMilestone->milestoneType;
+							$milestoneAwardAutomatically = $campaignMilestone->awardAutomatically;
 
                             //Calculate percentage progress
                             $percentageProgress = $totalGoals > 0 ? ($userProgress / $totalGoals) * 100 : 0;
                             //Add milestone data for each user
-                            $userCampaigns[$campaign->id][$user->id]['milestones'][$milestone->id] = [
+                            $userCampaigns[$campaign->id][$user->id]['milestones'][$campaignMilestone->id] = [
                                 'milestoneComplete' => $milestoneComplete,
                                 'userProgress' => $userProgress,
                                 'goal' => $totalGoals,
@@ -78,7 +78,7 @@ class CommunityEngagement_CampaignTable extends Admin_Dashboard {
                     }
                 }
                 $interface->assign('userCampaigns', $userCampaigns);
-                $interface->assign('milestones', $milestones);
+                $interface->assign('milestones', $campaignMilestones);
                 $interface->assign('users', $users);
 				$interface->assign('extraCreditActivities', $extraCreditActivities);
 

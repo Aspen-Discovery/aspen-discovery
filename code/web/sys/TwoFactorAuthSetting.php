@@ -7,12 +7,16 @@ class TwoFactorAuthSetting extends DataObject {
 	public $name;
 	public $isEnabled;
 	public $deniedMessage;
+	public $allowEmail;
+	public $allowTotp;
+	public $issuerTOTP;
 
 	private $_libraries;
 	private $_ptypes;
 
 	static $_objectStructure = [];
 	static function getObjectStructure(string $context = ''): array {
+		global $library;
 		if (isset(self::$_objectStructure[$context]) && self::$_objectStructure[$context] !== null) {
 			return self::$_objectStructure[$context];
 		}
@@ -62,6 +66,27 @@ class TwoFactorAuthSetting extends DataObject {
 				'type' => 'enum',
 				'label' => 'Is Enabled',
 				'values' => $requiredList,
+			],
+			'allowEmail' => [
+				'property' => 'allowEmail',
+				'type' => 'checkbox',
+				'label' => 'Allow Email',
+				'description' => 'Allow users to select email as a method for 2FA. If allowed, users will have the option to receive a code via email when they log in.'
+			],
+			'allowTotp' => [
+				'property' => 'allowTotp',
+				'type' => 'checkbox',
+				'label' => 'Allow TOTP apps (Google Authenticator, Authy, etc.)',
+				'description' => 'Allow users to select TOTP apps as a method for 2FA. If allowed, users will have the option to set up an authenticator app to receive codes when they log in.',
+				'onchange' => 'return AspenDiscovery.Admin.toggle2FATOTPOptions();',
+			],
+			'issuerTOTP' => [
+				'property' => 'issuerTOTP',
+				'type' => 'text',
+				'label' => 'TOTP Issuer Name',
+				'description' => 'The name of the service displayed in the authenticator app.',
+				'default' => $library->displayName . ' Catalog',
+				'required' => true,
 			],
 			'deniedMessage' => [
 				'property' => 'deniedMessage',

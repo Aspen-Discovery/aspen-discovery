@@ -132,26 +132,71 @@ class GroupedWork_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function getDescription() : array {
-		$this->checkRequiredParameters(['id']);
-		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-		$result = [
-			'success' => false,
-		];
-		$id = $_REQUEST['id'];
+		global $library;
 
-		$recordDriver = new GroupedWorkDriver($id);
-		if ($recordDriver->isValid()) {
-			$description = $recordDriver->getDescription();
-			if (strlen($description) == 0) {
-				$description = translate([
-					'text' => 'Description not provided',
-					'isPublicFacing' => true,
-				]);
+		$this->checkRequiredParameters(['id']);
+
+		$description = '';
+
+		if (isset($_REQUEST['recordType'])) {
+			$driverMap = [
+				'marcRecord'          => 'MarcRecordDriver',
+				'hooplaRecord'        => 'HooplaRecordDriver',
+				'libbyRecord'         => 'OverDriveRecordDriver',
+				'cloudLibraryRecord'  => 'CloudLibraryRecordDriver',
+				'axis360Record'       => 'Axis360RecordDriver',
+				'palaceProjectRecord' => 'PalaceProjectRecordDriver',
+			];
+			$recordType = $_REQUEST['recordType'];
+
+			if (isset($driverMap[$recordType])) {
+				$driverClass = $driverMap[$recordType];
+				require_once ROOT_DIR . "/RecordDrivers/{$driverClass}.php";
+				$record = new $driverClass($_REQUEST['recordId']);
+
+				//first check if we prefer supplemental description instead
+				$useMarcSummary = true;
+				if ($library->getGroupedWorkDisplaySettings()->preferSyndeticsSummary == 1) {
+					$isbn = $record->getCleanISBN();
+					$upc = $record->getCleanUPC();
+					if ($isbn || $upc) {
+						require_once ROOT_DIR . '/Drivers/marmot_inc/GoDeeperData.php';
+						$summaryInfo = GoDeeperData::getSummary($record->getPermanentId(), $isbn, $upc);
+						if (isset($summaryInfo['summary'])) {
+							$description = $summaryInfo['summary'];
+							$useMarcSummary = false;
+						}
+					}
+				}
+
+				if ($useMarcSummary) {
+					$description = $record->getDescription();
+				}
 			}
+		}
+		if (empty($description)){
+			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+			$id = $_REQUEST['id'];
+
+			$recordDriver = new GroupedWorkDriver($id);
+			if ($recordDriver->isValid()) {
+				$description = $recordDriver->getDescription();
+			}
+		}
+
+		if (empty($description)) {
+			$description = translate([
+				'text' => 'Description not provided',
+				'isPublicFacing' => true,
+			]);
+			$result = [
+				'success' => false,
+			];
+		} else {
 			$description = strip_tags($description, '<a><b><p><i><em><strong><ul><li><ol>');
 			$result['success'] = true;
-			$result['description'] = $description;
 		}
+		$result['description'] = $description;
 
 		return $result;
 	}
@@ -162,6 +207,7 @@ class GroupedWork_AJAX extends JSON_Action {
 
 		global $interface;
 		global $memoryWatcher;
+		global $library;
 
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 		$id = $_REQUEST['id'];
@@ -181,8 +227,42 @@ class GroupedWork_AJAX extends JSON_Action {
 		$enrichmentData = $recordDriver->loadEnrichment();
 		$memoryWatcher->logMemory('Loaded Enrichment information from NoveList');
 
-		//Process series data
+		//Process series data if series module is on
 		$titles = [];
+		if ($library->useSeriesSearchIndex) {
+			$seriesInfo = $recordDriver->getSeries(true);
+			if (empty($seriesInfo) || empty($seriesInfo['seriesId'])) {
+				$enrichmentResult['seriesInfo'] = [
+					'titles' => $titles,
+					'currentIndex' => 0,
+				];
+			}else{
+				$seriesId = $seriesInfo['seriesId'];
+
+				require_once ROOT_DIR . '/sys/Series/Series.php';
+				$series = new Series();
+				$series->id = $seriesId;
+				if ($series->find(true)) {
+					$seriesMembers = $series->getSeriesMembers($series->getDefaultSortMethodName(), false, false);
+					$titles = [];
+					$currentIndex = 1;
+					foreach ($seriesMembers as $index => $seriesMember) {
+						$titles[] = $this->getScrollerTitleForSeriesMember($seriesMember, $index, 'Series');
+						if ($seriesMember->groupedWorkPermanentId == $id) {
+							$currentIndex = $index;
+						}
+					}
+
+					$seriesInfo = [
+						'titles' => $titles,
+						'currentIndex' => $currentIndex,
+					];
+					$enrichmentResult['seriesInfo'] = $seriesInfo;
+				}
+			}
+		}
+
+		//Process Novelist if on.
 		/** @var NovelistData $novelistData */
 		if (isset($enrichmentData['novelist'])) {
 			$novelistData = $enrichmentData['novelist'];
@@ -250,6 +330,7 @@ class GroupedWork_AJAX extends JSON_Action {
 				$interface->assign($detailOption, true);
 			}
 			$interface->assign('series', $series);
+			$interface->assign('summId', $id);
 			$enrichmentResult['seriesSummary'] = $interface->fetch('GroupedWork/series-summary.tpl');
 		}
 
@@ -260,6 +341,7 @@ class GroupedWork_AJAX extends JSON_Action {
 	function getMoreLikeThis() : array {
 		$this->checkRequiredParameters(['id']);
 
+		global $library;
 		global $configArray;
 		global $memoryWatcher;
 
@@ -286,8 +368,19 @@ class GroupedWork_AJAX extends JSON_Action {
 				$db = new GroupedWorksSolrConnector2($url);
 			}
 
-			$db->disableScoping();
-			$similar = $db->getMoreLikeThis($id);
+			if ($library->moreLikeThisSettings == 1 || $library->moreLikeThisSettings == 4) {
+				$selectedAvailabilityToggle = 'global';
+			} else {
+				$selectedAvailabilityToggle = 'local';
+			}
+			UserAccount::getActiveUserObj();
+			$format = null;
+			if (($library->moreLikeThisSettings == 3 || $library->moreLikeThisSettings == 4) && !empty($_REQUEST['format']) && !str_contains($_REQUEST['requestUrl'], 'GroupedWork')) {
+				$format = $_REQUEST['format'];
+				$similar = $db->getMoreLikeThis($id, $selectedAvailabilityToggle, false, true, null, $format);
+			} else{
+				$similar = $db->getMoreLikeThis($id, $selectedAvailabilityToggle);
+			}
 			$memoryWatcher->logMemory('Loaded More Like This data from Solr');
 			// Send the similar items to the template; if there is only one, we need
 			// to force it to be an array or things will not display correctly.
@@ -295,7 +388,7 @@ class GroupedWork_AJAX extends JSON_Action {
 				$similarTitles = [];
 				foreach ($similar['response']['docs'] as $key => $similarTitle) {
 					$similarTitleDriver = new GroupedWorkDriver($similarTitle);
-					$similarTitles[] = $similarTitleDriver->getScrollerTitle($key, 'MoreLikeThis');
+					$similarTitles[] = $similarTitleDriver->getScrollerTitle($key, 'MoreLikeThis', $format);
 				}
 				$similarTitlesInfo = [
 					'titles' => $similarTitles,
@@ -477,6 +570,70 @@ class GroupedWork_AJAX extends JSON_Action {
 		];
 	}
 
+	private function getScrollerTitleForSeriesMember(SeriesMember $seriesMember, $index, $scrollerName) : array {
+		$recordDriver = $seriesMember->getRecordDriver();
+		if ($recordDriver != null) {
+			$cover = $recordDriver->getBookcoverUrl('medium');
+		}else{
+			$cover = '';
+		}
+		$title = preg_replace("~\\s*([/:])\\s*$~", "", $seriesMember->displayName);
+		$series = $seriesMember->getSeries()->displayName;
+
+		if (isset($series)) {
+			$title .= ' (' . $series;
+			if (!empty($seriesMember->volume)) {
+				$title .= ' Volume ' . $seriesMember->volume;
+			}
+			$title .= ')';
+		}
+
+		if ($recordDriver != null) {
+			global $interface;
+			$interface->assign('index', $index);
+			$interface->assign('scrollerName', $scrollerName);
+			$interface->assign('id', $recordDriver->getPermanentId());
+			$interface->assign('title', $title);
+			$interface->assign('linkUrl', $recordDriver->getLinkUrl());
+			$interface->assign('bookCoverUrl', $cover);
+			$interface->assign('bookCoverUrlMedium', $cover);
+			$formattedTitle = $interface->fetch('RecordDrivers/GroupedWork/scroller-title.tpl');
+		} else {
+			$originalId = $_REQUEST['id'];
+			$formattedTitle = "<div id=\"scrollerTitle$scrollerName$index\" class=\"scrollerTitle\" onclick=\"return AspenDiscovery.showElementInPopup('$title', '#noResults$index')\">" . "<img src=\"$cover\" class=\"scrollerTitleCover\" alt=\"$title Cover\"/>" . "</div>";
+			$formattedTitle .= "<div id=\"noResults$index\" style=\"display:none\">
+					<div class=\"row\">
+						<div class=\"result-label col-md-3\">Author: </div>
+						<div class=\"col-md-9 result-value notranslate\">
+							<a href='/Author/Home?author=\"{$seriesMember->getSeries()->author}\"'>{$seriesMember->getSeries()->author}</a>
+						</div>
+					</div>
+					<div class=\"series row\">
+						<div class=\"result-label col-md-3\">Series: </div>
+						<div class=\"col-md-9 result-value\">
+							<a href=\"/GroupedWork/$originalId/Series\">$series</a>
+						</div>
+					</div>
+					<div class=\"row related-manifestation\">
+						<div class=\"col-sm-12\">
+							" . translate([
+					'text' => "The library does not own any copies of this title.",
+					'isPublicFacing' => true,
+				]) . "
+						</div>
+					</div>
+				</div>";
+		}
+
+		return [
+			'id' => $seriesMember->groupedWorkPermanentId ?? '',
+			'image' => $cover,
+			'title' => $title,
+			'author' => $seriesMember->getSeries()->author ?? '',
+			'formattedTitle' => $formattedTitle,
+		];
+	}
+
 	/** @noinspection PhpUnused */
 	function getGoDeeperData() : array {
 		$this->checkRequiredParameters(['id']);
@@ -531,10 +688,11 @@ class GroupedWork_AJAX extends JSON_Action {
 		}
 		$interface->assign('recordDriver', $recordDriver);
 
-		// if the grouped work consists of only 1 related item, return the record url, otherwise return the grouped-work url
+		//Load the Related Manifestations. This causes formats to be hidden appropriately
+		$recordDriver->getRelatedManifestations();
 		$relatedRecords = $recordDriver->getRelatedRecords();
 
-		// short version
+		// if the grouped work consists of only 1 related item, return the record url, otherwise return the grouped-work url
 		if (count($relatedRecords) == 1) {
 			$firstRecord = reset($relatedRecords);
 			$url = $firstRecord->getUrl();
@@ -549,6 +707,7 @@ class GroupedWork_AJAX extends JSON_Action {
 		]);
 
 		// button template
+		$interface->assign('summId', $recordDriver->getPermanentId());
 		$interface->assign('workId', $recordDriver->getPermanentId());
 		$interface->assign('escapeId', $escapedId);
 		$interface->assign('buttonLabel', $buttonLabel);
@@ -1592,16 +1751,23 @@ class GroupedWork_AJAX extends JSON_Action {
 	/** @noinspection PhpUnused */
 	function getCopyDetails() : array {
 		$this->checkRequiredParameters(['id']);
+		$this->checkRequiredParameters(['recordId']);
+		$this->checkRequiredParameters(['format']);
 
 		global $interface;
+		global $library;
 
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+		require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 		$id = $_REQUEST['id'];
 		$recordDriver = new GroupedWorkDriver($id);
 		$interface->assign('recordDriver', $recordDriver);
 
 		$recordId = $_REQUEST['recordId'];
 		$selectedFormat = urldecode($_REQUEST['format']);
+
+		$whereIsItDisplayStyle = $library->getGroupedWorkDisplaySettings()->whereIsItDisplayStyle;
+		$interface->assign('whereIsItDisplayStyle', $whereIsItDisplayStyle);
 
 		$relatedManifestation = null;
 		foreach ($recordDriver->getRelatedManifestations() as $relatedManifestation) {
@@ -1624,14 +1790,26 @@ class GroupedWork_AJAX extends JSON_Action {
 		$interface->assign('relatedManifestation', $relatedManifestation);
 		$interface->assign('isEContent', $relatedManifestation->isEContent());
 
+		$infoToShow = [
+			'volume'   => false,
+			'note'     => false,
+			'dueDate' => false,
+			'barcode'  => false
+		];
 		if ($recordId != $id) {
 			$record = $recordDriver->getRelatedRecord($recordId);
-			$summary = null;
 			if ($record != null) {
+				if (!empty($record->getUnsuppressedVolumeData())) {
+					$infoToShow['volume'] = true;
+				}
 				foreach ($relatedManifestation->getVariations() as $variation) {
 					foreach ($variation->getRecords() as $recordWithVariation) {
 						if ($recordWithVariation->id == $recordId) {
-							$summary = $recordWithVariation->getItemSummary();
+							if ($whereIsItDisplayStyle == 1) {
+								$summary = $recordWithVariation->getItemSummary();
+							}else{
+								$summary = $recordWithVariation->getItemDetails();
+							}
 							break;
 						}
 					}
@@ -1642,14 +1820,43 @@ class GroupedWork_AJAX extends JSON_Action {
 			} else {
 				foreach ($relatedManifestation->getVariations() as $variation) {
 					if ($recordId == $id . '_' . $variation->label) {
-						$summary = $variation->getItemSummary();
+						if ($whereIsItDisplayStyle == 1) {
+							$summary = $variation->getItemSummary();
+						}else{
+							$summary = $variation->getItemDetails();
+						}
 						break;
 					}
 				}
 			}
 		} else {
-			$summary = $relatedManifestation->getItemSummary();
+			if ($whereIsItDisplayStyle == 1) {
+				$summary = $relatedManifestation->getItemSummary();
+			}else{
+				$summary = $relatedManifestation->getItemDetails();
+			}
+			$infoToShow['volume'] = $relatedManifestation->hasVolumes();
 		}
+		if ($whereIsItDisplayStyle == 2) {
+			foreach ($summary as $item) {
+				if (!empty($item['volume'])) {
+					$infoToShow['volume'] = true;
+				}
+				if (!empty($item['note'])) {
+					$infoToShow['note'] = true;
+				}
+				if (!empty($item['dueDate'])) {
+					$infoToShow['dueDate'] = true;
+				}
+				if (!empty($item['barcode'])) {
+					$infoToShow['barcode'] = true;
+				}
+			}
+		}
+		$interface->assign('infoToShow', $infoToShow);
+		$interface->assign('showItemNotes', $library->getGroupedWorkDisplaySettings()->showItemNotes);
+		$interface->assign('showItemDueDates', $library->getGroupedWorkDisplaySettings()->showItemDueDates);
+		$interface->assign('showItemBarcodes', $library->getGroupedWorkDisplaySettings()->showItemBarcodes);
 		$interface->assign('showEContentHoldCounts', true);
 
 		$interface->assign('summary', $summary);
@@ -1941,6 +2148,94 @@ class GroupedWork_AJAX extends JSON_Action {
 					}
 				}
 			}
+			$interface->assign('availableRecords', $availableRecords);
+
+			$results = [
+				'success' => true,
+				'title' => translate([
+					'text' => "Group this with another work",
+					'isAdminFacing' => true,
+				]),
+				'modalBody' => $interface->fetch("GroupedWork/groupWithSearchForm.tpl"),
+				'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.GroupedWork.processGroupWithForm()'>" . translate([
+						'text' => "Group",
+						'isAdminFacing' => true,
+					]) . "</button>",
+			];
+		} else {
+			$results['message'] = translate([
+				'text' => "Could not find a work with that id",
+				'isAdminFacing' => true,
+			]);
+		}
+		return $results;
+	}
+
+	/** @noinspection PhpUnused */
+	function getGroupWithSeriesPageForm() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission('Manually Group and Ungroup Works');
+		$this->checkRequiredParameters(['id']);
+
+		$results = [
+			'success' => false,
+			'message' => translate([
+				'text' => 'Unknown Error',
+				'isAdminFacing' => true,
+			]),
+		];
+
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+		$groupedWork = new GroupedWork();
+		$id = $_REQUEST['id'];
+		$groupedWork->permanent_id = $id;
+		if ($groupedWork->find(true)) {
+			global $interface;
+			$interface->assign('id', $id);
+			$interface->assign('groupedWork', $groupedWork);
+
+			$availableRecords = [];
+			$availableRecords[-1] = translate([
+				'text' => "Select the primary work",
+				'isAdminFacing' => true,
+			]);
+
+			$seriesId = $_REQUEST['seriesId'];
+			require_once ROOT_DIR . '/sys/Series/SeriesMember.php';
+			$seriesMembers = new SeriesMember();
+			$seriesMembers->seriesId = $seriesId;
+			$seriesMembers->find();
+			while ($seriesMembers->fetch()) {
+				$primaryWork = new GroupedWork();
+				$primaryWork->permanent_id = $seriesMembers->groupedWorkPermanentId;
+				if ($primaryWork->find(true)) {
+					require_once ROOT_DIR . '/sys/Grouping/ManualGroupedWork.php';
+					$manualGroupedWork = new ManualGroupedWork();
+					$manualGroupedWork->grouped_work_permanent_id = $primaryWork->permanent_id;
+					if ($manualGroupedWork->find(true)) {
+						continue;
+					}
+					$isValidForGrouping = false;
+					if ($primaryWork->permanent_id != $id){
+						if ($primaryWork->grouping_category == $groupedWork->grouping_category) {
+							$isValidForGrouping = true;
+						}elseif (($groupedWork->grouping_category == 'comic' && $primaryWork->grouping_category == 'book') || ($groupedWork->grouping_category == 'book' && $primaryWork->grouping_category == 'comic')){
+							$isValidForGrouping = true;
+						}elseif ($groupedWork->grouping_category == 'other' || $primaryWork->grouping_category == 'other') {
+							$isValidForGrouping = true;
+						}
+					}
+					if ($isValidForGrouping) {
+						require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+						$groupedWorkDriver = new GroupedWorkDriver($primaryWork->permanent_id);
+						$primaryTitle = $groupedWorkDriver->getTitle();
+						$primaryAuthor = $groupedWorkDriver->getPrimaryAuthor();
+						$availableRecords[$seriesMembers->groupedWorkPermanentId] = "$primaryTitle  by  $primaryAuthor";
+					}
+				}
+			}
+
+
 			$interface->assign('availableRecords', $availableRecords);
 
 			$results = [
@@ -2701,7 +2996,7 @@ class GroupedWork_AJAX extends JSON_Action {
 			$bookcoverInfo->setImageSource('');
 			require_once ROOT_DIR . '/sys/SystemVariables.php';
 			if (SystemVariables::getSystemVariables()->useOriginalCoverUrls) {
-				$bookcoverInfo->setOriginalUrl(null);
+				$bookcoverInfo->clearOriginalUrls();
 				$bookcoverInfo->setLastUrlValidation(null);
 			}
 			$bookcoverInfo->update();
@@ -2833,11 +3128,47 @@ class GroupedWork_AJAX extends JSON_Action {
 
 			if ($foundVariation) {
 				$relatedRecords = $variation->getRelatedRecords();
+				if (count($relatedRecords) > 1) {
+					// Extract and filter out null/empty durations
+					$durations = array_values(array_filter(
+						array_map(fn($item) => $item->duration ?? null, $relatedRecords),
+						fn($d) => $d !== null && $d !== ''
+					));
+
+					if (!empty($durations)) {
+						// Calculate median
+						sort($durations);
+						$count = count($durations);
+						$middle = (int)floor($count / 2);
+
+						$median = ($count % 2 === 0)
+							? (int)(($durations[$middle - 1] + $durations[$middle]) / 2)
+							: $durations[$middle];
+
+						// Check if all durations are within 60 minutes of the median
+						$withinOneHour = true;
+						foreach ($durations as $duration) {
+							if (abs($duration - $median) > 60) {
+								$withinOneHour = false; // Not all within range
+							}
+						}
+
+						$interface->assign('duration', $median);
+						$interface->assign('withinOneHour', $withinOneHour);
+						$interface->assign('multipleDurations', true);
+
+					}
+				}
+
 				/** @var Grouping_Record $firstRecord */
 				$firstRecord = reset($relatedRecords);
 				$interface->assign('firstRecord', $firstRecord);
 				$interface->assign('isEContent', $firstRecord->isEContent());
-				$interface->assign('itemSummary', $firstRecord->getItemSummary());
+				$interface->assign('itemSummary', $variation->getItemSummary());
+				if (count($relatedRecords) === 1){
+					$interface->assign('duration', $firstRecord->duration);
+					$interface->assign('multipleDurations', false);
+				}
 				$interface->assign('relatedRecords', $relatedRecords);
 				$interface->assign('relatedManifestation', $relatedManifestation);
 				$interface->assign('variationId', $variation->databaseId);

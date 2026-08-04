@@ -1,13 +1,14 @@
 <?php /** @noinspection PhpMissingFieldTypeInspection */
+require_once ROOT_DIR . '/sys/AbstractUsage.php';
 
-
-class SummonRecordUsage extends DataObject {
+class SummonRecordUsage extends AbstractUsage {
 	public $__table = 'summon_usage';
 	public $id;
 	public $instance;
 	public $summonId;
 	public $year;
 	public $month;
+	public $day;
 	public $timesViewedInSearch;
 	public $timesUsed;
 
@@ -17,6 +18,7 @@ class SummonRecordUsage extends DataObject {
 			'summonId',
 			'year',
 			'month',
+			'day',
 		];
 	}
 

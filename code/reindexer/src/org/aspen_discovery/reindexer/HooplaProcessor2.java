@@ -1,5 +1,6 @@
 package org.aspen_discovery.reindexer;
 
+import com.turning_leaf_technologies.hoopla.HooplaUtils;
 import com.turning_leaf_technologies.indexing.HooplaScope;
 import com.turning_leaf_technologies.indexing.Scope;
 import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
@@ -18,6 +19,8 @@ import java.sql.SQLException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Locale;
+import java.util.Set;
 
 class HooplaProcessor2 {
 	private final GroupedWorkIndexer indexer;
@@ -144,32 +147,41 @@ class HooplaProcessor2 {
 				groupedWork.setTitle(title, subTitle, sortableTitle, formatCategory, false, hooplaRecord);
 				groupedWork.addFullTitle(fullTitle);
 
-
-				String primaryAuthor = "";
-				if (rawResponse.has("artist")){
-					primaryAuthor = rawResponse.getString("artist");
-					//Don't swap artist names for music since these are typically group names.
-					if (!format.equals("MUSIC")) {
-						primaryAuthor = AspenStringUtils.swapFirstLastNames(primaryAuthor);
-					}
-				}else if (rawResponse.has("publisher")){
-					primaryAuthor = rawResponse.getString("publisher");
-				}
+				String primaryAuthor = HooplaUtils.getPrimaryAuthor(rawResponse, format);
 				groupedWork.setAuthor(primaryAuthor);
 				groupedWork.setAuthAuthor(primaryAuthor);
 				groupedWork.setAuthorDisplay(primaryAuthor, formatCategory, hooplaRecord);
 
+				String language = rawResponse.getString("language");
+				language = StringUtils.capitalize(language.toLowerCase());
+				hooplaRecord.setPrimaryLanguage(language);
+				groupedWork.addLanguage(language);
+				if (language.equalsIgnoreCase("English")){
+					groupedWork.setLanguageBoost(10L);
+				}else if (language.equalsIgnoreCase("Spanish")){
+					groupedWork.setLanguageBoostSpanish(10L);
+				}
+
 				String series = rawResponse.optString("seriesName", rawResponse.optString("series", ""));
 
 				if (!series.isEmpty()){
-					groupedWork.addSeries(series);
+					String volume = "";
 					if (rawResponse.has("seriesNumber")) {
-						String volume = rawResponse.optString("seriesNumber", rawResponse.optString("volume", ""));
-						if (rawResponse.has("episodeNumber") || rawResponse.has("episode")) {
-							volume += " Episode " + rawResponse.optString("episodeNumber", rawResponse.optString("episode", ""));
-						}
-						groupedWork.addSeriesWithVolume(series, volume, 2, false);
+						volume = rawResponse.get("seriesNumber").toString();
 					}
+					if (rawResponse.has("volume")) {
+						if (!volume.isEmpty()){
+							volume += " ";
+						}
+						volume += rawResponse.get("volume").toString();
+					}
+					if (rawResponse.has("episodeNumber") || rawResponse.has("episode")) {
+						if (!volume.isEmpty()){
+							volume += " ";
+						}
+						volume += "Episode " + rawResponse.optString("episodeNumber", rawResponse.optString("episode", ""));
+					}
+					groupedWork.addSeriesWithVolume(series, primaryAuthor, volume, 2, false);
 				}
 
 				if (rawResponse.has("atosBookLevel")) {
@@ -256,7 +268,6 @@ class HooplaProcessor2 {
 
 					if (!foundAudience && rawResponse.has("ratings")) {
 						String rating = productRS.getString("rating");
-						//noinspection SpellCheckingInspection
 						if (rating.equals("TVMA") || rating.equals("M") || rating.equals("NC17")) {
 							isAdult = true;
 							groupedWork.addTargetAudience("Adult");
@@ -278,7 +289,6 @@ class HooplaProcessor2 {
 									case "PG-13":
 									case "PG13":
 									case "PG":
-										//noinspection SpellCheckingInspection
 									case "TVPG":
 									case "TV14":
 									case "NRT":
@@ -369,15 +379,18 @@ class HooplaProcessor2 {
 					}
 				}
 
-				String language = rawResponse.getString("language");
-				language = StringUtils.capitalize(language.toLowerCase());
-				hooplaRecord.setPrimaryLanguage(language);
-				groupedWork.addLanguage(language);
-				if (language.equalsIgnoreCase("English")){
-					groupedWork.setLanguageBoost(10L);
-				}else if (language.equalsIgnoreCase("Spanish")){
-					groupedWork.setLanguageBoostSpanish(10L);
+				// Add languages to translations
+				HashSet<String> translatedLanguages = new HashSet<>();
+				if (rawResponse.has("dubLanguage")) {
+					String translatedLanguage = StringUtils.capitalize(rawResponse.getString("dubLanguage").toLowerCase());
+					translatedLanguages.add(translatedLanguage);
 				}
+				if (rawResponse.has("subtitleLanguage")) {
+					String translatedLanguage = StringUtils.capitalize(rawResponse.getString("subtitleLanguage").toLowerCase());
+					translatedLanguages.add(translatedLanguage);
+				}
+				groupedWork.setTranslations(translatedLanguages);
+
 				long formatBoost = 1;
 				try {
 					formatBoost = Long.parseLong(indexer.translateSystemValue("format_boost_hoopla", primaryFormat, identifier));
@@ -444,8 +457,12 @@ class HooplaProcessor2 {
 
 				groupedWork.addPublicationDate(releaseYear);
 				//physical description
-				if (rawResponse.has("duration")){
-					groupedWork.addPhysical(rawResponse.getString("duration"));
+				if (primaryFormat.equals("eAudiobook") && rawResponse.has("duration")) {
+					int duration = AspenStringUtils.extractTotalMinutes(rawResponse.getString("duration"));
+					hooplaRecord.setDuration(duration);
+					Set<Integer> durationSet = new HashSet<>();
+					durationSet.add(duration);
+					groupedWork.addDuration(durationSet);
 				}
 
 				//Description
@@ -464,6 +481,11 @@ class HooplaProcessor2 {
 				boolean pa = productRS.getBoolean("pa");
 				boolean profanity = productRS.getBoolean("profanity");
 				String rating = productRS.getString("rating");
+
+				String normalizedRating = normalizeHooplaContentRating(rating);
+				if (normalizedRating != null) {
+					groupedWork.addContentRating(normalizedRating);
+				}
 
 				ItemInfo baseItemInfo = new ItemInfo();
 				baseItemInfo.setIsEContent(true);
@@ -603,19 +625,51 @@ class HooplaProcessor2 {
 	private HashMap<Long, String> loadEntitlementsForTitle(long hooplaId) throws SQLException {
 		HashMap<Long, String> entitlementsByScope = new HashMap<>();
 		getEntitlementsByHooplaIdStmt.setLong(1, hooplaId);
-		ResultSet entitlementsByHooplaIdRS = getEntitlementsByHooplaIdStmt.executeQuery();
-		try {
+		try (ResultSet entitlementsByHooplaIdRS = getEntitlementsByHooplaIdStmt.executeQuery()) {
 			while (entitlementsByHooplaIdRS.next()) {
 				long scopeLibraryId = entitlementsByHooplaIdRS.getLong("scopeLibraryId");
 				String hooplaType = entitlementsByHooplaIdRS.getString("hooplaType");
 				entitlementsByScope.put(scopeLibraryId, hooplaType);
 			}
-		}finally {
-			if (entitlementsByHooplaIdRS != null) {
-				entitlementsByHooplaIdRS.close();
-			}
 		}
 		return entitlementsByScope;
+	}
+
+	private String normalizeHooplaContentRating(String rating) {
+		if (rating == null) {
+			return null;
+		}
+
+		String normalizedRating = rating.toUpperCase(Locale.ROOT).replaceAll("[-\\s]", "");
+		if (normalizedRating.isEmpty()) {
+			return null;
+		}
+		if (normalizedRating.startsWith("NR")) {
+			return "Not Rated";
+		}
+
+		switch (normalizedRating) {
+			case "UNK":
+				return "Unknown";
+			case "PG13":
+				return "PG-13 Rated";
+			case "NC17":
+				return "NC-17 Rated";
+			case "TVY7":
+				return "TV-Y7 Rated";
+			case "TVY":
+				return "TV-Y Rated";
+			case "TVG":
+				return "TV-G Rated";
+			case "TVPG":
+				return "TV-PG Rated";
+			case "TV14":
+				return "TV-14 Rated";
+			case "TVMA":
+				return "TV-MA Rated";
+			default:
+				return normalizedRating + " Rated";
+		}
 	}
 
 }

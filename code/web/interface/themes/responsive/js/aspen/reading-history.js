@@ -81,11 +81,11 @@ AspenDiscovery.Account.ReadingHistory = (function(){
 
 		deleteEntry(patronId, id) {
 			AspenDiscovery.confirm(
-				'Delete Reading History Entry',
-				'The item will be irreversibly deleted from your reading history. Proceed?',
-				'Delete',
-				'Cancel',
-				true,
+				__('Delete Reading History Entry'),
+				__('The item will be irreversibly deleted from your reading history. Proceed?'),
+				__('Delete'),
+				__('Cancel'),
+				false,
 				`AspenDiscovery.Account.ReadingHistory.doDeleteEntry(${patronId}, ${id})`,
 				'btn-danger'
 			);
@@ -118,11 +118,11 @@ AspenDiscovery.Account.ReadingHistory = (function(){
 
 		deleteGroupedEntry(patronId, groupedWorkPermanentId, title, author, displayId) {
 			AspenDiscovery.confirm(
-				'Delete Reading History Entry',
-				'All checkout records for this title will be irreversibly deleted from your reading history. Proceed?',
-				'Delete',
-				'Cancel',
-				true,
+				__('Delete Reading History Entry'),
+				__('All checkout records for this title will be irreversibly deleted from your reading history. Proceed?'),
+				__('Delete'),
+				__('Cancel'),
+				false,
 				`AspenDiscovery.Account.ReadingHistory.doDeleteGroupedEntry(&quot;${patronId}&quot;, &quot;${groupedWorkPermanentId}&quot;, &quot;${title}&quot;, &quot;${author}&quot;, &quot;${displayId}&quot;)`,
 				'btn-danger'
 			);
@@ -158,11 +158,11 @@ AspenDiscovery.Account.ReadingHistory = (function(){
 
 		deleteIndividualEntry(patronId, entryId, groupId) {
 			AspenDiscovery.confirm(
-				'Delete Checkout Record',
-				'This checkout record will be irreversibly deleted from your reading history. Proceed?',
-				'Delete',
-				'Cancel',
-				true,
+				__('Delete Checkout Record'),
+				__('This checkout record will be irreversibly deleted from your reading history. Proceed?'),
+				__('Delete'),
+				__('Cancel'),
+				false,
 				`AspenDiscovery.Account.ReadingHistory.doDeleteIndividualEntry(&quot;${patronId}&quot;, &quot;${entryId}&quot;, &quot;${groupId}&quot;)`,
 				'btn-danger'
 			);
@@ -214,16 +214,16 @@ AspenDiscovery.Account.ReadingHistory = (function(){
 		deleteSelectedAction() {
 			const selectedItems = $('.titleSelect:checked');
 			if (selectedItems.length === 0) {
-				AspenDiscovery.showMessageWithButtons('Failed to Delete Reading History Entries', 'Please select one or more items to delete.', '', false, '', false, false, false);
+				AspenDiscovery.showMessageWithButtons(__('Failed to Delete Reading History Entries'), __('Please select one or more items to delete.'), '', false, '', false, false, false);
 				return false;
 			}
 
 			AspenDiscovery.confirm(
-				'Delete Selected Items',
-				`You have selected ${selectedItems.length} item(s) to delete from your reading history. This action is irreversible. Proceed?`,
-				'Delete',
-				'Cancel',
-				true,
+				__('Delete Selected Items'),
+				__('You have selected {count} item(s) to delete from your reading history. This action is irreversible. Proceed?', { count: selectedItems.length }),
+				__('Delete'),
+				__('Cancel'),
+				false,
 				'AspenDiscovery.Account.ReadingHistory.doDeleteSelected()',
 				'btn-danger'
 			);
@@ -266,11 +266,11 @@ AspenDiscovery.Account.ReadingHistory = (function(){
 
 		deleteAllAction() {
 			AspenDiscovery.confirm(
-				'Delete All Reading History',
-				'Your entire reading history will be irreversibly deleted. Proceed?',
-				'Delete All',
-				'Cancel',
-				true,
+				__('Delete All Reading History'),
+				__('Your entire reading history will be irreversibly deleted. Proceed?'),
+				__('Delete All'),
+				__('Cancel'),
+				false,
 				'AspenDiscovery.Account.ReadingHistory.doDeleteAllAction()',
 				'btn-danger'
 			);
@@ -285,11 +285,11 @@ AspenDiscovery.Account.ReadingHistory = (function(){
 
 		optOutAction() {
 			AspenDiscovery.confirm(
-				'Opt Out of Reading History',
-				'Opting out of Reading History will also delete your entire reading history irreversibly. Proceed?',
-				'Opt Out',
-				'Cancel',
-				true,
+				__('Opt Out of Reading History'),
+				__('Opting out of Reading History will also delete your entire reading history irreversibly. Proceed?'),
+				__('Opt Out'),
+				__('Cancel'),
+				false,
 				'AspenDiscovery.Account.ReadingHistory.doOptOutAction()',
 				'btn-danger'
 			);

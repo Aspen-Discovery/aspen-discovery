@@ -35,10 +35,10 @@ class HomeScreenLinkGroupEntry extends DataObject {
 		$homeScreenLinks->orderBy('title');
 		$homeScreenLinksList = [];
 		if (!UserAccount::userHasPermission('Administer All Aspen LiDA Home Screen Links')) {
-			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
-			$libraryId = $library == null ? -1 : $library->libraryId;
+			$validLibraries = Library::getLibraryList(true);
+			$libraryIds = empty($validLibraries) ? [-1] : array_keys($validLibraries);
 			$homeScreenLinks->whereAdd("sharing = 'everyone'");
-			$homeScreenLinks->whereAdd("sharing = 'library' AND libraryId = " . $libraryId, 'OR');
+			$homeScreenLinks->whereAdd("sharing = 'library' AND libraryId IN (" . implode(',' ,$libraryIds) . ')', 'OR');
 			$homeScreenLinks->find();
 			while ($homeScreenLinks->fetch()) {
 				$homeScreenLinksList[$homeScreenLinks->id] = $homeScreenLinks->title . " ($homeScreenLinks->textId)" . " - $homeScreenLinks->id";
@@ -112,12 +112,13 @@ class HomeScreenLinkGroupEntry extends DataObject {
 	}
 
 	public function canActiveUserChangeSelection(): bool {
-		$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
-		$libraryId = $library == null ? -1 : $library->libraryId;
+		$validLibraries = Library::getLibraryList(true);
+		$libraryIds = empty($validLibraries) ? [-1] : array_keys($validLibraries);
+
 		$linkId = $this->getHomeScreenLink()->libraryId;
 		if (($this->getHomeScreenLink()->sharing == 'everyone') || (UserAccount::userHasPermission('Administer All Aspen LiDA Home Screen Links'))) {
 			return true;
-		} else if ($linkId == $libraryId) {
+		} else if (in_array($linkId, $libraryIds)) {
 			return UserAccount::userHasPermission('Administer Library Aspen LiDA Home Screen Links');
 		}
 		return false;
@@ -128,12 +129,12 @@ class HomeScreenLinkGroupEntry extends DataObject {
 	}
 
 	public function canActiveUserEdit(): bool {
-		$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
-		$libraryId = $library == null ? -1 : $library->libraryId;
+		$validLibraries = Library::getLibraryList(true);
+		$libraryIds = empty($validLibraries) ? [-1] : array_keys($validLibraries);
 		$linkId = $this->getHomeScreenLink()->libraryId;
 		if (($this->getHomeScreenLink()->sharing == 'everyone') || (UserAccount::userHasPermission('Administer All Aspen LiDA Home Screen Links'))) {
 			return true;
-		} elseif ($linkId == $libraryId) {
+		} elseif (in_array($linkId, $libraryIds)) {
 			return UserAccount::userHasPermission('Administer Library Aspen LiDA Home Screen Links');
 		}
 		return false;

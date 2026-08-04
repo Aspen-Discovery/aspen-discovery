@@ -135,6 +135,39 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 			if (author.indexOf(';') > 0) {
 				author = author.substring(0, author.indexOf(';') - 1);
 			}
+		} else if (field245 != null && field245.getSubfield('a') != null && field245.getSubfieldsAsString("a").equals("<>.")) {
+			//a title of <>. is an indicator that additional info may be in the 880
+			List<DataField> authorField = marcRecord.getDataFields(880);
+			Iterator<DataField> fieldIterator = authorField.iterator();
+			DataField field880;
+			while (fieldIterator.hasNext()) {
+				boolean checkForAuthor = false; //set this to false each iteration, we may have multiple authors
+				String potentialAuthor = null;
+				field880 = fieldIterator.next();
+				List<Subfield> subfields = field880.getSubfields();
+				for (Subfield subfield : subfields) {
+					if (subfield.getCode() == '6') {
+						String subfieldData = subfield.getData().toLowerCase();
+						if (subfieldData.contains("100")) {
+							checkForAuthor = true;
+						}
+					}
+					if (checkForAuthor) {
+						if (subfield.getCode() == 'a') { //we can check if  it's actually an author in the e subfield
+							potentialAuthor = subfield.getData().toLowerCase();
+						}
+						if (subfield.getCode() == 'e') {
+							if (subfield.getData().toLowerCase().contains("author")) {
+								author = potentialAuthor;
+								break;
+							}
+						}
+					}
+				}
+				if (author != null) {
+					break;
+				}
+			}
 		} else if (field710 != null && field710.getSubfield('a') != null) {
 			author = field710.getSubfield('a').getData();
 		} else if (field260 != null && field260.getSubfield('b') != null) {
@@ -170,8 +203,21 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 
 		DataField field245 = marcRecord.getDataField(245);
 		if (field245 != null && field245.getSubfield('a') != null) {
-			assignTitleInfoFromMarcField(workForTitle, field245, 2);
-			return field245;
+			if (field245.getSubfieldsAsString("a").equals("<>.")) { //a title of <>. is an indicator that the title may be in the 880
+				List<DataField> altTitleField = marcRecord.getDataFields(880);
+				Iterator<DataField> fieldIterator = altTitleField.iterator();
+				DataField field880;
+				while (fieldIterator.hasNext()) {
+					field880 = fieldIterator.next();
+					if (field880.getSubfield('6') != null && field880.getSubfieldsAsString("6").contains("245")) {
+						assignTitleInfoFromMarcField(workForTitle, field880, 2);
+						return field880;
+					}
+				}
+			} else {
+				assignTitleInfoFromMarcField(workForTitle, field245, 2);
+				return field245;
+			}
 		}
 		return null;
 	}
@@ -251,13 +297,32 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 		}
 		//Check to see if the language has a space in it.
 		if (activeLanguage == null){
-			if (!treatUnknownLanguageAs.isEmpty()){
-				activeLanguage = translateValue("language_to_three_letter_code", treatUnknownLanguageAs);
-				if (activeLanguage.length() != 3 || activeLanguage.contains(" ")){
+			String secondaryLanguageField = "041a";
+			languages = MarcUtil.getFieldList(marcRecord, secondaryLanguageField);
+			for (String language : languages){
+				language = language.replaceAll("^[^a-zA-Z]+|[^a-zA-Z]+$|\\p{Punct}", "");
+				language = translateValue("language_to_three_letter_code", language);
+				if (language == null || language.length() != 3 || language.contains(" ")) {
+					continue;
+				}
+				if (activeLanguage == null){
+					activeLanguage = language;
+				}else{
+					if (!activeLanguage.equals(language)){
+						activeLanguage = "mul";
+						break;
+					}
+				}
+			}
+			if (activeLanguage == null) {
+				if (!treatUnknownLanguageAs.isEmpty()) {
+					activeLanguage = translateValue("language_to_three_letter_code", treatUnknownLanguageAs);
+					if (activeLanguage.length() != 3 || activeLanguage.contains(" ")) {
+						activeLanguage = "unk";
+					}
+				} else {
 					activeLanguage = "unk";
 				}
-			}else {
-				activeLanguage = "unk";
 			}
 		}
 		workForTitle.setLanguage(activeLanguage);

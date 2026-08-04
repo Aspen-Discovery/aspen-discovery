@@ -23,7 +23,13 @@ class Admin_CollectionSpotlightLists extends ObjectEditor {
 		$object = new CollectionSpotlightList();
 		if (!UserAccount::userHasPermission('Administer All Collection Spotlights')) {
 			$homeLibrary = Library::getPatronHomeLibrary();
-			$object->whereAdd("collectionSpotlightId IN (SELECT id FROM collection_spotlights WHERE libraryId = $homeLibrary->libraryId OR libraryId = -1)");
+			$libraries = Library::getLibraryList(true);
+			if (empty($libraries)) {
+				$object->whereAdd("collectionSpotlightId IN (SELECT id FROM collection_spotlights WHERE libraryId = $homeLibrary->libraryId OR libraryId = -1)");
+			}else{
+				$object->whereAdd("collectionSpotlightId IN (SELECT id FROM collection_spotlights WHERE libraryId IN (" . implode(',', $libraries) . ") OR libraryId = -1)");
+			}
+
 		}
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
@@ -53,7 +59,7 @@ class Admin_CollectionSpotlightLists extends ObjectEditor {
 	}
 
 	function getInstructions(): string {
-		return 'https://help.aspendiscovery.org/help/promote/spotlights';
+		return 'https://aspen-discovery.atlassian.net/wiki/spaces/Help/pages/279150606/Collection+Spotlights';
 	}
 
 	function getInitializationJs(): string {

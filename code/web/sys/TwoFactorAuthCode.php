@@ -92,7 +92,15 @@ class TwoFactorAuthCode extends DataObject {
 	public function createRecoveryCode($username) : array {
 		$user = new User();
 		$user->ils_barcode = $username;
-		if ($user->find(true)) {
+		if (!$user->find(true)) {
+			//Try username for local admins
+			$user = new User();
+			$user->username = $username;
+			if (!$user->find(true)) {
+				$user = null;
+			}
+		}
+		if ($user != null) {
 			if ($user->twoFactorStatus == '1') {
 				$twoFactorAuthCode = new TwoFactorAuthCode();
 				$twoFactorAuthCode->code = mt_rand(100000, 999999);
@@ -165,21 +173,134 @@ class TwoFactorAuthCode extends DataObject {
 		}
 	}
 
-	function validateCode($code) : array {
-		global $library;
+	function validateCode($code, $method, $secretId = null): array {
 		require_once ROOT_DIR . '/sys/TwoFactorAuthSetting.php';
-		$authSetting = new TwoFactorAuthSetting();
-		$authSetting->id = $library->twoFactorAuthSettingId;
-		if ($authSetting->find(true)) {
+		require_once ROOT_DIR . '/sys/TwoFactorAuthTOTPSecret.php';
+
+		$userId = UserAccount::getActiveUserId();
+		$user = new User();
+		$user->id = $userId;
+		if (!$user->find(true)) {
+			return [
+				'success' => 'false',
+				'message' => translate([
+					'text' => 'No user found',
+					'isPublicFacing' => true,
+				]),
+			];
+		}
+		$authSetting = $user->getTwoFactorAuthenticationSetting();
+		if ($authSetting) {
 			$deniedMessage = $authSetting->deniedMessage;
 		} else {
 			$deniedMessage = "";
 		}
 
+		if ($method === 'totp') {
+			return $this->validateTOTPCode($code, $userId, $deniedMessage, $secretId);
+		}
+
+		// Otherwise, validate email code
+		return $this->validateEmailCode($code, $userId, $deniedMessage);
+	}
+
+	function createNewBackups() : void {
+		$oldBackupCodes = new TwoFactorAuthCode();
+		$oldBackupCodes->userId = UserAccount::getActiveUserId();
+		$oldBackupCodes->status = "backup";
+		$oldBackupCodes->find();
+		while ($oldBackupCodes->fetch()) {
+			$this->deleteCode($oldBackupCodes->code);
+		}
+
+		$this->createCode(5, true);
+	}
+
+	private function validateTOTPCode($code, $userId, $deniedMessage, $secretId = null): array {
+		require_once ROOT_DIR . '/sys/TwoFactorAuthTOTPSecret.php';
+		$totpSecret = new TwoFactorAuthTOTPSecret();
+		$totpSecret->userId = $userId;
+
+		if ($secretId !== null) {
+			$totpSecret->id = $secretId;
+			if (!$totpSecret->find(true)) {
+				return [
+					'success' => 'false',
+					'message' => translate([
+						'text' => 'TOTP secret not found. ' . $deniedMessage,
+						'isPublicFacing' => true,
+					]),
+				];
+			}
+			if (TwoFactorAuthTOTPSecret::verifyCode($totpSecret->secretKey, $code, 1)) {
+				//We're verifing the code for the first time
+				$totpSecret->verified = 1;
+				$totpSecret->update();
+				return [
+					'success' => 'true',
+					'message' => translate([
+						'text' => 'Code OK',
+						'isPublicFacing' => true,
+					]),
+				];
+			}
+		} else {
+			$totpSecret->verified = 1;
+			//Make sure we get the latest secret if the user has opted in and out of TOTP multiple times
+			$totpSecret->orderBy('id desc');
+			if (!$totpSecret->find(true)) {
+				return [
+					'success' => 'false',
+					'message' => translate([
+						'text' => 'TOTP not configured. ' . $deniedMessage,
+						'isPublicFacing' => true,
+					]),
+				];
+			}
+			if (TwoFactorAuthTOTPSecret::verifyCode($totpSecret->secretKey, $code, 1)) {
+				return [
+					'success' => 'true',
+					'message' => translate([
+						'text' => 'Code OK',
+						'isPublicFacing' => true,
+					]),
+				];
+			}
+		}
+
+		// Check if it's a backup code or manual recovery code
+		$backupCode = new TwoFactorAuthCode();
+		$backupCode->code = $code;
+		$backupCode->userId = $userId;
+		$backupCode->whereAddIn('status', ['created', 'backup'], true);
+
+		if ($backupCode->find(true)) {
+			$backupCode->status = 'used';
+			$backupCode->sessionId = session_id();
+			$backupCode->update();
+			return [
+				'success' => 'true',
+				'message' => translate([
+					'text' => 'Backup code accepted',
+					'isPublicFacing' => true,
+				]),
+			];
+		}
+
+		return [
+			'success' => 'false',
+			'message' => translate([
+				'text' => 'Invalid code. ' . $deniedMessage,
+				'isPublicFacing' => true,
+			]),
+		];
+	}
+
+	private function validateEmailCode($code, $userId, $deniedMessage): array {
 		$codeToCheck = new TwoFactorAuthCode();
 		$codeToCheck->code = $code;
 		if ($codeToCheck->find(true)) {
-			if ($codeToCheck->userId == UserAccount::getActiveUserId()) {
+			if ($codeToCheck->userId == $userId) {
 				if ($codeToCheck->status != "used") {
 					$codeToCheck->status = "used";
 					$codeToCheck->sessionId = session_id();
@@ -222,18 +343,6 @@ class TwoFactorAuthCode extends DataObject {
 		}
 
 		return $result;
-	}
-
-	function createNewBackups() : void {
-		$oldBackupCodes = new TwoFactorAuthCode();
-		$oldBackupCodes->userId = UserAccount::getActiveUserId();
-		$oldBackupCodes->status = "backup";
-		$oldBackupCodes->find();
-		while ($oldBackupCodes->fetch()) {
-			$this->deleteCode($oldBackupCodes->code);
-		}
-
-		$this->createCode(5, true);
 	}
 
 	function getBackups() : array {
@@ -283,19 +392,35 @@ class TwoFactorAuthCode extends DataObject {
 		}
 	}
 
-	function deactivate2FA() : void {
-
+	function deactivate2FA($method): void {
 		$user = new User();
 		$user->id = UserAccount::getActiveUserId();
 		if ($user->find(true)) {
-			$user->twoFactorStatus = 0;
+			$methods = array_filter(array_map('trim', explode(',', (string)$user->twoFactorMethod)));
+			$methodToRemove = trim((string)$method);
+			$methods = array_values(array_filter($methods, function ($m) use ($methodToRemove) {
+				return strcasecmp($m, $methodToRemove) !== 0;
+			}));
+
+			if (empty($methods)) {
+				$user->twoFactorStatus = 0;
+			}
+			$user->twoFactorMethod = implode(',', $methods);
 			$user->update();
 
-			$userCodes = new TwoFactorAuthCode();
-			$userCodes->userId = UserAccount::getActiveUserId();
-			$userCodes->find();
-			while ($userCodes->fetch()) {
-				$userCodes->deleteCode($userCodes->code);
+			if ($user->twoFactorStatus == 0) {
+				//Delete backup codes
+				$userCodes = new TwoFactorAuthCode();
+				$userCodes->userId = UserAccount::getActiveUserId();
+				$userCodes->find();
+				while ($userCodes->fetch()) {
+					$userCodes->deleteCode($userCodes->code);
+				}
+			}
+
+			if ($methodToRemove == 'totp') {
+				require_once ROOT_DIR . '/sys/TwoFactorAuthTOTPSecret.php';
+				TwoFactorAuthTOTPSecret::deleteUserSecrets(UserAccount::getActiveUserId());
 			}
 		}
 	}

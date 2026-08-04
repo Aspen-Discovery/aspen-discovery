@@ -23,10 +23,15 @@ abstract class MarcRecordProcessor {
 	protected GroupedWorkIndexer indexer;
 	protected BaseIndexingSettings settings;
 	protected String profileType;
-	private static final Pattern mpaaRatingRegex1 = Pattern.compile(".*?Rated\\s(G|PG-13|PG|R|NC-17|NR|X).*", Pattern.CANON_EQ);
-	private static final Pattern mpaaRatingRegex2 = Pattern.compile(".*?(G|PG-13|PG|R|NC-17|NR|X)\\sRated.*", Pattern.CANON_EQ);
-	private static final Pattern mpaaRatingRegex3 = Pattern.compile(".*?MPAA rating:\\s(G|PG-13|PG|R|NC-17|NR|X).*", Pattern.CANON_EQ);
-	private static final Pattern mpaaNotRatedRegex = Pattern.compile("Rated\\sNR\\.?|Not Rated\\.?|NR");
+	private static final Pattern mpaaRatingRegex1 = Pattern.compile("Rated\\s(G|PG-13|PG|R|NC-17|NR|X)", Pattern.CASE_INSENSITIVE);
+	private static final Pattern mpaaRatingRegex2 = Pattern.compile("(G|PG-13|PG|R|NC-17|NR|X)\\sRated", Pattern.CASE_INSENSITIVE);
+	private static final Pattern mpaaRatingRegex3 = Pattern.compile("MPAA rating:\\s(G|PG-13|PG|R|NC-17|NR|X)", Pattern.CASE_INSENSITIVE);
+	private static final Pattern mpaaRatingRegex4 = Pattern.compile("\\b(PG-13|NC-17|PG|G|R|NR|X)\\b", Pattern.CASE_INSENSITIVE);
+	private static final Pattern tvRatingRegex1 = Pattern.compile("Rated\\s(TV[-\\s]?(?:Y7[-\\s]?FV|Y7|Y|G|PG|14|MA))", Pattern.CASE_INSENSITIVE);
+	private static final Pattern tvRatingRegex2 = Pattern.compile("(TV[-\\s]?(?:Y7[-\\s]?FV|Y7|Y|G|PG|14|MA))\\sRated", Pattern.CASE_INSENSITIVE);
+	private static final Pattern tvRatingRegex3 = Pattern.compile("TV rating:\\s(TV[-\\s]?(?:Y7[-\\s]?FV|Y7|Y|G|PG|14|MA))", Pattern.CASE_INSENSITIVE);
+	private static final Pattern tvRatingRegex4 = Pattern.compile("\\b(TV[-\\s]?(?:Y7[-\\s]?FV|Y7|Y|G|PG|14|MA))\\b", Pattern.CASE_INSENSITIVE);
+	private static final Pattern notRatedRegex = Pattern.compile("\\b(?:Rated\\s+NR\\.?|Not\\s+Rated\\.?|NR)\\b", Pattern.CASE_INSENSITIVE);
 	private final HashSet<String> unknownSubjectForms = new HashSet<>();
 
 	PreparedStatement addRecordToDBStmt;
@@ -399,8 +404,11 @@ abstract class MarcRecordProcessor {
 				//Separate out the volume so we can link specially
 				volume = seriesField.getSubfield('v').getData();
 			}
-			groupedWork.addSeriesWithVolume(series, volume, 3, false);
-			groupedWork.addSeries(series);
+			String seriesAuthor = "";
+			if (seriesField.getIndicator2() == '1' && seriesField.getSubfield('a') != null) {
+				seriesAuthor = seriesField.getSubfield('a').getData();
+			}
+			groupedWork.addSeriesWithVolume(series, seriesAuthor, volume, 3, false);
 		}
 
 		seriesFields = MarcUtil.getDataFields(record, seriesFieldsToIndexWith800);
@@ -429,14 +437,17 @@ abstract class MarcRecordProcessor {
 				//Separate out the volume so we can link specially
 				volume = seriesField.getSubfield('v').getData();
 			}
-			groupedWork.addSeriesWithVolume(series, volume, 5, false);
-			groupedWork.addSeries(series);
+			String seriesAuthor = "";
+			if (seriesField.getSubfield('a') != null) {
+				seriesAuthor = seriesField.getSubfield('a').getData();
+			}
+			groupedWork.addSeriesWithVolume(series, seriesAuthor, volume, 5, false);
 		}
 
 		seriesFields = MarcUtil.getDataFields(record, 490);
 		for (DataField seriesField : seriesFields){
 			// Include only uncontrolled series from 490, since controlled will also be in 800/830
-			if (seriesField.getIndicator1() == '0') {
+			if (seriesField.getIndicator1() == '0' || seriesField.getIndicator1() == ' ') {
 				String series = AspenStringUtils.trimTrailingPunctuation(MarcUtil.getSpecifiedSubfieldsAsString(seriesField, "a", " ")).toString();
 				//Remove anything in parentheses since it's normally just the format
 				//series = series.replaceAll("\\s+\\(.*?\\)", "");
@@ -450,8 +461,10 @@ abstract class MarcRecordProcessor {
 					//Separate out the volume so we can link specially
 					volume = seriesField.getSubfield('v').getData();
 				}
-				groupedWork.addSeriesWithVolume(series, volume, 1, true);
-				groupedWork.addSeries(series);
+
+				//490 does not have a series author field
+				String seriesAuthor = "";
+				groupedWork.addSeriesWithVolume(series, seriesAuthor, volume, 1, true);
 			}
 		}
 
@@ -463,7 +476,7 @@ abstract class MarcRecordProcessor {
 		groupedWork.addIsbns(MarcUtil.getFieldList(record, "020a"), format);
 		List<DataField> upcFields = MarcUtil.getDataFields(record, 24);
 		for (DataField upcField : upcFields){
-			if (upcField.getIndicator1() == '1' && upcField.getSubfield('a') != null){
+			if (upcField.getSubfield('a') != null){
 				groupedWork.addUpc(upcField.getSubfield('a').getData());
 			}
 		}
@@ -472,10 +485,12 @@ abstract class MarcRecordProcessor {
 		loadBibCallNumbers(groupedWork, record, identifier);
 		loadLiteraryForms(groupedWork, record, printItems, identifier);
 		loadTargetAudiences(groupedWork, record, printItems, identifier);
+		loadAcceleratedReader(groupedWork, record);
 		loadFountasPinnell(groupedWork, record);
 		loadLexileScore(groupedWork, record);
-		groupedWork.addMpaaRating(getMpaaRating(record));
+		groupedWork.addContentRating(getContentRating(record));
 		groupedWork.addKeywords(MarcUtil.getAllSearchableFields(record, 100, 900));
+		groupedWork.addKeywords(MarcUtil.getAllSubfields(record, "010:028", ""));
 		//Settings are nullable for eContent that is in MARC format (i.e. cloudLibrary)
 		if (settings != null && settings.getCustomMarcFieldsToIndexAsKeyword() != null && !settings.getCustomMarcFieldsToIndexAsKeyword().isEmpty()) {
 			try {
@@ -490,7 +505,31 @@ abstract class MarcRecordProcessor {
 	}
 	private static boolean loggedCustomMarcError = false;
 
-	private static final Pattern lexileMatchingPattern = Pattern.compile("(AD|NC|HL|IG|GN|BR|NP)(\\d+)");
+
+	private void loadAcceleratedReader(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record) {
+		List<DataField> acceleratedReaderFields = MarcUtil.getDataFields(record, 526);
+		for (DataField acceleratedReaderField : acceleratedReaderFields){
+			Subfield subfieldA = acceleratedReaderField.getSubfield('a');
+			if (subfieldA != null){
+				String program = subfieldA.getData();
+				if (!(program.equals("AR") || program.startsWith("Accelerated Reader"))) {
+					//This is the wrong program
+					continue;
+				}
+			}
+			Subfield subfieldC = acceleratedReaderField.getSubfield('c');
+			if (subfieldC != null){
+				String readingLevel = subfieldC.getData();
+				groupedWork.setAcceleratedReaderReadingLevel(readingLevel);
+			}
+			Subfield subfieldD = acceleratedReaderField.getSubfield('d');
+			if (subfieldD != null){
+				String points = subfieldD.getData();
+				groupedWork.setAcceleratedReaderPointValue(points);
+			}
+		}
+	}
+
 	private void loadLexileScore(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record) {
 		List<DataField> targetAudiences = MarcUtil.getDataFields(record, 521);
 		for (DataField targetAudience : targetAudiences){
@@ -499,25 +538,7 @@ abstract class MarcRecordProcessor {
 			if (subfieldA != null && subfieldB != null){
 				if (subfieldB.getData().toLowerCase().startsWith("lexile")){
 					String lexileValue = subfieldA.getData();
-					if (lexileValue.endsWith("L")){
-						lexileValue = lexileValue.substring(0, lexileValue.length() - 1).trim();
-					}
-					if (AspenStringUtils.isNumeric(lexileValue)) {
-						AspenStringUtils.trimTrailingPunctuation(lexileValue);
-						if (lexileValue.contains(".")) {
-							//We expect the number to be an integer so trim anything that looks like a decimal
-							lexileValue = lexileValue.substring(0, lexileValue.indexOf('.')).trim();
-						}
-						groupedWork.setLexileScore(lexileValue);
-					}else{
-						Matcher lexileMatcher = lexileMatchingPattern.matcher(lexileValue);
-						if (lexileMatcher.find()){
-							String lexileCode = lexileMatcher.group(1);
-							String lexileScore = lexileMatcher.group(2);
-							groupedWork.setLexileScore(lexileScore);
-							groupedWork.setLexileCode(lexileCode);
-						}
-					}
+					groupedWork.setLexileScore(lexileValue);
 				}
 			}
 		}
@@ -554,7 +575,7 @@ abstract class MarcRecordProcessor {
 				//Remove dates
 				award = award.replaceAll("\\d{2,4}", "");
 				//Remove punctuation
-				award = award.replaceAll("[^\\w\\s]", "");
+				award = award.replaceAll("[^\\p{L}\\p{N}\\s]", "");
 			}
 			awards.add(award.trim());
 		}
@@ -598,6 +619,25 @@ abstract class MarcRecordProcessor {
 		groupedWork.addPhysical(physicalDescriptions);
 	}
 
+	void loadDuration(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record, HashSet<RecordInfo> ilsRecords) {
+		Set<String> durations = MarcUtil.getFieldList(record, "300a");
+		Set<Integer> durationSet = new HashSet<>();
+		if (!durations.isEmpty()){
+			String duration = durations.iterator().next();
+			for(RecordInfo ilsRecord : ilsRecords){
+				if (ilsRecord.getPrimaryFormatCategory().equals("Audio Books")) {
+					//try to get total minutes and save as duration if not zero
+					int durationMinutes = AspenStringUtils.extractTotalMinutes(duration);
+					if (durationMinutes != 0){
+						ilsRecord.setDuration(durationMinutes);
+						durationSet.add(durationMinutes);
+					}
+				}
+			}
+		}
+		groupedWork.addDuration(durationSet);
+	}
+
 	private String getCallNumberSubject(org.marc4j.marc.Record record) {
 		String val = MarcUtil.getFirstFieldVal(record, "090a:050a");
 
@@ -610,36 +650,57 @@ abstract class MarcRecordProcessor {
 		return null;
 	}
 
-	private String getMpaaRating(org.marc4j.marc.Record record) {
+	private String getContentRating(org.marc4j.marc.Record record) {
 		String val = MarcUtil.getFirstFieldVal(record, "521a");
-
-		if (val != null) {
-			if (mpaaNotRatedRegex.matcher(val).matches()) {
-				return "Not Rated";
-			}
-			try {
-				Matcher mpaaMatcher1 = mpaaRatingRegex1.matcher(val);
-				if (mpaaMatcher1.find()) {
-					return mpaaMatcher1.group(1) + " Rated";
-				} else {
-					Matcher mpaaMatcher2 = mpaaRatingRegex2.matcher(val);
-					if (mpaaMatcher2.find()) {
-						return mpaaMatcher2.group(1) + " Rated";
-					} else {
-						Matcher mpaaMatcher3 = mpaaRatingRegex3.matcher(val);
-						if (mpaaMatcher3.find()) {
-							return mpaaMatcher3.group(1) + " Rated";
-						} else {
-							return null;
-						}
-					}
-				}
-			} catch (PatternSyntaxException ex) {
-				// Syntax error in the regular expression
-				return null;
-			}
-		} else {
+		if (val == null || val.isEmpty()) {
 			return null;
+		}
+
+		if (notRatedRegex.matcher(val).find()) {
+			return "Not Rated";
+		}
+
+		String mpaaRating = getRatingFromPatterns(val, mpaaRatingRegex1, mpaaRatingRegex2, mpaaRatingRegex3, mpaaRatingRegex4);
+		if (mpaaRating != null) {
+			return mpaaRating + " Rated";
+		}
+
+		String tvRating = getRatingFromPatterns(val, tvRatingRegex1, tvRatingRegex2, tvRatingRegex3, tvRatingRegex4);
+		if (tvRating != null) {
+			return normalizeTvRating(tvRating) + " Rated";
+		}
+		return null;
+	}
+
+	private String getRatingFromPatterns(String val, Pattern... patterns ) {
+		for (Pattern pattern : patterns) {
+			Matcher matcher = pattern.matcher(val);
+			if (matcher.find()) {
+				return matcher.group(1);
+			}
+		}
+		return null;
+	}
+
+	private String normalizeTvRating(String rating) {
+		String condensed = rating.toUpperCase(Locale.ROOT).replaceAll("[-\\s]", "");
+		switch (condensed) {
+			case "TVY7FV":
+				return "TV-Y7-FV";
+			case "TVY7":
+				return "TV-Y7";
+			case "TVY":
+				return "TV-Y";
+			case "TVG":
+				return "TV-G";
+			case "TVPG":
+				return "TV-PG";
+			case "TV14":
+				return "TV-14";
+			case "TVMA":
+				return "TV-MA";
+			default:
+				return rating.toUpperCase(Locale.ROOT).trim();
 		}
 	}
 
@@ -1453,13 +1514,14 @@ abstract class MarcRecordProcessor {
 		return publisher;
 	}
 
-	String languageFields = "041a:008[35-37]";
+	String languageFields = "008[35-37]:041a";
 
 	void loadLanguageDetails(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record, HashSet<RecordInfo> ilsRecords, String identifier) {
 		Set <String> languages = MarcUtil.getFieldList(record, languageFields);
 		HashSet<String> translatedLanguages = new HashSet<>();
 		boolean isFirstLanguage = true;
 		for (String language : languages){
+			language = language.replaceAll("^[^a-zA-Z]+|[^a-zA-Z]+$|\\p{Punct}", "");
 			if (!indexer.hasSystemTranslation("language", language)) {
 				continue;
 			}
@@ -1476,6 +1538,7 @@ abstract class MarcRecordProcessor {
 				for (RecordInfo ilsRecord : ilsRecords){
 					ilsRecord.setPrimaryLanguage(translatedLanguage);
 				}
+				groupedWork.setPrimaryLanguage(translatedLanguage);
 			}
 			isFirstLanguage = false;
 			String languageBoost = indexer.translateSystemValue("language_boost", language, identifier);
@@ -1532,6 +1595,32 @@ abstract class MarcRecordProcessor {
 		groupedWork.addAuthor2(MarcUtil.getFieldList(record, "110ab:111ab:700abcd:710ab:711ab:800ac"));
 		//author_additional = 505r:245c
 		groupedWork.addAuthorAdditional(MarcUtil.getFieldList(record, "505r:245c"));
+		//set display author based on 100/110
+		String displayAuthor = MarcUtil.getFirstFieldVal(record, "100abcdq:110ab");
+		if (displayAuthor != null && displayAuthor.indexOf(';') > 0){
+			displayAuthor = displayAuthor.substring(0, displayAuthor.indexOf(';') -1);
+		}
+		//a title of <>. is an indicator that additional info may be in the 880
+		String title = MarcUtil.getFirstFieldVal(record, "245a");
+		if (title != null && title.equals("<>.")) {
+			List<DataField> altAuthorField = MarcUtil.getDataFields(record, 880);
+			Iterator<DataField> fieldIterator = altAuthorField.iterator();
+			DataField field880;
+			Set<String> additionalAuthors = new HashSet<>();
+			while (fieldIterator.hasNext()) {
+				field880 = fieldIterator.next();
+				if (field880.getSubfield('6') != null && field880.getSubfieldsAsString("6").contains("100")) { //equivalent to 100a
+					groupedWork.setAuthAuthor(field880.getSubfieldsAsString("a"));
+					if (displayAuthor == null) {
+						displayAuthor = field880.getSubfieldsAsString("a");
+					}
+				}
+				if ((field880.getSubfield('6') != null) && (field880.getSubfield('e') != null && field880.getSubfieldsAsString("e").contains("author"))) { //additional author 880 fields have "author." in the e subfield
+					additionalAuthors.add(field880.getSubfieldsAsString("a"));
+				}
+				groupedWork.addAuthAuthor2(additionalAuthors);
+			}
+		}
 		//Load contributors with role
 		List<DataField> contributorFields = MarcUtil.getDataFields(record, new int[]{700,710});
 		HashSet<String> contributors = new HashSet<>();
@@ -1551,10 +1640,6 @@ abstract class MarcRecordProcessor {
 		}
 
 		groupedWork.addAuthor2Role(contributors);
-		String displayAuthor = MarcUtil.getFirstFieldVal(record, "100acdq:110ab");
-		if (displayAuthor != null && displayAuthor.indexOf(';') > 0){
-			displayAuthor = displayAuthor.substring(0, displayAuthor.indexOf(';') -1);
-		}
 
 		RecordInfo recordInfo = groupedWork.getRecordInfo(profileType, identifier);
 		groupedWork.setAuthorDisplay(displayAuthor, formatCategory, recordInfo);
@@ -1564,13 +1649,27 @@ abstract class MarcRecordProcessor {
 		DataField titleField = record.getDataField(245);
 		String authorInTitleField = null;
 		if (titleField != null) {
+			String title = titleField.getSubfieldsAsString("a");
 			//noinspection SpellCheckingInspection
 			String subTitle = titleField.getSubfieldsAsString("bfgnp", " ");
+			if (title != null && title.equals("<>.")) { //a title of <>. is an indicator that the title may be in the 880
+				List<DataField> altTitleField = MarcUtil.getDataFields(record, 880);
+				Iterator<DataField> fieldIterator = altTitleField.iterator();
+				DataField field880;
+				while (fieldIterator.hasNext()) {
+					field880 = fieldIterator.next();
+					if (field880.getSubfield('6') != null && field880.getSubfieldsAsString("6").contains("245")) {
+						title = field880.getSubfieldsAsString("a");
+						subTitle = field880.getSubfieldsAsString("b");
+						break;
+					}
+				}
+			}
 			if (!hasParentRecord) {
 				RecordInfo recordInfo = groupedWork.getRecordInfo(profileType, identifier);
 
 				groupedWork.setTitle(
-					titleField.getSubfieldsAsString("a"),
+					title,
 					subTitle,
 					this.getSortableTitle(record),
 					formatCategory,

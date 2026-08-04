@@ -324,11 +324,14 @@ class Nashville extends CarlX {
 		}
 	}
 
-	public function getFines(User $patron, $includeMessages = false): array {
+	public function getFines(User $patron, $includeMessages = false, ?string $type = null): array {
+		$myFines = [];
+		if ($type == 'credit'){
+			return $myFines;
+		}
 		global $library;
 		if ($library->finePaymentType == 3){
 			// Do MSB payment stuff
-			$myFines = [];
 
 			$request = $this->getSearchbyPatronIdRequest($patron);
 

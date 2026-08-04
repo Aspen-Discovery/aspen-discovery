@@ -94,9 +94,14 @@ class SeriesRecordDriver extends IndexRecordDriver {
 
 		$seriesObject = $this->getSeriesObject();
 		if ($seriesObject) {
+			$numTitles = $seriesObject->numScopedTitlesInSeries();
 			$interface->assign('summNumTitles', $seriesObject->numScopedTitlesInSeries());
+			$interface->assign('seriesObjectId', $seriesObject->id);
+			$interface->assign('seriesVersion', $seriesObject->version);
 		}else{
 			$interface->assign('summNumTitles', 0);
+			$interface->assign('seriesObjectId', -1);
+			$interface->assign('seriesVersion', -1);
 		}
 
 		if ($showListsAppearingOn) {
@@ -111,7 +116,7 @@ class SeriesRecordDriver extends IndexRecordDriver {
 		return 'RecordDrivers/Series/result.tpl';
 	}
 
-	public function getMoreDetailsOptions() {
+	public function getMoreDetailsOptions() : array {
 		return [];
 	}
 
@@ -247,7 +252,11 @@ class SeriesRecordDriver extends IndexRecordDriver {
 		if ($this->seriesObject == null) {
 			require_once ROOT_DIR . '/sys/Series/Series.php';
 			$this->seriesObject = new Series();
-			$this->seriesObject->id = $this->getId();
+			if (is_numeric($this->getId())) {
+				$this->seriesObject->id = $this->getId();
+			}else{
+				$this->seriesObject->seriesPermanentId = $this->getId();
+			}
 			if (!$this->seriesObject->find(true)) {
 				$this->seriesObject = false;
 			}

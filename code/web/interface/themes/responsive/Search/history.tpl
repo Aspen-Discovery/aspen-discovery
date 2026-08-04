@@ -1,18 +1,17 @@
 
 	<div class="page">
+		<h1>{translate text="Your Searches" isPublicFacing=true}</h1>
+
 		{if $user->_web_note}
 			<div class="row">
 				<div id="web_note" class="alert alert-info text-center col-xs-12">{$user->_web_note}</div>
 			</div>
 		{/if}
-
 		{if !empty($accountMessages)}
 			{include file='systemMessages.tpl' messages=$accountMessages}
 		{/if}
 
-		<h1>{translate text="Your Searches" isPublicFacing=true}</h1>
-
-        {if $numSavedSearches > 0 || $numRecentSearches > 0}
+		{if $numSavedSearches > 0 || $numRecentSearches > 0}
 		<ul class="nav nav-tabs" role="tablist" id="searchHistoryTab">
             {if $numSavedSearches > 0}<li role="presentation"{if $tab=='saved'} class="active"{/if}><a href="#saved" aria-controls="saved" role="tab" data-toggle="tab">{translate text="Saved Searches" isPublicFacing=true} <span class="badge"><span class="saved-searches-count-placeholder">&nbsp;</span></span></a></li>{/if}
 			{if $numRecentSearches > 0}<li role="presentation"{if $tab=='recent'} class="active"{/if}><a href="#recent" aria-controls="recent" role="tab" data-toggle="tab">{translate text="Recent Searches" isPublicFacing=true} <span class="badge"><span class="recent-searches-count-placeholder">&nbsp;</span></span></a></li>{/if}

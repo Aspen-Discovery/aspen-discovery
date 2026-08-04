@@ -31,7 +31,7 @@ class Admin_HelpManual extends Action {
 			$parsedown = AspenParsedown::instance();
 			$formattedPage = $parsedown->parse(file_get_contents($helpManualPath . '/' . $page . '.MD'));
 			$interface->assign('formattedPage', $formattedPage);
-			$this->display('https://help.aspendiscovery.org', 'Help Center', $sidebar);
+			$this->display('https://aspen-discovery.atlassian.net/wiki/spaces/Help/overview', 'Help Center', $sidebar);
 		} else {
 			$this->display('unknownPage.tpl', 'Help Manual', $sidebar);
 		}

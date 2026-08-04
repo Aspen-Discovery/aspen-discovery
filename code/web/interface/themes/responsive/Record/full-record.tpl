@@ -1,4 +1,4 @@
-{include file="GroupedWork/load-full-record-view-enrichment.tpl"}
+{include file="GroupedWork/load-full-record-view-enrichment.tpl" recordType="marcRecord" recordId=$recordDriver->getIdWithSource()}
 
 {strip}
 	<div class="col-xs-12">
@@ -16,7 +16,11 @@
 			<h1>
 				{*{$recordDriver->getTitle()|escape}*}{* // ever a case when the trailing punction is needed? *}
 				{* Title includes the title section *}
-				{$recordDriver->getTitle()|removeTrailingPunctuation}{if !empty($recordDriver->get880Title())} <span class="agrTitle">({$recordDriver->get880Title()|removeTrailingPunctuation})</span>{/if}
+				{if empty($recordDriver->getTitle()) && !empty($recordDriver->get880Title())}
+					{$recordDriver->get880Title()|removeTrailingPunctuation}
+				{else}
+					{$recordDriver->getTitle()|removeTrailingPunctuation}{if !empty($recordDriver->get880Title())} <span class="agrTitle">({$recordDriver->get880Title()|removeTrailingPunctuation})</span>{/if}
+				{/if}
 				{if $recordDriver->getFormats()}
 					<br>
 					<small>
@@ -38,9 +42,9 @@
 			<div class="row">
 				<div class="col-xs-4 col-sm-5 col-md-4 col-lg-3 text-center">
 					{if $disableCoverArt != 1}
-						<div id="recordCover" class="text-center row">
+						<a href="#" id="recordCover" class="text-center row" style="display: inline-block;" onclick="return AspenDiscovery.Record.getLargeCover('{$recordDriver->getModule()}', '{$recordDriver->getUniqueID()}')">
 							<img alt="{translate text='Book Cover' isPublicFacing=true inAttribute=true}" class="img-thumbnail{if $useOriginalCoverUrls} use-original-covers{/if} {$coverStyle}" src="{$recordDriver->getBookcoverUrl('medium')}" role="presentation">
-						</div>
+						</a>
 					{/if}
 					{if !empty($showRatings)}
 						{include file="GroupedWork/title-rating-full.tpl" showFavorites=0 ratingData=$recordDriver->getRatingData() showNotInterested=false hideReviewButton=true}
@@ -57,19 +61,60 @@
 					{/if}
 
 					<div class="row">
-						<div id="record-details-column" class="col-xs-12 col-sm-12 col-md-9">
-							{include file="Record/view-title-details.tpl"}
-						</div>
+                        {if $formatDisplayStyle == 1}
+							<div id="record-details-column" class="col-xs-12 col-sm-12 col-md-9">
+								{include file="Record/view-title-details.tpl"}
+							</div>
 
-						{if !($recordDriver->hasMultipleVariations())}
-							<div id="recordTools" class="col-xs-12 col-sm-6 col-md-3">
-								{include file="Record/result-tools.tpl" showMoreInfo=false summShortId=$shortId module=$activeRecordProfileModule summId=$id summTitle=$recordDriver->getTitle()}
-							</div>
-						{else}
-							<div id="multiple-variations-column" class="col-xs-12 col-sm-12 col-md-9">
-								{include file="Record/multipleVariationDisplay.tpl" workId=$recordDriver->getPermanentId() summTitle=$recordDriver->getTitle()}
-							</div>
-						{/if}
+							{if !($recordDriver->hasMultipleVariations())}
+								<div id="recordTools" class="col-xs-12 col-sm-6 col-md-3">
+									{include file="Record/result-tools.tpl" showMoreInfo=false summShortId=$shortId module=$activeRecordProfileModule summId=$id summTitle=$recordDriver->getTitle()}
+								</div>
+							{else}
+								<div id="multiple-variations-column" class="col-xs-12 col-sm-12 col-md-9">
+									{include file="Record/multipleVariationDisplay.tpl" workId=$recordDriver->getPermanentId() summTitle=$recordDriver->getTitle()}
+								</div>
+							{/if}
+                        {else}
+                            {* Show alterative layout to match the horizontal design in search results *}
+	                            <div id="record-details-column" class="row">
+                                    {include file="Record/view-title-details-horiz.tpl" hasMultipleVariations=$recordDriver->hasMultipleVariations()}
+                                    {if !($recordDriver->hasMultipleVariations())}
+                                        {* Detailed status information *}
+			                            <div class="row variationInfo">
+				                            <div class="col-xs-12">
+					                            <div class="row">
+		                                            {if !empty($statusSummary)}
+	                                                    {if ($statusSummary->showCopySummary())}<div class="col-tn-8">{/if}
+				                                            <div class="row">
+					                                            <div class="col-tn-12">
+			                                                    {assign var=workId value=$recordDriver->getPermanentId()}
+			                                                    {include file='GroupedWork/statusIndicator.tpl' statusInformation=$statusSummary->getStatusInformation() viewingIndividualRecord=1}
+					                                            </div>
+				                                            </div>
+							                            {if ($statusSummary->showCopySummary())}</div>{/if}
+			                                                <div class="col-tn-4">
+				                                                <div id="recordTools">
+                                                                    {include file="Record/result-tools.tpl" showMoreInfo=false summShortId=$shortId module=$activeRecordProfileModule summId=$id summTitle=$recordDriver->getTitle()}
+				                                                </div>
+			                                                </div>
+		                                            {else}
+		                                                {translate text="Unavailable/Withdrawn" isPublicFacing=true}
+		                                            {/if}
+					                            </div>
+                                                {if ($statusSummary->showCopySummary())}
+                                                    {include file='GroupedWork/copySummaryHoriz.tpl' summary=$statusSummary->getItemSummary() totalCopies=$statusSummary->getCopies() itemSummaryId=$statusSummary->id format=$recordDriver->getPrimaryFormat() isEContent=$statusSummary->isEContent() showMoreInfo=false summShortId=$shortId module=$activeRecordProfileModule summId=$id summTitle=$recordDriver->getTitle()}
+                                                {/if}
+				                            </div>
+			                            </div>
+                                    {/if}
+	                            </div>
+	                        {if $recordDriver->hasMultipleVariations()}
+		                        <div class="col-xs-12 formatDisplayHorizontal" id="multiple-variations-column">
+                                    {include file="Record/multipleVariationDisplayHoriz.tpl" workId=$recordDriver->getPermanentId() summTitle=$recordDriver->getTitle()}
+		                        </div>
+	                        {/if}
+                        {/if}
 					</div>
 
 					<div class="row">

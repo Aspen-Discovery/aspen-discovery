@@ -22,11 +22,16 @@ class Admin_GroupedWorkFacets extends ObjectEditor {
 		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		if (!UserAccount::userHasPermission('Administer All Grouped Work Facets')) {
-			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
+			$validLibraries = Library::getLibraryListAsObjects(true);
+			$validGroupedWorkDisplaySettings = [];
+			foreach ($validLibraries as $library) {
+				$validGroupedWorkDisplaySettings[$library->groupedWorkDisplaySettingId] = $library->groupedWorkDisplaySettingId;
+			}
+
 			$groupedWorkDisplaySettings = new GroupedWorkDisplaySetting();
-			$groupedWorkDisplaySettings->id = $library->groupedWorkDisplaySettingId;
-			$groupedWorkDisplaySettings->find(true);
-			$object->id = $groupedWorkDisplaySettings->facetGroupId;
+			$groupedWorkDisplaySettings->whereAddIn('id', $validGroupedWorkDisplaySettings, false);
+			$validFormatSortingGroupIds = $groupedWorkDisplaySettings->fetchAll('formatSortingGroupId', 'formatSortingGroupId');
+			$object->whereAddIn('id', $validFormatSortingGroupIds, false);
 		}
 		$object->find();
 		$list = [];
@@ -53,7 +58,7 @@ class Admin_GroupedWorkFacets extends ObjectEditor {
 	}
 
 	function getInstructions(): string {
-		return 'https://help.aspendiscovery.org/help/catalog/facets';
+		return 'https://aspen-discovery.atlassian.net/wiki/spaces/Help/pages/381648900/Facets';
 	}
 
 	function getBreadcrumbs(): array {

@@ -31,18 +31,14 @@ class CommunityEngagement_AdminView extends Admin_Dashboard {
 		$upcomingCampaigns = $campaign->getUpcomingCampaigns();
 		$interface->assign('upcomingCampaigns', $upcomingCampaigns);
 
-		$campaignAjax = new CommunityEngagement_AJAX();
-		$users = $campaignAjax->fetchLibraryUsers();
-		$interface->assign('users', $users);
-
 		$userCampaigns = [];
-		$campaignMilestones = [];
+		$campaignMilestonesMap = [];
 		$userCampaignMilestones = [];
 
 		foreach ($campaigns as $campaign) {
-			$milestones = CampaignMilestone::getMilestoneByCampaign($campaign->id);
+			$campaignMilestones = CampaignMilestone::getCampaignMilestoneByCampaign($campaign->id);
 			$extraCreditActivities = CampaignExtraCredit::getExtraCreditByCampaign($campaign->id);
-			$campaignMilestones[$campaign->id] = $milestones;
+			$campaignMilestonesMap[$campaign->id] = $campaignMilestones;
 
 			$users = $campaign->getUsersForCampaign();
 			foreach ($users as $user) {
@@ -60,14 +56,13 @@ class CommunityEngagement_AdminView extends Admin_Dashboard {
 
 				$userCampaigns[$campaign->id][$user->id]['isCampaignComplete'] = $isCampaignComplete;
 
-
-				$milestoneCompletionStatus = $userCampaign->checkMilestoneCompletionStatus();
-				foreach ($milestones as $milestone) {
-					$milestoneComplete = $milestoneCompletionStatus[$milestone->id] ?? false;
-					$userProgress = CampaignMilestoneUsersProgress::getProgressByMilestoneId($milestone->id, $campaign->id, $user->id);
-					$totalGoals = CampaignMilestone::getMilestoneGoalCountByCampaign($campaign->id, $milestone->id);
-					$milestoneRewardGiven = CampaignMilestoneUsersProgress::getRewardGivenForMilestone($milestone->id, $user->id, $campaign->id);
-					$userCampaigns[$campaign->id][$user->id]['milestones'][$milestone->id] = [
+				$campaignMilestoneCompletionStatus = $userCampaign->checkCampaignMilestoneCompletionStatus();
+				foreach ($campaignMilestones as $campaignMilestone) {
+					$milestoneComplete = $campaignMilestoneCompletionStatus[$campaignMilestone->id] ?? false;
+					$userProgress = CampaignMilestoneUsersProgress::getProgressByCampaignMilestoneId($campaignMilestone->id, $user->id);
+					$totalGoals = CampaignMilestone::getCampaignMilestoneGoalCountByCampaign($campaignMilestone->id);
+					$milestoneRewardGiven = CampaignMilestoneUsersProgress::getRewardGivenForCampaignMilestone($campaignMilestone->id, $user->id);
+					$userCampaigns[$campaign->id][$user->id]['milestones'][$campaignMilestone->id] = [
 						'milestoneComplete' => $milestoneComplete, 
 						'userProgress' => $userProgress,
 						'goal' => $totalGoals,
@@ -81,7 +76,7 @@ class CommunityEngagement_AdminView extends Admin_Dashboard {
 			$campaign->completedUsersCount = $campaign->getCompletedUsersCount();
 		}
 		$interface->assign('userCampaigns', $userCampaigns);
-		$interface->assign('campaignMilestones', $campaignMilestones);
+		$interface->assign('campaignMilestones', $campaignMilestonesMap);
 		$interface->assign('library', $library);
 		$this->display('adminView.tpl', 'Admin View');
 	}

@@ -12,12 +12,23 @@ class Testing_SIPTester extends Admin_Admin {
 			$sipPassword = $_REQUEST['sipPassword'] ?? null;
 			$patronBarcode = $_REQUEST['patronBarcode'] ?? null;
 			$patronPin = $_REQUEST['patronPin'] ?? null;
+			$msgTerminatorRaw = $_REQUEST['sipTerminator'] ?? "crlf";
+			if ($msgTerminatorRaw == "crlf") {
+				$msgTerminator = "\r\n";
+			}else{
+				$msgTerminator = "\r";
+			}
+			$location = $_REQUEST['location'] ?? "";
+			$useSSL = !empty($_REQUEST['useSSL']) ?? false;
 			$interface->assign('sipHost', $sipHost);
 			$interface->assign('sipPort', $sipPort);
 			$interface->assign('sipUser', $sipUser);
 			$interface->assign('sipPassword', $sipPassword);
 			$interface->assign('patronBarcode', $patronBarcode);
 			$interface->assign('patronPin', $patronPin);
+			$interface->assign('useSSL', $useSSL);
+			$interface->assign('msgTerminator', $msgTerminator);
+			$interface->assign('location', $location);
 
 			$results = [
 				'success' => false,
@@ -28,10 +39,15 @@ class Testing_SIPTester extends Admin_Admin {
 				$mySip->port = $sipPort;
 
 				$mySip->debug = true;
+				$mySip->useSSL = $useSSL;
+				$mySip->msgTerminator = $msgTerminator;
+				$mySip->scLocation = $location;
 
 				if ($mySip->connect($sipUser, $sipPassword)) {
 					$results['success'] = true;
 					$results['message'] = 'Connection succeeded';
+					$results['message'] .= '<br/>' . $mySip->lastMessageSent;
+					$results['message'] .= '<br/>' . $mySip->lastResponse;
 
 					$scMessage = $mySip->msgSCStatus();
 					$scResult = $mySip->get_message($scMessage);
@@ -75,7 +91,7 @@ class Testing_SIPTester extends Admin_Admin {
 				}else{
 					$results['message'] = 'Connection failed, additional details in messages.log';
 					$results['message'] .= '<br/>' . $mySip->lastMessageSent;
-					$results['message'] .= '<br/>' . $mySip->lastResponse;
+					$results['message'] .= '<br/>' . $mySip->lastResponse ?? 'No response received';
 				}
 			}else{
 				$results['message'] = 'The IP and port must be provided.';
@@ -89,6 +105,7 @@ class Testing_SIPTester extends Admin_Admin {
 	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Greenhouse/Home', 'Greenhouse Home');
+		$breadcrumbs[] = new Breadcrumb('/Greenhouse/Home#greenhouse-testing-tools', 'Testing Tools');
 		$breadcrumbs[] = new Breadcrumb('/Testing/SIPTester', 'SIP Tester', true);
 		return $breadcrumbs;
 	}

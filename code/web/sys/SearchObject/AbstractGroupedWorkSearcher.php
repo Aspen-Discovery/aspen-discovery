@@ -688,6 +688,25 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 				$searchTerm = preg_replace('/\.$/', ' ', $searchTerm);
 				$searchTerm = trim($searchTerm);
 			}
+			global $enabledModules;
+			global $library;
+			$searchSeriesModule = array_key_exists('Series', $enabledModules) && $library->useSeriesSearchIndex == 1;
+			if (preg_match('/(\b|^)(series)(\b|$)/i', $searchTerm) && $searchInterpreterSettings->triggerSeriesSearch) {
+				// Only redirect if bypassSeriesRedirect is not set
+				if (empty($_REQUEST['bypassSeriesRedirect'])) {
+					$originalSearchUrl = $_SERVER['REQUEST_URI'];
+					$searchTerm = preg_replace('/(\b)series(\b)/i', '', $searchTerm);
+					if ($searchSeriesModule) {
+						$redirectUrl = '/Union/Search?lookfor=' . urlencode(trim($searchTerm)) . '&searchIndex=SeriesKeyword&searchSource=series&seriesRedirectedFrom=' . urlencode($originalSearchUrl);
+					}
+					else {
+						// Switch to just searching the series index within the grouped work/catalog search type.
+						$redirectUrl = '/Union/Search?lookfor=' . urlencode(trim($searchTerm)) . '&searchIndex=Series&searchSource=local&seriesRedirectedFrom=' . urlencode($originalSearchUrl);
+					}
+					header('Location: ' . $redirectUrl);
+					exit;
+				}
+			}
 		}
 		return $searchTerm;
 	}
@@ -764,10 +783,9 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 	protected function getBaseUrl() : string {
 		// Base URL is different for author searches:
 		if ($this->searchType == 'author') {
-			if ($this->searchSubType == 'home') {
-				return "/Author/Home?";
-			}
-			if ($this->searchSubType == 'search') {
+			if (is_null($this->searchSubType) || $this->searchSubType == 'home') {
+				return '/Author/Home?author=' . urlencode($this->query) . '&';
+			}elseif ($this->searchSubType == 'search') {
 				return "/Author/Search?";
 			}
 		} elseif ($this->searchType == 'favorites') {
@@ -1275,6 +1293,32 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 		}
 
 		return $this->facetConfig;
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getFullFacetConfig() : array {
+		if ($this->fullFacetConfig == null) {
+			$facetConfig = [];
+			$searchLibrary = Library::getActiveLibrary();
+			global $locationSingleton;
+			$searchLocation = $locationSingleton->getActiveLocation();
+			if ($searchLocation != null) {
+				$facets = $searchLocation->getGroupedWorkDisplaySettings()->getFacets();
+			} else {
+				$facets = $searchLibrary->getGroupedWorkDisplaySettings()->getFacets();
+			}
+			foreach ($facets as $facet) {
+				//Adjust facet name for local scoping
+				$facet->facetName = $this->getScopedFieldName($facet->getFacetName($this->searchVersion));
+				$facetConfig[$facet->facetName] = $facet;
+
+			}
+			$this->fullFacetConfig = $facetConfig;
+		}
+
+		return $this->fullFacetConfig;
 	}
 
 	function getMoreLikeThis($id, $selectedAvailabilityToggle = 'global', $availableOnly = false, $limitFormat = true, $limit = null, $format = null) {

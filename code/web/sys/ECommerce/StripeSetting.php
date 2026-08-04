@@ -160,12 +160,13 @@ class StripeSetting extends DataObject {
 
 		require_once ROOT_DIR . '/sys/Account/User.php';
 		require_once ROOT_DIR . '/sys/SystemVariables.php';
+		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 		$systemVariables = SystemVariables::getSystemVariables();
 		$currencyCode = 'USD';
 		$currencySymbol = '$';
 		if (!empty($systemVariables) && !empty($systemVariables->currencyCode)) {
 			$currencyCode = $systemVariables->currencyCode;
-			$currencySymbol = $systemVariables->getCurrencySymbol();
+			$currencySymbol = StringUtils::getCurrencySymbol();
 		}
 		$stripeCurrency = strtolower($currencyCode);
 
@@ -198,7 +199,7 @@ class StripeSetting extends DataObject {
 		if (!empty($user->ils_barcode)) {
 			$metadata['Patron Barcode'] = $user->ils_barcode;
 		}
-		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
+
 		foreach ($paymentLines as $i => $paymentLine) {
 			$metadata['Line ' . ($i + 1)] = $paymentLine->description . " - " . StringUtils::formatCurrency($paymentLine->amountPaid);
 		}
@@ -288,7 +289,7 @@ class StripeSetting extends DataObject {
 						if ($chargeRequest->getResponseCode() == 200) {
 							$chargeData = json_decode($chargeResponse, true);
 							if (!empty($chargeData['receipt_url'])) {
-								$payment->stripeReceiptUrl = $chargeData['receipt_url'];
+								$payment->receiptUrl = $chargeData['receipt_url'];
 							}
 						}
 					}
@@ -303,8 +304,8 @@ class StripeSetting extends DataObject {
 								'isPublicFacing' => true,
 							]),
 						];
-						if (!empty($payment->stripeReceiptUrl)) {
-							$result['receiptUrl'] = $payment->stripeReceiptUrl;
+						if (!empty($payment->receiptUrl)) {
+							$result['receiptUrl'] = $payment->receiptUrl;
 						}
 						return $result;
 					} else {
@@ -322,8 +323,8 @@ class StripeSetting extends DataObject {
 										'isPublicFacing' => true,
 									]),
 								];
-								if (!empty($payment->stripeReceiptUrl)) {
-									$result['receiptUrl'] = $payment->stripeReceiptUrl;
+								if (!empty($payment->receiptUrl)) {
+									$result['receiptUrl'] = $payment->receiptUrl;
 								}
 								return $result;
 							} else {

@@ -39,151 +39,6 @@ class Record_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function getVdxRequestForm(): array {
-		$this->requireLoggedInUser(null, "You must be logged in.  Please close this dialog and login before placing your request.");
-		$this->checkRequiredParameters(['id']);
-		global $interface;
-
-		$user = UserAccount::getLoggedInUser();
-		$id = $_REQUEST['id'];
-		if (strpos($id, ':') > 0) {
-			[
-				,
-				$id,
-			] = explode(':', $id);
-		}
-		$recordSource = $_REQUEST['recordSource'];
-		$interface->assign('recordSource', $recordSource);
-		require_once ROOT_DIR . '/sys/VDX/VdxSetting.php';
-		require_once ROOT_DIR . '/sys/VDX/VdxForm.php';
-		$vdxSettings = new VdxSetting();
-		if ($vdxSettings->find(true)) {
-			$homeLocation = Location::getDefaultLocationForUser();
-			if ($homeLocation != null) {
-				//Get configuration for the form.
-				$vdxForm = new VdxForm();
-				$vdxForm->id = $homeLocation->vdxFormId;
-				if ($vdxForm->find(true)) {
-					//Check to see if the patron is eligible to place holds
-					$accountSummary = $user->getAccountSummary();
-					if ($accountSummary->isExpired()) {
-						$results = [
-							'title' => translate([
-								'text' => 'Request Title',
-								'isPublicFacing' => true,
-							]),
-							'modalBody' => translate([
-								'text' => 'Your account is not eligible to request titles from other libraries.  Please visit the library to renew your account.',
-								'isPublicFacing' => true,
-							]),
-							'modalButtons' => '',
-							'success' => true,
-						];
-					} elseif ($user->isBlockedFromIllRequests()) {
-						$results = [
-							'title' => translate([
-								'text' => 'Request Title',
-								'isPublicFacing' => true,
-							]),
-							'modalBody' => translate([
-								'text' => 'Your account is not eligible to request titles from other libraries.  Please visit the library to update your account.',
-								'isPublicFacing' => true,
-							]),
-							'modalButtons' => '',
-							'success' => true,
-						];
-					} else {
-						$marcRecord = new MarcRecordDriver($id);
-
-						$interface->assign('vdxForm', $vdxForm);
-						$vdxFormFields = $vdxForm->getFormFields($marcRecord);
-						$interface->assign('structure', $vdxFormFields);
-						$interface->assign('vdxFormFields', $interface->fetch('DataObjectUtil/ajaxForm.tpl'));
-
-						$results = [
-							'title' => translate([
-								'text' => 'Request Title',
-								'isPublicFacing' => true,
-							]),
-							'modalBody' => $interface->fetch("Record/vdx-request-popup.tpl"),
-							'modalButtons' => '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.submitVdxRequest(\'Record\', \'' . $id . '\')">' . translate([
-									'text' => 'Place Request',
-									'isPublicFacing' => true,
-								]) . '</a>',
-							'success' => true,
-						];
-					}
-				} else {
-					$results = [
-						'title' => translate([
-							'text' => 'Invalid Configuration',
-							'isPublicFacing' => true,
-						]),
-						'message' => translate([
-							'text' => "Unable to find the specified form.",
-							'isPublicFacing' => true,
-						]),
-						'success' => false,
-					];
-				}
-			} else {
-				$results = [
-					'title' => translate([
-						'text' => 'Invalid Configuration',
-						'isPublicFacing' => true,
-					]),
-					'message' => translate([
-						'text' => "Unable to determine home library to place request from.",
-						'isPublicFacing' => true,
-					]),
-					'success' => false,
-				];
-			}
-		} else {
-			$results = [
-				'title' => translate([
-					'text' => 'Invalid Configuration',
-					'isPublicFacing' => true,
-				]),
-				'message' => translate([
-					'text' => "VDX Settings do not exist, please contact the library to make a request.",
-					'isPublicFacing' => true,
-				]),
-				'success' => false,
-			];
-		}
-		return $results;
-	}
-
-	/** @noinspection PhpUnused */
-	function submitVdxRequest(): array {
-		$this->requireLoggedInUser(null, "You must be logged in.  Please close this dialog and login before placing your request.");
-		$this->checkRequiredParameters(['id']);
-
-		require_once ROOT_DIR . '/Drivers/VdxDriver.php';
-		require_once ROOT_DIR . '/sys/VDX/VdxSetting.php';
-		require_once ROOT_DIR . '/sys/VDX/VdxForm.php';
-		$vdxSettings = new VdxSetting();
-		if ($vdxSettings->find(true)) {
-			$vdxDriver = new VdxDriver();
-			$results = $vdxDriver->submitRequest($vdxSettings, UserAccount::getActiveUserObj(), $_REQUEST);
-		} else {
-			$results = [
-				'title' => translate([
-					'text' => 'Invalid Configuration',
-					'isPublicFacing' => true,
-				]),
-				'message' => translate([
-					'text' => "VDX Settings do not exist, please contact the library to make a request.",
-					'isPublicFacing' => true,
-				]),
-				'success' => false,
-			];
-		}
-		return $results;
-	}
-
-	/** @noinspection PhpUnused */
 	function getLocalIllRequestForm(): array {
 		$this->requireLoggedInUser(null, "You must be logged in.  Please close this dialog and login before placing your request.");
 		$this->checkRequiredParameters(['id']);
@@ -352,10 +207,58 @@ class Record_AJAX extends JSON_Action {
 			}
 
 			$marcRecord = new MarcRecordDriver($id);
+			$groupedWorkDriver = $marcRecord->getGroupedWorkDriver();
 
+			$allowEditionSelection = (isset($_REQUEST['allowEditionSelection']) && $_REQUEST['allowEditionSelection'] == '1');
+			$interface->assign('allowEditionSelection', $allowEditionSelection);
+
+			$currentFormat = null;
+			$catalogDriver = $marcRecord->getCatalogDriver();
+			$allowHoldsToBeGrouped = $catalogDriver && $catalogDriver->supportsHyperholdsGrouping()
+				? User::resolveAllowHoldsToBeGrouped($user, $library)
+				: false;
+
+			if (isset($_REQUEST['format']) && !empty($_REQUEST['format'])) {
+				$currentFormat = $_REQUEST['format'];
+			} elseif ($selectedVariationId !== -1) {
+				if ($groupedWorkDriver) {
+					$relatedRecord = $groupedWorkDriver->getRelatedRecord($marcRecord->getIdWithSource());
+					if ($relatedRecord && !empty($relatedRecord->recordVariations)) {
+						foreach ($relatedRecord->recordVariations as $variation) {
+							if ((string)$variation->databaseId === (string)$selectedVariationId) {
+								$currentFormat = $variation->manifestation->format ?? null;
+								break;
+							}
+						}
+					}
+				}
+			}
+
+			if ($currentFormat === null) {
+				$currentFormat = $marcRecord->getPrimaryFormat();
+			}
+
+			$interface->assign('currentFormat', $currentFormat);
+			$interface->assign('allowHoldsToBeGrouped', $allowHoldsToBeGrouped);
+
+			if ($allowEditionSelection) {
+				$groupedWorkDriver = $marcRecord->getGroupedWorkDriver();
+				if ($groupedWorkDriver) {
+					$editions = $this->getHoldableEditionsForFormat($groupedWorkDriver, $recordSource, $currentFormat);
+					$interface->assign('editions', $editions);
+				}
+			}
+ 
 			require_once ROOT_DIR . '/sys/Account/User.php';
 			$isOnHold = $user->isRecordOnHold($recordSource, $id);
 			$interface->assign('isOnHold', $isOnHold);
+
+			$enableMultiCopyHolds = $user->canPlaceMultiCopyHolds();
+			$interface->assign('enableMultiCopyHolds', $enableMultiCopyHolds);
+			if ($enableMultiCopyHolds) {
+				$statusSummary = $marcRecord->getGroupedWorkDriver()->getRelatedRecord($marcRecord->getIdWithSource());
+				$interface->assign('maxCopyHolds', $statusSummary->getAvailableHoldableCopies());
+			}
 
 			if (!$this->setupHoldForm($recordSource, $rememberHoldPickupLocation, $marcRecord, $locations, $selectedVariationId, $promptForEdition)) {
 				return [
@@ -624,16 +527,41 @@ class Record_AJAX extends JSON_Action {
 					'success' => true,
 				];
 				if ($holdType != 'none') {
+					$groupedWorkId = '';
+					$catalogDriver = $marcRecord->getCatalogDriver();
+					$allowHoldsToBeGrouped = $catalogDriver && $catalogDriver->supportsHyperholdsGrouping()
+						? User::resolveAllowHoldsToBeGrouped($user, $library)
+						: false;
+					if ($allowEditionSelection && $allowHoldsToBeGrouped) {
+						$groupedWorkDriver = $marcRecord->getGroupedWorkDriver();
+						if ($groupedWorkDriver) {
+							$groupedWorkId = $groupedWorkDriver->getPermanentId();
+						}
+					}
 					if ($isOnHold) {
-						$results['modalButtons'] = "<button type='submit' name='submit' id='requestTitleButton' class='btn btn-primary' onclick='return AspenDiscovery.Record.submitHoldForm();'><i class='fas fa-spinner fa-spin hidden' role='status' aria-hidden='true'></i>&nbsp;" . translate([
+						if ($allowEditionSelection && $allowHoldsToBeGrouped) {
+							$results['modalButtons'] = "<button type='submit' name='submit' id='requestTitleButton' class='btn btn-primary' onclick='return AspenDiscovery.Record.submitHyperhold(\"$groupedWorkId\");'><i class='fas fa-spinner fa-spin hidden' role='status' aria-hidden='true'></i>&nbsp;" . translate([
 								'text' => "Yes, Place Hold",
 								'isPublicFacing' => true,
 							]) . "</button>";
+						} else {
+								$results['modalButtons'] = "<button type='submit' name='submit' id='requestTitleButton' class='btn btn-primary' onclick='return AspenDiscovery.Record.submitHoldForm();'><i class='fas fa-spinner fa-spin hidden' role='status' aria-hidden='true'></i>&nbsp;" . translate([
+								'text' => "Yes, Place Hold",
+								'isPublicFacing' => true,
+							]) . "</button>";
+						}
 					} else {
-						$results['modalButtons'] = "<button type='submit' name='submit' id='requestTitleButton' class='btn btn-primary' onclick='return AspenDiscovery.Record.submitHoldForm();'><i class='fas fa-spinner fa-spin hidden' role='status' aria-hidden='true'></i>&nbsp;" . translate([
+						if ($allowEditionSelection && $allowHoldsToBeGrouped) {
+							$results['modalButtons'] = "<button type='submit' name='submit' id='requestTitleButton' class='btn btn-primary' onclick='return AspenDiscovery.Record.submitHyperhold(\"$groupedWorkId\");'><i class='fas fa-spinner hidden' role='status' aria-hidden='true'></i>&nbsp;" . translate([
 								'text' => "Submit Hold Request",
 								'isPublicFacing' => true,
 							]) . "</button>";
+						} else {
+							$results['modalButtons'] = "<button type='submit' name='submit' id='requestTitleButton' class='btn btn-primary' onclick='return AspenDiscovery.Record.submitHoldForm();'><i class='fas fa-spinner fa-spin hidden' role='status' aria-hidden='true'></i>&nbsp;" . translate([
+								'text' => "Submit Hold Request",
+								'isPublicFacing' => true,
+							]) . "</button>";
+						}
 					}
 				}
 			}
@@ -726,7 +654,7 @@ class Record_AJAX extends JSON_Action {
 			foreach ($relatedRecord->recordVariations as $variation) {
 				foreach ($variation->getRecords() as $record) {
 					if ($record->id == $relatedRecord->id) {
-						$unsuppressedVolumeData = $relatedRecord->getUnsuppressedVolumeData(true);
+						$unsuppressedVolumeData = $record->getUnsuppressedVolumeData(true);
 						foreach ($unsuppressedVolumeData as $volumeInfo) {
 							if (!isset($volumeData[$volumeInfo->volumeId])) {
 								$volumeData[$volumeInfo->volumeId] = clone($volumeInfo);
@@ -1063,8 +991,9 @@ class Record_AJAX extends JSON_Action {
 					}else{
 						//Placing a hold on the suggested edition
 						$rememberUserEditionPreference = isset($_REQUEST['rememberUserEditionPreference']) ? filter_var($_REQUEST['rememberUserEditionPreference'], FILTER_VALIDATE_BOOLEAN) : false;
-						if ($rememberUserEditionPreference !== $user->rememberHoldPromptForEdition) {
-							$user->setRememberHoldPromptForEdition($rememberUserEditionPreference);
+						if ($rememberUserEditionPreference !== $patron->rememberHoldPromptForEdition) {
+							$patron->setRememberHoldPromptForEdition($rememberUserEditionPreference);
+							$patron->update();
 						}
 					}
 				}
@@ -1087,7 +1016,8 @@ class Record_AJAX extends JSON_Action {
 							$return = $patron->placeVolumeHold($shortId, $_REQUEST['volume'], $pickupBranch, $pickupSublocation);
 						}
 					} else {
-						$return = $patron->placeHold($shortId, $pickupBranch, $cancelDate, $pickupSublocation);
+						$numberOfCopies = $_REQUEST['numberOfCopies'] ?? 1;
+						$return = $patron->placeHold($shortId, $pickupBranch, $cancelDate, $pickupSublocation, $numberOfCopies);
 					}
 				}
 
@@ -1179,33 +1109,7 @@ class Record_AJAX extends JSON_Action {
 
 								$homeLocation = Location::getDefaultLocationForUser();
 								if ($homeLocation != null) {
-									if ($illLoanType == 'vdx') {
-										require_once ROOT_DIR . '/sys/VDX/VdxForm.php';
-
-										//Get configuration for the form.
-										$vdxForm = new VdxForm();
-										$vdxForm->id = $homeLocation->vdxFormId;
-										if ($vdxForm->find(true)) {
-											$interface->assign('vdxForm', $vdxForm);
-
-											$vdxFormFields = $vdxForm->getFormFields($marcRecord, $volumeLabel);
-											$interface->assign('structure', $vdxFormFields);
-											$interface->assign('vdxFormFields', $interface->fetch('DataObjectUtil/ajaxForm.tpl'));
-											return [
-												'title' => translate([
-													'text' => 'Hold Failed, Request Title?',
-													'isPublicFacing' => true,
-												]),
-												'modalBody' => $interface->fetch("Record/vdx-request-popup.tpl"),
-												'modalButtons' => '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.submitVdxRequest(\'Record\', \'' . $recordId . '\')">' . translate([
-														'text' => 'Place Request',
-														'isPublicFacing' => true,
-													]) . '</a>',
-												'success' => true,
-												'needsIllRequest' => true,
-											];
-										}
-									} elseif ($illLoanType == 'localIll') {
+									if ($illLoanType == 'localIll') {
 										require_once ROOT_DIR . '/sys/InterLibraryLoan/LocalIllForm.php';
 										//Get configuration for the form.
 										$localIllForm = new LocalIllForm();
@@ -1266,6 +1170,16 @@ class Record_AJAX extends JSON_Action {
 						$interface->assign('whileYouWaitTitles', []);
 					}
 
+					/** @var Koha $catalogDriver */
+					$catalogDriver = $user->getCatalogDriver();
+					if ($catalogDriver->hasHoldFeeMessage()) {
+						$marcRecord = RecordDriverFactory::initRecordDriverById($recordId);
+						$reserveFeeMessage = $catalogDriver->getPostHoldSubmissionFeeMessage($marcRecord);
+						if ($reserveFeeMessage) {
+							$interface->assign('reserveFeeMessage', $reserveFeeMessage);
+						}
+					}
+
 					$results = [
 						'success' => $return['success'],
 						'message' => $interface->fetch('Record/hold-success-popup.tpl'),
@@ -1274,6 +1188,9 @@ class Record_AJAX extends JSON_Action {
 					];
 					if (isset($return['viewHoldsAction'])) {
 						$results['viewHoldsAction'] = $return['viewHoldsAction'];
+						$results['modalButtons'] = $return['modalButtons'];
+					}else{
+						$results['viewHoldsAction'] = '';
 					}
 					if ($confirmationNeeded) {
 						$results['modalButtons'] = '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.confirmHold(\'Record\', \'' . $shortId . '\', ' . $return['confirmationId'] . ')">' . translate([
@@ -1290,6 +1207,7 @@ class Record_AJAX extends JSON_Action {
 							UserAccount::softLogout();
 						}
 						$results['autologout'] = true;
+						$results['modalButtons'] = null;
 						$alreadyLoggedOut = true;
 					}
 				}
@@ -1354,12 +1272,14 @@ class Record_AJAX extends JSON_Action {
 			$interface->assign('whileYouWaitTitles', []);
 		}
 
+		$interface->assign('success', $return['success']);
 		$interface->assign('message', $return['message']);
 		$results = [
 			'success' => $return['success'],
 			'message' => $interface->fetch('Record/hold-success-popup.tpl'),
 			'title' => $return['title'] ?? '',
 			'confirmationNeeded' => $confirmationNeeded,
+			'modalButtons' => $return['modalButtons'] ?? '',
 		];
 		if ($confirmationNeeded) {
 			$results['modalButtons'] = '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.confirmHold(\'Record\', \'' . $shortId . '\', ' . $return['confirmationId'] . ')">' . translate([
@@ -1388,7 +1308,7 @@ class Record_AJAX extends JSON_Action {
 
 		//Figure out the maximum upload size
 		require_once ROOT_DIR . '/sys/Utils/SystemUtils.php';
-		$interface->assign('max_file_size', SystemUtils::file_upload_max_size() / (1024 * 1024));
+		$interface->assign('max_file_size', SystemUtils::file_upload_max_size_mb());
 
 		return [
 			'title' => translate([
@@ -1421,7 +1341,7 @@ class Record_AJAX extends JSON_Action {
 
 		//Figure out the maximum upload size
 		require_once ROOT_DIR . '/sys/Utils/SystemUtils.php';
-		$interface->assign('max_file_size', SystemUtils::file_upload_max_size() / (1024 * 1024));
+		$interface->assign('max_file_size', SystemUtils::file_upload_max_size_mb());
 
 		return [
 			'title' => translate([
@@ -2032,39 +1952,44 @@ class Record_AJAX extends JSON_Action {
 		}
 
 		global $library;
-		//Check to see if we can bypass the holds popup and just place the hold
-		if (!$multipleAccountPickupLocations && !$promptForHoldNotifications && $library->allowRememberPickupLocation && !$holdPromptForEditions) {
-			//If the patron's preferred pickup location is not valid, then force them to pick a new location
-			if ($preferredPickupLocationIsValid && $preferredPickupSublocationIsValid) {
-				$rememberHoldPickupLocation = $user->rememberHoldPickupLocation;
-			} else {
-				$rememberHoldPickupLocation = false;
-				if (!$preferredPickupSublocationIsValid) {
-					if ($user->pickupSublocationId > 0) {
-						$interface->assign('pickupLocationInvalidMessage', translate([
-							'text' => 'Your preferred pickup area is not available for your patron type. Please select a pickup location.',
-							'isPublicFacing' => true,
-						]));
-					}
-				}
-			}
-		} else {
-			$rememberHoldPickupLocation = false;
-			if ($multipleAccountPickupLocations) {
-				$interface->assign('pickupLocationInvalidMessage', translate([
-					'text' => 'You have linked accounts with different pickup locations. Please select which location and account to use for this hold.',
-					'isPublicFacing' => true,
-				]));
-			} elseif ($promptForHoldNotifications) {
-				$interface->assign('pickupLocationInvalidMessage', translate([
-					'text' => 'Your library system requires you to choose notification preferences for each hold.',
-					'isPublicFacing' => true,
-				]));
-			}
-			// If the Library System does not allow remembering pickup location (i.e., !$library->allowRememberPickupLocation),
-			// then no need to display a message because the patron cannot choose a preferred pickup location anyway.
+
+		//Check to see if this is a non-fiction work
+		$isNonFiction = false;
+		$groupedWorkDriver = $marcRecord->getGroupedWorkDriver();
+		if ($groupedWorkDriver->getPrimaryLiteraryForm()) {
+			$literaryForm = $groupedWorkDriver->getPrimaryLiteraryForm();
+			$isNonFiction = $literaryForm == 'Non Fiction';
 		}
 
+		//If it is a non-fiction work, we will prompt the user for the edition if they aren't placing a hold on the latest
+		if ($isNonFiction) {
+			$selectedRecordLatestPubDate = 0;
+			foreach ($marcRecord->getPublicationDates() as $selectedRecordPubDate) {
+				if (preg_match('/(\d{4})/', $selectedRecordPubDate, $matches)) {
+					$selectedRecordLatestPubDate = max($selectedRecordLatestPubDate, $matches[1]);
+				}
+			}
+			$marcRecordFormat = $marcRecord->getPrimaryFormat();
+			foreach ($groupedWorkDriver->getRelatedRecords() as $relatedRecord) {
+				if ($relatedRecord->getFormat() == $marcRecordFormat) {
+					foreach ($relatedRecord->getDriver()->getPublicationDates() as $relatedRecordPubDate) {
+						if (preg_match('/(\d{4})/', $relatedRecordPubDate, $matches)) {
+							if ($matches[1] > $selectedRecordLatestPubDate) {
+								$holdPromptForEditions = 2;
+								$promptForEdition = true;
+								$interface->assign('holdEditionPromptMessage', 'You are placing a hold on an earlier version of this title. If you need the latest information, you can request the newer edition instead, though wait times may be longer.');
+								break;
+							}
+						}
+					}
+				}
+				if ($promptForEdition && $holdPromptForEditions == 2) {
+					break;
+				}
+			}
+		}
+
+		//This needs to come before determining if the hold prompt can be bypassed
 		$editionOptions = [];
 		if ($holdPromptForEditions > 0 && $promptForEdition) {
 			if (count($relatedRecord->recordVariations) > 1) {
@@ -2117,9 +2042,47 @@ class Record_AJAX extends JSON_Action {
 					$editionOptions = $variation->getRelatedRecords();
 				}
 			}
+		}else{
+			//We are not prompting for a specific edition, make sure the hold prompt can still be bypassed.
+			$holdPromptForEditions = 0;
 		}
+
+		$interface->assign('holdPromptForEditions', $holdPromptForEditions);
+
 		$interface->assign('editionOptions', $editionOptions);
 
+		//Check to see if we can bypass the holds popup and just place the hold
+		if (!$multipleAccountPickupLocations && !$promptForHoldNotifications && $library->allowRememberPickupLocation && !$holdPromptForEditions) {
+			//If the patron's preferred pickup location is not valid, then force them to pick a new location
+			if ($preferredPickupLocationIsValid && $preferredPickupSublocationIsValid) {
+				$rememberHoldPickupLocation = $user->rememberHoldPickupLocation;
+			} else {
+				$rememberHoldPickupLocation = false;
+				if (!$preferredPickupSublocationIsValid) {
+					if ($user->pickupSublocationId > 0) {
+						$interface->assign('pickupLocationInvalidMessage', translate([
+							'text' => 'Your preferred pickup area is not available for your patron type. Please select a pickup location.',
+							'isPublicFacing' => true,
+						]));
+					}
+				}
+			}
+		} else {
+			$rememberHoldPickupLocation = false;
+			if ($multipleAccountPickupLocations) {
+				$interface->assign('pickupLocationInvalidMessage', translate([
+					'text' => 'You have linked accounts with different pickup locations. Please select which location and account to use for this hold.',
+					'isPublicFacing' => true,
+				]));
+			} elseif ($promptForHoldNotifications) {
+				$interface->assign('pickupLocationInvalidMessage', translate([
+					'text' => 'Your library system requires you to choose notification preferences for each hold.',
+					'isPublicFacing' => true,
+				]));
+			}
+			// If the Library System does not allow remembering pickup location (i.e., !$library->allowRememberPickupLocation),
+			// then no need to display a message because the patron cannot choose a preferred pickup location anyway.
+		}
 
 		$locationKeys = array_keys($locations);
 		$interface->assign('preferredPickupLocationIsValid', $preferredPickupLocationIsValid);
@@ -2146,6 +2109,16 @@ class Record_AJAX extends JSON_Action {
 		$interface->assign('allowFreezeHolds', $library->allowFreezeHolds);
 		$interface->assign('promptToFreezeHoldsImmediately', $user->promptToFreezeHoldsImmediately);
 		$interface->assign('onlyValidPickupLocation', $onlyValidPickupLocation ?? null);
+
+
+		/** @var Koha $catalogDriver */
+		$catalogDriver = $marcRecord->getCatalogDriver();
+		if ($catalogDriver->hasHoldFeeMessage()) {
+			$reserveFeeMessage = $catalogDriver->getPreHoldSubmissionFeeMessage($marcRecord);
+			if ($reserveFeeMessage) {
+				$interface->assign('reserveFeeMessage', $reserveFeeMessage);
+			}
+		}
 
 		$interface->assign('pickupLocations', $locations);
 		$interface->assign('pickupSublocations', $pickupSublocations);
@@ -2470,5 +2443,296 @@ class Record_AJAX extends JSON_Action {
 
 		$user = UserAccount::getLoggedInUser();
 		return $user->submitLocalIllRequestEmail();
+	}
+
+	/** @noinspection PhpUnused */
+	function getLargeCover() : array {
+		global $interface;
+
+		$id = $_REQUEST['id'];
+		$interface->assign('id', $id);
+
+		return [
+			'title' => translate([
+				'text' => 'Cover Image',
+				'isPublicFacing' => true,
+			]),
+			'modalBody' => $interface->fetch("Record/largeCover.tpl"),
+			'modalButtons' => "",
+		];
+	}
+
+	public function requestHyperholdConfirmation() {
+		global $interface;
+
+		$groupedWorkId = $_REQUEST['groupedWorkId'] ?? null;
+		$variationId = $_REQUEST['variationId'] ?? null;
+
+		$user = UserAccount::getLoggedInUser();
+		if (empty($user)) {
+			return [
+				'success' => false,
+				'title' => translate(['text' => 'Error', 'isPublicFacing' => true]),
+				'message' => translate(['text' => 'Please log in to place holds', 'isPublicFacing' => true])
+			];
+		}
+
+		if (empty($user->unique_ils_id)) {
+			return [
+				'success' => false,
+				'title' => translate(['text' => 'Unable to place hold', 'isPublicFacing' => true]),
+				'message' => '<p>' . translate([
+					'text' => 'This account is not associated with a library, please contact your library.',
+					'isPublicFacing' => true,
+				]) . '</p>',
+			];
+		}
+
+		if (empty($groupedWorkId)) {
+			return [
+				'success' => false,
+				'title' => translate(['text' => 'Error', 'isPublicFacing' => true]),
+				'message' => translate(['text' => 'No Grouped Work Selected', 'isPublicFacing' => true])
+			];
+		}
+		
+		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+		$groupedWorkDriver = new GroupedWorkDriver($groupedWorkId);
+
+		if (!$groupedWorkDriver->isValid()) {
+			return [
+				'success' => false,
+				'title' => translate(['text' => 'Error', 'isPublicFacing' => true]),
+				'message' => translate(['text' => 'Invalid Grouped Work', 'isPublicFacing' => true])
+			];
+		}
+
+		require_once ROOT_DIR . '/sys/LibraryLocation/Location.php';
+		$location = new Location();
+		$pickupBranches = $location->getPickupBranches($user);
+
+		$relatedManifestations = $groupedWorkDriver->getRelatedManifestations();
+		
+		$formats = [];
+		foreach ($relatedManifestations as $formatName => $manifestation) {
+			
+			$relatedRecords = $manifestation->getRelatedRecords();
+			
+			$records = [];
+			foreach ($relatedRecords as $record) {
+				$driver = $record->getDriver();
+				$items = $record->getItems();
+				
+				$copies = [];
+				foreach ($items as $item) {
+					$copies[] = [
+						'itemId' => $item->itemId,
+						'location' => $item->shelfLocation,
+						'callNumber' => $item->callNumber,
+						'status' => $item->status,
+					];
+				}
+				
+				$records[] = [
+					'id' => $record->id,
+					'title' => $driver->getTitle(),
+					'author' => $driver->getPrimaryAuthor(),
+					'copies' => $copies,
+					'copyCount' => count($copies),
+				];
+			}
+						
+			$formats[] = [
+				'name' => $formatName,
+				'recordCount' => count($records),
+				'records' => $records
+			];
+		}
+		
+		$interface->assign('groupedWorkId', $groupedWorkId);
+		$interface->assign('formats', $formats);
+		$interface->assign('pickupLocations', $pickupBranches);
+		$interface->assign('user', $user);
+
+		return [
+			'success' => true,
+			'title' => translate(['text' => 'Confirm Hyperhold', 'isPublicFacing' => true]),
+			'modalBody' => $interface->fetch('Record/hyperholds-hold-popup.tpl'),
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.Record.submitHyperhold(\"{$groupedWorkId}\"); return false;'>" . 
+				translate(['text' => "Confirm Hold", 'isPublicFacing' => true]) . "</button>",
+		];
+	}
+
+	public function submitHyperhold() {
+		$groupedWorkId = $_REQUEST['groupedWorkId'] ?? null;
+		$recordsJson = $_REQUEST['records'] ?? '[]';
+		$records = json_decode($recordsJson, true);
+		$pickupBranch = $_REQUEST['pickupBranch'] ?? null;
+
+		$user = UserAccount::getLoggedInUser();
+		if (!$user) {
+			return [
+				'success' => false,
+				'title' => translate(['text' => 'Error', 'isPublicFacing' => true]),
+				'message' => translate(['text' => 'Please log in to place holds', 'isPublicFacing' => true])
+			];
+		}
+
+		if (empty($groupedWorkId) || empty($records)) {
+			return [
+				'success' => false,
+				'title' => translate(['text' => 'Error', 'isPublicFacing' => true]),
+				'message' => translate(['text' => 'No records selected for Hyperhold', 'isPublicFacing' => true])
+			];
+		}
+
+		if (empty($pickupBranch)) {
+			$pickupBranch = $user->getPickupLocationCode();
+		}
+
+		$catalogDriver = $user->getCatalogDriver();
+		$patronId = $user->unique_ils_id;
+
+		$successCount = 0;
+		$failedRecords = [];
+		$realHoldIds = [];
+		$successfulRecords = [];
+
+		foreach ($records as $recordId) {
+			$holdResult = $catalogDriver->placeHold($user, $recordId, $pickupBranch, null);
+
+			if (!empty($holdResult['success'])) {
+				$successCount++;
+				$successfulRecords[] = $recordId;
+				if (!empty($holdResult['hold_id'])) {
+					$realHoldIds[] = (int)$holdResult['hold_id'];
+				}
+			} else {
+				$failedRecords[] = $recordId;
+			}
+		}
+
+		$viewHoldsActions = [];
+		if ($successCount > 0) {
+			$thisUser = translate([
+				'text' => 'You',
+				'isPublicFacing' => true,
+			]);
+			if (!empty($user->parentUser)) {
+				$thisUser = $user->displayName;
+			}
+
+			$viewHoldsText = translate([
+				'text' => 'On Hold for %1%',
+				1 => $thisUser,
+				'isPublicFacing' => true,
+				'inAttribute' => true
+			]);
+
+			foreach ($successfulRecords as $recordId) {
+				$viewHoldsActions[$recordId] = "<a id='onHoldAction{$recordId}' href='/MyAccount/Holds' class='btn btn-sm btn-info btn-wrap' title='{$viewHoldsText}'>{$viewHoldsText}</a>";
+			}
+		}
+
+		$realHoldIds = array_unique(array_filter($realHoldIds));
+
+		if (count($realHoldIds) > 1) {
+			$groupResult = $catalogDriver->groupHolds($patronId, $realHoldIds);
+
+			if (!empty($groupResult['success'])) {
+				return [
+					'success' => true,
+					'title' => translate(['text' => 'Hyperhold Placed', 'isPublicFacing' => true]),
+					'message' => translate([
+						'text' => "Successfully placed and grouped holds on %1% editions.",
+						1 => $successCount,
+						'isPublicFacing' => true
+					]),
+					'viewHoldsActions' => $viewHoldsActions
+				];
+			}
+			return [
+				'success' => true,
+				'title' => translate(['text' => 'Holds Placed', 'isPublicFacing' => true]),
+				'message' => translate([
+					'text' => "Placed holds on %1% editions, but could not group them: " . ($groupResult['message'] ?? 'unknown error'),
+					1 => $successCount,
+					'isPublicFacing' => true
+				]),
+				'viewHoldsActions' => $viewHoldsActions
+			];
+		}
+
+		// Single hold success
+		if ($successCount > 0) {
+			return [
+				'success' => true,
+				'title' => translate(['text' => 'Hold Placed', 'isPublicFacing' => true]),
+				'message' => translate([
+					'text' => "Successfully placed hold on %1% edition.",
+					1 => $successCount,
+					'isPublicFacing' => true
+				]),
+				'viewHoldsActions' => $viewHoldsActions
+			];
+		}
+
+		// No holds placed
+		return [
+			'success' => false,
+			'title' => translate(['text' => 'Error', 'isPublicFacing' => true]),
+			'message' => translate(['text' => 'Failed to place holds', 'isPublicFacing' => true])
+		];
+	}
+
+	private function getHoldableEditionsForFormat($groupedWorkDriver, $recordSource, $targetFormat): array {
+		$editions = [];
+
+		if (!$groupedWorkDriver || !$groupedWorkDriver->isValid()) {
+			return $editions;
+		}
+
+		$relatedRecords = $groupedWorkDriver->getRelatedRecords();
+
+		foreach ($relatedRecords as $relatedRecord) {
+			if ($relatedRecord->source != $recordSource) {
+				continue;
+			}
+
+			$recordFormat = null;
+			if (!empty($relatedRecord->recordVariations)) {
+				foreach ($relatedRecord->recordVariations as $variation) {
+					if ($variation->manifestation) {
+						$recordFormat = $variation->manifestation->format;
+						break;
+					}
+				}
+			}
+			
+			// Skip if format doesn't match
+			if ($recordFormat !== $targetFormat) {
+				continue;
+			}
+
+			$actions = $relatedRecord->getActions();
+			$isHoldable = false;
+			foreach ($actions as $action) {
+				if (isset($action['type']) && $action['type'] === 'ils_hold') {
+					$isHoldable = true;
+					break;
+				}
+			}
+
+			if ($isHoldable) {
+				$recordDriver = RecordDriverFactory::initRecordDriverById($relatedRecord->id);
+				$editions[] = [
+					'id' => $relatedRecord->id,
+					'title' => $recordDriver ? $recordDriver->getTitle() : '',
+					'author' => $recordDriver ? $recordDriver->getPrimaryAuthor() : '',
+				];
+			}
+		}
+
+		return $editions;
 	}
 }

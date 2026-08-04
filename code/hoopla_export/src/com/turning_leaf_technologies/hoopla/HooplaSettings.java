@@ -11,6 +11,7 @@ class HooplaSettings {
 	private final String apiPassword;
 	private final int recordExtractionBatchSize;
 	private final int indexingTime;
+	private final int hooplaFlexBatchSize;
 
 	// Instant settings
 	private final boolean hooplaInstantEnabled;
@@ -38,6 +39,7 @@ class HooplaSettings {
 		apiPassword = settingsRS.getString("apiPassword");
 
 		recordExtractionBatchSize = settingsRS.getInt("recordExtractionBatchSize");
+		hooplaFlexBatchSize = settingsRS.getInt("hooplaFlexBatchSize");
 		indexingTime = settingsRS.getInt("indexingTime");
 		hooplaInstantEnabled = settingsRS.getBoolean("hooplaInstantEnabled");
 		runFullUpdateInstant = settingsRS.getBoolean("runFullUpdateInstant");
@@ -129,5 +131,9 @@ class HooplaSettings {
 
 	public int getIndexingTime() {
 		return indexingTime;
+	}
+
+	public int getHooplaFlexBatchSize() {
+		return hooplaFlexBatchSize;
 	}
 }

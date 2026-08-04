@@ -207,7 +207,7 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 		}
 	}
 
-	public function getMoreDetailsOptions() {
+	public function getMoreDetailsOptions() : array {
 		global $interface;
 
 		$isbn = $this->getCleanISBN();
@@ -461,7 +461,9 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 	}
 
 	public function getAuthor() {
-		if (!empty($this->hooplaRawMetadata->artist)) {
+		if (!empty($this->hooplaRawMetadata->artists[0]->artistFormal)) {
+			return $this->hooplaRawMetadata->artists[0]->artistFormal;
+		} elseif (!empty($this->hooplaRawMetadata->artist)) {
 			return $this->hooplaRawMetadata->artist;
 		} else {
 			return '';
@@ -605,6 +607,22 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 		return $physicalDescriptions;
 	}
 
+	/**
+	 * Get duration of the item.
+	 *
+	 * @access  protected
+	 * @return  string
+	 */
+	public function getDuration() {
+		$duration = '';
+		if (!empty($this->hooplaRawMetadata->duration)) {
+			if (in_array('Audio Books', $this->getGroupedWorkDriver()->getFormatCategories())) {
+				$duration = StringUtils::extractTotalMinutes($this->hooplaRawMetadata->duration);
+			}
+		}
+		return $duration;
+	}
+
 	function getHooplaCoverUrl() {
 		return $this->hooplaRawMetadata->coverImageUrl ?? '';
 	}
@@ -616,8 +634,6 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 			$statusSummary['status'] = "Unavailable";
 			$statusSummary['available'] = false;
 			$statusSummary['class'] = 'unavailable';
-			$statusSummary['showPlaceHold'] = false;
-			$statusSummary['showCheckout'] = false;
 		} else {
 			// Check if it's a Flex title
 			if ($this->getHooplaType() == 'Flex') {
@@ -626,21 +642,15 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 					$statusSummary['status'] = "Available from Hoopla";
 					$statusSummary['available'] = true;
 					$statusSummary['class'] = 'available';
-					$statusSummary['showPlaceHold'] = false;
-					$statusSummary['showCheckout'] = true;
 				} else {
 					$statusSummary['status'] = "Checked Out";
 					$statusSummary['available'] = false;
 					$statusSummary['class'] = 'checkedOut';
-					$statusSummary['showPlaceHold'] = true;
-					$statusSummary['showCheckout'] = false;
 				}
 			} else {
 				$statusSummary['status'] = "Available from Hoopla";
 				$statusSummary['available'] = true;
 				$statusSummary['class'] = 'available';
-				$statusSummary['showPlaceHold'] = false;
-				$statusSummary['showCheckout'] = true;
 			}
 		}
 		return $statusSummary;

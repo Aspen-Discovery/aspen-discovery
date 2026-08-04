@@ -68,6 +68,7 @@ class Development_AspenReleases extends ObjectEditor {
 	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Greenhouse/Home', 'Greenhouse Home');
+		$breadcrumbs[] = new Breadcrumb('/Greenhouse/Home#greenhouse-maintenance-tools', 'Maintenance Tools');
 		$breadcrumbs[] = new Breadcrumb('/Development/AspenReleases', 'Aspen Releases');
 		return $breadcrumbs;
 	}
@@ -89,7 +90,7 @@ class Development_AspenReleases extends ObjectEditor {
 		return [];
 	}
 
-	public function display($mainContentTemplate, $pageTitle, $sidebarTemplate = 'Development/development-sidebar.tpl', $translateTitle = true) {
+	public function display($mainContentTemplate, $pageTitle, $sidebarTemplate = 'Greenhouse/greenhouse-sidebar.tpl', $translateTitle = true) {
 		parent::display($mainContentTemplate, $pageTitle, $sidebarTemplate, $translateTitle);
 	}
 

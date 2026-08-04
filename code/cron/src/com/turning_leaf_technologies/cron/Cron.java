@@ -23,6 +23,12 @@ public class Cron {
 	 * @param args command line parameters passed
 	 */
 	public static void main(String[] args) {
+		// Java refuses to send the Host header set via setRequestProperty unless restricted headers are allowed.
+		// This must be set before the first HttpURLConnection is loaded, so it must happen here rather than in
+		// the process that needs it. UpdateReadingHistoryTask uses the Host header to route requests made via
+		// localhost to the correct virtual host.
+		System.setProperty("sun.net.http.allowRestrictedHeaders", "true");
+
 		String serverName;
 		if (args.length == 0) {
 			serverName = AspenStringUtils.getInputFromCommandLine("Please enter the server name");
@@ -34,14 +40,14 @@ public class Cron {
 			serverName = args[0];
 			args = Arrays.copyOfRange(args, 1, args.length);
 		}
-		
+
 		Date currentTime = new Date();
 		logger = LoggingUtil.setupLogging(serverName, "cron");
 		logger.info(currentTime + ": Starting Cron");
 
 		// Read the base INI file to get information about the server (current directory/cron/config.ini)
 		Ini ini = ConfigUtil.loadConfigFile("config.ini", serverName, logger);
-		
+
 		//Connect to the database
 		String databaseConnectionInfo = ConfigUtil.cleanIniValue(ini.get("Database","database_aspen_jdbc"));
 		if (databaseConnectionInfo == null || databaseConnectionInfo.isEmpty()) {
@@ -63,10 +69,12 @@ public class Cron {
 			logger.error("Could not save log entry to database, quitting");
 			return;
 		}
-		
+
+		deleteOldCronLogs(cronEntry);
+
 		// Read the cron INI file to get information about the processes to run
 		Ini cronIni = ConfigUtil.loadConfigFile("config.cron.ini", serverName, logger);
-		
+
 		//Check to see if a specific task has been specified to be run
 		ArrayList<ProcessToRun> processesToRun = new ArrayList<>();
 		// INI file has a main section for processes to be run
@@ -91,7 +99,7 @@ public class Cron {
 			//Load processes to run
 			processesToRun = loadProcessesToRun(cronIni, processes);
 		}
-		
+
 		for (ProcessToRun processToRun: processesToRun){
 			Section processSettings;
 			if (processToRun.getArguments() != null){
@@ -105,7 +113,7 @@ public class Cron {
 			}else{
 				processSettings = cronIni.get(processToRun.getProcessName());
 			}
-		
+
 			currentTime = new Date();
 			logger.info(currentTime + ": Running Process " + processToRun.getProcessName());
 			if (processToRun.getProcessClass() == null){
@@ -130,7 +138,7 @@ public class Cron {
 					IProcessHandler processHandlerInstance = (IProcessHandler) processHandlerClassObject;
 					cronEntry.addNote("Starting cron process " + processToRun.getProcessName());
 					cronEntry.saveResults();
-					
+
 					//Mark the time the run was started rather than finished so really long-running processes
 					//can go on while faster processes execute multiple times in other threads.
 					markProcessStarted(processToRun);
@@ -162,6 +170,22 @@ public class Cron {
 		cronEntry.saveResults();
 
 		System.exit(0);
+	}
+
+	private static void deleteOldCronLogs(CronLogEntry cronEntry) {
+		try (PreparedStatement deleteOldCronLogs = dbConn.prepareStatement("DELETE FROM cron_log where startTime < ?")) {
+			deleteOldCronLogs.setLong(1, (new Date().getTime() / 1000) - 30L * 24 * 60 * 60);
+			deleteOldCronLogs.executeUpdate();
+		} catch (SQLException ex) {
+			cronEntry.incErrors("Error deleting old cron logs", ex);
+		}
+		try (PreparedStatement deleteOldCronProcessLogs = dbConn.prepareStatement("DELETE FROM cron_process_log where startTime < ?")) {
+			deleteOldCronProcessLogs.setLong(1, (new Date().getTime() / 1000) - 30L * 24 * 60 * 60);
+			deleteOldCronProcessLogs.executeUpdate();
+		} catch (SQLException ex) {
+			cronEntry.incErrors("Error deleting old cron logs", ex);
+		}
+
 	}
 
 	private static void markProcessStarted(ProcessToRun processToRun) {
@@ -202,7 +226,7 @@ public class Cron {
 			String frequencyHours = cronIni.get(processName, "frequencyHours");
 			ProcessToRun newProcess = new ProcessToRun(processName, processHandler);
 			if (frequencyHours == null || frequencyHours.isEmpty()){
-				//If the frequency isn't set, automatically run the process 
+				//If the frequency isn't set, automatically run the process
 				runProcess = true;
 			}else if (frequencyHours.trim().compareTo("-1") == 0) {
 				// Process has to be run manually
@@ -227,7 +251,7 @@ public class Cron {
 							}else{
 								logger.info("Skipping Process " + processName + " because it has already run in the specified interval.");
 							}
-	
+
 						}
 					} catch (NumberFormatException e) {
 						logger.warn("Warning: the lastRun setting for " + processName + " was invalid. " + e);

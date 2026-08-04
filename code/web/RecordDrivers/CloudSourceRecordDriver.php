@@ -40,6 +40,13 @@ class CloudSourceRecordDriver extends RecordInterface {
 		}
 		$bookCoverUrl .= "/bookcover.php?id={$this->getUniqueID()}&size={$size}&type=cloudsource";
 
+		if (!empty($this->record->isbn[0])){
+			$bookCoverUrl .= "&isbn={$this->record->isbn[0]}";
+		}
+		if (!empty($this->record->publication->issnL)) {
+			$bookCoverUrl .= "&issn={$this->record->publication->issnL}";
+		}
+
 		return $bookCoverUrl;
 	}
 
@@ -47,9 +54,24 @@ class CloudSourceRecordDriver extends RecordInterface {
 	 * @param bool $unscoped
 	 * @return string
 	 */
-	public function getLinkUrl($unscoped = false)
-	{
+	public function getLinkUrl($unscoped = false, $redirectUrl = '') {
+		if ($this->bypassAspenCloudSourcePageSetting()){
+			return $this->getRecordUrl($redirectUrl);
+		}
 		return '/CloudSource/Record?id=' . $this->getId();
+	}
+
+	public function bypassAspenCloudSourcePageSetting(): bool {
+		global $library;
+		require_once ROOT_DIR . '/sys/CloudSource/CloudSourceSetting.php';
+		$libraryCloudSourceSetting = new CloudSourceSetting();
+		$libraryCloudSourceSetting->id = $library->getCloudSourceSettingId();
+		if ($libraryCloudSourceSetting->find(true)) {
+			if ($libraryCloudSourceSetting->bypassAspenCloudSourcePage) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -60,9 +82,12 @@ class CloudSourceRecordDriver extends RecordInterface {
 		return $this->getRecordUrl();
 	}
 
-	public function getRecordUrl()
-	{
-		if (isset($this->record->webUrl)) {
+	public function getRecordUrl($redirectUrl = ''): null|string {
+		if ($redirectUrl != '') {
+			$doi = $this->record->doi;
+			return preg_replace('/(?<=qu=)[^&]+/', $doi, $redirectUrl);
+		}
+		elseif (isset($this->record->webUrl)) {
 			return $this->record->webUrl;
 		} else {
 			return null;
@@ -83,13 +108,81 @@ class CloudSourceRecordDriver extends RecordInterface {
 		return 'CloudSource';
 	}
 
-	public function getSearchResult($view = 'list', $showListsAppearingOn = true)
-	{
+	public function getDoi() {
+		return $this->record->doi;
+	}
+
+	private static ?string $teValue = null;
+	public function getTeValue() : string {
+		if (CloudSourceRecordDriver::$teValue === null) {
+			CloudSourceRecordDriver::$teValue = '';
+
+			global $library;
+			require_once ROOT_DIR . '/sys/CloudSource/LibraryCloudSourceSetting.php';
+			$libraryCloudSourceSetting = new LibraryCloudSourceSetting();
+			$libraryCloudSourceSetting->libraryId = $library->libraryId;
+			if ($libraryCloudSourceSetting->find(true)){
+				require_once ROOT_DIR . '/sys/CloudSource/CloudSourceSetting.php';
+				$cloudSourceSetting = new CloudSourceSetting();
+				$cloudSourceSetting->id = $libraryCloudSourceSetting->cloudsourceSettingId;
+				if ($cloudSourceSetting->find(true)){
+					$patronUrl = $cloudSourceSetting->patronUrl . "/search/results";
+
+					$ch = curl_init();
+					curl_setopt($ch, CURLOPT_URL, $patronUrl);
+					curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+					curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+					$html = curl_exec($ch);
+					curl_close($ch);
+
+					// First grab the full input tag with id="targetValue"
+					if ($html && preg_match('/<input[^>]*id="targetValue"[^>]*>/', $html, $tag)) {
+						// Then extract the number from its value attribute
+						if (preg_match('/value="(-\d+):/', $tag[0], $matches)) {
+							CloudSourceRecordDriver::$teValue = $matches[1]; // e.g. "-261243320"
+						}
+					}
+				}
+			}
+		}
+		return CloudSourceRecordDriver::$teValue;
+	}
+
+	private $patronUrl = null;
+	public function getPatronUrl($recordView = false): string {
+		if ($this->patronUrl == null) {
+			require_once ROOT_DIR . '/sys/CloudSource/CloudSourceSetting.php';
+
+			global $library;
+			$patronUrl = '';
+			require_once ROOT_DIR . '/sys/CloudSource/LibraryCloudSourceSetting.php';
+			$libraryCloudSourceSetting = new LibraryCloudSourceSetting();
+			$libraryCloudSourceSetting->libraryId = $library->libraryId;
+			if ($libraryCloudSourceSetting->find(true)){
+				require_once ROOT_DIR . '/sys/CloudSource/CloudSourceSetting.php';
+				$cloudSourceSetting = new CloudSourceSetting();
+				$cloudSourceSetting->id = $libraryCloudSourceSetting->cloudsourceSettingId;
+				if ($cloudSourceSetting->find(true)){
+					if (!empty($this->getDoi())) {
+						$patronUrl = $cloudSourceSetting->patronUrl . "/search/results?qu=doi:" . $this->getDoi();
+					} else {
+						$patronUrl = $cloudSourceSetting->patronUrl . "/search/results?qu=" . $_REQUEST["lookfor"];
+					}
+				}
+			}
+
+			$this->patronUrl = $patronUrl . "&te=" . $this->getTeValue();
+		}
+		return $this->patronUrl;
+	}
+	public function getSearchResult($view = 'list', $showListsAppearingOn = true) : string {
 		if ($view == 'covers') {
 			return $this->getBrowseResult();
 		}
 
 		global $interface;
+
+		$redirectUrl = $this->getPatronUrl();
 
 		$id = $this->getUniqueID();
 		$formats = $this->getFormats();
@@ -97,7 +190,9 @@ class CloudSourceRecordDriver extends RecordInterface {
 		$interface->assign('summShortId', $id);
 		$interface->assign('module', $this->getModule());
 		$interface->assign('summFormats', $formats);
-		$interface->assign('summUrl', $this->getLinkUrl());
+		$interface->assign('summUrl', $this->getLinkUrl(false, $redirectUrl));
+		$interface->assign('externalUrl', $redirectUrl);
+		$interface->assign('directLinkUrl', $this->getAbsoluteUrl());
 		$interface->assign('summTitle', $this->getTitle());
 		$interface->assign('summAuthor', $this->getAuthor());
 		$interface->assign('summPublicationDates', $this->getPublicationDate());
@@ -112,30 +207,18 @@ class CloudSourceRecordDriver extends RecordInterface {
 		$interface->assign('summDescription', $this->getDescription());
 		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
 		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
+		$interface->assign('bypassAspenPage', $this->bypassAspenCloudSourcePageSetting());
 
-		/*require_once ROOT_DIR . '/sys/CloudSource/CloudSourceRecordUsage.php';
-		global $aspenUsage;
-		$recordUsage = new CloudSourceRecordUsage();
-		$recordUsage->instance = $aspenUsage->getInstance();
-		$recordUsage->cloudsourceId = $this->getUniqueID();
-		$recordUsage->year = date('Y');
-		$recordUsage->month = date('n');
-		if ($recordUsage->find(true)) {
-			$recordUsage->timesViewedInSearch++;
-			$recordUsage->update();
-		} else {
-			$recordUsage->timesViewedInSearch = 1;
-			$recordUsage->timesUsed = 0;
-			$recordUsage->insert();
-		}*/
 		return 'RecordDrivers/CloudSource/result.tpl';
 	}
 
 	public function getBrowseResult() {
 		global $interface;
 
+		$redirectUrl = $this->getPatronUrl();
+
 		$interface->assign('summId', $this->getUniqueID());
-		$interface->assign('summUrl', $this->getLinkUrl());
+		$interface->assign('summUrl', $this->getLinkUrl(false, $redirectUrl));
 		$interface->assign('summTitle', $this->getTitle());
 
 		//Get cover image size
@@ -177,11 +260,12 @@ class CloudSourceRecordDriver extends RecordInterface {
 		$formats = $this->getFormats();
 		$id = $this->getUniqueID();
 
+		$redirectUrl = $this->getPatronUrl();
 		$interface->assign('summId', $id);
 		$interface->assign('summShortId', $id);
 		$interface->assign('module', $this->getModule());
 		$interface->assign('summFormats', $formats);
-		$interface->assign('summUrl', $this->getLinkUrl());
+		$interface->assign('summUrl', $this->getLinkUrl(false, $redirectUrl));
 		$interface->assign('summTitle', $this->getTitle());
 		$interface->assign('summAuthor', $this->getAuthor());
 		$interface->assign('summDescription', $this->getDescription());
@@ -197,6 +281,8 @@ class CloudSourceRecordDriver extends RecordInterface {
 	{
 		global $interface;
 
+		$redirectUrl = $this->getPatronUrl();
+
 		$interface->assign('showRatings', $collectionSpotlight->showRatings);
 		$interface->assign('key', $index);
 		$interface->assign('title', $this->getTitle());
@@ -204,7 +290,7 @@ class CloudSourceRecordDriver extends RecordInterface {
 		$interface->assign('description', $this->getDescription());
 		$interface->assign('shortId', $this->getUniqueID());
 		$interface->assign('id', $this->getUniqueID());
-		$interface->assign('titleURL', $this->getLinkUrl());
+		$interface->assign('titleURL', $this->getLinkUrl(false, $redirectUrl));
 
 		if ($collectionSpotlight->coverSize == 'small') {
 			$imageUrl = $this->getBookcoverUrl('small');
@@ -302,9 +388,8 @@ class CloudSourceRecordDriver extends RecordInterface {
 		return $description;
 	}
 
-	public function getMoreDetailsOptions()
-	{
-		// TODO: Implement getMoreDetailsOptions() method.
+	public function getMoreDetailsOptions() : array {
+		return [];
 	}
 
 	public function getFormats()

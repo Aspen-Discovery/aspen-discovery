@@ -557,6 +557,7 @@ class WebBuilder_AJAX extends JSON_Action {
 		}
 		return $result;
 	}
+	
 	/** @noinspection PhpUnused */
 	function uploadImage(): array {
 		$this->requireLoggedInUser();
@@ -1230,6 +1231,7 @@ class WebBuilder_AJAX extends JSON_Action {
 	function trackWebResourceUsage() : void {
 		$id = $_REQUEST['id'];
 		$authType = $_REQUEST['authType'];
+		$fromPlacard = isset($_REQUEST['fromPlacard']) ? (int)$_REQUEST['fromPlacard'] : 0;
 
 		require_once ROOT_DIR . '/sys/WebBuilder/WebResource.php';
 		$webResource = new WebResource();
@@ -1249,6 +1251,9 @@ class WebBuilder_AJAX extends JSON_Action {
 				} elseif ($authType == "library") {
 					$webResourceUsage->pageViewsInLibrary++;
 				}
+				if ($fromPlacard) {
+					$webResourceUsage->pageViewsFromPlacard++;
+				}
 				$webResourceUsage->update();
 			} else {
 				$webResourceUsage->pageViews++;
@@ -1257,9 +1262,71 @@ class WebBuilder_AJAX extends JSON_Action {
 				} elseif ($authType == "library") {
 					$webResourceUsage->pageViewsInLibrary++;
 				}
+				if ($fromPlacard) {
+					$webResourceUsage->pageViewsFromPlacard++;
+				}
 				$webResourceUsage->insert();
 			}
 		}
+	}
+
+	/** @noinspection PhpUnused */
+	function trackPlacardUsage() {
+		$id = $_REQUEST['id'];
+		$operation = $_REQUEST['operation'];
+		global $locationSingleton;
+		$authType = null;
+		if (UserAccount::isLoggedIn()) {
+			$authType = 'user';
+		} elseif ($locationSingleton && $locationSingleton->getActiveLocation() != null) {
+			$authType = 'library';
+		} else {
+			$authType = 'none';
+		}
+
+		require_once ROOT_DIR . '/sys/LocalEnrichment/Placard.php';
+		require_once ROOT_DIR . '/sys/WebBuilder/PlacardUsage.php';
+		$placard = new Placard();
+		$placard->id = $id;
+		if ($placard->find(true)) {
+			$placardName = $placard->title;
+			$year = date('Y');
+			$month = date('n');
+			global $aspenUsage;
+			$instance = $aspenUsage->getInstance();
+			$usage = new PlacardUsage();
+			$usage->year = $year;
+			$usage->month = $month;
+			$usage->instance = $instance;
+			$usage->placardName = $placardName;
+			if ($usage->find(true)) {
+				if ($operation === 'view') {
+					$usage->timesShown++;
+				} elseif ($operation === 'click') {
+					$usage->pageViews++;
+					if ($authType === 'user') {
+						$usage->pageViewsByAuthenticatedUsers++;
+					} elseif ($authType === 'library') {
+						$usage->pageViewsInLibrary++;
+					}
+				}
+				$usage->update();
+			} else {
+				if ($operation === 'view') {
+					$usage->timesShown = 1;
+					$usage->pageViews = 0;
+					$usage->pageViewsByAuthenticatedUsers = 0;
+					$usage->pageViewsInLibrary = 0;
+				} elseif ($operation === 'click') {
+					$usage->timesShown = 0;
+					$usage->pageViews = 1;
+					$usage->pageViewsByAuthenticatedUsers = ($authType === 'user') ? 1 : 0;
+					$usage->pageViewsInLibrary = ($authType === 'library') ? 1 : 0;
+				}
+				$usage->insert();
+			}
+		}
+		return ['success' => true];
 	}
 
 	/** @noinspection PhpUnused */

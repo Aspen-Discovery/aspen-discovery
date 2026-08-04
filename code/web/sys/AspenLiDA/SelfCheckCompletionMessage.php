@@ -3,6 +3,7 @@
 class SelfCheckCompletionMessage extends DataObject {
 	public $__table = 'self_check_completion_message';
 	public $id;
+	public $name;
 	public $formats;
 	public $owningLocations;
 	public $checkoutLocations;
@@ -22,6 +23,13 @@ class SelfCheckCompletionMessage extends DataObject {
 				'label' => 'Id',
 				'description' => 'The unique id within the database',
 			],
+			'name' => [
+				'property' => 'name',
+				'type' => 'text',
+				'label' => 'Name',
+				'description' => 'The name of the message (for internal use)',
+				'maxLength' => 255,
+			],
 			'formats' => [
 				'property' => 'formats',
 				'type' => 'regularExpression',
@@ -31,24 +39,24 @@ class SelfCheckCompletionMessage extends DataObject {
 				'required' => false,
 				'default' => '.*',
 			],
-//			'owningLocations' => [
-//				'property' => 'owningLocations',
-//				'type' => 'regularExpression',
-//				'label' => 'Owning Locations to show message for (Regex)',
-//				'description' => 'A regular expression for the owning locations to show this message for, leave blank or use .* to include everything',
-//				'maxLength' => '500',
-//				'required' => false,
-//				'default' => '.*',
-//			],
-//			'checkoutLocations' => [
-//				'property' => 'checkoutLocations',
-//				'type' => 'regularExpression',
-//				'label' => 'Checkout Locations to show message for (Regex)',
-//				'description' => 'A regular expression for the checkout locations to show this message for, leave blank or use .* to include everything',
-//				'maxLength' => '500',
-//				'required' => false,
-//				'default' => '.*',
-//			],
+			'owningLocations' => [
+				'property' => 'owningLocations',
+				'type' => 'regularExpression',
+				'label' => 'Owning Locations to show message for (Regex)',
+				'description' => 'A regular expression for the owning locations to show this message for, leave blank or use .* to include everything',
+				'maxLength' => '500',
+				'required' => false,
+				'default' => '.*',
+			],
+			'checkoutLocations' => [
+				'property' => 'checkoutLocations',
+				'type' => 'regularExpression',
+				'label' => 'Checkout Locations to show message for (Regex)',
+				'description' => 'A regular expression for the checkout locations to show this message for, leave blank or use .* to include everything',
+				'maxLength' => '500',
+				'required' => false,
+				'default' => '.*',
+			],
 			'requireConfirmation' => [
 				'property' => 'requireConfirmation',
 				'type' => 'checkbox',

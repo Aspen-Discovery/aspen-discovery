@@ -231,6 +231,7 @@
 			<th>{translate text="Library Owned Scopes" isAdminFacing="true"}</th>
 			<th>{translate text="Grouped Status" isAdminFacing="true"}</th>
 			<th>{translate text="Status" isAdminFacing="true"}</th>
+			<th>{translate text="Due Date" isAdminFacing="true"}</th>
 			<th>{translate text="Grouped Work Record ID" isAdminFacing="true"}</th>
 			<th>{translate text="Grouped Work Variation ID" isAdminFacing="true"}</th>
 			<th>{translate text="Item ID" isAdminFacing="true"}</th>
@@ -242,6 +243,8 @@
 			<th>{translate text="Location Code" isAdminFacing="true"}</th>
 			<th>{translate text="Sub Location Code" isAdminFacing="true"}</th>
 			<th>{translate text="Last Check In Date" isAdminFacing="true"}</th>
+			<th>{translate text="Barcode" isAdminFacing="true"}</th>
+			<th>{translate text="Note" isAdminFacing="true"}</th>
 		</tr>
 		</thead>
 		<tbody>
@@ -255,6 +258,7 @@
 				<th>{$row.libraryOwnedScopes}</th>
 				<th>{$row.groupedStatus}</th>
 				<th>{$row.status}</th>
+				<th>{$row.dueDate}</th>
 				<th>{$row.groupedWorkRecordId}</th>
 				<th>{$row.groupedWorkVariationId}</th>
 				<th>{$row.itemId}</th>
@@ -266,6 +270,8 @@
 				<th>{$row.locationCode}</th>
 				<th>{$row.subLocationCode}</th>
 				<th>{$row.lastCheckInDate}</th>
+				<th>{$row.barcode}</th>
+				<th>{$row.note}</th>
 			</tr>
 		{/foreach}
 		</tbody>

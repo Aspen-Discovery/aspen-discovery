@@ -19,7 +19,7 @@
 
 		<div class="row">
 			<div class="col-xs-12">
-	<span class="result-index">{$resultIndex})</span>&nbsp;
+				<span class="result-index">{$resultIndex})</span>&nbsp;
 				<a href="/Series/{$summShortId}" class="result-title notranslate">
 					{if !$summTitle|removeTrailingPunctuation} {translate text='Title not available' isPublicFacing=true}{else}{$summTitle|removeTrailingPunctuation|highlight|truncate:180:"..."}{/if}
 				</a>

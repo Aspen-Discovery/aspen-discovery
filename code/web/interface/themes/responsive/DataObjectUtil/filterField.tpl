@@ -21,7 +21,7 @@
 		<div class="col-xs-5">
 			<input type="text" name="filterValue[{$filterField.property}]" class="form-control form-control-sm filterValue" aria-label="Filtering for {$filterField.label|escapeCSS}" {if !empty($appliedFilter)}value="{$appliedFilter.filterValue}"{/if}/>
 		</div>
-	{elseif $filterField.type == 'timestamp'}
+	{elseif $filterField.type == 'timestamp' || $filterField.type == 'date'}
 		<div class="col-xs-3">
 			{assign var=label value="Type of filtering for `$filterField.label`"}
 			<select name="filterType[{$filterField.property}]" id="filterType_{$filterField.property}" class="form-control form-control-sm filterType" aria-label="{translate text=$label inAttribute=true isAdminFacing=true}" onchange="AspenDiscovery.Admin.setDateFilterFieldVisibility('{$filterField.property}')">
@@ -32,17 +32,45 @@
 		</div>
 		<div class="col-xs-5">
 			{assign var=label value="Type of filtering for `$filterField.label`"}
-			<input type="text" name="filterValue[{$filterField.property}]" id="filterValue_{$filterField.property}" class="form-control form-control-sm filterValue" aria-label="" {if !empty($appliedFilter)}value="{$appliedFilter.filterValue|date_format:"%Y-%m-%d %H:%M"}"{/if}/>
-			<input type="text" name="filterValue2[{$filterField.property}]" id="filterValue2_{$filterField.property}" class="form-control form-control-sm filterValue" aria-label="" {if !empty($appliedFilter)}value="{$appliedFilter.filterValue2|date_format:"%Y-%m-%d %H:%M"}"{/if}/>
+			{assign var=dateFormat value=($filterField.type eq 'timestamp') ? '%Y-%m-%d %H:%M' : '%Y-%m-%d'}
+			<input type="text" name="filterValue[{$filterField.property}]" id="filterValue_{$filterField.property}" class="form-control form-control-sm filterValue" aria-label="" {if !empty($appliedFilter)}value="{$appliedFilter.filterValue|date_format:$dateFormat}"{/if}/>
+			<input type="text" name="filterValue2[{$filterField.property}]" id="filterValue2_{$filterField.property}" class="form-control form-control-sm filterValue" aria-label="" {if !empty($appliedFilter)}value="{$appliedFilter.filterValue2|date_format:$dateFormat}"{/if}/>
 			<script type="text/javascript">
 				$(document).ready(function(){ldelim}
+					{if $filterField.type == 'timestamp'}
 					rome(filterValue_{$filterField.property});
 					rome(filterValue2_{$filterField.property});
+					{else}
+					rome(filterValue_{$filterField.property}, {ldelim}date: true, time: false{rdelim});
+					rome(filterValue2_{$filterField.property}, {ldelim}date: true, time: false{rdelim});
+					{/if}
 					AspenDiscovery.Admin.setDateFilterFieldVisibility('{$filterField.property}');
 				{rdelim});
 			</script>
 		</div>
-	{elseif $filterField.type == 'checkbox'}
+	{elseif $filterField.type == 'integer' || $filterField.type == 'calculatedInteger'}
+		<div class="col-xs-3">
+			{assign var=label value="Type of filtering for `$filterField.label`"}
+			<select name="filterType[{$filterField.property}]" id="filterType_{$filterField.property}" class="form-control form-control-sm filterType" aria-label="{translate text=$label inAttribute=true isAdminFacing=true}" onchange="AspenDiscovery.Admin.setIntegerFilterFieldVisibility('{$filterField.property}')">
+				<option value="equals" {if !empty($appliedFilter) && $appliedFilter.filterType == 'equals'}selected="selected"{/if}>{translate text="Equals" isAdminFacing=true}</option>
+				<option value="greaterThan" {if !empty($appliedFilter) && $appliedFilter.filterType == 'greaterThan'}selected="selected"{/if}>{translate text="Greater Than" isAdminFacing=true}</option>
+				<option value="greaterThanOrEqual" {if !empty($appliedFilter) && $appliedFilter.filterType == 'greaterThanOrEqual'}selected="selected"{/if}>{translate text="Greater Than or Equal to" isAdminFacing=true}</option>
+				<option value="lessThan" {if !empty($appliedFilter) && $appliedFilter.filterType == 'lessThan'}selected="selected"{/if}>{translate text="Less Than" isAdminFacing=true}</option>
+				<option value="lessThanOrEqual" {if !empty($appliedFilter) && $appliedFilter.filterType == 'lessThanOrEqual'}selected="selected"{/if}>{translate text="Less Than or Equal to" isAdminFacing=true}</option>
+				<option value="between" {if !empty($appliedFilter) && $appliedFilter.filterType == 'between'}selected="selected"{/if}>{translate text="Between" isAdminFacing=true}</option>
+			</select>
+		</div>
+		<div class="col-xs-5">
+			{assign var=label value="Type of filtering for `$filterField.label`"}
+			<input type="text" name="filterValue[{$filterField.property}]" id="filterValue_{$filterField.property}" class="form-control form-control-sm filterValue" aria-label="" {if !empty($appliedFilter)}value="{$appliedFilter.filterValue}"{/if}/>
+			<input type="text" name="filterValue2[{$filterField.property}]" id="filterValue2_{$filterField.property}" class="form-control form-control-sm filterValue" aria-label="" {if !empty($appliedFilter)}value="{$appliedFilter.filterValue2}"{/if}/>
+			<script type="text/javascript">
+				$(document).ready(function(){ldelim}
+					AspenDiscovery.Admin.setIntegerFilterFieldVisibility('{$filterField.property}');
+				{rdelim});
+			</script>
+		</div>
+	{elseif $filterField.type == 'checkbox' || $filterField.type == 'calculatedBoolean'}
 		<div class="col-xs-8">
 			{assign var=label value="Type of filtering for `$filterField.label`"}
 			<input type="hidden" name="filterType[{$filterField.property}]" id="filterType_{$filterField.property}" value="matches"/>

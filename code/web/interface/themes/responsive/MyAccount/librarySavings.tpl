@@ -2,6 +2,8 @@
 <div class="col-xs-12">
 	{if !empty($loggedIn)}
 
+		<h1>{translate text='My Library Savings' isPublicFacing = true}</h1>
+
 		{if !empty($profile->_web_note)}
 			<div class="row">
 				<div id="web_note" class="alert alert-info text-center col-xs-12">{$profile->_web_note}</div>
@@ -14,8 +16,6 @@
 			{include file='ilsMessages.tpl' messages=$ilsMessages}
 		{/if}
 		{strip}
-
-		<h1>{translate text='My Library Savings' isPublicFacing = true}</h1>
 
 		<div class="row">
 			<div id="costSavingsExplanation" class="alert alert-info">

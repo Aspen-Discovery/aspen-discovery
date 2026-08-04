@@ -1,6 +1,8 @@
 <div class="col-xs-12">
 	{if !empty($loggedIn)}
 
+		<h1>{translate text='My Payment History' isPublicFacing = true}</h1>
+
 		{if !empty($profile->_web_note)}
 			<div class="row">
 				<div id="web_note" class="alert alert-info text-center col-xs-12">{$profile->_web_note}</div>
@@ -12,8 +14,6 @@
 		{if !empty($ilsMessages)}
 			{include file='ilsMessages.tpl' messages=$ilsMessages}
 		{/if}
-
-		<h1>{translate text='My Payment History' isPublicFacing = true}</h1>
 
 		{if !empty($explanationText)}
 			<div id="paymentHistoryExplanation" class="alert alert-info">
@@ -51,8 +51,8 @@
 							<td>{$payment.completed}</td>
 							{if $hasStripePayments}
 								<td>
-									{if !empty($payment.stripeReceiptUrl)}
-										<a href="{$payment.stripeReceiptUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-xs btn-default" title="{translate text='View Stripe Receipt' isPublicFacing=true inAttribute=true}">
+									{if !empty($payment.receiptUrl)}
+										<a href="{$payment.receiptUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-xs btn-default" title="{translate text='View Receipt' isPublicFacing=true inAttribute=true}">
 											<i class="fas fa-receipt"></i> {translate text="View" isPublicFacing=true}
 										</a>
 									{/if}

@@ -235,7 +235,7 @@ class GaleRecordDriver extends RecordInterface {
 		return '';
 	}
 
-	public function getMoreDetailsOptions() {
+	public function getMoreDetailsOptions() : array {
 		return [];
 	}
 

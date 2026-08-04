@@ -7,6 +7,7 @@ class SendGridSetting extends DataObject {
 	public $fromAddress;
 	public $replyToAddress;
 	public $apiKey;
+	public $baseUrl;
 
 	static $_objectStructure = [];
 	static function getObjectStructure(string $context = ''): array {
@@ -32,6 +33,13 @@ class SendGridSetting extends DataObject {
 				'type' => 'email',
 				'label' => 'ReplyTo Address',
 				'description' => 'The address that will be shown for responses',
+				'default' => '',
+			],
+			'baseUrl' => [
+				'property' => 'baseUrl',
+				'label' => 'SendGrid URL',
+				'type' => 'text',
+				'description' => 'The URL used for sending - is region-specific',
 				'default' => '',
 			],
 			'apiKey' => [

@@ -341,8 +341,8 @@ function doFullUpgrade($operatingSystem, $linuxDistribution, $serverName, $versi
 
 function executeCommand(string $commandNote, string $commandToExecute, ScheduledUpdate $scheduledUpdate) {
 	$scheduledUpdate->notes .= $commandNote . "\n";
-	exec($commandToExecute, $execResult);
 	console_log($commandToExecute);
+	exec($commandToExecute, $execResult);
 	foreach ($execResult as $result) {
 		$scheduledUpdate->notes .= $result . "\n";
 		console_log($result);

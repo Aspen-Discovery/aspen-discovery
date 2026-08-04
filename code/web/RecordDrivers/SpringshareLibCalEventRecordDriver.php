@@ -140,7 +140,7 @@ class SpringshareLibCalEventRecordDriver extends IndexRecordDriver {
 		return 'SpringshareLibCal'; // TODO: verify module name 2022 03 16 James
 	}
 
-	public function getMoreDetailsOptions() {
+	public function getMoreDetailsOptions() : array {
 		global $interface;
 		$moreDetailsOptions = new StdClass();
 		if ($interface->getVariable('showStaffView')) {

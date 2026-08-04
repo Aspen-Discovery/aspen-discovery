@@ -1,4 +1,5 @@
 {if !empty($loggedIn)}
+	<h1>{translate text='Fines' isPublicFacing=true}</h1>
 	{if !empty($profile->_web_note)}
 		<div class="row">
 			<div id="web_note" class="alert alert-info text-center col-xs-12">{$profile->_web_note}</div>
@@ -10,8 +11,6 @@
 	{if !empty($ilsMessages)}
 		{include file='ilsMessages.tpl' messages=$ilsMessages}
 	{/if}
-
-	<h1>{translate text='Fines' isPublicFacing=true}</h1>
 	{if !empty($offline)}
 		<div class="alert alert-warning"><strong>{translate text=$offlineMessage isPublicFacing=true}</strong></div>
 	{else}
@@ -221,6 +220,89 @@
 			{/foreach}
 		{else}
 			<p class="alert alert-success">{translate text="You do not have any fines within the system." isPublicFacing=true}</p>
+		{/if}
+		{if $supportsCredits}
+			{if count($userCredits) > 0}
+				<h2>{translate text='Credits' isPublicFacing=true}</h2>
+				{foreach from=$userCredits item=credits key=userId name=creditTable}
+					<form id="credits{$userId}" method="post">
+						{if count($userCredits) > 1}<h2>{$userAccountLabel.$userId|escape}</h2>{/if}{* Only show account name if there is more than one account. *}
+						{if !empty($credits)}
+							<div class="table-responsive">
+								<table id="creditsTable{$smarty.foreach.creditTable.index}" class="credits-table table table-condensed table-striped" style="table-layout: fixed">
+									<thead>
+									<tr>
+										<th scope="col"><span>{translate text="Details" isPublicFacing=true}</span></th>
+										<th scope="col">
+											<div style="width: 100%">
+												<span style="white-space:pre-line">{translate text="Credit Amount" isPublicFacing=true}</span>
+											</div>
+										</th>
+										{if !empty($showOutstanding)}
+											<th scope="col">
+												<div style="width: 100%">
+													<span style="white-space:pre-line">{translate text="Credit Remaining" isPublicFacing=true}</span>
+												</div>
+											</th>
+										{/if}
+									</tr>
+									</thead>
+									<tbody>
+									{assign var=counter value=0}
+									{foreach from=$credits item=credit }
+										{assign var=counter value=$counter++}
+										<tr>
+											<td>
+												<div style="width: 100%">
+												{if !empty($showDate)}
+													<p class="credits-table-date" style="white-space:pre-line">{$credit.date}</p>
+												{/if}
+												<p class="credits-table-reason" style="white-space:pre-line">{$credit.reason}</p>
+												<p class="credits-table-message" style="white-space:pre-line">{$credit.message|removeTrailingPunctuation}</p>
+												{if !empty($credit.details)}
+													{foreach from=$credit.details item=detail}
+														<div class="row credits-table-details">
+															<div class="col-xs-5 credits-table-details-label" style="white-space:pre-line"><strong>{$detail.label}</strong></div>
+															<div class="col-xs-7 credits-table-details-value" style="white-space:pre-line">{$detail.value}</div>
+														</div>
+													{/foreach}
+												{/if}
+												{if !empty($showSystem)}
+													<p class="credits-table-system" style="white-space:pre-line">{$credit.system}</p>
+												{/if}
+												</div>
+											</td>
+
+											<td>{$credit.amountVal|formatCurrency}</td>
+											{if !empty($showOutstanding)}
+												<td>{$credit.amountOutstandingVal|formatCurrency}</td>
+											{/if}
+										</tr>
+									{/foreach}
+									</tbody>
+									<tfoot>
+									<tr class="info">
+										<th>
+											<div style="width: 100%">
+												<span style="white-space:pre-line">{translate text="Total" isPublicFacing=true}</span>
+											</div>
+										</th>
+										<th id="formattedTotalcredit{$userId}">{$creditTotalsVal.$userId|formatCurrency}</th>
+										{if !empty($showOutstanding)}
+											<th id="formattedOutstandingTotalcredit{$userId}">{$creditOutstandingTotalVal.$userId|formatCurrency}</th>
+										{/if}
+									</tr>
+									</tfoot>
+								</table>
+							</div>
+						{else}
+							<p class="alert alert-success">{translate text="This account does not have any credits within the system." isPublicFacing=true}</p>
+						{/if}
+					</form>
+				{/foreach}
+			{else}
+				<p class="alert alert-success">{translate text="You do not have any credits within the system." isPublicFacing=true}</p>
+			{/if}
 		{/if}
 	{/if}
 {else}

@@ -250,7 +250,7 @@ class AmazonSesSetting extends DataObject {
 				AspenError::raiseError('sendEmail - ' . $ses_response->error->Error->Message);
 				return false;
 			}
-			return $ses_response;
+			return (array) $ses_response;
 		}
 
 		return [

@@ -11,7 +11,7 @@
 			</select>
 		</div>
 	</form>
-	<rapi-doc allow-spec-url-load="false" allow-spec-file-load="false" allow-advanced-search="false" render-style="view" layout="column" allow-try="false" allow-authentication="false" default-schema-tab="schema"
+	<rapi-doc allow-spec-url-load="false" allow-spec-file-load="false" allow-advanced-search="false" render-style="view" allow-try="false" allow-authentication="false" default-schema-tab="schema"
 		spec-url="{$activeApiFileFullPath}"
 		server-url="{$url}{$apiBasePath}"
 		default-api-server="{$url}{$apiBasePath}"
@@ -25,4 +25,6 @@
 		{if $isDarkColorScheme}theme="dark" {else}theme="light"{/if}>
 		<img slot="logo" src="" alt="" />
 	</rapi-doc>
+
+	<script type="module" src="/interface/themes/responsive/js/lib/rapidoc.min.js?v={$aspenVersion|urlencode}.{$cssJsCacheCounter}"></script>
 </div>

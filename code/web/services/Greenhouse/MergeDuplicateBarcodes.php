@@ -30,6 +30,7 @@ class MergeDuplicateBarcodes extends UserMerger {
 	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Greenhouse/Home', 'Greenhouse Home');
+		$breadcrumbs[] = new Breadcrumb('/Greenhouse/Home#greenhouse-migration-tools', 'Migration Tools');
 		$breadcrumbs[] = new Breadcrumb('', 'Merge Duplicate Barcodes');
 
 		return $breadcrumbs;

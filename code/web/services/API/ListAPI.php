@@ -1,94 +1,44 @@
 <?php
 
 require_once ROOT_DIR . '/services/API/AbstractAPI.php';
+require_once ROOT_DIR . '/sys/API/APIMethodConfiguration.php';
 require_once ROOT_DIR . '/sys/Pager.php';
 require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 require_once ROOT_DIR . '/sys/SearchEntry.php';
 
 class ListAPI extends AbstractAPI {
+	use APIMethodConfiguration;
 
-	function launch() {
+	function launch() : void {
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 
-		global $activeLanguage;
-		if (isset($_GET['language'])) {
-			$language = new Language();
-			$language->code = $_GET['language'];
-			if ($language->find(true)) {
-				$activeLanguage = $language;
-			}
+		$this->setLanguage();
+
+		// Special handling for RSS feed method (XML output)
+		if ($method == 'getRSSFeed') {
+			header('Content-type: text/xml');
+			header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
+			header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
+			$xml = '<?xml version="1.0" encoding="UTF-8"?' . ">\n";
+			$xml .= $this->$method();
+			echo $xml;
+
+			require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
+			APIUsage::incrementStat('ListAPI', $method);
+			return;
 		}
 
-		if (isset($_SERVER['PHP_AUTH_USER'])) {
-			if ($this->grantTokenAccess()) {
-				if (in_array($method, [
-					'getUserLists',
-					'getListTitles',
-					'createList',
-					'deleteList',
-					'editList',
-					'addTitlesToList',
-					'removeTitlesFromList',
-					'clearListTitles',
-					'getSavedSearchesForLiDA',
-					'getSavedSearchTitles',
-					'getListDetails',
-					'getUserListGroups',
-					'getListGroupDetails',
-					'createListGroup',
-					'deleteListGroup',
-					'editListGroup',
-					'editListGroupParent'
-				])) {
-					$result = ['result' => $this->$method()];
-					$output = json_encode($result);
-					header('Content-type: application/json');
-					header("Cache-Control: max-age=300");
-					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
-					APIUsage::incrementStat('ListAPI', $method);
-				} else {
-					$output = json_encode(['error' => 'invalid_method']);
-				}
-			} else {
-				header('HTTP/1.0 401 Unauthorized');
-				$output = json_encode(['error' => 'unauthorized_access']);
-			}
-			ExternalRequestLogEntry::logRequest('ListAPI.' . $method, $_SERVER['REQUEST_METHOD'], $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], getallheaders(), '', $_SERVER['REDIRECT_STATUS'], $output, []);
-			echo $output;
-		} else {
-			if ($method != 'getRSSFeed' && !IPAddress::allowAPIAccessForClientIP()) {
-				$this->forbidAPIAccess();
-			}
-
-			if (!in_array($method, [
-					'getSavedSearchTitles',
-					'getCacheInfoForListId',
-					'getSystemListTitles',
-				]) && method_exists($this, $method)) {
-				if ($method == 'getRSSFeed') {
-					header('Content-type: text/xml');
-					header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-					header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-					$xml = '<?xml version="1.0" encoding="UTF-8"?' . ">\n";
-					$xml .= $this->$method();
-
-					echo $xml;
-
-				} else {
-					header('Content-type: application/json');
-					header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-					header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-					$output = json_encode(['result' => $this->$method()]);
-
-					echo $output;
-				}
-				require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
-				APIUsage::incrementStat('ListAPI', $method);
-			} else {
-				echo json_encode(['error' => 'invalid_method']);
-			}
-		}
+		// Use automatic method discovery - no more manual arrays!
+		$this->handleAPIRequestAuto($method, 'list_api');
 	}
+
+	/**
+	 * Override the API scope prefix for ListAPI
+	 */
+	protected function getAPIScopePrefix(): string {
+		return 'list';
+	}
+
 
 	function getAllListIds() {
 		$allListNames = [];
@@ -111,8 +61,11 @@ class ListAPI extends AbstractAPI {
 	/**
 	 * Get all public lists
 	 * includes id, title, description, and number of titles
+	 * @oauth true
+	 * @token false
+	 * @public true
 	 */
-	function getPublicLists() {
+	function getPublicLists(): array {
 		global $aspen_db;
 		$list = new UserList();
 		$list->public = 1;
@@ -291,7 +244,7 @@ class ListAPI extends AbstractAPI {
 
 	/**
 	 * Get all lists that a particular user has created.
-	 * includes id, title, description, number of titles, and whether or not the list is public
+	 * includes id, title, description, number of titles, and whether the list is public
 	 * @noinspection PhpUnused
 	 */
 	function getUserLists() {
@@ -409,6 +362,13 @@ class ListAPI extends AbstractAPI {
 		return $result;
 	}
 
+	/**
+	 * Get all the list groups that a particular user has created.
+	 * @oauth true
+	 * @token true
+	 * @scopes list:read
+	 * @noinspection PhpUnused
+	 */
 	function getUserListGroups(): array {
 		$user = $this->getUserForApiCall();
 		if ($user === false) {
@@ -517,6 +477,9 @@ class ListAPI extends AbstractAPI {
 	 * @param string $listId - The list to show
 	 * @param integer $numTitlesToShow - the maximum number of titles that should be shown
 	 * @return array
+	 * @oauth true
+	 * @token true
+	 * @scopes list:read
 	 */
 	function getListTitles($listId = NULL, $numTitlesToShow = 25, $page = 1) {
 		global $configArray;
@@ -530,14 +493,9 @@ class ListAPI extends AbstractAPI {
 			$listId = $_REQUEST['id'];
 		}
 
-		[
-			$username,
-			$password,
-		] = $this->loadUsernameAndPassword();
-		if (!empty($username)) {
-			$user = UserAccount::validateAccount($username, $password);
-		} else {
-			$user = UserAccount::getLoggedInUser();
+		$user = $this->getUserForApiCall();
+		if (!$user) {
+			$user = UserAccount::getLoggedInUser(); // This is here because the API is called from Discovery when loading Browse Categories
 		}
 
 		if (isset($_REQUEST['numTitles'])) {
@@ -799,6 +757,11 @@ class ListAPI extends AbstractAPI {
 		}
 	}
 
+	/**
+	 * Get titles from a saved search - publicly accessible
+	 *
+	 * @public true
+	 */
 	function getSavedSearchTitles($searchId = null, $numTitlesToShow = null) {
 		if (!$searchId) {
 			if (!isset($_REQUEST['searchId'])) {
@@ -861,19 +824,23 @@ class ListAPI extends AbstractAPI {
 		return $listTitles;
 	}
 
+	/**
+	 * Get details about a list including title, description, number of titles, and whether the list is public
+	 *
+	 * @oauth true
+	 * @token true
+	 * @scopes list:read
+	 * @noinspection PhpUnused
+	 */
 	function getListDetails(): array {
 		global $configArray;
-		[
-			$username,
-			$password,
-		] = $this->loadUsernameAndPassword();
 		if (!isset($_REQUEST['id'])) {
 			return [
 				'success' => false,
 				'message' => 'The id of the list to load must be provided as the id parameter.',
 			];
 		}
-		$user = UserAccount::validateAccount($username, $password);
+		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
 			$list = new UserList();
 			$list->id = $_REQUEST['id'];
@@ -981,6 +948,12 @@ class ListAPI extends AbstractAPI {
 		}
 	}
 
+	/**
+	 * Get all saved searches for a user.
+	 * If checkIfValid is set to true, only returns searches that have a title and are valid for display.
+	 * @oauth true
+	 * @token true
+	 */
 	function getSavedSearches($userId = null): array {
 
 		if (!UserAccount::isLoggedIn()) {
@@ -1064,17 +1037,10 @@ class ListAPI extends AbstractAPI {
 	}
 
 	function getSavedSearchesForLiDA(): array {
-
-		[
-			$username,
-			$password,
-		] = $this->loadUsernameAndPassword();
-		if (!empty($username)) {
-			$user = UserAccount::validateAccount($username, $password);
-		} else {
+		$user = $this->getUserForApiCall();
+		if (!$user) {
 			$user = UserAccount::getLoggedInUser();
 		}
-
 		if ($user && !($user instanceof AspenError)) {
 			$checkIfValid = "true";
 			if (isset($_REQUEST['checkIfValid'])) {
@@ -1175,18 +1141,15 @@ class ListAPI extends AbstractAPI {
 	 * </code>
 	 * @noinspection PhpUnused
 	 */
-	function createList() {
-		[
-			$username,
-			$password,
-		] = $this->loadUsernameAndPassword();
+	function createList(): array {
 		if (!isset($_REQUEST['title'])) {
 			return [
 				'success' => false,
 				'message' => 'You must provide the title of the list to be created.',
 			];
 		}
-		$user = UserAccount::validateAccount($username, $password);
+
+		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
 			$list = new UserList();
 			$list->title = strip_tags($_REQUEST['title']);
@@ -1295,10 +1258,6 @@ class ListAPI extends AbstractAPI {
 	 * </code>
 	 */
 	function addTitlesToList($existingList = false) {
-		[
-			$username,
-			$password,
-		] = $this->loadUsernameAndPassword();
 		if (!isset($_REQUEST['listId'])) {
 			return [
 				'success' => false,
@@ -1321,7 +1280,7 @@ class ListAPI extends AbstractAPI {
 
 		$source = $_REQUEST['source'] ?? 'GroupedWork';
 
-		$user = UserAccount::validateAccount($username, $password);
+		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
 			$list = new UserList();
 			$list->id = $_REQUEST['listId'];
@@ -1456,17 +1415,13 @@ class ListAPI extends AbstractAPI {
 	 * @noinspection PhpUnused
 	 */
 	function deleteList() {
-		[
-			$username,
-			$password,
-		] = $this->loadUsernameAndPassword();
 		if (!isset($_REQUEST['id'])) {
 			return [
 				'success' => false,
 				'message' => 'You must provide the id of the list to be deleted.',
 			];
 		}
-		$user = UserAccount::validateAccount($username, $password);
+		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
 			$list = new UserList();
 			$list->id = $_REQUEST['id'];
@@ -1558,17 +1513,14 @@ class ListAPI extends AbstractAPI {
 	 * @noinspection PhpUnused
 	 */
 	function editList() {
-		[
-			$username,
-			$password,
-		] = $this->loadUsernameAndPassword();
 		if (!isset($_REQUEST['id'])) {
 			return [
 				'success' => false,
 				'message' => 'You must provide the id of the list to be modified.',
 			];
 		}
-		$user = UserAccount::validateAccount($username, $password);
+
+		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
 			$list = new UserList();
 			$list->id = $_REQUEST['id'];
@@ -1653,10 +1605,6 @@ class ListAPI extends AbstractAPI {
 	 * </code>
 	 */
 	function removeTitlesFromList() {
-		[
-			$username,
-			$password,
-		] = $this->loadUsernameAndPassword();
 		if (!isset($_REQUEST['listId'])) {
 			return [
 				'success' => false,
@@ -1679,7 +1627,7 @@ class ListAPI extends AbstractAPI {
 
 		$source = $_REQUEST['source'] ?? 'GroupedWork';
 
-		$user = UserAccount::validateAccount($username, $password);
+		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
 			$list = new UserList();
 			$list->id = $_REQUEST['listId'];
@@ -1759,17 +1707,13 @@ class ListAPI extends AbstractAPI {
 	 * @noinspection PhpUnused
 	 */
 	function clearListTitles() {
-		[
-			$username,
-			$password,
-		] = $this->loadUsernameAndPassword();
 		if (!isset($_REQUEST['listId'])) {
 			return [
 				'success' => false,
 				'message' => 'You must provide the listId to clear titles from.',
 			];
 		}
-		$user = UserAccount::validateAccount($username, $password);
+		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
 			$list = new UserList();
 			$list->id = $_REQUEST['listId'];

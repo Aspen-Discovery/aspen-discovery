@@ -62,7 +62,7 @@
 			{/if}
 		{/if}
 	{else}
-		<div class="related-manifestation-shelf-status status-withdrawn {if $applyColors}label label-danger label-wrap{/if}">
+		<div class="related-manifestation-shelf-status {$statusInformation->getCssClass()} {if $applyColors}label label-danger label-wrap{/if}">
 			{if $statusInformation->getGroupedStatus()}{translate text=$statusInformation->getGroupedStatus() isPublicFacing=true}{else}{translate text="Withdrawn / Unavailable" isPublicFacing=true}{/if}
 		</div>
 	{/if}

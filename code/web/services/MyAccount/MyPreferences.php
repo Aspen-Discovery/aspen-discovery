@@ -372,6 +372,13 @@ class MyAccount_MyPreferences extends MyAccount {
 				$user->updateMessageIsError = 0;
 				$user->update();
 			}
+
+			$aspenNativeEventsEnabled = false;
+			if (array_key_exists('Events', $enabledModules)) {
+				require_once ROOT_DIR . '/sys/Events/LibraryEventsSetting.php';
+				$aspenNativeEventsEnabled = LibraryEventsSetting::libraryHasSource($library->libraryId, 'aspenEvents');
+			}
+			$interface->assign('aspenNativeEventsEnabled', $aspenNativeEventsEnabled);
 		}
 
 		$this->display('myPreferences.tpl', 'Preferences');

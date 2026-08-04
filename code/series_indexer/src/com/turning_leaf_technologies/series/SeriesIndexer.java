@@ -184,16 +184,32 @@ class SeriesIndexer {
 	private boolean updateSolrForSeries(boolean fullReindex, ConcurrentUpdateHttp2SolrClient updateServer, PreparedStatement getTitlesForSeriesStmt, ResultSet allSeriesRS, long lastReindexTime, SeriesLogEntry logEntry) throws SQLException, SolrServerException, IOException {
 		try {
 			SeriesSolr seriesSolr = new SeriesSolr(this);
+			int seriesVersion = 1;
+			String permanentId = allSeriesRS.getString("seriesPermanentId");
+			if (permanentId != null) {
+				seriesVersion = 2;
+			}
 			long seriesId = allSeriesRS.getLong("id");
 			int deleted = allSeriesRS.getInt("deleted");
 			int isIndexed = allSeriesRS.getInt("isIndexed");
 			boolean indexed = false;
 			if (!fullReindex && (deleted == 1 || isIndexed == 0)) {
-				updateServer.deleteByQuery("id:" + seriesId);
+				if (seriesVersion == 1) {
+					updateServer.deleteByQuery("id:" + seriesId);
+				} else {
+					updateServer.deleteByQuery("id:" + permanentId);
+				}
+
 				logEntry.incDeleted();
 			} else {
-				logger.info("Processing series " + seriesId + " " + allSeriesRS.getString("displayName"));
-				seriesSolr.setId(seriesId);
+				if (seriesVersion == 1) {
+					logger.info("Processing series " + seriesId + " " + allSeriesRS.getString("displayName"));
+					seriesSolr.setId(String.valueOf(seriesId));
+				}else{
+					logger.info("Processing series " + permanentId + " " + allSeriesRS.getString("displayName"));
+					seriesSolr.setId(permanentId);
+				}
+
 				seriesSolr.setTitle(allSeriesRS.getString("displayName"));
 				seriesSolr.setDescription(allSeriesRS.getString("description"));
 				String audience = allSeriesRS.getString("audience");

@@ -1,5 +1,7 @@
 <?php
 
+require_once ROOT_DIR . '/sys/AspenError.php';
+
 class TwoFactorAuthenticationError extends AspenError {
 	public $userId;
 	public $twoFactorStartDate;

@@ -205,7 +205,18 @@ class Polaris extends AbstractIlsDriver {
 		];
 	}
 
-	public function getCheckouts(User $patron): array {
+	/**
+	 * Get Patron Checkouts
+	 *
+	 * This is responsible for retrieving all checkouts (i.e. checked out items)
+	 * by a specific patron.
+	 *
+	 * @param User $patron       The user to load transactions for
+	 * @param array $options     Additional options
+	 * @return Checkout[]        Array of the patron's transactions on success
+	 * @access public
+	 */
+	public function getCheckouts(User $patron, array $options = []): array {
 		require_once ROOT_DIR . '/sys/User/Checkout.php';
 		$checkedOutTitles = [];
 
@@ -624,7 +635,20 @@ class Polaris extends AbstractIlsDriver {
 					if (count($curPickupBranch->getPickupSublocations()) > 0){
 						//Polaris does not return the hold area for the hold, instead it updates the pickup branch name
 						// to include the name of the hold area.
-						$curHold->pickupLocationName = $holdInfo->PickupBranchName;
+						$holdPickupAreaID = $holdInfo->HoldPickupAreaID;
+						$pickupAreaFound = false;
+						foreach ($curPickupBranch->getPickupSublocations() as $pickupArea) {
+							if ($pickupArea->ilsId == $holdInfo->HoldPickupAreaID) {
+								$curHold->pickupLocationName = $curPickupBranch->displayName;
+								$curHold->pickupSublocationId = $pickupArea->id;
+								$curHold->pickupSublocationName = $pickupArea->name;
+								$pickupAreaFound = true;
+								break;
+							}
+						}
+						if (!$pickupAreaFound) {
+							$curHold->pickupLocationName = $holdInfo->PickupBranchName;
+						}
 					}else{
 						//We can display the name of the branch which includes any translations
 						$curHold->pickupLocationName = $curPickupBranch->displayName;
@@ -757,7 +781,7 @@ class Polaris extends AbstractIlsDriver {
 		return $holds;
 	}
 
-	function placeHold(User $patron, $recordId, $pickupBranch = null, $cancelDate = null, $pickupSublocation = null) : array {
+	function placeHold(User $patron, mixed $recordId, ?string $pickupBranch = null, ?string $cancelDate = null, ?string $pickupSublocation = null, ?int $numberOfCopies = 1) : array {
 		return $this->placeItemHold($patron, $recordId, null, $pickupBranch, $cancelDate, $pickupSublocation);
 	}
 
@@ -1095,7 +1119,7 @@ class Polaris extends AbstractIlsDriver {
 		global $library;
 		if ($library) {
 			if ($library->barcodePrefix) {
-				if (strpos($username, $library->barcodePrefix) !== 0) {
+				if (!str_starts_with($username, $library->barcodePrefix)) {
 					//Add the barcode prefix to the barcode
 					$barcodesToTest[] = $library->barcodePrefix . $username;
 				}
@@ -1143,6 +1167,11 @@ class Polaris extends AbstractIlsDriver {
 				$user->firstname = $firstName;
 				$forceDisplayNameUpdate = true;
 			}
+			$middleName = isset($patronBasicData->NameMiddle) ? $patronBasicData->NameMiddle : '';
+			if ($user->middlename != $middleName) {
+				$user->middlename = $middleName;
+				$forceDisplayNameUpdate = true;
+			}
 			$lastName = isset($patronBasicData->NameLast) ? $patronBasicData->NameLast : '';
 			if ($user->lastname != $lastName) {
 				$user->lastname = isset($lastName) ? $lastName : '';
@@ -1188,8 +1217,7 @@ class Polaris extends AbstractIlsDriver {
 				if (!$location->find(true)) {
 					$location = null;
 				}
-
-				if (empty($user->homeLocationId) || (isset($location) && $user->homeLocationId != $location->locationId)) { // When homeLocation isn't set or has changed
+				if (empty($user->homeLocationId) || (isset($location) && $user->homeLocationId != $location->locationId) || $user->pickupLocationId != $patronBasicData->RequestPickupBranchID) { // When homeLocation isn't set or has changed
 					if (empty($user->homeLocationId) && !isset($location)) {
 						// homeBranch Code not found in location table and the user doesn't have an assigned homelocation,
 						// try to find the main branch to assign to user
@@ -1232,9 +1260,20 @@ class Polaris extends AbstractIlsDriver {
 							}
 						}
 
-						if ($homeLocationChanged) {
+						if ($homeLocationChanged || $user->pickupLocationId != $patronBasicData->RequestPickupBranchID) {
 							//reset the patrons preferred pickup location to their new home library
-							$user->setPickupLocationId($user->homeLocationId);
+							//unless we get preferred pickup location from api response
+							if (isset($patronBasicData->RequestPickupBranchID)) {
+								$pickupLocation = new Location();
+								$pickupLocation->code = $patronBasicData->RequestPickupBranchID;
+								if ($pickupLocation->find(true)) {
+									$user->setPickupLocationId($pickupLocation->locationId);
+								} else {
+									$user->setPickupLocationId($user->homeLocationId);
+								}
+							} else {
+								$user->setPickupLocationId($user->homeLocationId);
+							}
 							$user->setRememberHoldPickupLocation(0);
 						}
 					}
@@ -1818,6 +1857,35 @@ class Polaris extends AbstractIlsDriver {
 		return $result;
 	}
 
+	function updatePreferredPickupLocation($patron, $pickupLocation, $fromMasquerade): bool {
+		$staffInfo = $this->getStaffUserInfo();
+		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}";
+		$body = new stdClass();
+		$body->LogonBranchID = $patron->getHomeLocationCode();
+		$body->LogonUserID = (string)$staffInfo['polarisId'];
+		$body->LogonWorkstationID = $this->getWorkstationID($patron);
+
+		//User the patron's home library rather than the active library just in case they are on the wrong interface
+		$library = $patron->getHomeLibrary();
+		$this->setupBodyForSelfRegAndPatronUpdateCall('patronUpdate', $body, $library);
+
+		// Update Preferred Pickup Location
+		if (!empty($pickupLocation)) {
+			$homeLibraryLocation = new Location();
+			if ($homeLibraryLocation->get('locationId', $pickupLocation)) {
+				$homeBranchCode = strtoupper($homeLibraryLocation->code);
+				$body->RequestPickupBranchID = $homeBranchCode;
+			}
+		}
+		$encodedBody = json_encode($body);
+		$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), $encodedBody, $fromMasquerade || UserAccount::isUserMasquerading());
+		ExternalRequestLogEntry::logRequest('polaris.updatePatronInfo', 'PUT', $this->getWebServiceURL() . $polarisUrl, $this->apiCurlWrapper->getHeaders(), $encodedBody, $this->lastResponseCode, $response, []);
+		if ($response && $this->lastResponseCode == 200) {
+			return true;
+		}
+		return false;
+	}
+
 	function updatePin(User $patron, ?string $oldPin, string $newPin) {
 		if ($patron->ils_password != $oldPin && $patron->cat_password != $oldPin) {
 			return [
@@ -1830,7 +1898,6 @@ class Polaris extends AbstractIlsDriver {
 		}
 		$result = [
 			'success' => false,
-			'message' => "Unknown error updating password.",
 		];
 		$staffInfo = $this->getStaffUserInfo();
 		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}";
@@ -1851,15 +1918,19 @@ class Polaris extends AbstractIlsDriver {
 				$patron->ils_password = $newPin;
 				$patron->update();
 			} else {
-				$result['message'] = "Error updating your password. (Error {$jsonResponse->PAPIErrorCode}).";
+				$result['message'] = "Error updating your password. (Error $jsonResponse->PAPIErrorCode).";
 			}
 		} else {
-			$result['message'] = "Error updating your password. ({$this->lastResponseCode}).";
+			$result['message'] = "Error updating your password. ($this->lastResponseCode).";
 		}
 		return $result;
 	}
 
-	public function getFines(User $patron, $includeMessages = false): array {
+	public function supportsCredits() : bool {
+		return true;
+	}
+
+	public function getFines(User $patron, $includeMessages = false, ?string $type = null): array {
 		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 
 		global $activeLanguage;
@@ -1881,7 +1952,7 @@ class Polaris extends AbstractIlsDriver {
 			$finesRows = $jsonResponse->PatronAccountGetRows;
 			foreach ($finesRows as $fineRow) {
 				// TODO: It might be most accurate to use the TransactionTypeID for each, but I cannot find what the ID is for "Credit."
-				if ($fineRow->TransactionTypeDescription != "Credit" && $fineRow->TransactionTypeDescription != "Deposit") {
+				if ($fineRow->TransactionTypeDescription != "Credit" && $fineRow->TransactionTypeDescription != "Deposit" && is_null($type)) {
 					$curFine = [
 						'fineId' => $fineRow->TransactionID,
 						'date' => $this->parsePolarisDate($fineRow->TransactionDate),
@@ -1892,6 +1963,22 @@ class Polaris extends AbstractIlsDriver {
 						'amountOutstandingVal' => $fineRow->OutstandingAmount,
 						'amount' => $currencyFormatter->formatCurrency($fineRow->TransactionAmount, $currencyCode),
 						'amountOutstanding' => $currencyFormatter->formatCurrency($fineRow->OutstandingAmount, $currencyCode),
+					];
+					$fines[] = $curFine;
+				}
+				// Credits should have negative values since they reduce the amount owed.
+				elseif ($fineRow->TransactionTypeDescription == "Credit" && $type == 'credit') {
+					$curFine = [
+						'fineId' => $fineRow->TransactionID,
+						'date' => $this->parsePolarisDate($fineRow->TransactionDate),
+						'type' => $fineRow->TransactionTypeDescription,
+						'reason' => (!empty($fineRow->FeeDescription) ? $fineRow->FeeDescription : 'Credit'),
+						'message' => $fineRow->Title . " " . $fineRow->Author . ' ' . $fineRow->FreeTextNote,
+						'amountVal' => $fineRow->TransactionAmount,
+						'amountOutstandingVal' => $fineRow->OutstandingAmount,
+						'amount' => $currencyFormatter->formatCurrency($fineRow->TransactionAmount, $currencyCode),
+						'amountOutstanding' => $currencyFormatter->formatCurrency($fineRow->OutstandingAmount, $currencyCode),
+						'canPayFine' => false,
 					];
 					$fines[] = $curFine;
 				}
@@ -2358,8 +2445,8 @@ class Polaris extends AbstractIlsDriver {
 		if ($basicDataResponse != null) {
 			$user->branchcode = $user->getHomeLocationCode();
 			$user->firstName = $basicDataResponse->NameFirst;
+			$user->middleName = $user->middlename = $basicDataResponse->NameMiddle;
 			$user->lastName = $basicDataResponse->NameLast;
-			$user->middleName = $basicDataResponse->NameMiddle;
 			if (count($basicDataResponse->PatronAddresses) > 0) {
 				$address = reset($basicDataResponse->PatronAddresses);
 				$user->zipcode = $address->PostalCode;
@@ -3131,7 +3218,7 @@ class Polaris extends AbstractIlsDriver {
 		];
 	}
 
-	public function updateEditableUsername(User $patron, string $newUsername): array {
+	public function updateEditableUsername(User $patron, string $username): array {
 		$result = [
 			'success' => false,
 			'message' => translate([
@@ -3140,7 +3227,7 @@ class Polaris extends AbstractIlsDriver {
 			]),
 		];
 
-		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/username/" . urlencode($newUsername);
+		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/username/" . urlencode($username);
 		$updateUsernameResponse = $this->getWebServiceResponse($polarisUrl, 'PUT', Polaris::$accessTokensForUsers[$patron->getBarcode()]['accessToken'], false, UserAccount::isUserMasquerading());
 		ExternalRequestLogEntry::logRequest('polaris.updateUsername', 'PUT', $this->getWebServiceURL() . $polarisUrl, $this->apiCurlWrapper->getHeaders(), false, $this->lastResponseCode, $updateUsernameResponse, []);
 		if ($updateUsernameResponse && $this->lastResponseCode == 200) {

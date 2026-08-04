@@ -71,7 +71,7 @@ class Greenhouse_UpdateCenter extends Admin_Admin {
 	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Greenhouse/Home', 'Greenhouse Home');
-		$breadcrumbs[] = new Breadcrumb('/Greenhouse/Sites', 'Sites');
+		$breadcrumbs[] = new Breadcrumb('/Greenhouse/Home#greenhouse-stats-reports', 'Partner Maintenance & Reports');
 		$breadcrumbs[] = new Breadcrumb('', 'Update Center');
 		return $breadcrumbs;
 	}

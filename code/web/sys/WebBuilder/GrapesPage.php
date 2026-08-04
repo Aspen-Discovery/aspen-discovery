@@ -285,13 +285,13 @@ class GrapesPage extends DB_LibraryLinkedObject {
 		if ($existingObject instanceof GrapesPage) {
 			$objectActions[] = [
 				'text' => 'Open in Editor',
-				'url' => '/services/WebBuilder/GrapesJSEditor?objectAction=edit&id=' . $existingObject->id . '&templateId=' . $existingObject->templatesSelect,
+				'url' => '/WebBuilder/GrapesJSEditor?objectAction=edit&id=' . $existingObject->id . '&templateId=' . $existingObject->templatesSelect,
 			];
 		}
 		if ($existingObject instanceof GrapesPage) {
 			$objectActions[] = [
 				'text' => 'View As Page',
-				// 'url' => '/services/WebBuilder/GrapesJSEditor?objectAction=edit&id=' . $this->id . '&templateId=' . $this->templatesSelect,
+				// 'url' => '/WebBuilder/GrapesJSEditor?objectAction=edit&id=' . $this->id . '&templateId=' . $this->templatesSelect,
 				'url' => $existingObject->urlAlias,
 			];
 		}
@@ -303,7 +303,7 @@ class GrapesPage extends DB_LibraryLinkedObject {
 		$objectActions = [];
 		$objectActions[] = [
 			'text' => 'Open in Editor',
-			'url' => '/services/WebBuilder/GrapesJSEditor?objectAction=edit&id=' . $this->id . '&templateId=' . $this->templatesSelect,
+			'url' => '/WebBuilder/GrapesJSEditor?objectAction=edit&id=' . $this->id . '&templateId=' . $this->templatesSelect,
 		];
 		$objectActions[] = [
 			'text' => 'View As Page',

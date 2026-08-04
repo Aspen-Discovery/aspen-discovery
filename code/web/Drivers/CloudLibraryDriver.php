@@ -22,14 +22,18 @@ class CloudLibraryDriver extends AbstractEContentDriver {
 	 * This is responsible for retrieving all checkouts (i.e. checked out items)
 	 * by a specific patron.
 	 *
-	 * @param User $patron The user to load transactions for
+	 * @param User $patron       The user to load transactions for
+	 * @param array $options     Additional options
 	 * @return Checkout[]        Array of the patron's transactions on success
 	 * @access public
 	 */
-	public function getCheckouts(User $patron): array {
+	public function getCheckouts(User $patron, array $options = []): array {
 		$accountSummary = $patron->getCachedAccountSummary('cloud_library');
 		$cachedCheckouts = $patron->getCachedCheckoutsForSource('cloud_library');
 		if ($accountSummary->areCheckoutsStale() || isset($_REQUEST['reload']) || isset($_REQUEST['refreshCheckouts'])) {
+			$userEligibleForPalaceProject = $patron->isValidForEContentSource('palace_project');
+			$showPalaceProjectLink = $userEligibleForPalaceProject && $patron->getHomeLibrary()->getPalaceProjectSettings()->showPalaceProjectLinks;
+
 			require_once ROOT_DIR . '/RecordDrivers/CloudLibraryRecordDriver.php';
 
 			$checkouts = [];
@@ -76,6 +80,8 @@ class CloudLibraryDriver extends AbstractEContentDriver {
 						}
 
 						$checkout->userId = $patron->id;
+
+						$checkout->showPalaceProjectLink = $showPalaceProjectLink;
 
 						$checkouts[$checkout->source . $checkout->sourceId . $checkout->userId] = $checkout;
 					}
@@ -318,7 +324,7 @@ class CloudLibraryDriver extends AbstractEContentDriver {
 	 * This is responsible for both placing holds as well as placing recalls.
 	 *
 	 * @param User $patron The User to place a hold for
-	 * @param string $recordId The id of the bib record
+	 * @param mixed $recordId The id of the bib record
 	 * @return  array                 An array with the following keys
 	 *                                result - true/false
 	 *                                message - the message to display (if item holds are required, this is a form to select the item).
@@ -326,7 +332,7 @@ class CloudLibraryDriver extends AbstractEContentDriver {
 	 *                                title - the title of the record the user is placing a hold on
 	 * @access  public
 	 */
-	function placeHold(User $patron, $recordId, $pickupBranch = null, $cancelDate = null) : array {
+	function placeHold(User $patron, mixed $recordId, $pickupBranch = null, $cancelDate = null) : array {
 		$result = [
 			'success' => false,
 			'message' => translate([
@@ -510,7 +516,7 @@ class CloudLibraryDriver extends AbstractEContentDriver {
 				'isPublicFacing' => true,
 			]);
 
-			$this->updateCachesForCancelledHold($patron, $holdToCancel);
+			$this->updateCachesForCancelledHold($patron, $holdToCancel, 'cloud_library');
 		} elseif ($responseCode == '400') {
 			$result['message'] = translate([
 				'text' => "Bad Request cancelling hold.",

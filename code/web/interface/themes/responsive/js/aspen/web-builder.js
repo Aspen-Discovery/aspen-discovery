@@ -2,6 +2,27 @@ AspenDiscovery.WebBuilder = function () {
 	// noinspection JSUnusedGlobalSymbols
 	return {
 		editors: [],
+		// Track placard views (whenever shown to a user, regardless of whether they interact with it)
+		trackPlacardView: function(placardId) {
+			const url = Globals.path + '/WebBuilder/AJAX';
+			const params = {
+				method: 'trackPlacardUsage',
+				id: placardId,
+				operation: 'view'
+			};
+			$.getJSON(url, params);
+		},
+
+		// Track placard clicks
+		trackPlacardClick: function(placardId) {
+			const url = Globals.path + '/WebBuilder/AJAX';
+			const params = {
+				method: 'trackPlacardUsage',
+				id: placardId,
+				operation: 'click'
+			};
+			$.getJSON(url, params);
+		},
 		saveLinkedObjCallback: function() {},
 
 		getPortalCellValuesForSource: function () {
@@ -126,6 +147,15 @@ AspenDiscovery.WebBuilder = function () {
 			});
 		},
 
+		// Call this whenever placards are rendered/shown.
+		renderPlacards: function(placardIds) {
+			if (Array.isArray(placardIds)) {
+				placardIds.forEach(function(id) {
+					AspenDiscovery.WebBuilder.trackPlacardView(id);
+				});
+			}
+		},
+
 		checkLinkedObject: function (submitForm) {
 			var url = Globals.path + "/WebBuilder/AJAX";
 			var params = {
@@ -229,7 +259,7 @@ AspenDiscovery.WebBuilder = function () {
 		},
 
 		deleteCell(id) {
-			AspenDiscovery.confirm('Delete Cell', `Are you sure you want to delete this cell (ID: ${id})?`, 'Delete', 'Cancel', true, `AspenDiscovery.WebBuilder.deleteCellConfirmed("${id}")`, 'btn-danger');
+			AspenDiscovery.confirm(__('Delete Cell'), __('Are you sure you want to delete this cell (ID: {id})?', { id: id }), __('Delete'), __('Cancel'), false, `AspenDiscovery.WebBuilder.deleteCellConfirmed("${id}")`, 'btn-danger');
 			return false;
 		},
 
@@ -256,7 +286,7 @@ AspenDiscovery.WebBuilder = function () {
 		},
 
 		deleteRow(id) {
-			AspenDiscovery.confirm('Delete Row', `Are you sure you want to delete this row (ID: ${id})?`, 'Delete', 'Cancel', true, `AspenDiscovery.WebBuilder.deleteRowConfirmed("${id}")`, 'btn-danger');
+			AspenDiscovery.confirm(__('Delete Row'), __('Are you sure you want to delete this row (ID: {id})?', { id: id }), __('Delete'), __('Cancel'), false, `AspenDiscovery.WebBuilder.deleteRowConfirmed("${id}")`, 'btn-danger');
 			return false;
 		},
 
@@ -434,7 +464,7 @@ AspenDiscovery.WebBuilder = function () {
 			});
 		},
 
-		getWebResource(id) {
+		getWebResource(id, fromPlacard = false) {
 			const url = `${Globals.path}/WebBuilder/AJAX`;
 			const params = {
 				method: "getWebResource",
@@ -463,6 +493,9 @@ AspenDiscovery.WebBuilder = function () {
 						id,
 						authType
 					};
+					if (fromPlacard) {
+						trackParams.fromPlacard = 1;
+					}
 					$.getJSON(url, trackParams, () => openResource());
 				};
 
@@ -472,7 +505,7 @@ AspenDiscovery.WebBuilder = function () {
 					} else if (Globals.loggedIn && !canView) {
 						AspenDiscovery.showMessage(userNoAccessTitle, userNoAccessMessage);
 					} else {
-						AspenDiscovery.Account.ajaxLogin(null, () => AspenDiscovery.WebBuilder.getWebResource(id), true);
+						AspenDiscovery.Account.ajaxLogin(null, () => AspenDiscovery.WebBuilder.getWebResource(id, fromPlacard), true);
 					}
 				} else {
 					trackUsage("none");
@@ -480,6 +513,10 @@ AspenDiscovery.WebBuilder = function () {
 			}).fail(AspenDiscovery.ajaxFail);
 
 			return false;
+		},
+
+		placardClickHandler: function(placardId) {
+			AspenDiscovery.WebBuilder.trackPlacardClick(placardId);
 		},
 
 		getAddQuickPollOptionForm: function (pollId) {

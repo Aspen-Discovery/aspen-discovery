@@ -18,6 +18,9 @@ class BookCoverInfo extends DataObject {
 	protected $uploadedImage;
 	protected $disallowThirdPartyCover;
 	protected $original_url;
+	protected $original_url_small;
+	protected $original_url_medium;
+	protected $original_url_large;
 	protected $last_url_validation;
 
 	public function getNumericColumnNames(): array {
@@ -92,8 +95,13 @@ class BookCoverInfo extends DataObject {
 	 * Get the original URL of the cover image
 	 * @return string|null
 	 */
-	public function getOriginalUrl(): ?string
+	//TODO: Keep original_url as a legacy fallback for one release, then remove the fallback and drop the column
+	public function getOriginalUrl(string $size): ?string
 	{
+		$sizeProperty = $this->getOriginalUrlPropertyForSize($size);
+		if ($sizeProperty !== null && !empty($this->$sizeProperty)) {
+			return $this->$sizeProperty;
+		}
 		return $this->original_url;
 	}
 
@@ -101,8 +109,20 @@ class BookCoverInfo extends DataObject {
 	 * Set the original URL of the cover image
 	 * @param ?string $url
 	 */
-	public function setOriginalUrl(?string $url): void {
+	public function setOriginalUrl(?string $url, string $size): void {
+		$sizeProperty = $this->getOriginalUrlPropertyForSize($size);
+		if ($sizeProperty !== null) {
+			$this->__set($sizeProperty, $url);
+			return;
+		}
 		$this->__set('original_url', $url);
+	}
+
+	public function clearOriginalUrls(): void {
+		$this->__set('original_url', null);
+		$this->__set('original_url_small', null);
+		$this->__set('original_url_medium', null);
+		$this->__set('original_url_large', null);
 	}
 
 	/**
@@ -181,5 +201,14 @@ class BookCoverInfo extends DataObject {
 
 	public function setFirstLoaded(int $firstLoaded): void {
 		$this->firstLoaded = $firstLoaded;
+	}
+
+	private function getOriginalUrlPropertyForSize(string $size): ?string {
+		return match ($size) {
+			'small' => 'original_url_small',
+			'medium' => 'original_url_medium',
+			'large' => 'original_url_large',
+			default => null,
+		};
 	}
 }

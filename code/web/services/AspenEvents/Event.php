@@ -49,7 +49,8 @@ class AspenEvents_Event extends Action {
 		$interface->assign('isStaff', UserAccount::isStaff());
 		$interface->assign('upcomingInstanceCount', $this->recordDriver->getEventObject()->getUpcomingInstanceCount() ?? 0);
 		$interface->assign('private', $this->recordDriver->isPrivate() ? 'private' : '');
-		// Display Page
+		$this->recordDriver->assignRegistrationTemplateVars();
+
 		$this->display('event.tpl', $this->recordDriver->getTitle(), null, false);
 	}
 

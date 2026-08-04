@@ -3,7 +3,7 @@ require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 
 class MyEvents extends MyAccount {
-	public function launch() {
+	public function launch() : void {
 		global $interface;
 
 		global $offlineMode;

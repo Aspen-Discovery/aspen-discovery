@@ -50,6 +50,7 @@
 			<th style="width: fit-content;">{translate text="Limits" isPublicFacing=true}</th>
 			<th style="width: fit-content;">{translate text="Search Source" isPublicFacing=true}</th>
 			<th style="width: fit-content;">{translate text="Results" isPublicFacing=true}</th>
+			{if $userSearchType == 'saved' && $showNotificationColumn}<th style="width: fit-content;">{translate text="Notifications" isPublicFacing=true}</th>{/if}
 			<th></th>
 		</tr>
 	</thead>
@@ -67,6 +68,36 @@
                 {/foreach}</td>
 			<td>{$info.source}</td>
 			<td>{$info.hits}</td>
+			{if $userSearchType == 'saved' && $showNotificationColumn}
+				<td>
+					<div class="form-switch">
+						<input
+							title="{translate text="Toggle Email Notifications" isPublicFacing=true}"
+							class="form-check-input"
+							type="checkbox"
+							role="switch"
+							{if $info.sendNotification}checked{/if}
+							onchange="
+								const el = this;
+								el.disabled = true;
+								$.getJSON(Globals.path + '/MyAccount/AJAX', {
+									method: 'toggleSearchNotification',
+									searchId: {$info.id},
+									sendNotification: el.checked ? 1 : 0
+								})
+								.done((data) => {
+									if (!data?.success) {
+										el.checked = !el.checked;
+										AspenDiscovery.ajaxFail();
+									}
+								})
+								.fail(AspenDiscovery.ajaxFail)
+								.always(() => el.disabled = false);
+							"
+						>
+					</div>
+				</td>
+			{/if}
 			<td>
                 {if $userSearchType == 'saved'}
                     <a class="btn btn-xs btn-warning" role="button" href="/MyAccount/SaveSearch?delete={$info.searchId|escape:"url"}&amp;mode=history">{translate text="Delete" isPublicFacing=true}</a>

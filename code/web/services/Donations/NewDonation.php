@@ -144,8 +144,9 @@ class Donations_NewDonation extends Action {
 			$interface->assign('donationFormFields', $donationFormFields);
 
 			// Get the value options to display for the form
+			require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 			$values = Donation::getDonationValues($donationSettings->id);
-			$symbol = $donation->getCurrencySymbol();
+			$symbol = StringUtils::getCurrencySymbol();
 			$interface->assign('donationValues', $values);
 			$interface->assign('currencySymbol', $symbol);
 

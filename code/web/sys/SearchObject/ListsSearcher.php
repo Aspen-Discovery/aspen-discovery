@@ -1,5 +1,6 @@
 <?php
 require_once ROOT_DIR . '/sys/SearchObject/SolrSearcher.php';
+require_once ROOT_DIR . '/sys/UserLists/UserListFacet.php';
 
 class SearchObject_ListsSearcher extends SearchObject_SolrSearcher {
 
@@ -231,46 +232,76 @@ class SearchObject_ListsSearcher extends SearchObject_SolrSearcher {
 		return $this->processSearchSuggestions($searchTerm, $suggestionHandler);
 	}
 
-	//TODO: Convert this to use definitions so they can be customized in admin
 	public function getFacetConfig() : array {
 		if ($this->facetConfig == null) {
-			$facetConfig = [];
-			require_once ROOT_DIR . '/sys/LibraryLocation/LibraryFacetSetting.php';
-			$author = new LibraryFacetSetting();
-			$author->id = 1;
-			$author->multiSelect = true;
-			$author->facetName = "author_display";
-			$author->displayName = "Created By";
-			$author->numEntriesToShowByDefault = 5;
-			$author->translate = true;
-			$author->collapseByDefault = false;
-			$author->useMoreFacetPopup = true;
-			$facetConfig["author_display"] = $author;
-
+			global $library;
 			global $solrScope;
-			$daysSinceAdded = new LibraryFacetSetting();
-			$daysSinceAdded->id = 2;
-			$daysSinceAdded->multiSelect = false;
-			$daysSinceAdded->facetName = "local_time_since_added_$solrScope";
-			$daysSinceAdded->displayName = "Added In the Last";
-			$daysSinceAdded->numEntriesToShowByDefault = 10;
-			$daysSinceAdded->translate = true;
-			$daysSinceAdded->collapseByDefault = false;
-			$daysSinceAdded->useMoreFacetPopup = false;
-			$facetConfig["local_time_since_added_$solrScope"] = $daysSinceAdded;
+			require_once ROOT_DIR . '/sys/UserLists/LibraryUserListFacetSetting.php';
+			require_once ROOT_DIR . '/sys/UserLists/UserListFacetGroup.php';
+			$libraryUserListFacetSetting = new LibraryUserListFacetSetting();
+			$libraryUserListFacetSetting->libraryId = $library->libraryId;
+			if ($libraryUserListFacetSetting->find(true)) {
+				$userListFacetGroup = new UserListFacetGroup();
+				$userListFacetGroup->id = $libraryUserListFacetSetting->userListFacetGroupId;
+				if ($userListFacetGroup->find(true)) {
+					$userListFacets = $userListFacetGroup->getFacets();
+					if (!empty($userListFacets)) {
+						$facetsToReturn = [];
+						foreach ($userListFacets as $facetKey => $facetValue) {
+							if ($facetValue->facetName == 'time_since_added'){
+								$facetKey = "local_time_since_added_$solrScope";
+								$facetValue->facetName = $facetKey;
+							}elseif ($facetValue->facetName == 'time_since_updated'){
+								$facetKey = "local_time_since_updated_$solrScope";
+								$facetValue->facetName = $facetKey;
+							}else{
+								$facetKey = $facetValue->facetName;
+							}
+							$facetsToReturn[$facetKey] = $facetValue;
+						}
+						$this->facetConfig = $facetsToReturn;
+					}
+				}
+			}
 
-			$daysSinceUpdated = new LibraryFacetSetting();
-			$daysSinceUpdated->id = 3;
-			$daysSinceUpdated->multiSelect = false;
-			$daysSinceUpdated->facetName = "local_time_since_updated_$solrScope";
-			$daysSinceUpdated->displayName = "Updated In the Last";
-			$daysSinceUpdated->numEntriesToShowByDefault = 10;
-			$daysSinceUpdated->translate = true;
-			$daysSinceUpdated->collapseByDefault = false;
-			$daysSinceUpdated->useMoreFacetPopup = false;
-			$facetConfig["local_time_since_updated_$solrScope"] = $daysSinceUpdated;
+			if ($this->facetConfig == null) {
+				$facetConfig = [];
+				require_once ROOT_DIR . '/sys/LibraryLocation/LibraryFacetSetting.php';
+				$author = new LibraryFacetSetting();
+				$author->id = 1;
+				$author->multiSelect = true;
+				$author->facetName = "author_display";
+				$author->displayName = "Created By";
+				$author->numEntriesToShowByDefault = 5;
+				$author->translate = true;
+				$author->collapseByDefault = false;
+				$author->useMoreFacetPopup = true;
+				$facetConfig["author_display"] = $author;
 
-			$this->facetConfig = $facetConfig;
+				$daysSinceAdded = new LibraryFacetSetting();
+				$daysSinceAdded->id = 2;
+				$daysSinceAdded->multiSelect = false;
+				$daysSinceAdded->facetName = "local_time_since_added_$solrScope";
+				$daysSinceAdded->displayName = "Added In the Last";
+				$daysSinceAdded->numEntriesToShowByDefault = 10;
+				$daysSinceAdded->translate = true;
+				$daysSinceAdded->collapseByDefault = false;
+				$daysSinceAdded->useMoreFacetPopup = false;
+				$facetConfig["local_time_since_added_$solrScope"] = $daysSinceAdded;
+
+				$daysSinceUpdated = new LibraryFacetSetting();
+				$daysSinceUpdated->id = 3;
+				$daysSinceUpdated->multiSelect = false;
+				$daysSinceUpdated->facetName = "local_time_since_updated_$solrScope";
+				$daysSinceUpdated->displayName = "Updated In the Last";
+				$daysSinceUpdated->numEntriesToShowByDefault = 10;
+				$daysSinceUpdated->translate = true;
+				$daysSinceUpdated->collapseByDefault = false;
+				$daysSinceUpdated->useMoreFacetPopup = false;
+				$facetConfig["local_time_since_updated_$solrScope"] = $daysSinceUpdated;
+
+				$this->facetConfig = $facetConfig;
+			}
 		}
 		return $this->facetConfig;
 	}

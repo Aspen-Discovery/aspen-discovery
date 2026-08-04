@@ -242,9 +242,12 @@ class Admin_AJAX extends JSON_Action {
 		require_once ROOT_DIR . '/sys/LocalEnrichment/CollectionSpotlight.php';
 		$collectionSpotlight = new CollectionSpotlight();
 		if (!UserAccount::userHasPermission('Administer All Collection Spotlights')) {
-			//Get all spotlights for the library
-			$userLibrary = Library::getPatronHomeLibrary();
-			$collectionSpotlight->libraryId = $userLibrary->libraryId;
+			$libraries = Library::getLibraryList(true);
+			if (empty($libraries)) {
+				$collectionSpotlight->whereAdd('libraryId = -1');
+			}else{
+				$collectionSpotlight->whereAdd('libraryId IN (' . implode(',', array_keys($libraries)) . ') OR libraryId = -1');
+			}
 		}
 		$collectionSpotlight->orderBy('name');
 		$existingCollectionSpotlights = $collectionSpotlight->fetchAll('id', 'name');
@@ -1360,6 +1363,9 @@ class Admin_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function createRecoveryCode() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission(['Administer Two-Factor Authentication']);
+		$this->checkRequiredParameters(['user']);
 		$user = $_REQUEST['user'] ?? '0';
 		require_once ROOT_DIR . '/sys/TwoFactorAuthCode.php';
 		$twoFactorAuth = new TwoFactorAuthCode();
@@ -1715,6 +1721,11 @@ class Admin_AJAX extends JSON_Action {
 			'Send Notifications to Home Library',
 			'Send Notifications to Home Location',
 			'Send Notifications to Home Library Locations',
+			'Send Aspen Progressive Web Application(PWA) Notifications to All Libraries',
+			'Send Aspen Progressive Web Application(PWA) Notifications to All Locations',
+			'Send Aspen Progressive Web Application(PWA) Notifications to Home Library',
+			'Send Aspen Progressive Web Application(PWA) Notifications to Home Location',
+			'Send Aspen PWA Notifications to Home Library Locations'
 		]);
 		$result = $this->failureResultAdmin(null, 'Unknown error getting devices');
 
@@ -1925,11 +1936,16 @@ class Admin_AJAX extends JSON_Action {
 		while ($library->fetch()){
 			$libraryCodes[$library->libraryId] = $library->ilsCode;
 		}
+		$holidayLocationsByLibrary = [];
 		$locationCodes = [];
 		$location = new Location();
 		$location->find();
 		while ($location->fetch()){
 			$locationCodes[$location->locationId] = $location->code;
+
+			if (!empty($location->showInHolidayHoursTable)) {
+				$holidayLocationsByLibrary[$location->libraryId][] = $location->locationId;
+			}
 		}
 
 
@@ -1944,31 +1960,17 @@ class Admin_AJAX extends JSON_Action {
 			} else {
 				$holidayDates = $this->getDatesForDayOfWeek($holidayDate);
 			}
+			$datesToAdd = !empty($holidayDates) ? $holidayDates : [$holidayDate];
 
 			if ($libraryLocationCode == "?????") { //update all libraries
 				if ($scope == 'library' || $scope == 'all') {
 					foreach ($libraryCodes as $libId => $libraryCode) {
 						if (empty($libraryList) || array_key_exists($libId, $libraryList)) {
-							require_once ROOT_DIR . '/sys/LibraryLocation/Holiday.php';
-							$holiday = new Holiday();
-							$holiday->libraryId = $libId;
-							$holiday->name = '';
-							if (!empty($holidayDates)) {
-								foreach ($holidayDates as $holidayDate) {
-									$holiday->date = $holidayDate;
-									if ($holiday->insert()) {
-										$holidaysAdded++;
-									}
-								}
-							} else {
-								$holiday->date = $holidayDate;
-								if ($holiday->insert()) {
-									$holidaysAdded++;
-								}
-							}
+							$holidaysAdded += $this->addHolidayRowsForLibrary($libId, $datesToAdd, $holidayLocationsByLibrary);
 						}
 					}
-				} if (($scope == 'location' || $scope == 'all') && strlen($holidayDate) == 3) {
+				}
+				if (($scope == 'location' || $scope == 'all') && strlen($holidayDate) == 3) {
 					foreach ($locationCodes as $locId => $locationCode) {
 						if (empty($locationList) || array_key_exists($locId, $locationList)) {
 							require_once ROOT_DIR . '/sys/LibraryLocation/LocationHours.php';
@@ -1989,29 +1991,15 @@ class Admin_AJAX extends JSON_Action {
 			} else {
 				$libraryLocationCode = strtr($libraryLocationCode, ['?' => '.', '*' => '.*']);
 				if ($scope == 'library' || $scope == 'all') {
-					$libraries = preg_grep("/^". $libraryLocationCode . "/", $libraryCodes);
+					$libraries = preg_grep("/^" . $libraryLocationCode . "/", $libraryCodes);
 					foreach ($libraries as $libId => $lib) {
 						if (empty($libraryList) || array_key_exists($libId, $libraryList)) {
-							require_once ROOT_DIR . '/sys/LibraryLocation/Holiday.php';
-							$holiday = new Holiday();
-							$holiday->libraryId = $libId;
-							$holiday->name = '';
-							if (!empty($holidayDates)) {
-								foreach ($holidayDates as $holidayDate) {
-									$holiday->date = $holidayDate;
-									if ($holiday->insert()) {
-										$holidaysAdded++;
-									}
-								}
-							} else {
-								$holiday->date = $holidayDate;
-								if ($holiday->insert()) {
-									$holidaysAdded++;
-								}
-							}
+							$holidaysAdded += $this->addHolidayRowsForLibrary($libId, $datesToAdd, $holidayLocationsByLibrary);
 						}
 					}
-				} if ((($scope == 'location' || $scope == 'all')) && strlen($holidayDate) == 3) {
+				}
+ 
+				if ((($scope == 'location' || $scope == 'all')) && strlen($holidayDate) == 3) {
 					$locations = preg_grep("/^" . $libraryLocationCode . "/", $locationCodes);
 					foreach ($locations as $locId => $loc){
 						if (empty($locationList) || array_key_exists($locId, $locationList)) {
@@ -2073,6 +2061,32 @@ class Admin_AJAX extends JSON_Action {
 			]),
 		];
 	}
+
+	private function addHolidayRowsForLibrary(int $libraryId, array $datesToAdd, array $holidayLocationsByLibrary): int {
+		require_once ROOT_DIR . '/sys/LibraryLocation/Holiday.php';
+
+		$holidaysAdded = 0;
+		$locationIds = $holidayLocationsByLibrary[$libraryId] ?? [];
+		foreach ($datesToAdd as $dateToAdd) {
+			foreach ($locationIds as $locationId) {
+				$holiday = new Holiday();
+				$holiday->locationId = $locationId;
+				$holiday->date = $dateToAdd;
+				if (!$holiday->find(true)) {
+					$holiday->libraryId = $libraryId;
+					$holiday->name = '';
+					$holiday->closed = 1;
+					$holiday->open = null;
+					$holiday->close = null;
+					if ($holiday->insert()) {
+						$holidaysAdded++;
+					}
+				}
+			}
+		}
+		return $holidaysAdded;
+	}
+
 
 	private function parseSierraHolidayData($holidayInformation): array {
 		//parse text into an array of rows that are an array of columns
@@ -2137,5 +2151,58 @@ class Admin_AJAX extends JSON_Action {
 		}
 
 		return $dates;
+	}
+
+	/** @noinspection PhpUnused */
+	public function getPaymentDetails(): array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission([
+			'View eCommerce Reports for All Libraries',
+			'View eCommerce Reports for Home Library'
+		]);
+		global $interface;
+
+		$paymentId = (int)($_REQUEST['paymentId'] ?? 0);
+
+		require_once ROOT_DIR . '/sys/Account/UserPaymentLine.php';
+		require_once ROOT_DIR . '/sys/Account/UserPayment.php';
+		$payment = new UserPayment();
+		$payment->id = $paymentId;
+		$payment->find(true);
+		$paymentLines = new UserPaymentLine();
+		$paymentLines->paymentId = $paymentId;
+		$lineItems = [];
+		$paymentLines->find();
+		while ($paymentLines->fetch()) {
+			$lineItems[] = clone $paymentLines;
+		}
+
+		$interface->assign('paymentId', $paymentId);
+		$interface->assign('payment', $payment);
+		$interface->assign('lineItems', $lineItems);
+
+		return [
+			'title' => translate([
+				'text' => 'Payment Details',
+				'isPublicFacing' => true,
+			]),
+			'modalBody' => $interface->fetch('Admin/paymentDetails.tpl')
+		];
+	}
+	/** @noinspection PhpUnused */
+	public function getILSMetadata(): array {
+		$accountProfile = null;
+		require_once ROOT_DIR . '/sys/Account/AccountProfile.php';
+		$accountProfiles = new AccountProfile();
+		$accountProfiles->find();
+		while ($accountProfiles->fetch()) {
+			if ($accountProfiles->ils == 'symphony') {
+				$accountProfile = $accountProfiles;
+				require_once ROOT_DIR . '/Drivers/SirsiDynixROA.php';
+				return (new SirsiDynixROA($accountProfile))->getPatronMetadataOptions();
+			}
+		}
+
+		return [];
 	}
 }

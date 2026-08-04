@@ -109,6 +109,67 @@ public class AspenStringUtils {
 		return subfield;
 	}
 
+	static final Pattern discPattern = Pattern.compile("(\\d+)\\s+(?:\\w+\\s+)?discs?");
+	static final Pattern timeColonPattern = Pattern.compile("(\\d+):(\\d{2}):(\\d{2})");
+	static final Pattern hrPattern = Pattern.compile(
+		"(?:ca\\.\\s*)?(\\d+(?:\\.\\d+)?(?:\\s+\\d+/\\d+)?)\\s*(?:hours?|hrs?\\.|h\\b)"
+	);
+	static final Pattern minPattern = Pattern.compile(
+		"(?:ca\\.\\s*)?(\\d+)\\s*(?:minutes?|min\\.|m(?!s))"
+	);
+
+	/**
+	 * Extracts a duration from a string. Note this is also in StringUtils.php
+	 *
+	 * @param input
+	 * @return
+	 */
+	public static int extractTotalMinutes(String input) {
+		// Check for "N disc/discs" at the start, used when "each" appears later to calculate total time
+		// Allow a word in-between the number and disc/discs for matching
+		Matcher discMatcher = discPattern.matcher(input);
+		int discCount = discMatcher.find() ? Integer.parseInt(discMatcher.group(1)) : 1;
+		boolean hasEach = input.contains("each");
+
+		// Handle HH:mm:ss format (e.g., "06:02:00")
+		Matcher timeColonMatcher = timeColonPattern.matcher(input);
+		if (timeColonMatcher.find()) {
+			int hours = Integer.parseInt(timeColonMatcher.group(1));
+			int minutes = Integer.parseInt(timeColonMatcher.group(2));
+			// group(3) is seconds — ignored, but matched to confirm HH:mm:ss format
+			return hours * 60 + minutes;
+		}
+
+		// Handle hours/minutes in word or abbreviated form, ignore comma separation, include decimal and fraction values
+		// e.g., "16 hours, 10 minutes" / "6 hr. 2 min." / "7.5 hr." / "11 1/2 hr." / "6h 2m"
+		Matcher hrMatcher = hrPattern.matcher(input);
+		Matcher minMatcher = minPattern.matcher(input);
+
+		// Hours: convert decimal/fraction to total minutes (e.g. 7.5 hr -> 450 min)
+		int hours   = hrMatcher.find()  ? (int) Math.round(parseMixedNumber(hrMatcher.group(1).trim()) * 60) : 0;
+		// Minutes: round to nearest minute
+		int minutes = minMatcher.find() ? (int) Math.round(Double.parseDouble(minMatcher.group(1))) : 0;
+
+		if (hours > 0 || minutes > 0) {
+			int total = hours + minutes;
+			return hasEach ? total * discCount : total;
+		}
+
+		return 0;
+	}
+
+	static final Pattern mixedPattern = Pattern.compile("(\\d+)\\s+(\\d+)/(\\d+)");
+	private static double parseMixedNumber(String s) {
+		Matcher m = mixedPattern.matcher(s);
+		if (m.find()) {
+			double whole = Double.parseDouble(m.group(1));
+			double num   = Double.parseDouble(m.group(2));
+			double denom = Double.parseDouble(m.group(3));
+			return whole + num / denom;
+		}
+		return Double.parseDouble(s);
+	}
+
 	public static String stripNonValidXMLCharacters(String in) {
 		StringBuilder out = new StringBuilder(); // Used to hold the output.
 		char current; // Used to reference the current character.

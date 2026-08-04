@@ -54,6 +54,7 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 
 			loadEditions(groupedWork, record, allRelatedRecords);
 			loadPhysicalDescription(groupedWork, record, allRelatedRecords);
+			loadDuration(groupedWork, record, allRelatedRecords);
 			loadLanguageDetails(groupedWork, record, allRelatedRecords, identifier);
 			loadPublicationDetails(groupedWork, record, allRelatedRecords);
 
@@ -130,6 +131,10 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 					//Try to determine if this is a resource or not.
 					if (urlField.getIndicator1() == '4' || urlField.getIndicator1() == ' ' || urlField.getIndicator1() == '0') {
 						if (urlField.getIndicator2() == ' ' || urlField.getIndicator2() == '0' || urlField.getIndicator2() == '1' || urlField.getIndicator2() == '4') {
+							Subfield subfield3 = urlField.getSubfield('3');
+							if (subfield3 != null && subfield3.getData().trim().equalsIgnoreCase("Image")) {
+								continue;
+							}
 							urlIndex++;
 
 							hasValidUrl = true;

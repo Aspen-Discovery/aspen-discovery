@@ -123,6 +123,9 @@ class UserListEntry extends DataObject {
 			} elseif (str_starts_with($this->sourceId, 'assabet')) {
 				require_once ROOT_DIR . '/RecordDrivers/AssabetEventRecordDriver.php';
 				return new AssabetEventRecordDriver($this->sourceId);
+			} elseif (str_starts_with($this->sourceId, 'localhop')) {
+				require_once ROOT_DIR . '/RecordDrivers/LocalHopEventRecordDriver.php';
+				return new LocalHopEventRecordDriver($this->sourceId);
 			}
 		} elseif ($this->source == 'Lists') {
 			require_once ROOT_DIR . '/RecordDrivers/ListsRecordDriver.php';

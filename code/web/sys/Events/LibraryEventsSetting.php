@@ -7,4 +7,11 @@ class LibraryEventsSetting extends DataObject {
 	public $settingSource;
 	public $settingId;
 	public $libraryId;
+
+	public static function libraryHasSource(int $libraryId, string $settingSource) : bool {
+		$link = new LibraryEventsSetting();
+		$link->libraryId = $libraryId;
+		$link->settingSource = $settingSource;
+		return (bool)$link->find(true);
+	}
 }

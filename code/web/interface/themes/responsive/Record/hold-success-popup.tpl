@@ -3,6 +3,11 @@
 	<div class="content">
 		{if !empty($success)}
 			<p class="alert alert-success">{$message}</p>
+			{if !empty($reserveFeeMessage)}
+				<p class="alert alert-warning">
+					{translate text=$reserveFeeMessage isPublicFacing=true}&nbsp;
+				</p>
+			{/if}
 			<div class="alert">
 					{translate text="Once the title arrives at your library you will receive a notification informing you that the title is ready for you." isPublicFacing=true}&nbsp;
 			</div>

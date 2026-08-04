@@ -190,7 +190,7 @@ abstract class IndexRecordDriver extends RecordInterface {
 	 */
 	public abstract function getListEntry($listId = null, $allowEdit = true);
 
-	public function getMoreDetailsOptions() {
+	public function getMoreDetailsOptions() : array {
 		return $this->getBaseMoreDetailsOptions(false);
 	}
 

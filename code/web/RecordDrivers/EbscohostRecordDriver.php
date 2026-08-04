@@ -371,8 +371,8 @@ class EbscohostRecordDriver extends RecordInterface {
 		return '';
 	}
 
-	public function getMoreDetailsOptions() {
-		// TODO: Implement getMoreDetailsOptions() method.
+	public function getMoreDetailsOptions() : array {
+		return [];
 	}
 
 	public function getFormats() {

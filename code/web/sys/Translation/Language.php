@@ -10,6 +10,7 @@ class Language extends DataObject {
 	public $locale;
 	public $facetValue;
 	public $displayToTranslatorsOnly;
+	public $isDefault;
 
 	static $_objectStructure = [];
 	static function getObjectStructure(string $context = ''): array {
@@ -75,6 +76,13 @@ class Language extends DataObject {
 				'type' => 'checkbox',
 				'label' => 'Display To Translators Only',
 				'description' => 'Whether or not only translators should see the translation (good practice before the translation is completed)',
+				'default' => 0,
+			],
+			'isDefault' => [
+				'property' => 'isDefault',
+				'type' => 'checkbox',
+				'label' => 'Default Language',
+				'description' => 'Whether this is the default language for unauthenticated users. Only one language can be set as default.',
 				'default' => 0,
 			],
 		];
@@ -145,10 +153,68 @@ class Language extends DataObject {
 		return  self::$_validLanguages;
 	}
 
+	public function update($context = ''): bool|int {
+		if ($this->isDefault) {
+			$other = new Language();
+			$other->whereAdd('id != ' . (int)$this->id);
+			$other->find();
+			while ($other->fetch()) {
+				if ($other->isDefault) {
+					$other->isDefault = 0;
+					$other->update();
+				}
+			}
+		}
+		self::$_validLanguages = null;
+		return parent::update($context);
+	}
+
+	public static function getDefaultLanguageCode(): string {
+		$validLanguages = self::getValidLanguages();
+		$language = new Language();
+		$language->isDefault = 1;
+		if ($language->find(true) && isset($validLanguages[$language->code])) {
+			return $language->code;
+		}
+		return array_key_first($validLanguages) ?? 'en';
+	}
+
+	public static function getLanguageFromBrowser(): string {
+		if (empty($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
+			return '';
+		}
+		$validLanguages = self::getValidLanguages();
+		$accepted = [];
+		foreach (explode(',', $_SERVER['HTTP_ACCEPT_LANGUAGE']) as $part) {
+			$part = trim($part);
+			if (preg_match('/^([a-zA-Z]{1,8}(?:-[a-zA-Z0-9]{1,8})*)(?:;q=([0-9.]+))?$/', $part, $m)) {
+				$accepted[strtolower($m[1])] = isset($m[2]) ? (float)$m[2] : 1.0;
+			}
+		}
+		arsort($accepted);
+		// Exact match first (e.g. "es" matches language code "es")
+		foreach ($accepted as $tag => $q) {
+			if (isset($validLanguages[$tag])) {
+				return $tag;
+			}
+		}
+		// Primary subtag match (e.g. "es-419" or "es-US" matches code "es")
+		foreach ($accepted as $tag => $q) {
+			$primary = explode('-', $tag)[0];
+			foreach (array_keys($validLanguages) as $code) {
+				if (strtolower(explode('-', $code)[0]) === $primary) {
+					return $code;
+				}
+			}
+		}
+		return '';
+	}
+
 	public function getNumericColumnNames(): array {
 		return [
 			'id',
 			'weight',
+			'isDefault',
 		];
 	}
 

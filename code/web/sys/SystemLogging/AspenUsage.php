@@ -1,13 +1,15 @@
 <?php
 /** @noinspection PhpUnused */
 /** @noinspection PhpMissingFieldTypeInspection */
+require_once ROOT_DIR . '/sys/AbstractUsage.php';
 
-class AspenUsage extends DataObject {
+class AspenUsage extends AbstractUsage {
 	public $__table = 'aspen_usage';
 	protected $id;
 	protected $instance;
 	protected $year;
 	protected $month;
+	protected $day;
 	protected $pageViews;
 	protected $pageViewsByBots;
 	protected $pageViewsByAuthenticatedUsers;
@@ -38,6 +40,7 @@ class AspenUsage extends DataObject {
 			'instance',
 			'year',
 			'month',
+			'day',
 		];
 	}
 

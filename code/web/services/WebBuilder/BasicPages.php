@@ -66,7 +66,7 @@ class WebBuilder_BasicPages extends ObjectEditor {
 	}
 
 	function getInstructions(): string {
-		return 'https://help.aspendiscovery.org/help/webbuilder/pages';
+		return 'https://aspen-discovery.atlassian.net/wiki/spaces/Help/pages/239206444/Basic+and+Custom+Pages';
 	}
 
 	function getInitializationJs(): string {

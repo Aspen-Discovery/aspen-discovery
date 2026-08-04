@@ -55,10 +55,11 @@ class OverDrive_APIData extends Admin_Admin {
 				$advantageAccounts = $driver->getAdvantageAccountInformation($library, $activeSetting);
 				if ($advantageAccounts && !empty($advantageAccounts->advantageAccounts)) {
 					$contents .= "<h1>Advantage Accounts</h1>";
+					$contents .= "<div class='alert alert-warning'>Please use <strong>Advantage Name</strong> and <strong>Advantage ID</strong> for configuration when available. </div>";
 					$contents .= $this->easy_printr('Advantage Account Information', 'advantageAccountInfo', $advantageAccounts);
 					$contents .= "<br/>";
 					foreach ($advantageAccounts->advantageAccounts as $accountInfo) {
-						$contents .= $accountInfo->name . ' - ' . $accountInfo->collectionToken . '<br/>';
+						$contents .= '<strong>' . $accountInfo->name . '</strong> - <strong>' . $accountInfo->id . '</strong> - ' . $accountInfo->collectionToken . '<br/>';
 					}
 				} else {
 					$contents .= "<div>No advantage accounts for this collection</div>";

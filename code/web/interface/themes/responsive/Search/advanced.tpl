@@ -180,15 +180,37 @@
 																	<input type="text" size="4" maxlength="4" class="yearbox form-control" name="accelerated_reader_reading_levelto" id="accelerated_reader_reading_levelto" value="" aria-label="Accelerated Reader Level To">
 																</div>
 															</div>
+														{elseif $facetInfo.facetName == "duration"}
+															<div class="row">
+																<div class="col-xs-6 col-md-4 col-lg-3">
+																	<label for="durationfrom" class="yearboxlabel">{translate text="From" isPublicFacing=true} </label>
+																	<input type="text" size="4" maxlength="4" class="yearbox form-control" name="durationfrom" id="durationfrom" value="" aria-label="Audiobook Duration From">
+																</div>
+																<div class="col-xs-6 col-md-4 col-lg-3">
+																	<label for="durationto" class="yearboxlabel">{translate text="To" isPublicFacing=true} </label>
+																	<input type="text" size="4" maxlength="4" class="yearbox form-control" name="durationto" id="durationto" value="" aria-label="Audiobook Duration To">
+																</div>
+															</div>
 														{else}
-															<select name="filter[]" class="form-control" aria-label="{translate text=$facetInfo.facetLabel inAttribute=true isPublicFacing=true}">
+															{assign var="facetValueCount" value=$facetInfo.values|@count}
+															<select name="filter[]"
+																id="facet-select-{$facetInfo.facetName}"
+																class="form-control"
+																aria-label="{translate text=$facetInfo.facetLabel inAttribute=true isPublicFacing=true}"
+																onchange="AspenDiscovery.Searches.onAdvancedFacetSelectChange(this)"
+																{if $facetValueCount <= 1}disabled="disabled"{/if}>
+																{assign var="shownOptions" value=0}
 																{foreach from=$facetInfo.values item="value" key="display"}
-																	{if strlen($display) > 0}
+																	{if strlen($display) > 0 && $shownOptions < 5}
 																		<option value="{$value.filter|escape}"{if !empty($value.selected)} selected="selected"{/if}>{$value.display|truncate:80}</option>
+																		{assign var="shownOptions" value=$shownOptions+1}
 																	{/if}
 																{/foreach}
+																{if $facetValueCount > 5}
+																	<option value="__browse__">{translate text="More options..." isPublicFacing=true}</option>
+																{/if}
 															</select>
-														{/if}
+																					{/if}
 													</div>
 												</div>
 											{/foreach}

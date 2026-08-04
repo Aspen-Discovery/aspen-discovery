@@ -71,7 +71,11 @@
 							<a href="{$siteStatus.baseUrl}/Admin/DBMaintenance" target="_blank">{translate text="Update" isAdminFacing=true}</a>
 						</td>
 						<td>
-							<a href="{$siteStatus.baseUrl}/Greenhouse/IndexerInformation" target="_blank">{translate text="Indexers" isAdminFacing=true}</a>
+							{if $siteStatus.version < '26.04.00'}
+								<a href="{$siteStatus.baseUrl}/Greenhouse/IndexerInformation" target="_blank">{translate text="Indexers" isAdminFacing=true}</a>
+							{else}
+								<a href="{$siteStatus.baseUrl}/Admin/IndexerInformation" target="_blank">{translate text="Indexers" isAdminFacing=true}</a>
+							{/if}
 						</td>
 						<td>
 							{translate text=$siteStatus.implementationStatus isAdminFacing=true}

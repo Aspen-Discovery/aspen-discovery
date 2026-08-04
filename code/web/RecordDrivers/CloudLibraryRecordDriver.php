@@ -108,7 +108,7 @@ class CloudLibraryRecordDriver extends MarcRecordDriver {
 		return $this->id;
 	}
 
-	public function getMoreDetailsOptions() {
+	public function getMoreDetailsOptions() : array {
 		global $interface;
 
 		$isbn = $this->getCleanISBN();
@@ -345,14 +345,10 @@ class CloudLibraryRecordDriver extends MarcRecordDriver {
 			$statusSummary['status'] = "Available from cloudLibrary";
 			$statusSummary['available'] = true;
 			$statusSummary['class'] = 'available';
-			$statusSummary['showPlaceHold'] = false;
-			$statusSummary['showCheckout'] = true;
 		} else {
 			$statusSummary['status'] = 'Checked Out';
 			$statusSummary['class'] = 'checkedOut';
 			$statusSummary['available'] = false;
-			$statusSummary['showPlaceHold'] = true;
-			$statusSummary['showCheckout'] = false;
 		}
 		return $statusSummary;
 	}

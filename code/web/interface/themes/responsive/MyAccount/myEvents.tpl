@@ -1,10 +1,13 @@
 {strip}
 	{if !empty($loggedIn)}
+	<div class="resultHead">
+		<h1>{translate text='Your Events' isPublicFacing=true}</h1>
 		{if !empty($accountMessages)}
 			{include file='systemMessages.tpl' messages=$accountMessages}
 		{/if}
-	<div class="resultHead">
-		<h1>{translate text='Your Events' isPublicFacing=true}</h1>
+	<div class="alert alert-info" role="status">
+		{translate text='To receive waiting list invites, make sure a contact email is saved to your account and that event email notifications are enabled in your preferences. Without both, your spot is held but, as we have no way to let you know when it is your turn to register you will not be able to access registration.' isPublicFacing=true}
+	</div>
 
 		<div class="page">
 			<div class="row">

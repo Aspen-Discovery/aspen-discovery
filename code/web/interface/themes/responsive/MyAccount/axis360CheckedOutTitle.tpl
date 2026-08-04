@@ -95,7 +95,7 @@
 						{if !empty($record->accessOnlineUrl)}
 							<a href="{$record->accessOnlineUrl}" target="_blank" class="btn btn-sm btn-action btn-wrap" aria-label="{translate text='Open in Boundless' isPublicFacing=true} ({translate text='opens in new window' isPublicFacing=true})"><i class="fas fa-external-link-alt" role="presentation"></i> {translate text='Open in Boundless' isPublicFacing=true}</a>
 						{/if}
-						{if array_key_exists('Palace Project', $enabledModules)}
+						{if $record->showPalaceProjectLink}
 							{if $record->format == 'eBook' || $record->format == 'eAudiobook'}
 								<a onclick="AspenDiscovery.PalaceProject.showUsageInstructions();" target="_blank" class="btn btn-sm btn-action btn-wrap">{translate text='Access In Palace Project' isPublicFacing=true}</a>
 							{/if}

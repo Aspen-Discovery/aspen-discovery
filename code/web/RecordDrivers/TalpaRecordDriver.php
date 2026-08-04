@@ -318,8 +318,8 @@ class TalpaRecordDriver extends RecordInterface {
 		return $description;
 	}
 
-	public function getMoreDetailsOptions() {
-		// TODO: Implement getMoreDetailsOptions() method.
+	public function getMoreDetailsOptions() : array {
+		return [];
 	}
 
 	public function getFormats() {

@@ -70,7 +70,7 @@ AspenDiscovery.Axis360 = (function () {
 					dataType: 'json',
 					async: false,
 					error: function () {
-						alert("An error occurred processing your request in Boundless.  Please try again in a few minutes.");
+						alert(__('An error occurred processing your request in Boundless.  Please try again in a few minutes.'));
 						//alert("ajaxUrl = " + ajaxUrl);
 						AspenDiscovery.closeLightbox();
 					}
@@ -124,7 +124,7 @@ AspenDiscovery.Axis360 = (function () {
 				dataType: 'json',
 				async: true,
 				error: function () {
-					alert("An error occurred processing your request.  Please try again in a few minutes.");
+					alert(__('An error occurred processing your request.  Please try again in a few minutes.'));
 					AspenDiscovery.closeLightbox();
 					if (callback) callback(false);
 				}
@@ -148,7 +148,7 @@ AspenDiscovery.Axis360 = (function () {
 				dataType: 'json',
 				async: false,
 				error: function () {
-					alert("An error occurred processing your request in Boundless.  Please try again in a few minutes.");
+					alert(__('An error occurred processing your request in Boundless.  Please try again in a few minutes.'));
 					AspenDiscovery.closeLightbox();
 				}
 			});

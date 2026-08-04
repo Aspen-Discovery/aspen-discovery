@@ -110,7 +110,9 @@
 						{if $section == 'available'}
 							<button onclick="return AspenDiscovery.PalaceProject.doCheckOut('{$record->userId}', '{$record->recordId}', '{$record->recordId|escapeCSS}');" class="btn btn-sm btn-action">{translate text="Checkout" isPublicFacing=true}</button>
 						{/if}
-						<button onclick="return AspenDiscovery.PalaceProject.cancelHold('{$record->userId}', '{$record->recordId}', '{$record->recordId|escapeCSS}');" class="btn btn-sm btn-warning">{translate text="Cancel Hold" isPublicFacing=true}</button>
+						{if !empty($record->cancellationUrl)}
+							<button onclick="return AspenDiscovery.PalaceProject.cancelHold('{$record->userId}', '{$record->recordId}', '{$record->recordId|escapeCSS}');" class="btn btn-sm btn-warning">{translate text="Cancel Hold" isPublicFacing=true}</button>
+						{/if}
 					</div>
 					{if !empty($showWhileYouWait)}
 						<div class="btn-group btn-group-vertical btn-block">

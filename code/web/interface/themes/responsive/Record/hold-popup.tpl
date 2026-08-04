@@ -16,6 +16,39 @@
 				<input type="hidden" name="variationId" id="variationId" value="{$variationId}">
 			{/if}
 			<fieldset>
+				{if !empty($allowEditionSelection) && !empty($editions) && $allowHoldsToBeGrouped}
+					<div id="editionSelectionSection" class="form-group">
+						<h4>{translate text='Select editions to place holds on' isPublicFacing=true} ({$currentFormat})</h4>
+						<p class="alert alert-info">
+							{translate text="Select which editions of this format you want to place holds on. By default, all editions are selected." isPublicFacing=true}
+						</p>
+
+						<div class="editions-list">
+							<ul class="list-unstyled">
+								<li>
+									<a href="#" id="toggleEditions">See Editions</a>
+								</li>
+									{foreach from=$editions item=edition}
+										<li class="edition-item mb-2" style="display: none;">
+											<label>
+												<input type="checkbox"
+													name="hyperholdRecord[]"
+													value="{$edition.id}"
+													checked="checked"
+													class="edition-checkbox">
+												<strong>{$edition.title|escape}</strong>
+												{if $edition.author} by {$edition.author|escape}{/if}
+												<br>
+											</label>
+										</li>
+									{/foreach}
+							</ul>
+						</div>
+
+						<hr>
+					</div>
+				{/if}
+
 				<div class="holdsSummary">
 					<input type="hidden" name="holdCount" id="holdCount" value="1">
 					<div class="alert alert-warning" id="overHoldCountWarning" {if empty($showOverHoldLimit)}style="display:none"{/if}>
@@ -42,6 +75,12 @@
 						{translate text="You will then have 7 days to pick up the title from your home library." isPublicFacing=true}&nbsp;
 					{/if}
 				</p>
+				{/if}
+
+				{if !empty($reserveFeeMessage)}
+					<p class="alert alert-warning">
+						{translate text=$reserveFeeMessage isPublicFacing=true}&nbsp;
+					</p>
 				{/if}
 
 				<div id="holdOptions">
@@ -104,7 +143,6 @@
 								</div>
 							</div>
 						{/if}
-
 						<div id="userOption" class="form-group"{if empty($multipleUsers)} style="display: none"{/if}>{* display if there are multiple accounts *}
 							<label for="user" class="control-label">
 								{if $hidePickupLocationPrompt}
@@ -234,6 +272,9 @@
 					{/if}
 					<input type="hidden" name="holdPromptForEditions" id="holdPromptForEditions" value="{$holdPromptForEditions}">
 					{if $holdPromptForEditions > 0 && count($editionOptions) > 0 && $promptForEdition}
+						{if !empty($holdEditionPromptMessage)}
+							<div class="alert alert-info">{translate text=$holdEditionPromptMessage isPublicFacing=true}</div>
+						{/if}
 						<div id="editionSelectionOptions" class="form-group">
 							<label class="control-label" for="selectedEditionOption">{translate text="Do you want to place a hold on the suggested edition or a specific edition?" isPublicFacing=true}</label>
 							<select name="selectedEditionOption" id="selectedEditionOption" class="form-control"  onchange="AspenDiscovery.GroupedWork.showEditionSwiper()">
@@ -263,7 +304,7 @@
 														</div>
 														<div class="edition-data">
 															{$edition->publicationDate}. {$edition->publisher}. {$edition->physical}.<br/>
-															{include file='GroupedWork/statusIndicator.tpl' statusInformation=$relatedRecord->getStatusInformation() viewingIndividualRecord=1}
+															{include file='GroupedWork/statusIndicator.tpl' statusInformation=$edition->getStatusInformation() viewingIndividualRecord=1}
 															<span>{$current} of {count($editionOptions)}</span>
 														</div>
 													</label>
@@ -290,6 +331,13 @@
 								<input type="checkbox" name="rememberEditionSelection" id="rememberEditionSelection" {if $rememberEditionSelection}checked{/if}>
 								{translate text="Always place holds on suggested edition" isPublicFacing=true}
 							</label>
+						</div>
+					{/if}
+					{if $holdType == 'bib' && $enableMultiCopyHolds && $maxCopyHolds > 1}
+						<div id="numberOfCopiesRow" class="form-group">
+							<label for="numberOfCopies" class="control-label">{translate text="Number of Copies" isPublicFacing=true}</label>
+							<input type="number" name="numberOfCopies" id="numberOfCopies" value="1" min="1" max="{$maxCopyHolds}" class="form-control"/>
+							<span id="numberOfCopiesHelpBlock" class="help-block"><small><i class="fas fa-info-circle"></i> {translate text="A maximum of %1% copies may be requested." 1=$maxCopyHolds isPublicFacing=true}</small></span>
 						</div>
 					{/if}
 					{if !empty($promptForHoldNotifications)}
@@ -320,3 +368,14 @@
 	{/if}
 </div>
 {/strip}
+<script>
+	$('#toggleEditions').on('click', function(e){
+		e.preventDefault();
+		$('.edition-item').toggle();
+		if ($('.edition-item:visible').length) {
+			$(this).text('Hide Editions');
+		} else {
+			$(this).text('See Editions');
+		}
+	});
+</script>

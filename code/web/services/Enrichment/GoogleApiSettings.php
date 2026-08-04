@@ -55,7 +55,7 @@ class Enrichment_GoogleApiSettings extends ObjectEditor {
 	}
 
 	function getInstructions(): string {
-		return 'https://help.aspendiscovery.org/help/integration/enrichment';
+		return 'https://aspen-discovery.atlassian.net/wiki/spaces/Help/pages/328105985/Third+Party+Enrichment';
 	}
 
 	function getBreadcrumbs(): array {

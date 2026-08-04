@@ -41,8 +41,15 @@ read waitOver
 cd /usr/local/aspen-discovery/data_dir_setup
 /usr/local/aspen-discovery/data_dir_setup/update_solr_files.sh $1
 
-systemctl restart mariadb 
-sleep 10
+if systemctl is-active --quiet mysqld || systemctl is-active --quiet mariadb; then
+  systemctl restart mariadb
+  sleep 10
+else
+  echo "Restart MariaDB, and then press return when done"
+  # shellcheck disable=SC2034
+  read waitOver
+fi
+
 apachectl graceful
 sleep 5
 

@@ -102,7 +102,7 @@ class HomeScreenLinkGroup extends DataObject {
 			],
 		];
 
-		if (UserAccount::userHasPermission('Administer Selected Aspen LiDA Home Screen Link Groups') && !(UserAccount::userHasPermission('AAdminister All Aspen LiDA Home Screen Links') || UserAccount::userHasPermission('Administer Library Aspen LiDA Home Screen Links'))) {
+		if (UserAccount::userHasPermission('Administer Selected Aspen LiDA Home Screen Link Groups') && !(UserAccount::userHasPermission('Administer All Aspen LiDA Home Screen Links') || UserAccount::userHasPermission('Administer Library Aspen LiDA Home Screen Links'))) {
 			unset($structure['additionalEditors']);
 			unset($structure['libraries']);
 			unset($structure['locations']);

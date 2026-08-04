@@ -90,6 +90,21 @@ class Search_Home extends Action {
 		}
 
 		$interface->assign('activeMenuOption', 'home');
+
+		$now = time();
+		$customAccountMessages = new SystemMessage();
+		$customAccountMessages->whereAdd("showOn = 12");
+		$customAccountMessages->whereAdd("startDate = 0 OR startDate <= $now");
+		$customAccountMessages->whereAdd("endDate = 0 OR endDate > $now");
+		$customAccountMessages->find();
+		$accountMessages = [];
+		while ($customAccountMessages->fetch()) {
+			if ($customAccountMessages->isValidForDisplay()) {
+				$accountMessages[] = clone $customAccountMessages;
+			}
+		}
+		$interface->assign('accountMessages', $accountMessages);
+
 		$this->display('home.tpl', 'Catalog Home', '');
 	}
 

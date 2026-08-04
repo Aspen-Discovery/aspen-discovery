@@ -10,6 +10,11 @@ class Search_Results extends ResultsAction {
 
 	function launch() : void {
 		global $interface;
+
+		// If redirected from a grouped work search, pass the original search URL to the template.
+		if (!empty($_REQUEST['seriesRedirectedFrom'])) {
+			$interface->assign('seriesRedirectedFrom', $_REQUEST['seriesRedirectedFrom']);
+		}
 		global $timer;
 		global $memoryWatcher;
 		global $library;
@@ -167,12 +172,18 @@ class Search_Results extends ResultsAction {
 			'lexile_score',
 			'accelerated_reader_reading_level',
 			'accelerated_reader_point_value',
+			'duration',
 		];
 		foreach ($rangeFilters as $filter) {
 			if ((isset($_REQUEST[$filter . 'from']) && strlen($_REQUEST[$filter . 'from']) > 0) || (isset($_REQUEST[$filter . 'to']) && strlen($_REQUEST[$filter . 'to']) > 0)) {
 				$queryParams = $_GET;
 				$from = (isset($_REQUEST[$filter . 'from']) && preg_match('/^\d+(\.\d*)?$/', $_REQUEST[$filter . 'from'])) ? $_REQUEST[$filter . 'from'] : '*';
 				$to = (isset($_REQUEST[$filter . 'to']) && preg_match('/^\d+(\.\d*)?$/', $_REQUEST[$filter . 'to'])) ? $_REQUEST[$filter . 'to'] : '*';
+
+				if ($filter == 'duration') {
+					$from = $from === '*' ? '*' : intval($from * 60);
+					$to = $to === '*' ? '*' : intval($to * 60);
+				}
 
 				if ($to != '*' && $from != '*' && $to < $from) {
 					$tmpFilter = $to;

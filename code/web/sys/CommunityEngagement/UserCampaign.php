@@ -88,13 +88,13 @@ class UserCampaign extends DataObject {
 
 	//Check if the user has completed the campaign
 	public function checkCompletionStatus() {
-		//Get milestones for campaign
-		$milestones = CampaignMilestone::getMilestoneByCampaign($this->campaignId);
+		//Get campaign milestones for campaign
+		$campaignMilestones = CampaignMilestone::getCampaignMilestoneByCampaign($this->campaignId);
 		$isComplete = true;
 
-		foreach ($milestones as $milestone) {
-			$userProgress = CampaignMilestoneUsersProgress::getProgressByMilestoneId($milestone->id, $this->campaignId, $this->userId);
-			$goal = CampaignMilestone::getMilestoneGoalCountByCampaign($this->campaignId, $milestone->id);
+		foreach ($campaignMilestones as $campaignMilestone) {
+			$userProgress = CampaignMilestoneUsersProgress::getProgressByCampaignMilestoneId($campaignMilestone->id, $this->userId);
+			$goal = CampaignMilestone::getCampaignMilestoneGoalCountByCampaign($campaignMilestone->id);
 			if ($userProgress < $goal) {
 				$isComplete = false;
 				break;
@@ -103,32 +103,32 @@ class UserCampaign extends DataObject {
 		return $isComplete;
 	}
 
-	public function checkMilestoneCompletionStatus() {
-		$milestones = CampaignMilestone::getMilestoneByCampaign($this->campaignId);
-		$milestoneCompletionStatus = [];
+	public function checkCampaignMilestoneCompletionStatus() {
+		$campaignMilestones = CampaignMilestone::getCampaignMilestoneByCampaign($this->campaignId);
+		$campaignMilestoneCompletionStatus = [];
 
-		foreach ($milestones as $milestone) {
-			//User's progress for this milestone
-			$userProgress = CampaignMilestoneUsersProgress::getProgressByMilestoneId($milestone->id, $this->campaignId, $this->userId);
+		foreach ($campaignMilestones as $campaignMilestone) {
+			//User's progress for this campaign milestone
+			$userProgress = CampaignMilestoneUsersProgress::getProgressByCampaignMilestoneId($campaignMilestone->id, $this->userId);
 
-			//Goal for this milestone
-			$goal = CampaignMilestone::getMilestoneGoalCountByCampaign($this->campaignId, $milestone->id);
-			//Check if milestone is complete
-			$isMilestoneComplete = ($userProgress >= $goal);
+			//Goal for this campaign milestone
+			$goal = CampaignMilestone::getCampaignMilestoneGoalCountByCampaign($campaignMilestone->id);
+			//Check if campaign milestone is complete
+			$isCampaignMilestoneComplete = ($userProgress >= $goal);
 
 			//Add to array
-			$milestoneCompletionStatus[$milestone->id] = $isMilestoneComplete;
+			$campaignMilestoneCompletionStatus[$campaignMilestone->id] = $isCampaignMilestoneComplete;
 		}
 
-		return $milestoneCompletionStatus;
+		return $campaignMilestoneCompletionStatus;
 	}
 
 	 /**
-	 * Calculate the total number of completed milestones for a user
+	 * Calculate the total number of completed campaign milestones for a user
 	 * @param int $userId
 	 * @return int
 	 */
-	public function calculateUserCompletedMilestones($userId) {
+	public function calculateUserCompletedCampaignMilestones($userId) {
 		$userCampaign = new UserCampaign();
 		$userEnrolledCampaigns = [];
 		$userCampaign->whereAdd("userId = '$userId'");
@@ -136,15 +136,15 @@ class UserCampaign extends DataObject {
 		while ($userCampaign->fetch()) {
 			$userEnrolledCampaigns[] = clone $userCampaign;
 		}
-		$totalCompletedMilestones = 0;
+		$totalCompletedCampaignMilestones = 0;
 		foreach ($userEnrolledCampaigns as $userEnrolledCampaign) {
-			$milestoneCompletionStatus = $userEnrolledCampaign->checkMilestoneCompletionStatus();
-			$completedMilestones = array_filter($milestoneCompletionStatus, function($status) {
+			$campaignMilestoneCompletionStatus = $userEnrolledCampaign->checkCampaignMilestoneCompletionStatus();
+			$completedCampaignMilestones = array_filter($campaignMilestoneCompletionStatus, function($status) {
 				return $status === true;
 			});
 			//Add the completed milestones count to the total 
-			$totalCompletedMilestones += count($completedMilestones);
-			return $totalCompletedMilestones;
+			$totalCompletedCampaignMilestones += count($completedCampaignMilestones);
+			return $totalCompletedCampaignMilestones;
 		}
 	}
 	/**
@@ -157,7 +157,7 @@ class UserCampaign extends DataObject {
 		$allUsers = $campaign->getAllUsersInCampaigns();
 		$userCompletedMilestones = [];
 		foreach ($allUsers as $user) {
-			$totalCompletedMilestones = $this->calculateUserCompletedMilestones($userId);
+			$totalCompletedMilestones = $this->calculateUserCompletedCampaignMilestones($userId);
 			$userCompletedMilestones[$user] = $totalCompletedMilestones;
 		}
 		arsort($userCompletedMilestones);
@@ -249,45 +249,44 @@ class UserCampaign extends DataObject {
 						}
 					}
 				}
-				$milestone = new CampaignMilestone();
-				$milestone->campaignId = $campaignId;
-				$milestones = [];
+				$campaignMilestone = new CampaignMilestone();
+				$campaignMilestone->campaignId = $campaignId;
+				$campaignMilestones = [];
 
-				if ($milestone->find()) {
-					while ($milestone->fetch()) {
+				if ($campaignMilestone->find()) {
+					while ($campaignMilestone->fetch()) {
 						$milestoneObj = new Milestone();
-						$milestoneObj->id = $milestone->milestoneId;
+						$milestoneObj->id = $campaignMilestone->milestoneId;
 						if ($milestoneObj->find(true)) {
-							$milestone->name = $milestoneObj->name;
+							$campaignMilestone->name = $milestoneObj->name;
 
-							if (!empty($milestone->reward)) {
+							if (!empty($campaignMilestone->reward)) {
 								require_once ROOT_DIR . '/sys/CommunityEngagement/Reward.php';
 
 								$reward = new Reward();
-								$reward->id = $milestone->reward;
+								$reward->id = $campaignMilestone->reward;
 
 								if ($reward->find(true)) {
-									$milestone->rewardName = $reward->name;
+									$campaignMilestone->rewardName = $reward->name;
 								} else {
-									$milestone->rewardName = '';
+									$campaignMilestone->rewardName = '';
 								}
 							} else {
-								$milestone->rewardName = '';
+								$campaignMilestone->rewardName = '';
 							}
 						}
-						$milestones[] = clone $milestone;
+						$campaignMilestones[] = clone $campaignMilestone;
 					}
 				}
 
-				foreach ($milestones as $milestone) {
-					$milestoneProgress = new CampaignMilestoneUsersProgress();
-					$milestoneProgress->userId = $userId;
-					$milestoneProgress->ce_milestone_id = $milestone->milestoneId;
-					$milestoneProgress->ce_campaign_id = $campaignId;
+				foreach ($campaignMilestones as $campaignMilestone) {
+					$campaignMilestoneUsersProgress = new CampaignMilestoneUsersProgress();
+					$campaignMilestoneUsersProgress->userId = $userId;
+					$campaignMilestoneUsersProgress->ce_campaign_milestone_id = $campaignMilestone->id;
 
-					if ($milestoneProgress->find(true)) {
+					if ($campaignMilestoneUsersProgress->find(true)) {
 
-						if ($milestoneProgress->progress >= $milestone->goal && !$milestoneProgress->milestoneCompleteEmailSent && $userCampaign->optInToCampaignEmailNotifications == 1){
+						if ($campaignMilestoneUsersProgress->progress >= $campaignMilestone->goal && !$campaignMilestoneUsersProgress->milestoneCompleteEmailSent && $userCampaign->optInToCampaignEmailNotifications == 1){
 
 							$emailTemplate = EmailTemplate::getActiveTemplate('milestoneComplete');
 
@@ -295,15 +294,15 @@ class UserCampaign extends DataObject {
 								$parameters = [
 									'user' => $user,
 									'campaignName' => $campaign->name,
-									'milestoneName' => $milestone->name,
-									'milestoneReward' => $milestone->rewardName,
+									'milestoneName' => $campaignMilestone->name,
+									'milestoneReward' => $campaignMilestone->rewardName,
 									'library' => $user->getHomeLibrary(),
 								];
 
 								try {
 									$emailTemplate->sendEmail($user->email, $parameters);
-									$milestoneProgress->milestoneCompleteEmailSent = 1;
-									$milestoneProgress->update();
+									$campaignMilestoneUsersProgress->milestoneCompleteEmailSent = 1;
+									$campaignMilestoneUsersProgress->update();
 								} catch (Exception $e) {
 									$logger->log("Error sending milestone email to {$user->email}: " . $e->getMessage(), Logger::LOG_ERROR);
 								}

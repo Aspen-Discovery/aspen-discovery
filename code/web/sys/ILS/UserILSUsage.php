@@ -1,7 +1,7 @@
 <?php /** @noinspection PhpMissingFieldTypeInspection */
+require_once ROOT_DIR . '/sys/AbstractUsage.php';
 
-
-class UserILSUsage extends DataObject {
+class UserILSUsage extends AbstractUsage {
 	public $__table = 'user_ils_usage';
 	public $id;
 	public $instance;
@@ -9,6 +9,7 @@ class UserILSUsage extends DataObject {
 	public $indexingProfileId;
 	public $year;
 	public $month;
+	public $day;
 	public $usageCount; //Number of holds/clicks to online for sideloads
 	public $selfRegistrationCount;
 	public $pdfDownloadCount;
@@ -22,6 +23,7 @@ class UserILSUsage extends DataObject {
 			'indexingProfileId',
 			'year',
 			'month',
+			'day',
 		];
 	}
 

@@ -4,6 +4,7 @@ require_once ROOT_DIR . '/sys/Events/EventFieldSetField.php';
 class EventField extends DataObject {
 	public $__table = 'event_field';
 	public $id;
+	public $fieldUse;
 	public $name;
 	public $description;
 	public $type;
@@ -23,6 +24,19 @@ class EventField extends DataObject {
 				'label' => 'Id',
 				'description' => 'The unique id',
 			],
+			'fieldUse' => [
+				'property' => 'fieldUse',
+				'type' => 'enum',
+				'label' => 'Field Use',
+				'description' => 'Defines what the field is to be used for (describing an event, taking in registration information, etc)',
+				'values' => [
+					'0' => 'Please select...',
+					'1' => 'Event description section (for staff use, viewable by the public)',
+					'2' => 'Event registration form (for public use)',
+				],
+				'default' => '0',
+				'required' => true,
+			], 
 			'name' => [
 				'property' => 'name',
 				'type' => 'text',
@@ -98,8 +112,8 @@ class EventField extends DataObject {
 		return 0;
 	}
 
-	public static function getEventFieldList(bool $forCalendarOptions = false): array {
-		$fieldList = [];
+	public static function getEventInformationFieldList(bool $forCalendarOptions = false): array {
+		$fieldList = EventField::getEventFieldList(1);
 		if ($forCalendarOptions) {
 			/*			$fieldList[-3] = "Title - The title of the event";
 						$fieldList[-2] = "Time - The time of the event";
@@ -108,7 +122,19 @@ class EventField extends DataObject {
 			$fieldList[-4] = "Room - The Room where the event is held";
 			$fieldList[-2] = "Description - The description for the event";
 		}
+		return $fieldList;
+	}
+
+	public static function getEventRegistrationFieldList(): array {
+		return EventField::getEventFieldList(2);
+	}
+
+	public static function getEventFieldList($fieldUse = null): array {
+		$fieldList = [];
 		$object = new EventField();
+		if (!is_null($fieldUse)) {
+			$object->fieldUse = $fieldUse;
+		}
 		$object->orderBy('name');
 		$object->find();
 		while ($object->fetch()) {
@@ -129,6 +155,39 @@ class EventField extends DataObject {
 			$fieldList[$object->id] = clone($object);
 		}
 		return $fieldList;
+	}
+
+	public function	getFieldObjectStructure(): array {
+		if (!$this->find(true)) {
+			return [];
+		}
+		$type = match ($this->type) {
+			0 => 'text',
+			1 => 'textarea',
+			2 => 'checkbox',
+			3 => 'enum',
+			4 => 'email',
+			5 => 'url',
+			default => '',
+		};
+		$structure = [
+			'fieldId' => $this->id,
+			'property' => $this->id,
+			'type' => $type,
+			'label' => $this->name,
+			'description' => $this->description,
+			'default' => $this->defaultValue,
+			'facetName' => $this->facetName,
+		];
+		if ($type == 'enum') {
+			require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
+			$allowableValues = array_map('trim', explode("\n", $this->allowableValues));
+			$keys = array_map([StringUtils::class, 'toCamelCase'], $allowableValues);
+			$structure['values'] = array_combine($keys, $allowableValues);
+		} else if ($type == 'checkbox') {
+			$structure['returnValueForUnchecked'] = true;
+		}
+		return $structure;
 	}
 }
 

@@ -30,10 +30,10 @@
 		</div>
 	{/if}
 
-	{if !empty($recordDriver->getMpaaRating())}
+	{if !empty($recordDriver->getContentRating())}
 		<div class="row">
-			<div class="result-label col-sm-4 col-xs-12">{translate text='MPAA Rating' isPublicFacing=true}</div>
-			<div class="result-value col-sm-8 col-xs-12">{implode subject=$recordDriver->getMpaaRating() glue=", " translate=true isPublicFacing=true isMetadata=true}</div>
+			<div class="result-label col-sm-4 col-xs-12">{translate text='Content Rating' isPublicFacing=true}</div>
+			<div class="result-value col-sm-8 col-xs-12">{implode subject=$recordDriver->getContentRating() glue=", " translate=true isPublicFacing=true isMetadata=true}</div>
 		</div>
 	{/if}
 

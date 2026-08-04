@@ -11,7 +11,7 @@ class SSOAuthentication implements Authentication {
 		$this->ssoSettings = $this->getSSOSettings();
 	}
 
-	public function authenticate($validatedViaSSO, $accountProfile) {
+	public function authenticate(bool $validatedViaSSO, ?AccountProfile $accountProfile) : AspenError|bool|null|User {
 		if(!$validatedViaSSO) {
 			if ($this->ssoSettings->service === 'ldap' && (!isset($_POST['username']) || !isset($_POST['password']))) {
 				return new AspenError('Login information cannot be blank during LDAP authentication.');

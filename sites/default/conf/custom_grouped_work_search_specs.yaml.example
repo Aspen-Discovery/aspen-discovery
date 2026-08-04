@@ -1,0 +1,88 @@
+# Example Custom Grouped Work Search Specs Configuration
+#
+# This file demonstrates how to customize catalog search field weights and query
+# structure for your library. Copy this file to a location accessible by Aspen
+# Discovery (e.g., /data/aspen-discovery/custom/groupedWorkSearchSpecs.yaml) and
+# configure the path in Library Settings > Catalog / Grouped Works >
+# Custom Grouped Work Search Specs Path.
+#
+# IMPORTANT: This only affects catalog (grouped work) searches, not other search
+# types like Events, Lists, Open Archives, etc.
+#
+# This example shows an optimized Keyword search that reduces query complexity
+# from 35+ clauses to 14 core clauses for improved performance while maintaining
+# search quality.
+#
+# For full documentation on search specs format, see:
+# sites/default/conf/groupedWorksSearchSpecs2.yaml
+
+---
+# Highly optimized Keyword search - focus on performance
+# CRITICAL: Proximity searches (~10) are VERY expensive - limited to only top 2 fields
+# Reduced from 35+ clauses to 14 core clauses for major performance improvement
+Keyword:
+  QueryFields:
+    # Top priority - exact matches and high-value fields
+    - title_exact:
+      - [localized_callnumber, 6000]
+    - title_left:
+      - [text_left_word, 2500]
+    - title_proper:
+      - [exact, 800]
+      - [onephrase, 500]
+      - [single_word_removal, 1]
+    - title_author:
+      - [onephrase, 500]
+    - subject:
+      - [onephrase, 800]
+    - author:
+      - [proximal, 8000]  # Keep only top author proximity search
+      - [single_word, 250]
+    - series_proper:
+      - [proximal, 7000]  # Keep only top series proximity search
+      - [single_word, 100]
+      - [onephrase, 50]
+
+    # Essential identifiers
+    - id:
+      - [exact, 500]
+    - alternate_ids:
+      - [exact, 500]
+    - barcode:
+      - [onephrase, 500]
+    - local_callnumber_exact:
+      - [localized_callnumber, 400]
+    - local_callnumber_left:
+      - [text_left, 300]
+
+    # Title full (replaces title, title_alt)
+    - title_full:
+      - [onephrase, 200]
+      - [single_word_removal, 1]
+
+    # Standard identifiers
+    - issn:
+      - [and, 100]
+    - isbn:
+      - [and, 100]
+    - upc:
+      - [and, 100]
+
+    # Fallback searches
+    - issn:
+      - [or, ~]
+    - isbn:
+      - [or, ~]
+    - upc:
+      - [or, ~]
+    - id:
+      - [or, ~]
+    - alternate_ids:
+      - [or, ~]
+    - keywords:
+      - [or, ~]
+
+# Note: This example only overrides the Keyword search type.
+# To customize other search types (Author, Title, Subject, etc.),
+# copy the relevant sections from groupedWorksSearchSpecs2.yaml
+# and modify as needed.

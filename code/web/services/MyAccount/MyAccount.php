@@ -35,6 +35,16 @@ abstract class MyAccount extends Action {
 					$customAccountMessages->whereAdd("showOn = 1 OR showOn = 4");
 				} elseif ($action == 'ContactInformation') {
 					$customAccountMessages->whereAdd("showOn = 1 OR showOn = 5");
+				} elseif ($action == 'MyEvents') {
+					$customAccountMessages->whereAdd("showOn = 1 OR showOn = 6");
+				} elseif ($action == 'MyPreferences') {
+					$customAccountMessages->whereAdd("showOn = 1 OR showOn = 8");
+				} elseif ($action == 'OverDriveOptions') {
+					$customAccountMessages->whereAdd("showOn = 1 OR showOn = 9");
+				} elseif ($action == 'HooplaOptions') {
+					$customAccountMessages->whereAdd("showOn = 1 OR showOn = 10");
+				} elseif ($action == 'Lists') {
+					$customAccountMessages->whereAdd("showOn = 1 OR showOn = 11");
 				} else {
 					$customAccountMessages->showOn = 1;
 				}

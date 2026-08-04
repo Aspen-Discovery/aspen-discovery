@@ -105,7 +105,7 @@
 				<div class="col-sm-12 col-md-4 col-lg-3">
 					<div class="btn-group btn-group-vertical btn-block">
 						<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record->userId}', '{$record->sourceId}', '', false)" class="btn btn-sm btn-action btn-wrap">{translate text="Open with %1%" 1=$readerName isPublicFacing=true}</a>
-						{if array_key_exists('Palace Project', $enabledModules)}
+						{if $record->showPalaceProjectLink}
 							{if $record->format == 'eBook' || $record->format == 'eAudiobook'}
 								<a onclick="AspenDiscovery.PalaceProject.showUsageInstructions();" target="_blank" class="btn btn-sm btn-action btn-wrap">{translate text='Access In Palace Project' isPublicFacing=true}</a>
 							{/if}

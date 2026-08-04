@@ -229,8 +229,10 @@ class AJAX_JSON extends Action {
 		global $logger;
 		$_SESSION['enroll2FA'] = false;
 		$_SESSION['has2FA'] = false;
+		$codeSent = $_SESSION['codeSent'] ?? false;
 		$_SESSION['codeSent'] = false;
 		$_SESSION['passwordExpired'] = false;
+		$_SESSION['authMethod'] = '';
 		$logger->log("Starting JSON/loginUser session: " . session_id(), Logger::LOG_DEBUG);
 		$isLoggedIn = UserAccount::isLoggedIn();
 		if (!$isLoggedIn) {
@@ -253,6 +255,7 @@ class AJAX_JSON extends Action {
 						$_SESSION['enroll2FA'] = false;
 						$_SESSION['has2FA'] = false;
 						$_SESSION['passwordExpired'] = true;
+						$_SESSION['authMethod'] = UserAccount::typeOf2FAEnabled();
 
 						return [
 							'success' => false,
@@ -279,12 +282,24 @@ class AJAX_JSON extends Action {
 							$_SESSION['twoFactorStart'] = time();
 							$_SESSION['has2FA'] = false;
 							$_SESSION['passwordExpired'] = false;
-
+							$authStatus = UserAccount::get2FAMethodStatus();
+							$interface->assign('canUseTotp', $authStatus['allowTotp']);
+							$interface->assign('canUseEmail', $authStatus['allowEmail']);
+							$interface->assign('isModal', true);
 							return [
 								'success' => false,
 								'enroll2FA' => true,
 								'has2FA' => false,
 								'passwordExpired' => false,
+								'title' => translate([
+									'text' => 'Two-factor Authentication',
+									'isPublicFacing' => true
+								]),
+								'body' => $interface->fetch('MyAccount/login-2fa-enroll.tpl'),
+								'buttons' => "<button id='loginFormCancelLogin' class='btn btn-warning' onclick='window.location =\"/MyAccount/Logout\"'>" . translate([
+										'text' => 'Cancel Sign In',
+										'isPublicFacing' => true,
+									]) . "</button>",
 							];
 						} else {
 							// User needs to authenticate with 2FA
@@ -292,16 +307,22 @@ class AJAX_JSON extends Action {
 							$_SESSION['has2FA'] = true;
 							$_SESSION['twoFactorStart'] = time();
 							$_SESSION['passwordExpired'] = false;
+							$authStatus = UserAccount::get2FAMethodStatus();
 							$referer = $_REQUEST['referer'] ?? null;
 							$interface->assign('referer', $referer);
 							$name = $_REQUEST['name'] ?? null;
 							$interface->assign('name', $name);
-							$interface->assign('codeSent', !empty($_SESSION['codeSent']));
+							$interface->assign('codeSent', $codeSent);
+							$interface->assign('hasTotp', $authStatus['hasTotp']);
+							$interface->assign('hasEmail', $authStatus['hasEmail']);
+							$interface->assign('setupMethods', $authStatus['setupMethods']);
 							return [
 								'success' => false,
 								'enroll2FA' => false,
 								'has2FA' => true,
 								'passwordExpired' => false,
+								'hasTotp' => $authStatus['hasTotp'],
+								'hasEmail' => $authStatus['hasEmail'],
 								'title' => translate([
 									'text' => 'Two-Factor Authentication',
 									'isPublicFacing' => true,
@@ -604,7 +625,7 @@ class AJAX_JSON extends Action {
 		global $interface;
 		$userLanguage = UserAccount::getUserInterfaceLanguage();
 		if ($userLanguage == '') {
-			$language = strip_tags((isset($_SESSION['language'])) ? $_SESSION['language'] : 'en');
+			$language = strip_tags(!empty($_SESSION['language']) ? $_SESSION['language'] : 'en');
 		} else {
 			$language = $userLanguage;
 		}
@@ -613,6 +634,8 @@ class AJAX_JSON extends Action {
 		if ($language != $preferredLanguage) {
 			$language = $preferredLanguage;
 			$_SESSION['language'] = $language;
+			setcookie('aspenInterfaceLanguage', $language, time() + (3 * 365 * 24 * 3600), '/');
+			$_COOKIE['aspenInterfaceLanguage'] = $language;
 			//Clear the preference cookie
 			if (isset($_COOKIE['searchPreferenceLanguage'])) {
 				//Clear the cookie when we change languages

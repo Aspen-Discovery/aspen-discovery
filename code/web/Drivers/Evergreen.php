@@ -24,10 +24,11 @@ class Evergreen extends AbstractIlsDriver {
 	 * This is responsible for retrieving all checkouts (i.e. checked out items)
 	 * by a specific patron.
 	 *
-	 * @param User $patron The user for which to load transactions.
+	 * @param User $patron       The user for which to load transactions.
+	 * @param array $options     Additional options
 	 * @return Checkout[] Array of the patron's transactions on success.
 	 */
-	public function getCheckouts(User $patron): array {
+	public function getCheckouts(User $patron, array $options = []): array {
 		require_once ROOT_DIR . '/sys/User/Checkout.php';
 		$checkedOutTitles = [];
 
@@ -1327,7 +1328,7 @@ class Evergreen extends AbstractIlsDriver {
 	/**
 	 * @inheritDoc
 	 */
-	function placeHold(User $patron, $recordId, $pickupBranch = null, $cancelDate = null) : array {
+	function placeHold(User $patron, mixed $recordId, ?string $pickupBranch = null, ?string $cancelDate = null, ?string $pickupSublocation = null, ?int $numberOfCopies = 1) : array {
 		$hold_result = [
 			'success' => false,
 			'message' => translate([
@@ -1530,7 +1531,11 @@ class Evergreen extends AbstractIlsDriver {
 		return true;
 	}
 
-	public function getFines(User $patron, $includeMessages = false): array {
+	public function getFines(User $patron, $includeMessages = false, ?string $type = null): array {
+		$fines = [];
+		if ($type == 'credit'){
+			return $fines;
+		}
 		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 
 		global $activeLanguage;
@@ -1542,8 +1547,6 @@ class Evergreen extends AbstractIlsDriver {
 		}
 
 		$currencyFormatter = new NumberFormatter($activeLanguage->locale . '@currency=' . $currencyCode, NumberFormatter::CURRENCY);
-
-		$fines = [];
 
 		$authToken = $this->getAPIAuthToken($patron, true);
 		if ($authToken != null) {

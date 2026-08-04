@@ -51,6 +51,7 @@ hr.menu{
   padding: 3px;
 }
 .system-message{
+  margin-top: 5px;
   padding: 5px;
 }
 .system-message-text{
@@ -1020,5 +1021,188 @@ a.placard-image-link{
 @media (min-width: @screen-sm-min) {
   #side-bar.collapsed + #main-content-with-sidebar .breadcrumbs {
     margin-left: 60px !important;
+  }
+}
+/* "Make Content Full Width" in theme settings */
+body.fullWidthContent {
+
+  /* Header and footer containers */
+  .container-fluid {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* Main container with a small amount of padding */
+  .container {
+    width: 98%;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+
+  @media (min-width: @screen-lg-min) {
+    #side-bar {
+      width: 16%;
+    }
+    #main-content-with-sidebar {
+      width: 84%;
+    }
+  }
+
+  #more-details-accordion {
+    max-width: 1700px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* Make series or you might like covers bigger */
+  .scrollerTitleCover {
+    max-height: 300px;
+  }
+
+  /* Reduce space between tabs and what changes */
+  .horizontalSliders {
+    margin-bottom: 0;
+  }
+
+  /* Deal with large covers on homepage-standard browse categories*/
+  #home-page-browse-results .browse-thumbnail img {
+    width: auto;
+    max-height: 300px;
+  }
+
+  .swiper-slide img {
+    max-height: 250px;
+    width: auto;
+    object-fit: contain;
+  }
+
+  /*Fix images on results page*/
+  .results-covers-view.home-page-browse-results-grid.home-page-browse-results-grid-grid .browse-thumbnail {
+    height: auto !important;
+    min-height: 350px !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+
+  /*Reduce Browse Category bottom margin from 5em */
+  .browse-category-feed-item {
+    margin-bottom: 2em !important;
+  }
+
+  /* reduce space between tabs */
+  .slider-wrapper {
+    gap: 2px !important;
+  }
+
+  /* Width of information on details page so hold button isn't so far over */
+  #record-details-column {
+    max-width: 500px;
+  }
+
+  /* change width for sort by area */
+  div.col-md-4:has(label[for="results-sort"]) {
+    width: 40% !important;
+  }
+
+  /* change width for sort by area */
+  div.col-md-8:has(.btn-toolbar) {
+    width: 60% !important;
+  }
+
+  /* tighten sign-in page */
+  #loginFormFields {
+    max-width: 600px !important;
+    margin: 0 auto !important;
+    /* Centers the 400px block on the page */
+    display: block;
+  }
+
+  /* tighten library card barcodes */
+  #library-barcode {
+    text-align: left;
+    padding-left: 100px;
+  }
+
+  /*Limit the size of the Explore More Box */
+  .exploreMoreBar {
+    width: 75%;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+
+  /*Group format Categories together*/
+  .categoryValue {
+    max-width: 150px;
+  }
+
+  /*Limit Size of Linked User Dropdown*/
+  #linkedUsersDropdown.form-control {
+    max-width: 300px;
+  }
+
+  /*Limit Width Advanced Search Content*/
+  .advSearchContent {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  /* Narrow Events Filter*/
+  div#eventsFilter.form-group.col-sm-6 {
+    max-width: 300px;
+  }
+
+
+  /* Limit width of preferences / contact information forms*/
+  &#MyAccount-MyPreferences form[role="form"],
+  &#MyAccount-ContactInformation form[role="form"]
+  {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+
+  /* Limit the Width of Forms*/
+  #pin,
+  #pin1,
+  #pin2,
+  #newUsername,
+  #overdriveEmail {
+    max-width: 300px;
+    margin-left: 30px;
+  }
+
+  /* Adjust rating layout on homepage*/
+  .browse-rating {
+    display: block !important;
+    width: 100%;
+    clear: both;
+    position: absolute;
+    bottom: 0;
+  }
+
+  @media screen and (min-width: 768px) {
+    /* adjust spacing for information under title in results */
+    .result-label {
+      display: inline-block !important;
+      width: auto !important;
+      min-width: 140px !important;
+      float: left !important;
+      clear: left !important;
+      text-align: left !important;
+      margin-right: 10px !important;
+      padding-right: 0 !important;
+    }
+  }
+
+  /* Center Format Categories in full width */
+  div#categoryValues.row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
   }
 }

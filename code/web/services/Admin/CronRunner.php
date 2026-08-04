@@ -27,6 +27,7 @@ class Admin_CronRunner extends Admin_Admin {
 			'updateNYTLists' => 'Update New York Times Lists',
 			'updateSavedSearches' => 'Update Saved Searches',
 			'updateSuggesters' => 'Update Suggesters',
+			'updateEventRegistrationInvitations' => 'Update Event Registration Invites',
 		];
 		$interface->assign('availableCronProcesses', $availableCronProcesses);
 
@@ -65,7 +66,11 @@ class Admin_CronRunner extends Admin_Admin {
 	 */
 	public static function getFrequentCronJobs(): array {
 		return [
+			'Cleanup Shared Sessions',
+			'Fetch ILS Messages',
 			'Load Initial Reading History',
+			'Send LiDA Notifications',
+			'Update Event Registration Invites',
 		];
 	}
 }

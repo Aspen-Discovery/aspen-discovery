@@ -55,6 +55,8 @@ public class ItemInfo{
 	private String shelfLocationCode;
 	private Long autoReindexTime = null;
 	private DataField marcField;
+	private String barcode;
+	private String note;
 
 	public void setRecordInfo(RecordInfo recordInfo) {
 		this.recordInfo = recordInfo;
@@ -620,5 +622,21 @@ public class ItemInfo{
 
 	public boolean isVirtual() {
 		return isVirtualChildRecord || isVirtualHoldingsRecord;
+	}
+
+	public String getBarcode() {
+		return barcode;
+	}
+
+	public void setBarcode(String barcode) {
+		this.barcode = barcode;
+	}
+
+	public String getNote() {
+		return note;
+	}
+
+	public void setNote(String note) {
+		this.note = note;
 	}
 }

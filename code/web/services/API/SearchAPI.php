@@ -9,82 +9,19 @@ class SearchAPI extends AbstractAPI {
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 		$output = '';
 
-		//Set Headers
-		header('Content-type: application/json');
-		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-
-		global $activeLanguage;
-		if (isset($_GET['language'])) {
-			$language = new Language();
-			$language->code = $_GET['language'];
-			if ($language->find(true)) {
-				$activeLanguage = $language;
-			}
+		if (in_array($method, [
+			'getListWidget',
+			'getCollectionSpotlight',
+		])) {
+			header('Content-type: text/html');
+			$output = $this->$method();
+			require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
+			APIUsage::incrementStat('SearchAPI', $method);
+			echo $output;
+			die();
 		}
 
-		//Check if user can access API with keys sent from LiDA
-		if (isset($_SERVER['PHP_AUTH_USER'])) {
-			if ($this->grantTokenAccess()) {
-				if (in_array($method, [
-					'getAppBrowseCategoryResults',
-					'getAppActiveBrowseCategories',
-					'getAppSearchResults',
-					'getListResults',
-					'getSavedSearchResults',
-					'getSortList',
-					'getAppliedFilters',
-					'getAvailableFacets',
-					'getAvailableFacetsKeys',
-					'searchLite',
-					'getDefaultFacets',
-					'getFacetClusterByKey',
-					'searchFacetCluster',
-					'getFormatCategories',
-					'getBrowseCategoryListForUser',
-					'searchAvailableFacets',
-					'getSearchSources',
-					'getSearchIndexes',
-					'getBrowseCategories',
-					'getHomeScreenFeed'
-				])) {
-					header("Cache-Control: max-age=10800");
-					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
-					APIUsage::incrementStat('SearchAPI', $method);
-					$jsonOutput = json_encode(['result' => $this->$method()]);
-				} else {
-					$output = json_encode(['error' => 'invalid_method']);
-				}
-			} else {
-				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-				header('HTTP/1.0 401 Unauthorized');
-				$output = json_encode(['error' => 'unauthorized_access']);
-			}
-			ExternalRequestLogEntry::logRequest('SearchAPI.' . $method, $_SERVER['REQUEST_METHOD'], $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], getallheaders(), '', $_SERVER['REDIRECT_STATUS'], $jsonOutput ?? $output, []);
-			echo $jsonOutput ?? $output;
-		} elseif (IPAddress::allowAPIAccessForClientIP() || in_array($method, [
-				'getListWidget',
-				'getCollectionSpotlight',
-			])) {
-			header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-			if (!empty($method) && method_exists($this, $method)) {
-				if (in_array($method, [
-					'getListWidget',
-					'getCollectionSpotlight',
-				])) {
-					header('Content-type: text/html');
-					$output = $this->$method();
-				} else {
-					$jsonOutput = json_encode(['result' => $this->$method()]);
-				}
-				require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
-				APIUsage::incrementStat('SearchAPI', $method);
-				echo $jsonOutput ?? $output;
-			} else {
-				echo json_encode(['error' => 'invalid_method']);
-			}
-		} else {
-			$this->forbidAPIAccess();
-		}
+		$this->handleAPIRequestAuto($method, 'search_api');
 	}
 
 	// The time intervals in seconds beyond which we consider the status as not current
@@ -461,12 +398,25 @@ class SearchAPI extends AbstractAPI {
 						/** @noinspection PhpPossiblePolymorphicInvocationInspection */
 						$logEntry->websiteName = 'Web Builder Content';
 					}elseif ($aspenModule->name == 'Hoopla') {
-						require_once ROOT_DIR . '/sys/Hoopla/HooplaSetting.php';
-						$hooplaSettings = new HooplaSetting();
-						$hooplaSettings->find();
 						$checkEntriesInLast34Hours = true;
 						$checkEntriesInLast24Hours = false;
 						$checkEntriesInLast1Hours = false;
+						//Check to see if Flex is enabled (which will have continuous indexing)
+						$numEntriesToCheck = 1;
+						if (!empty($systemVariables)) {
+							if ($systemVariables->hooplaVersion == 1) {
+								require_once ROOT_DIR . '/sys/Hoopla/HooplaSetting.php';
+								$hooplaSetting = new HooplaSetting();
+							}else{
+								require_once ROOT_DIR . '/sys/Hoopla/LibraryHooplaSetting.php';
+								$hooplaSetting = new LibraryHooplaSetting();
+							}
+							$hooplaSetting->hooplaFlexEnabled = 1;
+							if ($hooplaSetting->count() > 0) {
+								//Flex is enabled
+								$numEntriesToCheck = 3;
+							}
+						}
 					}
 					$logEntry->limit(0, $numEntriesToCheck * $numSettings);
 					$logErrors = 0;
@@ -536,9 +486,6 @@ class SearchAPI extends AbstractAPI {
 							}
 						}
 					}elseif ($aspenModule->name == 'Hoopla') {
-						require_once ROOT_DIR . '/sys/Hoopla/HooplaSetting.php';
-						$hooplaSettings = new HooplaSetting();
-						$hooplaSettings->find();
 						$checkEntriesInLast34Hours = true;
 						$checkEntriesInLast24Hours = false;
 						$checkEntriesInLast1Hours = false;
@@ -616,6 +563,7 @@ class SearchAPI extends AbstractAPI {
 		//Check cron to be sure it doesn't have errors either
 		require_once ROOT_DIR . '/sys/CronLogEntry.php';
 		$cronLogEntry = new CronLogEntry();
+		$cronLogEntry->name = 'Primary Cron';
 		$cronLogEntry->orderBy("id DESC");
 		$cronLogEntry->limit(0, 1);
 		if ($cronLogEntry->find(true)) {
@@ -1310,6 +1258,9 @@ class SearchAPI extends AbstractAPI {
 		$isLiDA = $this->checkIfLiDA();
 		$textId = $this->getTextId($textId);
 		$user = $this->getUserForApiCall();
+		if (empty($user)) {
+			$user = UserAccount::getLoggedInUser();
+		}
 		$key = $isLiDA ? 'records' : 'initialResults';
 		$curCount = 1;
 		if (!empty($textId)) {
@@ -1329,7 +1280,7 @@ class SearchAPI extends AbstractAPI {
 								$pageToLoad = 1;
 								require_once ROOT_DIR . '/services/Search/History.php';
 								$savedSearch = History::getSavedSearchObject($temp->id);
-								SearchObjectFactory::initSearchObject();
+								SearchObjectFactory::initSearchObject($savedSearch['source'] ?? 'GroupedWork');
 								$minSO = unserialize($savedSearch['search_object']);
 								$searchObject = SearchObjectFactory::deminify($minSO);
 								$searchObject->getFilterList();
@@ -1794,7 +1745,7 @@ class SearchAPI extends AbstractAPI {
 					if (!$hasSubcategories && $subCategoryCount === 0) {
 						$results = $this->getAppBrowseCategoryResults($browseCategory->textId, $appUser);
 						if ($browseCategory->textId === "system_recommended_for_you") {
-							$results = $results['records'];
+							$results = $results['records'] ?? [];
 						} else {
 							$results = $results['items'];
 						}
@@ -2012,11 +1963,8 @@ class SearchAPI extends AbstractAPI {
 		//based off of url, branch parameter, or IP address
 		$activeLocation = $locationSingleton->getActiveLocation();
 
-		[
-			$username,
-			$password,
-		] = $this->loadUsernameAndPassword();
-		$appUser = UserAccount::validateAccount($username, $password);
+		$appUser = $this->getUserForApiCall();
+
 
 		/** @var BrowseCategoryGroupEntry[] $browseCategories */
 		if ($activeLocation == null) {
@@ -2114,6 +2062,15 @@ class SearchAPI extends AbstractAPI {
 						$formattedCategories[] = $categoryResponse;
 					} else {
 						$subCategories = $categoryInformation->getSubCategories();
+						//Add the main category even if there are subcategories
+						$categoryResponse = [
+							'key' => $categoryInformation->textId,
+							'title' => $categoryInformation->label,
+							'source' => $categoryInformation->source,
+							'isHidden' => $categoryInformation->isDismissed($appUser),
+						];
+						$formattedCategories[] = $categoryResponse;
+						//Now add subcategories
 						if (count($subCategories) > 0) {
 							foreach ($subCategories as $subCategory) {
 								$temp = new BrowseCategory();
@@ -2142,14 +2099,6 @@ class SearchAPI extends AbstractAPI {
 									}
 								}
 							}
-						} else {
-							$categoryResponse = [
-								'key' => $categoryInformation->textId,
-								'title' => $categoryInformation->label,
-								'source' => $categoryInformation->source,
-								'isHidden' => $categoryInformation->isDismissed($appUser),
-							];
-							$formattedCategories[] = $categoryResponse;
 						}
 					}
 				}
@@ -2647,6 +2596,11 @@ class SearchAPI extends AbstractAPI {
 				if ($browseCategory->textId == 'system_recommended_for_you') {
 					$records = $this->getAppSuggestionsBrowseCategoryResults($pageToLoad, $pageSize);
 					$response['key'] = $browseCategory->textId;
+					if (!array_key_exists('records', $records)){
+						//User not logged in
+						$response['success'] = false;
+						return $response;
+					}
 					$response['records'] = $records['records'];
 					$response['message'] = 'Results found for browse category';
 				} else {
@@ -2804,7 +2758,7 @@ class SearchAPI extends AbstractAPI {
 									$eventSource = 'assabet';
 									$bypass = $assabetBypass;
 									$addToList = $assabetAddToList;
-								} else if (str_starts_with($record['id'], 'aspenEvent')) {
+								} else if (str_starts_with($record['id'], 'aspenEvents')) {
 									$eventSource = 'aspenEvents';
 									$bypass = $aspenEventsBypass;
 									$addToList = $aspenEventsAddToList;
@@ -2865,7 +2819,7 @@ class SearchAPI extends AbstractAPI {
 								$items[$recordKey]['title'] = $record['title_display'];
 								$items[$recordKey]['author'] = $record['author_display'];
 								$items[$recordKey]['image'] = $configArray['Site']['url'] . '/bookcover.php?id=' . $record['id'] . '&size=medium&type=grouped_work';
-								$items[$recordKey]['language'] = $record['language'][0];
+								$items[$recordKey]['language'] = array_key_exists('language',$record) ? $record['language'][0] : '';
 								$items[$recordKey]['summary'] = null;
 								$items[$recordKey]['type'] = 'grouped_work';
 								$formats = [];
@@ -3634,10 +3588,10 @@ class SearchAPI extends AbstractAPI {
 								if (!is_null($obj->manifestation) && !array_key_exists($obj->manifestation->format, $items[$recordKey]['itemList'])) {
 									$format = $obj->manifestation->format;
 									$items[$recordKey]['itemList'][$format]['key'] = $i;
-									$items[$recordKey]['itemList'][$format]['name'] = translate([
+									$items[$recordKey]['itemList'][$format]['name'] = strip_tags(translate([
 										'text' => $format,
 										'isPublicFacing' => true
-									]);
+									]));
 									$i++;
 								}
 							}
@@ -3811,6 +3765,7 @@ class SearchAPI extends AbstractAPI {
 		$search = new SearchEntry();
 		$search->id = $id;
 		if ($search->find(true)) {
+			SearchObjectFactory::initSearchObject($search->searchSource);
 			$minSO = unserialize($search->search_object);
 			$storedSearch = SearchObjectFactory::deminify($minSO, $search);
 			$searchObj = $storedSearch->restoreSavedSearch($id, false, true);
@@ -3841,6 +3796,7 @@ class SearchAPI extends AbstractAPI {
 		$search = new SearchEntry();
 		$search->id = $id;
 		if ($search->find(true)) {
+			SearchObjectFactory::initSearchObject($search->searchSource);
 			$minSO = unserialize($search->search_object);
 			$searchObj = SearchObjectFactory::deminify($minSO, $search);
 			$sortList = $searchObj->getSortList();
@@ -4226,6 +4182,7 @@ class SearchAPI extends AbstractAPI {
 		$search = new SearchEntry();
 		$search->id = $id;
 		if ($search->find(true)) {
+			SearchObjectFactory::initSearchObject($search->searchSource);
 			$minSO = unserialize($search->search_object);
 			$searchObj = SearchObjectFactory::deminify($minSO, $search);
 			$filters = $searchObj->getFilterList();

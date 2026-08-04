@@ -225,4 +225,19 @@ class PalaceProjectScope extends DataObject {
 			unset($this->_locations);
 		}
 	}
+
+	private null|bool|PalaceProjectSetting $_palaceProjectSettings = false;
+	public function getSettings() : ?PalaceProjectSetting {
+		if ($this->_palaceProjectSettings === false) {
+			$this->_palaceProjectSettings = null;
+			if ($this->settingId > 0) {
+				$palaceProjectSettings = new PalaceProjectSetting();
+				$palaceProjectSettings->id = $this->settingId;
+				if ($palaceProjectSettings->find(true)){
+					$this->_palaceProjectSettings = $palaceProjectSettings;
+				}
+			}
+		}
+		return $this->_palaceProjectSettings;
+	}
 }

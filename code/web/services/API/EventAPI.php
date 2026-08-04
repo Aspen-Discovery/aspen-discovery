@@ -2,58 +2,16 @@
 require_once ROOT_DIR . '/services/API/AbstractAPI.php';
 
 class EventAPI extends AbstractAPI {
-	function launch() {
+	function launch() : void {
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 
 		header('Content-type: application/json');
 		header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 
-		global $activeLanguage;
-		if (isset($_GET['language'])) {
-			$language = new Language();
-			$language->code = $_GET['language'];
-			if ($language->find(true)) {
-				$activeLanguage = $language;
-			}
-		}
+		$this->setLanguage();
 
-		if (isset($_SERVER['PHP_AUTH_USER'])) {
-			if ($this->grantTokenAccess()) {
-				if (in_array($method, [
-					'getEventDetails',
-					'saveEvent',
-					'removeSavedEvent',
-					'getSavedEvents'
-				])) {
-					header('Cache-Control: max-age=10800');
-					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
-					APIUsage::incrementStat('EventAPI', $method);
-					$output = json_encode($this->$method());
-				} else {
-					header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-					$output = json_encode(['error' => 'invalid_method']);
-				}
-			} else {
-				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-				header('HTTP/1.0 401 Unauthorized');
-				$output = json_encode(['error' => 'unauthorized_access']);
-			}
-			ExternalRequestLogEntry::logRequest('EventAPI.' . $method, $_SERVER['REQUEST_METHOD'], $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], getallheaders(), '', $_SERVER['REDIRECT_STATUS'], $output, []);
-			echo $output;
-		} elseif (IPAddress::allowAPIAccessForClientIP()) {
-			if (method_exists($this, $method)) {
-				$output = json_encode(['result' => $this->$method()]);
-				require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
-				APIUsage::incrementStat('EventAPI', $method);
-			} else {
-				$output = json_encode(['error' => "invalid_method '$method'"]);
-			}
-
-			echo $output;
-		} else {
-			$this->forbidAPIAccess();
-		}
+		$this->handleAPIRequestAuto($method, 'event_api');
 	}
 
 	/**
@@ -85,7 +43,9 @@ class EventAPI extends AbstractAPI {
 			return $this->getSpringshareEventDetails();
 		} else if ($source == 'assabet') {
 			return $this->getAssabetEventDetails();
-		} else if ($source == 'aspenEvents') {
+		} else if ($source == 'localhop') {
+			return $this->getLocalHopEventDetails();
+		} else if ($source == 'aspenEvent') {
 			return $this->getAspenEventDetails();
 		} else {
 			return [
@@ -295,6 +255,60 @@ class EventAPI extends AbstractAPI {
 				$itemData['userIsRegistered'] = $user->isRegistered($_REQUEST['id']);
 				$itemData['inUserEvents'] = $user->inUserEvents($_REQUEST['id']);
 				$itemData['canAddToList'] = $user->isAllowedToAddEventsToList($assabetDriver->getSource());
+			}
+
+
+			return $itemData;
+		}
+		return [
+			'success' => false,
+			'message' => 'Event id not valid',
+		];
+	}
+
+	function getLocalHopEventDetails(): array {
+		require_once ROOT_DIR . '/RecordDrivers/LocalHopEventRecordDriver.php';
+		$localHopDriver = new LocalHopEventRecordDriver($_REQUEST['id']);
+		if($localHopDriver->isValid()) {
+			$registrationInformation = null;
+			if($localHopDriver->getRegistrationModalBodyForAPI()) {
+				$registrationInformation = strip_tags($localHopDriver->getRegistrationModalBodyForAPI());
+			} elseif ($localHopDriver->getRegistrationModalBody()) { // use the regular registration modal as a backup if needed
+				$registrationInformation = strip_tags($localHopDriver->getRegistrationModalBody());
+			}
+
+			$itemData['success'] = true;
+			$itemData['id'] = $_REQUEST['id'];
+			$itemData['title'] = $localHopDriver->getTitle();
+			$itemData['isAllDay'] = (bool)$localHopDriver->isAllDayEvent();
+			$itemData['startDate'] = $localHopDriver->getStartDate();
+			$itemData['endDate'] = $localHopDriver->getEndDate();
+			$itemData['description'] = strip_tags($localHopDriver->getDescription());
+			$itemData['registrationRequired'] = $localHopDriver->isRegistrationRequired();
+			$itemData['userIsRegistered'] = false;
+			$itemData['inUserEvents'] = false;
+			$itemData['registrationBody'] = $registrationInformation;
+			$itemData['bypass'] = (bool)$localHopDriver->getBypassSetting();
+			$itemData['cover'] = $localHopDriver->getEventCoverUrl();
+			$itemData['url'] = $localHopDriver->getExternalUrl();
+			$itemData['audiences'] = $localHopDriver->getAudiences();
+			$itemData['categories'] = null;
+			$itemData['programTypes'] = null;
+			$itemData['room'] = null;
+
+			// check if event has passed
+			$today = new DateTime('now');
+			$eventDay = $localHopDriver->getStartDate();
+			$itemData['pastEvent'] = $today >= $eventDay;
+
+			$itemData['location'] = $this->getDiscoveryBranchDetails($localHopDriver->getBranch());
+			$itemData['canAddToList'] = false;
+
+			$user = $this->getUserForApiCall();
+			if ($user && !($user instanceof AspenError)) {
+				$itemData['userIsRegistered'] = $user->isRegistered($_REQUEST['id']);
+				$itemData['inUserEvents'] = $user->inUserEvents($_REQUEST['id']);
+				$itemData['canAddToList'] = $user->isAllowedToAddEventsToList($localHopDriver->getSource());
 			}
 
 
@@ -703,8 +717,8 @@ class EventAPI extends AbstractAPI {
 					$sourceFull = 'assabet';
 					$source = 'assabet';
 				} else if(str_starts_with($eventId, 'aspenEvent')) {
-					$sourceFull = 'aspenEvent';
-					$source = 'aspenEvent';
+					$sourceFull = 'aspenEvents';
+					$source = 'aspenEvents';
 				} else {
 					// something went wrong
 				}

@@ -31,10 +31,11 @@ class ILS_UsageGraphs extends Admin_AbstractUsageGraphs {
 		]);
 	}
 
-	protected function getAndSetInterfaceDataSeries($stat, $instanceName): void {
+	protected function getAndSetInterfaceDataSeries($stat, $instanceName, $timeframes = ['year', 'month'], $custom = false): void {
 		global $interface;
 		$dataSeries = [];
 		$columnLabels = [];
+		$groupByTimeframe = implode(',', $timeframes);
 
 		// for graphs displaying data retrieved from the user_ils_usage table
 		if (
@@ -46,14 +47,20 @@ class ILS_UsageGraphs extends Admin_AbstractUsageGraphs {
 			$stat == 'usersWithHolds'
 		) {
 			$userILSUsage = new UserILSUsage();
-			$userILSUsage->groupBy('year, month');
+			$userILSUsage->selectAdd();
 			if (!empty($instanceName)) {
 				$userILSUsage->instance = $instanceName;
 			}
-			$userILSUsage->selectAdd();
-			$userILSUsage->selectAdd('year');
-			$userILSUsage->selectAdd('month');
-			$userILSUsage->orderBy('year, month');
+		
+			if (is_array($custom)) {
+				$userILSUsage->buildCustomPeriodQuery($custom);
+			} else {
+				$userILSUsage->groupBy($groupByTimeframe);
+				foreach ($timeframes as $timeframe) {
+					$userILSUsage->selectAdd($timeframe);
+				}
+				$userILSUsage->orderBy($groupByTimeframe);
+			}
 			
 			if ($stat == 'userLogins') {
 				$dataSeries['User Logins'] =  GraphingUtils::getDataSeriesArray(count($dataSeries));
@@ -82,9 +89,9 @@ class ILS_UsageGraphs extends Admin_AbstractUsageGraphs {
 
 			//Collect results
 			$userILSUsage->find();
-	
+			
 			while ($userILSUsage->fetch()) {
-				$curPeriod = "{$userILSUsage->month}-{$userILSUsage->year}";
+				$curPeriod = $custom ? $userILSUsage->getCustomPeriod() : $userILSUsage->getCurPeriod($timeframes);
 				$columnLabels[] = $curPeriod;
 				if ($stat == 'userLogins' ) {
 					/** @noinspection PhpUndefinedFieldInspection */
@@ -122,14 +129,20 @@ class ILS_UsageGraphs extends Admin_AbstractUsageGraphs {
 			$stat == 'totalHolds'
 		) {
 			$recordILSUsage = new ILSRecordUsage();
-			$recordILSUsage->groupBy('year, month');
+			$recordILSUsage->selectAdd();
 			if (!empty($instanceName)) {
 				$recordILSUsage->instance = $instanceName;
 			}
-			$recordILSUsage->selectAdd();
-			$recordILSUsage->selectAdd('year');
-			$recordILSUsage->selectAdd('month');
-			$recordILSUsage->orderBy('year, month');
+		
+			if (is_array($custom)) {
+				$recordILSUsage->buildCustomPeriodQuery($custom);
+			} else {
+				$recordILSUsage->groupBy($groupByTimeframe);
+				foreach ($timeframes as $timeframe) {
+					$recordILSUsage->selectAdd($timeframe);
+				}
+				$recordILSUsage->orderBy($groupByTimeframe);
+			}
 
 			if ($stat == 'pdfsDownloaded') {
 				$dataSeries['PDFs Downloaded'] =  GraphingUtils::getDataSeriesArray(count($dataSeries));
@@ -155,7 +168,7 @@ class ILS_UsageGraphs extends Admin_AbstractUsageGraphs {
 			//Collect results
 			$recordILSUsage->find();
 			while ($recordILSUsage->fetch()) {
-				$curPeriod = "{$recordILSUsage->month}-{$recordILSUsage->year}";
+				$curPeriod = $custom ? $recordILSUsage->getCustomPeriod() : $recordILSUsage->getCurPeriod($timeframes);
 				$columnLabels[] = $curPeriod;
 				if ($stat == 'pdfsDownloaded' ) {
 					/** @noinspection PhpUndefinedFieldInspection */

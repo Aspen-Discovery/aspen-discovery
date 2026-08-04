@@ -8,7 +8,7 @@ class MockILS extends AbstractIlsDriver{
 		return false;
 	}
 
-	public function getCheckouts(User $patron): array {
+	public function getCheckouts(User $patron, array $options = []): array {
 		return [];
 	}
 
@@ -37,7 +37,7 @@ class MockILS extends AbstractIlsDriver{
 		];
 	}
 
-	function placeHold(User $patron, $recordId, $pickupBranch = null, $cancelDate = null) : array {
+	function placeHold(User $patron, mixed $recordId, ?string $pickupBranch = null, ?string $cancelDate = null, ?string $pickupSublocation = null, ?int $numberOfCopies = 1) : array {
 		return [
 			'success' => 'false',
 			'message' => 'Place Hold not implemented for MockILS'
@@ -97,7 +97,7 @@ class MockILS extends AbstractIlsDriver{
 		];
 	}
 
-	public function getFines(User $patron, $includeMessages = false): array {
+	public function getFines(User $patron, $includeMessages = false, ?string $type = null): array {
 		return [
 			'success' => 'false',
 			'message' => 'Get Fines not implemented for MockILS'

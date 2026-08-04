@@ -22,7 +22,7 @@
 						{/if}
 					{elseif $property.type == 'regularExpression' || $property.type =='multilineRegularExpression'}
 						{$value = $propValue|escape}
-					{elseif $property.type == 'text' || $property.type == 'hidden' || $property.type == 'file' || $property.type == 'integer' || $property.type == 'email' || $property.type == 'url'}
+					{elseif $property.type == 'text' || $property.type == 'hidden' || $property.type == 'file' || $property.type == 'integer' || $property.type == 'calculatedInteger' || $property.type == 'email' || $property.type == 'url'}
 						{$value = $propValue|escape}
 					{elseif $property.type == 'date'}
 						{$value = {$propValue|date_format}}
@@ -86,7 +86,7 @@
 						{else}
 							{$value = 'Not set'}
 						{/if}
-					{elseif $property.type == 'checkbox'}
+					{elseif $property.type == 'checkbox' || $property.type == 'calculatedBoolean'}
 						{if ($propValue == 1)}
 							{$value = {translate text='Yes' isAdminFacing=true}}
 						{elseif ($propValue == 0)}

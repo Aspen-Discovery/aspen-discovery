@@ -1,23 +1,38 @@
 <?php
 require_once ROOT_DIR . '/services/Admin/Admin.php';
+require_once ROOT_DIR . '/sys/SystemLogging/AspenUsage.php';
+
 abstract class Admin_AbstractUsageGraphs extends Admin_Admin {
 
 	// method specific enough to be worth writing an implementation for per section
 	abstract function getBreadcrumbs(): array;
 	abstract function getActiveAdminSection(): string;
 	abstract protected function assignGraphSpecificTitle(string $stat): void;
-	abstract protected function getAndSetInterfaceDataSeries(string $stat, string $instanceName): void;
+	abstract protected function getAndSetInterfaceDataSeries(string $stat, string $instanceName, array $timeframes, bool|array $customMode): void;
 
 	// methods shared amongst all usagegraph classes
 	protected function launchGraph(string $sectionName): void {
 		global $interface;
 
 		$stat = $_REQUEST['stat'];
+		$timeframe = $_REQUEST['timeframe'] ?? 'month';
+		$custom = false;
+
+		if ($timeframe === 'custom') {
+			$customUsagePeriodStart = $_REQUEST['customUsagePeriodStart'] ?? null;
+			$customUsagePeriodDuration = $_REQUEST['customUsagePeriodDuration'] ?? null;
+			$custom = [
+				'customUsagePeriodStart' => $customUsagePeriodStart,
+				'customUsagePeriodDuration' => $customUsagePeriodDuration,
+			];
+		}
+
 		if (!empty($_REQUEST['instance'])) {
 			$instanceName = $_REQUEST['instance'];
 		} else {
 			$instanceName = '';
 		}
+		$profileName = $_REQUEST['profileName'] ?? '';
 
 		// includes dashboard subsection name in title if relevant
 		$subSectionName = $_REQUEST['subSection'] ?? '';
@@ -33,12 +48,51 @@ abstract class Admin_AbstractUsageGraphs extends Admin_Admin {
 		$interface->assign('graphTitle', $sectionTitle);
 		$interface->assign('showCSVExportButton', true);
 		$interface->assign('propName', 'exportToCSV');
+		$interface->assign('profileName', $profileName);
+		$interface->assign('instance', $instanceName);
+		$interface->assign('timeframe', $timeframe);
+
+		$usage = new AspenUsage();
+		// Only used by custom, but assign it always so it's in the DOM when custom fields render dynamically before reload.
+		$earliestUsageDate = $usage->getEarliestUsageDate();
+		$interface->assign('earliestUsageDate', $earliestUsageDate);
+
+		if ($timeframe === 'custom') {
+			$interface->assign('customUsagePeriodStart', $customUsagePeriodStart);
+			$interface->assign('customUsagePeriodDuration', $customUsagePeriodDuration);
+			$interface->assign('customPeriodStartWarning', $this->getCustomPeriodStartWarning($customUsagePeriodStart, $earliestUsageDate));
+		}
 
 		$this->assignGraphSpecificTitle($stat);
-		$this->getAndSetInterfaceDataSeries($stat, $instanceName);
-		
+		$this->getAndSetInterfaceDataSeries($stat, $instanceName, $this->setGroupBy($timeframe), $custom);
 		$graphTitle = $interface->getVariable('graphTitle');
 		$this->display('../Admin/usage-graph.tpl', $graphTitle);
+	}
+
+	private function getCustomPeriodStartWarning(?string $customPeriodStart, ?string $earliestUsageDate): ?string {
+		if (empty($customPeriodStart) || empty($earliestUsageDate) || strtotime($customPeriodStart) >= strtotime($earliestUsageDate)) {
+			return null;
+		}
+		return "The selected start date is before the earliest recorded usage ($earliestUsageDate). Periods before then will not be displayed.";
+	}
+
+	private function setGroupBy(string $timeframe): array {
+		if ($timeframe == 'day') {
+			return ['year', 'month', 'day'];
+		}
+		if ($timeframe == 'month') {
+			return ['year', 'month'];
+		}
+		if ($timeframe == 'week') {
+			return ['year', 'week'];
+		}
+		if ($timeframe == 'year') {
+			return ['year'];
+		}
+		if ($timeframe == 'custom') {
+			return ['year', 'month', 'day'];
+		}
+		return ['year', 'month']; // monthly is the default
 	}
 
 	public function canView(): bool {
@@ -48,16 +102,27 @@ abstract class Admin_AbstractUsageGraphs extends Admin_Admin {
 		]);
 	}
 
-	public function buildCSV(string $section): void {
+	public function buildCSV(string $section, $customUsagePeriodStart = null, $customUsagePeriodDuration = null): void {
 		global $interface;
 
 		$stat = $_REQUEST['stat'];
+		$timeframe = $_REQUEST['timeframe'] ?? 'month';
+		$custom = false;
+		if ($timeframe === 'custom') {
+			$customUsagePeriodStart = $_REQUEST['customUsagePeriodStart'] ?? null;
+			$customUsagePeriodDuration = $_REQUEST['customUsagePeriodDuration'] ?? null;
+			$custom = [
+				'customUsagePeriodStart' => $customUsagePeriodStart,
+				'customUsagePeriodDuration' => $customUsagePeriodDuration,
+			];
+		}
+
 		if (!empty($_REQUEST['instance'])) {
 			$instanceName = $_REQUEST['instance'];
 		} else {
 			$instanceName = '';
 		}
-		$this->getAndSetInterfaceDataSeries($stat, $instanceName);
+		$this->getAndSetInterfaceDataSeries($stat, $instanceName, $this->setGroupBy($timeframe), $custom);
 		$dataSeries = $interface->getVariable('dataSeries');
 
 		// ensures csv filename contains dashboard subsection name if relevant

@@ -86,7 +86,7 @@ class SIPAuthentication implements Authentication {
 
 	}
 
-	public function authenticate($validatedViaSSO, $accountProfile) {
+	public function authenticate(bool $validatedViaSSO, ?AccountProfile $accountProfile) : mixed {
 		global $configArray;
 		global $timer;
 

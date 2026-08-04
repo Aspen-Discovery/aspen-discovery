@@ -398,6 +398,9 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher {
 		} else if (str_starts_with($record['type'],'event_aspenEvent')) {
 			require_once ROOT_DIR . '/RecordDrivers/AspenEventRecordDriver.php';
 			return new AspenEventRecordDriver($record);
+		} else if (str_starts_with($record['type'], 'event_localhop')) {
+			require_once ROOT_DIR . '/RecordDrivers/LocalHopEventRecordDriver.php';
+			return new LocalHopEventRecordDriver($record);
 		} else {
 			// TODO: rewrite Library Market Library Calendar type as event_lm or something similar. 2022 03 20 James.
 			require_once ROOT_DIR . '/RecordDrivers/LibraryCalendarEventRecordDriver.php';

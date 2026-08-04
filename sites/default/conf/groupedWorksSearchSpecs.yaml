@@ -252,6 +252,53 @@ SeriesProper:
       - [onephrase, 1000]
       - [exact, 400]
 
+TitleAuthorSeries:
+  QueryFields:
+# Titles
+    -
+      - [OR, 500]
+      - title_exact:
+        - [localized_callnumber, 10000]
+      - title_left:
+        - [text_left, 4000]
+      - title_proper:
+        - [onephrase, 800]
+        - [and, 500]
+        - [single_word_removal, 50]
+      - title:
+        - [and, 125]
+      - title_alt:
+        - [and, 100]
+      - title_new:
+        - [and, 50]
+      - title_full:
+        - [and, 200]
+        - [single_word_removal, 50]
+#Authors
+    -
+      - [OR, 400]
+      - author_exact:
+        - [localized_callnumber, 2000]
+      - author_left:
+        - [text_left, 1000]
+      - author:
+        - [onephrase, 800]
+        - [proximal, 200]
+      - author2:
+        - [onephrase, 100]
+        - [proximal, 50]
+      - author_additional:
+        - [onephrase, 100]
+        - [proximal, 50]
+# Series
+    -
+      - [OR, 300]
+      - series:
+        - [exact_quoted, 1500]
+        - [onephrase, 600]
+        - [and, 50]
+
+
 # This is proving slow based of the number of things we are searching.
 # Try reorganizing to match things better and ensure that we don't look at similar fields multiple times.
 Keyword:

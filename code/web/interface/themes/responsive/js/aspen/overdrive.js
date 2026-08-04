@@ -2,7 +2,7 @@ AspenDiscovery.OverDrive = (function(){
 	// noinspection JSUnusedGlobalSymbols
 	return {
 		cancelOverDriveHold: function(patronId, overdriveId){
-			if (confirm("Are you sure you want to cancel this hold?")){
+			if (confirm(__('Are you sure you want to cancel this hold?'))){
 				var ajaxUrl = Globals.path + "/OverDrive/AJAX?method=cancelHold&patronId=" + patronId + "&overDriveId=" + overdriveId;
 				$.ajax({
 					url: ajaxUrl,
@@ -279,7 +279,7 @@ AspenDiscovery.OverDrive = (function(){
 		},
 
 		returnCheckout: function (patronId, overDriveId){
-			if (confirm('Are you sure you want to return this title?')){
+			if (confirm(__('Are you sure you want to return this title?'))){
 				AspenDiscovery.showMessage("Returning Title", "Returning your title in OverDrive.  This may take a minute.");
 				var ajaxUrl = Globals.path + "/OverDrive/AJAX?method=returnCheckout&patronId=" + patronId + "&overDriveId=" + overDriveId;
 				$.ajax({

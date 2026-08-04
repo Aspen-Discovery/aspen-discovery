@@ -1,0 +1,882 @@
+{
+  "info": {
+    "name": "Aspen Discovery - OAuth2 & OpenID Connect",
+    "description": "OAuth2 and OpenID Connect testing for Aspen Discovery APIs",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "OIDC Discovery & Configuration",
+      "item": [
+        {
+          "name": "Discovery - Get Server Configuration",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/.well-known/openid-configuration",
+              "host": ["{{base_url}}"],
+              "path": [".well-known", "openid-configuration"]
+            },
+            "description": "Retrieve OpenID Connect server metadata and supported endpoints"
+          },
+          "response": []
+        },
+        {
+          "name": "JWKS - Get Public Keys",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/.well-known/jwks.json",
+              "host": ["{{base_url}}"],
+              "path": [".well-known", "jwks.json"]
+            },
+            "description": "Retrieve JSON Web Key Set for token verification"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Token Generation - Grant Types",
+      "item": [
+        {
+          "name": "Password Grant - API Access Only",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var responseData = pm.response.json();",
+                  "if (responseData.access_token) {",
+                  "  pm.environment.set('access_token', responseData.access_token);",
+                  "  pm.environment.set('token_type', responseData.token_type);",
+                  "  console.log('Access token saved');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {"key": "grant_type", "value": "password"},
+                {"key": "username", "value": "{{username}}"},
+                {"key": "password", "value": "{{password}}"},
+                {"key": "client_id", "value": "{{client_id}}"},
+                {"key": "client_secret", "value": "{{client_secret}}"},
+                {"key": "scope", "value": "work:read list:read"}
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/Authentication/OAuth2/Token",
+              "host": ["{{base_url}}"],
+              "path": ["Authentication", "OAuth2", "Token"]
+            },
+            "description": "Get access token with API scopes only (no OpenID)"
+          },
+          "response": []
+        },
+        {
+          "name": "Password Grant - With OpenID & ID Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var responseData = pm.response.json();",
+                  "if (responseData.access_token) {",
+                  "  pm.environment.set('access_token', responseData.access_token);",
+                  "  pm.environment.set('refresh_token', responseData.refresh_token);",
+                  "  pm.environment.set('token_type', responseData.token_type);",
+                  "}",
+                  "if (responseData.id_token) {",
+                  "  pm.environment.set('id_token', responseData.id_token);",
+                  "  var parts = responseData.id_token.split('.');",
+                  "  if (parts.length === 3) {",
+                  "    var payload = JSON.parse(atob(parts[1]));",
+                  "    pm.environment.set('id_token_payload', JSON.stringify(payload, null, 2));",
+                  "    console.log('ID Token Claims:', payload);",
+                  "  }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {"key": "grant_type", "value": "password"},
+                {"key": "username", "value": "{{username}}"},
+                {"key": "password", "value": "{{password}}"},
+                {"key": "client_id", "value": "{{client_id}}"},
+                {"key": "client_secret", "value": "{{client_secret}}"},
+                {"key": "scope", "value": "openid profile email work:read list:read"}
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/Authentication/OAuth2/Token",
+              "host": ["{{base_url}}"],
+              "path": ["Authentication", "OAuth2", "Token"]
+            },
+            "description": "Get access token, refresh token, AND ID token with user claims"
+          },
+          "response": []
+        },
+        {
+          "name": "Authorization Code Flow - Initiate",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/Authentication/OAuth2/Authorize?response_type=code&client_id={{client_id}}&redirect_uri={{redirect_uri}}&scope=openid%20profile%20email%20work:read&state=xyz123",
+              "host": ["{{base_url}}"],
+              "path": ["Authentication", "OAuth2", "Authorize"],
+              "query": [
+                {"key": "response_type", "value": "code"},
+                {"key": "client_id", "value": "{{client_id}}"},
+                {"key": "redirect_uri", "value": "{{redirect_uri}}"},
+                {"key": "scope", "value": "openid profile email work:read"},
+                {"key": "state", "value": "xyz123"}
+              ]
+            },
+            "description": "Step 1: Get authorization approval page (shows client, scopes, and user)"
+          },
+          "response": []
+        },
+        {
+          "name": "Authorization Code Flow - Approve",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Extract authorization code from redirect",
+                  "var code = null;",
+                  "",
+                  "// Method 1: Check Location header for redirect",
+                  "var locationHeader = pm.response.headers.get('Location');",
+                  "if (locationHeader) {",
+                  "  console.log('Location Header found');",
+                  "  var match = locationHeader.match(/code=([^&]+)/);",
+                  "  if (match) {",
+                  "    code = match[1];",
+                  "  }",
+                  "}",
+                  "",
+                  "// Method 2: If Postman followed redirect, check the cookies or history",
+                  "// The final URL after redirect should be in pm.request.url",
+                  "if (!code && pm.request.url) {",
+                  "  var urlStr = pm.request.url.toString ? pm.request.url.toString() : String(pm.request.url);",
+                  "  console.log('Checking request URL');",
+                  "  var match = urlStr.match(/code=([^&]+)/);",
+                  "  if (match) {",
+                  "    code = match[1];",
+                  "    console.log('Found code in request URL');",
+                  "  }",
+                  "}",
+                  "",
+                  "// Method 3: Get it from the response text (if it contains the redirect URL)",
+                  "if (!code) {",
+                  "  try {",
+                  "    var responseBody = pm.response.text();",
+                  "    if (responseBody && responseBody.length > 0) {",
+                  "      var match = responseBody.match(/code=([^&\\\"\\s]+)/);",
+                  "      if (match) {",
+                  "        code = match[1];",
+                  "        console.log('Found code in response body');",
+                  "      }",
+                  "    }",
+                  "  } catch (e) {",
+                  "    console.log('Could not read response body');",
+                  "  }",
+                  "}",
+                  "",
+                  "// If we found a code, save it",
+                  "if (code && code.length > 0) {",
+                  "  pm.environment.set('auth_code', code);",
+                  "  console.log('✓ Authorization code extracted and saved');",
+                  "  console.log('✓ Code (first 20 chars): ' + code.substring(0, 20) + '...');",
+                  "  console.log('✓ Ready for Token Exchange - use {{auth_code}} variable');",
+                  "} else {",
+                  "  console.log('⚠ Could not extract authorization code');",
+                  "  console.log('Response status: ' + pm.response.code);",
+                  "  console.log('Try checking your browser - you should have been redirected to:');",
+                  "  console.log('https://aspen.localhost:8890/?code=...&state=xyz123');",
+                  "  console.log('');",
+                  "  console.log('Manual extraction:');",
+                  "  console.log('1. Copy the code from the URL');",
+                  "  console.log('2. Click \"Environment\" in Postman');",
+                  "  console.log('3. Find auth_code variable');",
+                  "  console.log('4. Paste the code in the CURRENT VALUE field');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {"key": "approve", "value": "yes"}
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/Authentication/OAuth2/Authorize?response_type=code&client_id={{client_id}}&redirect_uri={{redirect_uri}}&scope=openid%20profile%20email%20work:read&state=xyz123",
+              "host": ["{{base_url}}"],
+              "path": ["Authentication", "OAuth2", "Authorize"],
+              "query": [
+                {"key": "response_type", "value": "code"},
+                {"key": "client_id", "value": "{{client_id}}"},
+                {"key": "redirect_uri", "value": "{{redirect_uri}}"},
+                {"key": "scope", "value": "openid profile email work:read"},
+                {"key": "state", "value": "xyz123"}
+              ]
+            },
+            "description": "Step 2: User approves - extracts authorization code from redirect URL and saves to {{auth_code}} variable"
+          },
+          "response": []
+        },
+        {
+          "name": "Authorization Code Flow - Token Exchange",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {"key": "grant_type", "value": "authorization_code"},
+                {"key": "code", "value": "{{auth_code}}"},
+                {"key": "redirect_uri", "value": "{{redirect_uri}}"},
+                {"key": "client_id", "value": "{{client_id}}"},
+                {"key": "client_secret", "value": "{{client_secret}}"}
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/Authentication/OAuth2/Token",
+              "host": ["{{base_url}}"],
+              "path": ["Authentication", "OAuth2", "Token"]
+            },
+            "description": "Step 3: Exchange authorization code for tokens"
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh Token Grant",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var responseData = pm.response.json();",
+                  "if (responseData.access_token) {",
+                  "  pm.environment.set('access_token', responseData.access_token);",
+                  "  console.log('New access token obtained via refresh');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {"key": "grant_type", "value": "refresh_token"},
+                {"key": "refresh_token", "value": "{{refresh_token}}"},
+                {"key": "client_id", "value": "{{client_id}}"},
+                {"key": "client_secret", "value": "{{client_secret}}"}
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/Authentication/OAuth2/Token",
+              "host": ["{{base_url}}"],
+              "path": ["Authentication", "OAuth2", "Token"]
+            },
+            "description": "Obtain new access token using refresh token"
+          },
+          "response": []
+        },
+        {
+          "name": "Client Credentials Grant",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {"key": "grant_type", "value": "client_credentials"},
+                {"key": "client_id", "value": "{{client_id}}"},
+                {"key": "client_secret", "value": "{{client_secret}}"},
+                {"key": "scope", "value": "work:read"}
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/Authentication/OAuth2/Token",
+              "host": ["{{base_url}}"],
+              "path": ["Authentication", "OAuth2", "Token"]
+            },
+            "description": "Get access token for service-to-service authentication"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "OIDC Endpoints",
+      "item": [
+        {
+          "name": "UserInfo - Get User Claims",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/Authentication/OAuth2/UserInfo",
+              "host": ["{{base_url}}"],
+              "path": ["Authentication", "OAuth2", "UserInfo"]
+            },
+            "description": "Get authenticated user's claims (requires openid scope)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "API Methods - User Data",
+      "item": [
+        {
+          "name": "Get My Account",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/API/UserAPI?method=getMyAccount",
+              "host": ["{{base_url}}"],
+              "path": ["API", "UserAPI"],
+              "query": [
+                {"key": "method", "value": "getMyAccount"}
+              ]
+            },
+            "description": "Get authenticated user's account information (requires user:read scope)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get User Lists",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/API/ListAPI?method=getUserLists",
+              "host": ["{{base_url}}"],
+              "path": ["API", "ListAPI"],
+              "query": [
+                {"key": "method", "value": "getUserLists"}
+              ]
+            },
+            "description": "Get user's reading lists (requires list:read scope)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Checked Out Items",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/API/UserAPI?method=getPatronCheckedOutItems",
+              "host": ["{{base_url}}"],
+              "path": ["API", "UserAPI"],
+              "query": [
+                {"key": "method", "value": "getPatronCheckedOutItems"}
+              ]
+            },
+            "description": "Get user's currently checked out items (requires user:read scope)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Holds",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/API/UserAPI?method=getPatronHolds",
+              "host": ["{{base_url}}"],
+              "path": ["API", "UserAPI"],
+              "query": [
+                {"key": "method", "value": "getPatronHolds"}
+              ]
+            },
+            "description": "Get user's active holds (requires user:read scope)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Error Handling - Token Errors",
+      "item": [
+        {
+          "name": "Error - Invalid Client ID",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {"key": "grant_type", "value": "password"},
+                {"key": "username", "value": "{{username}}"},
+                {"key": "password", "value": "{{password}}"},
+                {"key": "client_id", "value": "invalid_client_id"},
+                {"key": "client_secret", "value": "invalid_secret"},
+                {"key": "scope", "value": "openid profile"}
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/Authentication/OAuth2/Token",
+              "host": ["{{base_url}}"],
+              "path": ["Authentication", "OAuth2", "Token"]
+            },
+            "description": "Test error response when client not found"
+          },
+          "response": []
+        },
+        {
+          "name": "Error - Invalid User Credentials",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {"key": "grant_type", "value": "password"},
+                {"key": "username", "value": "nonexistent_user"},
+                {"key": "password", "value": "wrong_password"},
+                {"key": "client_id", "value": "{{client_id}}"},
+                {"key": "client_secret", "value": "{{client_secret}}"},
+                {"key": "scope", "value": "openid profile"}
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/Authentication/OAuth2/Token",
+              "host": ["{{base_url}}"],
+              "path": ["Authentication", "OAuth2", "Token"]
+            },
+            "description": "Test error response for invalid user credentials"
+          },
+          "response": []
+        },
+        {
+          "name": "Error - Invalid Scope",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {"key": "grant_type", "value": "password"},
+                {"key": "username", "value": "{{username}}"},
+                {"key": "password", "value": "{{password}}"},
+                {"key": "client_id", "value": "{{client_id}}"},
+                {"key": "client_secret", "value": "{{client_secret}}"},
+                {"key": "scope", "value": "invalid:scope nonexistent:permission"}
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/Authentication/OAuth2/Token",
+              "host": ["{{base_url}}"],
+              "path": ["Authentication", "OAuth2", "Token"]
+            },
+            "description": "Test error response for unsupported scopes"
+          },
+          "response": []
+        },
+        {
+          "name": "Error - Missing Required Parameter",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {"key": "grant_type", "value": "password"},
+                {"key": "username", "value": "{{username}}"}
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/Authentication/OAuth2/Token",
+              "host": ["{{base_url}}"],
+              "path": ["Authentication", "OAuth2", "Token"]
+            },
+            "description": "Test error response when required parameters are missing"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Error Handling - API Errors",
+      "item": [
+        {
+          "name": "Error - Missing Authorization Header",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/API/UserAPI?method=getPatronProfile",
+              "host": ["{{base_url}}"],
+              "path": ["API", "UserAPI"],
+              "query": [
+                {"key": "method", "value": "getPatronProfile"}
+              ]
+            },
+            "description": "Test error response when Authorization header is missing"
+          },
+          "response": []
+        },
+        {
+          "name": "Error - Invalid Token Format",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer not_a_valid_token"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/API/UserAPI?method=getPatronProfile",
+              "host": ["{{base_url}}"],
+              "path": ["API", "UserAPI"],
+              "query": [
+                {"key": "method", "value": "getPatronProfile"}
+              ]
+            },
+            "description": "Test error response for malformed token"
+          },
+          "response": []
+        },
+        {
+          "name": "Error - Expired Token",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{expired_access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/API/UserAPI?method=getPatronProfile",
+              "host": ["{{base_url}}"],
+              "path": ["API", "UserAPI"],
+              "query": [
+                {"key": "method", "value": "getPatronProfile"}
+              ]
+            },
+            "description": "Test error response for expired token"
+          },
+          "response": []
+        },
+        {
+          "name": "Error - Insufficient Scope",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{api_only_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/API/UserAPI?method=getPatronProfile",
+              "host": ["{{base_url}}"],
+              "path": ["API", "UserAPI"],
+              "query": [
+                {"key": "method", "value": "getPatronProfile"}
+              ]
+            },
+            "description": "Test error response when token lacks required scope"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Token Inspection & Testing",
+      "item": [
+        {
+          "name": "Get and Decode ID Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Decode and inspect the ID token from Password Grant response",
+                  "var responseData = pm.response.json();",
+                  "if (responseData.id_token) {",
+                  "  var token = responseData.id_token;",
+                  "  var parts = token.split('.');",
+                  "  if (parts.length === 3) {",
+                  "    // Decode header",
+                  "    var header = JSON.parse(atob(parts[0]));",
+                  "    // Decode payload",
+                  "    var payload = JSON.parse(atob(parts[1]));",
+                  "    console.log('Header:', header);",
+                  "    console.log('Payload:', payload);",
+                  "    console.log('Signature (first 50 chars):', parts[2].substring(0, 50));",
+                  "    pm.environment.set('decoded_id_token', JSON.stringify({header, payload}, null, 2));",
+                  "  }",
+                  "} else {",
+                  "  console.log('No ID token in response');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {"key": "grant_type", "value": "password"},
+                {"key": "username", "value": "{{username}}"},
+                {"key": "password", "value": "{{password}}"},
+                {"key": "client_id", "value": "{{client_id}}"},
+                {"key": "client_secret", "value": "{{client_secret}}"},
+                {"key": "scope", "value": "openid profile email"}
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/Authentication/OAuth2/Token",
+              "host": ["{{base_url}}"],
+              "path": ["Authentication", "OAuth2", "Token"]
+            },
+            "description": "Get token and run test script to decode and inspect ID token"
+          },
+          "response": []
+        },
+        {
+          "name": "Save Access Token for Reuse",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var responseData = pm.response.json();",
+                  "if (responseData.access_token) {",
+                  "  pm.environment.set('access_token', responseData.access_token);",
+                  "  pm.environment.set('token_type', responseData.token_type);",
+                  "  pm.environment.set('expires_in', responseData.expires_in);",
+                  "  if (responseData.refresh_token) {",
+                  "    pm.environment.set('refresh_token', responseData.refresh_token);",
+                  "  }",
+                  "  console.log('Tokens saved to environment');",
+                  "  console.log('Token expires in:', responseData.expires_in, 'seconds');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {"key": "grant_type", "value": "password"},
+                {"key": "username", "value": "{{username}}"},
+                {"key": "password", "value": "{{password}}"},
+                {"key": "client_id", "value": "{{client_id}}"},
+                {"key": "client_secret", "value": "{{client_secret}}"},
+                {"key": "scope", "value": "openid profile email work:read list:read user:read"}
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/Authentication/OAuth2/Token",
+              "host": ["{{base_url}}"],
+              "path": ["Authentication", "OAuth2", "Token"]
+            },
+            "description": "Get full-scope token and automatically save it to environment for use in other requests"
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://aspen.localhost:8890",
+      "type": "string"
+    },
+    {
+      "key": "client_id",
+      "value": "aspen_test_client_id",
+      "type": "string"
+    },
+    {
+      "key": "client_secret",
+      "value": "your_client_secret",
+      "type": "string"
+    },
+    {
+      "key": "username",
+      "value": "test_patron",
+      "type": "string"
+    },
+    {
+      "key": "password",
+      "value": "test_password",
+      "type": "string"
+    },
+    {
+      "key": "redirect_uri",
+      "value": "https://aspen.localhost:8890/callback",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refresh_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "id_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "auth_code",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "expired_access_token",
+      "value": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiaWF0IjoxNDIyNzc5NjM4LCJleHAiOjE0MjI3Nzk2MzksImF1ZCI6ImFzcGVuX3Rlc3RfY2xpZW50X2lkIiwiaXNzIjoiaHR0cHM6Ly9hc3Blbi5sb2NhbGhvc3Q6ODg5MCJ9.EXAMPLE_EXPIRED_TOKEN",
+      "type": "string"
+    },
+    {
+      "key": "api_only_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "token_type",
+      "value": "Bearer",
+      "type": "string"
+    },
+    {
+      "key": "expires_in",
+      "value": "3600",
+      "type": "string"
+    }
+  ]
+}
+

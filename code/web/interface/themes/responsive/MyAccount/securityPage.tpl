@@ -25,22 +25,58 @@
 			</div>
 			{/if}
 			{if !empty($twoFactorEnabled)}
-			<div class="row">
-				<div class="col-xs-6">
-					<label for="2faStatus" style="font-size: 18px">{translate text='2-Factor Authentication' isPublicFacing=true}</label>
+			<div class="row" style="padding-bottom: 1em;">
+				<div class="col-xs-12">
+					<h2>{translate text='2-Factor Authentication' isPublicFacing=true}</h2>
+					{if !empty($requiredSetupWarning)}<p>{$requiredSetupWarning}</p>{/if}
 					<small class="text-muted help-block">{translate text="Two-factor authentication is an enhanced security measure. Once enabled, you'll be required to give two types of identification when you log into the catalog." isPublicFacing=true}</small>
-					<small class="text-muted help-block bold">{translate text="Email is currently the only authentication method available." isPublicFacing=true}</small>
-				</div>
-				<div class="col-xs-6 text-right">
-					{if $twoFactorStatus == '0'}
-						<button type="button" name="2faStatus" class="btn btn-primary" onclick="return AspenDiscovery.Account.show2FAEnrollment(false);">{translate text="Set up" isPublicFacing=true}</button>
-					{else}
-						<button type="button" name="2faStatus" class="btn btn-primary" onclick="return AspenDiscovery.Account.showCancel2FA();" {if empty($enableDeactivation)}disabled{/if}>{translate text="Turn off" isPublicFacing=true}</button>
-						{if empty($enableDeactivation)}<small class="help-block">{translate text="Your account is required to have 2FA enabled" isPublicFacing=true}</small>{/if}
-					{/if}
 				</div>
 			</div>
-			{if $twoFactorStatus == '1'}
+
+			{if $allowTOTP2FA}
+				<div class="row">
+					<div class="col-xs-6">
+						<p>{translate text='Authenticator app' isPublicFacing=true} (Recommended)<br/>
+						<small class="help-block">{translate text='Examples: Google Authenticator, Microsoft Authenticator, Authy, etc.' isPublicFacing=true}</small>
+						</p>
+					</div>
+					<div class="col-xs-6 text-right">
+                        {if $showSetupTotp}
+							<button type="button" name="enableTOTP" class="btn btn-primary" onclick="return AspenDiscovery.Account.show2FAEnrollment(false, 'totp');">{translate text="Set up" isPublicFacing=true}</button>
+                        {else}
+							<button type="button" name="disableTOTP" class="btn btn-primary" onclick="return AspenDiscovery.Account.showCancel2FA('totp');" {if !$canDisableTotp}disabled{/if}>{translate text="Disable" isPublicFacing=true}</button>
+                        {/if}
+					</div>
+				</div>
+            {/if}
+	        {if $allowEmail2FA}
+				<div class="row" {if $allowTOTP2FA && $allowEmail2FA}style="padding-top:.5em"{/if}>
+					<div class="col-xs-6">
+						<p>{translate text='Email' isPublicFacing=true}<br/>
+							<small class="help-block">{translate text='Get a code sent to your email address.' isPublicFacing=true}</small>
+						</p>
+					</div>
+					<div class="col-xs-6 text-right">
+	                    {if $showSetupEmail}
+							<button type="button" name="enableEmail" class="btn btn-primary" onclick="return AspenDiscovery.Account.show2FAEnrollment(false, 'email');">{translate text="Set up" isPublicFacing=true}</button>
+	                    {else}
+							<button type="button" name="disableEmail" class="btn btn-primary" onclick="return AspenDiscovery.Account.showCancel2FA('email');" {if !$canDisableEmail}disabled{/if}>{translate text="Disable" isPublicFacing=true}</button>
+	                    {/if}
+					</div>
+				</div>
+	        {/if}
+
+            {if !empty($migrationRequired)}
+			<div class="row">
+				<div class="col-xs-12">
+					<div class="alert alert-warning">
+						<strong>{translate text="Action Required" isPublicFacing=true}</strong><br>
+                        {$migrationMessage}
+					</div>
+				</div>
+			</div>
+			{/if}
+            {if $twoFactorStatus == 1 && empty($migrationRequired)}
 				<div class="row">
 					<div class="col-xs-6">
 						<label for="2faStatus">{translate text='Backup codes' isPublicFacing=true}</label>

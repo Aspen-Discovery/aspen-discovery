@@ -1,4 +1,5 @@
 <div id="main-content">
+	<h1>{translate text='My Materials Requests' isPublicFacing=true}</h1>
 	{if !empty($profile->_web_note)}
 		<div class="row">
 			<div id="web_note" class="alert alert-info text-center col-xs-12">{$profile->_web_note}</div>
@@ -11,7 +12,6 @@
 		{include file='ilsMessages.tpl' messages=$ilsMessages}
 	{/if}
 
-	<h1>{translate text='My Materials Requests' isPublicFacing=true}</h1>
 	{if !empty($error)}
 		<div class="alert alert-danger">{$error}</div>
 	{else}

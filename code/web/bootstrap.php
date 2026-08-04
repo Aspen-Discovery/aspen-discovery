@@ -2,6 +2,17 @@
 define('ROOT_DIR', __DIR__);
 
 /**
+ * Load and register Composer Autoloader
+ */
+global $composerActive;
+if (file_exists(ROOT_DIR . '/vendor/autoload.php')) {
+	$composerActive = true;
+	require_once ROOT_DIR . '/vendor/autoload.php';
+} else {
+	$composerActive = false;
+}
+
+/**
  * Load and register Smarty Autoloader
  */
 if (!class_exists('Smarty_Autoloader')) {
@@ -12,6 +23,7 @@ Smarty_Autoloader::register(true);
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
 require_once ROOT_DIR . '/sys/Interface.php';
 require_once ROOT_DIR . '/sys/AspenError.php';
+require_once ROOT_DIR . '/sys/BotChecker.php';
 require_once ROOT_DIR . '/sys/Module.php';
 require_once ROOT_DIR . '/sys/Administration/Permission.php';
 require_once ROOT_DIR . '/sys/SystemLogging/AspenUsage.php';
@@ -33,6 +45,7 @@ global $serverName;
 $aspenUsage = new AspenUsage();
 $aspenUsage->year = date('Y');
 $aspenUsage->month = date('n');
+$aspenUsage->day = date('d');
 
 global $errorHandlingEnabled;
 $errorHandlingEnabled = 0;
@@ -119,6 +132,10 @@ global $userAgent;
 $userAgentString = 'Unknown';
 if (isset($_SERVER['HTTP_USER_AGENT'])) {
 	$userAgentString = $_SERVER['HTTP_USER_AGENT'];
+	// Remove everything after the first "/" to avoid storing version information.
+	if (strpos($userAgentString, '/') !== false) {
+		$userAgentString = substr($userAgentString, 0, strpos($userAgentString, "/"));
+	}
 }
 try {
 	// Check if user agent tracking is disabled
@@ -140,11 +157,15 @@ try {
 		if ($userAgent->find(true)) {
 			$userAgentId = $userAgent->id;
 		}else{
-			if (!$userAgent->insert()) {
+			$userAgentToInsert = new UserAgent();
+			$userAgentToInsert->userAgent = $userAgentString;
+			$userAgentToInsert->isBot = BotChecker::isRequestFromBot();
+			if (!$userAgentToInsert->insert()) {
 				$logger->log("Could not insert user agent $userAgentString", Logger::LOG_ERROR);
-				$logger->log($userAgent->getLastError(), Logger::LOG_ERROR);
+				$logger->log($userAgentToInsert->getLastError(), Logger::LOG_ERROR);
 			}
-			$userAgentId = $userAgent->id;
+			$userAgentId = $userAgentToInsert->id;
+			$userAgent = $userAgentToInsert;
 		}
 		require_once ROOT_DIR . '/sys/SystemLogging/UsageByUserAgent.php';
 		$usageByUserAgent = new UsageByUserAgent();
@@ -319,7 +340,9 @@ function loadLibraryAndLocation() {
 	$branch = $locationSingleton->getBranchLocationCode();
 	if (!isset($_COOKIE['branch']) || $branch != $_COOKIE['branch']) {
 		if ($branch == '') {
-			setcookie('branch', $branch, time() - 1000, '/');
+			if (!empty($_COOKIE['branch'])) {
+				setcookie('branch', $branch, time() - 1000, '/');
+			}
 		} else {
 			setcookie('branch', $branch, 0, '/');
 		}
@@ -329,7 +352,9 @@ function loadLibraryAndLocation() {
 	$subLocation = $locationSingleton->getSublocationCode();
 	if (!isset($_COOKIE['sublocation']) || $subLocation != $_COOKIE['sublocation']) {
 		if (empty($subLocation)) {
-			setcookie('sublocation', $subLocation, time() - 1000, '/');
+			if (!empty($_COOKIE['sublocation'])) {
+				setcookie('sublocation', $subLocation, time() - 1000, '/');
+			}
 		} else {
 			setcookie('sublocation', $subLocation, 0, '/');
 		}

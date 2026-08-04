@@ -9,7 +9,7 @@ class EmailTemplate extends DataObject {
 	public $languageCode;
 	public $subject;
 	public $plainTextBody;
-	//TODO: Add HTML Body
+	public $htmlBody;
 
 	private $_libraries;
 
@@ -27,21 +27,34 @@ class EmailTemplate extends DataObject {
 				$isCarlX = true;
 			}
 		}
-		if ($isCarlX){
-			$availableTemplates = [
-				'welcome' => 'Welcome',
-				'duplicateNameDOB' => 'Duplicate Name and Birthdate',
-				'duplicateEmail' => 'Duplicate Email'
-			];
-		} else {
-			$availableTemplates = [
-				'welcome' => 'Welcome',
+		$availableTemplates = [
+			'welcome' => 'Welcome',
+			'savedSearchAlert' => 'Saved Search Alert',
+		];
+		global $enabledModules;
+		if (in_array('Community Engagement', $enabledModules)) {
+			$availableTemplates += [
 				'campaignStart' => 'Campaign Start',
 				'campaignEnd' => 'Campaign Ending',
 				'campaignEnroll' => 'Campaign Enrollment',
 				'campaignComplete' => 'Campaign Complete',
 				'milestoneComplete' => 'Milestone Complete',
 				'staffCampaignComplete' => 'Campaign Complete Staff Alert',
+			];
+		}
+		if (in_array('Events', $enabledModules)) {
+			$availableTemplates += [
+				'registerForEventFromWaitingList' => 'Register for Event From Waiting List',
+				'eventWaitingListInviteExpired' => 'Waiting List Invitation Expired',
+				'eventCancellationRegistered' => 'Cancellation of an Event (Registered Patron)',
+				'eventCancellationInvited' => 'Cancellation of an Event (Invited from Waiting List)',
+				'eventCancellationWaiting' => 'Cancellation of an Event (On Waiting List)',
+			];
+		}
+		if ($isCarlX){
+			$availableTemplates += [
+				'duplicateNameDOB' => 'Duplicate Name and Birthdate',
+				'duplicateEmail' => 'Duplicate Email'
 			];
 		}
 		require_once ROOT_DIR . '/sys/Translation/Language.php';
@@ -106,6 +119,15 @@ class EmailTemplate extends DataObject {
 				'description' => 'The plain text body of the email',
 				'hideInLists' => true,
 				'required' => true,
+				'autocomplete' => false,
+			],
+			'htmlBody' => [
+				'property' => 'htmlBody',
+				'type' => 'html',
+				'label' => 'HTML Body',
+				'description' => 'The html body of the email (will use plain text if left blank)',
+				'hideInLists' => true,
+				'required' => false,
 				'autocomplete' => false,
 			],
 			'libraries' => [
@@ -237,23 +259,27 @@ class EmailTemplate extends DataObject {
 		}
 	}
 
-	public static function getActiveTemplate(string $templateType) : ?EmailTemplate{
+	public static function getActiveTemplate(string $templateType, ?User $user = null) : ?EmailTemplate{
 		global $library;
 		global $activeLanguage;
+		$libraryId = $user == null ? $library->libraryId : ($user->getHomeLibrary() == null ? $library->libraryId : $user->getHomeLibrary()->libraryId);
+		$activeLanguageCode = $user == null ? $activeLanguage->code : $user->interfaceLanguage;
 		$templateFound = false;
 		//First look for a template based on the active language
-		$emailTemplate = new EmailTemplate();
-		$emailTemplate->templateType = $templateType;
-		$emailTemplate->languageCode = $activeLanguage->code;
-		$emailTemplate->find();
-		while ($emailTemplate->fetch()) {
+		$tmpEmailTemplate = new EmailTemplate();
+		$tmpEmailTemplate->templateType = $templateType;
+		$tmpEmailTemplate->languageCode = $activeLanguageCode;
+		$tmpEmailTemplate->find();
+		$matchingTemplates = $tmpEmailTemplate->fetchAll();
+		foreach ($matchingTemplates as $emailTemplate) {
 			$librariesForTemplate = $emailTemplate->getLibraries();
-			if (in_array($library->libraryId, $librariesForTemplate)) {
+			if (in_array($libraryId, $librariesForTemplate)) {
 				$templateFound = true;
+				break;
 			}
 		}
 		//If we didn't find a template for the active language, check english
-		if (!$templateFound) {
+		if (!$templateFound && $activeLanguage != 'en') {
 			$emailTemplate = new EmailTemplate();
 			$emailTemplate->templateType = $templateType;
 			$emailTemplate->languageCode = 'en';
@@ -262,6 +288,7 @@ class EmailTemplate extends DataObject {
 				$librariesForTemplate = $emailTemplate->getLibraries();
 				if (in_array($library->libraryId, $librariesForTemplate)) {
 					$templateFound = true;
+					break;
 				}
 			}
 		}
@@ -269,21 +296,38 @@ class EmailTemplate extends DataObject {
 		if ($templateFound) {
 			return $emailTemplate;
 		}else{
-			return null;
+			return EmailTemplate::getDefaultTemplate($templateType);
 		}
+	}
+
+	public static function getDefaultTemplate(string $templateType) : ?EmailTemplate {
+		global $activeLanguage;
+		$emailTemplate = new EmailTemplate();
+		$emailTemplate->templateType = $templateType;
+		$emailTemplate->languageCode = $activeLanguage->code;
+		if ($templateType === 'savedSearchAlert') {
+			$emailTemplate->subject = 'New Library Materials Match Your Saved Searches';
+			$emailTemplate->plainTextBody = "The library has added new materials to its collection that may be of interest based on your saved searches (%searchHistory.url%). You may view and request the material via the link(s) below.\r\n\r\n%searchHistory.updatedSearchesWithSampleTitles%";
+			$emailTemplate->htmlBody = "<p>The library has added new materials to its collection that may be of interest based on your <a href='%searchHistory.url%'>saved searches</a>. You may view and request the material via the link(s) below.</p><div>%searchHistory.updatedSearchesWithSampleTitlesHtml%</div>";
+			return $emailTemplate;
+		}
+		return null;
 	}
 
 	public function sendEmail($toEmail, $parameters) : bool {
 		if (empty($toEmail)) {
 			return false;
 		}
-		$plainTextBody = $this->plainTextBody;
-		$updatedBody = $this->applyParameters($this->plainTextBody, $parameters);
+		$updatedPlainTextBody = $this->applyParameters($this->plainTextBody, $parameters);
+		$updatedHtmlBody = null;
+		if (!empty($this->htmlBody)){
+			$updatedHtmlBody = $this->applyParameters($this->htmlBody, $parameters);
+		}
 		$updatedSubject = $this->applyParameters($this->subject, $parameters);
 
 		require_once ROOT_DIR . '/sys/Email/Mailer.php';
 		$mail = new Mailer();
-		return $mail->send($toEmail, $updatedSubject, $updatedBody);
+		return $mail->send($toEmail, $updatedSubject, $updatedPlainTextBody, null, $updatedHtmlBody);
 	}
 
 	private function applyParameters($text, $parameters) {
@@ -318,6 +362,28 @@ class EmailTemplate extends DataObject {
 			$text = str_replace('%campaign.name%', $parameters['campaignName'] ?? '', $text);
 			$text = str_replace('%milestone.name%', $parameters['milestoneName'] ?? '', $text);
 			$text = str_replace('%milestone.reward%', $parameters['milestoneReward'] ?? '', $text);
+		} elseif ($this->templateType == 'savedSearchAlert') {
+			$text = str_replace('%searchHistory.url%', $parameters['searchHistory']['url'] ?? '', $text);
+			$text = str_replace('%searchHistory.updatedSearchesWithSampleTitlesHtml%', $parameters['searchHistory']['updatedSearchesWithSampleTitlesHtml'] ?? '', $text);
+			$text = str_replace('%searchHistory.updatedSearchesWithSampleTitles%', $parameters['searchHistory']['updatedSearchesWithSampleTitles'] ?? '', $text);
+			$text = str_replace('%searchHistory.updatedSearchesHtml%', $parameters['searchHistory']['updatedSearchesHtml'] ?? '', $text);
+			$text = str_replace('%searchHistory.updatedSearches%', $parameters['searchHistory']['updatedSearches'] ?? '', $text);
+		} elseif (in_array($this->templateType, ['registerForEventFromWaitingList', 'eventWaitingListInviteExpired'], true)) {
+			$text = str_replace('%event.title%', $parameters['eventTitle'] ?? '', $text);
+			$text = str_replace('%event.date%', $parameters['eventDate'] ?? '', $text);
+			$text = str_replace('%event.time%', $parameters['eventTime'] ?? '', $text);
+			$text = str_replace('%canRegisterUntil%', $parameters['canRegisterUntil'] ?? '', $text);
+		} elseif (in_array($this->templateType, ['eventCancellationRegistered', 'eventCancellationInvited', 'eventCancellationWaiting'], true)) {
+			$text = str_replace('%changeType%', $parameters['changeType'] ?? 'cancelled', $text);
+			$instancesText = '';
+			if (isset($parameters['instances']) && is_array($parameters['instances'])) {
+				foreach ($parameters['instances'] as $instance) {
+					$instancesText .= " Event Title: " . $instance['eventTitle'] . "\n";
+					$instancesText .= " Date: " . $instance['eventDate'] . "\n";
+					$instancesText .= " Time: " . $instance['eventTime'] . "\n";
+				}
+			}
+			$text = str_replace('%eventInstances%', trim($instancesText), $text);
 		}
 		return $text;
 	}

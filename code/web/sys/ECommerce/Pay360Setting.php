@@ -5,8 +5,7 @@ class Pay360Setting extends DataObject {
 	public $id;
 	public $name;
 	public $privateKey;
-	public $urlSection;
-	public $wsldUrl;
+	public $wsdlUrl;
 	public $scpId;
 	public $hmacKeyId;
 	public $siteId;
@@ -48,12 +47,12 @@ class Pay360Setting extends DataObject {
 				'description' => 'The Pay360 Private Key (provided by Capita)',
 				'maxLength' => 255,
 			],
-			'wsldUrl' => [
-				'property' => 'wsldUrl',
+			'wsdlUrl' => [
+				'property' => 'wsdlUrl',
 				'type' => 'text',
 				'hideInLists' => true,
-				'label' => 'Pay360 WSLD URL',
-				'description' => 'The WSLD URL for use when sending requests to Pay360',
+				'label' => 'Pay360 WSDL URL',
+				'description' => 'The WSDL URL for use when sending requests to Pay360',
 				'maxLength' => 255,
 				'required' => true,
 			],
@@ -109,7 +108,7 @@ class Pay360Setting extends DataObject {
 				'property' => 'pollingEnabled',
 				'type' => 'checkbox',
 				'label' => 'Enable Polling',
-				'description' => 'Whenever a user accesses uses the Click to pay online button, start a polling process to check Pay360 for status updates. This will start 10 minutes after the patron first accessed the link, and run every 5 minutes for ',
+				'description' => 'Whenever a patron uses the Click to pay online button, start a polling process to check Pay360 for status updates. This will start 10 minutes after the patron first accessed the link, and run every 5 minutes for up to 30 minutes.',
 				'hideInLists' => true,
 				'default' => true,
 			],
@@ -248,8 +247,6 @@ class Pay360Setting extends DataObject {
 				}
 			} else {
 				if ($location->pay360SettingId == $this->id) {
-					if ($location->finePaymentType == 16) {
-					}
 					$location->pay360SettingId = -1;
 					$location->update();
 				}

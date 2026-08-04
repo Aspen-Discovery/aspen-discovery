@@ -3,7 +3,7 @@
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 
 class MyAccount_HooplaOptions extends MyAccount {
-	function launch() {
+	function launch() : void {
 		global $interface;
 		$user = UserAccount::getLoggedInUser();
 
@@ -11,7 +11,7 @@ class MyAccount_HooplaOptions extends MyAccount {
 			// Determine which user we are showing/updating settings for
 			$linkedUsers = $user->getLinkedUsers();
 
-			$patronId = isset($_REQUEST['patronId']) ? $_REQUEST['patronId'] : $user->id;
+			$patronId = $_REQUEST['patronId'] ?? $user->id;
 			/** @var User $patron */
 			$patron = $user->getUserReferredTo($patronId);
 

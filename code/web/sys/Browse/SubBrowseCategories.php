@@ -80,10 +80,10 @@ class SubBrowseCategories extends DataObject {
 
 				$browseCategories->whereAddIn('id', $activeBrowseCategories, false);
 			} else {
-				$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
-				$libraryId = $library == null ? -1 : $library->libraryId;
+				$validLibraries = Library::getLibraryList(true);
+				$libraryIds = empty($validLibraries) ? [-1] : array_keys($validLibraries);
 				$browseCategories->whereAdd("sharing = 'everyone'");
-				$browseCategories->whereAdd("sharing = 'library' AND libraryId = " . $libraryId, 'OR');
+				$browseCategories->whereAdd("sharing = 'library' AND libraryId IN (" . implode(',' ,$libraryIds) . ')', 'OR');
 			}
 			$browseCategories->find();
 

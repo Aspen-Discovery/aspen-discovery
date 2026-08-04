@@ -27,7 +27,8 @@ AspenDiscovery.Searches = (function(){
 			}
 		})
 	});
-	return{
+	return {
+		_advFacetCache: {},
 		searchGroups: [],
 		curPage: 1,
 		displayMode: 'list', // default display Mode for results
@@ -425,6 +426,134 @@ AspenDiscovery.Searches = (function(){
 					$("#facetSearchResults").html(data.message);
 				}
 			});
+		},
+
+		showAdvancedSearchFacetPopup: function (facetName) {
+			var cache = AspenDiscovery.Searches._advFacetCache;
+			var show = function (data) {
+				AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.buttons);
+				// Pre-check the checkbox matching the currently selected value
+				var currentVal = aspenJQ('#facet-select-' + facetName).val();
+				if (currentVal) {
+					aspenJQ('.advFacetCheckbox').filter(function () {
+						return aspenJQ(this).attr('data-filter') === currentVal;
+					}).prop('checked', true);
+				}
+				// Enforce single-select: checking one unchecks all others.
+				// If the user clicks the already-checked item, keep it checked so Apply always has a valid selection.
+				aspenJQ('#modalDialog').off('change.advFacet').on('change.advFacet', '.advFacetCheckbox', function () {
+					if (aspenJQ(this).prop('checked')) {
+						aspenJQ('.advFacetCheckbox').not(this).prop('checked', false);
+					} else {
+						aspenJQ(this).prop('checked', true);
+					}
+				});
+				// Bind Apply button via event delegation (avoids inline onclick issues)
+				aspenJQ('#modalDialog').off('click.advFacetApply').on('click.advFacetApply', '.adv-facet-apply-btn', function () {
+					AspenDiscovery.Searches.applyAdvancedFacetSelections();
+				});
+			};
+			if (cache[facetName]) {
+				show(cache[facetName]);
+				return false;
+			}
+			var url = Globals.path + '/Search/AJAX?method=getAdvancedSearchFacetPopup&facetName=' + encodeURIComponent(facetName);
+			$.getJSON(url, function (data) {
+				if (data.success === true) {
+					cache[facetName] = data;
+					show(data);
+				} else {
+					AspenDiscovery.showMessage(data.title, data.message);
+				}
+			});
+			return false;
+		},
+
+		onAdvancedFacetSelectChange: function (selectEl) {
+			var $select = aspenJQ(selectEl);
+			var val     = $select.val();
+			if (val === '__browse__') {
+				$select.val($select.data('prevVal') || '');
+				var facetName = selectEl.id.replace('facet-select-', '');
+				AspenDiscovery.Searches.showAdvancedSearchFacetPopup(facetName);
+			} else {
+				$select.data('prevVal', val);
+			}
+		},
+
+		searchAdvancedFacetValuesKeyDown: function (e) {
+			if (e.keyCode === 9) {
+				AspenDiscovery.Searches.searchAdvancedFacetValues();
+			} else if (e.keyCode === 10 || e.keyCode === 13) {
+				e.preventDefault();
+				AspenDiscovery.Searches.searchAdvancedFacetValues();
+			}
+			return false;
+		},
+
+		searchAdvancedFacetValues: function () {
+			$("#advFacetSearchResultsPopularHelp").hide();
+			$("#advFacetSearchResultsLoading").show();
+			$("#advFacetSearchResults").html("");
+			var facetName   = $("#advFacetName").val();
+			var searchTerm  = $("#advFacetSearchTerm").val();
+			var url = Globals.path + '/Search/AJAX';
+			var params = {
+				'method':     'searchAdvancedFacetTerms',
+				'facetName':  facetName,
+				'searchTerm': searchTerm
+			};
+			$.getJSON(url, params, function (data) {
+				$("#advFacetSearchResultsLoading").hide();
+				if (data.success === true) {
+					$("#advFacetSearchResults").html(data.facetResults);
+				} else {
+					$("#advFacetSearchResults").html(data.message);
+				}
+			});
+		},
+
+		applyAdvancedFacetSelections: function () {
+			var $checked = aspenJQ('.advFacetCheckbox:checked').first();
+			if ($checked.length === 0) {
+				aspenJQ('#modalDialog').modal('hide');
+				return;
+			}
+			var filterValue = $checked.attr('data-filter');
+			var displayText = aspenJQ('<div/>').html($checked.attr('data-display')).text();
+			var facetName   = $checked.attr('data-facet');
+			var $select = aspenJQ('#facet-select-' + facetName);
+			if ($select.length === 0) {
+				aspenJQ('#modalDialog').modal('hide');
+				return;
+			}
+			$select.find('option.adv-facet-dynamic').remove();
+			$select.val(filterValue);
+			if ($select.val() !== filterValue) {
+				$select.append(aspenJQ('<option>', {value: filterValue, text: displayText, 'class': 'adv-facet-dynamic'}));
+				$select.val(filterValue);
+			}
+			$select.data('prevVal', filterValue);
+			aspenJQ('#modalDialog').modal('hide');
+		},
+
+		setAdvancedSearchFacetValue: function (el) {
+			var $el         = aspenJQ(el);
+			var filterValue = $el.attr('data-filter');
+			var displayText = $el.attr('data-display');
+			var facetName   = $el.attr('data-facet');
+			var $select = aspenJQ('#facet-select-' + facetName);
+			if ($select.length === 0) {
+				aspenJQ('#modalDialog').modal('hide');
+				return;
+			}
+			$select.val(filterValue);
+			if ($select.val() !== filterValue) {
+				$select.append(aspenJQ('<option>', {value: filterValue, text: displayText}));
+				$select.val(filterValue);
+			}
+			$select.data('prevVal', filterValue);
+			aspenJQ('#modalDialog').modal('hide');
 		}
 	}
 }(AspenDiscovery.Searches || {}));

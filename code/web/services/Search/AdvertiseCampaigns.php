@@ -24,7 +24,7 @@ class AdvertiseCampaigns extends Action {
 				$campaignRewardExists = !empty($campaignReward->badgeImage);
 				$campaignRewardDescription = $campaignReward->getTextBlockTranslation('description', $activeLanguageCode);
 			}
-			$campaignMilestones = CampaignMilestone::getMilestoneByCampaign($campaignId);
+			$campaignMilestones = CampaignMilestone::getCampaignMilestoneByCampaign($campaignId);
 			$extraCreditActivites = CampaignExtraCredit::getExtraCreditByCampaign($campaignId);
 		}
 

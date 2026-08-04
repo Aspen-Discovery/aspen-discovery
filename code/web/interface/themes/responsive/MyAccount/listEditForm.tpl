@@ -22,7 +22,7 @@
 			<div class="form-group">
 				<label for="public" class="col-sm-3 control-label">{translate text="Access" isPublicFacing=true}</label>
 				<div class="col-sm-9">
-					<input type='checkbox' name='public' id='public' data-on-text="Public" data-off-text="Private" {if $userList->public == 1}checked{/if} {if in_array('Include Lists In Search Results', $userPermissions)}onchange="if($(this).prop('checked') === true){ldelim}$('#searchableRow').show(){rdelim}else{ldelim}$('#searchableRow').hide(){rdelim}"{/if}/>
+					<input type='checkbox' name='public' id='public' data-on-text="Public" data-off-text="Private" {if $userList->public == 1}checked{/if} {if in_array('Include Lists In Search Results', $userPermissions)}onchange="AspenDiscovery.Lists.updateListEditFields();"{/if}/>
 					<div class="form-text text-muted">
 						<small>{translate text="Public lists can be shared with other people by copying the URL of the list or using the Email List button when viewing the list." isPublicFacing=true}</small>
 					</div>
@@ -48,27 +48,34 @@
 				<div class="form-group" id="searchableRow" {if $userList->public == 0}style="display: none"{/if}>
 					<label for="searchable" class="col-sm-3 control-label">{translate text="Show in search results" isPublicFacing=true}</label>
 					<div class="col-sm-9">
-						<input type='checkbox' name='searchable' id='searchable' data-on-text="Yes" data-off-text="No" {if $userList->searchable == 1}checked{/if}/>
+						<input type='checkbox' name='searchable' id='searchable' data-on-text="Yes" data-off-text="No" {if $userList->searchable == 1}checked{/if} onchange="AspenDiscovery.Lists.updateListEditFields();"/>
 						<div class="form-text text-muted">
 							<small>{translate text="If enabled, this list can be found by searching user lists. It must have at least 3 titles to be shown." isPublicFacing=true}</small>
 						</div>
 					</div>
 				</div>
-			{/if}
-			{if in_array('Include Lists In Search Results', $userPermissions)}
-			<div class="form-group" id="displayListAuthorRow" {if $userList->public == 0}style="display: none"{/if}>
-				<label for="displayListAuthor" class="col-sm-3 control-label">{translate text="Show list author in search results" isPublicFacing=true}</label>
-				<div class="col-sm-9">
-					<input type='checkbox' name='displayListAuthor' id='displayListAuthor' data-on-text="Yes" data-off-text="No" {if $userList->displayListAuthor == 1}checked{/if}/>
-					<div class="form-text text-muted">
-						<small>{translate text="If enabled, your name will be displayed as the author of this public list." isPublicFacing=true}</small>
+				<div class="form-group" id="displayListAuthorRow" {if $userList->public == 0}style="display: none"{/if}>
+					<label for="displayListAuthor" class="col-sm-3 control-label">{translate text="Show list author in search results" isPublicFacing=true}</label>
+					<div class="col-sm-9">
+						<input type='checkbox' name='displayListAuthor' id='displayListAuthor' data-on-text="Yes" data-off-text="No" {if $userList->displayListAuthor == 1}checked{/if} onchange="AspenDiscovery.Lists.updateListEditFields();"/>
+						<div class="form-text text-muted">
+							<small>{translate text="If enabled, your name will be displayed as the author of this public list." isPublicFacing=true}</small>
+						</div>
 					</div>
 				</div>
-			</div>
-		{/if}
+				<div class="form-group" id="customAuthorNameRow" style="display: none">
+					<label for="customAuthorName" class="col-sm-3 control-label">{translate text="List Author Name" isPublicFacing=true}</label>
+					<div class="col-sm-9">
+						<input type='text' name='customAuthorName' id='customAuthorName' maxlength="256" class="form-control" value="{$userList->customAuthorName|escape}"/>
+						<div class="form-text text-muted">
+							<small>{translate text="Leave blank to use your user display name." isPublicFacing=true}</small>
+						</div>
+					</div>
+				</div>
+			{/if}
 			{if in_array('Upload List Covers', $userPermissions)}
-				<div class="form-group" id="searchableRow" {if $userList->public == 0}style="display: none"{/if}>
-					<label for="searchable" class="col-sm-3 control-label">{translate text="Upload custom list cover" isPublicFacing=true}</label>
+				<div class="form-group" id="listCoversRow" {if $userList->public == 0}style="display: none"{/if}>
+					<label class="col-sm-3 control-label">{translate text="Upload custom list cover" isPublicFacing=true}</label>
 					<div class="col-sm-9">
 						<button onclick="return AspenDiscovery.Lists.getUploadListCoverForm({$userList->id})" class="btn btn-sm btn-default">{translate text="Upload List Cover from Computer" isPublicFacing=true}</button>
 						<button onclick="return AspenDiscovery.Lists.getUploadListCoverFormByURL('{$userList->id}')" class="btn btn-sm btn-default">{translate text="Upload List Cover by URL" isPublicFacing=true}</button>

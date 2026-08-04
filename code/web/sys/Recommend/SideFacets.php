@@ -77,8 +77,8 @@ class SideFacets implements RecommendationInterface {
 		$lockedFacetsChanged = false;
 		$unscopedFieldCache = [];
 		$lockedValuesIndexByFacet = [];
-		foreach ($filterList as $facet) {
-			foreach ($facet as $filter) {
+		foreach ($filterList as &$facet) {
+			foreach ($facet as $filterKey => &$filter) {
 				if (!empty($filter['field']) && array_key_exists('value', $filter)) {
 					$field = $filter['field'];
 					if (!isset($unscopedFieldCache[$field])) {
@@ -190,6 +190,13 @@ class SideFacets implements RecommendationInterface {
 					if ($eventSettings->find(true)) {
 						$interface->assign('maxEventDate', strtotime("+" . $eventSettings->numberOfDaysToIndex . " days"));
 					}
+				} else if ($facetSettings->settingSource == 'localhop') {
+					require_once ROOT_DIR . '/sys/Events/LocalHopSetting.php';
+					$eventSettings = new LocalHopSetting;
+					$eventSettings->id = $facetSettings->settingId;
+					if ($eventSettings->find(true)) {
+						$interface->assign('maxEventDate', strtotime("+" . $eventSettings->numberOfDaysToIndex . " days"));
+					}
 				} else {
 					require_once ROOT_DIR . '/sys/Events/LMLibraryCalendarSetting.php';
 					$eventSettings = new LMLibraryCalendarSetting;
@@ -244,10 +251,17 @@ class SideFacets implements RecommendationInterface {
 		} elseif ($this->searchObject instanceof SearchObject_ListsSearcher) {
 			foreach ($sideFacets as $facetKey => $facet) {
 				//Do special processing of facets
+				/** @var FacetSetting $facetSetting */
+				$facetSetting = $this->facetSettings[$facetKey];
 				if (preg_match('/local_time_since_(added|updated)/i', $facetKey)) {
 					$timeSinceAddedFacet = $this->updateTimeSinceAddedFacet($facet);
 					$sideFacets[$facetKey] = $timeSinceAddedFacet;
+				}else{
+					$sideFacets = $this->applyFacetSettings($facetKey, $sideFacets, $facetSetting, $lockedFacets);
 				}
+				$sideFacets[$facetKey]['collapseByDefault'] = $facetSetting->collapseByDefault;
+				$sideFacets[$facetKey]['locked'] = array_key_exists($facetKey, $lockedFacets);
+				$sideFacets[$facetKey]['canLock'] = $facetSetting->canLock;
 			}
 		} else {
 			//Process other searchers to add more facet popup

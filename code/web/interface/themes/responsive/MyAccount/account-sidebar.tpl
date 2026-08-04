@@ -95,14 +95,6 @@
 											</a>
 										</li>
 									{/if}
-									{if $user->getInterlibraryLoanType() == 'vdx'}
-										<li class="myAccountLink">
-											&nbsp;&nbsp;&raquo;&nbsp;
-											<a href="/MyAccount/Holds?tab=interlibrary_loan" id="holdsInterlibraryLoan" title="View Interlibrary Loan Requests">
-												{translate text="Interlibrary Loan Requests" isPublicFacing=true} {if empty($offline)}<span class="badge"><span class="interlibrary-loan-requests-placeholder">??</span></span>{/if}
-											</a>
-										</li>
-									{/if}
 									{if $user->isValidForEContentSource('overdrive')}
 										<li class="myAccountLink">
 											&nbsp;&nbsp;&raquo;&nbsp;
@@ -260,6 +252,7 @@
 						<div class="panel-body">
 							{if empty($offline)}
 								{if !empty($showUserPreferences)}<div class="myAccountLink"><a href="/MyAccount/MyPreferences">{translate text='Your Preferences' isPublicFacing=true}</a></div>{/if}
+								{if $AspenPWAEnabled }<div class="myAccountLink"><a href="/MyAccount/MyNotificationPreferences">{translate text="Your Notification Preferences" isPublicFacing=true}</a></div>{/if}
 								{if $privacyConsentEnabled}<div class="myAccountLink"><a href="/MyAccount/MyPrivacySettings">{translate text="Your Privacy Settings" isPublicFacing=true}</a></div>{/if}
 								{if !empty($showUserContactInformation) && $userHasCatalogConnection}<div class="myAccountLink"><a href="/MyAccount/ContactInformation">{translate text='Contact Information' isPublicFacing=true}</a></div>{/if}
 								{if $user->showHoldNotificationPreferences()}

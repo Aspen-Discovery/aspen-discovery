@@ -70,7 +70,17 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 		];
 	}
 
-	public abstract function getFines(User $patron, $includeMessages = false): array;
+	/**
+	 * @param User $patron
+	 * @param $includeMessages
+	 * @param string|null $type - null for Fines, credit for Credits
+	 * @return array
+	 */
+	public abstract function getFines(User $patron, $includeMessages = false, ?string $type = null): array;
+
+	public function supportsCredits() : bool {
+		return false;
+	}
 
 	/**
 	 * @return IndexingProfile|null
@@ -846,6 +856,7 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 				'text' => 'Unable to checkout title',
 				'isPublicFacing' => true,
 			]),
+			'itemNotFound' => false,
 		];
 
 		require_once ROOT_DIR . '/sys/AspenLiDA/SelfCheckSetting.php';
@@ -908,8 +919,14 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 							$dueDate = date_format($dueDate, 'm/d/Y');
 							$item['due'] = $dueDate;
 						} else {
-							$message .= ' ' . $checkoutResponse['variable']['AF'][0];
 							$item['due'] = null;
+							if (isset($checkoutResponse['variable']['AF'][0])) {
+								$alertMessage = $checkoutResponse['variable']['AF'][0];
+								$message .= ': ' . $alertMessage;
+								if (stripos($alertMessage, 'not found') !== false || stripos($alertMessage, 'item not found') !== false || stripos($alertMessage, 'unknown item') !== false) {
+									$apiResult['itemNotFound'] = true;
+								}
+							}
 						}
 						$item['title'] = $checkoutResponse['variable']['AJ'][0] ?? 'Unknown title';
 						$item['barcode'] = $barcode;
@@ -1018,6 +1035,14 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 		return false;
 	}
 
+	function placeHold(User $patron, mixed $recordId, ?string $pickupBranch = null, ?string $cancelDate = null, ?string $pickupSublocation = null, ?int $numberOfCopies = 1) : array {
+		return [
+			'success' => false,
+			'title' => 'An error occurred',
+			'message' => 'This functionality has not been implemented for this ILS',
+		];
+	}
+
 	public function submitLocalIllRequest(User $patron, LocalIllForm $localIllForm) : array {
 		return [
 			'success' => false,
@@ -1048,7 +1073,34 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 		return false;
 	}
 
+	public function updatePreferredPickupLocation($user, $pickupLocation, $fromMasquerade): bool {
+		return false;
+	}
+
 	public function isPatronAccountLocked(User $patron, $fine): bool {
+		return false;
+	}
+
+	/**
+	 * Check if this driver supports hyperholds grouping
+	*/
+	public function supportsHyperholdsGrouping() {
+		return false;
+	}
+
+	public function getPatronHoldGroups($patronId): ?array {
+		return null;
+	}
+
+	public function hasHoldFeeMessage(): bool {
+		return false;
+	}
+
+	public function hasCardRenewalSupport(): bool {
+		return false;
+	}
+
+	public function supportsMultiCopyHolds() : bool {
 		return false;
 	}
 }

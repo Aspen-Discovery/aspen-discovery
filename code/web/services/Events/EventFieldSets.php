@@ -52,7 +52,7 @@ class Events_EventFieldSets extends ObjectEditor {
 	}
 
 	function getInstructions(): string {
-		return 'https://help.aspendiscovery.org/help/catalog/events';
+		return 'https://aspen-discovery.atlassian.net/wiki/spaces/Help/pages/308477977/Events';
 	}
 
 	function getBreadcrumbs(): array {
@@ -77,5 +77,9 @@ class Events_EventFieldSets extends ObjectEditor {
 
 	public function getRequiredModule(): ?string {
 		return 'Events';
+	}
+
+	function getInitializationJs(): string {
+		return 'AspenDiscovery.Events.displayFieldOptionsForSelectedUse();';
 	}
 }

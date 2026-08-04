@@ -7,6 +7,7 @@ class EventFieldSet extends DataObject {
 	public $__table = 'event_field_set';
 	public $id;
 	public $name;
+	public $fieldSetUse;
 	private $_eventFields;
 
 	static $_objectStructure = [];
@@ -14,7 +15,6 @@ class EventFieldSet extends DataObject {
 		if (isset(self::$_objectStructure[$context]) && self::$_objectStructure[$context] !== null) {
 			return self::$_objectStructure[$context];
 		}
-		$eventFields = EventField::getEventFieldList();
 		$structure = [
 			'id' => [
 				'property' => 'id',
@@ -22,6 +22,20 @@ class EventFieldSet extends DataObject {
 				'label' => 'Id',
 				'description' => 'The unique id',
 			],
+			'fieldSetUse' => [
+				'property' => 'fieldSetUse',
+				'type' => 'enum',
+				'label' => 'The intended use for the field set',
+				'description' => 'Defines where the field set is to be added to (eg. registration)',
+				'values' => [
+					'0' => 'Please select...',
+					'1' => 'Event description section (for staff use, viewable by the public)',
+					'2' => 'Event registration form (for public use)',
+				],
+				'default' => '0',
+				'required' => true,
+				'onchange' => 'return AspenDiscovery.Events.displayFieldOptionsForSelectedUse(this.value);'
+			], 
 			'name' => [
 				'property' => 'name',
 				'type' => 'text',
@@ -36,9 +50,11 @@ class EventFieldSet extends DataObject {
 				'listStyle' => 'checkboxSimple',
 				'label' => 'Event Fields',
 				'description' => 'The event fields that make up the set',
-				'values' => $eventFields,
-			]
+				'values' => [],
+				'hiddenByDefault' => true,
+			],
 		];
+		$structure['eventFields']['values'] = EventField::getEventFieldList();
 
 		self::$_objectStructure[$context] = $structure;
 		return self::$_objectStructure[$context];
@@ -126,9 +142,20 @@ class EventFieldSet extends DataObject {
 		}
 	}
 
-	public static function getEventFieldSetList(): array {
+	public static function getEventInformationFieldSetList() {
+		return EventFieldSet::getEventFieldSetList(1);
+	}
+	
+	public static function getEventRegistrationFieldSetList() {
+		return EventFieldSet::getEventFieldSetList(2);
+	}
+
+	public static function getEventFieldSetList($fieldSetUse = null): array {
 		$setList = [];
 		$object = new EventFieldSet();
+		if (!is_null($fieldSetUse)) {
+			$object->fieldSetUse = $fieldSetUse;
+		}
 		$object->orderBy('name');
 		$object->find();
 		while ($object->fetch()) {
@@ -140,32 +167,10 @@ class EventFieldSet extends DataObject {
 
 	public function getFieldObjectStructure() : array {
 		$structure = [];
-		foreach ($this->getEventFields() as $fieldId) {
+		foreach ($this->getEventFields() as $eventFieldSetField) {
 			$field = new EventField();
-			$field->id = $fieldId->eventFieldId;
-			if ($field->find(true)) {
-				$type = match ($field->type) {
-					0 => 'text',
-					1 => 'textarea',
-					2 => 'checkbox',
-					3 => 'enum',
-					4 => 'email',
-					5 => 'url',
-					default => '',
-				};
-				$structure[$field->id] = [
-					'fieldId' => $field->id,
-					'property' => $field->id,
-					'type' => $type,
-					'label' => $field->name,
-					'description' => $field->description,
-					'default' => $field->defaultValue,
-					'facetName' => $field->facetName,
-				];
-				if ($type == 'enum') {
-					$structure[$field->id]['values'] = explode("\n", $field->allowableValues);
-				}
-			}
+			$field->id = $eventFieldSetField->eventFieldId;
+			$structure[$field->id] = $field->getFieldObjectStructure();
 		}
 		return $structure;
 	}

@@ -119,6 +119,14 @@ class LibraryHooplaSetting extends DataObject
 				'default' => false,
 				'forcesReindex' => false,
 			],
+			'numFlexTitles' => [
+				'property' => 'numFlexTitles',
+				'type' => 'integer',
+				'label' => 'Flex Title Count',
+				'description' => 'The number of active Hoopla Flex titles in the database for this library',
+				'hideInLists' => false,
+				'readOnly' => true,
+			],
 		];
 
 		self::$_objectStructure[$context] = $structure;
@@ -147,6 +155,26 @@ class LibraryHooplaSetting extends DataObject
 			}
 		}
 		return $this->_hooplaSettings;
+	}
+
+	public function __get($name)
+	{
+		if ($name == 'numFlexTitles') {
+			return $this->getNumFlexTitlesInDb();
+		}
+		return parent::__get($name);
+	}
+
+	public function getNumFlexTitlesInDb(): int
+	{
+		global $aspen_db;
+
+		$countStmt = $aspen_db->prepare('SELECT COUNT(DISTINCT hooplaId) as numFlexTitles FROM hoopla_flex_availability WHERE scopeLibraryId = ?');
+		$countStmt->bindValue(1, $this->libraryId, PDO::PARAM_INT);
+		$countStmt->execute();
+		$result = $countStmt->fetch(PDO::FETCH_ASSOC);
+
+		return (int)$result['numFlexTitles'];
 	}
 
 	public function update(string $context = ''): int|bool

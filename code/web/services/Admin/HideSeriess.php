@@ -46,7 +46,7 @@ class Admin_HideSeriess extends ObjectEditor {
 	}
 
 	function getInstructions(): string {
-		return 'https://help.aspendiscovery.org/help/catalog/groupedworks';
+		return 'https://aspen-discovery.atlassian.net/wiki/spaces/Help/pages/347373607/Grouped+Works+and+Record+Display';
 	}
 
 	function getBreadcrumbs(): array {

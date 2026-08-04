@@ -91,7 +91,7 @@
 		<field name="fullName" type="searchable_text" indexed="true" stored="true"/>
 		<field name="veteranOf" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
 		<field name="birthDate" type="date" indexed="true" stored="true" multiValued="false"/>
-		<field name="deathDate" type="date" indexed="true" stored="trues" multiValued="false"/>
+		<field name="deathDate" type="date" indexed="true" stored="true" multiValued="false"/>
 		<field name="birthYear" type="unchanged_string" indexed="true" stored="true" multiValued="false"/>
 		<field name="deathYear" type="unchanged_string" indexed="true" stored="true" multiValued="false"/>
 		<field name="ageAtDeath" type="unchanged_string" indexed="true" stored="true" multiValued="false"/>

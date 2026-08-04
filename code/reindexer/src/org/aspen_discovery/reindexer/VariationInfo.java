@@ -1,5 +1,7 @@
 package org.aspen_discovery.reindexer;
 
+import java.util.Objects;
+
 class VariationInfo {
 	public Long id;
 	public long primaryLanguageId;
@@ -26,11 +28,15 @@ class VariationInfo {
 		}
 	}
 
+	private String stringValue = null;
 	public String toString(){
-		return String.valueOf(primaryLanguageId) + eContentSourceId + formatId + formatCategoryId;
+		if (stringValue == null){
+			stringValue = String.valueOf(primaryLanguageId) + eContentSourceId + formatId + formatCategoryId;
+		}
+		return stringValue;
 	}
 
 	public int hashCode(){
-		 return this.toString().hashCode();
+		return Objects.hash(primaryLanguageId, eContentSourceId, formatId, formatCategoryId);
 	}
 }

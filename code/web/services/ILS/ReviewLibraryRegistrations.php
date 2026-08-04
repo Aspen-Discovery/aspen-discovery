@@ -47,7 +47,7 @@ class ILS_ReviewLibraryRegistrations extends ObjectEditor {
 	}
 
 	function getDefaultSort(): string {
-		return 'dateRegistered desc';
+		return 'createdAt desc';
 	}
 
 	function getObjectStructure($context = ''): array {

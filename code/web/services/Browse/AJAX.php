@@ -78,14 +78,14 @@ class Browse_AJAX extends JSON_Action {
 
 				$browseCategories->whereAddIn('id', $activeBrowseCategories, false);
 			} else {
-				$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
-				$libraryId = $library == null ? -1 : $library->libraryId;
+				$validLibraries = Library::getLibraryList(true);
+				$libraryIds = empty($validLibraries) ? [-1] : array_keys($validLibraries);
 				$browseCategories->whereAdd("sharing = 'everyone'");
-				if ($libraryId == -1) {
+				if (empty($validLibraries)) {
 					//For Aspen admin, show all categories
 					$browseCategories->whereAdd("sharing = 'library'", 'OR');
 				} else {
-					$browseCategories->whereAdd("sharing = 'library' AND libraryId = " . $libraryId, 'OR');
+					$browseCategories->whereAdd("sharing = 'library' AND libraryId IN (" . implode(',', $libraryIds) . ')', 'OR');
 				}
 			}
 			$browseCategories->find();
@@ -666,7 +666,7 @@ class Browse_AJAX extends JSON_Action {
 						$id = str_replace('system_saved_searches_', '', $this->textId);
 						require_once ROOT_DIR . '/services/Search/History.php';
 						$savedSearch = History::getSavedSearchObject($id);
-						SearchObjectFactory::initSearchObject();
+						SearchObjectFactory::initSearchObject($savedSearch['source'] ?? 'GroupedWork');
 						$minSO = unserialize($savedSearch['search_object']);
 						$searchObject = SearchObjectFactory::deminify($minSO);
 						$searchObject->getFilterList();
@@ -1067,10 +1067,10 @@ class Browse_AJAX extends JSON_Action {
 
 		// Get More Results requires a defined page to load
 		if ($pageToLoad == null) {
-			if (!is_int($_REQUEST['pageToLoad'])) {
-				return ['success' => false];
-			}
 			$pageToLoad = $_REQUEST['pageToLoad'];
+		}
+		if (!filter_var($_REQUEST['pageToLoad'], FILTER_VALIDATE_INT)) {
+			return ['success' => false];
 		}
 		return $this->getBrowseCategoryResults($pageToLoad);
 	}

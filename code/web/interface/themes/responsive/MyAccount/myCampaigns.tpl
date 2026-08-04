@@ -597,6 +597,7 @@
 									<thead>
 										<tr>
 											<th>{translate text="Milestone" isPublicFacing=true}</th>
+											<th>{translate text="Goal" isPublicFacing=true}</th>
 											<th>{translate text="Milestone Reward" isPublicFacing=true}</th>
 										</tr>
 									</thead>
@@ -604,6 +605,7 @@
 										{foreach from=$campaign->milestones item="milestone"}
 											<tr class="milestone-row">
 												<td class="milestone-name-cell">{$milestone->name}</td>
+												<td class="milestone-goal-cell">{$milestone->goal}</td>
 												<td class="milestone-reward-cell">
 													<div class="milestone-reward-container" style="display: flex; flex-direction: column; align-items: center; text-align: center;">
 														{if $milestone->displayName}

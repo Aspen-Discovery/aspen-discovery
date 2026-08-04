@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.Date;
 
 import org.apache.logging.log4j.Logger;
@@ -32,6 +33,7 @@ public class DatabaseCleanup implements IProcessHandler {
 
 		cleanupReadingHistory(dbConn, logger, processLog);
 		removeOldIndexingDiagnostics(dbConn, logger, processLog);
+		cleanupUserAgent(dbConn, logger, processLog);
 
 		removeOldObjectHistory(dbConn, logger, processLog);
 		removeLocalAnalyticsTracking(dbConn, logger, processLog);
@@ -126,6 +128,61 @@ public class DatabaseCleanup implements IProcessHandler {
 		}
 	}
 
+	private void cleanupUserAgent(Connection dbConn, Logger logger, CronProcessLogEntry processLog) {
+		LocalDate today = LocalDate.now();
+
+		// Only run this cleanup on the first day of the month.
+		if (today.getDayOfMonth() != 1) {
+			return;
+		}
+		int retentionMonths = 0;
+		boolean isDisabled = false;
+		try (PreparedStatement getRetentionStmt = dbConn.prepareStatement("SELECT userAgentRetentionMonths, disable_user_agent_logging FROM system_variables LIMIT 1")) {
+			ResultSet retentionRS = getRetentionStmt.executeQuery();
+			if (retentionRS.next()) {
+				retentionMonths = retentionRS.getInt("userAgentRetentionMonths");
+				isDisabled = retentionRS.getBoolean("disable_user_agent_logging");
+			}
+		} catch (SQLException e) {
+			processLog.incErrors("Unable to load user agent retention setting. ", e);
+			return;
+		}
+
+		if (isDisabled) {
+			processLog.addNote("User agent retention cleanup skipped because User agent tracking is disabled.");
+			processLog.saveResults();
+			return;
+		}
+
+		if (retentionMonths == 0) {
+			processLog.addNote("User agent retention cleanup is set to Do not clean up.");
+			processLog.saveResults();
+			return;
+		}
+
+		LocalDate cutoff = today.withDayOfMonth(1).minusMonths(retentionMonths);
+		int cutoffYear = cutoff.getYear();
+		int cutoffMonth = cutoff.getMonthValue();
+
+		try {
+			PreparedStatement deleteOldUsageStmt = dbConn.prepareStatement("DELETE FROM usage_by_user_agent WHERE year < ? OR (year = ? AND month < ?)");
+			deleteOldUsageStmt.setInt(1, cutoffYear);
+			deleteOldUsageStmt.setInt(2, cutoffYear);
+			deleteOldUsageStmt.setInt(3, cutoffMonth);
+			int usageRowsRemoved = deleteOldUsageStmt.executeUpdate();
+
+			PreparedStatement deleteUnusedUserAgentsStmt = dbConn.prepareStatement("DELETE user_agent FROM user_agent LEFT JOIN usage_by_user_agent ON usage_by_user_agent.userAgentId = user_agent.id WHERE usage_by_user_agent.id IS NULL AND user_agent.blockAccess = 0 AND user_agent.isBot = 0");
+			int userAgentRowsRemoved = deleteUnusedUserAgentsStmt.executeUpdate();
+
+			processLog.addNote("Removed " + usageRowsRemoved + " old user agent usage rows.");
+			processLog.addNote("Removed " + userAgentRowsRemoved + " unused user agent rows.");
+			processLog.incUpdated();
+			processLog.saveResults();
+		} catch (SQLException e) {
+			processLog.incErrors("Unable to cleanup user agent. ", e);
+		}
+	}
+
 	private void removeOldExternalRequests(Connection dbConn, Logger logger, CronProcessLogEntry processLog) {
 		//Remove long searches
 		try {
@@ -195,67 +252,67 @@ public class DatabaseCleanup implements IProcessHandler {
 
 	private void removeUserDataForDeletedUsers(Connection dbConn, Logger logger, CronProcessLogEntry processLog) {
 		try {
-			int numUpdates = dbConn.prepareStatement("DELETE FROM user_link where primaryAccountId NOT IN (select id from user)").executeUpdate();
+			int numUpdates = dbConn.prepareStatement("DELETE ul FROM user_link ul LEFT JOIN user u ON ul.primaryAccountId = u.id WHERE u.id IS NULL").executeUpdate();
 			if (numUpdates > 0){
 				processLog.incUpdated();
 				processLog.addNote("Deleted " + numUpdates + " user links where the primary account does not exist");
 			}
 
-			numUpdates = dbConn.prepareStatement("DELETE FROM user_link where linkedAccountId NOT IN (select id from user)").executeUpdate();
+			numUpdates = dbConn.prepareStatement("DELETE ul FROM user_link ul LEFT JOIN user u ON ul.linkedAccountId = u.id WHERE u.id IS NULL").executeUpdate();
 			if (numUpdates > 0){
 				processLog.incUpdated();
 				processLog.addNote("Deleted " + numUpdates + " user links where the linked account does not exist");
 			}
 
-			numUpdates = dbConn.prepareStatement("DELETE FROM user_link_blocks where primaryAccountId NOT IN (select id from user)").executeUpdate();
+			numUpdates = dbConn.prepareStatement("DELETE ulb FROM user_link_blocks ulb LEFT JOIN user u ON ulb.primaryAccountId = u.id WHERE u.id IS NULL").executeUpdate();
 			if (numUpdates > 0){
 				processLog.incUpdated();
 				processLog.addNote("Deleted " + numUpdates + " user link blocks where the primary account does not exist");
 			}
 
-			numUpdates = dbConn.prepareStatement("DELETE FROM user_link_blocks where blockedLinkAccountId NOT IN (select id from user)").executeUpdate();
+			numUpdates = dbConn.prepareStatement("DELETE ulb FROM user_link_blocks ulb LEFT JOIN user u ON ulb.blockedLinkAccountId = u.id WHERE ulb.blockedLinkAccountId IS NOT NULL AND u.id IS NULL").executeUpdate();
 			if (numUpdates > 0){
 				processLog.incUpdated();
 				processLog.addNote("Deleted " + numUpdates + " user link blocks where the blocked account does not exist");
 			}
 
-			numUpdates = dbConn.prepareStatement("DELETE FROM user_list where public = 0 and user_id NOT IN (select id from user)").executeUpdate();
+			numUpdates = dbConn.prepareStatement("DELETE ul FROM user_list ul LEFT JOIN user u ON ul.user_id = u.id WHERE ul.public = 0 AND u.id IS NULL").executeUpdate();
 			if (numUpdates > 0){
 				processLog.incUpdated();
 				processLog.addNote("Deleted " + numUpdates + " user_list where the user does not exist");
 			}
 
-			numUpdates = dbConn.prepareStatement("DELETE FROM user_not_interested where userId NOT IN (select id from user)").executeUpdate();
+			numUpdates = dbConn.prepareStatement("DELETE uni FROM user_not_interested uni LEFT JOIN user u ON uni.userId = u.id WHERE u.id IS NULL").executeUpdate();
 			if (numUpdates > 0){
 				processLog.incUpdated();
 				processLog.addNote("Deleted " + numUpdates + " user_not_interested where the user does not exist");
 			}
 
-			numUpdates = dbConn.prepareStatement("DELETE FROM user_reading_history_work where userId NOT IN (select id from user)").executeUpdate();
+			numUpdates = dbConn.prepareStatement("DELETE urh FROM user_reading_history_work urh LEFT JOIN user u ON urh.userId = u.id WHERE u.id IS NULL").executeUpdate();
 			if (numUpdates > 0){
 				processLog.incUpdated();
 				processLog.addNote("Deleted " + numUpdates + " user_reading_history_work where the user does not exist");
 			}
 
-			numUpdates = dbConn.prepareStatement("DELETE FROM user_roles where userId NOT IN (select id from user)").executeUpdate();
+			numUpdates = dbConn.prepareStatement("DELETE ur FROM user_roles ur LEFT JOIN user u ON ur.userId = u.id WHERE u.id IS NULL").executeUpdate();
 			if (numUpdates > 0){
 				processLog.incUpdated();
 				processLog.addNote("Deleted " + numUpdates + " user_roles where the user does not exist");
 			}
 
-			numUpdates = dbConn.prepareStatement("DELETE FROM search where user_id NOT IN (select id from user) and user_id != 0").executeUpdate();
+			numUpdates = dbConn.prepareStatement("DELETE s FROM search s LEFT JOIN user u ON s.user_id = u.id WHERE s.user_id != 0 AND u.id IS NULL").executeUpdate();
 			if (numUpdates > 0){
 				processLog.incUpdated();
 				processLog.addNote("Deleted " + numUpdates + " search where the user does not exist");
 			}
 
-			numUpdates = dbConn.prepareStatement("DELETE FROM user_work_review where userId NOT IN (select id from user)").executeUpdate();
+			numUpdates = dbConn.prepareStatement("DELETE uwr FROM user_work_review uwr LEFT JOIN user u ON uwr.userId = u.id WHERE u.id IS NULL").executeUpdate();
 			if (numUpdates > 0){
 				processLog.incUpdated();
 				processLog.addNote("Deleted " + numUpdates + " user_work_review where the user does not exist");
 			}
 
-			numUpdates = dbConn.prepareStatement("UPDATE browse_category SET userID = null where userId NOT IN (select id from user)").executeUpdate();
+			numUpdates = dbConn.prepareStatement("UPDATE browse_category bc LEFT JOIN user u ON bc.userId = u.id SET bc.userID = NULL WHERE u.id IS NULL").executeUpdate();
 			if (numUpdates > 0){
 				processLog.incUpdated();
 				processLog.addNote("Deleted " + numUpdates + " user_work_review where the user does not exist");

@@ -9,7 +9,7 @@ services:
     run_as_root:
       - git config --global --add safe.directory /usr/local/aspen-discovery
       - apt-get -y update
-      - apt-get -y install sudo nano cron wget rsyslog gpg openjdk-17-jre-headless apache2 certbot python3-certbot-apache mariadb-server apt-transport-https lsb-release ca-certificates zip pigz
+      - apt-get -y install sudo nano cron wget rsyslog gpg openjdk-25-jre-headless apache2 certbot python3-certbot-apache mariadb-server apt-transport-https lsb-release ca-certificates zip pigz
       - mkdir -m 0755 -p /usr/local/aspen-discovery/tmp && echo "Created temp directory."
       - cp /usr/local/aspen-discovery/install/60-aspen.cnf /etc/mysql/mariadb.conf.d/ && echo "Added MariaDB conf."
       - chown -R www-data:www-data /usr/local/aspen-discovery/tmp && echo "Updated temp directory."
@@ -34,6 +34,7 @@ services:
       database: install/60-aspen.cnf
   solr:
     type: solr:8.11
+    portforward: 8983
     # Note: The solr recipe only allows for 1 core out of the box, so we have to
     # create the rest of the cores using run commands.
     core: course_reserves

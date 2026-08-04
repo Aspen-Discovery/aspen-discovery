@@ -29,35 +29,31 @@ foreach ($notifications as $notification) {
 		$user->id = $ilsMessage->userId;
 		if($user->find(true)) {
 			if($user->canReceiveNotifications('notifyAccount') && $user->canReceiveILSNotification($ilsMessage->type)) {
-				$tokens = $user->getNotificationPushToken();
-				foreach($tokens as $token) {
-					if($ilsMessage->title && $ilsMessage->content) {
-						$body = [
-							'to' => $token,
-							'title' => $ilsMessage->title,
-							'body' => $ilsMessage->content,
-							'categoryId' => 'accountAlert',
-							'channelId' => 'accountAlert',
+				if($ilsMessage->title && $ilsMessage->content) {
+					//define the message
+					$body = [
+						'title' => $ilsMessage->title,
+						'body' => $ilsMessage->content,
+						'categoryId' => 'accountAlert',
+						'channelId' => 'accountAlert',
+					];
+					$typeUpper = strtoupper($ilsMessage->type);
+					if(str_contains($typeUpper, 'HOLD')) {
+						$body['data'] = [
+							'url' => urlencode(LocationSetting::getDeepLinkByName('user/holds', '')),
 						];
-
-						$typeUpper = strtoupper($ilsMessage->type);
-						if(str_contains($typeUpper, 'HOLD')) {
-							$body['data'] = [
-								'url' => urlencode(LocationSetting::getDeepLinkByName('user/holds', '')),
-							];
-						} elseif(str_contains($typeUpper, 'CHECKOUT') || str_contains($typeUpper,'OVERDUE') || str_contains($typeUpper,'BILLED')) {
-							$body['data'] = [
-								'url' => urlencode(LocationSetting::getDeepLinkByName('user/checkouts', '')),
-							];
-						}
-
-						$expoNotification = new ExpoNotification();
-						$expoNotification->sendExpoPushNotification($body, $token, $user->id, "ils_message");
-						$expoNotification = null;
-						$numNotificationsSent++;
+					} elseif(str_contains($typeUpper, 'CHECKOUT') || str_contains($typeUpper,'OVERDUE') || str_contains($typeUpper,'BILLED')) {
+						$body['data'] = [
+							'url' => urlencode(LocationSetting::getDeepLinkByName('user/checkouts', '')),
+						];
 					}
+					//send the message
+					$sent = $user->sendPushNotification($body, 'ils_message');
+					$numNotificationsSent += $sent;
 				}
-				$tokens = null;
+				// leaving this outside the if to preserve original behavior
+				// if we should only update this if something actually sends
+				// go ahead and move this inside the if statement above.
 				$ilsMessage->status = "sent";
 				$ilsMessage->dateSent = time();
 				$ilsMessage->update();

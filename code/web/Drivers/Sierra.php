@@ -787,7 +787,18 @@ class Sierra extends AbstractIlsDriver {
 		return null;
 	}
 
-	public function getCheckouts(User $patron): array {
+	/**
+	 * Get Patron Checkouts
+	 *
+	 * This is responsible for retrieving all checkouts (i.e. checked out items)
+	 * by a specific patron.
+	 *
+	 * @param User $patron       The user to load transactions for
+	 * @param array $options     Additional options
+	 * @return Checkout[]        Array of the patron's transactions on success
+	 * @access public
+	 */
+	public function getCheckouts(User $patron, array $options = []): array {
 		require_once ROOT_DIR . '/sys/User/Checkout.php';
 		$checkedOutTitles = [];
 		global $library;
@@ -834,6 +845,8 @@ class Sierra extends AbstractIlsDriver {
 						$curCheckout->author = 'Unknown';
 					}
 					$curCheckout->formats = ['Unknown'];
+					$homeLibrary = $patron->getHomeLibrary();
+					$curCheckout->canRenew = !($homeLibrary && !$homeLibrary->allowToRenewILL);
 				} else {
 					preg_match($this->urlIdRegExp, $entry->item, $m);
 					$itemIdShort = $m[1];
@@ -1242,7 +1255,7 @@ class Sierra extends AbstractIlsDriver {
 		}
 	}
 
-	public function placeHold(User $patron, $recordId, $pickupBranch = null, $cancelDate = null) : array {
+	public function placeHold(User $patron, mixed $recordId, ?string $pickupBranch = null, ?string $cancelDate = null, ?string $pickupSublocation = null, ?int $numberOfCopies = 1) : array {
 		/** @noinspection PhpArrayIndexImmediatelyRewrittenInspection */
 		$hold_result = [
 			'success' => false,
@@ -1947,10 +1960,10 @@ class Sierra extends AbstractIlsDriver {
 				$pickupLocations[$location->code] = $location->displayName;
 			}
 			if (count($pickupLocations) > 1) {
-				array_unshift($pickupLocations, translate([
+				$pickupLocations = [-1 =>translate([
 					'text' => 'Please select a location',
 					'isPublicFacing' => true,
-				]));
+				])] + $pickupLocations;
 			}
 		}
 
@@ -2180,20 +2193,20 @@ class Sierra extends AbstractIlsDriver {
 					} else {
 						$fullName = $_REQUEST['lastName'] . ', ' . $_REQUEST['firstName'];
 					}
-					$params['names'] = [$fullName];
+					$params['names'] = [$this->getPatronFieldValue($fullName, $library->useAllCapsWhenSubmittingSelfRegistration)];
 				}
 				elseif ($field == 'guardian') {
 					if (!empty($_REQUEST['guardian'])) {
 						$params['varFields'][] = [
 							'fieldTag' => $selfRegistrationForm->selfRegGuardianField,
-							'content' => $_REQUEST['guardian']
+							'content' => $this->getPatronFieldValue($_REQUEST['guardian'], $library->useAllCapsWhenSubmittingSelfRegistration)
 						];
 					}
 				}
 				elseif ($field == 'email') {
-					$params['emails'] = [$_REQUEST['email']];
+					$params['emails'] = [$this->getPatronFieldValue($_REQUEST['email'], $library->useAllCapsWhenSubmittingSelfRegistration)];
 					if ($selfRegistrationForm->selfRegEmailBarcode) {
-						$params['barcodes'] = [$_REQUEST['email']];
+						$params['barcodes'] = [$this->getPatronFieldValue($_REQUEST['email'], $library->useAllCapsWhenSubmittingSelfRegistration)];
 					}
 				}
 				elseif ($field == 'phone') {
@@ -2207,7 +2220,7 @@ class Sierra extends AbstractIlsDriver {
 					$address = new stdClass();
 					$address->lines = [];
 					$address->type = 'a';
-					$address->lines[] = $_REQUEST['street'];
+					$address->lines[] = $this->getPatronFieldValue($_REQUEST['street'], $library->useAllCapsWhenSubmittingSelfRegistration);
 					//Add blank lines as needed
 					for ($i = 2; $i < $library->sierraAddressLineForCityState; $i++) {
 						$address->lines[] = '';
@@ -2219,10 +2232,10 @@ class Sierra extends AbstractIlsDriver {
 					}
 					if ($library->sierraZipOnSameLineAsCityState) {
 						$cityStateZip = $cityState . ' ' . $_REQUEST['zip'];
-						$address->lines[] = $cityStateZip;
+						$address->lines[] = $this->getPatronFieldValue($cityStateZip, $library->useAllCapsWhenSubmittingSelfRegistration);
 					}else{
-						$address->lines[] = $cityState;
-						$address->lines[] = $_REQUEST['zip'];
+						$address->lines[] = $this->getPatronFieldValue($cityState, $library->useAllCapsWhenSubmittingSelfRegistration);
+						$address->lines[] = $this->getPatronFieldValue($_REQUEST['zip'], $library->useAllCapsWhenSubmittingSelfRegistration);
 					}
 
 					$params['addresses'][] = $address;
@@ -2387,6 +2400,9 @@ class Sierra extends AbstractIlsDriver {
 											$expirationPeriod = "D";
 										}
 										$expirationDate->add(new DateInterval('P' . $expirationDays . $expirationPeriod));
+										if ($municipalities[$matchId]->extendExpirationToMonthEnd) {
+											$expirationDate->modify('last day of this month');
+										}
 										$params['expirationDate'] = $expirationDate->format('Y-m-d');
 									}
 									if (!empty($municipalities[$matchId]->sierraPType) && $municipalities[$matchId]->sierraPType != -1) {
@@ -2500,6 +2516,14 @@ class Sierra extends AbstractIlsDriver {
 		}
 
 		return $selfRegResult;
+	}
+
+	private function getPatronFieldValue(string $value, $useAllCaps) {
+		if ($useAllCaps) {
+			return strtoupper($value);
+		} else {
+			return $value;
+		}
 	}
 
 	private function generateBarcode($barcodePrefix, $barcodeSuffixLength) : ?string {
@@ -2675,8 +2699,11 @@ class Sierra extends AbstractIlsDriver {
 		}
 	}
 
-	public function getFines($patron = null, $includeMessages = false): array {
+	public function getFines(User $patron, $includeMessages = false, ?string $type = null): array {
 		$fines = [];
+		if ($type == 'credit'){
+			return $fines;
+		}
 
 		$params = [
 			'fields' => 'default,assessedDate,itemCharge,processingFee,billingFee,chargeType,paidAmount,datePaid,description,returnDate,location,description,invoiceNumber',
@@ -3381,6 +3408,7 @@ class Sierra extends AbstractIlsDriver {
 					'text' => 'There was an error checking out this title.',
 					'isPublicFacing' => true,
 				]),
+				'itemNotFound' => false,
 			],
 			'itemData' => []
 		];
@@ -3419,6 +3447,7 @@ class Sierra extends AbstractIlsDriver {
 					1 => $barcode,
 					'isPublicFacing' => true,
 				]);
+				$result['api']['itemNotFound'] = true;
 			}else{
 				if (pg_num_rows($getItemRS) > 1) {
 					$result['message'] = translate([

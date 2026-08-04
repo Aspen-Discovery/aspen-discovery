@@ -6,6 +6,7 @@ class AdvantageCollectionInfo {
 	private int advantageId;
 	private String collectionToken;
 	private final HashSet<Long> aspenLibraryIds = new HashSet<>();
+	private final HashSet<Long> additionalAspenLibraryIds = new HashSet<>();
 	private String name;
 
 	int getAdvantageId() {
@@ -30,6 +31,14 @@ class AdvantageCollectionInfo {
 
 	void addAspenLibraryId(long aspenLibraryId) {
 		this.aspenLibraryIds.add(aspenLibraryId);
+	}
+
+	HashSet<Long> getAdditionalAspenLibraryIds() {
+		return additionalAspenLibraryIds;
+	}
+
+	void addAdditionalAspenLibraryId(long additionalAspenLibraryId) {
+		this.additionalAspenLibraryIds.add(additionalAspenLibraryId);
 	}
 
 	String getName() {

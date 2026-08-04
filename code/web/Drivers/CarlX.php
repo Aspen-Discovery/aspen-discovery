@@ -585,7 +585,7 @@ class CarlX extends AbstractIlsDriver {
 	 *                                title - the title of the record the user is placing a hold on
 	 * @access  public
 	 */
-	public function placeHold(User $patron, $recordId, $pickupBranch = null, $cancelDate = null, $pickupSublocation = null) : array {
+	public function placeHold(User $patron, mixed $recordId, ?string $pickupBranch = null, ?string $cancelDate = null, ?string $pickupSublocation = null, ?int $numberOfCopies = 1) : array {
 		return $this->placeHoldViaSIP($patron, $recordId, $pickupBranch, $cancelDate);
 	}
 
@@ -629,7 +629,7 @@ class CarlX extends AbstractIlsDriver {
 		return $this->placeHoldViaSIP($patron, $holdId, $newPickupLocation, null, 'update', $queuePosition, $freeze, $freezeReactivationDate);
 	}
 
-	public function getCheckouts(User $patron): array {
+	public function getCheckouts(User $patron, array $options = []): array {
 		require_once ROOT_DIR . '/sys/User/Checkout.php';
 		$checkedOutTitles = [];
 
@@ -1549,8 +1549,11 @@ class CarlX extends AbstractIlsDriver {
 		return null;
 	}
 
-	public function getFines(User $patron, $includeMessages = false): array {
+	public function getFines(User $patron, $includeMessages = false, ?string $type = null): array {
 		$myFines = [];
+		if ($type == 'credit'){
+			return $myFines;
+		}
 		$request = $this->getSearchbyPatronIdRequest($patron);
 
 		$request->TransactionType = 'Fine';

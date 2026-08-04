@@ -16,9 +16,9 @@ import org.apache.solr.common.SolrInputDocument;
 import org.ini4j.Ini;
 
 import java.io.*;
+import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.sql.*;
-import java.text.Normalizer;
 import java.util.*;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -30,17 +30,19 @@ import org.marc4j.MarcWriter;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.MarcFactory;
 import org.marc4j.marc.Record;
+import org.marc4j.marc.VariableField;
 
-public class GroupedWorkIndexer {
+public class GroupedWorkIndexer implements AutoCloseable {
+	private final int indexerInstanceId = (int)(Math.random() * 1000) ;
 	private final String serverName;
 	private final BaseIndexingLogEntry logEntry;
 	private final Logger logger;
 	private final Long indexStartTime;
 	private int deletionCommitInterval = 1000;
 	private int indexCommitInterval = 10000;
-	private boolean waitAfterDeleteCommit = false;
 	private boolean removeTheWordSeriesFromEndOfSeries;
 	private int totalRecordsHandled = 0;
+	private Http2SolrClient http2Client;
 	private ConcurrentUpdateHttp2SolrClient updateServer;
 	private RecordGroupingProcessor recordGroupingProcessor;
 	private final HashMap<String, MarcRecordProcessor> ilsRecordProcessors = new HashMap<>();
@@ -141,11 +143,12 @@ public class GroupedWorkIndexer {
 	private PreparedStatement addPlaceOfPublicationStmt;
 	private PreparedStatement getPhysicalDescriptionStmt;
 	private PreparedStatement addPhysicalDescriptionStmt;
+	private PreparedStatement getDurationStmt;
+	private PreparedStatement addDurationStmt;
 	private PreparedStatement getEContentSourceStmt;
 	private PreparedStatement addEContentSourceStmt;
 	private PreparedStatement getShelfLocationStmt;
 	private PreparedStatement addShelfLocationStmt;
-	private PreparedStatement getCallNumberStmt;
 	private PreparedStatement addCallNumberStmt;
 	private PreparedStatement getStatusStmt;
 	private PreparedStatement addStatusStmt;
@@ -168,16 +171,24 @@ public class GroupedWorkIndexer {
 	private PreparedStatement removeRecordsForWorkStmt;
 
 	private boolean seriesModuleEnabled = false;
-	private PreparedStatement getSeriesStmt;
+	private int seriesVersion = 1;
+	private boolean include490_0 = false;
 	private PreparedStatement getSeriesMemberStmt;
 	private PreparedStatement addSeriesMemberStmt;
 	private PreparedStatement deleteSeriesMemberStmt;
+	private PreparedStatement deleteSeriesMemberByIdStmt;
 	private PreparedStatement deleteSeriesStmt;
 	private PreparedStatement getNumberOfSeriesMembersStmt;
+	private PreparedStatement getV1SeriesStmt;
+	private PreparedStatement getV2SeriesStmt;
+	private PreparedStatement checkIfSeriesMemberExistsStmt;
 	private PreparedStatement addSeriesStmt;
+	private PreparedStatement addSeriesV2Stmt;
 	private PreparedStatement setSeriesDateUpdated;
+	private PreparedStatement setSeriesMemberAsManualAddition;
 	private PreparedStatement updateSeriesAuthor;
 	private PreparedStatement updateSeriesScore;
+	private PreparedStatement updateSeriesToV2Stmt;
 
 	private final CRC32 checksumCalculator = new CRC32();
 
@@ -194,6 +205,8 @@ public class GroupedWorkIndexer {
 	private int searchVersion;
 	private boolean enableNovelistSeriesIntegration;
 	private int hooplaVersion;
+	private int solrThreadCount;
+	private int solrQueueSize;
 
 	public GroupedWorkIndexer(String serverName, Connection dbConn, Ini configIni, boolean fullReindex, boolean clearIndex, BaseIndexingLogEntry logEntry, Logger logger) {
 		this(serverName, dbConn, configIni, fullReindex, clearIndex, false, logEntry, logger);
@@ -204,6 +217,7 @@ public class GroupedWorkIndexer {
 		this.serverName = serverName;
 		this.logEntry = logEntry;
 		this.logger = logger;
+		logger.info("Initializing GroupedWorkIndexer {}", indexerInstanceId);
 		this.dbConn = dbConn;
 		this.fullReindex = fullReindex;
 		this.clearIndex = clearIndex;
@@ -225,40 +239,37 @@ public class GroupedWorkIndexer {
 		}
 
 		//Load the last Index time
-		try{
-			PreparedStatement loadLastGroupingTime = dbConn.prepareStatement("SELECT * from variables WHERE name = 'last_reindex_time'");
-			ResultSet lastGroupingTimeRS = loadLastGroupingTime.executeQuery();
-			if (lastGroupingTimeRS.next()){
-				lastReindexTime = lastGroupingTimeRS.getLong("value");
-				lastReindexTimeVariableId = lastGroupingTimeRS.getLong("id");
+		try (PreparedStatement loadLastGroupingTime = dbConn.prepareStatement("SELECT * from variables WHERE name = 'last_reindex_time'")) {
+			try (ResultSet lastGroupingTimeRS = loadLastGroupingTime.executeQuery()) {
+				if (lastGroupingTimeRS.next()) {
+					lastReindexTime = lastGroupingTimeRS.getLong("value");
+					lastReindexTimeVariableId = lastGroupingTimeRS.getLong("id");
+				}
 			}
-			lastGroupingTimeRS.close();
-			loadLastGroupingTime.close();
 		} catch (Exception e){
 			logEntry.incErrors("Could not load last index time from variables table ", e);
 		}
 
 		//Check to see if we should store record details in Solr
-		try{
-			PreparedStatement systemVariablesStmt = dbConn.prepareStatement("SELECT storeRecordDetailsInSolr, storeRecordDetailsInDatabase, indexVersion, searchVersion, processEmptyGroupedWorks, enableNovelistSeriesIntegration, deletionCommitInterval, waitAfterDeleteCommit, removeTheWordSeriesFromEndOfSeries, hooplaVersion, indexCommitInterval from system_variables");
-			ResultSet systemVariablesRS = systemVariablesStmt.executeQuery();
-			if (systemVariablesRS.next()){
-				this.storeRecordDetailsInSolr = systemVariablesRS.getBoolean("storeRecordDetailsInSolr");
-				this.storeRecordDetailsInDatabase = systemVariablesRS.getBoolean("storeRecordDetailsInDatabase");
-				this.indexVersion = systemVariablesRS.getInt("indexVersion");
-				this.searchVersion = systemVariablesRS.getInt("searchVersion");
-				this.enableNovelistSeriesIntegration = systemVariablesRS.getBoolean("enableNovelistSeriesIntegration");
-				this.deletionCommitInterval = systemVariablesRS.getInt("deletionCommitInterval");
-				this.indexCommitInterval = systemVariablesRS.getInt("indexCommitInterval");
-				this.waitAfterDeleteCommit = systemVariablesRS.getBoolean("waitAfterDeleteCommit");
-				if (fullReindex) {
-					this.processEmptyGroupedWorks = systemVariablesRS.getBoolean("processEmptyGroupedWorks");
+		try (PreparedStatement systemVariablesStmt = dbConn.prepareStatement("SELECT storeRecordDetailsInSolr, storeRecordDetailsInDatabase, indexVersion, searchVersion, processEmptyGroupedWorks, enableNovelistSeriesIntegration, deletionCommitInterval, waitAfterDeleteCommit, removeTheWordSeriesFromEndOfSeries, hooplaVersion, indexCommitInterval, solrThreadCount, solrQueueSize from system_variables")){
+			try (ResultSet systemVariablesRS = systemVariablesStmt.executeQuery()) {
+				if (systemVariablesRS.next()) {
+					this.storeRecordDetailsInSolr = systemVariablesRS.getBoolean("storeRecordDetailsInSolr");
+					this.storeRecordDetailsInDatabase = systemVariablesRS.getBoolean("storeRecordDetailsInDatabase");
+					this.indexVersion = systemVariablesRS.getInt("indexVersion");
+					this.searchVersion = systemVariablesRS.getInt("searchVersion");
+					this.enableNovelistSeriesIntegration = systemVariablesRS.getBoolean("enableNovelistSeriesIntegration");
+					this.deletionCommitInterval = systemVariablesRS.getInt("deletionCommitInterval");
+					this.indexCommitInterval = systemVariablesRS.getInt("indexCommitInterval");
+					if (fullReindex) {
+						this.processEmptyGroupedWorks = systemVariablesRS.getBoolean("processEmptyGroupedWorks");
+					}
+					this.removeTheWordSeriesFromEndOfSeries = systemVariablesRS.getBoolean("removeTheWordSeriesFromEndOfSeries");
+					this.hooplaVersion = systemVariablesRS.getInt("hooplaVersion");
+					this.solrThreadCount = systemVariablesRS.getInt("solrThreadCount");
+					this.solrQueueSize = systemVariablesRS.getInt("solrQueueSize");
 				}
-				this.removeTheWordSeriesFromEndOfSeries = systemVariablesRS.getBoolean("removeTheWordSeriesFromEndOfSeries");
-				this.hooplaVersion = systemVariablesRS.getInt("hooplaVersion");
 			}
-			systemVariablesRS.close();
-			systemVariablesStmt.close();
 		} catch (Exception e){
 			logEntry.incErrors("Could not load last index time from variables table ", e);
 		}
@@ -272,7 +283,7 @@ public class GroupedWorkIndexer {
 			getArBookIdForIsbnStmt = dbConn.prepareStatement("SELECT arBookId from accelerated_reading_isbn where isbn = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			getArBookInfoStmt = dbConn.prepareStatement("SELECT * from accelerated_reading_titles where arBookId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			getNumScheduledWorksStmt = dbConn.prepareStatement("SELECT COUNT(DISTINCT permanent_id) as numScheduledWorks FROM grouped_work_scheduled_index where processed = 0 and indexAfter <= ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-			getScheduledWorksStmt = dbConn.prepareStatement("SELECT id, permanent_id FROM grouped_work_scheduled_index where processed = 0 and indexAfter <= ? ORDER BY indexAfter ASC LIMIT 0, 1", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			getScheduledWorksStmt = dbConn.prepareStatement("SELECT id, permanent_id FROM grouped_work_scheduled_index where processed = 0 and indexAfter <= ? ORDER BY indexAfter LIMIT 0, 1", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			getScheduledWorkStmt = dbConn.prepareStatement("SELECT * FROM grouped_work_scheduled_index where processed = 0 and permanent_id = ? and indexAfter = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			markScheduledWorkProcessedStmt = dbConn.prepareStatement("UPDATE grouped_work_scheduled_index set processed = 1 where permanent_id = ? and indexAfter <= ?");
 			addScheduledWorkStmt = dbConn.prepareStatement("INSERT INTO grouped_work_scheduled_index (permanent_id, indexAfter) VALUES (?, ?)");
@@ -285,10 +296,10 @@ public class GroupedWorkIndexer {
 			addScopeStmt = dbConn.prepareStatement("INSERT INTO scope (name, isLibraryScope, isLocationScope) VALUES (?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
 			updateScopeStmt = dbConn.prepareStatement("UPDATE scope set isLibraryScope = ?, isLocationScope = ? WHERE id = ?");
 			removeScopeStmt = dbConn.prepareStatement("DELETE FROM scope where id = ?");
-			getExistingRecordsForWorkStmt = dbConn.prepareStatement("SELECT id, sourceId, recordIdentifier, groupedWorkId, editionId, publisherId, publicationDateId, placeOfPublicationId, physicalDescriptionId, formatId, formatCategoryId, languageId, isClosedCaptioned, hasParentRecord, audienceId, hasChildRecord from grouped_work_records where groupedWorkId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-			addRecordForWorkStmt = dbConn.prepareStatement("INSERT INTO grouped_work_records (groupedWorkId, sourceId, recordIdentifier, editionId, publisherId, publicationDateId, placeOfPublicationId, physicalDescriptionId, formatId, formatCategoryId, languageId, isClosedCaptioned, hasParentRecord, hasChildRecord, audienceId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
-					"ON DUPLICATE KEY UPDATE groupedWorkId = VALUES(groupedWorkId), editionId = VALUES(editionId), publisherId = VALUES(publisherId), publicationDateId = VALUES(publicationDateId), placeOfPublicationId = VALUES(placeOfPublicationId), physicalDescriptionId = VALUES(physicalDescriptionId), formatId = VALUES(formatId), formatCategoryId = VALUES(formatCategoryId), languageId = VALUES(languageId), isClosedCaptioned = VALUES(isClosedCaptioned), hasParentRecord = VALUES(hasParentRecord), hasChildRecord = VALUES(hasChildRecord), audienceId = VALUES(audienceId)", PreparedStatement.RETURN_GENERATED_KEYS);
-			updateRecordForWorkStmt = dbConn.prepareStatement("UPDATE grouped_work_records SET groupedWorkId = ?, editionId = ?, publisherId = ?, publicationDateId = ?, placeOfPublicationId = ?, physicalDescriptionId = ?, formatId = ?, formatCategoryId = ?, languageId = ?, isClosedCaptioned = ?, hasParentRecord = ?, hasChildRecord = ?, audienceId = ? where id = ?");
+			getExistingRecordsForWorkStmt = dbConn.prepareStatement("SELECT id, sourceId, recordIdentifier, groupedWorkId, editionId, publisherId, publicationDateId, placeOfPublicationId, physicalDescriptionId, formatId, formatCategoryId, languageId, isClosedCaptioned, hasParentRecord, audienceId, hasChildRecord, durationId from grouped_work_records where groupedWorkId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			addRecordForWorkStmt = dbConn.prepareStatement("INSERT INTO grouped_work_records (groupedWorkId, sourceId, recordIdentifier, editionId, publisherId, publicationDateId, placeOfPublicationId, physicalDescriptionId, formatId, formatCategoryId, languageId, isClosedCaptioned, hasParentRecord, hasChildRecord, audienceId, durationId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
+					"ON DUPLICATE KEY UPDATE groupedWorkId = VALUES(groupedWorkId), editionId = VALUES(editionId), publisherId = VALUES(publisherId), publicationDateId = VALUES(publicationDateId), placeOfPublicationId = VALUES(placeOfPublicationId), physicalDescriptionId = VALUES(physicalDescriptionId), formatId = VALUES(formatId), formatCategoryId = VALUES(formatCategoryId), languageId = VALUES(languageId), isClosedCaptioned = VALUES(isClosedCaptioned), hasParentRecord = VALUES(hasParentRecord), hasChildRecord = VALUES(hasChildRecord), audienceId = VALUES(audienceId), durationId = VALUES(durationId)", PreparedStatement.RETURN_GENERATED_KEYS);
+			updateRecordForWorkStmt = dbConn.prepareStatement("UPDATE grouped_work_records SET groupedWorkId = ?, editionId = ?, publisherId = ?, publicationDateId = ?, placeOfPublicationId = ?, physicalDescriptionId = ?, formatId = ?, formatCategoryId = ?, languageId = ?, isClosedCaptioned = ?, hasParentRecord = ?, hasChildRecord = ?, audienceId = ?, durationId = ? where id = ?");
 			removeRecordForWorkStmt = dbConn.prepareStatement("DELETE FROM grouped_work_records where id = ?");
 			getIdForRecordStmt = dbConn.prepareStatement("SELECT id from grouped_work_records where sourceId = ? and recordIdentifier = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			getExistingVariationsForWorkStmt = dbConn.prepareStatement("SELECT * from grouped_work_variation where groupedWorkId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
@@ -299,11 +310,11 @@ public class GroupedWorkIndexer {
 			getIdForVariationStmt = dbConn.prepareStatement("SELECT id from grouped_work_variation where groupedWorkId = ? AND primaryLanguageId = ? AND eContentSourceId = ? AND formatId = ? AND formatCategoryId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			removeVariationStmt = dbConn.prepareStatement("DELETE FROM grouped_work_variation WHERE id = ?");
 			getExistingItemsForRecordStmt = dbConn.prepareStatement("SELECT * from grouped_work_record_items WHERE groupedWorkRecordId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-			addItemForRecordStmt = dbConn.prepareStatement("INSERT INTO grouped_work_record_items (groupedWorkRecordId, groupedWorkVariationId, itemId, shelfLocationId, callNumberId, sortableCallNumberId, numCopies, isOrderItem, statusId, dateAdded, locationCodeId, subLocationCodeId, lastCheckInDate, groupedStatusId, available, holdable, inLibraryUseOnly, locationOwnedScopes, libraryOwnedScopes, recordIncludedScopes, isVirtual) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)" +
+			addItemForRecordStmt = dbConn.prepareStatement("INSERT INTO grouped_work_record_items (groupedWorkRecordId, groupedWorkVariationId, itemId, shelfLocationId, callNumberId, sortableCallNumberId, numCopies, isOrderItem, statusId, dateAdded, locationCodeId, subLocationCodeId, lastCheckInDate, groupedStatusId, available, holdable, inLibraryUseOnly, locationOwnedScopes, libraryOwnedScopes, recordIncludedScopes, isVirtual, barcode, note, dueDate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)" +
 					" ON DUPLICATE KEY " +
-					"UPDATE shelfLocationId = VALUES(shelfLocationId), callNumberId = VALUES(callNumberId), sortableCallNumberId = VALUES(sortableCallNumberId), numCopies = VALUES(numCopies), isOrderItem = VALUES(isOrderItem), statusId = VALUES(statusId), locationCodeId = VALUES(locationCodeId), subLocationCodeId = VALUES(subLocationCodeId), lastCheckInDate = VALUES(lastCheckInDate), groupedStatusId = VALUES(groupedStatusId), available = VALUES(available), inLibraryUseOnly = VALUES(inLibraryUseOnly), holdable = VALUES(holdable), locationOwnedScopes = VALUES(locationOwnedScopes), libraryOwnedScopes = VALUES(libraryOwnedScopes), recordIncludedScopes = VALUES(recordIncludedScopes), isVirtual = VALUES(isVirtual)", PreparedStatement.RETURN_GENERATED_KEYS);
+					"UPDATE shelfLocationId = VALUES(shelfLocationId), callNumberId = VALUES(callNumberId), sortableCallNumberId = VALUES(sortableCallNumberId), numCopies = VALUES(numCopies), isOrderItem = VALUES(isOrderItem), statusId = VALUES(statusId), locationCodeId = VALUES(locationCodeId), subLocationCodeId = VALUES(subLocationCodeId), lastCheckInDate = VALUES(lastCheckInDate), groupedStatusId = VALUES(groupedStatusId), available = VALUES(available), inLibraryUseOnly = VALUES(inLibraryUseOnly), holdable = VALUES(holdable), locationOwnedScopes = VALUES(locationOwnedScopes), libraryOwnedScopes = VALUES(libraryOwnedScopes), recordIncludedScopes = VALUES(recordIncludedScopes), isVirtual = VALUES(isVirtual), barcode = VALUES(barcode), note = VALUES(note), dueDate = VALUES(dueDate)", PreparedStatement.RETURN_GENERATED_KEYS);
 			updateItemForRecordStmt = dbConn.prepareStatement("UPDATE grouped_work_record_items set groupedWorkVariationId = ?, shelfLocationId = ?, callNumberId = ?, sortableCallNumberId = ?, numCopies = ?, isOrderItem = ?, statusId = ?, dateAdded = ?, " +
-					"locationCodeId = ?, subLocationCodeId = ?, lastCheckInDate = ?, groupedStatusId = ?, available = ?, holdable = ?, inLibraryUseOnly = ?, locationOwnedScopes = ?, libraryOwnedScopes = ?, recordIncludedScopes = ?, isVirtual = ? WHERE id = ?");
+					"locationCodeId = ?, subLocationCodeId = ?, lastCheckInDate = ?, groupedStatusId = ?, available = ?, holdable = ?, inLibraryUseOnly = ?, locationOwnedScopes = ?, libraryOwnedScopes = ?, recordIncludedScopes = ?, isVirtual = ?, barcode = ?, note = ?, dueDate = ? WHERE id = ?");
 			getIdForItemStmt = dbConn.prepareStatement("SELECT id from grouped_work_record_items where groupedWorkRecordId = ? and groupedWorkVariationId = ? and itemId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			removeItemStmt = dbConn.prepareStatement("DELETE FROM grouped_work_record_items WHERE id = ?");
 			addItemUrlStmt = dbConn.prepareStatement("INSERT INTO grouped_work_record_item_url (groupedWorkItemId, scopeId, url) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE url = VALUES(url) ");
@@ -328,11 +339,12 @@ public class GroupedWorkIndexer {
 			addPlaceOfPublicationStmt = dbConn.prepareStatement("INSERT INTO indexed_place_of_publication (placeOfPublication) VALUES (?)", Statement.RETURN_GENERATED_KEYS);
 			getPhysicalDescriptionStmt = dbConn.prepareStatement("SELECT id from indexed_physical_description where physicalDescription = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			addPhysicalDescriptionStmt = dbConn.prepareStatement("INSERT INTO indexed_physical_description (physicalDescription) VALUES (?)", Statement.RETURN_GENERATED_KEYS);
+			getDurationStmt = dbConn.prepareStatement("SELECT id from indexed_duration where duration = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			addDurationStmt = dbConn.prepareStatement("INSERT INTO indexed_duration (duration) VALUES (?)", Statement.RETURN_GENERATED_KEYS);
 			getEContentSourceStmt = dbConn.prepareStatement("SELECT id from indexed_econtent_source where eContentSource = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			addEContentSourceStmt = dbConn.prepareStatement("INSERT INTO indexed_econtent_source (eContentSource) VALUES (?)", Statement.RETURN_GENERATED_KEYS);
 			getShelfLocationStmt = dbConn.prepareStatement("SELECT id from indexed_shelf_location where shelfLocation = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			addShelfLocationStmt = dbConn.prepareStatement("INSERT INTO indexed_shelf_location (shelfLocation) VALUES (?)", Statement.RETURN_GENERATED_KEYS);
-			getCallNumberStmt = dbConn.prepareStatement("SELECT id from indexed_call_number where callNumber = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			addCallNumberStmt = dbConn.prepareStatement("INSERT INTO indexed_call_number (callNumber) VALUES (?)", Statement.RETURN_GENERATED_KEYS);
 			getStatusStmt = dbConn.prepareStatement("SELECT id from indexed_status where status = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			addStatusStmt = dbConn.prepareStatement("INSERT INTO indexed_status (status) VALUES (?)", Statement.RETURN_GENERATED_KEYS);
@@ -354,16 +366,23 @@ public class GroupedWorkIndexer {
 			removeVariationsForWorkStmt = dbConn.prepareStatement("DELETE FROM grouped_work_variation where groupedWorkId = ?");
 			removeRecordsForWorkStmt = dbConn.prepareStatement("DELETE FROM grouped_work_records where groupedWorkId = ?");
 
-			getSeriesMemberStmt = dbConn.prepareStatement("SELECT s.groupedWorkSeriesTitle, s.isIndexed, sm.seriesId, sm.priorityScore FROM series_member AS sm LEFT JOIN series AS s ON sm.seriesId = s.id WHERE groupedWorkPermanentId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			getSeriesStmt = dbConn.prepareStatement("SELECT * FROM series WHERE groupedWorkSeriesTitle = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			addSeriesStmt = dbConn.prepareStatement("INSERT INTO series (displayName, audience, created, dateUpdated, author, groupedWorkSeriesTitle) VALUES (?, ?, ?, ?, ?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
-			addSeriesMemberStmt = dbConn.prepareStatement("INSERT INTO series_member (seriesId, isPlaceholder, groupedWorkPermanentId, volume, pubDate, displayName, author, description, weight, priorityScore) VALUES (?, 0, ?, ?, ?, ?, ?, ?, ?, ?)");
-			deleteSeriesMemberStmt = dbConn.prepareStatement("DELETE FROM series_member WHERE seriesId = ? AND groupedWorkPermanentId = ? AND userAdded = 0;");
+			getV1SeriesStmt = dbConn.prepareStatement("SELECT * from series where groupedWorkSeriesTitle = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getV2SeriesStmt = dbConn.prepareStatement("SELECT * from series where seriesPermanentId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+
+			checkIfSeriesMemberExistsStmt = dbConn.prepareStatement("SELECT * from series_member where seriesId = ? AND groupedWorkPermanentId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getSeriesMemberStmt = dbConn.prepareStatement("SELECT sm.id as seriesMemberId, sm.seriesId, s.seriesPermanentId, s.version, s.groupedWorkSeriesTitle, s.author, s.seriesLanguage, s.isIndexed, sm.volume, sm.priorityScore, sm.deleted, sm.userAdded FROM series_member AS sm LEFT JOIN series AS s ON sm.seriesId = s.id WHERE groupedWorkPermanentId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			addSeriesStmt = dbConn.prepareStatement("INSERT INTO series (displayName, audience, created, dateUpdated, author, groupedWorkSeriesTitle, version) VALUES (?, ?, ?, ?, ?, ?, 1)", PreparedStatement.RETURN_GENERATED_KEYS);
+			addSeriesV2Stmt = dbConn.prepareStatement("INSERT INTO series (displayName, audience, created, dateUpdated, author, groupedWorkSeriesTitle, seriesPermanentId, seriesLanguage, version) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 2)", PreparedStatement.RETURN_GENERATED_KEYS);
+			addSeriesMemberStmt = dbConn.prepareStatement("INSERT INTO series_member (seriesId, isPlaceholder, groupedWorkPermanentId, volume, pubDate, displayName, author, description, weight, priorityScore) VALUES (?, 0, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)", PreparedStatement.RETURN_GENERATED_KEYS);
+			deleteSeriesMemberStmt = dbConn.prepareStatement("DELETE FROM series_member WHERE seriesId = ? AND groupedWorkPermanentId = ? AND volume = ?;");
+			deleteSeriesMemberByIdStmt = dbConn.prepareStatement("DELETE FROM series_member WHERE id = ?;");
 			deleteSeriesStmt = dbConn.prepareStatement("DELETE FROM series WHERE id = ?;");
 			getNumberOfSeriesMembersStmt = dbConn.prepareStatement("SELECT COUNT(*) as numMembers FROM series_member WHERE seriesId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			updateSeriesAuthor = dbConn.prepareStatement("UPDATE series SET author = ? WHERE id = ?;");
-			updateSeriesScore = dbConn.prepareStatement("UPDATE series_member SET priorityScore = ? WHERE seriesId = ? AND groupedWorkPermanentId = ?");
+			updateSeriesScore = dbConn.prepareStatement("UPDATE series_member SET priorityScore = ? WHERE seriesId = ? AND groupedWorkPermanentId = ? AND volume = ?;");
+			updateSeriesToV2Stmt = dbConn.prepareStatement("UPDATE series SET version = 2, series.seriesLanguage = ?, seriesPermanentId = ?, dateUpdated = ? WHERE id = ?");
 			setSeriesDateUpdated = dbConn.prepareStatement("UPDATE series SET dateUpdated = ? WHERE id = ?;");
+			setSeriesMemberAsManualAddition = dbConn.prepareStatement("UPDATE series_member SET userAdded=1 WHERE id = ?;");
 		} catch (Exception e){
 			logEntry.incErrors("Could not load statements to get identifiers ", e);
 			this.okToIndex = false;
@@ -371,16 +390,27 @@ public class GroupedWorkIndexer {
 		}
 
 		// Check if the series module is enabled
-		try {
-			PreparedStatement seriesModuleEnabledStmt = dbConn.prepareStatement("SELECT enabled FROM modules WHERE name = 'series'");
-			ResultSet enabledRS = seriesModuleEnabledStmt.executeQuery();
-			if (enabledRS.next()) {
-				seriesModuleEnabled = enabledRS.getBoolean("enabled");
+		try (PreparedStatement seriesModuleEnabledStmt = dbConn.prepareStatement("SELECT enabled FROM modules WHERE name = 'series'")) {
+			try (ResultSet enabledRS = seriesModuleEnabledStmt.executeQuery()) {
+				if (enabledRS.next()) {
+					seriesModuleEnabled = enabledRS.getBoolean("enabled");
+				}
 			}
-			enabledRS.close();
-			seriesModuleEnabledStmt.close();
 		} catch (Exception e) {
 			logEntry.incErrors("Could not check if series module enabled ", e);
+		}
+
+		if (seriesModuleEnabled) {
+			try (PreparedStatement getSeriesSettingsStmt = dbConn.prepareStatement("SELECT id, version, truncateForVersionSwitch, include490_0 FROM series_indexing_settings")) {
+				try (ResultSet seriesSettingsRS = getSeriesSettingsStmt.executeQuery()) {
+					if (seriesSettingsRS.next()) {
+						seriesVersion = seriesSettingsRS.getInt("version");
+						include490_0 = seriesSettingsRS.getBoolean("include490_0");
+					}
+				}
+			} catch (Exception e) {
+				logEntry.incErrors("Could not get settings for series index ", e);
+			}
 		}
 
 		//Initialize the updateServer and solr server
@@ -390,15 +420,23 @@ public class GroupedWorkIndexer {
 
 		String solrUrl;
 		if (indexVersion == 1) {
+			//noinspection HttpUrlsUsage
 			solrUrl = "http://" + solrHost + ":" + solrPort + "/solr/grouped_works";
 		}else{
+			//noinspection HttpUrlsUsage
 			solrUrl = "http://" + solrHost + ":" + solrPort + "/solr/grouped_works_v2";
 		}
-		Http2SolrClient http2Client = new Http2SolrClient.Builder().build();
+		//Set a longer timeout
+		http2Client = new Http2SolrClient.Builder()
+			.idleTimeout(60000)
+			.connectionTimeout(15000)
+			.build();
 		try {
+
+
 			updateServer = new ConcurrentUpdateHttp2SolrClient.Builder(solrUrl, http2Client)
-				.withThreadCount(1)
-				.withQueueSize(25)
+				.withThreadCount(solrThreadCount)
+				.withQueueSize(solrQueueSize)
 				.build();
 		}catch (OutOfMemoryError e) {
 			logger.error("Unable to create solr client, out of memory", e);
@@ -412,7 +450,7 @@ public class GroupedWorkIndexer {
 				this.okToIndex = false;
 				return;
 			}else{
-				logger.info("Loaded " + scopes.size() + " scopes");
+				logger.info("Loaded {} scopes", scopes.size());
 			}
 			loadLocationLabels();
 
@@ -581,13 +619,26 @@ public class GroupedWorkIndexer {
 		if (clearIndex){
 			clearIndex();
 		}
+
+		logger.info("Finished initializing GroupedWorkIndexer {}", indexerInstanceId);
 	}
 
 	public void close(){
-		updateServer = null;
+		logger.info("Closing GroupedWorkIndexer {}", indexerInstanceId);
+		if (updateServer != null) {
+			logger.info("Closing updateServer {}", indexerInstanceId);
+			updateServer.shutdownNow();
+			updateServer.close();
+			updateServer = null;
+			http2Client.close();
+			http2Client = null;
+		}
 		ilsRecordProcessors.clear();
 		sideLoadProcessors.clear();
-		overDriveProcessor = null;
+		if (overDriveProcessor != null) {
+			overDriveProcessor.close();
+			overDriveProcessor = null;
+		}
 		cloudLibraryProcessor = null;
 		axis360Processor = null;
 		hooplaProcessor = null;
@@ -599,12 +650,43 @@ public class GroupedWorkIndexer {
 		hideSeries.clear();
 		scopes.clear();
 		try {
-			getRatingStmt.close();
-			getNovelistStmt.close();
-			getDisplayInfoStmt.close();
-			getGroupedWorkPrimaryIdentifiers.close();
+			closeAllActivePreparedStatements();
+
+			for (PreparedStatement getCallNumbersStmt : getCallNumbersStmts.values()) {
+				getCallNumbersStmt.close();
+			}
 		} catch (Exception e) {
 			logEntry.incErrors("Error closing prepared statements in grouped work indexer", e);
+		}
+		logger.info("Finished Closing GroupedWorkIndexer {}", indexerInstanceId);
+	}
+
+	private void closeAllActivePreparedStatements() {
+		try {
+			// Get all fields of the object, including private ones
+			Field[] fields = this.getClass().getDeclaredFields();
+
+			for (Field field : fields) {
+				field.setAccessible(true); // Make sure we can access private fields
+
+				Object fieldValue = field.get(this);
+
+				if (fieldValue instanceof PreparedStatement) {
+					PreparedStatement statement = (PreparedStatement) fieldValue;
+					try {
+						if (!statement.isClosed()) {
+							//Close the statement and set it to null
+							statement.close();
+							field.set(this, null);
+						}
+					} catch (SQLException e) {
+						logEntry.incErrors("Could not close prepared statement in grouped work indexer", e);
+					}
+				}
+			}
+		} catch (IllegalAccessException e) {
+			// Handle the exception appropriately
+			logEntry.incErrors("Illegal access closing prepared statements in grouped work indexer", e);
 		}
 	}
 
@@ -646,7 +728,7 @@ public class GroupedWorkIndexer {
 				curLine++;
 			}
 			lexileReader.close();
-			logger.info("Read " + lexileInformation.size() + " lines of lexile data");
+			logger.info("Read {} lines of lexile data", lexileInformation.size());
 		}catch (FileNotFoundException fne){
 			//This is normal
 			//logEntry.addNote("Error loading lexile data, the file was not found at " + lexileExportPath);
@@ -657,7 +739,7 @@ public class GroupedWorkIndexer {
 
 	private void clearIndex() {
 		//Check to see if we should clear the existing index
-		logger.info("Clearing existing marc records from index");
+		logger.info("Clearing existing MARC records from index");
 		try {
 			updateServer.deleteByQuery("recordtype:grouped_work");
 			//3-19-2019 Don't commit so the index does not get cleared during run (but will clear at the end).
@@ -670,7 +752,7 @@ public class GroupedWorkIndexer {
 	}
 
 	public synchronized void deleteRecord(String permanentId, Long groupedWorkId) {
-		logger.info("Clearing existing work " + permanentId + " from index");
+		logger.info("Clearing existing work {} from index", permanentId);
 		//noinspection CommentedOutCode
 		try {
 			if (permanentId.length() < 40) {
@@ -691,11 +773,7 @@ public class GroupedWorkIndexer {
 			//Allow auto commit functionality to handle this
 			totalRecordsHandled++;
 			if (totalRecordsHandled % this.deletionCommitInterval == 0) {
-				if (this.waitAfterDeleteCommit) {
-					this.commitChangesWithWait();
-				}else{
-					this.commitChanges();
-				}
+				this.commitChanges();
 			}
 
 			/*
@@ -755,7 +833,11 @@ public class GroupedWorkIndexer {
 			System.exit(-4);
 		}
 		try {
+			updateServer.shutdownNow();
 			updateServer.close();
+			updateServer = null;
+			http2Client.close();
+			http2Client = null;
 		}catch (Exception e) {
 			logEntry.incErrors("Error closing update server ", e);
 			logEntry.setFinished();
@@ -765,14 +847,6 @@ public class GroupedWorkIndexer {
 	}
 
 	public void commitChanges(){
-		try {
-			updateServer.commit(false, false, true);
-		}catch (Exception e) {
-			logEntry.incErrors("Error committing changes ", e);
-		}
-	}
-
-	public void commitChangesWithWait(){
 		try {
 			updateServer.commit(false, false, true);
 		}catch (Exception e) {
@@ -859,8 +933,10 @@ public class GroupedWorkIndexer {
 		}
 	}
 
-	void finishIndexing(){
-		this.processScheduledWorks(logEntry, true, -1);
+	void finishIndexing(boolean processedSingleWork){
+		if (!processedSingleWork) {
+			this.processScheduledWorks(logEntry, true, -1);
+		}
 		logEntry.addNote("Finishing indexing");
 		if (fullReindex) {
 			try {
@@ -873,7 +949,7 @@ public class GroupedWorkIndexer {
 				//Update the search version to version 2
 				try {
 					logEntry.addNote("Updating search version to version 2");
-					dbConn.prepareStatement("UPDATE system_variables set searchVersion = 2").executeUpdate();
+					dbConn.prepareStatement("UPDATE system_variables set searchVersion = 2 WHERE true").executeUpdate();
 				} catch (Exception e) {
 					logEntry.incErrors("Error updating search version", e);
 				}
@@ -881,7 +957,7 @@ public class GroupedWorkIndexer {
 			if (regroupAllRecords){
 				try {
 					logEntry.addNote("Turning off regroupAllRecords");
-					dbConn.prepareStatement("UPDATE system_variables set regroupAllRecordsDuringNightlyIndex = 0").executeUpdate();
+					dbConn.prepareStatement("UPDATE system_variables set regroupAllRecordsDuringNightlyIndex = 0 WHERE true").executeUpdate();
 				} catch (Exception e) {
 					logEntry.incErrors("Error turning off regroupAllRecords", e);
 				}
@@ -889,7 +965,7 @@ public class GroupedWorkIndexer {
 			if (processEmptyGroupedWorks){
 				try {
 					logEntry.addNote("Turning off processEmptyGroupedWorks");
-					dbConn.prepareStatement("UPDATE system_variables set processEmptyGroupedWorks = 0").executeUpdate();
+					dbConn.prepareStatement("UPDATE system_variables set processEmptyGroupedWorks = 0 WHERE true").executeUpdate();
 				} catch (Exception e) {
 					logEntry.incErrors("Error turning off processEmptyGroupedWorks", e);
 				}
@@ -902,7 +978,11 @@ public class GroupedWorkIndexer {
 				updateServer.commit(false, false, true);
 				logEntry.addNote("Shutting down the update server");
 				updateServer.blockUntilFinished();
+				updateServer.shutdownNow();
 				updateServer.close();
+				updateServer = null;
+				http2Client.close();
+				http2Client = null;
 			} catch (Exception e) {
 				logEntry.incErrors("Error shutting down update server", e);
 			}
@@ -981,7 +1061,7 @@ public class GroupedWorkIndexer {
 						}
 					}
 					//Change to a debug statement to avoid filling up the notes.
-					logger.debug("Processed " + numWorksProcessed + " grouped works processed.");
+					logger.debug("Processed {} grouped works processed.", numWorksProcessed);
 				}
 				if (lastUpdated == null){
 					setLastUpdatedTime.setLong(1, indexStartTime - 1); //Set just before the index started, so we don't index multiple times
@@ -1003,7 +1083,7 @@ public class GroupedWorkIndexer {
 		} catch (SQLException e) {
 			logEntry.incErrors("Unexpected SQL error", e);
 		}
-		logger.info("Finished processing grouped works.  Processed a total of " + numWorksProcessed + " grouped works");
+		logger.info("Finished processing grouped works.  Processed a total of {} grouped works", numWorksProcessed);
 	}
 
 	protected void processEmptyGroupedWorks() throws SQLException {
@@ -1140,7 +1220,7 @@ public class GroupedWorkIndexer {
 				String newId = permanentId;
 				if (ilsRecordGroupers.containsKey(type)) {
 					MarcRecordGrouper ilsGrouper = ilsRecordGroupers.get(type);
-					org.marc4j.marc.Record record = loadMarcRecordFromDatabase(type, identifier, logEntry);
+					Record record = loadMarcRecordFromDatabase(type, identifier, logEntry);
 					if (record == null) {
 						RemoveRecordFromWorkResult result = getRecordGroupingProcessor().removeRecordFromGroupedWork(type, identifier);
 						if (result.reindexWork) {
@@ -1155,7 +1235,7 @@ public class GroupedWorkIndexer {
 					}
 				} else if (sideLoadRecordGroupers.containsKey(type)) {
 					SideLoadedRecordGrouper sideLoadGrouper = sideLoadRecordGroupers.get(type);
-					org.marc4j.marc.Record record = loadMarcRecordFromDatabase(type, identifier, logEntry);
+					Record record = loadMarcRecordFromDatabase(type, identifier, logEntry);
 					if (record == null) {
 						RemoveRecordFromWorkResult result = getRecordGroupingProcessor().removeRecordFromGroupedWork(type, identifier);
 						if (result.reindexWork) {
@@ -1230,7 +1310,7 @@ public class GroupedWorkIndexer {
 		}
 
 		if (numPrimaryIdentifiers > 0) {
-			//Strip out any hoopla records that have the same format as another econtent record with apis
+			//Strip out any hoopla records that have the same format as another econtent record with APIs
 			groupedWork.removeRedundantHooplaRecords();
 
 			//Load local enrichment for the work
@@ -1339,7 +1419,7 @@ public class GroupedWorkIndexer {
 				groupedWork.setLexileScore(lexileTitle.getLexileScore());
 				groupedWork.addAwards(lexileTitle.getAwards());
 				if (!lexileTitle.getSeries().isEmpty()){
-					groupedWork.addSeries(lexileTitle.getSeries());
+					groupedWork.addSeriesWithVolume(lexileTitle.getSeries(), lexileTitle.getAuthor(), "", 1, false);
 				}
 				break;
 			}
@@ -1357,12 +1437,24 @@ public class GroupedWorkIndexer {
 					ResultSet arBookInfoRS = getArBookInfoStmt.executeQuery();
 					if (arBookInfoRS.next()){
 						String bookLevel = arBookInfoRS.getString("bookLevel");
-						if (!bookLevel.isEmpty()){
+						String arPoints = arBookInfoRS.getString("arPoints");
+						String interestLevel = arBookInfoRS.getString("interestLevel");
+						boolean foundUsableArData = false;
+						if (bookLevel != null && !bookLevel.trim().isEmpty()){
 							groupedWork.setAcceleratedReaderReadingLevel(bookLevel);
+							foundUsableArData = true;
 						}
-						groupedWork.setAcceleratedReaderPointValue(arBookInfoRS.getString("arPoints"));
-						groupedWork.setAcceleratedReaderInterestLevel(arBookInfoRS.getString("interestLevel"));
-						break;
+						if (arPoints != null && !arPoints.trim().isEmpty()){
+							groupedWork.setAcceleratedReaderPointValue(arPoints);
+							foundUsableArData = true;
+						}
+						if (interestLevel != null && !interestLevel.trim().isEmpty()){
+							groupedWork.setAcceleratedReaderInterestLevel(interestLevel);
+							foundUsableArData = true;
+						}
+						if (foundUsableArData){
+							break;
+						}
 					}
 					arBookInfoRS.close();
 				}
@@ -1454,7 +1546,7 @@ public class GroupedWorkIndexer {
 						if (novelistRS.wasNull()) {
 							volume = "";
 						}
-						groupedWork.addSeriesWithVolume(series, volume, 2, false);
+						groupedWork.addSeriesWithVolume(series, "", volume, 2, false);
 					}
 				}
 				novelistRS.close();
@@ -1464,16 +1556,30 @@ public class GroupedWorkIndexer {
 		}
 	}
 
+	/**
+	 * Update the series for the grouped work with the series module.
+	 *
+	 * We have 2 versions of the series module
+	 * 	the first is keyed only by series name.
+	 * 	the second is keyed by series name, author, and language
+	 *
+	 * This routine also handles updating a series from version 1 to version 2
+	 * - To move from version 1 to version 2
+	 * 		- Check the author to see if it matches.
+	 * 			- Yes, Add the language to the series & generate primary ID
+	 * 			- No, Add a new series and the member
+	 * 		- Check to see if a version 1 series no longer
+	 */
 	private void updateSeriesDataForWork(AbstractGroupedWorkSolr groupedWork) {
+		if (!seriesModuleEnabled) {
+			return;
+		}
 		try {
-			if (seriesModuleEnabled) {
-				getSeriesMemberStmt.setString(1, groupedWork.getId());
-				ResultSet seriesMemberRS = getSeriesMemberStmt.executeQuery();
-				HashMap<String, Integer> seriesInDb = new HashMap<>();
-				HashMap<String, Integer> seriesInProcess = new HashMap<>();
-				HashMap<String, Integer> seriesScore = new HashMap<>();
-				HashMap<String, Boolean> seriesIsIndexed = new HashMap<>();
-				HashMap<String, String> seriesToRemove = new HashMap<>();
+			HashMap<String, SeriesMember> seriesMembersInDb = new HashMap<>();
+
+			//Get existing series members from the database. These represent the series that are currently attached to the work.
+			getSeriesMemberStmt.setString(1, groupedWork.getId());
+			try (ResultSet seriesMemberRS = getSeriesMemberStmt.executeQuery()) {
 				while (seriesMemberRS.next()) {
 					// Strip diacritics and switch to lowercase for comparing series names to minimize duplicates
 					String seriesTitle = seriesMemberRS.getString("groupedWorkSeriesTitle");
@@ -1481,141 +1587,97 @@ public class GroupedWorkIndexer {
 						//If the grouped work series title is null, this is a manually created series, so we should skip it.
 						continue;
 					}
-					String normalizedSeriesName = Normalizer.normalize(seriesTitle.toLowerCase(), Normalizer.Form.NFKD).replaceAll("\\p{M}", "");
-					seriesInDb.put(normalizedSeriesName, seriesMemberRS.getInt("seriesId"));
-					seriesInProcess.put(normalizedSeriesName, seriesMemberRS.getInt("seriesId"));
-					seriesScore.put(normalizedSeriesName, seriesMemberRS.getInt("priorityScore"));
-					seriesIsIndexed.put(normalizedSeriesName, seriesMemberRS.getBoolean("isIndexed"));
-				}
-				seriesMemberRS.close();
-				for (String seriesNameWithVolume : groupedWork.seriesWithVolume.keySet()) {
-					String[] series = seriesNameWithVolume.split("\\|");
-					if (series.length == 0) {
-						continue;
+					SeriesMember seriesMember = new SeriesMember(seriesMemberRS);
+					String key;
+					if (seriesMember.getVersion() == 1) {
+						key = seriesMember.getNormalizedSeriesName();
+					}else{
+						key = seriesMember.getSeriesPermanentId();
 					}
-					String normalizedSeriesName = Normalizer.normalize(series[0], Normalizer.Form.NFKD).replaceAll("\\p{M}", "");
-					if (!seriesInDb.containsKey(normalizedSeriesName)) { // Skip if this work is already in the series
-						// Check if the series exists
-						getSeriesStmt.setString(1, series[0]);
-						ResultSet seriesRS = getSeriesStmt.executeQuery();
-						long timeNow = new Date().getTime() / 1000;
-						long seriesId;
-						if (seriesRS.next()) { // Should only be one match
-							seriesId = seriesRS.getLong("id");
-							// Check if the series has been deleted
-							int seriesDeleted = seriesRS.getInt("deleted");
-							if (seriesDeleted == 1) {
-								continue;
-							}
-							// Check to see if we need to add additional authors
-							String authors = seriesRS.getString("author");
-							String newAuthor = groupedWork.getPrimaryAuthor();
-							if (newAuthor != null) {
-								updateSeriesAuthor.setLong(2, seriesId);
-								if (authors == null) {
-									updateSeriesAuthor.setString(1, newAuthor);
-									updateSeriesAuthor.executeUpdate();
-								} else if (!authors.equals("Various") && !authors.contains(newAuthor)) {
-									// If we already have three authors, change author to Various
-									if (authors.split("\\|").length == 3) {
-										authors = "Various";
-									} else {
-										authors = authors + "|" + newAuthor;
-									}
-									updateSeriesAuthor.setString(1, AspenStringUtils.trimTo(500, authors));
-									updateSeriesAuthor.executeUpdate();
-								}
-							}
-							addSeriesMemberStmt.setLong(1, seriesId);
-						} else {
-							// Add the series first
-							String[] displayTitle = groupedWork.seriesWithVolume.get(seriesNameWithVolume).split("\\|");
-							addSeriesStmt.setString(1, AspenStringUtils.trimTo(500, displayTitle[0])); //displayTitle (user can edit)
-							addSeriesStmt.setString(6,  AspenStringUtils.trimTo(500, displayTitle[0])); //groupedWorkSeriesTitle (to match on)
-							addSeriesStmt.setString(2, groupedWork.getTargetAudiencesAsString());
-							addSeriesStmt.setLong(3, timeNow);
-							addSeriesStmt.setLong(4, timeNow);
-							addSeriesStmt.setString(5, AspenStringUtils.trimTo(500, groupedWork.getPrimaryAuthor()));
-							addSeriesStmt.executeUpdate();
-							ResultSet generatedKeys = addSeriesStmt.getGeneratedKeys();
-							if (generatedKeys.next()) {
-								seriesId = generatedKeys.getLong(1);
-								addSeriesMemberStmt.setLong(1, seriesId);
-							} else {
-								seriesId = -1;
-							}
-							generatedKeys.close();
-						}
-						addSeriesMemberStmt.setString(2, groupedWork.getId());
-						if (series.length == 2) {
-							addSeriesMemberStmt.setString(3, AspenStringUtils.trimTo(100, series[1])); // Add volume
-							long seriesWeight = NumberUtils.toLong(series[1]);
-							if (seriesWeight > Integer.MAX_VALUE) {
-								seriesWeight = Integer.MAX_VALUE;
-							}
-							addSeriesMemberStmt.setLong(8, seriesWeight); // Add volume as weight if it's an integer - 0 otherwise
-						} else {
-							addSeriesMemberStmt.setString(3, "");
-							addSeriesMemberStmt.setLong(8, 0);
-						}
-						addSeriesMemberStmt.setLong(4, groupedWork.earliestPublicationDate != null ? groupedWork.earliestPublicationDate : 0);
-						addSeriesMemberStmt.setString(5, AspenStringUtils.trimTo(500, groupedWork.displayTitle));
-						addSeriesMemberStmt.setString(6, AspenStringUtils.trimTo(200, groupedWork.getPrimaryAuthor()));
-						addSeriesMemberStmt.setString(7, groupedWork.displayDescription);
-						addSeriesMemberStmt.setInt(9, groupedWork.seriesWithVolumePriority.get(seriesNameWithVolume));
-						addSeriesMemberStmt.executeUpdate();
-						if (seriesId >= 0) {
-							setSeriesDateUpdated.setLong(1, timeNow);
-							setSeriesDateUpdated.setLong(2, seriesId);
-							setSeriesDateUpdated.executeUpdate();
-						}
-						seriesRS.close();
+					if (seriesMembersInDb.containsKey(key)) {
+						seriesMembersInDb.get(key).addVolume(seriesMemberRS.getString("volume"), seriesMemberRS.getBoolean("deleted"), seriesMemberRS.getBoolean("userAdded"));
+					}else{
+						seriesMembersInDb.put(key,  seriesMember);
+					}
+				}
+			}
 
+			for (SeriesInfo seriesInfo : groupedWork.series.values()) {
+				//Don't create series module records from untraced series
+				if (!seriesInfo.isTraced() && !include490_0) {
+					continue;
+				}
+				long timeNow = new Date().getTime() / 1000;
+				long seriesId;
+				SeriesMember existingMember;
+				if (seriesVersion == 1) {
+					existingMember = seriesMembersInDb.get(seriesInfo.getNormalizedSeriesName());
+					if (existingMember != null) {
+						//Series already exists, update if needed
+						seriesId = existingMember.getSeriesId();
+						updateV1SeriesInDb(existingMember, groupedWork);
 					} else {
-						if (!Objects.equals(seriesScore.get(normalizedSeriesName), groupedWork.seriesWithVolumePriority.get(seriesNameWithVolume))) {
-							long timeNow = new Date().getTime() / 1000;
-							updateSeriesScore.setInt(1, groupedWork.seriesWithVolumePriority.get(seriesNameWithVolume));
-							updateSeriesScore.setInt(2, seriesInDb.get(normalizedSeriesName));
-							updateSeriesScore.setString(3, groupedWork.getId());
-							updateSeriesScore.executeUpdate();
-							setSeriesDateUpdated.setLong(1, timeNow);
-							setSeriesDateUpdated.setLong(2, seriesInDb.get(normalizedSeriesName));
-							setSeriesDateUpdated.executeUpdate();
-						}
-						seriesInProcess.remove(normalizedSeriesName); // Remove since we have accounted for it
+						//Need to add the series
+						seriesId = addV1SeriesToDb(seriesInfo, groupedWork, timeNow);
 					}
-					if (seriesIsIndexed.get(normalizedSeriesName) != null && !seriesIsIndexed.get(normalizedSeriesName)) {
-						//This series should not be indexed, remove it from series, series with volume, and series with volume priority
-						seriesToRemove.put(series[0], seriesNameWithVolume);
+				} else {
+					setSeriesLanguage(seriesInfo, groupedWork);
+					existingMember = seriesMembersInDb.get(seriesInfo.getPermanentId());
+					if (existingMember != null) {
+						//V2 series already exists. They don't' get updated since they are already unique by title, author, and language
+						seriesId = existingMember.getSeriesId();
+						//Check if this series has a value for "seriesToGroupWithId"
+						String seriesToGroupWithId = checkForSeriesToGroupWith(seriesInfo);
+						if (!seriesToGroupWithId.isEmpty()) {
+							updateGroupedSeriesMembers(seriesToGroupWithId, seriesInfo, existingMember, groupedWork, timeNow);
+						}
+					} else {
+						SeriesMember existingV1Member = seriesMembersInDb.get(seriesInfo.getNormalizedSeriesName());
+						//Upgrade this series to v2 if the author matches. If it doesn't we will create a new series
+						//TODO: during testing we should make sure that this doesn't merge series with different languages
+						if (existingV1Member != null && existingV1Member.getNormalizedAuthor().equals(seriesInfo.getNormalizedAuthor())) {
+							seriesId = existingV1Member.getSeriesId();
+							updateV1SeriesToV2(seriesInfo, existingV1Member, groupedWork, timeNow);
+						} else {
+							//Need to add a new series V2
+							seriesId = addV2SeriesToDb(seriesInfo, groupedWork, timeNow);
+						}
 					}
 				}
-				for (String seriesName : seriesToRemove.keySet()) {
+				//Update Series Members (volumes and priorities)
+				if (existingMember == null) {
+					addMemberToSeries(seriesId, seriesInfo, groupedWork, timeNow);
+				}else{
+					//Update series member(s) as needed
+					existingMember.setFoundInCurrentIndex(true);
+					seriesInfo.setIndexed(existingMember.isIndexed());
+					if (existingMember.isIndexed()) {
+						updateSeriesMembers(seriesId, seriesInfo, existingMember, groupedWork, timeNow);
+					}
+				}
+			}
+
+			//Hide anything the user doesn't want indexed
+			for (SeriesInfo seriesInfo : groupedWork.series.values()) {
+				if (!seriesInfo.isIndexed()) {
 					if (groupedWork.isDebugEnabled()) {
-						groupedWork.addDebugMessage("Removing series " + seriesName + " from grouped work because the series has indexing disabled", 1);
+						groupedWork.addDebugMessage("Removing series " + seriesInfo.getSeriesName() + " from grouped work because the series has indexing disabled", 1);
 					}
-					groupedWork.removeSeries(seriesName, seriesToRemove.get(seriesName));
+					groupedWork.removeSeries(seriesInfo);
 				}
-				if (!seriesInProcess.isEmpty()) {
-					// Remove entries from the series_member table when this work is no longer part of the series
-					for (int seriesId : seriesInProcess.values()) {
-						deleteSeriesMemberStmt.setInt(1, seriesId);
-						deleteSeriesMemberStmt.setString(2, groupedWork.id);
-						int result = deleteSeriesMemberStmt.executeUpdate();
-						// Also delete the series if it no longer has any members
-						if (result != 0) {
-							getNumberOfSeriesMembersStmt.setInt(1, seriesId);
-							ResultSet numSeriesMembersRS = getNumberOfSeriesMembersStmt.executeQuery();
-							if (numSeriesMembersRS.next()) {
-								if (numSeriesMembersRS.getInt("numMembers") == 0) {
-									deleteSeriesStmt.setInt(1, seriesId); // Deletes if it only had 1 member (this work)
-									deleteSeriesStmt.executeUpdate();
-									// Also remove from Solr
-									updateServer.deleteByQuery("recordtype:series AND id:" + seriesId);
-								}
-							}
-							numSeriesMembersRS.close();
+			}
+
+			// Remove entries from the series_member table when this work is no longer part of the series
+			for (SeriesMember seriesMember : seriesMembersInDb.values()) {
+				//Loop through volumes to delete the ones that don't exist
+				if (!seriesMember.isFoundInCurrentIndex()) {
+					for (SeriesMemberVolume volume : seriesMember.getSeriesVolumes()) {
+						if (!volume.isUserAdded()) {
+							deleteSeriesMember(seriesMember.getSeriesId(), groupedWork.getId(), volume.getVolume());
 						}
 					}
+					// Also delete the series if it no longer has any members
+					deleteSeriesIfNoMembersExist(seriesMember.getSeriesId());
 				}
 			}
 		} catch (Exception e) {
@@ -1623,33 +1685,332 @@ public class GroupedWorkIndexer {
 		}
 	}
 
+	private String checkForSeriesToGroupWith(SeriesInfo seriesInfo) {
+		String seriesToGroupWithId = "";
+		try {
+			getV2SeriesStmt.setString(1, seriesInfo.getPermanentId());
+			try (ResultSet existingSeriesRS = getV2SeriesStmt.executeQuery()) {
+				if (existingSeriesRS.next()) {
+					seriesToGroupWithId = Objects.toString(existingSeriesRS.getString("seriesToGroupWithId"), "");
+				}
+			} catch (Exception e) {
+				logEntry.incErrors("No series found with id: " + seriesInfo.getPermanentId(), e);
+			}
+		} catch (Exception e) {
+			logEntry.incErrors("Unable to run check for series to group with for " + seriesInfo.getPermanentId(), e);
+		}
+		return seriesToGroupWithId;
+	}
+
+	private void deleteSeriesMember(long seriesMember, String groupedWorkId, String volume) {
+		try {
+			deleteSeriesMemberStmt.setLong(1, seriesMember);
+			deleteSeriesMemberStmt.setString(2, groupedWorkId);
+			deleteSeriesMemberStmt.setString(3, volume);
+			deleteSeriesMemberStmt.executeUpdate();
+		} catch (Exception e) {
+			logEntry.incErrors("Could not delete series member " + seriesMember + " " + groupedWorkId + " " + volume, e);
+		}
+	}
+
+	private void deleteSeriesIfNoMembersExist(long seriesId) {
+		try {
+			getNumberOfSeriesMembersStmt.setLong(1, seriesId);
+			try (ResultSet numSeriesMembersRS = getNumberOfSeriesMembersStmt.executeQuery()) {
+				if (numSeriesMembersRS.next()) {
+					if (numSeriesMembersRS.getInt("numMembers") == 0) {
+						deleteSeriesStmt.setLong(1, seriesId); // Deletes if it only had 1 member (this work)
+						deleteSeriesStmt.executeUpdate();
+						// Also remove from Solr
+						updateServer.deleteByQuery("recordtype:series AND id:" + seriesId);
+					}
+				}
+			}
+		}catch (Exception e) {
+			logEntry.incErrors("Error checking if series is empty and should be deleted " + seriesId, e);
+		}
+	}
+
+	private long  addV1SeriesToDb(SeriesInfo seriesInfo, AbstractGroupedWorkSolr groupedWork, long timeNow) {
+		// We have previously checked if the series already exists and is already attached to the work.
+		// Before we insert the series, we need to check for a duplicate.
+		String trimmedSeriesName = AspenStringUtils.trimTo(500, seriesInfo.getSeriesName());
+		long seriesId = -1;
+		try {
+			getV1SeriesStmt.setString(1, trimmedSeriesName);
+			boolean hasExistingSeries = false;
+			try (ResultSet existingSeriesRS = getV1SeriesStmt.executeQuery()) {
+				if (existingSeriesRS.next()) {
+					hasExistingSeries = true;
+					seriesId = existingSeriesRS.getLong("id");
+					SeriesMember memberToAdd = new SeriesMember(seriesId, existingSeriesRS.getString("groupedWorkSeriesTitle"), existingSeriesRS.getString("author"), existingSeriesRS.getBoolean("isIndexed"), existingSeriesRS.getBoolean("deleted"));
+					updateV1SeriesInDb(memberToAdd, groupedWork);
+				}
+			}
+
+			if (!hasExistingSeries) {
+				//This is a series we haven't seen before, add it.
+				try {
+					addSeriesStmt.setString(1, trimmedSeriesName); //displayTitle (user can edit)
+					addSeriesStmt.setString(6, trimmedSeriesName); //groupedWorkSeriesTitle (to match on)
+					addSeriesStmt.setString(2, groupedWork.getTargetAudiencesAsString());
+					addSeriesStmt.setLong(3, timeNow);
+					addSeriesStmt.setLong(4, timeNow);
+					addSeriesStmt.setString(5, AspenStringUtils.trimTo(500, seriesInfo.getAuthor()));
+					addSeriesStmt.executeUpdate();
+					try (ResultSet generatedKeys = addSeriesStmt.getGeneratedKeys()) {
+						if (generatedKeys.next()) {
+							seriesId = generatedKeys.getLong(1);
+						}
+					}
+				} catch (SQLException e) {
+					logEntry.incErrors("Error inserting v1 series into db " + seriesInfo.getSeriesName(), e);
+				}
+			}
+		} catch (SQLException e) {
+			logEntry.incErrors("Error looking for existing V1 series " + seriesInfo.getSeriesName(), e);
+		}
+		return seriesId;
+	}
+
+	private void updateV1SeriesInDb(SeriesMember memberInDB, AbstractGroupedWorkSolr groupedWork) {
+		// Check if the series has been deleted
+		if (memberInDB.isDeleted()) {
+			return;
+		}
+
+		// Check to see if we need to add additional authors
+		String authors = memberInDB.getAuthor();
+		String newAuthor = groupedWork.getPrimaryAuthor();
+		if (newAuthor != null) {
+			try {
+				updateSeriesAuthor.setLong(2, memberInDB.getSeriesId());
+				if (authors == null || authors.isEmpty()) {
+					updateSeriesAuthor.setString(1, newAuthor);
+					updateSeriesAuthor.executeUpdate();
+				} else if (!authors.equals("Various") && !authors.contains(newAuthor)) {
+					// If we already have three authors, change author to Various
+					if (authors.split("\\|").length == 3) {
+						authors = "Various";
+					} else {
+						authors = authors + "|" + newAuthor;
+					}
+					updateSeriesAuthor.setString(1, AspenStringUtils.trimTo(500, authors));
+					updateSeriesAuthor.executeUpdate();
+				}
+			}catch (Exception e) {
+				logEntry.incErrors("Error updating series author for " + memberInDB.getSeriesId(), e);
+			}
+		}
+		memberInDB.setFoundInCurrentIndex(true);
+	}
+
+	private long addV2SeriesToDb(SeriesInfo seriesInfo, AbstractGroupedWorkSolr groupedWork, long timeNow) {
+		// We have previously checked if the series already exists and is already attached to the work.
+		// Before we insert the series, we need to check for a duplicate.
+		String permanentId = seriesInfo.getPermanentId();
+		long seriesId = -1;
+		try {
+			getV2SeriesStmt.setString(1, permanentId);
+			boolean hasExistingSeries = false;
+			try (ResultSet existingSeriesRS = getV2SeriesStmt.executeQuery()) {
+				if (existingSeriesRS.next()) {
+					hasExistingSeries = true;
+					seriesId = existingSeriesRS.getLong("id");
+					//With V2 there aren't specific updates to do since each is unique by author and language
+					// just need to return the existing series
+				}
+			}
+			if (!hasExistingSeries) {
+				try {
+					addSeriesV2Stmt.setString(1, AspenStringUtils.trimTo(500, seriesInfo.getSeriesName())); //displayTitle (user can edit)
+					addSeriesV2Stmt.setString(6, AspenStringUtils.trimTo(500, seriesInfo.getSeriesName())); //groupedWorkSeriesTitle (to match on)
+					addSeriesV2Stmt.setString(7, seriesInfo.getPermanentId());
+					//
+					addSeriesV2Stmt.setString(8, seriesInfo.getLanguage());
+					addSeriesV2Stmt.setString(2, groupedWork.getTargetAudiencesAsString());
+					addSeriesV2Stmt.setLong(3, timeNow);
+					addSeriesV2Stmt.setLong(4, timeNow);
+					addSeriesV2Stmt.setString(5, seriesInfo.getAuthor());
+					addSeriesV2Stmt.executeUpdate();
+					try (ResultSet generatedKeys = addSeriesV2Stmt.getGeneratedKeys()) {
+						if (generatedKeys.next()) {
+							seriesId = generatedKeys.getLong(1);
+						}
+					}
+				} catch (SQLException e) {
+					logEntry.incErrors("Error inserting v2 series into db " + seriesInfo.getSeriesName(), e);
+				}
+			}
+		} catch (SQLException e) {
+			logEntry.incErrors("Error looking for existing V2 series " + seriesInfo.getSeriesName(), e);
+		}
+		return seriesId;
+	}
+
+	private void setSeriesLanguage(SeriesInfo seriesInfo, AbstractGroupedWorkSolr groupedWork) {
+		if (seriesInfo.getLanguage() == null || seriesInfo.getLanguage().isEmpty() || seriesInfo.getLanguage().length() > 3) {
+			seriesInfo.setLanguage(groupedWork.getPrimaryLanguage(), this);
+		}
+	}
+
+	private void updateV1SeriesToV2(SeriesInfo seriesInfo, SeriesMember memberInDB, AbstractGroupedWorkSolr groupedWork, long timeNow) {
+		//Check language
+		setSeriesLanguage(seriesInfo, groupedWork);
+
+		try {
+			updateSeriesToV2Stmt.setString(1, seriesInfo.getLanguage());
+			updateSeriesToV2Stmt.setString(2, seriesInfo.getPermanentId());
+			updateSeriesToV2Stmt.setLong(3, timeNow);
+			updateSeriesToV2Stmt.setLong(4, memberInDB.getSeriesId());
+			updateSeriesToV2Stmt.executeUpdate();
+		} catch (SQLException e) {
+			logEntry.incErrors("Error inserting updating series to v2 " + seriesInfo.getSeriesName(), e);
+		}
+
+		memberInDB.setFoundInCurrentIndex(true);
+	}
+
+
+	private void updateGroupedSeriesMembers(String seriesToGroupWithId, SeriesInfo seriesInfo, SeriesMember seriesMember, AbstractGroupedWorkSolr groupedWork, long timeNow) {
+		try {
+			getV2SeriesStmt.setString(1, seriesToGroupWithId);
+			try (ResultSet existingSeriesRS = getV2SeriesStmt.executeQuery()) {
+				if (existingSeriesRS.next()) {
+					//Check to see if this has already been added
+					checkIfSeriesMemberExistsStmt.setLong(1, existingSeriesRS.getLong("id"));
+					checkIfSeriesMemberExistsStmt.setString(2, groupedWork.getId());
+					ResultSet checkIfSeriesMemberExistsRS = checkIfSeriesMemberExistsStmt.executeQuery();
+					if (!checkIfSeriesMemberExistsRS.next()) {
+						for (String volume : seriesMember.getVolumes()) {
+							addSeriesMemberWithVolume(existingSeriesRS.getLong("id"), seriesInfo, volume, groupedWork, timeNow, 1);
+						}
+					}
+					checkIfSeriesMemberExistsRS.close();
+				}
+			}
+		} catch (Exception e) {
+			logEntry.incErrors("Adding series member " + seriesInfo.getSeriesName(), e);
+		}
+	}
+
+	private void addMemberToSeries(long seriesId, SeriesInfo seriesInfo, AbstractGroupedWorkSolr groupedWork, long timeNow) {
+		for (String volume : seriesInfo.getVolumes()) {
+			addSeriesMemberWithVolume(seriesId, seriesInfo, volume, groupedWork, timeNow, 0);
+		}
+	}
+
+	private void updateSeriesMembers(long seriesId, SeriesInfo seriesInfo, SeriesMember seriesMember, AbstractGroupedWorkSolr groupedWork, long timeNow) {
+		for (String volume : seriesInfo.getVolumes()) {
+			Set<String> existingVolumes = seriesMember.getVolumes();
+			if (!existingVolumes.contains(volume)) {
+				addSeriesMemberWithVolume(seriesId, seriesInfo, volume, groupedWork, timeNow, 0);
+			}else{
+				seriesMember.setVolumeFoundInIndex(volume);
+				//Update priority score as needed
+				if (!Objects.equals(seriesInfo.getPriorityScore(), seriesMember.getPriorityScore())) {
+					try {
+						updateSeriesScore.setLong(1, seriesInfo.getPriorityScore());
+						updateSeriesScore.setLong(2, seriesId);
+						updateSeriesScore.setString(3, groupedWork.getId());
+						updateSeriesScore.setString(4, volume);
+						updateSeriesScore.executeUpdate();
+					}catch (SQLException e) {
+						logEntry.incErrors("Error updating series priority score for " + seriesInfo.getSeriesName(), e);
+					}
+					try {
+						setSeriesDateUpdated.setLong(1, timeNow);
+						setSeriesDateUpdated.setLong(2, seriesId);
+						setSeriesDateUpdated.executeUpdate();
+					}catch (SQLException e) {
+						logEntry.incErrors("Error updating series date updated for " + seriesInfo.getSeriesName(), e);
+					}
+				}
+			}
+		}
+
+		//Delete any series members that no longer exist (with the volume)
+		boolean valuesWereDeleted = false;
+		for (SeriesMemberVolume volume : seriesMember.getSeriesVolumes()) {
+			if (!volume.isFoundInIndex() && !volume.isUserAdded()) {
+				deleteSeriesMember(seriesMember.getSeriesId(), groupedWork.getId(), volume.getVolume());
+				valuesWereDeleted = true;
+			}
+		}
+		if  (valuesWereDeleted) {
+			// Also delete the series if it no longer has any members
+			deleteSeriesIfNoMembersExist(seriesMember.getSeriesId());
+		}
+	}
+
+	private void addSeriesMemberWithVolume(long seriesId, SeriesInfo seriesInfo, String volume, AbstractGroupedWorkSolr groupedWork, long timeNow,  int isManualGrouping) {
+		try {
+			addSeriesMemberStmt.setLong(1, seriesId);
+			addSeriesMemberStmt.setString(2, groupedWork.getId());
+			if (!volume.isEmpty()) {
+				addSeriesMemberStmt.setString(3, AspenStringUtils.trimTo(100, volume)); // Add volume
+				long seriesWeight = NumberUtils.toLong(volume);
+				if (seriesWeight > Integer.MAX_VALUE) {
+					seriesWeight = Integer.MAX_VALUE;
+				}
+				addSeriesMemberStmt.setLong(8, seriesWeight); // Add volume as weight if it's an integer - 0 otherwise
+			} else {
+				addSeriesMemberStmt.setString(3, "");
+				addSeriesMemberStmt.setLong(8, 0);
+			}
+			addSeriesMemberStmt.setLong(4, groupedWork.earliestPublicationDate != null ? groupedWork.earliestPublicationDate : 0);
+			addSeriesMemberStmt.setString(5, AspenStringUtils.trimTo(500, groupedWork.displayTitle));
+			addSeriesMemberStmt.setString(6, AspenStringUtils.trimTo(200, groupedWork.getPrimaryAuthor()));
+			addSeriesMemberStmt.setString(7, groupedWork.displayDescription);
+			addSeriesMemberStmt.setInt(9, seriesInfo.getPriorityScore());
+			addSeriesMemberStmt.executeUpdate();
+			if (isManualGrouping == 1) {
+				try (ResultSet generatedKeys = addSeriesMemberStmt.getGeneratedKeys()) {
+					if (generatedKeys.next()) {
+						long seriesMemberId = generatedKeys.getLong(1);
+						setSeriesMemberAsManualAddition.setLong(1, seriesMemberId);
+						setSeriesMemberAsManualAddition.executeUpdate();
+					}
+				}
+			}
+			if (seriesId >= 0) {
+				setSeriesDateUpdated.setLong(1, timeNow);
+				setSeriesDateUpdated.setLong(2, seriesId);
+				setSeriesDateUpdated.executeUpdate();
+			}
+		} catch (Exception e) {
+			logEntry.incErrors("Adding series member " + seriesInfo.getSeriesName(), e);
+		}
+	}
+
 	private void removeSeriesForWork(String groupedWorkId) {
 		try {
 			if (seriesModuleEnabled) {
 				getSeriesMemberStmt.setString(1, groupedWorkId);
-				ResultSet seriesMemberRS = getSeriesMemberStmt.executeQuery();
-				long seriesId;
-				while (seriesMemberRS.next()) {
-					seriesId = seriesMemberRS.getLong("seriesId");
-					deleteSeriesMemberStmt.setLong(1, seriesId);
-					deleteSeriesMemberStmt.setString(2, groupedWorkId);
-					int result = deleteSeriesMemberStmt.executeUpdate();
-					// Also delete the series if it no longer has any members
-					if (result != 0) {
-						getNumberOfSeriesMembersStmt.setLong(1, seriesId);
-						ResultSet numSeriesMembersRS = getNumberOfSeriesMembersStmt.executeQuery();
-						if (numSeriesMembersRS.next()) {
-							if (numSeriesMembersRS.getInt("numMembers") == 0) {
-								deleteSeriesStmt.setLong(1, seriesId); // Deletes if it only had 1 member (this work)
-								deleteSeriesStmt.executeUpdate();
-								// Also remove from Solr
-								updateServer.deleteByQuery("recordtype:series AND id:" + seriesId);
+				try (ResultSet seriesMemberRS = getSeriesMemberStmt.executeQuery()) {
+					long seriesId;
+					while (seriesMemberRS.next()) {
+						seriesId = seriesMemberRS.getLong("seriesId");
+						long seriesMemberId = seriesMemberRS.getLong("seriesMemberId");
+						deleteSeriesMemberByIdStmt.setLong(1, seriesMemberId);
+
+						int result = deleteSeriesMemberByIdStmt.executeUpdate();
+						// Also delete the series if it no longer has any members
+						if (result != 0) {
+							getNumberOfSeriesMembersStmt.setLong(1, seriesId);
+							try (ResultSet numSeriesMembersRS = getNumberOfSeriesMembersStmt.executeQuery()) {
+								if (numSeriesMembersRS.next()) {
+									if (numSeriesMembersRS.getInt("numMembers") == 0) {
+										deleteSeriesStmt.setLong(1, seriesId); // Deletes if it only had 1 member (this work)
+										deleteSeriesStmt.executeUpdate();
+										// Also remove from Solr
+										updateServer.deleteByQuery("recordtype:series AND id:" + seriesId);
+									}
+								}
 							}
 						}
-						numSeriesMembersRS.close();
 					}
 				}
-				seriesMemberRS.close();
 			}
 		} catch (Exception e) {
 			logEntry.incErrors("Unable to remove series data for grouped work " + groupedWorkId, e);
@@ -1697,10 +2058,10 @@ public class GroupedWorkIndexer {
 							groupedWork.addDebugMessage("Setting series to " + seriesName + " " + seriesDisplayOrder + " based on display info", 2);
 						}
 						groupedWork.clearSeries();
-						groupedWork.addSeries(seriesName);
-						if (seriesDisplayOrder != null && !seriesDisplayOrder.isEmpty()) {
-							groupedWork.addSeriesWithVolume(seriesName, seriesDisplayOrder, 2, false);
+						if (seriesDisplayOrder == null) {
+							seriesDisplayOrder = "";
 						}
+						groupedWork.addSeriesWithVolume(seriesName, author, seriesDisplayOrder, 2, false);
 					}else{
 						if (groupedWork.isDebugEnabled()) {
 							groupedWork.addDebugMessage("Not applying series data for grouped work because no series was defined", 2);
@@ -1760,7 +2121,7 @@ public class GroupedWorkIndexer {
 					sideLoadProcessors.get(type).processRecord(groupedWork, identifier, logEntry);
 				}else{
 					//This happens if a side load processor is deleted and all the related record don't get cleaned up.
-					logger.debug("Could not find a record processor for type " + type);
+					logger.debug("Could not find a record processor for type {}", type);
 				}
 				break;
 		}
@@ -1841,7 +2202,7 @@ public class GroupedWorkIndexer {
 					String concatenatedValue = mapName + ":" + value;
 					if (!unableToTranslateWarnings.contains(concatenatedValue)){
 						if (fullReindex) {
-							logger.warn("Could not translate '" + concatenatedValue + "' sample record " + identifier);
+							logger.warn("Could not translate '{}' sample record {}", concatenatedValue, identifier);
 						}
 						unableToTranslateWarnings.add(concatenatedValue);
 					}
@@ -1935,6 +2296,7 @@ public class GroupedWorkIndexer {
 				addRecordForWorkStmt.setBoolean(13, recordInfo.hasParentRecord());
 				addRecordForWorkStmt.setBoolean(14, recordInfo.hasChildRecord());
 				addRecordForWorkStmt.setLong(15, getAudienceId(recordInfo.getAudience(), 1));
+				addRecordForWorkStmt.setLong(16, getDurationId(recordInfo.getDuration(), 1));
 				addRecordForWorkStmt.executeUpdate();
 				ResultSet addRecordForWorkRS = addRecordForWorkStmt.getGeneratedKeys();
 				if (addRecordForWorkRS.next()) {
@@ -1957,6 +2319,7 @@ public class GroupedWorkIndexer {
 				long publisherId = getPublisherId(recordInfo.getPublisher(), recordInfo.getRecordIdentifier(), 1);
 				long publicationDateId = getPublicationDateId(recordInfo.getPublicationDate(), 1);
 				long physicalDescriptionId = getPhysicalDescriptionId(recordInfo.getPhysicalDescription(), 1);
+				long durationId = getDurationId(recordInfo.getDuration(), 1);
 				long placeOfPublicationId = getPlaceOfPublicationId(recordInfo.getPlaceOfPublication(), 1);
 				long formatId = getFormatId(recordInfo.getPrimaryFormat(), 1);
 				long formatCategoryId = getFormatCategoryId(recordInfo.getPrimaryFormatCategory(), 1);
@@ -1971,6 +2334,7 @@ public class GroupedWorkIndexer {
 				if (publicationDateId != existingRecord.publicationDateId) { hasChanges = true; }
 				if (placeOfPublicationId != existingRecord.placeOfPublicationId) {hasChanges = true; }
 				if (physicalDescriptionId != existingRecord.physicalDescriptionId) { hasChanges = true; }
+				if (durationId != existingRecord.durationId) {hasChanges = true; }
 				if (formatId != existingRecord.formatId) { hasChanges = true; }
 				if (formatCategoryId != existingRecord.formatCategoryId) { hasChanges = true; }
 				if (languageId != existingRecord.languageId) { hasChanges = true; }
@@ -1992,7 +2356,8 @@ public class GroupedWorkIndexer {
 					updateRecordForWorkStmt.setBoolean(11, hasParentRecord);
 					updateRecordForWorkStmt.setBoolean(12, hasChildRecord);
 					updateRecordForWorkStmt.setLong(13, audienceId);
-					updateRecordForWorkStmt.setLong(14, existingRecord.id);
+					updateRecordForWorkStmt.setLong(14, durationId);
+					updateRecordForWorkStmt.setLong(15, existingRecord.id);
 					updateRecordForWorkStmt.executeUpdate();
 				}
 			}
@@ -2420,6 +2785,45 @@ public class GroupedWorkIndexer {
 		return id;
 	}
 
+	private final MaxSizeHashMap<Integer, Long> durationIds = new MaxSizeHashMap<>(1000);
+	private long getDurationId(int duration, int numTries) {
+		if (duration == 0){
+			return 0;
+		}
+		Long id = durationIds.get(duration);
+		if (id == null){
+			try {
+				getDurationStmt.setInt(1, duration);
+				ResultSet getPhysicalDescriptionRS = getDurationStmt.executeQuery();
+				if (getPhysicalDescriptionRS.next()){
+					id = getPhysicalDescriptionRS.getLong("id");
+				}else {
+					addDurationStmt.setInt(1, duration);
+					addDurationStmt.executeUpdate();
+					ResultSet addDurationRS = addDurationStmt.getGeneratedKeys();
+					if (addDurationRS.next()) {
+						id = addDurationRS.getLong(1);
+					} else {
+						logEntry.incErrors("Could not add duration");
+						id = -1L;
+					}
+					addDurationRS.close();
+				}
+				getPhysicalDescriptionRS.close();
+			} catch (SQLException e) {
+				//Another thread already created it, call it again
+				if (numTries == 1) {
+					return getDurationId(duration, numTries + 1);
+				}else {
+					logEntry.incErrors("Error getting physicalDescription id (" + duration + "):" + duration, e);
+					id = -1L;
+				}
+			}
+			durationIds.put(duration, id);
+		}
+		return id;
+	}
+
 	private final HashMap<String, Long> eContentSourceIds = new HashMap<>();
 	private long getEContentSourceId(String eContentSource, int numTries) {
 		if (eContentSource == null){
@@ -2501,53 +2905,106 @@ public class GroupedWorkIndexer {
 		return id;
 	}
 
-	private long lastRecordId = -1;
-	private final HashMap<String, Long> callNumberIds = new HashMap<>();
-	private long getCallNumberId(long recordId, String callNumber, int numTries) {
-		if (callNumber == null){
-			return -1;
-		}
-		if (lastRecordId != recordId) {
-			callNumberIds.clear();
-		}
-		lastRecordId = recordId;
-		if (callNumber.length() > 255){
-			callNumber = callNumber.substring(0, 255);
-		}
-		Long id = callNumberIds.get(callNumber);
-		if (id == null){
-			try {
-				getCallNumberStmt.setString(1, callNumber);
-				ResultSet getCallNumberRS = getCallNumberStmt.executeQuery();
-				if (getCallNumberRS.next()){
-					id = getCallNumberRS.getLong("id");
-				}else {
-					addCallNumberStmt.setString(1, callNumber);
-					addCallNumberStmt.executeUpdate();
-					ResultSet addCallNumberRS = addCallNumberStmt.getGeneratedKeys();
-					if (addCallNumberRS.next()) {
-						id = addCallNumberRS.getLong(1);
-					} else {
-						logEntry.incErrors("Could not add callNumber");
-						id = -1L;
-					}
-					addCallNumberRS.close();
-				}
-				getCallNumberRS.close();
-			} catch (SQLException e) {
-				//Another thread already created it, call it again
-				if (numTries == 1) {
-					return getCallNumberId(recordId, callNumber, numTries + 1);
-				}else {
-					logEntry.incErrors("Error getting callNumber id", e);
-					id = -1L;
+	private long addCallNumberToDatabase(String callNumber) {
+		long id = -1L;
+		try {
+			addCallNumberStmt.setString(1, callNumber);
+			addCallNumberStmt.executeUpdate();
+			try (ResultSet addCallNumberRS = addCallNumberStmt.getGeneratedKeys()) {
+				if (addCallNumberRS.next()) {
+					id = addCallNumberRS.getLong(1);
+				} else {
+					logEntry.incErrors("Could not add callNumber" + callNumber);
 				}
 			}
-			callNumberIds.put(callNumber, id);
-		}else{
-			logger.debug("Found cached call number");
+		}catch (SQLException e) {
+			logEntry.incErrors("Error adding callNumber " + callNumber, e);
 		}
 		return id;
+	}
+
+	/**
+	 * Some call numbers are used very frequently, but the majority are only used once. We'll preload anything that
+	 * has 50 or more usages
+	 */
+	private HashMap<String, Long> frequentlyUsedCallNumbers = null;
+	private HashMap<String, Long> getFrequentlyUsedCallNumbers() {
+		if (frequentlyUsedCallNumbers == null) {
+			frequentlyUsedCallNumbers = new HashMap<>();
+			try (PreparedStatement frequentlyUsedCallNumbersStmt = dbConn.prepareStatement("select id, callNumber from indexed_call_number where id IN (SELECT highUsageCallNumbers.callNumberId FROM (SELECT callNumberId, count(*) as numUsages from grouped_work_record_items group by callNumberId having numUsages > 50) as highUsageCallNumbers);", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)) {
+				try (ResultSet frequentlyUsedCallNumbersRS = frequentlyUsedCallNumbersStmt.executeQuery()) {
+					while (frequentlyUsedCallNumbersRS.next()) {
+						frequentlyUsedCallNumbers.put(frequentlyUsedCallNumbersRS.getString("callNumber"), frequentlyUsedCallNumbersRS.getLong("id"));
+					}
+				}
+			}catch (SQLException e) {
+				logEntry.incErrors("Could not load frequentlyUsedCallNumbers", e);
+			}
+		}
+		return frequentlyUsedCallNumbers;
+	}
+
+	private final HashMap<Integer, PreparedStatement> getCallNumbersStmts = new HashMap<>();
+	/**
+	 * Loads call numbers for all items for a grouped work. Accepts a list of unique call numbers
+	 */
+	public HashMap<String, Long> getCallNumberIds(HashSet<String> callNumbers) {
+		HashMap<String, Long> callNumberIds = new HashMap<>();
+		if (callNumbers == null || callNumbers.isEmpty()) {
+			return callNumberIds;
+		}
+
+		//Look for frequently used call numbers so we don't have to query the database
+		HashMap<String, Long> frequentCallNumbers = getFrequentlyUsedCallNumbers();
+		Iterator<String> iterator = callNumbers.iterator();
+		while (iterator.hasNext()) {
+			String currentCallNumber = iterator.next();
+			Long frequentId = frequentCallNumbers.get(currentCallNumber);
+			if (frequentId != null) {
+				callNumberIds.put(currentCallNumber, frequentId);
+				iterator.remove();
+			}
+		}
+
+		//All the call numbers were frequently used.
+		if (callNumbers.isEmpty()) {
+			return callNumberIds;
+		}
+
+		int numPlaceholders = callNumbers.size();
+		PreparedStatement getCallNumbersStmt = getCallNumbersStmts.get(numPlaceholders);
+		if (getCallNumbersStmt == null) {
+			String placeholders = String.join(",", Collections.nCopies(callNumbers.size(), "?"));
+			try {
+				getCallNumbersStmt = dbConn.prepareStatement("SELECT id, callNumber from indexed_call_number where callNumber IN (" + placeholders + ")", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+				getCallNumbersStmts.put(numPlaceholders, getCallNumbersStmt);
+			} catch (SQLException e) {
+				logEntry.incErrors("Could not create prepared statement to get call numbers");
+			}
+		}
+		try {
+			int index = 1;
+			for (String callNumber : callNumbers) {
+				//noinspection DataFlowIssue
+				getCallNumbersStmt.setString(index++, callNumber);
+			}
+			assert getCallNumbersStmt != null;
+			try (ResultSet getCallNumbersRS = getCallNumbersStmt.executeQuery()) {
+				while (getCallNumbersRS.next()) {
+					callNumberIds.put(getCallNumbersRS.getString("callNumber"), getCallNumbersRS.getLong("id"));
+				}
+			}
+		} catch (SQLException e) {
+			logEntry.incErrors("Error batch loading call numbers", e);
+		}
+		//Now check for anything that doesn't exist and add it
+		for (String callNumber : callNumbers) {
+			if (!callNumberIds.containsKey(callNumber)) {
+				callNumberIds.put(callNumber, addCallNumberToDatabase(callNumber));
+			}
+		}
+
+		return callNumberIds;
 	}
 
 	private final HashMap<String, Long> statusIds = new HashMap<>();
@@ -2819,7 +3276,7 @@ public class GroupedWorkIndexer {
 		}
 	}
 
-	long saveItemForRecord(long recordId, long variationId, ItemInfo itemInfo, HashMap<String, SavedItemInfo> existingItems) {
+	long saveItemForRecord(long recordId, long variationId, ItemInfo itemInfo, HashMap<String, SavedItemInfo> existingItems, HashMap<String, Long> callNumberIds) {
 		SavedItemInfo savedItem = existingItems.get(itemInfo.getItemIdentifier().toLowerCase());
 		long itemId = -1;
 		if (savedItem != null){
@@ -2827,12 +3284,34 @@ public class GroupedWorkIndexer {
 		}
 		try {
 			long shelfLocationId = this.getShelfLocationId(itemInfo.getDetailedLocation(), 1);
-			long callNumberId = this.getCallNumberId(recordId, itemInfo.getCallNumber(), 1);
-			long sortableCallNumberId;
+			Long callNumberId;
+			if (itemInfo.getCallNumber() == null || itemInfo.getCallNumber().isEmpty()) {
+				callNumberId = -1L;
+			}else{
+				String callNumber = itemInfo.getCallNumber();
+
+				if (callNumber.length() > 255) {
+					callNumber = callNumber.substring(0, 255);
+				}
+				if (callNumberIds.containsKey(callNumber)) {
+					callNumberId = callNumberIds.get(callNumber);
+				}else{
+					logEntry.incErrors("Call Number not loaded properly " + callNumber);
+					callNumberId = -1L;
+				}
+
+			}
+			Long sortableCallNumberId;
 			if (AspenStringUtils.compareStrings(itemInfo.getCallNumber(), itemInfo.getSortableCallNumber())){
 				sortableCallNumberId = callNumberId;
-			}else{
-				sortableCallNumberId = this.getCallNumberId(recordId, itemInfo.getSortableCallNumber(), 1);
+			}else if (itemInfo.getSortableCallNumber() == null) {
+				sortableCallNumberId = -1L;
+			}else {
+				String callNumber = itemInfo.getSortableCallNumber();
+				if (callNumber.length() > 255) {
+					callNumber = callNumber.substring(0, 255);
+				}
+				sortableCallNumberId = callNumberIds.get(callNumber);
 			}
 			long statusId = this.getStatusId(itemInfo.getDetailedStatus(), 1);
 			long locationCodeId = this.getLocationCodeId(itemInfo.getLocationCode(), 1);
@@ -2870,6 +3349,9 @@ public class GroupedWorkIndexer {
 					addItemForRecordStmt.setString(19, itemInfo.getLibraryOwnedScopes());
 					addItemForRecordStmt.setString(20, itemInfo.getRecordsIncludedScopes());
 					addItemForRecordStmt.setBoolean(21, itemInfo.isVirtual());
+					addItemForRecordStmt.setString(22, itemInfo.getBarcode());
+					addItemForRecordStmt.setString(23, itemInfo.getNote());
+					addItemForRecordStmt.setString(24, itemInfo.getDueDate());
 					addItemForRecordStmt.executeUpdate();
 					ResultSet addItemForWorkRS = addItemForRecordStmt.getGeneratedKeys();
 					if (addItemForWorkRS.next()) {
@@ -2887,7 +3369,8 @@ public class GroupedWorkIndexer {
 					addItemForWorkRS.close();
 					SavedItemInfo savedItemInfo = new SavedItemInfo(itemId, recordId, variationId, itemInfo.getItemIdentifier(), shelfLocationId, callNumberId, sortableCallNumberId, itemInfo.getNumCopies(),
 						itemInfo.isOrderItem(), statusId, itemInfo.getDateAdded(), locationCodeId, subLocationId, itemInfo.getLastCheckinDate(), groupedStatusId, itemInfo.isAvailable(),
-						itemInfo.isHoldable(), itemInfo.isInLibraryUseOnly(), itemInfo.getLocationOwnedScopes(), itemInfo.getLibraryOwnedScopes(), itemInfo.getRecordsIncludedScopes());
+						itemInfo.isHoldable(), itemInfo.getBarcode(), itemInfo.getNote(), itemInfo.getDueDate(), itemInfo.isInLibraryUseOnly(),
+						itemInfo.getLocationOwnedScopes(), itemInfo.getLibraryOwnedScopes(), itemInfo.getRecordsIncludedScopes());
 
 					existingItems.put(itemInfo.getItemIdentifier().toLowerCase(), savedItemInfo);
 				}catch (SQLException e){
@@ -2896,7 +3379,8 @@ public class GroupedWorkIndexer {
 				}
 			}else if (savedItem.hasChanged(recordId, variationId, itemInfo.getItemIdentifier(), shelfLocationId, callNumberId, sortableCallNumberId, itemInfo.getNumCopies(),
 				itemInfo.isOrderItem(), statusId, itemInfo.getDateAdded(), locationCodeId, subLocationId, itemInfo.getLastCheckinDate(), groupedStatusId, itemInfo.isAvailable(),
-				itemInfo.isHoldable(), itemInfo.isInLibraryUseOnly(), itemInfo.getLocationOwnedScopes(), itemInfo.getLibraryOwnedScopes(), itemInfo.getRecordsIncludedScopes())){
+				itemInfo.isHoldable(), itemInfo.getBarcode(), itemInfo.getNote(), itemInfo.getDueDate(), itemInfo.isInLibraryUseOnly(),
+				itemInfo.getLocationOwnedScopes(), itemInfo.getLibraryOwnedScopes(), itemInfo.getRecordsIncludedScopes())){
 				try {
 					updateItemForRecordStmt.setLong(1, variationId);
 					updateItemForRecordStmt.setLong(2, shelfLocationId);
@@ -2925,7 +3409,10 @@ public class GroupedWorkIndexer {
 					updateItemForRecordStmt.setString(17, itemInfo.getLibraryOwnedScopes());
 					updateItemForRecordStmt.setString(18, itemInfo.getRecordsIncludedScopes());
 					updateItemForRecordStmt.setBoolean(19, itemInfo.isVirtual());
-					updateItemForRecordStmt.setLong(20, itemId);
+					updateItemForRecordStmt.setString(20, itemInfo.getBarcode());
+					updateItemForRecordStmt.setString(21, itemInfo.getNote());
+					updateItemForRecordStmt.setString(22, itemInfo.getDueDate());
+					updateItemForRecordStmt.setLong(23, itemId);
 					updateItemForRecordStmt.executeUpdate();
 				}catch (SQLException e){
 					logEntry.incErrors("Error updating item " + itemId + " record " + recordId, e);
@@ -2940,7 +3427,7 @@ public class GroupedWorkIndexer {
 					addItemUrlStmt.setString(3, itemInfo.geteContentUrl());
 					addItemUrlStmt.executeUpdate();
 
-					//Check to see if we need to save local urls
+					//Check to see if we need to save local URLs
 					for (ScopingInfo scopingInfo : itemInfo.getScopingInfo().values()) {
 						String localUrl = scopingInfo.getLocalUrl();
 						if (localUrl != null && !localUrl.isEmpty() && !localUrl.equals(itemInfo.geteContentUrl())) {
@@ -3144,10 +3631,13 @@ public class GroupedWorkIndexer {
 	 *
 	 * @param indexingProfile - the indexing profile for the record
 	 * @param ilsId - The id of the record to save
-	 * @param marcRecord - The contents of the marc record
-	 * @return int 0 if the marc has not changed, 1 if the marc is new, and 2 if the marc has changes
+	 * @param marcRecord - The contents of the MARC record
+	 * @return int 0 if the MARC has not changed, 1 if the MARC is new, and 2 if the MARC has changes
 	 */
 	public synchronized MarcStatus saveMarcRecordToDatabase(BaseIndexingSettings indexingProfile, String ilsId, Record marcRecord) {
+		// Filter out any private fields from the record
+		marcRecord = filterPrivateFields(marcRecord);
+
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		MarcWriter writer = new MarcJsonWriter(outputStream);
 		writer.write(marcRecord);
@@ -3177,7 +3667,7 @@ public class GroupedWorkIndexer {
 					updateRecordInDBStmt.executeUpdate();
 					returnValue = MarcStatus.CHANGED;
 				}
-			}else{
+			}else {
 				long lastModified = new Date().getTime() / 1000;
 
 				addRecordToDBStmt.setString(1, ilsId);
@@ -3197,6 +3687,21 @@ public class GroupedWorkIndexer {
 		marcRecordCache.put(indexingProfile.getName() + ilsId, marcRecord);
 
 		return returnValue;
+	}
+
+	private Record filterPrivateFields(Record marcRecord){
+		String[] privateFields = {"541", "542", "561", "583"};
+		for (String tag : privateFields) {
+			List<VariableField> fields = new ArrayList<>(marcRecord.getVariableFields(tag));
+			for (VariableField field : fields) {
+				DataField dataField = (DataField) field;
+				if (dataField.getIndicator1() == '0') {
+					marcRecord.removeVariableField(dataField);
+				}
+			}
+		}
+
+		return marcRecord;
 	}
 
 	//Create a small cache to hold recently used marc records to avoid time reloading them.
@@ -3243,7 +3748,12 @@ public class GroupedWorkIndexer {
 		}
 	}
 
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean hasSeriesModuleEnabled() {
 		return seriesModuleEnabled;
+	}
+
+	public int getSeriesVersion() {
+		return seriesVersion;
 	}
 }

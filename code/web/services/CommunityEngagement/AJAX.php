@@ -1289,7 +1289,7 @@ class CommunityEngagement_AJAX extends JSON_Action {
 
 		$escapedQuery = addslashes($query);
 
-		$user->whereAdd("displayName LIKE '%$escapedQuery%' OR ils_barcode LIKE '%$escapedQuery%'");
+		$user->whereAdd("ils_username LIKE '%$escapedQuery%' OR ils_barcode LIKE '%$escapedQuery%'");
 
 		$user->limit(0, 25);
 

@@ -1,7 +1,7 @@
 <?php /** @noinspection PhpMissingFieldTypeInspection */
+require_once ROOT_DIR . '/sys/AbstractUsage.php';
 
-
-class UserAxis360Usage extends DataObject {
+class UserAxis360Usage extends AbstractUsage {
 	public $__table = 'user_axis360_usage';
 	public $id;
 	public $instance;
@@ -9,6 +9,7 @@ class UserAxis360Usage extends DataObject {
 	public $recordId;
 	public $year;
 	public $month;
+	public $day;
 	public $usageCount; //Number of holds/clicks
 
 	public function getUniquenessFields(): array {
@@ -17,6 +18,7 @@ class UserAxis360Usage extends DataObject {
 			'userId',
 			'recordId',
 			'year',
+			'day',
 			'month',
 		];
 	}

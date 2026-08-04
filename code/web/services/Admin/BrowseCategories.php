@@ -24,10 +24,10 @@ class Admin_BrowseCategories extends ObjectEditor {
 		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		if (!UserAccount::userHasPermission('Administer All Browse Categories')) {
-			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
-			$libraryId = $library == null ? -1 : $library->libraryId;
+			$validLibraries = Library::getLibraryList(true);
+			$libraryIds = empty($validLibraries) ? [-1] : array_keys($validLibraries);
 			$object->whereAdd("sharing = 'everyone'");
-			$object->whereAdd("sharing = 'library' AND libraryId = " . $libraryId, 'OR');
+			$object->whereAdd("sharing = 'library' AND libraryId in (" . implode(',' ,$libraryIds) . ')', 'OR');
 		}
 		$object->find();
 		$list = [];
@@ -54,7 +54,7 @@ class Admin_BrowseCategories extends ObjectEditor {
 	}
 
 	function getInstructions(): string {
-		return 'https://help.aspendiscovery.org/help/promote/browsecategories';
+		return 'https://aspen-discovery.atlassian.net/wiki/spaces/Help/pages/279642122/Browse+Categories';
 	}
 
 	function getInitializationJs(): string {
@@ -99,12 +99,13 @@ class Admin_BrowseCategories extends ObjectEditor {
 		if ($this->_numObjects == null) {
 			if (!UserAccount::userHasPermission('Administer All Browse Categories')) {
 				/** @var DataObject $object */
-				$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
-				$libraryId = $library == null ? -1 : $library->libraryId;
+				$validLibraries = Library::getLibraryList(true);
+				$libraryIds = empty($validLibraries) ? [-1] : array_keys($validLibraries);
+
 				$objectType = $this->getObjectType();
 				$object = new $objectType();
 				$object->whereAdd("sharing = 'everyone'");
-				$object->whereAdd("sharing = 'library' AND libraryId = " . $libraryId, 'OR');
+				$object->whereAdd("sharing = 'library' AND libraryId IN (" . implode(',' ,$libraryIds) . ')', 'OR');
 				$this->applyFilters($object);
 				$this->_numObjects = $object->count();
 			} elseif (UserAccount::userHasPermission('Administer All Browse Categories')) {

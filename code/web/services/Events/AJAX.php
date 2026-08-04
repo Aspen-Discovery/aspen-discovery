@@ -11,7 +11,7 @@ class Events_AJAX extends JSON_Action {
 	/** @noinspection PhpUnused */
 	public function getEventTypesAndSubLocationsForLocation() : array {
 		$this->requireLoggedInUser();
-		$this->checkRequiredPermission(["View Event Reports for All Libraries","View Event Reports for Home Library",]);
+		$this->checkRequiredPermission(["View Event Reports for All Libraries","View Event Reports for Home Library",'Administer Events for All Locations', 'Administer Events for Home Library Locations', 'Administer Events for Home Location']);
 		require_once ROOT_DIR . '/sys/Events/EventType.php';
 		$result = [
 			'success' => false,
@@ -80,7 +80,7 @@ class Events_AJAX extends JSON_Action {
 			$eventType = new EventType();
 			$eventType->id = $_REQUEST['eventTypeId'];
 			if ($eventType->find(true)) {
-				$fieldStructure = $eventType->getFieldSetFields();
+				$fieldStructure = $eventType->getFieldSetFieldsByUse(1);
 				global $interface;
 				$fieldHTML = [];
 				foreach ($fieldStructure as $property) {
@@ -105,6 +105,78 @@ class Events_AJAX extends JSON_Action {
 			];
 		}
 		return $result;
+	}
+
+	/** @noinspection PhpUnused */
+	public function getFieldSetFields(): array {
+		$result = [
+			'success' => false,
+			'title' => translate([
+				'text' => "Error",
+				'isAdminFacing' => true,
+			]),
+			'message' =>  translate([
+				'text' => 'You must log in first.',
+				'isAdminFacing' => true,
+			])
+		];
+		if (!UserAccount::isLoggedIn()) {
+			return $result;
+		}
+
+		require_once ROOT_DIR . '/sys/Events/EventFieldSet.php';
+		$fieldSet = new EventFieldSet();
+		$fieldSet->id = $_REQUEST['fieldSetId'];
+
+		$selectedFields = [];
+
+		foreach ($fieldSet->getEventFields() as $field) {
+			array_push($selectedFields, $field->eventFieldId);
+		}
+
+		return [
+			'success' => true,
+			'selectedFields' => $selectedFields,
+		];
+	}
+
+	/** @noinspection PhpUnused */
+	public function getFieldsByUse() {
+		$result = [
+			'success' => false,
+			'title' => translate([
+				'text' => "Error",
+				'isAdminFacing' => true,
+			]),
+			'message' =>  translate([
+				'text' => 'You must log in first.',
+				'isAdminFacing' => true,
+			])
+		];
+		if (!UserAccount::isLoggedIn()) {
+			return $result;
+		}
+
+		$fieldUse = $_REQUEST['fieldUse'];
+
+		if (is_null($fieldUse) || $fieldUse == "0") {
+			$result['message'] = 'You must select a valid field use.';
+			return $result;
+		}
+
+		require_once ROOT_DIR . '/sys/Events/EventField.php';
+
+		if ($fieldUse == '1'){
+			$fieldList = EventField::getEventInformationFieldList();
+		}
+		if ($fieldUse == '2'){
+			$fieldList = EventField::getEventRegistrationFieldList();
+		}
+		
+		return [
+			'success' => true,
+			'useFields' => $fieldList,
+		];
 	}
 
 	/** @noinspection PhpUnused */
@@ -160,6 +232,10 @@ class Events_AJAX extends JSON_Action {
 					case 'event_aspenEvent':
 						require_once ROOT_DIR . '/RecordDrivers/AspenEventRecordDriver.php';
 						$driver = new AspenEventRecordDriver($eventId);
+						break;
+					case 'event_localhop':
+						require_once ROOT_DIR . '/RecordDrivers/LocalHopEventRecordDriver.php';
+						$driver = new LocalHopEventRecordDriver($eventId);
 						break;
 					default:
 						return [
@@ -553,6 +629,305 @@ class Events_AJAX extends JSON_Action {
 			}
 		}
 		return $result;
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getStaffRegistrationModal(): array {
+		$this->requireLoggedInUser();
+
+		$eventInstanceId = $_REQUEST['eventInstanceId'] ?? null;
+		if (empty($eventInstanceId)) {
+			return [
+				'success' => false,
+				'title' => translate(['text' => 'Error', 'isAdminFacing' => true]),
+				'message' => translate(['text' => 'Event instance ID is required.', 'isAdminFacing' => true]),
+			];
+		}
+
+		require_once ROOT_DIR . '/sys/Events/EventInstance.php';
+		$eventInstance = new EventInstance();
+		$eventInstance->id = $eventInstanceId;
+		if (!$eventInstance->find(true)) {
+			return [
+				'success' => false,
+				'title' => translate(['text' => 'Error', 'isAdminFacing' => true]),
+				'message' => translate(['text' => 'Event not found.', 'isAdminFacing' => true]),
+			];
+		}
+
+		$parentEvent = $eventInstance->getParentEvent();
+
+		require_once ROOT_DIR . '/services/EventRegistrationService.php';
+		if (!EventRegistrationService::canStaffRegisterUsersForLocation($parentEvent->locationId)) {
+			return [
+				'success' => false,
+				'title' => translate(['text' => 'Permission Denied', 'isAdminFacing' => true]),
+				'message' => translate(['text' => 'You do not have permission to register users for this event.', 'isAdminFacing' => true]),
+			];
+		}
+
+		require_once ROOT_DIR . '/sys/Events/UserAspenEventInstanceRegistration.php';
+		global $interface;
+		$interface->assign('eventInstanceId', $eventInstanceId);
+		$interface->assign('eventTitle', $parentEvent->title);
+		$interface->assign('eventDate', $eventInstance->date);
+		$interface->assign('eventTime', $eventInstance->time);
+		$interface->assign('numberOfSeats', $eventInstance->getEffectiveNumberOfSeats());
+		$interface->assign('availableSeats', EventRegistrationService::getAvailableSeats($eventInstance));
+		$interface->assign('registrationCount', EventRegistrationService::getRegistrationCount((int)$eventInstance->id));
+
+		$eventType = $eventInstance->getEventType();
+		$attendeeCategories = $eventType !== null ? $eventType->getEventTypeAttendeeCategories() : [];
+		$interface->assign('attendeeCategories', $attendeeCategories);
+
+		return [
+			'success' => true,
+			'title' => translate(['text' => 'Register Patron for Event', 'isAdminFacing' => true]),
+			'modalBody' => $interface->fetch('Events/staffRegistrationModal.tpl'),
+			'modalButtons' => '',
+		];
+	}
+
+	/**
+	 * @return array
+	 */
+	public function lookupPatronByBarcode(): array {
+		$this->requireLoggedInUser();
+
+		require_once ROOT_DIR . '/services/EventRegistrationService.php';
+
+		if (!EventRegistrationService::canStaffRegisterUsers()) {
+			return [
+				'success' => false,
+				'title' => translate(['text' => 'Permission Denied', 'isAdminFacing' => true]),
+				'message' => translate(['text' => 'You do not have permission to register users for events.', 'isAdminFacing' => true]),
+			];
+		}
+
+		$barcode = $_REQUEST['barcode'] ?? '';
+		return EventRegistrationService::lookupUserByBarcode($barcode);
+	}
+
+	/**
+	 * @return array
+	 */
+	public function staffRegisterUserForEvent(): array {
+		$this->requireLoggedInUser();
+
+		require_once ROOT_DIR . '/services/EventRegistrationService.php';
+
+		$eventInstanceId = $_REQUEST['eventInstanceId'] ?? null;
+		$userId = $_REQUEST['userId'] ?? null;
+
+		if (empty($eventInstanceId) || empty($userId)) {
+			return [
+				'success' => false,
+				'title' => translate(['text' => 'Error', 'isAdminFacing' => true]),
+				'message' => translate(['text' => 'Event instance ID and user ID are required.', 'isAdminFacing' => true]),
+			];
+		}
+
+		require_once ROOT_DIR . '/sys/Events/EventInstance.php';
+		$eventInstance = new EventInstance();
+		$eventInstance->id = $eventInstanceId;
+		if (!$eventInstance->find(true)) {
+			return [
+				'success' => false,
+				'title' => translate(['text' => 'Error', 'isAdminFacing' => true]),
+				'message' => translate(['text' => 'Event not found.', 'isAdminFacing' => true]),
+			];
+		}
+
+		$parentEvent = $eventInstance->getParentEvent();
+		if (!EventRegistrationService::canStaffRegisterUsersForLocation($parentEvent->locationId)) {
+			return [
+				'success' => false,
+				'title' => translate(['text' => 'Permission Denied', 'isAdminFacing' => true]),
+				'message' => translate(['text' => 'You do not have permission to register users for this event.', 'isAdminFacing' => true]),
+			];
+		}
+
+		$attendeeCounts = [];
+		if (isset($_REQUEST['attendeeCategory']) && is_array($_REQUEST['attendeeCategory'])) {
+			$attendeeCounts = $_REQUEST['attendeeCategory'];
+		}
+
+		$staffUserId = UserAccount::getActiveUserId();
+		return EventRegistrationService::registerUserForEvent((int)$userId, (int)$eventInstanceId, (int)$staffUserId, $attendeeCounts);
+	}
+
+	/**
+	 * @return array
+	 */
+	public function staffUnregisterUserFromEvent(): array {
+		$this->requireLoggedInUser();
+
+		require_once ROOT_DIR . '/services/EventRegistrationService.php';
+
+		$eventInstanceId = $_REQUEST['eventInstanceId'] ?? null;
+		$userId = $_REQUEST['userId'] ?? null;
+
+		if (empty($eventInstanceId) || empty($userId)) {
+			return [
+				'success' => false,
+				'title' => translate(['text' => 'Error', 'isAdminFacing' => true]),
+				'message' => translate(['text' => 'Event instance ID and user ID are required.', 'isAdminFacing' => true]),
+			];
+		}
+
+		require_once ROOT_DIR . '/sys/Events/EventInstance.php';
+		$eventInstance = new EventInstance();
+		$eventInstance->id = $eventInstanceId;
+		if (!$eventInstance->find(true)) {
+			return [
+				'success' => false,
+				'title' => translate(['text' => 'Error', 'isAdminFacing' => true]),
+				'message' => translate(['text' => 'Event not found.', 'isAdminFacing' => true]),
+			];
+		}
+
+		$parentEvent = $eventInstance->getParentEvent();
+		if (!EventRegistrationService::canStaffRegisterUsersForLocation($parentEvent->locationId)) {
+			return [
+				'success' => false,
+				'title' => translate(['text' => 'Permission Denied', 'isAdminFacing' => true]),
+				'message' => translate(['text' => 'You do not have permission to manage registrations for this event.', 'isAdminFacing' => true]),
+			];
+		}
+
+		return EventRegistrationService::unregisterUserFromEvent((int)$userId, (int)$eventInstanceId);
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getEventRegistrations(): array {
+		$this->requireLoggedInUser();
+
+		require_once ROOT_DIR . '/services/EventRegistrationService.php';
+
+		$eventInstanceId = $_REQUEST['eventInstanceId'] ?? null;
+		if (empty($eventInstanceId)) {
+			return [
+				'success' => false,
+				'title' => translate(['text' => 'Error', 'isAdminFacing' => true]),
+				'message' => translate(['text' => 'Event instance ID is required.', 'isAdminFacing' => true]),
+			];
+		}
+
+		require_once ROOT_DIR . '/sys/Events/EventInstance.php';
+		$eventInstance = new EventInstance();
+		$eventInstance->id = $eventInstanceId;
+		if (!$eventInstance->find(true)) {
+			return [
+				'success' => false,
+				'title' => translate(['text' => 'Error', 'isAdminFacing' => true]),
+				'message' => translate(['text' => 'Event not found.', 'isAdminFacing' => true]),
+			];
+		}
+
+		$parentEvent = $eventInstance->getParentEvent();
+		if (!EventRegistrationService::canStaffManagePatronEventAttendance($parentEvent->locationId)) {
+			return [
+				'success' => false,
+				'title' => translate(['text' => 'Permission Denied', 'isAdminFacing' => true]),
+				'message' => translate(['text' => 'You do not have permission to view registrations for this event.', 'isAdminFacing' => true]),
+			];
+		}
+
+		require_once ROOT_DIR . '/sys/Events/UserAspenEventInstanceRegistration.php';
+		$registrations = UserAspenEventInstanceRegistration::getRegistrationsForEvent((int)$eventInstanceId);
+
+		$registrationData = [];
+		foreach ($registrations as $registration) {
+			$user = $registration->getUser();
+			$staffUser = $registration->getStaffUser();
+			$registrationData[] = [
+				'id' => $registration->id,
+				'userId' => $registration->userId,
+				'userName' => $user ? $user->getDisplayName() : 'Unknown',
+				'userBarcode' => $user ? $user->ils_barcode : '',
+				'userEmail' => $user ? $user->email : '',
+				'attended' => (bool)$registration->attended,
+				'registeredByStaff' => $registration->wasRegisteredByStaff(),
+				'staffName' => $staffUser ? $staffUser->getDisplayName() : null,
+				'dateRegistered' => $registration->createdAt ? date('Y-m-d H:i', strtotime($registration->createdAt)) : null,
+			];
+		}
+
+		return [
+			'success' => true,
+			'registrations' => $registrationData,
+			'totalCount' => count($registrationData),
+			'availableSeats' => EventRegistrationService::getAvailableSeats($eventInstance),
+			'numberOfSeats' => $eventInstance->getEffectiveNumberOfSeats(),
+		];
+	}
+
+	/**
+	 * @return array
+	 */
+	public function markAttendance(): array {
+		$this->requireLoggedInUser();
+
+		require_once ROOT_DIR . '/services/EventRegistrationService.php';
+
+		$registrationId = $_REQUEST['registrationId'] ?? null;
+		$attended = $_REQUEST['attended'] ?? null;
+
+		if (empty($registrationId)) {
+			return [
+				'success' => false,
+				'title' => translate(['text' => 'Error', 'isAdminFacing' => true]),
+				'message' => translate(['text' => 'Registration ID is required.', 'isAdminFacing' => true]),
+			];
+		}
+
+		require_once ROOT_DIR . '/sys/Events/UserAspenEventInstanceRegistration.php';
+		$registration = new UserAspenEventInstanceRegistration();
+		$registration->id = $registrationId;
+		if (!$registration->find(true)) {
+			return [
+				'success' => false,
+				'title' => translate(['text' => 'Error', 'isAdminFacing' => true]),
+				'message' => translate(['text' => 'Registration not found.', 'isAdminFacing' => true]),
+			];
+		}
+
+		$eventInstance = $registration->getEventInstance();
+		if (!$eventInstance) {
+			return [
+				'success' => false,
+				'title' => translate(['text' => 'Error', 'isAdminFacing' => true]),
+				'message' => translate(['text' => 'Event not found.', 'isAdminFacing' => true]),
+			];
+		}
+
+		$parentEvent = $eventInstance->getParentEvent();
+		if (!EventRegistrationService::canStaffManagePatronEventAttendance($parentEvent->locationId)) {
+			return [
+				'success' => false,
+				'title' => translate(['text' => 'Permission Denied', 'isAdminFacing' => true]),
+				'message' => translate(['text' => 'You do not have permission to mark attendance for this event.', 'isAdminFacing' => true]),
+			];
+		}
+
+		$registration->attended = $attended ? 1 : 0;
+		if ($registration->update()) {
+			return [
+				'success' => true,
+				'title' => translate(['text' => 'Success', 'isAdminFacing' => true]),
+				'message' => translate(['text' => 'Attendance updated successfully.', 'isAdminFacing' => true]),
+			];
+		}
+
+		return [
+			'success' => false,
+			'title' => translate(['text' => 'Error', 'isAdminFacing' => true]),
+			'message' => translate(['text' => 'Failed to update attendance.', 'isAdminFacing' => true]),
+		];
 	}
 
 }

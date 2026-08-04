@@ -8,7 +8,7 @@ class MyAccount_Masquerade extends MyAccount {
 	// with a followup action back to this class
 
 
-	function launch() {
+	function launch() : void {
 		$result = $this->initiateMasquerade();
 		if ($result['success']) {
 			header('Location: /MyAccount/Home');
@@ -26,13 +26,13 @@ class MyAccount_Masquerade extends MyAccount {
 		}
 	}
 
-	static function initiateMasquerade() {
+	static function initiateMasquerade() : array {
 		require_once ROOT_DIR . '/services/API/UserAPI.php';
 		$api = new UserAPI();
 		return $api->initMasquerade();
 	}
 
-	static function endMasquerade() {
+	static function endMasquerade() : array {
 		require_once ROOT_DIR . '/services/API/UserAPI.php';
 		$api = new UserAPI();
 		return $api->endMasquerade();

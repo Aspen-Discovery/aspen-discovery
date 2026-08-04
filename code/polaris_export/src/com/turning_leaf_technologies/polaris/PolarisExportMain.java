@@ -74,7 +74,6 @@ public class PolarisExportMain {
 	private static long accountProfileId;
 	private static String webServiceUrl;
 	private static String clientId;
-	private static String clientSecret;
 	private static String domain;
 	private static String staffUsername;
 	private static String staffPassword;
@@ -141,7 +140,7 @@ public class PolarisExportMain {
 
 		while (true) {
 			java.util.Date startTime = new Date();
-			logger.info(startTime + ": Starting Polaris Extract");
+			logger.info("{}: Starting Polaris Extract", startTime);
 			long startTimeForLogging = startTime.getTime() / 1000;
 
 			// Read the base INI file to get information about the server (current directory/conf/config.ini)
@@ -149,36 +148,37 @@ public class PolarisExportMain {
 
 			int numChanges = 0;
 
-			try {
-				//Connect to the Aspen Database
-				databaseConnectionInfo = ConfigUtil.cleanIniValue(configIni.get("Database", "database_aspen_jdbc"));
-				if (databaseConnectionInfo == null) {
-					logger.error("Please provide database_aspen_jdbc within config.pwd.ini");
-					System.exit(1);
-				}
+			//Connect to the Aspen Database
+			databaseConnectionInfo = ConfigUtil.cleanIniValue(configIni.get("Database", "database_aspen_jdbc"));
+			if (databaseConnectionInfo == null) {
+				logger.error("Please provide database_aspen_jdbc within config.pwd.ini");
+				break;
+			}
 
+			try {
 				dbConn = DriverManager.getConnection(databaseConnectionInfo);
 				if (dbConn == null) {
-					logger.error("Could not establish connection to database at " + databaseConnectionInfo);
-					System.exit(1);
+					logger.error("Could not establish connection to database at {}", databaseConnectionInfo);
+					break;
 				}
-				PreparedStatement accountProfileStmt = dbConn.prepareStatement("SELECT * from account_profiles WHERE ils = 'polaris'");
-				ResultSet accountProfileRS = accountProfileStmt.executeQuery();
-				if (accountProfileRS.next()){
-					domain = accountProfileRS.getString("domain");
-					staffUsername = accountProfileRS.getString( "staffUsername");
-					staffPassword = accountProfileRS.getString( "staffPassword");
-					profileToLoad = accountProfileRS.getString("recordSource");
+				try (PreparedStatement accountProfileStmt = dbConn.prepareStatement("SELECT * from account_profiles WHERE ils = 'polaris'")) {
+					try (ResultSet accountProfileRS = accountProfileStmt.executeQuery()) {
+						if (accountProfileRS.next()) {
+							domain = accountProfileRS.getString("domain");
+							staffUsername = accountProfileRS.getString("staffUsername");
+							staffPassword = accountProfileRS.getString("staffPassword");
+							profileToLoad = accountProfileRS.getString("recordSource");
+						}
+					}
 				}
-				accountProfileRS.close();
 
 
 				logEntry = new IlsExtractLogEntry(dbConn, profileToLoad, logger);
 				//Remove log entries older than 45 days
 				long earliestLogToKeep = (startTime.getTime() / 1000) - (60 * 60 * 24 * 45);
-				try {
-					int numDeletions = dbConn.prepareStatement("DELETE from ils_extract_log WHERE startTime < " + earliestLogToKeep + " AND indexingProfile = '" + profileToLoad + "'").executeUpdate();
-					logger.info("Deleted " + numDeletions + " old log entries");
+				try (PreparedStatement deleteOldLogsStmt = dbConn.prepareStatement("DELETE from ils_extract_log WHERE startTime < " + earliestLogToKeep + " AND indexingProfile = '" + profileToLoad + "'")) {
+					int numDeletions = deleteOldLogsStmt.executeUpdate();
+					logger.info("Deleted {} old log entries", numDeletions);
 				} catch (SQLException e) {
 					logger.error("Error deleting old log entries", e);
 				}
@@ -192,8 +192,10 @@ public class PolarisExportMain {
 					if (authenticationResponse.isSuccess()) {
 						loadPolarisVersion();
 						if (!extractSingleWork) {
-							importLibraryBranchData(dbConn);
-							updateSublocationInfo(dbConn);
+							if (indexingProfile.loadLibrariesAndLocationsFromIls() == true) {
+								importLibraryBranchData(dbConn);
+								updateSublocationInfo(dbConn);
+							}
 							updatePatronCodes(dbConn);
 							updateTranslationMaps(dbConn);
 
@@ -214,6 +216,7 @@ public class PolarisExportMain {
 					}
 				}else{
 					logEntry.incErrors("Could not load Account Profile");
+					break;
 				}
 
 				if (!extractSingleWork) {
@@ -227,46 +230,45 @@ public class PolarisExportMain {
 
 				closeGroupedWorkIndexers();
 
-				try {
-					if (indexingProfile.isRunFullUpdate()) {
-						if (!logEntry.hasErrors()) {
-							PreparedStatement updateVariableStmt = dbConn.prepareStatement("UPDATE indexing_profiles set lastUpdateOfAllRecords = ?, runFullUpdate = 0 WHERE id = ?");
+				if (indexingProfile.isRunFullUpdate()) {
+					if (!logEntry.hasErrors()) {
+						try (PreparedStatement updateVariableStmt = dbConn.prepareStatement("UPDATE indexing_profiles set lastUpdateOfAllRecords = ?, runFullUpdate = 0 WHERE id = ?")) {
 							updateVariableStmt.setLong(1, startTimeForLogging);
 							updateVariableStmt.setLong(2, indexingProfile.getId());
 							updateVariableStmt.executeUpdate();
-							updateVariableStmt.close();
-						}
-					} else {
-						if (!logEntry.hasErrors()) {
-							PreparedStatement updateVariableStmt = dbConn.prepareStatement("UPDATE indexing_profiles set lastUpdateOfChangedRecords = ? WHERE id = ?");
-							updateVariableStmt.setLong(1, startTimeForLogging);
-							updateVariableStmt.setLong(2, indexingProfile.getId());
-							updateVariableStmt.executeUpdate();
-							updateVariableStmt.close();
+						}catch (SQLException e){
+							logEntry.incErrors("Error updating when the records were last indexed", e);
 						}
 					}
-				}catch (SQLException e){
-					logEntry.incErrors("Error updating when the records were last indexed", e);
+				} else {
+					if (!logEntry.hasErrors()) {
+						try (PreparedStatement updateVariableStmt = dbConn.prepareStatement("UPDATE indexing_profiles set lastUpdateOfChangedRecords = ? WHERE id = ?")) {
+							updateVariableStmt.setLong(1, startTimeForLogging);
+							updateVariableStmt.setLong(2, indexingProfile.getId());
+							updateVariableStmt.executeUpdate();
+						}catch (SQLException e){
+							logEntry.incErrors("Error updating when the records were last indexed", e);
+						}
+					}
 				}
 
 				logEntry.setFinished();
 
 				Date currentTime = new Date();
-				logger.info(currentTime + ": Finished Polaris Extract");
+				logger.info("{}: Finished Polaris Extract", currentTime);
 			} catch (Exception e) {
 				logger.error("Error connecting to database ", e);
-				//Don't exit, we will try again in a few minutes
+				//Exit and allow cron to restart
+				break;
 			}
 
 			//Check to see if the jar has changes, and if so, quit
 			if (myChecksumAtStart != JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar")){
 				IndexingUtils.markNightlyIndexNeeded(dbConn, logger);
-				disconnectDatabase();
 				break;
 			}
 			if (reindexerChecksumAtStart != JarUtil.getChecksumForJar(logger, "reindexer", "../reindexer/reindexer.jar")){
 				IndexingUtils.markNightlyIndexNeeded(dbConn, logger);
-				disconnectDatabase();
 				break;
 			}
 			//Check to see if it's between midnight and 1 am, and the jar has been running more than 15 hours.  If so, restart just to clean up memory.
@@ -275,26 +277,25 @@ public class PolarisExportMain {
 			nowAsCalendar.setTime(now);
 			if (nowAsCalendar.get(Calendar.HOUR_OF_DAY) <=1 && (now.getTime() - timeAtStart) > 15 * 60 * 60 * 1000 ){
 				logger.info("Ending because we have been running for more than 15 hours and it's between midnight and one AM");
-				disconnectDatabase();
 				break;
 			}
 			//Check memory to see if we should close
 			if (SystemUtils.hasLowMemory(configIni, logger)){
 				logger.info("Ending because we have low memory available");
-				disconnectDatabase();
 				break;
 			}
 
 			if (extractSingleWork) {
-				disconnectDatabase();
 				break;
 			}
+
+			//Explicitly close the database so we don't leave it open while we sleep
 			disconnectDatabase();
 
 			//Check to see if nightly indexing is running, and if so, wait until it is done.
 			if (IndexingUtils.isNightlyIndexRunning(configIni, serverName, logger)) {
 				//Quit and we will restart after if finishes
-				System.exit(0);
+				break;
 			}else{
 				//Pause before running the next export (longer if we didn't get any actual changes)
 				try {
@@ -312,7 +313,18 @@ public class PolarisExportMain {
 			}
 		} //Infinite loop
 
+		close();
+
 		System.exit(0);
+	}
+
+	public static void close() {
+		if (recordGroupingProcessorSingleton != null) {
+			recordGroupingProcessorSingleton.close();
+			recordGroupingProcessorSingleton = null;
+		}
+		closeGroupedWorkIndexers();
+		disconnectDatabase();
 	}
 
 	private static void loadPolarisVersion() {
@@ -346,98 +358,104 @@ public class PolarisExportMain {
 		try {
 			//In Polaris, Sub locations can be connected to multiple locations, so need to account for that when loading and saving
 			logEntry.addNote("Loading Pickup Areas into Sub-locations");
-			PreparedStatement existingAspenSublocationStmt = dbConn.prepareStatement("SELECT id, name, isValidHoldPickupAreaILS, weight from sublocation where locationId = ? AND ilsId = ?");
-			PreparedStatement updateAspenSublocationStmt = dbConn.prepareStatement("UPDATE sublocation SET name = ?, isValidHoldPickupAreaILS = ?, weight = ? where id = ?");
-			PreparedStatement addAspenSublocationStmt = dbConn.prepareStatement("INSERT INTO sublocation (locationId, name, ilsId, isValidHoldPickupAreaILS, isValidHoldPickupAreaAspen, weight) VALUES (?, ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
-			PreparedStatement activateSublocationForAllPTypesStmt = dbConn.prepareStatement("INSERT INTO sublocation_ptype (sublocationId, patronTypeId) SELECT ?, id from ptype");
-			PreparedStatement getExistingAspenLocationsStmt = dbConn.prepareStatement("SELECT locationId, displayName, code from location", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			PreparedStatement getExistingSublocationsStmt = dbConn.prepareStatement("select distinct (ilsId) from sublocation where ilsId REGEXP '^[0-9]+$'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			PreparedStatement deleteExistingSublocationStmt = dbConn.prepareStatement("UPDATE sublocation set isValidHoldPickupAreaILS = 0 where ilsId = ?");
-			ResultSet allExistingLocationsRS = getExistingAspenLocationsStmt.executeQuery();
-			HashMap<String, ExistingLocation> existingLocations = new HashMap<>();
-			while (allExistingLocationsRS.next()) {
-				ExistingLocation existingLocation = new ExistingLocation();
+			HashSet<Long> existingSublocationIds;
+			try (
+				PreparedStatement existingAspenSublocationStmt = dbConn.prepareStatement("SELECT id, name, isValidHoldPickupAreaILS, weight from sublocation where locationId = ? AND ilsId = ?");
+				PreparedStatement updateAspenSublocationStmt = dbConn.prepareStatement("UPDATE sublocation SET isValidHoldPickupAreaILS = ?, weight = ? where id = ?");
+				PreparedStatement addAspenSublocationStmt = dbConn.prepareStatement("INSERT INTO sublocation (locationId, name, ilsId, isValidHoldPickupAreaILS, isValidHoldPickupAreaAspen, weight) VALUES (?, ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+				PreparedStatement activateSublocationForAllPTypesStmt = dbConn.prepareStatement("INSERT INTO sublocation_ptype (sublocationId, patronTypeId) SELECT ?, id from ptype");
+				PreparedStatement getExistingAspenLocationsStmt = dbConn.prepareStatement("SELECT locationId, displayName, code from location", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+				PreparedStatement getExistingSublocationsStmt = dbConn.prepareStatement("select distinct (ilsId) from sublocation where ilsId REGEXP '^[0-9]+$'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)
+				) {
 
-				existingLocation.setLocationId(allExistingLocationsRS.getLong("locationId"));
-				existingLocation.setName(allExistingLocationsRS.getString("displayName"));
-				existingLocation.setCode(allExistingLocationsRS.getString("code"));
-				existingLocations.put(existingLocation.getCode(), existingLocation);
-			}
+				try (ResultSet allExistingLocationsRS = getExistingAspenLocationsStmt.executeQuery()) {
+					HashMap<String, ExistingLocation> existingLocations = new HashMap<>();
+					while (allExistingLocationsRS.next()) {
+						ExistingLocation existingLocation = new ExistingLocation();
 
-			HashSet<Long> existingSublocationIds = new HashSet<>();
-			ResultSet allExistingSublocationsRS = getExistingSublocationsStmt.executeQuery();
-			while (allExistingSublocationsRS.next()) {
-				existingSublocationIds.add(allExistingSublocationsRS.getLong("ilsId"));
-			}
+						existingLocation.setLocationId(allExistingLocationsRS.getLong("locationId"));
+						existingLocation.setName(allExistingLocationsRS.getString("displayName"));
+						existingLocation.setCode(allExistingLocationsRS.getString("code"));
+						existingLocations.put(existingLocation.getCode(), existingLocation);
+					}
+
+					existingSublocationIds = new HashSet<>();
+					try (ResultSet allExistingSublocationsRS = getExistingSublocationsStmt.executeQuery()) {
+						while (allExistingSublocationsRS.next()) {
+							existingSublocationIds.add(allExistingSublocationsRS.getLong("ilsId"));
+						}
+					}
 
 
-			//Look up the sub-locations in Polaris. It does not look like filtering by orgID works in the API, so we will just grab them all
-			String getPickupAreasUrl = "/PAPIService/REST/public/v1/1033/100/1/pickupareas";
-			WebServiceResponse pickupAreasResponse = callPolarisAPI(getPickupAreasUrl, null, "GET", "application/json", null);
-			if (pickupAreasResponse.isSuccess()){
-				JSONObject pickupAreas = pickupAreasResponse.getJSONResponse();
-				JSONArray pickupAreaRows = pickupAreas.getJSONArray("PickupAreasRows");
-				for (int i = 0; i < pickupAreaRows.length(); i++) {
-					JSONObject pickupAreaInfo = pickupAreaRows.getJSONObject(i);
-					String parentOrganizationId = Long.toString(pickupAreaInfo.getLong("OrganizationID"));
-					long pickupAreaId = pickupAreaInfo.getLong("PickupAreaID");
-					String name = pickupAreaInfo.getString("Description");
-					long sequence = pickupAreaInfo.getLong("SequenceID");
-					boolean selected = pickupAreaInfo.getBoolean("Selected");
+					//Look up the sub-locations in Polaris. It does not look like filtering by orgID works in the API, so we will just grab them all
+					String getPickupAreasUrl = "/PAPIService/REST/public/v1/1033/100/1/pickupareas";
+					WebServiceResponse pickupAreasResponse = callPolarisAPI(getPickupAreasUrl, null, "GET", "application/json", null);
+					if (pickupAreasResponse.isSuccess()) {
+						JSONObject pickupAreas = pickupAreasResponse.getJSONResponse();
+						JSONArray pickupAreaRows = pickupAreas.getJSONArray("PickupAreasRows");
+						for (int i = 0; i < pickupAreaRows.length(); i++) {
+							JSONObject pickupAreaInfo = pickupAreaRows.getJSONObject(i);
+							String parentOrganizationId = Long.toString(pickupAreaInfo.getLong("OrganizationID"));
+							long pickupAreaId = pickupAreaInfo.getLong("PickupAreaID");
+							String name = pickupAreaInfo.getString("Description");
+							long sequence = pickupAreaInfo.getLong("SequenceID");
+							boolean selected = pickupAreaInfo.getBoolean("Selected");
 
-					existingSublocationIds.remove(pickupAreaId);
+							existingSublocationIds.remove(pickupAreaId);
 
-					//Get the parent location for the sublocation
-					ExistingLocation parentLocation = existingLocations.get(parentOrganizationId);
-					if (parentLocation != null) {
-						//See if we have an existing sublocation in Aspen
-						existingAspenSublocationStmt.setLong(1, parentLocation.getLocationId());
-						existingAspenSublocationStmt.setLong(2, pickupAreaId);
-						ResultSet existingAspenSublocationRS = existingAspenSublocationStmt.executeQuery();
-						if (existingAspenSublocationRS.next()) {
-							//We have an existing sublocation, make sure the name, sequence, and selection have not changed
-							long existingId = existingAspenSublocationRS.getLong("id");
-							String existingName = existingAspenSublocationRS.getString("name");
-							boolean existingSelected = existingAspenSublocationRS.getBoolean("isValidHoldPickupAreaILS");
-							long existingWeight = existingAspenSublocationRS.getLong("weight");
-							if (!existingName.equals(name)
-								|| existingSelected != selected
-								|| existingWeight != sequence){
-								updateAspenSublocationStmt.setString(1, name);
-								updateAspenSublocationStmt.setInt(2, selected ? 1 : 0);
-								updateAspenSublocationStmt.setLong(3, sequence);
-								updateAspenSublocationStmt.setLong(4, existingId);
-								updateAspenSublocationStmt.executeUpdate();
-							}
-						}else{
-							//This is a new sublocation
-							addAspenSublocationStmt.setLong(1, parentLocation.getLocationId());
-							addAspenSublocationStmt.setString(2, name);
-							addAspenSublocationStmt.setLong(3, pickupAreaId);
-							addAspenSublocationStmt.setInt(4, selected ? 1 : 0);
-							addAspenSublocationStmt.setInt(5, selected ? 1 : 0);
-							addAspenSublocationStmt.setLong(6, sequence);
-							addAspenSublocationStmt.executeUpdate();
+							//Get the parent location for the sublocation
+							ExistingLocation parentLocation = existingLocations.get(parentOrganizationId);
+							if (parentLocation != null) {
+								//See if we have an existing sublocation in Aspen
+								existingAspenSublocationStmt.setLong(1, parentLocation.getLocationId());
+								existingAspenSublocationStmt.setLong(2, pickupAreaId);
+								try (ResultSet existingAspenSublocationRS = existingAspenSublocationStmt.executeQuery()) {
+									if (existingAspenSublocationRS.next()) {
+										//We have an existing sublocation, make sure the name, sequence, and selection have not changed
+										long existingId = existingAspenSublocationRS.getLong("id");
+										String existingName = existingAspenSublocationRS.getString("name");
+										boolean existingSelected = existingAspenSublocationRS.getBoolean("isValidHoldPickupAreaILS");
+										long existingWeight = existingAspenSublocationRS.getLong("weight");
+										if (existingSelected != selected
+											|| existingWeight != sequence) {
+											updateAspenSublocationStmt.setInt(1, selected ? 1 : 0);
+											updateAspenSublocationStmt.setLong(2, sequence);
+											updateAspenSublocationStmt.setLong(3, existingId);
+											updateAspenSublocationStmt.executeUpdate();
+										}
+									} else {
+										//This is a new sublocation
+										addAspenSublocationStmt.setLong(1, parentLocation.getLocationId());
+										addAspenSublocationStmt.setString(2, name);
+										addAspenSublocationStmt.setLong(3, pickupAreaId);
+										addAspenSublocationStmt.setInt(4, selected ? 1 : 0);
+										addAspenSublocationStmt.setInt(5, selected ? 1 : 0);
+										addAspenSublocationStmt.setLong(6, sequence);
+										addAspenSublocationStmt.executeUpdate();
 
-							ResultSet addAspenSublocationRS = addAspenSublocationStmt.getGeneratedKeys();
-							if (addAspenSublocationRS.next()){
-								if (selected) {
-									long sublocationId = addAspenSublocationRS.getLong(1);
-									activateSublocationForAllPTypesStmt.setLong(1, sublocationId);
-									activateSublocationForAllPTypesStmt.executeUpdate();
+										try (ResultSet addAspenSublocationRS = addAspenSublocationStmt.getGeneratedKeys()) {
+											if (addAspenSublocationRS.next()) {
+												if (selected) {
+													long sublocationId = addAspenSublocationRS.getLong(1);
+													activateSublocationForAllPTypesStmt.setLong(1, sublocationId);
+													activateSublocationForAllPTypesStmt.executeUpdate();
+												}
+											}
+										}
+									}
 								}
 							}
 						}
-						existingAspenSublocationRS.close();
 					}
 				}
 			}
-			allExistingLocationsRS.close();
 
 			//Remove any pickup locations that no longer exist
-			for (Long existingSublocationId : existingSublocationIds) {
-				deleteExistingSublocationStmt.setLong(1, existingSublocationId);
-				deleteExistingSublocationStmt.executeUpdate();
+			try (PreparedStatement deleteExistingSublocationStmt = dbConn.prepareStatement("UPDATE sublocation set isValidHoldPickupAreaILS = 0 where ilsId = ?")) {
+				for (Long existingSublocationId : existingSublocationIds) {
+					deleteExistingSublocationStmt.setLong(1, existingSublocationId);
+					deleteExistingSublocationStmt.executeUpdate();
+				}
 			}
 
 			logEntry.addNote("Finished Loading Pickup Areas into Sub-locations");
@@ -448,21 +466,20 @@ public class PolarisExportMain {
 	}
 
 	private static void importLibraryBranchData(Connection dbConn) {
-		try{
-			PreparedStatement existingAspenLocationStmt = dbConn.prepareStatement("SELECT libraryId, locationId, isMainBranch from location where code = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			PreparedStatement existingAspenLibraryStmt = dbConn.prepareStatement("SELECT libraryId from library where ilsCode = ? and accountProfileId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			PreparedStatement existingAspenLibraryBySubdomainStmt = dbConn.prepareStatement("SELECT libraryId from library where subdomain = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			PreparedStatement addAspenLibraryStmt = dbConn.prepareStatement("INSERT INTO library (accountProfileId, subdomain, displayName, ilsCode, browseCategoryGroupId, groupedWorkDisplaySettingId) VALUES (?, ?, ?, ?, 1, 1)", Statement.RETURN_GENERATED_KEYS);
-			PreparedStatement addAspenLocationStmt = dbConn.prepareStatement("INSERT INTO location (libraryId, displayName, code, browseCategoryGroupId, groupedWorkDisplaySettingId) VALUES (?, ?, ?, -1, -1)", Statement.RETURN_GENERATED_KEYS);
-			PreparedStatement addAspenLocationRecordsOwnedStmt = dbConn.prepareStatement("INSERT INTO location_records_to_include (locationId, indexingProfileId, location, subLocation, markRecordsAsOwned) VALUES (?, ?, ?, '', 1)");
-			PreparedStatement addAspenLocationRecordsToIncludeStmt = dbConn.prepareStatement("INSERT INTO location_records_to_include (locationId, indexingProfileId, location, subLocation, weight) VALUES (?, ?, '.*', '', 1)");
-			PreparedStatement addAspenLibraryRecordsOwnedStmt = dbConn.prepareStatement("INSERT INTO library_records_to_include (libraryId, indexingProfileId, location, subLocation, markRecordsAsOwned) VALUES (?, ?, ?, '', 1) ON DUPLICATE KEY UPDATE location = CONCAT(location, '|', VALUES(location))");
-			PreparedStatement addAspenLibraryRecordsToIncludeStmt = dbConn.prepareStatement("INSERT INTO library_records_to_include (libraryId, indexingProfileId, location, subLocation, weight) VALUES (?, ?, '.*', '', 1)");
-			PreparedStatement createTranslationMapStmt = dbConn.prepareStatement("INSERT INTO translation_maps (name, indexingProfileId) VALUES (?, ?)", Statement.RETURN_GENERATED_KEYS);
-			PreparedStatement getTranslationMapStmt = dbConn.prepareStatement("SELECT id from translation_maps WHERE name = ? and indexingProfileId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			PreparedStatement getExistingValuesForMapStmt = dbConn.prepareStatement("SELECT * from translation_map_values where translationMapId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			PreparedStatement insertTranslationStmt = dbConn.prepareStatement("INSERT INTO translation_map_values (translationMapId, value, translation) VALUES (?, ?, ?)");
-
+		try (PreparedStatement existingAspenLocationStmt = dbConn.prepareStatement("SELECT libraryId, locationId, isMainBranch from location where code = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+		     PreparedStatement existingAspenLibraryStmt = dbConn.prepareStatement("SELECT libraryId from library where ilsCode = ? and accountProfileId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+		     PreparedStatement existingAspenLibraryBySubdomainStmt = dbConn.prepareStatement("SELECT libraryId from library where subdomain = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+		     PreparedStatement addAspenLibraryStmt = dbConn.prepareStatement("INSERT INTO library (accountProfileId, subdomain, displayName, ilsCode, browseCategoryGroupId, groupedWorkDisplaySettingId) VALUES (?, ?, ?, ?, 1, 1)", Statement.RETURN_GENERATED_KEYS);
+		     PreparedStatement addAspenLocationStmt = dbConn.prepareStatement("INSERT INTO location (libraryId, displayName, code, browseCategoryGroupId, groupedWorkDisplaySettingId) VALUES (?, ?, ?, -1, -1)", Statement.RETURN_GENERATED_KEYS);
+		     PreparedStatement addAspenLocationRecordsOwnedStmt = dbConn.prepareStatement("INSERT INTO location_records_to_include (locationId, indexingProfileId, location, subLocation, markRecordsAsOwned) VALUES (?, ?, ?, '', 1)");
+		     PreparedStatement addAspenLocationRecordsToIncludeStmt = dbConn.prepareStatement("INSERT INTO location_records_to_include (locationId, indexingProfileId, location, subLocation, weight) VALUES (?, ?, '.*', '', 1)");
+		     PreparedStatement addAspenLibraryRecordsOwnedStmt = dbConn.prepareStatement("INSERT INTO library_records_to_include (libraryId, indexingProfileId, location, subLocation, markRecordsAsOwned) VALUES (?, ?, ?, '', 1) ON DUPLICATE KEY UPDATE location = CONCAT(location, '|', VALUES(location))");
+		     PreparedStatement addAspenLibraryRecordsToIncludeStmt = dbConn.prepareStatement("INSERT INTO library_records_to_include (libraryId, indexingProfileId, location, subLocation, weight) VALUES (?, ?, '.*', '', 1)");
+		     PreparedStatement createTranslationMapStmt = dbConn.prepareStatement("INSERT INTO translation_maps (name, indexingProfileId) VALUES (?, ?)", Statement.RETURN_GENERATED_KEYS);
+		     PreparedStatement getTranslationMapStmt = dbConn.prepareStatement("SELECT id from translation_maps WHERE name = ? and indexingProfileId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+		     PreparedStatement getExistingValuesForMapStmt = dbConn.prepareStatement("SELECT * from translation_map_values where translationMapId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+		     PreparedStatement insertTranslationStmt = dbConn.prepareStatement("INSERT INTO translation_map_values (translationMapId, value, translation) VALUES (?, ?, ?)")
+			 ) {
 			Long locationMapId = getTranslationMapId(createTranslationMapStmt, getTranslationMapStmt, "location");
 			HashMap<String, String> existingLocationMapValues = getExistingTranslationMapValues(getExistingValuesForMapStmt, locationMapId);
 
@@ -481,68 +498,74 @@ public class PolarisExportMain {
 					if (organizationCodeId == 2) {
 						existingAspenLibraryStmt.setLong(1, ilsId);
 						existingAspenLibraryStmt.setLong(2, accountProfileId);
-						ResultSet existingLibraryRS = existingAspenLibraryStmt.executeQuery();
-						long libraryId = 0;
-						if (!existingLibraryRS.next()) {
-							// Check if the subdomain already exists.
-							existingAspenLibraryBySubdomainStmt.setString(1, abbreviation);
-							ResultSet existingSubdomainRS = existingAspenLibraryBySubdomainStmt.executeQuery();
-							if (existingSubdomainRS.next()) {
-								logEntry.addNote("Skipping library " + libraryDisplayName + " with ID " + ilsId + " because subdomain '" + abbreviation + "' is already in use.");
-							} else {
-								addAspenLibraryStmt.setLong(1, accountProfileId);
-								addAspenLibraryStmt.setString(2, abbreviation);
-								addAspenLibraryStmt.setString(3, libraryDisplayName);
-								addAspenLibraryStmt.setLong(4, ilsId);
-								addAspenLibraryStmt.executeUpdate();
-								ResultSet addAspenLibraryRS = addAspenLibraryStmt.getGeneratedKeys();
-								if (addAspenLibraryRS.next()){
-									libraryId = addAspenLibraryRS.getLong(1);
-								}
+						try (ResultSet existingLibraryRS = existingAspenLibraryStmt.executeQuery()) {
+							long libraryId = 0;
+							if (!existingLibraryRS.next()) {
+								// Check if the subdomain already exists.
+								existingAspenLibraryBySubdomainStmt.setString(1, abbreviation);
+								try (ResultSet existingSubdomainRS = existingAspenLibraryBySubdomainStmt.executeQuery()) {
+									if (existingSubdomainRS.next()) {
+										logEntry.addNote("Skipping library " + libraryDisplayName + " with ID " + ilsId + " because subdomain '" + abbreviation + "' is already in use.");
+									} else {
+										addAspenLibraryStmt.setLong(1, accountProfileId);
+										addAspenLibraryStmt.setString(2, abbreviation);
+										addAspenLibraryStmt.setString(3, libraryDisplayName);
+										addAspenLibraryStmt.setLong(4, ilsId);
+										addAspenLibraryStmt.executeUpdate();
+										try (ResultSet addAspenLibraryRS = addAspenLibraryStmt.getGeneratedKeys()) {
+											if (addAspenLibraryRS.next()) {
+												libraryId = addAspenLibraryRS.getLong(1);
+											}
+										}
 
-								//Add records to include for the library.
-								addAspenLibraryRecordsToIncludeStmt.setLong(1, libraryId);
-								addAspenLibraryRecordsToIncludeStmt.setLong(2, indexingProfile.getId());
-								addAspenLibraryRecordsToIncludeStmt.executeUpdate();
+										//Add records to include for the library.
+										addAspenLibraryRecordsToIncludeStmt.setLong(1, libraryId);
+										addAspenLibraryRecordsToIncludeStmt.setLong(2, indexingProfile.getId());
+										addAspenLibraryRecordsToIncludeStmt.executeUpdate();
+									}
+								}
 							}
 						}
 					} else if (organizationCodeId == 3) {
 						long parentOrganizationId = organizationInfo.getLong("ParentOrganizationID");
 						existingAspenLocationStmt.setLong(1, ilsId);
-						ResultSet existingLocationRS = existingAspenLocationStmt.executeQuery();
-						if (!existingLocationRS.next()){
-							//This location has not been added before
-							//Get the library id for the parent
-							existingAspenLibraryStmt.setLong(1, parentOrganizationId);
-							ResultSet existingLibraryRS = existingAspenLibraryStmt.executeQuery();
-							if (existingLibraryRS.next()){
-								//We found a valid library for the location
-								long libraryId = existingLibraryRS.getLong("libraryId");
+						try (ResultSet existingLocationRS = existingAspenLocationStmt.executeQuery()) {
+							if (!existingLocationRS.next()) {
+								//This location has not been added before
+								//Get the library id for the parent
+								existingAspenLibraryStmt.setLong(1, parentOrganizationId);
+								try (ResultSet existingLibraryRS = existingAspenLibraryStmt.executeQuery()) {
+									if (existingLibraryRS.next()) {
+										//We found a valid library for the location
+										long libraryId = existingLibraryRS.getLong("libraryId");
 
-								addAspenLocationStmt.setLong(1, libraryId);
-								addAspenLocationStmt.setString(2, AspenStringUtils.trimTo(60, libraryDisplayName));
-								addAspenLocationStmt.setLong(3, ilsId);
+										addAspenLocationStmt.setLong(1, libraryId);
+										addAspenLocationStmt.setString(2, AspenStringUtils.trimTo(60, libraryDisplayName));
+										addAspenLocationStmt.setLong(3, ilsId);
 
-								addAspenLocationStmt.executeUpdate();
-								ResultSet addAspenLocationRS = addAspenLocationStmt.getGeneratedKeys();
-								if (addAspenLocationRS.next()){
-									long locationId = addAspenLocationRS.getLong(1);
-									//Add records owned for the location
-									addAspenLocationRecordsOwnedStmt.setLong(1, locationId);
-									addAspenLocationRecordsOwnedStmt.setLong(2, indexingProfile.getId());
-									addAspenLocationRecordsOwnedStmt.setLong(3, ilsId);
-									addAspenLocationRecordsOwnedStmt.executeUpdate();
+										addAspenLocationStmt.executeUpdate();
+										try (ResultSet addAspenLocationRS = addAspenLocationStmt.getGeneratedKeys()) {
+											if (addAspenLocationRS.next()) {
+												long locationId = addAspenLocationRS.getLong(1);
+												//Add records owned for the location
+												addAspenLocationRecordsOwnedStmt.setLong(1, locationId);
+												addAspenLocationRecordsOwnedStmt.setLong(2, indexingProfile.getId());
+												addAspenLocationRecordsOwnedStmt.setLong(3, ilsId);
+												addAspenLocationRecordsOwnedStmt.executeUpdate();
 
-									//Add records owned by the library. Because we have multiple locations defined by ID, we will add separate rows for each.
-									addAspenLibraryRecordsOwnedStmt.setLong(1, libraryId);
-									addAspenLibraryRecordsOwnedStmt.setLong(2, indexingProfile.getId());
-									addAspenLibraryRecordsOwnedStmt.setLong(3, ilsId);
-									addAspenLibraryRecordsOwnedStmt.executeUpdate();
+												//Add records owned by the library. Because we have multiple locations defined by ID, we will add separate rows for each.
+												addAspenLibraryRecordsOwnedStmt.setLong(1, libraryId);
+												addAspenLibraryRecordsOwnedStmt.setLong(2, indexingProfile.getId());
+												addAspenLibraryRecordsOwnedStmt.setLong(3, ilsId);
+												addAspenLibraryRecordsOwnedStmt.executeUpdate();
 
-									//Add records to include for the location
-									addAspenLocationRecordsToIncludeStmt.setLong(1, locationId);
-									addAspenLocationRecordsToIncludeStmt.setLong(2, indexingProfile.getId());
-									addAspenLocationRecordsToIncludeStmt.executeUpdate();
+												//Add records to include for the location
+												addAspenLocationRecordsToIncludeStmt.setLong(1, locationId);
+												addAspenLocationRecordsToIncludeStmt.setLong(2, indexingProfile.getId());
+												addAspenLocationRecordsToIncludeStmt.executeUpdate();
+											}
+										}
+									}
 								}
 							}
 						}
@@ -569,46 +592,46 @@ public class PolarisExportMain {
 	}
 
 	private static void updatePatronCodes(Connection dbConn){
-		try{
-			PreparedStatement existingPTypeStmt = dbConn.prepareStatement("SELECT * from ptype where accountProfileId = ?");
+		try (PreparedStatement existingPTypeStmt = dbConn.prepareStatement("SELECT * from ptype where accountProfileId = ?")) {
 			existingPTypeStmt.setLong(1, accountProfileId);
-			ResultSet existingPTypesRS = existingPTypeStmt.executeQuery();
-			HashSet<Long> existingPTypes = new HashSet<>();
-			while (existingPTypesRS.next()){
-				existingPTypes.add(existingPTypesRS.getLong("pType"));
+			HashSet<Long> existingPTypes;
+			try (ResultSet existingPTypesRS = existingPTypeStmt.executeQuery()) {
+				existingPTypes = new HashSet<>();
+				while (existingPTypesRS.next()) {
+					existingPTypes.add(existingPTypesRS.getLong("pType"));
+				}
 			}
-			existingPTypesRS.close();
 			existingPTypeStmt.close();
-			PreparedStatement addPTypeStmt = dbConn.prepareStatement("INSERT INTO ptype (accountProfileId, pType, description) VALUES (?, ?, ?)");
-			//Get a list of all libraries
-			String getPatronCodesUrl = "/PAPIService/REST/public/v1/1033/100/1/patroncodes";
-			WebServiceResponse patronCodesResponse = callPolarisAPI(getPatronCodesUrl, null, "GET", "application/json", null);
-			if (patronCodesResponse.isSuccess()){
-				JSONObject patronCodes = patronCodesResponse.getJSONResponse();
-				JSONArray patronCodeRows = patronCodes.getJSONArray("PatronCodesRows");
-				for (int i = 0; i < patronCodeRows.length(); i++){
-					JSONObject curPatronType = patronCodeRows.getJSONObject(i);
-					long patronCodeId = curPatronType.getLong("PatronCodeID");
-					if (!existingPTypes.contains(patronCodeId)){
-						addPTypeStmt.setLong(1, accountProfileId);
-						addPTypeStmt.setLong(2, patronCodeId);
-						addPTypeStmt.setString(3, curPatronType.getString("Description"));
-						addPTypeStmt.executeUpdate();
+			try (PreparedStatement addPTypeStmt = dbConn.prepareStatement("INSERT INTO ptype (accountProfileId, pType, description) VALUES (?, ?, ?)")) {
+				//Get a list of all libraries
+				String getPatronCodesUrl = "/PAPIService/REST/public/v1/1033/100/1/patroncodes";
+				WebServiceResponse patronCodesResponse = callPolarisAPI(getPatronCodesUrl, null, "GET", "application/json", null);
+				if (patronCodesResponse.isSuccess()) {
+					JSONObject patronCodes = patronCodesResponse.getJSONResponse();
+					JSONArray patronCodeRows = patronCodes.getJSONArray("PatronCodesRows");
+					for (int i = 0; i < patronCodeRows.length(); i++) {
+						JSONObject curPatronType = patronCodeRows.getJSONObject(i);
+						long patronCodeId = curPatronType.getLong("PatronCodeID");
+						if (!existingPTypes.contains(patronCodeId)) {
+							addPTypeStmt.setLong(1, accountProfileId);
+							addPTypeStmt.setLong(2, patronCodeId);
+							addPTypeStmt.setString(3, curPatronType.getString("Description"));
+							addPTypeStmt.executeUpdate();
+						}
 					}
 				}
 			}
-			addPTypeStmt.close();
 		} catch (Exception e) {
 			logEntry.incErrors("Error updating patron codes from Polaris", e);
 		}
 	}
 
 	private static void updateTranslationMaps(Connection dbConn){
-		try {
-			PreparedStatement createTranslationMapStmt = dbConn.prepareStatement("INSERT INTO translation_maps (name, indexingProfileId) VALUES (?, ?)", Statement.RETURN_GENERATED_KEYS);
-			PreparedStatement getTranslationMapStmt = dbConn.prepareStatement("SELECT id from translation_maps WHERE name = ? and indexingProfileId = ?");
-			PreparedStatement getExistingValuesForMapStmt = dbConn.prepareStatement("SELECT * from translation_map_values where translationMapId = ?");
-			PreparedStatement insertTranslationStmt = dbConn.prepareStatement("INSERT INTO translation_map_values (translationMapId, value, translation) VALUES (?, ?, ?)");
+		try (PreparedStatement createTranslationMapStmt = dbConn.prepareStatement("INSERT INTO translation_maps (name, indexingProfileId) VALUES (?, ?)", Statement.RETURN_GENERATED_KEYS);
+		     PreparedStatement getTranslationMapStmt = dbConn.prepareStatement("SELECT id from translation_maps WHERE name = ? and indexingProfileId = ?");
+		     PreparedStatement getExistingValuesForMapStmt = dbConn.prepareStatement("SELECT * from translation_map_values where translationMapId = ?");
+		     PreparedStatement insertTranslationStmt = dbConn.prepareStatement("INSERT INTO translation_map_values (translationMapId, value, translation) VALUES (?, ?, ?)")
+			 ) {
 
 			//Get a list of all collections
 			Long collectionMapId = getTranslationMapId(createTranslationMapStmt, getTranslationMapStmt, "collection");
@@ -639,7 +662,6 @@ public class PolarisExportMain {
 
 			Long shelfLocationMapId = getTranslationMapId(createTranslationMapStmt, getTranslationMapStmt, "shelf_location");
 			HashMap<String, String> existingShelfLocations = getExistingTranslationMapValues(getExistingValuesForMapStmt, shelfLocationMapId);
-			//noinspection SpellCheckingInspection
 			String getShelfLocationsUrl = "/PAPIService/REST/public/v1/1033/100/1/shelflocations";
 			WebServiceResponse shelfLocationsResponse = callPolarisAPI(getShelfLocationsUrl, null, "GET", "application/json", null);
 			if (shelfLocationsResponse.isSuccess()){
@@ -728,9 +750,10 @@ public class PolarisExportMain {
 	private static HashMap<String, String> getExistingTranslationMapValues(PreparedStatement getExistingValuesForMapStmt, Long translationMapId) throws SQLException {
 		HashMap<String, String> existingValues = new HashMap<>();
 		getExistingValuesForMapStmt.setLong(1, translationMapId);
-		ResultSet getExistingValuesForMapRS = getExistingValuesForMapStmt.executeQuery();
-		while (getExistingValuesForMapRS.next()) {
-			existingValues.put(getExistingValuesForMapRS.getString("value").toLowerCase().trim(), getExistingValuesForMapRS.getString("translation"));
+		try (ResultSet getExistingValuesForMapRS = getExistingValuesForMapStmt.executeQuery()) {
+			while (getExistingValuesForMapRS.next()) {
+				existingValues.put(getExistingValuesForMapRS.getString("value").toLowerCase().trim(), getExistingValuesForMapRS.getString("translation"));
+			}
 		}
 		return existingValues;
 	}
@@ -739,48 +762,53 @@ public class PolarisExportMain {
 		Long translationMapId = null;
 		getTranslationMapStmt.setString(1, mapName);
 		getTranslationMapStmt.setLong(2, indexingProfile.getId());
-		ResultSet getTranslationMapRS = getTranslationMapStmt.executeQuery();
-		if (getTranslationMapRS.next()) {
-			translationMapId = getTranslationMapRS.getLong("id");
-		} else {
-			//Map does not exist, create it
-			createTranslationMapStmt.setString(1, mapName);
-			createTranslationMapStmt.setLong(2, indexingProfile.getId());
-			createTranslationMapStmt.executeUpdate();
-			ResultSet generatedIds = createTranslationMapStmt.getGeneratedKeys();
-			if (generatedIds.next()) {
-				translationMapId = generatedIds.getLong(1);
+		try (ResultSet getTranslationMapRS = getTranslationMapStmt.executeQuery()) {
+			if (getTranslationMapRS.next()) {
+				translationMapId = getTranslationMapRS.getLong("id");
+			} else {
+				//Map does not exist, create it
+				createTranslationMapStmt.setString(1, mapName);
+				createTranslationMapStmt.setLong(2, indexingProfile.getId());
+				createTranslationMapStmt.executeUpdate();
+				try (ResultSet generatedIds = createTranslationMapStmt.getGeneratedKeys()) {
+					if (generatedIds.next()) {
+						translationMapId = generatedIds.getLong(1);
+					}
+				}
 			}
 		}
 		return translationMapId;
 	}
 
 	private static void processRecordsToReload(IndexingProfile indexingProfile, IlsExtractLogEntry logEntry) {
-		try {
+		try (
 			PreparedStatement getNumRecordsToReloadStmt = dbConn.prepareStatement("SELECT count(*) from record_identifiers_to_reload WHERE processed = 0 and type='" + indexingProfile.getName() + "'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			ResultSet getNumRecordsToReloadRS = getNumRecordsToReloadStmt.executeQuery();
-			if (getNumRecordsToReloadRS.next()){
-				logEntry.addNote("Processing " + getNumRecordsToReloadRS.getLong(1) + " records to reload");
-				logEntry.saveResults();
-			}
 			PreparedStatement getRecordsToReloadStmt = dbConn.prepareStatement("SELECT * from record_identifiers_to_reload WHERE processed = 0 and type='" + indexingProfile.getName() + "'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			PreparedStatement markRecordToReloadAsProcessedStmt = dbConn.prepareStatement("UPDATE record_identifiers_to_reload SET processed = 1 where id = ?");
-			ResultSet getRecordsToReloadRS = getRecordsToReloadStmt.executeQuery();
-			int numRecordsToReloadProcessed = 0;
-			while (getRecordsToReloadRS.next()) {
-				long recordToReloadId = getRecordsToReloadRS.getLong("id");
-				String recordIdentifier = getRecordsToReloadRS.getString("identifier");
-				updateBibFromPolaris(recordIdentifier, null, 0, true);
+			PreparedStatement markRecordToReloadAsProcessedStmt = dbConn.prepareStatement("UPDATE record_identifiers_to_reload SET processed = 1 where id = ?")
+			) {
 
-				markRecordToReloadAsProcessedStmt.setLong(1, recordToReloadId);
-				markRecordToReloadAsProcessedStmt.executeUpdate();
-				numRecordsToReloadProcessed++;
+			try (ResultSet getNumRecordsToReloadRS = getNumRecordsToReloadStmt.executeQuery()) {
+				if (getNumRecordsToReloadRS.next()) {
+					logEntry.addNote("Processing " + getNumRecordsToReloadRS.getLong(1) + " records to reload");
+					logEntry.saveResults();
+				}
 			}
-			if (numRecordsToReloadProcessed > 0) {
-				logEntry.addNote("Processed " + numRecordsToReloadProcessed + " records marked for reprocessing");
-				logEntry.saveResults();
+			try (ResultSet getRecordsToReloadRS = getRecordsToReloadStmt.executeQuery()) {
+				int numRecordsToReloadProcessed = 0;
+				while (getRecordsToReloadRS.next()) {
+					long recordToReloadId = getRecordsToReloadRS.getLong("id");
+					String recordIdentifier = getRecordsToReloadRS.getString("identifier");
+					updateBibFromPolaris(recordIdentifier, null, 0, true);
+
+					markRecordToReloadAsProcessedStmt.setLong(1, recordToReloadId);
+					markRecordToReloadAsProcessedStmt.executeUpdate();
+					numRecordsToReloadProcessed++;
+				}
+				if (numRecordsToReloadProcessed > 0) {
+					logEntry.addNote("Processed " + numRecordsToReloadProcessed + " records marked for reprocessing");
+					logEntry.saveResults();
+				}
 			}
-			getRecordsToReloadRS.close();
 		}catch (Exception e){
 			logEntry.incErrors("Error processing records to reload ", e);
 		}
@@ -788,22 +816,22 @@ public class PolarisExportMain {
 
 	private static boolean loadAccountProfile(Connection dbConn) {
 		//Get information about the account profile for Polaris
-		try {
-			PreparedStatement accountProfileStmt = dbConn.prepareStatement("SELECT * from account_profiles WHERE ils = ?");
+		try (PreparedStatement accountProfileStmt = dbConn.prepareStatement("SELECT * from account_profiles WHERE ils = ?")) {
 			accountProfileStmt.setString(1, "polaris");
-			ResultSet accountProfileRS = accountProfileStmt.executeQuery();
-			if (accountProfileRS.next()) {
-				webServiceUrl = accountProfileRS.getString("patronApiUrl");
-				if (webServiceUrl.endsWith("/")){
-					webServiceUrl = webServiceUrl.substring(0, webServiceUrl.length() -1);
+			try (ResultSet accountProfileRS = accountProfileStmt.executeQuery()) {
+				if (accountProfileRS.next()) {
+					webServiceUrl = accountProfileRS.getString("patronApiUrl");
+					if (webServiceUrl.endsWith("/")) {
+						webServiceUrl = webServiceUrl.substring(0, webServiceUrl.length() - 1);
+					}
+					clientId = accountProfileRS.getString("oAuthClientId");
+					String clientSecret = accountProfileRS.getString("oAuthClientSecret");
+					signingKey = new SecretKeySpec(clientSecret.getBytes(), HMAC_SHA1_ALGORITHM);
+					accountProfileId = accountProfileRS.getLong("id");
+				} else {
+					logger.error("Could not find an account profile for Polaris stopping");
+					return false;
 				}
-				clientId = accountProfileRS.getString("oAuthClientId");
-				clientSecret = accountProfileRS.getString("oAuthClientSecret");
-				signingKey = new SecretKeySpec(clientSecret.getBytes(), HMAC_SHA1_ALGORITHM);
-				accountProfileId = accountProfileRS.getLong("id");
-			} else {
-				logger.error("Could not find an account profile for Polaris stopping");
-				System.exit(1);
 			}
 			return true;
 		} catch (Exception e){
@@ -910,7 +938,6 @@ public class PolarisExportMain {
 		boolean doneLoading = false;
 		while (!doneLoading) {
 
-			//noinspection SpellCheckingInspection
 			String getBibsUrl = "/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/bibs/deleted/paged?lastID=" + lastId + "&deletedate=" + URLEncoder.encode(deleteDate, StandardCharsets.UTF_8) + "&nrecs=100";
 			int numTries = 0;
 			boolean successfulResponse = false;
@@ -976,7 +1003,6 @@ public class PolarisExportMain {
 		}
 
 		//Get the highest bib from Polaris
-		//noinspection SpellCheckingInspection
 		WebServiceResponse maxBibResponse = callPolarisAPI("/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/bibs/maxid", null, "GET", "application/json", accessSecret);
 		long maxBibId = -1;
 		if (maxBibResponse.isSuccess()){
@@ -992,7 +1018,6 @@ public class PolarisExportMain {
 			if (lastIdForThisBatch > highestIdProcessed){
 				highestIdProcessed = lastIdForThisBatch;
 			}
-			//noinspection SpellCheckingInspection
 			String getBibsUrl = "/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/bibs/MARCXML/paged?nrecs=100&lastID=" + lastId;
 			ProcessBibRequestResponse response = processGetBibsRequest(getBibsUrl, marcFactory, lastExtractTime, true);
 			numChanges += response.numChanges;
@@ -1041,7 +1066,6 @@ public class PolarisExportMain {
 		formattedLastExtractTime = URLEncoder.encode(formattedLastExtractTime, StandardCharsets.UTF_8);
 
 		//Get the highest bib from Polaris
-		//noinspection SpellCheckingInspection
 		WebServiceResponse maxBibResponse = callPolarisAPI("/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/bibs/maxid", null, "GET", "application/json", accessSecret);
 		if (maxBibResponse.isSuccess()){
 			long maxBibId = maxBibResponse.getJSONResponse().getJSONArray("BibIDListRows").getJSONObject(0).getLong("BibliographicRecordID");
@@ -1077,11 +1101,12 @@ public class PolarisExportMain {
 		long sourceId = -1;
 		try {
 			sourceForPolarisStmt.setString(1, indexingProfile.getName());
-			ResultSet sourceForPolarisRS = sourceForPolarisStmt.executeQuery();
-			if (sourceForPolarisRS.next()){
-				sourceId = sourceForPolarisRS.getLong(1);
-			}else{
-				//Nothing has been indexed yet, leave source ID set to -1
+			try (ResultSet sourceForPolarisRS = sourceForPolarisStmt.executeQuery()) {
+				if (sourceForPolarisRS.next()) {
+					sourceId = sourceForPolarisRS.getLong(1);
+				} else {
+					//Nothing has been indexed yet, leave source ID set to -1
+				}
 			}
 		} catch (Exception e) {
 			logEntry.incErrors("Error getting source id for " + indexingProfile.getName(), e);
@@ -1135,7 +1160,6 @@ public class PolarisExportMain {
 
 	private static void getBibsToUpdateBasedOnUpdatedItems(String formattedLastItemExtractTime, HashSet<Long> updatedAndDeletedItemIds) {
 		//Get the highest item id from Polaris
-		//noinspection SpellCheckingInspection
 		WebServiceResponse maxItemResponse = callPolarisAPI("/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/items/maxid", null, "GET", "application/json", accessSecret);
 		long maxItemId = -1;
 		if (maxItemResponse.isSuccess()){
@@ -1148,7 +1172,6 @@ public class PolarisExportMain {
 		boolean doneLoading = false;
 		long highestItemIdProcessed = 0;
 		while (!doneLoading) {
-			//noinspection SpellCheckingInspection
 			String getItemsUrl = "/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/items/updated/paged?updatedate=" + formattedLastItemExtractTime + "&nrecs=100&lastId=" + highestItemIdProcessed;
 			WebServiceResponse pagedItems = callPolarisAPI(getItemsUrl, null, "GET", "application/json", accessSecret);
 			if (pagedItems.isSuccess()) {
@@ -1203,7 +1226,6 @@ public class PolarisExportMain {
 		logEntry.addNote("Getting a list of all items that have been deleted since " + formattedItemDeleteDate);
 		logEntry.saveResults();
 
-		//noinspection SpellCheckingInspection
 		String getDeletedItemsUrl = "/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/items/deleted?deletedate=" + formattedItemDeleteDate;
 		WebServiceResponse pagedDeletedItems = callPolarisAPI(getDeletedItemsUrl, null, "GET", "application/json", accessSecret);
 		final int[] numItemsProcessed = {0};
@@ -1230,6 +1252,7 @@ public class PolarisExportMain {
 	private static void getBibsToUpdateBasedOnItemChangesAndDeletions(long sourceId, HashSet<Long> updatedAndDeletedItemIds, Set<String> bibsToUpdate) {
 		logEntry.addNote("There were " + updatedAndDeletedItemIds.size() + " items that have been updated or deleted");
 		logEntry.saveResults();
+		//noinspection resource in Java 17 The cached thread pool does not have an auto close
 		ThreadPoolExecutor es = (ThreadPoolExecutor) Executors.newFixedThreadPool(5);
 		int[] numItemsProcessed = {0};
 		for (Long itemId : updatedAndDeletedItemIds) {
@@ -1243,7 +1266,7 @@ public class PolarisExportMain {
 						logEntry.incProducts();
 						bibsToUpdate.add(bibForItem);
 					}else{
-						logger.error("Got a null bib id for item id " + itemId);
+						logger.error("Got a null bib id for item id {}", itemId);
 					}
 				}
 				numItemsProcessed[0]++;
@@ -1256,15 +1279,16 @@ public class PolarisExportMain {
 
 		//Run the threads to get bibs for all items
 		es.shutdown();
-		while (true) {
-			try {
-				boolean terminated = es.awaitTermination(15, TimeUnit.SECONDS);
-				if (terminated){
-					break;
-				}
-			} catch (InterruptedException e) {
-				logger.error("Error waiting for all bib ids to be loaded based on item id.");
+		try {
+			boolean terminated = es.awaitTermination(48, TimeUnit.HOURS);
+			if (!terminated){
+				logger.error("Took more than 2 days to run Polaris extract, halting");
+				es.shutdownNow();
 			}
+		} catch (InterruptedException e) {
+			logger.error("Error waiting for all bib ids to be loaded based on item id.");
+			es.shutdownNow();
+			Thread.currentThread().interrupt();
 		}
 		logEntry.addNote("Finished getting bib ids for items, processed " + numItemsProcessed[0] + " items");
 		logEntry.saveResults();
@@ -1273,7 +1297,6 @@ public class PolarisExportMain {
 	private static void getBibsReplacedSinceLastExtract(long lastExtractTime, Set<String> bibsToUpdate) {
 		DateTimeFormatter dateReplacedFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.ENGLISH).withZone(ZoneId.systemDefault());
 		String formattedLastItemExtractDate = URLEncoder.encode(dateReplacedFormatter.format(Instant.ofEpochSecond(lastExtractTime)), StandardCharsets.UTF_8);
-		//noinspection SpellCheckingInspection
 		String getBibReplacedUrl = "/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/bibs/replacementids?startdate=" + formattedLastItemExtractDate;
 		WebServiceResponse bibsReplaced = callPolarisAPI(getBibReplacedUrl, null, "GET", "application/json", accessSecret);
 		if (bibsReplaced.isSuccess()){
@@ -1346,18 +1369,19 @@ public class PolarisExportMain {
 			synchronized (getRecordIdForItemLock) {
 				String itemIdString = Long.toString(itemId);
 				getRecordIdForItemIdStmt.setString(1, itemIdString);
-				ResultSet getRecordIdForItemIdRS = getRecordIdForItemIdStmt.executeQuery();
-				//If records are merged, we can have more than one record for the item in that case, don't return anything
-				while (getRecordIdForItemIdRS.next()) {
-					long recordId = getRecordIdForItemIdRS.getLong("groupedWorkRecordId");
-					getBibIdForItemIdStmt.setLong(1, recordId);
-					getBibIdForItemIdStmt.setLong(2, sourceId);
-					ResultSet getBibIdForItemIdRS = getBibIdForItemIdStmt.executeQuery();
-					if (getBibIdForItemIdRS.next()) {
-						bibIds.add(getBibIdForItemIdRS.getString("recordIdentifier"));
-						bibFound = true;
+				try (ResultSet getRecordIdForItemIdRS = getRecordIdForItemIdStmt.executeQuery()) {
+					//If records are merged, we can have more than one record for the item in that case, don't return anything
+					while (getRecordIdForItemIdRS.next()) {
+						long recordId = getRecordIdForItemIdRS.getLong("groupedWorkRecordId");
+						getBibIdForItemIdStmt.setLong(1, recordId);
+						getBibIdForItemIdStmt.setLong(2, sourceId);
+						try (ResultSet getBibIdForItemIdRS = getBibIdForItemIdStmt.executeQuery()) {
+							if (getBibIdForItemIdRS.next()) {
+								bibIds.add(getBibIdForItemIdRS.getString("recordIdentifier"));
+								bibFound = true;
+							}
+						}
 					}
-					getBibIdForItemIdRS.close();
 				}
 			}
 			if (!bibFound) {
@@ -1367,7 +1391,7 @@ public class PolarisExportMain {
 					bibIds.add(bibForItem);
 				}else{
 					//This seems normal if both the bib and all items have been deleted
-					logger.debug("No bib id found for item id " + itemId);
+					logger.debug("No bib id found for item id {}", itemId);
 				}
 			}
 		} catch (SQLException e) {
@@ -1378,7 +1402,6 @@ public class PolarisExportMain {
 
 	private static int updateBibFromPolaris(String bibNumber, MarcFactory marcFactory, long lastExtractTime, boolean incrementProductsInLog) {
 		//Get the bib record
-		//noinspection SpellCheckingInspection
 		String getBibUrl = "/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/bibs/MARCXML?bibids=" + bibNumber;
 		ProcessBibRequestResponse response = processGetBibsRequest(getBibUrl, marcFactory, lastExtractTime, incrementProductsInLog);
 		return response.numChanges;
@@ -1557,10 +1580,10 @@ public class PolarisExportMain {
 						response.numChanges++;
 					}
 				} else {
-					logEntry.incErrors("Could not read marc record for " + bibliographicRecordId);
+					logEntry.incErrors("Could not read MARC record for " + bibliographicRecordId);
 				}
 			}catch (Exception e){
-				logEntry.incErrors("Error loading marc record for bib " + bibliographicRecordId, e);
+				logEntry.incErrors("Error loading MARC record for bib " + bibliographicRecordId, e);
 			}
 		} else {
 			RemoveRecordFromWorkResult result = getRecordGroupingProcessor().removeRecordFromGroupedWork(indexingProfile.getName(), bibliographicRecordId);
@@ -1617,16 +1640,17 @@ public class PolarisExportMain {
 			}else {
 				HashMap<String, Long> existingVolumes = new HashMap<>();
 				getExistingVolumesStmt.setString(1, fullIdentifier);
-				ResultSet existingVolumesRS = getExistingVolumesStmt.executeQuery();
-				while (existingVolumesRS.next()) {
-					existingVolumes.put(existingVolumesRS.getString("volumeId"), existingVolumesRS.getLong("id"));
+				try (ResultSet existingVolumesRS = getExistingVolumesStmt.executeQuery()) {
+					while (existingVolumesRS.next()) {
+						existingVolumes.put(existingVolumesRS.getString("volumeId"), existingVolumesRS.getLong("id"));
+					}
 				}
 				int numVolumes = 0;
 				for (String volume : volumesForRecord.keySet()) {
 					VolumeInfo volumeInfo = volumesForRecord.get(volume);
 					try {
 						if (existingVolumes.containsKey(volume)) {
-							logger.info(" -- updating " + volume);
+							logger.info(" -- updating {}", volume);
 							updateVolumeStmt.setString(1, volumeInfo.volumeIdentifier);
 							updateVolumeStmt.setString(2, volumeInfo.getRelatedItemsAsString());
 							updateVolumeStmt.setLong(3, ++numVolumes);
@@ -1634,7 +1658,7 @@ public class PolarisExportMain {
 							updateVolumeStmt.executeUpdate();
 							existingVolumes.remove(volume);
 						} else {
-							logger.info(" -- adding " + volume);
+							logger.info(" -- adding {}", volume);
 							addVolumeStmt.setString(1, fullIdentifier);
 							addVolumeStmt.setString(2, volumeInfo.volume);
 							addVolumeStmt.setString(3, volumeInfo.volumeIdentifier);
@@ -1780,7 +1804,7 @@ public class PolarisExportMain {
 					bibForItem = Long.toString(itemInfo.getLong("BibliographicRecordID"));
 				} else {
 					//This does not look like an error, return a null bib.
-					logger.info("Failed to get bib id for item id " + itemId + ", could not find the item.");
+					logger.info("Failed to get bib id for item id {}, could not find the item.", itemId);
 					logger.info(getItemResponse.getMessage());
 				}
 			} else {
@@ -1829,9 +1853,46 @@ public class PolarisExportMain {
 
 		return doc;
 	}
+	@SuppressWarnings("DuplicatedCode")
 	private static void disconnectDatabase() {
 		try {
 			//Close the connection
+			if (addIlsHoldSummary != null) {
+				addIlsHoldSummary.close();
+				addIlsHoldSummary = null;
+			}
+			if (getExistingVolumesStmt != null) {
+				getExistingVolumesStmt.close();
+				getExistingVolumesStmt = null;
+			}
+			if (addVolumeStmt != null) {
+				addVolumeStmt.close();
+				addVolumeStmt = null;
+			}
+			if (deleteAllVolumesStmt != null) {
+				deleteAllVolumesStmt.close();
+				deleteAllVolumesStmt = null;
+			}
+			if (deleteVolumeStmt != null) {
+				deleteVolumeStmt.close();
+				deleteVolumeStmt = null;
+			}
+			if (updateVolumeStmt != null) {
+				updateVolumeStmt.close();
+				updateVolumeStmt = null;
+			}
+			if (getBibIdForItemIdStmt != null) {
+				getBibIdForItemIdStmt.close();
+				getBibIdForItemIdStmt = null;
+			}
+			if (getRecordIdForItemIdStmt != null) {
+				getRecordIdForItemIdStmt.close();
+				getRecordIdForItemIdStmt = null;
+			}
+			if (sourceForPolarisStmt != null) {
+				sourceForPolarisStmt.close();
+				sourceForPolarisStmt = null;
+			}
 			if (dbConn != null) {
 				dbConn.close();
 				dbConn = null;
@@ -1869,8 +1930,7 @@ public class PolarisExportMain {
 		headers.put("Authorization", authorization);
 
 		if (method.equals("GET")) {
-			WebServiceResponse response = NetworkUtils.getURL(fullUrl, logger, headers);
-			return response;
+			return NetworkUtils.getURL(fullUrl, logger, headers);
 		}else{
 			return NetworkUtils.postToURL(fullUrl, postData, contentType, null, logger, null, 10000, 60000, StandardCharsets.UTF_8, headers, !serverName.contains(".localhost"));
 		}
@@ -1896,7 +1956,7 @@ public class PolarisExportMain {
 				logEntry.incErrors("Could not authenticate the staff user.");
 				authenticationResponse.setSuccess(false);
 				logger.error(e);
-				logger.error(authenticationResponse.getResponseCode() + " " + authenticationResponse.getMessage());
+				logger.error("{} {}", authenticationResponse.getResponseCode(), authenticationResponse.getMessage());
 			}
 		}
 		return authenticationResponse;
@@ -1984,7 +2044,6 @@ public class PolarisExportMain {
 		logEntry.addNote("Starting to check for bibs that have been deleted in Polaris.");
 		logEntry.saveResults();
 
-		//noinspection SpellCheckingInspection
 		WebServiceResponse maxBibResponse = callPolarisAPI("/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/bibs/maxid", null, "GET", "application/json", accessSecret);
 		long maxBibId;
 		if (maxBibResponse.isSuccess()){
@@ -2000,7 +2059,6 @@ public class PolarisExportMain {
 		int startId = 0;
 		int numberOfRecords = 1000;
 		while (startId < maxBibId) {
-			//noinspection SpellCheckingInspection
 			WebServiceResponse getBibIdList = callPolarisAPI("/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/bibs/idlist?startId=" + startId + "&nrecs=" + numberOfRecords, null, "GET", "application/json", accessSecret);
 			if (maxBibResponse.isSuccess()){
 				JSONArray bibIdListRows = getBibIdList.getJSONResponse().getJSONArray("BibIDListRows");

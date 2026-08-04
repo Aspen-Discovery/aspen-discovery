@@ -22,6 +22,7 @@
 						<th>{translate text="Pages Added" isAdminFacing=true}</th>
 						<th>{translate text="Pages Deleted" isAdminFacing=true}</th>
 						<th>{translate text="Pages Updated" isAdminFacing=true}</th>
+						<th>{translate text="Pages Skipped" isAdminFacing=true}</th>
 						<th>{translate text="Notes" isAdminFacing=true}</th>
 					</tr>
 				</thead>
@@ -40,6 +41,7 @@
 							<td>{$logEntry->numAdded}</td>
 							<td>{$logEntry->numDeleted}</td>
 							<td>{$logEntry->numUpdated}</td>
+							<td>{$logEntry->numSkipped}</td>
 							<td><a href="#" onclick="return AspenDiscovery.Admin.showExtractNotes('{$logEntry->id}', 'website');">{translate text="Show Notes" isAdminFacing=true}</a></td>
 						</tr>
 					{/foreach}

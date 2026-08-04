@@ -70,7 +70,7 @@ class WebBuilder_CustomForms extends ObjectEditor {
 	}
 
 	function getInstructions(): string {
-		return 'https://help.aspendiscovery.org/help/webbuilder/customforms';
+		return 'https://aspen-discovery.atlassian.net/wiki/spaces/Help/pages/232488964/Custom+Forms';
 	}
 
 	function getBreadcrumbs(): array {

@@ -515,10 +515,8 @@ class Translator {
 			require_once ROOT_DIR . '/sys/Enrichment/GoogleApiSetting.php';
 			$googleSettings = new GoogleApiSetting();
 			if ($googleSettings->find(true)) {
-				if (!empty($googleSettings->googleMapsKey)) {
-					if (!empty($googleSettings->googleTranslateKey)) {
-						$this->googleSettings = $googleSettings;
-					}
+				if (!empty($googleSettings->googleTranslateKey)) {
+					$this->googleSettings = $googleSettings;
 				}
 			}
 		}

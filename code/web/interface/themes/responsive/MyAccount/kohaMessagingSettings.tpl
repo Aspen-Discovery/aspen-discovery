@@ -1,4 +1,6 @@
 <div id="main-content">
+	<h1>{translate text='Messaging Settings' isPublicFacing=true}</h1>
+
 	{if !empty($profile->_web_note)}
 		<div class="row">
 			<div id="web_note" class="alert alert-info text-center col-xs-12">{$profile->_web_note}</div>
@@ -10,8 +12,6 @@
 	{if !empty($ilsMessages)}
 		{include file='ilsMessages.tpl' messages=$ilsMessages}
 	{/if}
-
-	<h1>{translate text='Messaging Settings' isPublicFacing=true}</h1>
 
 	{* MDN 7/26/2019 Do not allow access for linked users *}
 	{*	{include file="MyAccount/switch-linked-user-form.tpl" label="Viewing Requests for" actionPath="/MyAccount/ReadingHistory"}*}

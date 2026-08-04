@@ -36,6 +36,9 @@ class Grouping_Item {
 	public int $numHolds = 0;
 	public bool $available = false;
 	public bool $isVirtual = false;
+	public string $barcode = '';
+	public string|int $dueDate = '';
+	public string $note = '';
 	private array $_relatedUrls = [];
 	private array $_actions = [];
 	private bool $_displayByDefault = false;
@@ -93,6 +96,9 @@ class Grouping_Item {
 		$this->lastCheckInDate = $itemDetails['lastCheckInDate'];
 		$this->isVirtual = $itemDetails['isVirtual'];
 		$this->variationId = $itemDetails['groupedWorkVariationId'];
+		$this->barcode = $itemDetails['barcode'] ?? '';
+		$this->dueDate = $this->normalizeDueDate($itemDetails['dueDate'] ?? '', $itemDetails['dueDateFormat'] ?? null);
+		$this->note = $itemDetails['note'] ?? '';
 
 		if ($this->status == 'Library Use Only' && !$this->available) {
 			$this->status = 'Checked Out (library use only)';
@@ -104,6 +110,28 @@ class Grouping_Item {
 				$this->_displayByDefault = $this->libraryOwned || $this->locallyOwned || $this->isEContent;
 			}
 		}
+	}
+
+	private function normalizeDueDate(mixed $dueDate, ?string $dueDateFormat): string|int {
+		if ($dueDate === '') {
+			return '';
+		}
+		$dueDate = (string)$dueDate;
+		if (ctype_digit($dueDate) && strlen($dueDate) > 8) {
+			return (int)$dueDate;
+		}
+
+		if (!empty($dueDateFormat)) {
+			$dueDateFormat = str_replace('yyyy', 'Y', $dueDateFormat);
+			$dueDateFormat = str_replace('yy', 'y', $dueDateFormat);
+			$dueDateFormat = str_replace('MM', 'm', $dueDateFormat);
+			$dueDateFormat = str_replace('dd', 'd', $dueDateFormat);
+			$normalizedDueDate = DateTime::createFromFormat($dueDateFormat, $dueDate);
+			if ($normalizedDueDate != false) {
+				return $normalizedDueDate->getTimestamp();
+			}
+		}
+		return strtotime($dueDate) !== false ? strtotime($dueDate) : $dueDate;
 	}
 
 	/**
@@ -247,6 +275,9 @@ class Grouping_Item {
 			'locationCode' => $this->locationCode,
 			'locationName' => $this->getLocationName(),
 			'subLocation' => $this->subLocation,
+			'barcode' => $this->barcode,
+			'note' => $this->note,
+			'dueDate' => $this->dueDate,
 			'itemId' => $this->itemId,
 			'variationId' => $this->variationId,
 			'actions' => $this->getActions(),

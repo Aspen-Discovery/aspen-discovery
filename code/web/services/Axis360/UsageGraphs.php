@@ -31,21 +31,29 @@ class Axis360_UsageGraphs extends Admin_AbstractUsageGraphs {
 		]);
 	}
 
-	protected function getAndSetInterfaceDataSeries($stat, $instanceName): void {
+	protected function getAndSetInterfaceDataSeries($stat, $instanceName, $timeframes = ['year', 'month'], $custom = false): void {
 		global $interface;
 		$dataSeries = [];
 		$columnLabels = [];
+		$groupByTimeframe = implode(',', $timeframes);
 
 		// Get data from user_axis360_usage
 		if ($stat == 'activeUsers' || $stat == 'general') {
 			$userUsage = new UserAxis360Usage();
-			$userUsage->groupBy('year, month');
+			$userUsage->selectAdd();
 			if (!empty($instanceName)) {
 				$userUsage->instance = $instanceName;
 			}
-			$userUsage->selectAdd();
-			$userUsage->selectAdd('year');
-			$userUsage->selectAdd('month');
+		
+			if (is_array($custom)) {
+				$userUsage->buildCustomPeriodQuery($custom);
+			} else {
+				$userUsage->groupBy($groupByTimeframe);
+				foreach ($timeframes as $timeframe) {
+					$userUsage->selectAdd($timeframe);
+				}
+				$userUsage->orderBy($groupByTimeframe);
+			}
 
 			if ($stat == 'activeUsers' || $stat == 'general') {
 				$dataSeries['Unique Users'] = GraphingUtils::getDataSeriesArray(count($dataSeries));
@@ -58,7 +66,7 @@ class Axis360_UsageGraphs extends Admin_AbstractUsageGraphs {
 			$userUsage->orderBy('year, month');
 			$userUsage->find();
 			while ($userUsage->fetch()) {
-				$curPeriod = "{$userUsage->month}-{$userUsage->year}";
+				$curPeriod = $custom ? $userUsage->getCustomPeriod() : $userUsage->getCurPeriod($timeframes);
 				$columnLabels[] = $curPeriod;
 				/** @noinspection PhpUndefinedFieldInspection */
 				$dataSeries['Total Usage']['data'][$curPeriod] = $userUsage->sumUsage;
@@ -73,14 +81,20 @@ class Axis360_UsageGraphs extends Admin_AbstractUsageGraphs {
 			$stat == 'holds' ||
 			$stat == 'general') {
 			$recordUsage = new Axis360RecordUsage();
-			$recordUsage->groupBy('year, month');
+			$recordUsage->selectAdd();
 			if (!empty($instanceName)) {
 				$recordUsage->instance = $instanceName;
 			}
-			$recordUsage->selectAdd();
-			$recordUsage->selectAdd('year');
-			$recordUsage->selectAdd('month');
-			$recordUsage->orderBy('year, month');
+		
+			if (is_array($custom)) {
+				$recordUsage->buildCustomPeriodQuery($custom);
+			} else {
+				$recordUsage->groupBy($groupByTimeframe);
+				foreach ($timeframes as $timeframe) {
+					$recordUsage->selectAdd($timeframe);
+				}
+				$recordUsage->orderBy($groupByTimeframe);
+			}
 
 			if ($stat == 'recordsWithUsage' || $stat == 'general') {
 				$dataSeries['Records With Usage'] = GraphingUtils::getDataSeriesArray(count($dataSeries));
@@ -95,10 +109,9 @@ class Axis360_UsageGraphs extends Admin_AbstractUsageGraphs {
 				$recordUsage->selectAdd('SUM(timesHeld) as totalHolds');
 			}
 
-			$recordUsage->orderBy('year, month');
 			$recordUsage->find();
 			while ($recordUsage->fetch()) {
-				$curPeriod = "{$recordUsage->month}-{$recordUsage->year}";
+				$curPeriod = $custom ? $recordUsage->getCustomPeriod() : $recordUsage->getCurPeriod($timeframes);
 				if ( $stat != 'general' || !in_array("{$recordUsage->month}-{$recordUsage->year}", $columnLabels)) { // prevents the multiple addition of a curPeriod
 					$columnLabels[] = $curPeriod;
 				}
@@ -129,14 +142,20 @@ class Axis360_UsageGraphs extends Admin_AbstractUsageGraphs {
 			$stat == 'general') {
 
 			$stats = new Axis360Stats();
-			$stats->groupBy('year, month');
+			$stats->selectAdd();
 			if (!empty($instanceName)) {
 				$stats->instance = $instanceName;
 			}
-			$stats->selectAdd();
-			$stats->selectAdd('year');
-			$stats->selectAdd('month');
-			$stats->orderBy('year, month');
+		
+			if (is_array($custom)) {
+				$stats->buildCustomPeriodQuery($custom);
+			} else {
+				$stats->groupBy($groupByTimeframe);
+				foreach ($timeframes as $timeframe) {
+					$stats->selectAdd($timeframe);
+				}
+				$stats->orderBy($groupByTimeframe);
+			}
 
 			if ($stat == 'renewals' || $stat == 'general') {
 				$dataSeries['Total Renewals'] = GraphingUtils::getDataSeriesArray(count($dataSeries));
@@ -168,7 +187,7 @@ class Axis360_UsageGraphs extends Admin_AbstractUsageGraphs {
 			}
 			$stats->find();
 			while ($stats->fetch()) {
-				$curPeriod = "{$stats->month}-{$stats->year}";
+				$curPeriod = $custom ? $stats->getCustomPeriod() : $stats->getCurPeriod($timeframes);
 				if ( $stat != 'general' || !in_array("{$stats->month}-{$stats->year}", $columnLabels)) {  // prevents the multiple addition of a curPeriod
 					$columnLabels[] = $curPeriod;
 				}

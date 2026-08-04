@@ -142,7 +142,7 @@ class WebsiteIndexer {
 		//***** Check for sitemap *****//
 		if (initialUrl.matches(".*\\.xml.*")){
 			try {
-				Document doc = Jsoup.connect(initialUrl).get();
+				Document doc = Jsoup.connect(initialUrl).header("User-Agent", "Aspen Discovery").get();
 				Elements url = doc.select("loc");
 				for (Element urlToProcess : url) {
 					String pageToProcess = String.valueOf(urlToProcess);
@@ -151,7 +151,7 @@ class WebsiteIndexer {
 					boolean includePath = true;
 
 					if (pageToProcess.matches(".*\\.xml.*")) { //if sitemap is xml index, walk through each xml file
-						Document doc2 = Jsoup.connect(pageToProcess).get();
+						Document doc2 = Jsoup.connect(pageToProcess).header("User-Agent", "Aspen Discovery").get();
 						Elements url2 = doc2.select("loc");
 						for (Element urlToProcess2 : url2) {
 							String pageToProcess2 = String.valueOf(urlToProcess2);
@@ -247,7 +247,7 @@ class WebsiteIndexer {
 	private void processPage(String pageToProcess) {
 		try {
 			logger.info("Processing page " + pageToProcess);
-			org.jsoup.Connection connection = Jsoup.connect(pageToProcess).ignoreContentType(true).ignoreHttpErrors(true);
+			org.jsoup.Connection connection = Jsoup.connect(pageToProcess).ignoreContentType(true).ignoreHttpErrors(true).header("User-Agent", "Aspen Discovery");
 			Document document = connection.get();
 			try{
 				if (connection.response().statusCode() == 200) {
@@ -319,6 +319,7 @@ class WebsiteIndexer {
 							if (linkUrl.isEmpty() || linkUrl.startsWith(".")) {
 								continue;
 							}
+							//noinspection HttpUrlsUsage
 							if (linkUrl.startsWith("http://")) {
 								if (!linkUrl.startsWith(initialUrl)) {
 									continue;
@@ -429,9 +430,12 @@ class WebsiteIndexer {
 
 							//TODO: Add popularity
 							solrUpdateServer.add(solrDocument);
+						}else{
+							logEntry.incSkipped();
 						}
 					} else {
 						logger.info("Non HTML page (" + mimeType + "), skipping");
+						logEntry.incSkipped();
 					}
 				} else{
 					logger.info("Got error processing the page");

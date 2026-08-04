@@ -142,6 +142,7 @@ class CloudLibraryProcessor extends MarcRecordProcessor {
 				allRelatedRecords.add(cloudLibraryRecord);
 				loadEditions(groupedWork, marcRecord, allRelatedRecords);
 				loadPhysicalDescription(groupedWork, marcRecord, allRelatedRecords);
+				loadDuration(groupedWork, marcRecord, allRelatedRecords);
 				loadLanguageDetails(groupedWork, marcRecord, allRelatedRecords, identifier);
 				loadPublicationDetails(groupedWork, marcRecord, allRelatedRecords);
 

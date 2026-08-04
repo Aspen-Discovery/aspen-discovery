@@ -15,11 +15,16 @@ class LibraryOverDriveSettings extends DataObject {
 	public $overdriveAdvantageName;
 	/** @noinspection PhpUnused - Used in indexer */
 	public $overdriveAdvantageProductsKey;
+	public $overdriveAdvantageId;
+	public $additionalAdvantageId;
+	public $additionalAdvantageProductsKey;
 
 	public function getNumericColumnNames(): array {
 		return [
 			'id',
 			'libraryId',
+			'overdriveAdvantageId',
+			'additionalAdvantageId',
 		];
 	}
 
@@ -108,10 +113,37 @@ class LibraryOverDriveSettings extends DataObject {
 				'hideInLists' => false,
 				'forcesReindex' => true,
 			],
+			'overdriveAdvantageId' => [
+				'property' => 'overdriveAdvantageId',
+				'type' => 'text',
+				'label' => 'Overdrive Advantage Products ID',
+				'description' => 'The ID of the OverDrive Advantage account if any.',
+				'size' => '20',
+				'hideInLists' => false,
+				'forcesReindex' => true,
+			],
 			'overdriveAdvantageProductsKey' => [
 				'property' => 'overdriveAdvantageProductsKey',
 				'type' => 'text',
 				'label' => 'Overdrive Advantage Products Key',
+				'description' => 'The products key for use when building urls to the API from the advantageAccounts call.',
+				'size' => '80',
+				'hideInLists' => false,
+				'forcesReindex' => true,
+			],
+			'additionalAdvantageId' => [
+				'property' => 'additionalAdvantageId',
+				'type' => 'text',
+				'label' => 'Overdrive Additional Advantage Products ID',
+				'description' => 'The ID of the OverDrive Advantage account if any.',
+				'size' => '20',
+				'hideInLists' => false,
+				'forcesReindex' => true,
+			],
+			'additionalAdvantageProductsKey' => [
+				'property' => 'additionalAdvantageProductsKey',
+				'type' => 'text',
+				'label' => 'Overdrive Additional Advantage Products Key',
 				'description' => 'The products key for use when building urls to the API from the advantageAccounts call.',
 				'size' => '80',
 				'hideInLists' => false,
@@ -128,7 +160,7 @@ class LibraryOverDriveSettings extends DataObject {
 				'type' => 'storedPassword',
 				'label' => 'Circulation Client Secret (if different from settings)',
 				'description' => 'The client secret provided by OverDrive when registering',
-				'hideInLists' => true,
+				'hideInLists' => false,
 			],
 		];
 

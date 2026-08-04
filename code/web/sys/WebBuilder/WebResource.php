@@ -30,6 +30,7 @@ class WebResource extends DB_LibraryLinkedObject {
 	public $deleted;
 	public $dateDeleted;
 	public $deletedBy;
+	public $showInExploreMore;
 
 	protected $_allowAccessByLibrary;
 	protected $_audiences;
@@ -44,6 +45,7 @@ class WebResource extends DB_LibraryLinkedObject {
 			'requiresLibraryCard',
 			'inLibraryUseOnly',
 			'lastUpdate',
+			'showInExploreMore',
 		];
 	}
 
@@ -103,6 +105,13 @@ class WebResource extends DB_LibraryLinkedObject {
 				'label' => 'Featured?',
 				'description' => 'Whether or not the resource is a featured resource',
 				'default' => 0,
+			],
+			'showInExploreMore' => [
+				'property' => 'showInExploreMore',
+				'type' => 'checkbox',
+				'label' => 'Show in Explore More?',
+				'description' => 'Whether or not the resource should be shown in Explore More',
+				'default' => 1,
 			],
 			'generatePlacard' => [
 				'property' => 'generatePlacard',

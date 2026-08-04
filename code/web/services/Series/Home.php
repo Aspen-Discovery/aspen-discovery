@@ -15,7 +15,11 @@ class Series_Home extends Action {
 	function reloadCover() : array {
 		$seriesId = $_REQUEST['id'];
 		$series = new Series();
-		$series->id = $seriesId;
+		if (is_numeric($seriesId)) {
+			$series->id = $seriesId;
+		}else{
+			$series->seriesPermanentId = $seriesId;
+		}
 
 		require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
 		$bookCoverInfo = new BookCoverInfo();
@@ -43,7 +47,11 @@ class Series_Home extends Action {
 		require_once ROOT_DIR . '/sys/Series/Series.php';
 		require_once ROOT_DIR . '/sys/Series/SeriesMember.php';
 		$series = new Series();
-		$series->id = $listId;
+		if (is_numeric($listId)) {
+			$series->id = $listId;
+		}else{
+			$series->seriesPermanentId = $listId;
+		}
 
 		//Determine the sort options
 		if (isset($_REQUEST['sort'])) {

@@ -22,6 +22,7 @@ class Theme extends DataObject {
 		$headerLogoBackgroundColorAppDefault;
 
 	public $fullWidth;
+	public $fullWidthContent;
 
 	//Format Icons
 	public $booksImage;
@@ -736,6 +737,14 @@ class Theme extends DataObject {
 				'required' => false,
 				'hideInLists' => true,
 			],
+			'fullWidthContent' => [
+				'property' => 'fullWidthContent',
+				'type' => 'checkbox',
+				'label' => 'Make Content Full Width',
+				'description' => 'Whether or not the content should be full width',
+				'required' => false,
+				'hideInLists' => true,
+			],
 			'isHighContrast' => [
 				'property' => 'isHighContrast',
 				'type' => 'checkbox',
@@ -1186,8 +1195,8 @@ class Theme extends DataObject {
 					'logoApp' => [
 						'property' => 'logoApp',
 						'type' => 'image',
-						'label' => 'Logo for Aspen LiDA (512x512 pixels)',
-						'description' => 'The logo for use in Aspen LiDA. If none provided, Aspen will use the favicon.',
+						'label' => 'Logo for Aspen LiDA & PWA (512x512 pixels)',
+						'description' => 'The logo for use in Aspen LiDA and Aspen PWA. If none provided, Aspen will use the favicon.',
 						'required' => false,
 						'thumbWidth' => 180,
 						'maxWidth' => 512,

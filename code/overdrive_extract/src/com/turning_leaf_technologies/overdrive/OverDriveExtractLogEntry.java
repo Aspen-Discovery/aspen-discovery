@@ -9,7 +9,7 @@ import java.util.Date;
 import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
 import org.apache.logging.log4j.Logger;
 
-class OverDriveExtractLogEntry extends BaseIndexingLogEntry {
+class OverDriveExtractLogEntry extends BaseIndexingLogEntry implements AutoCloseable {
 	private Long logEntryId = null;
 	private final long settingId;
 	private int numProducts = 0;
@@ -110,4 +110,15 @@ class OverDriveExtractLogEntry extends BaseIndexingLogEntry {
 		numProducts += size;
 	}
 
+	@Override
+	public void close() throws Exception {
+		if (insertLogEntry != null) {
+			insertLogEntry.close();
+			insertLogEntry = null;
+		}
+		if (updateLogEntry != null) {
+			updateLogEntry.close();
+			updateLogEntry = null;
+		}
+	}
 }

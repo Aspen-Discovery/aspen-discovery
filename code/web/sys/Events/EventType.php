@@ -3,6 +3,7 @@ require_once ROOT_DIR . '/sys/Events/EventFieldSet.php';
 require_once ROOT_DIR . '/sys/Events/EventTypeLibrary.php';
 require_once ROOT_DIR . '/sys/Events/EventTypeLocation.php';
 require_once ROOT_DIR . '/sys/Events/Event.php';
+require_once ROOT_DIR . '/sys/Events/EventTypeAttendeeCategory.php';
 
 class EventType extends DataObject {
 	public $__table = 'event_type';
@@ -16,13 +17,16 @@ class EventType extends DataObject {
 	public $eventLength; // in hours
 	public $lengthCustomizable;
 	public $archived;
-	public $eventFieldSetId;
+	public $eventInformationFieldSetId;
+	public $eventRegistrationFieldSetId;
 	public $includeInReports;
 	public $displayEventBranchOnThumbnail;
 	public $displayEventBranchOnThumbnailCustomizable;
+	public $waitingListInviteExpiryHours;
 
 	public $_libraries;
 	public $_locations;
+	public $_eventTypeAttendeeCategories;
 
 	static $_objectStructure = [];
 
@@ -36,6 +40,7 @@ class EventType extends DataObject {
 			'archived',
 			'includeInReports',
 			'displayEventBranchOnThumbnailCustomizable',
+			'waitingListInviteExpiryHours',
 		];
 	}
 
@@ -45,7 +50,8 @@ class EventType extends DataObject {
 		if (isset(self::$_objectStructure[$context]) && self::$_objectStructure[$context] !== null) {
 			return self::$_objectStructure[$context];
 		}
-		$eventSets = EventFieldSet::getEventFieldSetList();
+		$eventInformationSets = EventFieldSet::getEventInformationFieldSetList(); 
+		$eventRegistrationSets = EventFieldSet::getEventRegistrationFieldSetList(); 
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Libraries'));
 		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All Libraries') || UserAccount::userHasPermission('Administer Home Library Locations'));
 		$structure = [
@@ -153,13 +159,45 @@ class EventType extends DataObject {
 				'description' => 'Define locations that use this type',
 				'values' => $locationList,
 			],
-			'eventFieldSetId' => [
-				'property' => 'eventFieldSetId',
-				'type' => 'enum',
-				'label' => 'Event Field Set',
-				'description' => 'The event field set that contains the right fields to use with this event type',
-				'values' => $eventSets,
-				'required' => true,
+			'attendeeCategories' => [
+				'property' => 'attendeeCategories',
+				'type' => 'oneToMany',
+				'label' => 'Attendee Categories',
+				'description' => 'Define attendee categories and their limits for this event type',
+				'keyThis' => 'id',
+				'keyOther' => 'eventTypeId',
+				'subObjectType' => 'EventTypeAttendeeCategory',
+				'structure' => EventTypeAttendeeCategory::getObjectStructure(),
+				'sortable' => false,
+				'storeDb' => true,
+				'allowEdit' => true,
+				'canEdit' => true,
+				'canAddNew' => true,
+				'canDelete' => true,
+			],
+			'eventFieldSets' => [
+				'property' => 'eventFieldSets',
+				'type' => 'section',
+				'label' => 'Event Field Sets',
+				'expandByDefault' => true,
+				'properties' => [
+					'eventInformationFieldSetId' => [
+						'property' => 'eventInformationFieldSetId',
+						'type' => 'enum',
+						'label' => 'Additional Information',
+						'description' => 'The event field set that contains the right information fields for staff to use when adding information to this type of event.',
+						'values' => $eventInformationSets,
+						'required' => true,
+					],
+					'eventRegistrationFieldSetId' => [
+						'property' => 'eventRegistrationFieldSetId',
+						'type' => 'enum',
+						'label' => 'Registration form',
+						'description' => 'The event field set that contains the right registration fields for patrons to fill in when they register to an event of this type.',
+						'values' => $eventRegistrationSets,
+						'required' => true,
+					],
+				]
 			],
 			'includeInReports' => [
 				'property' => 'includeInReports',
@@ -167,6 +205,15 @@ class EventType extends DataObject {
 				'label' => 'Include in Reports?',
 				'default' => true,
 				'description' => 'If unchecked, events of this type will not be shown in events reports',
+			],
+			'waitingListInviteExpiryHours' => [
+				'property' => 'waitingListInviteExpiryHours',
+				'type' => 'integer',
+				'label' => 'Waiting List Invite Expiry (Hours)',
+				'default' => 24,
+				'min' => 1,
+				'max' => 168,
+				'description' => 'How many hours a user has to register after being invited from the waiting list',
 			],
 			'archived' => [
 				'property' => 'archived',
@@ -186,6 +233,7 @@ class EventType extends DataObject {
 		if ($ret !== FALSE) {
 			$this->saveLibraries();
 			$this->saveLocations();
+			$this->saveAttendeeCategories();
 			$this->saveTextBlockTranslations('editFormInstructions');
 		}
 		return $ret;
@@ -196,6 +244,7 @@ class EventType extends DataObject {
 		if ($ret !== FALSE) {
 			$this->saveLibraries();
 			$this->saveLocations();
+			$this->saveAttendeeCategories();
 			$this->saveTextBlockTranslations('editFormInstructions');
 		}
 		return $ret;
@@ -237,8 +286,9 @@ class EventType extends DataObject {
 			$this->setLibraries($value);
 		} else if ($name == 'locations'){
 			$this->setLocations($value);
-		} else
-		{
+		} else if ($name == 'attendeeCategories') {
+			$this->_eventTypeAttendeeCategories = $value;
+		} else {
 			parent::__set($name, $value);
 		}
 	}
@@ -248,6 +298,8 @@ class EventType extends DataObject {
 			return $this->getLibraries();
 		} else if ($name == 'locations') {
 			return $this->getLocations();
+		} else if ($name == 'attendeeCategories') {
+			return $this->getEventTypeAttendeeCategories();
 		} else {
 			return parent::__get($name);
 		}
@@ -336,6 +388,27 @@ class EventType extends DataObject {
 		}
 	}
 
+	public function getEventTypeAttendeeCategories(): array {
+		if (isset($this->_eventTypeAttendeeCategories)) {
+			return $this->_eventTypeAttendeeCategories ?? [];
+		}
+		$this->_eventTypeAttendeeCategories = [];
+		$eventTypeAttendeeCategory = new EventTypeAttendeeCategory();
+		$eventTypeAttendeeCategory->eventTypeId = $this->id;
+		$eventTypeAttendeeCategory->find();
+		while ($eventTypeAttendeeCategory->fetch()) {
+			$this->_eventTypeAttendeeCategories[$eventTypeAttendeeCategory->id] = clone($eventTypeAttendeeCategory);
+		}
+		return $this->_eventTypeAttendeeCategories;
+	}
+
+	public function saveAttendeeCategories(): void {
+		if (isset($this->_eventTypeAttendeeCategories) && is_array($this->_eventTypeAttendeeCategories)) {
+			$this->saveOneToManyOptions($this->_eventTypeAttendeeCategories, 'eventTypeId');
+			unset($this->_eventTypeAttendeeCategories);
+		}
+	}
+
 	public static function getEventTypeList($includeArchived = false, $location = false, $forReports = false): array {
 		$typeList = [];
 		$object = new EventType();
@@ -403,14 +476,21 @@ class EventType extends DataObject {
 
 	}
 
-	public function getFieldSetFields() : array {
+	public function getFieldSetFieldsByUse($fieldSetUse) : array {
 		$fieldSet = new EventFieldSet();
-		if ($this->eventFieldSetId) {
-			$fieldSet->id = $this->eventFieldSetId;
-			if ($fieldSet->find(true)) {
-				return $fieldSet->getFieldObjectStructure();
-			}
+
+		if ($fieldSetUse ==  1 && $this->eventInformationFieldSetId) {
+			$fieldSet->id = $this->eventInformationFieldSetId;
 		}
+
+		if ($fieldSetUse == 2 && $this->eventRegistrationFieldSetId) {
+			$fieldSet->id = $this->eventRegistrationFieldSetId;
+		}
+
+		if ($fieldSet->find(true)) {
+			return $fieldSet->getFieldObjectStructure();
+		}
+
 		return [];
 	}
 

@@ -34,12 +34,18 @@ class Admin_CreateCollectionSpotlight extends Action {
 			} else {
 				$userLibrary = Library::getPatronHomeLibrary();
 				if (!$userLibrary) {
-					return [
-						'success' => false,
-						'message' => "Your account has permission to Administer Library Collection Spotlights, but it does not have a home library set."
-					];
+					$libraries = Library::getLibraryList(true);
+					if (empty($libraries)) {
+						return [
+							'success' => false,
+							'message' => "Your account has permission to Administer Library Collection Spotlights, but it does not have a home library set."
+						];
+					}else{
+						$collectionSpotlight->libraryId = array_keys($libraries)[0];
+					}
+				}else{
+					$collectionSpotlight->libraryId = $userLibrary->libraryId;
 				}
-				$collectionSpotlight->libraryId = $userLibrary->libraryId;
 			}
 			$collectionSpotlight->customCss = '';
 			$collectionSpotlight->showTitle = 1;

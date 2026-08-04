@@ -241,6 +241,36 @@ class Author_Home extends ResultsAction {
 			$this->display('searchError.tpl', 'Error in Search');
 			return;
 		}
+		$globalResults = $this->getGlobalAuthorResults($searchObject, $interface);
+
+		$simpleSearchUrl = '/Author/Home?author=' . urlencode($_GET['author']);
+		$interface->assign('globalResultsLink', $simpleSearchUrl . '&globalResults=true');
+
+		if (isset($_REQUEST['replacedScope'])) {
+			$searchObject = clone $globalResults; //use global results
+			$replacedScope = $_REQUEST['replacedScope'];
+			$interface->assign('replacedScope', $replacedScope);
+
+			[
+				$superScopeLabel,
+				$localLabel,
+				$availableLabel,
+				$availableOnlineLabel,
+			] = $this->getAvailabilityToggleLabels();
+			$replacedScopeLabel = match ($replacedScope) {
+				'local' => $localLabel,
+				'available' => $availableLabel,
+				'available_online' => $availableOnlineLabel,
+				default => 'Unknown',
+			};
+			$interface->assign('replacedScope', $replacedScope);
+			$interface->assign('replacedScopeLabel', $replacedScopeLabel);
+			$interface->assign('globalScopeLabel', $superScopeLabel);
+
+			$oldSearchUrl = $_SERVER['REQUEST_URI'];
+			$oldSearchUrl = preg_replace("/[?&]replacedScope=$replacedScope/", '', $oldSearchUrl);
+			$interface->assign('oldSearchUrl', $oldSearchUrl);
+		}
 
 		// Some more variables
 		//   Those we can construct AFTER the search is executed, but we need
@@ -299,12 +329,114 @@ class Author_Home extends ResultsAction {
 		$currentView = $searchObject->getView();
 		$interface->assign('displayMode', $currentView);
 		if ($searchObject->getResultTotal() == 0) {
-			$this->display('invalidAuthor.tpl', 'Unknown Author', 'Author/sidebar.tpl');
+			//Check to see if we can automatically replace the search with a spelling result
+			$disallowReplacements = isset($_REQUEST['disallowReplacements']) || isset($_REQUEST['replacementTerm']);
+
+			//These are ok to do even if facets are applied
+			if ($library->allowAutomaticSearchReplacements) {
+				if ($globalResults == null) {
+					$this->display('invalidAuthor.tpl', 'Unknown Author', 'Author/sidebar.tpl');
+				} else {
+					$interface->assign('defaultSearchResults', false);
+					if (!$disallowReplacements) {
+						//We can automatically redirect to the global results
+						$newUrl = $interface->getVariable('globalResultsLink');
+						if (str_contains($newUrl, '?')) {
+							$newUrl .= '&disallowReplacements&replacedScope=' . $interface->getVariable('originalScope');
+						} else {
+							$newUrl .= '?disallowReplacements&replacedScope=' . $interface->getVariable('originalScope');
+						}
+						header("Location: " . $newUrl);
+						exit();
+					}
+					$interface->assign('globalResults', $globalResults);
+					$interface->assign('subpage', 'Search/list-' . $currentView . '.tpl');
+
+					$this->display('home.tpl', $authorName, 'Author/sidebar.tpl', false);
+				}
+			}
 		} else {
+			$interface->assign('defaultSearchResults', true);
 			$interface->assign('subpage', 'Search/list-' . $currentView . '.tpl');
 
 			$this->display('home.tpl', $authorName, 'Author/sidebar.tpl', false);
 		}
+	}
+
+	private function getGlobalAuthorResults(SearchObject_AbstractGroupedWorkSearcher $searchObject, UInterface $interface): ?SearchObject_AbstractGroupedWorkSearcher {
+		//Check to see if we are not using a Global search and the Global search would provide results
+		$searchTerms = $searchObject->getSearchTerms();
+		if (count($searchTerms) == 1) {
+			if ($searchObject->selectedAvailabilityToggleValue != 'global') {
+				[
+					$superScopeLabel,
+					$localLabel,
+					$availableLabel,
+					$availableOnlineLabel,
+				] = $this->getAvailabilityToggleLabels();
+				$originalScopeLabel = match ($searchObject->selectedAvailabilityToggleValue) {
+					'local' => $localLabel,
+					'available' => $availableLabel,
+					'available_online' => $availableOnlineLabel,
+					default => 'Unknown',
+				};
+
+				$interface->assign('originalScope', $searchObject->selectedAvailabilityToggleValue);
+				$interface->assign('originalScopeLabel', $originalScopeLabel);
+				$globalSearchObject = clone $searchObject;
+				$globalSearchObject->setPrimarySearch(false);
+				$globalSearchObject->setSearchTerms([
+					'index' => $searchTerms[0]['index'],
+					'lookfor' => $searchTerms[0]['lookfor'],
+				]);
+				$globalSearchObject->removeFilter('availability_toggle');
+				$globalSearchObject->addFilter('availability_toggle:global');
+				$globalSearchObject->disableSpelling();
+				$globalSearchObject->processSearch();
+				if ($globalSearchObject->getResultTotal() > 0) {
+					$interface->assign('hasGlobalResults', true);
+					$interface->assign('globalResultsCount', $globalSearchObject->getResultTotal());
+					$interface->assign('globalScopeLabel', $superScopeLabel);
+					return $globalSearchObject;
+				}
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * @return array
+	 */
+	private function getAvailabilityToggleLabels(): array {
+		$searchLibrary = Library::getSearchLibrary();
+		$searchLocation = Location::getSearchLocation();
+
+		if ($searchLocation) {
+			$groupedWorkDisplaySettings = $searchLocation->getGroupedWorkDisplaySettings();
+		} else {
+			$groupedWorkDisplaySettings = $searchLibrary->getGroupedWorkDisplaySettings();
+		}
+		$superScopeLabel = $groupedWorkDisplaySettings->availabilityToggleLabelSuperScope;
+		$localLabel = $groupedWorkDisplaySettings->availabilityToggleLabelLocal;
+		if ($searchLocation != null) {
+			$localLabel = str_ireplace('{display name}', $searchLocation->displayName, $localLabel);
+			$availableLabel = $groupedWorkDisplaySettings->availabilityToggleLabelAvailable;
+			$availableLabel = str_ireplace('{display name}', $searchLocation->displayName, $availableLabel);
+			$availableOnlineLabel = $groupedWorkDisplaySettings->availabilityToggleLabelAvailableOnline;
+			$availableOnlineLabel = str_ireplace('{display name}', $searchLocation->displayName, $availableOnlineLabel);
+		}else {
+			$localLabel = str_ireplace('{display name}', $searchLibrary->displayName, $localLabel);
+			$availableLabel = $groupedWorkDisplaySettings->availabilityToggleLabelAvailable;
+			$availableLabel = str_ireplace('{display name}', $searchLibrary->displayName, $availableLabel);
+			$availableOnlineLabel = $groupedWorkDisplaySettings->availabilityToggleLabelAvailableOnline;
+			$availableOnlineLabel = str_ireplace('{display name}', $searchLibrary->displayName, $availableOnlineLabel);
+		}
+		return [
+			$superScopeLabel,
+			$localLabel,
+			$availableLabel,
+			$availableOnlineLabel,
+		];
 	}
 
 	function getBreadcrumbs(): array {

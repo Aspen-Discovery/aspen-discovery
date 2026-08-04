@@ -47,7 +47,7 @@ class Admin_UserAgents extends ObjectEditor {
 	}
 
 	function getInstructions(): string {
-		return 'https://help.aspendiscovery.org/useragents';
+		return 'https://aspen-discovery.atlassian.net/wiki/spaces/Help/pages/335052808/System+Reports';
 	}
 
 	function getBreadcrumbs(): array {

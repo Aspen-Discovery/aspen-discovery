@@ -67,6 +67,20 @@ class History extends Action {
 			unset($_SESSION['lastSearchURL']);
 		}
 
+		$now = time();
+		$customAccountMessages = new SystemMessage();
+		$customAccountMessages->whereAdd("showOn = 1 OR showOn = 7");
+		$customAccountMessages->whereAdd("startDate = 0 OR startDate <= $now");
+		$customAccountMessages->whereAdd("endDate = 0 OR endDate > $now");
+		$customAccountMessages->find();
+		$accountMessages = [];
+		while ($customAccountMessages->fetch()) {
+			if ($customAccountMessages->isValidForDisplay()) {
+				$accountMessages[] = clone $customAccountMessages;
+			}
+		}
+		$interface->assign('accountMessages', $accountMessages);
+
 		$interface->assign('numSavedSearches', 0);
 		$interface->assign('numRecentSearches', 0);
 		$tab = $_REQUEST['tab'] ?? 'saved';
@@ -112,6 +126,7 @@ class History extends Action {
 			// Loop through the history to find the one we want
 			foreach ($searchHistory as $search) {
 				if ($search->id == $searchId) {
+					SearchObjectFactory::initSearchObject($search->searchSource);
 					$minSO = unserialize($search->search_object);
 					$searchObject = SearchObjectFactory::deminify($minSO);
 
@@ -156,7 +171,7 @@ class History extends Action {
 		if ($s->find(true)) {
 			require_once ROOT_DIR . '/sys/SearchObject/minSO.php';
 
-			SearchObjectFactory::initSearchObject();
+			SearchObjectFactory::initSearchObject($s->searchSource);
 			$minSO = unserialize($s->search_object);
 
 			$searchObject = SearchObjectFactory::deminify($minSO);

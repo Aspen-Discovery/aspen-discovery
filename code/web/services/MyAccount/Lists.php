@@ -13,12 +13,17 @@ class Lists extends MyAccount {
 		$userLists = new UserList();
 		$userLists->user_id = UserAccount::getActiveUserId();
 		$userLists->deleted = "0";
-		$sort = $_REQUEST['sort'] ?? 'title';
+		$sort = $_REQUEST['sort'];
+		if (!in_array($sort, ['title', 'created', 'dateUpdated'], true)) {
+			$sort = 'title';
+		}
 		if (($sort == 'dateCreated') || ($sort == 'created') || ($sort == 'dateUpdated')) {
 			$order = ' DESC';
 		} else {
 			$order = ' ASC';
 		}
+
+		$interface->assign('listOwnerId', $user->id);
 
 		$page = $_REQUEST['page'] ?? 1;
 		$interface->assign('page', $page);
@@ -48,6 +53,9 @@ class Lists extends MyAccount {
 		$pager = new Pager($options);
 
 		$interface->assign('pageLinks', $pager->getLinks());
+
+		$userCanTransfer = $user->isStaff() && UserAccount::userHasPermission('Transfer Lists');
+		$interface->assign('userCanTransfer', $userCanTransfer);
 
 		$lists = new UserList();
 		$lists->user_id = UserAccount::getActiveUserId();

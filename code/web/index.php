@@ -4,6 +4,9 @@ require_once ROOT_DIR . '/sys/BotChecker.php';
 if (file_exists('bootstrap_aspen.php')) {
 	require_once 'bootstrap_aspen.php';
 }
+global $plugins;
+require_once 'plugins.php';
+$plugins = loadPlugins();
 
 global $aspenUsage;
 global $usageByIPAddress;
@@ -14,6 +17,9 @@ global $memoryWatcher;
 //Do additional tasks that are only needed when running the full website
 loadModuleActionId();
 $timer->logTime("Loaded Module and Action Id");
+
+// Set Cloudflare Rate Limit complexity header based on endpoint weight
+setCloudflareComplexityHeader();
 $memoryWatcher->logMemory("Loaded Module and Action Id");
 initializeSession();
 $timer->logTime("Initialized session");
@@ -53,9 +59,17 @@ $interface->assign('cssJsCacheCounter', 47);
 global $language;
 global $serverName;
 //Get the active language
+require_once ROOT_DIR . '/sys/Translation/Language.php';
 $userLanguage = UserAccount::getUserInterfaceLanguage();
 if ($userLanguage == '') {
-	$language = strip_tags((isset($_SESSION['language'])) ? $_SESSION['language'] : 'en');
+	if (!empty($_COOKIE['aspenInterfaceLanguage'])) {
+		$language = strip_tags($_COOKIE['aspenInterfaceLanguage']);
+	} elseif (!empty($_SESSION['language'])) {
+		$language = strip_tags($_SESSION['language']);
+	} else {
+		$browserLanguage = Language::getLanguageFromBrowser();
+		$language = $browserLanguage ?: Language::getDefaultLanguageCode();
+	}
 } else {
 	$language = $userLanguage;
 }
@@ -68,7 +82,8 @@ if (isset($_REQUEST['myLang'])) {
 	}
 	if ($language != $newLanguage) {
 		$language = $newLanguage;
-		$_SESSION['language'] = $language;
+		setcookie('aspenInterfaceLanguage', $language, time() + (3 * 365 * 24 * 3600), '/');
+		$_COOKIE['aspenInterfaceLanguage'] = $language;
 		//Clear the preference cookie
 		if (isset($_COOKIE['searchPreferenceLanguage'])) {
 			//Clear the cookie when we change languages
@@ -91,11 +106,10 @@ if (!UserAccount::isLoggedIn() && isset($_COOKIE['searchPreferenceLanguage'])) {
 $interface->assign('showLanguagePreferencesBar', $showLanguagePreferencesBar);
 
 // Make sure language code is valid, reset to default if bad:
-require_once ROOT_DIR . '/sys/Translation/Language.php';
 $validLanguages = Language::getValidLanguages();
 
 if (!array_key_exists($language, $validLanguages)) {
-	$language = 'en';
+	$language = Language::getDefaultLanguageCode();
 }
 global $activeLanguage;
 global $translator;
@@ -198,7 +212,11 @@ $interface->assign('module', $module);
 $interface->assign('action', $action);
 
 //Check for maliciously formatted parameters
-checkForMaliciouslyFormattedParameters();
+//Check for maliciously formatted parameters unless this is a plugin which should do it's own validation
+global $isPluginAction;
+if (!$isPluginAction) {
+	checkForMaliciouslyFormattedParameters();
+}
 
 checkForTooManyFailedLogins();
 
@@ -663,9 +681,14 @@ if (UserAccount::isLoggedIn() && (!isset($_REQUEST['action']) || $_REQUEST['acti
 
 //Find a reasonable default location to go to
 if ($module == null && $action == null) {
-	//We have no information about where to go, go to the default location from config
-	$module = $configArray['Site']['defaultModule'];
-	$action = 'Home';
+	$requestPath = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?: '/';
+	if ($requestPath === '/') {
+		$module = $configArray['Site']['defaultModule'];
+		$action = 'Home';
+	} else {
+		$module = 'Error';
+		$action = 'Handle404';
+	}
 } elseif ($action == null) {
 	$action = 'Home';
 }
@@ -888,6 +911,19 @@ $requestUrl = $_SERVER['REQUEST_URI'];
 if (preg_match('/.*(DBMS_PIPE\.RECEIVE_MESSAGE|PG_SLEEP|WAITFOR|UNION%20ALL|SLEEP%28\d+%29|%7CCHR|CONVERT%28INT|SELECT%20COUNT).*/', $requestUrl)) {
 	$isInvalidUrl = true;
 }
+global $plugins;
+global $isPluginAction;
+$isPluginAction = false;
+if (!empty($module) && !empty($action)) {
+	foreach ($plugins as $plugin) {
+		if ($plugin->handlesModuleAction($module, $action)) {
+			$plugin->handleAction($module, $action);
+			$isPluginAction = true;
+		}
+		$timer->logTime('Finish launch of action');
+	}
+}
+if (!$isPluginAction) {
 if ($isInvalidUrl || !is_dir(ROOT_DIR . "/services/$module")) {
 	$module = 'Error';
 	$action = 'Handle404';
@@ -907,14 +943,9 @@ if ($isInvalidUrl || !is_dir(ROOT_DIR . "/services/$module")) {
 		try {
 			$service->launch();
 		} catch (Error $e) {
-			$backtrace[] = [
-				'file' => $e->getFile(),
-				'line' => $e->getLine(),
-			];
-			$backtrace = array_merge($backtrace, $e->getTrace());
-			AspenError::raiseError(new AspenError($e->getMessage(), $backtrace));
+			AspenError::raiseError(new AspenError($e->getMessage(), $e->getTrace(), $e->getLine(), $e->getFile()));
 		} catch (Exception $e) {
-			AspenError::raiseError(new AspenError($e->getMessage(), $e->getTrace()));
+			AspenError::raiseError(new AspenError($e->getMessage(), $e->getTrace(), $e->getLine(), $e->getFile()));
 		}
 		$timer->logTime('Finish launch of action');
 	} elseif (class_exists($action, false)) {
@@ -942,6 +973,7 @@ if ($isInvalidUrl || !is_dir(ROOT_DIR . "/services/$module")) {
 	$actionClass = new Error_Handle404();
 	$actionClass->launch();
 }
+}
 $timer->logTime('Finished Index');
 $timer->writeTimings();
 $memoryWatcher->logMemory("Finished index");
@@ -968,10 +1000,10 @@ try {
 		} else {
 			require_once ROOT_DIR . '/sys/SystemLogging/SlowPage.php';
 			$slowPage = new SlowPage();
-			$slowPage->year = date('Y');
-			$slowPage->month = date('n');
-			$slowPage->module = $module;
-			$slowPage->action = $action;
+			$slowPage->setYear(date('Y'));
+			$slowPage->setMonth(date('n'));
+			$slowPage->setModule($module);
+			$slowPage->setAction($action);
 			if ($slowPage->find(true)) {
 				$slowPage->setSlowness($elapsedTime);
 				$slowPage->update();
@@ -1060,9 +1092,13 @@ function loadModuleActionId() {
 			//This happens before the table is added, just ignore it.
 		}
 	}
+	if (str_starts_with($requestURI, '//')) {
+		$requestURI = substr($requestURI, 1);
+	}
+	$requestPath = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?: '/';
 	/** IndexingProfile[] $indexingProfiles */ global $indexingProfiles;
 	/** SideLoad[] $sideLoadSettings */ global $sideLoadSettings;
-	$allRecordModules = "OverDrive|GroupedWork|Record|ExternalEContent|Person|Library|Hoopla|CloudLibrary|Files|Axis360|WebBuilder|ProPay|CourseReserves|Springshare|LibraryMarket|Communico|PalaceProject|Assabet|AspenEvents|Series";
+	$allRecordModules = "OverDrive|GroupedWork|Record|ExternalEContent|Person|Library|Hoopla|CloudLibrary|Files|Axis360|WebBuilder|ProPay|CourseReserves|Springshare|LibraryMarket|Communico|PalaceProject|Assabet|AspenEvents|Series|LocalHop";
 	foreach ($indexingProfiles as $profile) {
 		$allRecordModules .= '|' . $profile->recordUrlComponent;
 	}
@@ -1070,76 +1106,62 @@ function loadModuleActionId() {
 		$allRecordModules .= '|' . $profile->recordUrlComponent;
 	}
 	$checkWebBuilderAliases = false;
-	if (preg_match("~(MyAccount)/([^/?]+)/([^/?]+)(\?.+)?~", $requestURI, $matches)) {
-		$_GET['module'] = $matches[1];
-		$_GET['id'] = $matches[3];
-		$_GET['action'] = $matches[2];
-		$_REQUEST['module'] = $matches[1];
-		$_REQUEST['id'] = $matches[3];
-		$_REQUEST['action'] = $matches[2];
-	} elseif (preg_match("~(MyAccount)/([^/?]+)(\?.+)?~", $requestURI, $matches)) {
-		$_GET['module'] = $matches[1];
-		$_GET['action'] = $matches[2];
-		$_REQUEST['id'] = '';
-		$_REQUEST['module'] = $matches[1];
-		$_REQUEST['action'] = $matches[2];
-		$_REQUEST['id'] = '';
-	} elseif (preg_match("~(MyAccount)/?~", $requestURI, $matches)) {
-		$_GET['module'] = $matches[1];
-		$_GET['action'] = 'Home';
-		$_REQUEST['id'] = '';
-		$_REQUEST['module'] = $matches[1];
-		$_REQUEST['action'] = 'Home';
-		$_REQUEST['id'] = '';
-	} elseif (preg_match('~/(Archive)/((?:[\\w\\d:]|%3A)+)/([^/?]+)~', $requestURI, $matches)) {
-		$_GET['module'] = $matches[1];
-		$_GET['id'] = urldecode($matches[2]); // Decodes colons % codes back into colons.
-		$_GET['action'] = $matches[3];
-		$_REQUEST['module'] = $matches[1];
-		$_REQUEST['id'] = urldecode($matches[2]);  // Decodes colons % codes back into colons.
-		$_REQUEST['action'] = $matches[3];
+	if (preg_match("~^/(MyAccount)/([^/]+)/([^/]+)/?$~", $requestPath, $matches)) {
+		setRoute($matches[1], $matches[2], $matches[3]);
+	} elseif (preg_match("~^/(MyAccount)/([^/]+)/?$~", $requestPath, $matches)) {
+		setRoute($matches[1], $matches[2]);
+		setEmptyRouteId();
+	} elseif (preg_match("~^/(MyAccount)/?$~", $requestPath, $matches)) {
+		setRoute($matches[1]);
+		setEmptyRouteId();
+	} elseif (preg_match('~^/(Archive)/((?:[\\w\\d:]|%3A)+)/([^/]+)/?$~', $requestPath, $matches)) {
+		setRoute($matches[1], $matches[3], urldecode($matches[2])); // Decodes colons % codes back into colons.
 		//Redirect things /GroupedWork/AJAX to the proper action
-	} elseif (preg_match("~($allRecordModules)/([a-zA-Z]+)(?:\?|/?$)~", $requestURI, $matches)) {
-		$_GET['module'] = $matches[1];
-		$_GET['action'] = $matches[2];
-		$_REQUEST['module'] = $matches[1];
-		$_REQUEST['action'] = $matches[2];
+	} elseif (preg_match("~^/($allRecordModules)/([a-zA-Z]+)/?$~", $requestPath, $matches)) {
+		setRoute($matches[1], $matches[2]);
 		//Redirect things /Record/.b3246786/Home to the proper action
 		//Also things like /OverDrive/84876507-043b-b3ce-2930-91af93d2a4f0/Home
-	} elseif (preg_match("~($allRecordModules)/([^/?]+?)/([^/?]+)~", $requestURI, $matches)) {
+	} elseif (preg_match("~^/($allRecordModules)/([^/]+)/([^/]+)/?$~", $requestPath, $matches)) {
 		//Getting some weird cases where the action is replaced with an email address for uintah.
 		//As a workaround, if the action looks like an email, change it to Home
-		if (preg_match('/^[A-Z0-9][A-Z0-9._%+-]{0,63}@(?:[A-Z0-9-]{1,63}\.){1,8}[A-Z]{2,63}$/i', $matches[3])) {
+		if (preg_match('/[A-Z0-9][A-Z0-9._%+-]{0,63}@(?:[A-Z0-9-]{1,63}\.){1,8}[A-Z]{2,63}$/i', $matches[3])) {
 			$requestURI = str_replace($matches[3], 'Home', $requestURI);
 			header('Location: ' . $requestURI);
 			die();
 		}
-		$_GET['module'] = $matches[1];
-		$_GET['id'] = $matches[2];
-		$_GET['action'] = $matches[3];
-		$_REQUEST['module'] = $matches[1];
-		$_REQUEST['id'] = $matches[2];
-		$_REQUEST['action'] = $matches[3];
+		setRoute($matches[1], $matches[3], $matches[2]);
 		//Redirect things /Record/.b3246786 to the proper action
-	} elseif (preg_match("~($allRecordModules)/([^/?]+?)(?:\?|/?$)~", $requestURI, $matches)) {
-		$_GET['module'] = $matches[1];
-		$_GET['id'] = $matches[2];
-		$_GET['action'] = 'Home';
-		$_REQUEST['module'] = $matches[1];
-		$_REQUEST['id'] = $matches[2];
-		$_REQUEST['action'] = 'Home';
-	} elseif (preg_match("~([^/?]+)/([^/?]+)~", $requestURI, $matches)) {
-		$_GET['module'] = $matches[1];
-		$_GET['action'] = $matches[2];
-		$_REQUEST['module'] = $matches[1];
-		$_REQUEST['action'] = $matches[2];
-		if (file_exists(ROOT_DIR . '/services/' . $_REQUEST['module'] . '/' . $_REQUEST['action'] . '.php')) {
-			$checkWebBuilderAliases = false;
-		}else{
+	} elseif (preg_match("~^/($allRecordModules)/([^/]+)/?$~", $requestPath, $matches)) {
+		setRoute($matches[1], 'Home', $matches[2]);
+	} elseif (preg_match("~^/(Authentication)/(OAuth2)/([^/]+)/?$~", $requestPath, $matches)) {
+		setRoute($matches[1], 'OAuth2_' . $matches[3]); // OAuth2_Authorize or OAuth2_Token
+	} elseif (preg_match("~^/(\.well-known)/([^/]+)/?$~", $requestPath, $matches)) {
+		// Map well-known requests to appropriate OAuth2/OIDC endpoints
+		$wellKnownType = $matches[2];
+		$action = $wellKnownType === 'jwks.json' ? 'OAuth2_JWKS' : 'OAuth2_Discovery';
+
+		setRoute('Authentication', $action);
+	} elseif (preg_match("~^/([^/]+)/([^/]+)/?$~", $requestPath, $matches)) {
+		setRoute($matches[1], $matches[2]);
+		if (!file_exists(ROOT_DIR . '/services/' . $_REQUEST['module'] . '/' . $_REQUEST['action'] . '.php')) {
 			$checkWebBuilderAliases = true;
 		}
-	} else {
+	} elseif (preg_match("~^/([^/]+)/?$~", $requestPath, $matches)) {
+		setRoute($matches[1]);
+		if (!file_exists(ROOT_DIR . '/services/' . $_REQUEST['module'] . '/' . $_REQUEST['action'] . '.php')) {
+			$checkWebBuilderAliases = true;
+		}
+	}else{
 		$checkWebBuilderAliases = true;
+	}
+
+	global $plugins;
+	if (!empty($_REQUEST['module']) && !empty($_REQUEST['action'])) {
+		foreach ($plugins as $plugin) {
+			if ($plugin->handlesModuleAction($_REQUEST['module'], $_REQUEST['action'])) {
+				return;
+			}
+		}
 	}
 
 	global $enabledModules;
@@ -1268,6 +1290,25 @@ function loadModuleActionId() {
 		}
 	}catch (Exception $e) {
 		//This happens if web builder is not fully installed, ignore the error.
+	}
+	
+	if ($library->AspenPWASettingId != -1)
+	{
+		$pwaAction = null;
+		$routes = array(
+			"/manifest.json" => "Manifest",
+			"/.well-known/assetlinks.json" => "AssetLinks",
+			"/firebase-messaging-sw.js" => "Firebase",
+			"/pwa-icon.png" => "Icon"
+		);
+		if(array_key_exists($requestURI, $routes))
+		{
+			$action = $routes[$requestURI];
+			$_GET['module'] = "AspenPWA";
+			$_GET['action'] = $action;
+			$_REQUEST['module'] = "AspenPWA";
+			$_REQUEST['action'] = $action;
+		}
 	}
 	//Correct some old actions
 	if (isset($_GET['action'])) {
@@ -1539,6 +1580,7 @@ function checkForMaliciouslyFormattedParameters(): void {
 }
 
 function checkForTooManyFailedLogins() : void {
+	global $logger;
 	$activeIP = IPAddress::getActiveIp();
 	$subnet = IPAddress::getIPAddressForIP($activeIP);
 
@@ -1557,6 +1599,7 @@ function checkForTooManyFailedLogins() : void {
 		if ($failedLogins->count() >= 5) {
 			http_response_code(403);
 			echo("<h1>Forbidden</h1><p><strong>We are unable to handle your request.</strong></p>");
+			$logger->log("Blocked request from " . IPAddress::getClientIP() . " for too many login attempts", Logger::LOG_ERROR);
 			die();
 		}
 		//Slow if we have more than 10 logins in 5 minutes
@@ -1565,6 +1608,7 @@ function checkForTooManyFailedLogins() : void {
 		$failedLogins->whereAdd('timestamp > ' . ($currentTime - 300));
 		if ($failedLogins->count() >= 10) {
 			sleep(10);
+			$logger->log("Delayed request from " . IPAddress::getClientIP() . " for too many login attempts", Logger::LOG_ERROR);
 		}
 	}catch (Exception $e) {
 		//This fails if the table has not been created, ignore
@@ -1594,4 +1638,95 @@ function trackSpammyRequest() : void {
 			}
 		}
 	}
+}
+
+function setRoute(string $module, string $action = 'Home', ?string $id = null): void {
+	$_GET['module'] = $module;
+	$_GET['action'] = $action;
+
+	$_REQUEST['module'] = $module;
+	$_REQUEST['action'] = $action;
+
+	if ($id !== null) {
+		$_GET['id'] = $id;
+		$_REQUEST['id'] = $id;
+	}
+}
+
+function setEmptyRouteId(): void {
+	$_REQUEST['id'] = '';
+}
+
+/**
+ * Set Cloudflare Rate Limit complexity header based on endpoint weight.
+ *
+ * This enables per-endpoint rate limiting in Cloudflare WAF Rate Limiting Rules.
+ * High-complexity endpoints (search, AJAX) get higher scores so they consume
+ * more of a client's rate limit budget.
+ *
+ * Configured via [Security] section in config.ini:
+ *   enableComplexityHeader  = true/false
+ *   complexityHeaderName    = x-complexity-score
+ *
+ * To add new endpoint weights, add a new case block below.
+ *
+ * @see https://developers.cloudflare.com/waf/rate-limiting-rules/
+ */
+function setCloudflareComplexityHeader(): void {
+	global $configArray;
+
+	// Bail early if feature is disabled
+	if (empty($configArray['Security']['enableComplexityHeader'])) {
+		return;
+	}
+
+	$headerName = $configArray['Security']['complexityHeaderName'] ?: 'x-complexity-score';
+
+	// Module and action are already parsed by loadModuleActionId()
+	$module = $_GET['module'] ?? '';
+	$action = $_GET['action'] ?? '';
+
+	$complexity = matchEndpointWeight($module, $action);
+
+	header("$headerName: $complexity");
+}
+
+/**
+ * Map module/action to a complexity weight score.
+ *
+ * Add new case blocks here to cover additional endpoints.
+ *
+ * @param string $module The request module (e.g. Search)
+ * @param string $action The request action (e.g. Results)
+ * @return int The complexity weight (default 1)
+ */
+function matchEndpointWeight(string $module, string $action): int {
+	switch (true) {
+		// Score: 25 - Heavy search result pages
+		case $module === 'Search' && $action === 'Results':
+		case $module === 'Union' && $action === 'Search':
+			return 25;
+
+		// Score: 20 - AJAX/API search endpoints
+		case $module === 'Search' && $action === 'AJAX':
+		case $module === 'API' && $action === 'SearchAPI':
+			return 20;
+
+		// Score: 15 - GroupedWork detail and AJAX endpoints
+		case $module === 'GroupedWork':
+			return 15;
+
+		// Score: 10 - Record, Author, and eContent detail pages
+		case $module === 'Record':
+		case $module === 'Author' && $action === 'Home':
+		case $module === 'Hoopla':
+		case $module === 'OverDrive':
+		case $module === 'PalaceProject':
+		case $module === 'Axis360':
+		case $module === 'CloudLibrary':
+			return 10;
+	}
+
+	// Default: lightweight pages (static content, home page, etc.)
+	return 1;
 }

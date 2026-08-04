@@ -149,7 +149,7 @@ public class GroupedReindexMain {
 					}
 				}
 
-				groupedWorkIndexer.finishIndexing();
+				groupedWorkIndexer.finishIndexing(individualWorkToProcess != null);
 			}
 		} catch (Error e) {
 			logEntry.incErrors("Error processing reindex " + e);

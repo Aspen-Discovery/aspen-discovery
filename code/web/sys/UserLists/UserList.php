@@ -11,6 +11,7 @@ class UserList extends DataObject {
 	public $created;
 	public $public;
 	public $searchable;
+	public $customAuthorName;
 	public $displayListAuthor;
 	public $deleted;
 	public $dateUpdated;
@@ -827,6 +828,12 @@ class UserList extends DataObject {
 							$coverUrl = "/bookcover.php?id=$id&size=medium&type=assabet_event";
 
 							$interface->assign('bookCoverUrl', $coverUrl);
+						} elseif (str_starts_with($listEntryInfo['sourceId'], 'localhop')){
+							$id = explode("localhop_1_", $listEntryInfo['sourceId']);
+							$id = $id[1];
+							$coverUrl = "/bookcover.php?id=$id&size=medium&type=localhop_event";
+
+							$interface->assign('bookCoverUrl', $coverUrl);
 						}
 					}
 
@@ -936,6 +943,12 @@ class UserList extends DataObject {
 							$id = explode("assabet_1_", $listEntryInfo['sourceId']);
 							$id = $id[1];
 							$coverUrl = "/bookcover.php?id=$id&size=medium&type=assabet_event";
+
+							$interface->assign('bookCoverUrl', $coverUrl);
+						} elseif (str_starts_with($listEntryInfo['sourceId'], 'localhop')){
+							$id = explode("localhop_1_", $listEntryInfo['sourceId']);
+							$id = $id[1];
+							$coverUrl = "/bookcover.php?id=$id&size=medium&type=localhop_event";
 
 							$interface->assign('bookCoverUrl', $coverUrl);
 						}
@@ -1142,6 +1155,8 @@ class UserList extends DataObject {
 		$springshareAddToList = false;
 		$assabetBypass = false;
 		$assabetAddToList = false;
+		$localhopBypass = false;
+		$localhopAddToList = false;
 
 		$libraryEventSettings = [];
 
@@ -1191,7 +1206,15 @@ class UserList extends DataObject {
 							$assabetBypass = $eventSetting->bypassAspenEventPages;
 							$assabetAddToList = $eventSetting->eventsInLists;
 						}
-					}else {
+					} else if ($source == 'localhop') {
+						require_once ROOT_DIR . '/sys/Events/LocalHopSetting.php';
+						$eventSetting = new LocalHopSetting();
+						$eventSetting->id = $id;
+						if($eventSetting->find(true)) {
+							$assabetBypass = $eventSetting->bypassAspenEventPages;
+							$assabetAddToList = $eventSetting->eventsInLists;
+						}
+					} else {
 						// invalid event source
 					}
 				}
@@ -2010,7 +2033,7 @@ class UserList extends DataObject {
 			'author' => 'author asc,title asc',
 			'dateAdded' => "list_entry_date_added_$this->id asc",
 			'recentlyAdded' => "list_entry_date_added_$this->id desc",
-			'call_number' => 'callnumber_sort',
+			'call_number' => "callnumber_sort_$solrScope asc,title asc",
 			'copies_available', 'availability_desc' => "available_copies_$solrScope desc,title asc",
 			'copies_available_asc', 'availability' => "available_copies_$solrScope asc,title asc",
 			'custom' => "list_entry_weight_$this->id asc",

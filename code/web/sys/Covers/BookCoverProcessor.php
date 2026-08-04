@@ -43,13 +43,9 @@ class BookCoverProcessor {
 
 		if (!$this->reload) {
 			$this->log("Looking for Cached cover", Logger::LOG_NOTICE);
-			if ($this->getCachedCover()) {
+			if ($this->getCachedCover() || $this->checkForEarlyRedirect()) {
 				return true;
 			}
-		}
-
-		if ($this->checkForEarlyRedirect()) {
-			return true;
 		}
 
 		if($this->bookCoverInfo->getImageSource() == 'upload') {
@@ -93,7 +89,11 @@ class BookCoverProcessor {
 			if ($this->getAssabetCover($this->id)){
 				return true;
 			}
-		} elseif ($this->type == 'aspenEvent_event') {
+		} elseif ($this->type == 'localhop_event') {
+			if ($this->getLocalHopCover($this->id)){
+				return true;
+			}
+		}elseif ($this->type == 'aspenEvent_event') {
 			if ($this->getAspenEventsDateCover($this->id)){
 				return true;
 			}
@@ -120,9 +120,12 @@ class BookCoverProcessor {
 			}
 		} elseif ($this->type == 'gale') {
 			if ($this->getGaleCover($this->id)) {
-        return true;
-      }
+				return true;
+			}
 		} elseif ($this->type == 'cloudsource') {
+			if ($this->getCoverFromProvider()) {
+				return true;
+			}
 			if ($this->getCloudSourceCover($this->id)) {
 				return true;
 			}
@@ -486,6 +489,10 @@ class BookCoverProcessor {
 		$this->id = $_GET['id'] ?? '';
 		//If this is external eContent, we don't care about that part, just use the remaining id
 		$this->id = str_replace('external_econtent:', '', $this->id);
+		//ampersands may cause the wrong cover to load. covering our bases here.
+		//$this->id = urlencode($this->id);
+		//using str_replace instead of urlencode because some ids are ils:1234
+		$this->id = str_replace('&', '%26', $this->id);
 		if (isset($_GET['type'])) {
 			$this->type = $_GET['type'];
 		} else {
@@ -595,6 +602,8 @@ class BookCoverProcessor {
 		} else {
 			$this->logTime("Added modification headers");
 		}
+		//Remove all cookies
+		header_remove("Set-Cookie");
 	}
 
 	private function getCoverFromProvider() : bool {
@@ -689,6 +698,17 @@ class BookCoverProcessor {
 							//Full url to the image
 							if ($this->processImageURL('marcRecord', trim($marcField->getSubfield('u')->getData()))) {
 								//We got a successful match
+								return true;
+							}
+						}
+					}
+				}
+
+				if ($marcField->getIndicator(1) == '7' && $marcField->getSubfield('3')) {
+					$subfield3 = trim($marcField->getSubfield('3')->getData());
+					if (stripos($subfield3, 'cover art') !== false || strcasecmp($subfield3, 'View cover art') == 0) {
+						if ($marcField->getSubfield('u')) {
+							if ($this->processImageURL('marcRecord', trim($marcField->getSubfield('u')->getData()))) {
 								return true;
 							}
 						}
@@ -1203,7 +1223,7 @@ class BookCoverProcessor {
 		return false;
 	}
 
-	function omdb(OMDBSetting $omdbSettings, $title = null, $shortTitle = null, $year = '') : bool {
+	function omdb(OMDBSetting $omdbSettings, $title = null, $shortTitle = null): bool {
 		//Only load from OMDB if we are looking at a grouped work to be sure uploaded covers have a chance to load
 		if ($this->type != 'grouped_work' || $this->bookCoverInfo->getDisallowThirdPartyCover()) {
 			return false;
@@ -1214,15 +1234,107 @@ class BookCoverProcessor {
 		$title = StringUtils::removeTrailingPunctuation($title);
 		$title = str_replace('.', '', $title);
 		$encodedTitle = urlencode($title);
-		if (!is_array($year)) {
-			$year = [$year];
-		}
-		foreach ($year as $curYear) {
-			if (strpos($curYear, ',')) {
-				$years = explode(',', $curYear);
-				$year = array_merge($year, $years);
+		$years = [];
+		$directors = [];
+		if ($this->loadGroupedWork() && $this->groupedWork) {
+			$relatedRecords = $this->groupedWork->getRelatedRecords(true);
+			foreach ($relatedRecords as $relatedRecord) {
+				$driver = $relatedRecord->getDriver();
+				if ($driver && method_exists($driver, 'getMarcRecord')) {
+					$marcRecord = $driver->getMarcRecord();
+					if ($marcRecord) {
+						$field046 = $marcRecord->getFields('046');
+						if ($field046) {
+							foreach ($field046 as $field) {
+								if ($field->getSubfield('c')) {
+									$dateStr = $field->getSubfield('c')->getData();
+									$yearFromMarc = substr($dateStr, 0, 4);
+									if (!empty($yearFromMarc) && is_numeric($yearFromMarc) && $yearFromMarc !== '9999' && $yearFromMarc !== '0000') {
+										$years[] = $yearFromMarc;
+									}
+								}
+								if ($field->getSubfield('d')) {
+									$dateStr = $field->getSubfield('d')->getData();
+									$yearFromMarc = substr($dateStr, 0, 4);
+									if (!empty($yearFromMarc) && is_numeric($yearFromMarc) && $yearFromMarc !== '9999' && $yearFromMarc !== '0000') {
+										$years[] = $yearFromMarc;
+									}
+								}
+							}
+						}
+
+						if (empty($marcYears)) {
+							$field008 = $marcRecord->getField('008');
+							if ($field008) {
+								$data = $field008->getData();
+								if (strlen($data) >= 11) {
+									$yearFromMarc = substr($data, 7, 4);
+									if (!empty($yearFromMarc) && is_numeric($yearFromMarc) && $yearFromMarc !== '9999' && $yearFromMarc !== '0000') {
+										$years[] = $yearFromMarc;
+									}
+								}
+							}
+						}
+
+						$field508 = $marcRecord->getFields('508');
+						if ($field508) {
+							foreach ($field508 as $field) {
+								if ($field->getSubfield('a')) {
+									$credits = $field->getSubfield('a')->getData();
+									if (preg_match('/director\s*:?\s*([^;]+)/i', $credits, $matches)) {
+										$directorNames = trim($matches[1]);
+										$directorList = preg_split('/\s*(?:,|&|\s+and\s+)\s*/i', $directorNames);
+										foreach ($directorList as $directorName) {
+											$directorName = trim($directorName);
+											if (!empty($directorName) && strlen($directorName) < 100) {
+												$directors[] = $directorName;
+											}
+										}
+									}
+								}
+							}
+						}
+
+						$field245 = $marcRecord->getField('245');
+						if ($field245) {
+							if ($field245->getSubfield('c')) {
+								$titleStatement = $field245->getSubfield('c')->getData();
+								if (preg_match('/directed by\s+([^;.]+)/i', $titleStatement, $matches)) {
+									$directorNames = $matches[1];
+									$directorList = preg_split('/\s*(?:,|&|\s+and\s+)\s*/i', $directorNames);
+									foreach ($directorList as $directorName) {
+										$directorName = trim($directorName);
+										if (!empty($directorName) && strlen($directorName) < 100) {
+											$directors[] = $directorName;
+										}
+									}
+								}
+							}
+						}
+
+						$field700 = $marcRecord->getFields('700');
+						if ($field700) {
+							foreach ($field700 as $field) {
+								if ($field->getSubfield('e')) {
+									$role = strtolower(trim($field->getSubfield('e')->getData()));
+									if (stripos($role, 'director') !== false) {
+										if ($field->getSubfield('a')) {
+											$directorName = trim($field->getSubfield('a')->getData());
+											$directorName = rtrim($directorName, ',');
+											if (!empty($directorName) && strlen($directorName) < 100) {
+												$directors[] = $directorName;
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
 			}
 		}
+
+		$year = array_unique($years);
 
 		$foundTitle = $this->searchOmdbForCover($year, $encodedTitle, $omdbSettings, $source);
 		if ($foundTitle) {
@@ -1257,6 +1369,19 @@ class BookCoverProcessor {
 			if ($result !== false) {
 				if ($json = json_decode($result, true)) {
 					if (array_key_exists('Poster', $json)) {
+						if (!empty($directors) && isset($json['Director'])) {
+							$omdbDirectors = array_map('trim', explode(',', $json['Director']));
+							foreach ($directors as $marcDirector) {
+								$normalizedMarcName = iconv('UTF-8', 'ASCII//TRANSLIT', $marcDirector);
+								foreach ($omdbDirectors as $omdbDirector) {
+									$normalizedOMDBName = iconv('UTF-8', 'ASCII//TRANSLIT', $omdbDirector);
+									if (stripos($normalizedOMDBName, $normalizedMarcName) !== false || stripos($normalizedMarcName, $normalizedOMDBName) !== false) {
+										$source = 'omdb_title_director';
+										break 2;
+									}
+								}
+							}
+						}
 						if ($this->processImageURL($source, $json['Poster'])) {
 							return true;
 						}
@@ -1271,6 +1396,20 @@ class BookCoverProcessor {
 			if ($result !== false) {
 				if ($json = json_decode($result, true)) {
 					if (array_key_exists('Poster', $json)) {
+						if (!empty($directors) && isset($json['Director'])) {
+							$omdbDirectors = array_map('trim', explode(',', $json['Director']));
+							foreach ($directors as $marcDirector) {
+								$normalizedMarcName = iconv('UTF-8', 'ASCII//TRANSLIT', $marcDirector);
+								foreach ($omdbDirectors as $omdbDirector) {
+									$normalizedOMDBName = iconv('UTF-8', 'ASCII//TRANSLIT', $omdbDirector);
+									if (stripos($normalizedOMDBName, $normalizedMarcName) !== false || stripos($normalizedMarcName, $normalizedOMDBName) !== false) {
+										$source = 'omdb_title_director';
+										break 2;
+									}
+								}
+							}
+						}
+
 						if ($this->processImageURL($source, $json['Poster'])) {
 							return true;
 						}
@@ -1478,7 +1617,7 @@ class BookCoverProcessor {
 						require_once ROOT_DIR . '/sys/Enrichment/OMDBSetting.php';
 						$omdbSettings = new OMDBSetting();
 						if ($omdbSettings->find(true)) {
-							if ($this->omdb($omdbSettings, $groupedWorkDriver->getTitle(), $groupedWorkDriver->getShortTitle(), $groupedWorkDriver->getPublicationDates())) {
+							if ($this->omdb($omdbSettings, $groupedWorkDriver->getTitle(), $groupedWorkDriver->getShortTitle())) {
 								return true;
 							}
 						}
@@ -1697,7 +1836,11 @@ class BookCoverProcessor {
 		$coverBuilder = new SeriesCoverBuilder();
 		require_once ROOT_DIR . '/sys/Series/Series.php';
 		$series = new Series();
-		$series->id = $id;
+		if (is_numeric($id)) {
+			$series->id = $id;
+		}else{
+			$series->seriesPermanentId = $id;
+		}
 
 		if ($series->find(true)) {
 			if ($this->getUploadedSeriesCover($series->cover)) {
@@ -1904,6 +2047,53 @@ class BookCoverProcessor {
 		}
 		require_once ROOT_DIR . '/RecordDrivers/AssabetEventRecordDriver.php';
 		$driver = new AssabetEventRecordDriver($id);
+		require_once ROOT_DIR . '/sys/Covers/EventCoverBuilder.php';
+		if (!($driver->isValid())){ //if driver isn't valid, likely a past event on a list
+			require_once ROOT_DIR . '/sys/Events/UserEventsEntry.php';
+			$coverBuilder = new EventCoverBuilder();
+			$userEntry = new UserEventsEntry();
+			$userEntry->sourceId = $id;
+			if ($userEntry->find(true)){
+				$startDate = new DateTime("@$userEntry->eventDate");
+				/** @noinspection PhpUnhandledExceptionInspection */
+				$startDate->setTimezone(new DateTimeZone(date_default_timezone_get()));
+				$props = [
+					'eventDate' => $startDate,
+					'isPastEvent' => true,
+				];
+				$title = $userEntry->title;
+			} else{
+				$props = [
+					'eventDate' => $driver->getStartDateFromDB($id),
+					'isPastEvent' => true,
+				];
+				$title = $driver->getTitleFromDB($id);
+			}
+			$coverBuilder->getCover($title, $this->cacheFile, $props);
+		} else {
+			$coverBuilder = new EventCoverBuilder();
+			$isPast = false;
+			if (array_key_exists('isPast', $_REQUEST)){
+				$isPast = $_REQUEST['isPast'];
+			}
+			$props = [
+				'eventDate' => $driver->getStartDate(),
+				'isPastEvent' => $isPast,
+			];
+			$coverBuilder->getCover($driver->getTitle(), $this->cacheFile, $props);
+		}
+		return $this->processImageURL('default_event', $this->cacheFile, false);
+	}
+
+	private function getLocalHopCover($id) : bool {
+		if (str_contains($id, ':')) {
+			[
+				,
+				$id,
+			] = explode(":", $id);
+		}
+		require_once ROOT_DIR . '/RecordDrivers/LocalHopEventRecordDriver.php';
+		$driver = new LocalHopEventRecordDriver($id);
 		require_once ROOT_DIR . '/sys/Covers/EventCoverBuilder.php';
 		if (!($driver->isValid())){ //if driver isn't valid, likely a past event on a list
 			require_once ROOT_DIR . '/sys/Events/UserEventsEntry.php';
@@ -2173,7 +2363,7 @@ class BookCoverProcessor {
 								return false;
 							}
 
-							$originalUrl = $referencedCoverInfo->getOriginalUrl();
+							$originalUrl = $referencedCoverInfo->getOriginalUrl($this->size);
 							if (!empty($originalUrl)) {
 								$url = $originalUrl;
 								$maybeHash = substr($originalUrl, 0, 32);
@@ -2461,7 +2651,7 @@ class BookCoverProcessor {
 				];
 				$validationHash = md5(implode('|', $validationFields));
 				$urlToStore = $validationHash . $url;
-				$this->bookCoverInfo->setOriginalUrl($urlToStore);
+				$this->bookCoverInfo->setOriginalUrl($urlToStore, $this->size);
 				$this->bookCoverInfo->update();
 
 				header("HTTP/1.1 301 Moved Permanently");
@@ -2484,7 +2674,7 @@ class BookCoverProcessor {
 	 */
 	private function checkForEarlyRedirect(): bool {
 		if ($this->bookCoverInfo &&
-			!empty($this->bookCoverInfo->getOriginalUrl()) &&
+			!empty($this->bookCoverInfo->getOriginalUrl($this->size)) &&
 			SystemVariables::getSystemVariables()->useOriginalCoverUrls &&
 			!str_starts_with($this->bookCoverInfo->getImageSource(), 'reference')
 		) {
@@ -2496,13 +2686,12 @@ class BookCoverProcessor {
 				$this->bookCoverInfo->getDisallowThirdPartyCover()
 			];
 			$currentHash = md5(implode('|', $validationFields));
-			$storedHash = substr($this->bookCoverInfo->getOriginalUrl(), 0, 32);
-			$url = substr($this->bookCoverInfo->getOriginalUrl(), 32);
+			$originalUrl = $this->bookCoverInfo->getOriginalUrl($this->size);
+			$storedHash = substr($originalUrl, 0, 32);
+			$url = substr($originalUrl, 32);
 
 			if ($currentHash === $storedHash && !empty($url)) {
-				// Check if URL needs to be validated based upon the expiration time; force validation if reload flag is set.
-				$forceValidation = $this->reload;
-				$validationResult = $this->validateCoverUrl($url, $this->bookCoverInfo->getImageSource(), $forceValidation);
+				$validationResult = $this->validateCoverUrl($url, $this->bookCoverInfo->getImageSource(), false);
 				if ($validationResult !== false) {
 					header("HTTP/1.1 301 Moved Permanently");
 					header("Location: $url");
@@ -2514,7 +2703,7 @@ class BookCoverProcessor {
 			}
 		} else {
 			$this->log("Debug - Early conditions failed: BookCoverInfo exists: " . ($this->bookCoverInfo ? "Yes" : "No") .
-				", Original URL exists: " . (!empty($this->bookCoverInfo) && !empty($this->bookCoverInfo->getOriginalUrl()) ? "Yes" : "No") .
+				", Original URL exists: " . (!empty($this->bookCoverInfo) && !empty($this->bookCoverInfo->getOriginalUrl($this->size)) ? "Yes" : "No") .
 				", useOriginalCoverUrls enabled: " . (SystemVariables::getSystemVariables()->useOriginalCoverUrls ? "Yes" : "No"));
 		}
 		return false;

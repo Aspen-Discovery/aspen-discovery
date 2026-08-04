@@ -12,6 +12,7 @@ class UserEventsEntry extends DataObject {
 	public $regRequired;
 	public $location;
 	public $displayEventBranchOnThumbnail;
+	public $savedByStaffId;
 
 	public function getUniquenessFields(): array {
 		return [
@@ -20,4 +21,18 @@ class UserEventsEntry extends DataObject {
 		];
 	}
 
+	public function delete(bool $useWhere = false, bool $hardDelete = false): bool|int {
+		require_once ROOT_DIR . '/RecordDrivers/AspenEventRecordDriver.php';
+		$eventInstanceId = AspenEventRecordDriver::extractEventInstanceId($this->sourceId);
+
+		if ($eventInstanceId !== null) {
+			require_once ROOT_DIR . '/sys/Events/UserAspenEventInstanceRegistration.php';
+			$registration = new UserAspenEventInstanceRegistration();
+			$registration->userId = $this->userId;
+			$registration->eventInstanceId = $eventInstanceId;
+			$registration->delete(true);
+		}
+		
+		return parent::delete();
+	}
 }

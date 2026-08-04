@@ -1,0 +1,12 @@
+{
+    "require": {
+        "league/oauth2-server": "^9.3",
+        "laminas/laminas-diactoros": "^3.8",
+        "lcobucci/clock": "^3.3"
+    },
+    "config": {
+        "platform": {
+            "php": "8.3.30"
+        }
+    }
+}

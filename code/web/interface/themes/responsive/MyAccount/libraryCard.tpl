@@ -1,5 +1,6 @@
 {if !empty($loggedIn)}
 	{strip}
+	<h1>{translate text="Library Card" isPublicFacing=true}</h1>
 	{if !empty($profile->_web_note)}
 		<div class="row">
 			<div id="web_note" class="alert alert-info text-center col-xs-12">{$profile->_web_note}</div>
@@ -19,7 +20,6 @@
 		</div>
 	{/if}
 
-	<h1>{translate text="Library Card" isPublicFacing=true}</h1>
 	<div class="row">
 		<div class="col-xs-12" id="library-barcode">
 			{if $libraryCardBarcodeStyle != 'none'}

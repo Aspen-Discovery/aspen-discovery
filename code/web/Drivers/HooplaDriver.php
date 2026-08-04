@@ -216,6 +216,7 @@ class HooplaDriver extends AbstractEContentDriver {
 					$hooplaErrorMessage = empty($hooplaPatronStatusResponse['body']->message) ? '' : ' Hoopla Message :' . $hooplaPatronStatusResponse['body']->message;
 					$logger->log('Error retrieving patron status from Hoopla. User ID : ' . $user->id . $hooplaErrorMessage, Logger::LOG_NOTICE);
 					$this->hooplaPatronStatuses[$user->id] = false; // Don't do status call again for this user
+					$summary->resetCounters();
 				}
 				// Get Holds status for only the patrons can access to Hoopla Flex
 				if ($user->isValidForEContentSource('hoopla_flex')) {
@@ -239,6 +240,7 @@ class HooplaDriver extends AbstractEContentDriver {
 						global $logger;
 						$errorMessage = empty($holdsResponse['body']->message) ? '' : ' Hoopla Message: ' . $holdsResponse['body']->message;
 						$logger->log('Error retrieving holds from Hoopla. User ID: ' . $user->id . $errorMessage, Logger::LOG_NOTICE);
+						$summary->resetCounters();
 					}
 				} else {
 					$summary->numAvailableHolds = 0;
@@ -253,10 +255,16 @@ class HooplaDriver extends AbstractEContentDriver {
 	}
 
 	/**
-	 * @param $patron User
+	 * Get Patron Checkouts
+	 *
+	 * This is responsible for retrieving all checkouts (i.e. checked out items)
+	 * by a specific patron.
+	 *
+	 * @param User $patron       The user to load transactions for
+	 * @param array $options     Additional options
 	 * @return Checkout[]
 	 */
-	public function getCheckouts(User $patron): array {
+	public function getCheckouts(User $patron, array $options = []): array {
 		$accountSummary = $patron->getCachedAccountSummary('hoopla');
 		$cachedCheckouts = $patron->getCachedCheckoutsForSource('hoopla');
 		if ($accountSummary->areCheckoutsStale() || isset($_REQUEST['reload']) || isset($_REQUEST['refreshCheckouts'])) {
@@ -903,7 +911,7 @@ class HooplaDriver extends AbstractEContentDriver {
 	 *                                title - the title of the record the user is placing a hold on
 	 * @access  public
 	 */
-	function placeHold($patron, $recordId, $pickupBranch = null, $cancelDate = null) : array {
+	function placeHold($patron, mixed $recordId, $pickupBranch = null, $cancelDate = null) : array {
 		$result = [
 			'success' => false,
 			'message' => translate(['text' => 'Unknown error', 'isPublicFacing' => true])
@@ -1118,7 +1126,7 @@ class HooplaDriver extends AbstractEContentDriver {
 					'text' => 'Your Hoopla hold was cancelled successfully',
 					'isPublicFacing' => true,
 				]);
-				$this->updateCachesForCancelledHold($patron, $holdToCancel);
+				$this->updateCachesForCancelledHold($patron, $holdToCancel, 'hoopla');
 			} else {
 				$result['message'] = translate([
 					'text' => 'Could not cancel Hoopla hold.',

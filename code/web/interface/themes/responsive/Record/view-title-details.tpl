@@ -12,11 +12,15 @@
 		</div>
 	{/if}
 
-	{if $recordDriver->getAuthor()}
+	{if !empty($recordDriver->getAuthor()) || !empty($recordDriver->get880Authors())}
 		<div class="row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text="Author" isPublicFacing=true} </div>
 			<div class="result-value col-sm-8 col-xs-12">
-				<a href='/Author/Home?author="{$recordDriver->getAuthor()|escape:"url"}"'>{$recordDriver->getAuthor()|highlight}</a>{if !empty($recordDriver->get880Authors())} <span class="agrAuthor">({implode subject=$recordDriver->get880Authors() glue=',' removeTrailingPunctuationFromTerms=true})</span>{/if}<br/>
+				{if empty($recordDriver->getAuthor()) && !empty($recordDriver->get880Authors())}
+					<span class="agrAuthor">{implode subject=$recordDriver->get880Authors() glue=',' removeTrailingPunctuationFromTerms=true}</span>
+				{else}
+					<a href='/Author/Home?author="{$recordDriver->getAuthor()|escape:"url"}"'>{$recordDriver->getAuthor()|highlight}</a>{if !empty($recordDriver->get880Authors())} <span class="agrAuthor">({implode subject=$recordDriver->get880Authors() glue=',' removeTrailingPunctuationFromTerms=true})</span>{/if}<br/>
+				{/if}
 			</div>
 		</div>
 	{/if}
@@ -129,6 +133,25 @@
 		</div>
 	{/if}
 
+	{if !empty($showPhysicalDescriptions) && !empty($duration)}
+		<div class="row">
+			<div class="result-label col-sm-4 col-xs-12">{translate text='Duration' isPublicFacing=true}</div>
+			<div class="result-value col-sm-8 col-xs-12">
+				{math equation="floor(x/60)" x=$duration assign="hours"}
+				{math equation="x%60" x=$duration assign="minutes"}
+				{if $hours != 0 && $minutes != 0}
+					{translate text='%1% hours %2% minutes' 1=$hours 2=$minutes isPublicFacing=true}
+				{else}
+					{if $hours == 0}
+						{translate text='%2% minutes' 2=$minutes isPublicFacing=true}<br/>
+					{else}
+						{translate text='%1% hours' 1=$hours isPublicFacing=true}<br/>
+					{/if}
+				{/if}
+			</div>
+		</div>
+	{/if}
+
 	{if !empty($showArInfo) && $recordDriver->getAcceleratedReaderDisplayString()}
 		<div class="row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='Accelerated Reader' isPublicFacing=true} </div>
@@ -156,10 +179,10 @@
 		</div>
 	{/if}
 
-	{if !empty($mpaaRating)}
+	{if !empty($contentRating)}
 		<div class="row">
-			<div class="result-label col-sm-4 col-xs-12">{translate text='MPAA Rating' isPublicFacing=true}</div>
-			<div class="result-value col-sm-8 col-xs-12">{implode subject=$mpaaRating glue=", " translate=true isPublicFacing=true}</div>
+			<div class="result-label col-sm-4 col-xs-12">{translate text='Content Rating' isPublicFacing=true}</div>
+			<div class="result-value col-sm-8 col-xs-12">{implode subject=$contentRating glue=", " translate=true isPublicFacing=true}</div>
 		</div>
 	{/if}
 

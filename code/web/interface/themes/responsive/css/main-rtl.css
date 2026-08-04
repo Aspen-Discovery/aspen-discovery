@@ -2621,6 +2621,10 @@ td[data-entry-id]::after {
   padding-left: 0;
 }
 
+#multiple-variations-column.formatDisplayHorizontal .horizDisplayShelfLocations .col-tn-4:first-child {
+  padding-right: 0;
+}
+
 .horizDisplayAllEditions .relatedRecord {
   margin-right: 0;
 }

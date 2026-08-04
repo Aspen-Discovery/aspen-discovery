@@ -12,7 +12,11 @@ class PaymentDetails extends MyAccount {
 		//Get Payment history for the user
 		require_once ROOT_DIR . '/services/API/UserAPI.php';
 		$api = new UserAPI('internal');
-		$paymentId = $_REQUEST['paymentId'];
+		if (!isset($_REQUEST['paymentId']) || !is_numeric($_REQUEST['paymentId'])) {
+			$this->display('paymentDetails.tpl', 'Payment Details');
+			return;
+		}
+		$paymentId = intval($_REQUEST['paymentId']);
 		$paymentDetails = $api->getPaymentDetails($paymentId);
 		$interface->assign('success', $paymentDetails['success']);
 		if ($paymentDetails['success']) {

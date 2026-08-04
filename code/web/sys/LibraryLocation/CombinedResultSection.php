@@ -24,24 +24,20 @@ abstract class CombinedResultSection extends DataObject {
 		if ($dplaSetting->find(true)) {
 			$validResultSources['dpla'] = 'DP.LA';
 		}
-		if (array_key_exists('EBSCO EDS', $enabledModules) && $library->edsSettingsId != -1) {
+		if (array_key_exists('EBSCO EDS', $enabledModules)) {
 			$validResultSources['ebsco_eds'] = 'EBSCO EDS';
-		} elseif (array_key_exists('EBSCOhost', $enabledModules) && $library->edsSettingsId == -1) {
+		}
+		if (array_key_exists('EBSCOhost', $enabledModules)) {
 			$validResultSources['ebscohost'] = 'EBSCOhost';
 		}
-		if (array_key_exists('Summon', $enabledModules) && $library->summonSettingsId != -1) {
+		if (array_key_exists('Summon', $enabledModules)) {
 			$validResultSources['summon'] = 'Summon';
 		}
 		if (array_key_exists('Gale', $enabledModules)) {
 			$validResultSources['gale'] = 'Gale';
     }
 		if (array_key_exists('CloudSource', $enabledModules)) {
-			require_once ROOT_DIR . '/sys/CloudSource/LibraryCloudSourceSetting.php';
-			$libraryCloudSourceSetting = new LibraryCloudSourceSetting();
-			$libraryCloudSourceSetting->libraryId = $library->libraryId;
-			if ($libraryCloudSourceSetting->find(true)) {
-				$validResultSources['cloudsource'] = 'CloudSource';
-			}
+			$validResultSources['cloudsource'] = 'CloudSource';
 		}
 		if (array_key_exists('Events', $enabledModules)) {
 			$validResultSources['events'] = 'Events';
@@ -52,13 +48,9 @@ abstract class CombinedResultSection extends DataObject {
 		if (array_key_exists('Open Archives', $enabledModules)) {
 			$validResultSources['open_archives'] = 'Open Archives';
 		}
-		global $library;
-		if ($library->enableInnReachIntegration) {
-			$validResultSources['innReach'] = 'INN-Reach';
-		}
-		if ($library->ILLSystem == 3) {
-			$validResultSources['shareIt'] = 'SHAREit';
-		}
+		$validResultSources['innReach'] = 'INN-Reach';
+		$validResultSources['shareIt'] = 'SHAREit';
+
 		if (array_key_exists('Web Indexer', $enabledModules)) {
 			$validResultSources['websites'] = 'Website Search';
 		}

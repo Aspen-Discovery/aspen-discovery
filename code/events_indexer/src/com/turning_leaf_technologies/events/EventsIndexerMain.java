@@ -141,6 +141,19 @@ public class EventsIndexerMain {
 					indexer.indexEvents();
 				}
 
+				// LocalHop
+				getEventsSitesToIndexStmt = aspenConn.prepareStatement("SELECT * from localhop_settings");
+				eventsSitesRS = getEventsSitesToIndexStmt.executeQuery();
+				while (eventsSitesRS.next()) {
+					LocalHopIndexer indexer = new LocalHopIndexer(
+						eventsSitesRS.getLong("id"),
+						eventsSitesRS.getString("name"),
+						eventsSitesRS.getString("baseUrl"),
+						eventsSitesRS.getInt("numberOfDaysToIndex"),
+						solrUpdateServer, aspenConn, logger);
+					indexer.indexEvents();
+				}
+
 				// Aspen events
 				getEventsSitesToIndexStmt = aspenConn.prepareStatement("SELECT * from events_indexing_settings");
 				eventsSitesRS = getEventsSitesToIndexStmt.executeQuery();

@@ -30,11 +30,12 @@ abstract class AbstractDriver {
 	 * This is responsible for retrieving all checkouts (i.e. checked out items)
 	 * by a specific patron.
 	 *
-	 * @param User $patron The user to load transactions for
+	 * @param User $patron       The user to load transactions for
+	 * @param array $option      Additional options, currently used for Koha/isNightlyUpdate
 	 * @return Checkout[]        Array of the patron's transactions on success
 	 * @access public
 	 */
-	public abstract function getCheckouts(User $patron): array;
+	public abstract function getCheckouts(User $patron, array $options = []): array;
 
 	/**
 	 * @return boolean true if the driver can renew all titles in a single pass
@@ -90,13 +91,14 @@ abstract class AbstractDriver {
 	 *     the account summary cache
 	 *
 	 * @param User $patron The User to place a hold for
-	 * @param string $recordId The id of the bib record
-	 * @param string $pickupBranch The branch where the user wants to pick up the item when available
-	 * @param string $cancelDate When the hold should be automatically cancelled
+	 * @param mixed $recordId The id of the bib record
+	 * @param ?string $pickupBranch The branch where the user wants to pick up the item when available
+	 * @param ?string $cancelDate When the hold should be automatically cancelled
+	 *
 	 * @return  array results of the hold
 	 * @access  public
 	 */
-	abstract function placeHold(User $patron, $recordId, $pickupBranch = null, $cancelDate = null) : array ;
+	abstract function placeHold(User $patron, mixed $recordId, ?string $pickupBranch = null, ?string $cancelDate = null) : array ;
 
 	/**
 	 * Cancels a hold for a patron.
@@ -144,8 +146,8 @@ abstract class AbstractDriver {
 		return null;
 	}
 
-	public function updateCachesForCancelledHold(User $patron, Hold $hold) : void {
-		$accountProfile = $patron->getCachedAccountSummary('ils');
+	public function updateCachesForCancelledHold(User $patron, Hold $hold, string $source) : void {
+		$accountProfile = $patron->getCachedAccountSummary($source);
 		if ($hold->available) {
 			$accountProfile->decrementAvailableHolds();
 		}else{

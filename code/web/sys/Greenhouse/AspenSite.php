@@ -2,6 +2,9 @@
 
 class AspenSite extends DataObject {
 	public $__table = 'aspen_sites';
+	/**
+	 * @var mixed|null
+	 */
 	protected $id;
 	protected $name;
 	protected $baseUrl;
@@ -38,7 +41,6 @@ class AspenSite extends DataObject {
 	protected $nextMeetingDate;
 	/** @noinspection PhpUnused */
 	protected $nextMeetingPerson;
-	protected $activeTicketFeed;
 	protected $lastOfflineTime;
 	/** @noinspection PhpUnused */
 	protected $lastOnlineTime;
@@ -102,6 +104,7 @@ class AspenSite extends DataObject {
 			'appAccess',
 			'ils',
 			'isOnline',
+			'monitored'
 		];
 	}
 
@@ -261,15 +264,6 @@ class AspenSite extends DataObject {
 				'description' => 'What operating system the site is on',
 				'maxLength' => 75,
 				'required' => false,
-			],
-			'activeTicketFeed' => [
-				'property' => 'activeTicketFeed',
-				'type' => 'url',
-				'label' => 'Active Ticket Feed',
-				'description' => 'The URL to get a list of all active tickets for an instance',
-				'maxLength' => 1000,
-				'required' => false,
-				'hideInLists' => true,
 			],
 			'contactFrequency' => [
 				'property' => 'contactFrequency',
@@ -691,13 +685,6 @@ class AspenSite extends DataObject {
 		return false;
 	}
 
-	public function getActiveTicketFeed() {
-		if($this->activeTicketFeed) {
-			return $this->activeTicketFeed;
-		}
-		return false;
-	}
-
 	public function isSendSlackAlerts() : bool {
 		return $this->sendSlackAlerts;
 	}
@@ -774,5 +761,17 @@ class AspenSite extends DataObject {
 	 */
 	public function getId() : mixed{
 		return $this->id;
+	}
+
+	public function isOnline() : bool {
+		return $this->isOnline;
+	}
+
+	public function isMonitored() : bool {
+		return $this->monitored;
+	}
+
+	public function setMonitored(int $monitored) : void {
+		$this->__set('monitored', $monitored);
 	}
 }

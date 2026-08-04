@@ -5,6 +5,31 @@ AspenDiscovery.Series = (function(){
 			window.location.href = "/Series/AdministerSeries?objectAction=edit&id=" + seriesId;
 			return false;
 		},
+		getGroupSeriesSearchForm: function (trigger, id, searchId, page) {
+			AspenDiscovery.loadingMessage();
+			var url = Globals.path + "/Series/" + id + "/AJAX?method=getGroupSeriesSearchForm&searchId=" + searchId + "&page=" + page;
+			$.getJSON(url, function(data){
+				if (data.success){
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+				}else{
+					AspenDiscovery.showMessage("An error occurred", data.message);
+				}
+			}).fail(AspenDiscovery.ajaxFail);
+			return false;
+		},
+		processGroupSeriesForm: function() {
+			var id = $('#id').val();
+			var groupSeriesId = $('#seriesToGroupWithId').val().trim();
+			var url = Globals.path + "/Series/" + id + "/AJAX?method=processGroupSeriesForm&groupSeriesId=" + groupSeriesId;
+			//AspenDiscovery.closeLightbox();
+			$.getJSON(url, function(data){
+				if (data.success){
+					AspenDiscovery.showMessage("Success", data.message, true, false);
+				}else{
+					AspenDiscovery.showMessage("An error occurred", data.message, false, false);
+				}
+			}).fail(AspenDiscovery.ajaxFail);
+		},
 		emailAction: function (seriesId) {
 			var urlToDisplay = Globals.path + '/Series/AJAX';
 			AspenDiscovery.loadingMessage();
@@ -41,7 +66,18 @@ AspenDiscovery.Series = (function(){
 		printAction: function (){
 			window.print();
 			return false;
-		}
+		},
 
+		ungroupSeries(id, groupedWithSeriesId) {
+			var url = Globals.path + "/Series/" + id + "/AJAX?method=ungroupSeries&groupedWithSeriesId=" + groupedWithSeriesId;
+			//AspenDiscovery.closeLightbox();
+			$.getJSON(url, function(data){
+				if (data.success){
+					AspenDiscovery.showMessage("Success", data.message, false, true);
+				}else{
+					AspenDiscovery.showMessage("An error occurred", data.message, false, false);
+				}
+			}).fail(AspenDiscovery.ajaxFail);
+		}
 	};
 }(AspenDiscovery.Series || {}));

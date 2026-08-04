@@ -18,11 +18,20 @@ class Event extends DataObject {
 	public $displayEventBranchOnThumbnail;
 	public $_typeFields = [];
 	public $startDate;
+
+	// Used as an alias for startDate at the root of the model structure
+	// so that it can be displayed in lists
 	public $_startDateForList;
+
 	public $hideTimestamps;
 	public $startTime;
 	public $eventLength;
 	public $recurrenceOption;
+	public $registrationRequired;
+	public $numberOfSeats;
+	public $waitingList;
+	public $waitingListNumberOfSeats;
+	public $staffNotes;
 	/** @noinspection PhpUnused */
 	public $recurrenceInterval;
 	public $recurrenceFrequency;
@@ -169,6 +178,7 @@ class Event extends DataObject {
 				'label' => 'Start Date',
 				'readOnly' => true,
 				'hiddenByDefault' => true,
+				'canSort' => false
 			],
 			'scheduleSection' => [
 				'property' => 'scheduleSection',
@@ -188,6 +198,7 @@ class Event extends DataObject {
 				'label' => 'Total Upcoming Events',
 				'hiddenByDefault' => true,
 				'readOnly' => true,
+				'canSort' => false
 			],
 			'dateUpdated' => [
 				'property' => 'dateUpdated',
@@ -195,10 +206,62 @@ class Event extends DataObject {
 				'type' => 'integer',
 				'hiddenByDefault' => true,
 				'hideInLists' => true,
+			],
+			'staffNotes' => [
+				'property' => 'staffNotes',
+				'label' => 'Staff notes',
+				'description' => 'Staff-only notes that are only visible on this page.',
+				'type' => 'textarea',
+				'hideInLists' => true,
 			]
 		];
+
+		global $library;
+		if (isset($library->allowEventRegistration) && $library->allowEventRegistration != '0') {
+			$structure['registrationSection'] = [
+				'property' => 'registrationSection',
+				'type' => 'section',
+				'label' => 'Event Registration',
+				'expandByDefault' => true,
+				'properties' => [
+					'registrationRequired' => [
+						'property' => 'registrationRequired',
+						'type' => 'checkbox',
+						'label' => 'Enable Registration ?',
+						'default' => false,
+						'description' => 'Enable registration for this event and mark is as required',
+						'onchange' => 'AspenDiscovery.Events.handleRegistrationEnabledToggle()',
+					],
+					'numberOfSeats' => [
+						'property' => 'numberOfSeats',
+						'type' => 'integer',
+						'label' => 'Number of Seats',
+						'description' => 'Maximum number of available seats for this event. Leave blank or 0 for unlimited.',
+						'min' => 0,
+						'max' => 1000,
+					],
+					'waitingList' => [
+						'property' => 'waitingList',
+						'type' => 'checkbox',
+						'label' => 'Enable Waiting List ?',
+						'description' => 'Whether or not to enable a waiting list for this event.',
+						'default' => 0,
+						'onchange' => 'AspenDiscovery.Events.displayWaitingListNumberOfSeats()',
+					],
+					'waitingListNumberOfSeats' => [
+						'property' => 'waitingListNumberOfSeats',
+						'type' => 'integer',
+						'label' => 'Number of Seats on Waiting List',
+						'description' => 'Number of seats on waiting list. Leave blank or 0 for unlimited.',
+						'min' => 0,
+						'max' => 1000,
+					],
+				],
+			];
+		}
+
 		// Add empty, hidden, readonly copies of all potential fields so that data can be added if they exist for any selected event type
-		$eventFieldList = EventField::getEventFieldList();
+		$eventFieldList = EventField::getEventInformationFieldList();
 		foreach ($eventFieldList as $fieldId => $field) {
 			$structure['infoSection']['properties']['fieldSetFieldSection']['properties'][$fieldId] = [
 				'property' => $fieldId,
@@ -211,7 +274,7 @@ class Event extends DataObject {
 			'startDate' => [
 				'property' => 'startDate',
 				'type' => 'date',
-				'label' => 'Event Date',
+				'label' => 'Start Date',
 				'description' => 'The date this event starts',
 				'onchange' => "return AspenDiscovery.Events.updateRecurrenceOptions(this.value);",
 			],
@@ -243,6 +306,7 @@ class Event extends DataObject {
 				'label' => 'End Date',
 				'description' => 'The date this event ends',
 				'note' => 'Automatically calculated based on Event Date, Start Time, and Event Length',
+				'canSort' => false
 			],
 			'endTime' => [
 				'property' => 'endTime',
@@ -424,6 +488,7 @@ class Event extends DataObject {
 				'note' => 'To update, change the scheduling options above',
 				'readOnly' => true,
 				'hiddenByDefault' => true,
+				'canSort' => false
 			],
 		];
 		if ($context == 'addNew') {
@@ -498,24 +563,62 @@ class Event extends DataObject {
 	}
 
 	public function delete(bool $useWhere = false, bool $hardDelete = false) : bool|int {
-		if (!$useWhere) {
-			$this->deleted = 1;
-			$this->dateUpdated = time();
-			$ret = parent::update();
-
-			if ($ret) {
-				$instance = new EventInstance();
-				$instance->eventId = $this->id;
-				$instance->find();
-				while ($instance->fetch()) {
-					$instance->delete();
-				}
-				return true;
-			}
-			return false;
-		} else {
-			return parent::delete($useWhere, $hardDelete);
+		if ($useWhere) {
+			throw new InvalidArgumentException('Event::delete does not support $useWhere = true. Delete events individually.');
 		}
+
+		$upcomingInstances = $this->getUpcomingInstances();
+		$upcomingInstanceIds = [];
+		foreach ($upcomingInstances as $upcomingInstance) {
+			$upcomingInstanceIds[] = (int)$upcomingInstance->id;
+		}
+
+		require_once ROOT_DIR . '/sys/Events/UserAspenEventInstanceRegistration.php';
+		$affectedUsersByStatus = UserAspenEventInstanceRegistration::getUsersGroupedByStatusForInstances($upcomingInstanceIds);
+
+		$this->deleted = 1;
+		$this->dateUpdated = time();
+		$softDeleteResult = parent::update();
+		if ($softDeleteResult === false) {
+			return false;
+		}
+
+		foreach ($this->getAllInstanceIds() as $instanceId) {
+			$instance = new EventInstance();
+			$instance->id = $instanceId;
+			if ($instance->find(true)) {
+				$instance->delete(false, false, true);
+			}
+		}
+
+		require_once ROOT_DIR . '/services/EventRegistrationService.php';
+		EventRegistrationService::sendCancellationNotificationEmails($upcomingInstances, $affectedUsersByStatus);
+
+		return $softDeleteResult;
+	}
+
+	public function getUpcomingInstances(): array {
+		$upcoming = [];
+		$instance = new EventInstance();
+		$instance->eventId = $this->id;
+		$instance->deleted = 0;
+		EventInstance::addUpcomingWhereClause($instance);
+		$instance->find();
+		while ($instance->fetch()) {
+			$upcoming[] = clone $instance;
+		}
+		return $upcoming;
+	}
+
+	public function getAllInstanceIds(): array {
+		$ids = [];
+		$instance = new EventInstance();
+		$instance->eventId = $this->id;
+		$instance->find();
+		while ($instance->fetch()) {
+			$ids[] = (int)$instance->id;
+		}
+		return $ids;
 	}
 
 	public function __set($name, $value) {
@@ -599,7 +702,8 @@ class Event extends DataObject {
 			'dateUpdated',
 			'sublocationId',
 			'weekNumber',
-			'deleted'
+			'deleted',
+			'numberOfSeats'
 		];
 	}
 
@@ -941,11 +1045,12 @@ class Event extends DataObject {
 					$structure['scheduleSection']['properties']['eventLength']['readOnly'] = true;
 					$this->eventLength = $eventType->eventLength;
 				}
+
 				if (!$eventType->displayEventBranchOnThumbnailCustomizable) {
 					$structure['infoSection']['properties']['displayEventBranchOnThumbnail']['readOnly'] = true;
 					$this->displayEventBranchOnThumbnail = $eventType->displayEventBranchOnThumbnail;
 				}
-				$structure['infoSection']['properties']['fieldSetFieldSection']['properties'] = $eventType->getFieldSetFields();
+				$structure['infoSection']['properties']['fieldSetFieldSection']['properties'] = $eventType->getFieldSetFieldsByUse(1);
 				// Update scheduling sections
 				switch ($this->recurrenceOption) {
 					case '2':

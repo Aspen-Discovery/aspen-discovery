@@ -1,7 +1,7 @@
 <?php /** @noinspection PhpMissingFieldTypeInspection */
+require_once ROOT_DIR . '/sys/AbstractUsage.php';
 
-
-class UserSideLoadUsage extends DataObject {
+class UserSideLoadUsage extends AbstractUsage {
 	public $__table = 'user_sideload_usage';
 	public $id;
 	public $instance;
@@ -9,6 +9,7 @@ class UserSideLoadUsage extends DataObject {
 	public $sideLoadId;
 	public $year;
 	public $month;
+	public $day;
 	public $usageCount; //Number of clicks
 
 	public function getUniquenessFields(): array {
@@ -18,6 +19,7 @@ class UserSideLoadUsage extends DataObject {
 			'sideLoadId',
 			'year',
 			'month',
+			'day',
 		];
 	}
 

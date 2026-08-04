@@ -12,4 +12,4 @@ The following appears at the top of search results
 ![Search Tools Before](/optionalUpdates/images/SearchToolsAfter.png)
 
 
-[More information on this setting](https://help.aspendiscovery.org/help/catalog/groupedworks#Cell-945-PanelBody)
+[More information on this setting](https://aspen-discovery.atlassian.net/wiki/spaces/Help/pages/347373607/Grouped+Works+and+Record+Display)

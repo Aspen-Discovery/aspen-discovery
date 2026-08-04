@@ -1,17 +1,22 @@
 <div class="col-xs-12">
 	{if !empty($loggedIn)}
 
+		<h1>{translate text='My Reading History' isPublicFacing = true} {if $historyActive == true}
+				<small><a id="readingListWhatsThis" href="#" onclick="$('#readingListDisclaimer').toggle();return false;">({translate text="What's This?" isPublicFacing=true})</a></small>
+			{/if}
+		</h1>
+
 		{if !empty($profile->_web_note)}
 			<div class="row">
 				<div id="web_note" class="alert alert-info text-center col-xs-12">{$profile->_web_note}</div>
 			</div>
 		{/if}
-		{if !empty($accountMessages)}
-			{include file='systemMessages.tpl' messages=$accountMessages}
-		{/if}
-		{if !empty($ilsMessages)}
-			{include file='ilsMessages.tpl' messages=$ilsMessages}
-		{/if}
+			{if !empty($accountMessages)}
+				{include file='systemMessages.tpl' messages=$accountMessages}
+			{/if}
+			{if !empty($ilsMessages)}
+				{include file='ilsMessages.tpl' messages=$ilsMessages}
+			{/if}
 		{if !empty($updateMessage)}
 			<div class="row">
 				<div class="col-xs-12">
@@ -19,11 +24,6 @@
 				</div>
 			</div>
 		{/if}
-
-		<h1>{translate text='My Reading History' isPublicFacing = true} {if $historyActive == true}
-				<small><a id="readingListWhatsThis" href="#" onclick="$('#readingListDisclaimer').toggle();return false;">({translate text="What's This?" isPublicFacing=true})</a></small>
-			{/if}
-		</h1>
 
 		{if !empty($offline)}
 			<div class="alert alert-warning">{translate text="<strong>The library system is currently offline.</strong> We are unable to retrieve information about any titles currently checked out." isPublicFacing=true}</div>

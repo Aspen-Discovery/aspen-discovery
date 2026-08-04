@@ -41,6 +41,7 @@ class Record_DownloadSupplementalFile {
 								$userUsage->indexingProfileId = $this->recordDriver->getIndexingProfile()->id;
 								$userUsage->year = date('Y');
 								$userUsage->month = date('n');
+								$userUsage->day = date('d');
 								if ($userUsage->find(true)) {
 									$userUsage->supplementalFileDownloadCount++;
 									$userUsage->update();
@@ -59,6 +60,7 @@ class Record_DownloadSupplementalFile {
 							$recordUsage->recordId = $this->recordDriver->getUniqueID();
 							$recordUsage->year = date('Y');
 							$recordUsage->month = date('n');
+							$recordUsage->day = date('d');
 							if ($recordUsage->find(true)) {
 								$recordUsage->supplementalFileDownloadCount++;
 								$recordUsage->update();

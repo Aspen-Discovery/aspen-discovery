@@ -12,11 +12,10 @@ A flexible, open-source discovery layer that empowers libraries of all types and
   
 [![Latest Release](https://img.shields.io/github/v/release/Aspen-Discovery/aspen-discovery)](https://github.com/Aspen-Discovery/aspen-discovery/releases)
 [![Contributors](https://img.shields.io/github/contributors/Aspen-Discovery/aspen-discovery)](https://github.com/Aspen-Discovery/aspen-discovery/graphs/contributors)
-[![Read Documentation](https://img.shields.io/badge/Help_Docs-Read_Now-ff69b4)](https://help.aspendiscovery.org/)
 [![License: GPLv2](https://img.shields.io/badge/License-GPLv2-blue.svg)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
+[![Help Center](https://img.shields.io/badge/Docs-Read_Now-0052CC?logo=confluence)](https://aspen-discovery.atlassian.net/wiki/spaces/Help/overview)
 
 [![Jira Work Items](https://img.shields.io/badge/Jira-Track_Work-0052CC?logo=jira)](https://aspen-discovery.atlassian.net/browse/DIS)
-[![Jira Help](https://img.shields.io/badge/Confluence-Get_Jira_Help-0052CC?logo=confluence)](https://aspen-discovery.atlassian.net/wiki/spaces/tools/overview)
 [![Chat on Slack](https://img.shields.io/badge/Slack-Join_Chat-4A154B?logo=slack)](https://join.slack.com/t/aspen-discovery/shared_invite/zt-32wwwwlu8-loanw~~sUMOv~MkCEDHR4w)
 [![Mailing List](https://img.shields.io/badge/Mailing_List-Join_Now-EA4335?logo=gmail&logoColor=white)](https://groups.google.com/a/koha-us.org/g/aspen-discovery-community)
 
@@ -26,7 +25,7 @@ A flexible, open-source discovery layer that empowers libraries of all types and
 
 ### For Administrators & Users
 
-For comprehensive information on how to use Aspen Discovery, please visit our [official help documentation](https://help.aspendiscovery.org).
+For comprehensive information on how to use Aspen Discovery, please visit our [official help documentation](https://aspen-discovery.atlassian.net/wiki/spaces/Help/overview).
 
 ### For Developers
 
@@ -41,10 +40,8 @@ We welcome contributions from everyone, so don't be shy! Whether it's code, QA, 
 
 [![Developer Handbook](https://img.shields.io/badge/Dev_Handbook-Read_Now-blueviolet?style=for-the-badge&logo=github)](https://github.com/Aspen-Discovery/developer-handbook/blob/main/developer-guidelines.md)
 
-[![Join Jira](https://img.shields.io/badge/Jira-Add_Bugs_&_Enhancements-0052CC?style=for-the-badge&logo=jira)](https://aspen-discovery.atlassian.net/browse/DIS)
-[![Join Confluence](https://img.shields.io/badge/Jira_Help-Read_Now-0052CC?style=for-the-badge&logo=confluence)](https://aspen-discovery.atlassian.net/wiki/spaces/tools/overview)
-
-[![Join Help Center](https://img.shields.io/badge/Help_Center-Request_Edit_Access-ff69b4?style=for-the-badge)](https://docs.google.com/forms/d/e/1FAIpQLSeTSn4A-vk-vDCF9wOySIl24sLsLBqebLjL4xzyjJTzayDBXw/viewform)
+[![Access Jira](https://img.shields.io/badge/Jira-Add_Work_Items-0052CC?style=for-the-badge&logo=jira)](https://aspen-discovery.atlassian.net/browse/DIS)
+[![Access Confluence](https://img.shields.io/badge/Tools_Help-Read_Now-0052CC?style=for-the-badge&logo=confluence)](https://aspen-discovery.atlassian.net/wiki/spaces/tools/overview)
 
 [![Join Our Community](https://img.shields.io/badge/Community-Get_Involved-1e947d?style=for-the-badge)](https://community.aspendiscovery.org/)
 

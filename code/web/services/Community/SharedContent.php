@@ -68,6 +68,7 @@ class Community_SharedContent extends ObjectEditor {
 	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Greenhouse/Home', 'Greenhouse Home');
+		$breadcrumbs[] = new Breadcrumb('/Greenhouse/Home#greenhouse-community', 'Community');
 		$breadcrumbs[] = new Breadcrumb('/Community/SharedContent', 'Shared Content');
 		return $breadcrumbs;
 	}

@@ -36,6 +36,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 	Pattern locationsToSuppressPattern = null;
 	Pattern collectionsToSuppressPattern = null;
 	boolean includeLocationNameInDetailedLocation;
+	boolean loadLibrariesAndLocationsFromIls;
 	private char itemStatusSubfield;
 	private char itemStatusAltSubfield;
 	private Pattern statusesToSuppressPattern;
@@ -152,6 +153,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 		this.setLastCheckinFormat(indexingProfileRS.getString("lastCheckinFormat"));
 		this.setLocationSubfield(getCharFromRecordSet(indexingProfileRS,"location"));
 		this.includeLocationNameInDetailedLocation = indexingProfileRS.getBoolean("includeLocationNameInDetailedLocation");
+		this.loadLibrariesAndLocationsFromIls = indexingProfileRS.getBoolean("loadLibrariesAndLocationsFromIls");
 		try {
 			String pattern = indexingProfileRS.getString("nonHoldableLocations");
 			if (pattern != null && !pattern.isEmpty()) {
@@ -587,7 +589,11 @@ public class IndexingProfile extends BaseIndexingSettings {
 	}
 
 	public boolean isIncludeLocationNameInDetailedLocation() {
-		return  includeLocationNameInDetailedLocation;
+		return includeLocationNameInDetailedLocation;
+	}
+
+	public boolean loadLibrariesAndLocationsFromIls() {
+		return loadLibrariesAndLocationsFromIls;
 	}
 
 	public char getItemStatusSubfield() {

@@ -32,6 +32,7 @@ class GroupedWorkDisplaySetting extends DataObject {
 	public $alwaysFlagNewTitles;
 	public $showRelatedRecordLabels;
 	public $showEditionCovers;
+	public $showEarliestPublicationDateSearchResults;
 
 	// Contents of search
 	public $includeOutOfSystemExternalLinks;
@@ -47,6 +48,8 @@ class GroupedWorkDisplaySetting extends DataObject {
 
 	// Faceting
 	public $includeAllRecordsInShelvingFacets;
+	/** @noinspection PhpUnused */
+	public $includeEContentInShelvingLocations;
 	public $includeAllRecordsInDateAddedFacets;
 	public $facetCountsToShow;
 	public $facetGroupId;
@@ -75,6 +78,7 @@ class GroupedWorkDisplaySetting extends DataObject {
 	public $showFastAddSubjects;
 	public $showOtherSubjects;
 	public $showInMainDetails;
+	public $showEarliestPublicationDateFullRecord;
 	public $preferIlsDescription;
 
 	// Search options
@@ -90,6 +94,7 @@ class GroupedWorkDisplaySetting extends DataObject {
 	public $showItemNotes;
 	public $showItemBarcodes;
 	public $showCopiesForPeriodicalsWithNoItems;
+	public $whereIsItDisplayStyle;
 
 	// Series display
 	public $showIndexedSeriesWithNoveList;
@@ -317,6 +322,18 @@ class GroupedWorkDisplaySetting extends DataObject {
 						'description' => 'Sort owned editions first within editions list.',
 						'hideInLists' => true,
 					],
+					'whereIsItDisplayStyle' => [
+						'property' => 'whereIsItDisplayStyle',
+						'type' => 'enum',
+						'values' => [
+							'1' => 'Summary',
+							'2' => 'Item Details',
+						],
+						'label' => 'Where Is It Display Style',
+						'description' => 'Define whether the Where is it? displays a summary or item details.',
+						'default' => 1,
+						'hideInLists' => true,
+					],
 				]
 			],
 			// Full Record Display //
@@ -454,6 +471,13 @@ class GroupedWorkDisplaySetting extends DataObject {
 						'description' => 'Selected details will be shown in the top/main section of the full record view. Details not selected are moved to the More Details accordion.',
 						'listStyle' => 'checkboxSimple',
 						'values' => self::$showInMainDetailsOptions,
+					],
+					'showEarliestPublicationDateFullRecord' => [
+						'property' => 'showEarliestPublicationDateFullRecord',
+						'type' => 'checkbox',
+						'label' => 'Show Earliest Publication Date for Full Record',
+						'description' => 'Show Earliest Publication Date for Full Record when publication dates vary for the work',
+						'default' => true,
 					],
 					'moreDetailsOptions' => [
 						'property' => 'moreDetailsOptions',
@@ -638,6 +662,15 @@ class GroupedWorkDisplaySetting extends DataObject {
 						'default' => false,
 						'forcesReindex' => true,
 					],
+					'includeEContentInShelvingLocations' => [
+						'property' => 'includeEContentInShelvingLocations',
+						'label' => 'Include eContent in Shelf Locations Facet',
+						'description' => 'Define whether all or only physical materials are included in the Shelf Location facet.',
+						'type' => 'checkbox',
+						'hideInLists' => true,
+						'default' => 1,
+						'forcesReindex' => true,
+					],
 					'includeAllRecordsInDateAddedFacets' => [
 						'property' => 'includeAllRecordsInDateAddedFacets',
 						'type' => 'checkbox',
@@ -719,12 +752,13 @@ class GroupedWorkDisplaySetting extends DataObject {
 						'type' => 'enum',
 						'values' => [
 							2 => 'Show first 3 available copies & Where Is It link always',
-							1 => 'Show first 3 available copies  & Where Is It link only if there additional copies',
+							1 => 'Show first 3 available copies & Where Is It link only if there additional copies',
 							0 => 'Show first 3 available copies only',
 							3 => 'Show Where Is It link only',
 						],
 						'label' => 'Copy Information to show',
 						'description' => 'What to show for copy summary and in the Where Is It link.',
+						'note' => 'In Horizontal Display, only 2 copies are shown. If there are 3 copies and Where Is It is only displayed when additional copies are present, the 3rd location will be shown.',
 						'hideInLists' => true,
 					],
 					'showInSearchResultsMainDetails' => [
@@ -734,6 +768,13 @@ class GroupedWorkDisplaySetting extends DataObject {
 						'description' => 'Selected details will be shown in the main details section of a record on a search results page.',
 						'listStyle' => 'checkboxSimple',
 						'values' => self::$searchResultsMainDetailsOptions,
+					],
+					'showEarliestPublicationDateSearchResults' => [
+						'property' => 'showEarliestPublicationDateSearchResults',
+						'type' => 'checkbox',
+						'label' => 'Show Earliest Publication Date in Search Results',
+						'description' => 'Show Earliest Publication Date in Search Results when publication dates vary for the work',
+						'default' => true,
 					],
 					'showIndexedSeriesWithNoveList' => [
 						'property' => 'showIndexedSeriesWithNoveList',
