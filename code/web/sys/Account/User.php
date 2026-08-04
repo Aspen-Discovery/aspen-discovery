@@ -5863,12 +5863,27 @@ class User extends DataObject {
 			}else{
 				require_once ROOT_DIR . '/sys/TwoFactorAuthSetting.php';
 				$this->_twoFactorAuthenticationSetting = new TwoFactorAuthSetting();
+
+				// First we should check if they are required by role and have a role that requires 2FA. If so, we will return that setting.
+				$permissionRoles = $this->getRoles();
+				if (!empty($permissionRoles)) {
+					foreach ($permissionRoles as $role) {
+						$this->_twoFactorAuthenticationSetting->id = $role->twoFactorAuthSettingId;
+						if ($this->_twoFactorAuthenticationSetting->find(true)) {
+							if ($this->_twoFactorAuthenticationSetting->assignToUsersBy == "role") {
+								return $this->_twoFactorAuthenticationSetting;
+							}
+						}
+					}
+				}
+
+				// As a backup, we will check if the user is required to use 2FA based on their patron type or account profile.
+				$patronType = $this->getPTypeObj();
 				//If the user has a patron type, we will use that to determine the two factor authentication settings.
 				//Otherwise, we can use the account profile.
-				$patronType = $this->getPTypeObj();
 				if (!empty($patronType)) {
 					$this->_twoFactorAuthenticationSetting->id = $patronType->twoFactorAuthSettingId;
-				}else{
+				} else {
 					$this->_twoFactorAuthenticationSetting->accountProfileId = $this->getAccountProfile()->id;
 				}
 				if (!$this->_twoFactorAuthenticationSetting->find(true)) {
