@@ -32,7 +32,7 @@ class UserListIndexer {
 	private final Logger logger;
 	private ConcurrentUpdateHttp2SolrClient updateServer;
 	private Http2SolrClient groupedWorkServer;
-	private TreeSet<Scope> scopes;
+	private HashMap<String, Scope> scopes;
 	private HashMap<Long, Long> librariesByHomeLocation = new HashMap<>();
 	private HashMap<Long, String> locationCodesByHomeLocation = new HashMap<>();
 	private HashSet<Long> usersThatCanShareLists = new HashSet<>();
@@ -442,7 +442,7 @@ class UserListIndexer {
 		}
 		return new int[]{indexed, skippedForFewTitles};
 	}
-	TreeSet<Scope> getScopes() {
+	HashMap<String, Scope> getScopes() {
 		return this.scopes;
 	}
 

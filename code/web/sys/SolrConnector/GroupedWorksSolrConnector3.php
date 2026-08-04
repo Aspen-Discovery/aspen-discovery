@@ -300,19 +300,7 @@ class GroupedWorksSolrConnector3 extends Solr
 		}
 
 		$scopingFilters = $this->getScopingFilters($searchLibrary, $searchLocation);
-		if (!$this->editionLimitersAreDisabled()) {
-			$editionLimiter = "edition_info:$solrScope#*";
-			if (isset($format) && $limitFormat) {
-				$editionLimiter .= "#" . str_replace(' ', '_', $format);
-			} else {
-				$editionLimiter .= "#*";
-			}
-			if ($availableOnly) {
-				$options['fq'][] = "($editionLimiter#available#*) OR ($editionLimiter#available_online#*)";
-			} else {
-				$options['fq'][] = "$editionLimiter#$selectedAvailabilityToggle#*";
-			}
-		}
+		//TODO: Filter by scope here?
 
 		foreach ($scopingFilters as $filter) {
 			$options['fq'][] = $filter;
@@ -534,7 +522,7 @@ class GroupedWorksSolrConnector3 extends Solr
 		$boostFactors[] = 'max(rating,1)';
 
 		global $solrScope;
-		$boostFactors[] = "max(lib_boost_{$solrScope},1)";
+		$boostFactors[] = "max(lib_boost,1)";
 
 		return $boostFactors;
 	}
@@ -551,19 +539,7 @@ class GroupedWorksSolrConnector3 extends Solr
 
 		$filter = [];
 
-		//Simplify detecting which works are relevant to our scope
-		if (!$this->editionLimitersAreDisabled()) {
-			if (!$solrScope) {
-				//MDN: This does happen when called within migration tools
-				if (isset($searchLocation)) {
-					$filter[] = "edition_info:$searchLocation->code#*";
-				} elseif (isset($searchLibrary)) {
-					$filter[] = "edition_info:$searchLibrary->subdomain#*";
-				}
-			} else {
-				$filter[] = "edition_info:$solrScope#*";
-			}
-		}
+		$filter[] = '{!parent which="recordtype:grouped_work" tag=scope_filter}(scope:' . $solrScope . ')';
 
 		global $activeLanguage;
 		if ($activeLanguage != null && $activeLanguage->code != 'en') {

@@ -1490,7 +1490,7 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 		if (relatedRecords.containsKey(recordIdentifierWithType)) {
 			return relatedRecords.get(recordIdentifierWithType);
 		} else {
-			RecordInfo newRecord = new RecordInfo(source, recordIdentifier, this);
+			RecordInfo newRecord = new RecordInfo(source, recordIdentifier);
 			relatedRecords.put(recordIdentifierWithType, newRecord);
 			return newRecord;
 		}
@@ -1502,7 +1502,7 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 		if (relatedRecords.containsKey(recordIdentifierWithType)) {
 			return relatedRecords.get(recordIdentifierWithType);
 		} else {
-			RecordInfo newRecord = new RecordInfo(source, recordIdentifier, this);
+			RecordInfo newRecord = new RecordInfo(source, recordIdentifier);
 			newRecord.setSubSource(subSource);
 			relatedRecords.put(recordIdentifierWithType, newRecord);
 			return newRecord;
@@ -1733,7 +1733,6 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 					foundVariations.add(variationId);
 
 					long itemId = groupedWorkIndexer.saveItemForRecord(recordId, variationId, itemInfo, existingItems, callNumberIds);
-					itemInfo.setDatabaseId(itemId);
 					if (itemId != -1) {
 						foundItems.add(itemId);
 					}

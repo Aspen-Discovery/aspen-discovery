@@ -1,13 +1,19 @@
 package org.aspen_discovery.reindexer;
 
+import org.apache.solr.common.SolrInputDocument;
+
+import java.util.HashSet;
 import java.util.Objects;
 
-class VariationInfo {
-	public Long id;
+public class VariationInfo {
+	public Long databaseId;
+	private String primaryLanguage;
 	public long primaryLanguageId;
+	private String eContentSource;
 	public long eContentSourceId;
 	public long formatId;
 	public long formatCategoryId;
+	private final HashSet<RecordInfo> records = new HashSet<>();
 
 	public boolean equals(VariationInfo o) {
 		return primaryLanguageId == o.primaryLanguageId &&
