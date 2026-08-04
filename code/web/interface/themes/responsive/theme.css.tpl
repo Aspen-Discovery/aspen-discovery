@@ -208,6 +208,12 @@ div.striped > div:nth-child(odd), div.striped > div:nth-child(odd){ldelim}
     border-color: {$closedPanelForegroundColor}70;
 {rdelim}
 
+/* Make panel title links fill the available heading area for easier clicking */
+.panel-title > a.panel-toggle-full, .panel-toggle-full{ldelim}
+    display: block;
+    width: 100%;
+{rdelim}
+
 .panel-default{ldelim}
 	border-color: {$closedPanelForegroundColor}70;
 {rdelim}
