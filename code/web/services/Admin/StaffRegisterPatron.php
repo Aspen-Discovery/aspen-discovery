@@ -44,7 +44,7 @@ class Admin_StaffRegisterPatron extends Admin_Admin {
 		$interface->assign('isSelfRegistration', false);
 		$interface->assign('initializationJs', $this->getInitializationJs());
 		$interface->assign('staffRegForm', $interface->fetch('DataObjectUtil/objectEditForm.tpl'));
-		$interface->assign('categoryMeta', $this->_catalogDriver->getPatronCategoryMetadata());
+		$interface->assign('categoryMeta', json_encode($this->_catalogDriver->getPatronCategoryMetadata()));
 		$interface->assign('childNeedsGuarantor', $this->_catalogDriver->getChildNeedsGuarantor());
 
 		if ($error !== null) {
