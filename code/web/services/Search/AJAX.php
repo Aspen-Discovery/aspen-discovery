@@ -258,18 +258,38 @@ class AJAX extends JSON_Action {
 	 * @noinspection PhpUnused
 	 */
 	function getSpotlightTitles(): array {
-		global $interface;
-		$listName = strip_tags($_GET['scrollerName'] ?? 'List' . $_GET['id']);
-		$interface->assign('listName', $listName);
+		global $interface, $memCache;
 
+		$listId = $_REQUEST['id'] ?? 0;
+		$scrollerName = strip_tags($_REQUEST['scrollerName'] ?? ('List' . $listId));
+		$coverSize = $_REQUEST['coverSize'] ?? 'medium';
+		$cacheKey = "spotlight_titles_" . $listId;
+
+		$interface->assign('listName', $scrollerName);
+
+		// 1. Check Cache
+		if ($memCache) {
+			$cachedResult = $memCache->get($cacheKey);
+			if ($cachedResult !== false && empty($_REQUEST['reload'])) {
+				// Re-hydrate formattedTitle for cached titles
+				foreach ($cachedResult['titles'] as $index => &$item) {
+					$item['formattedTitle'] = $this->buildFormattedTitle($item, $scrollerName, $index, $coverSize);
+				}
+				return $cachedResult;
+			}
+		}
+
+		// 2. Cache Miss: Execute regular fetch logic
 		require_once ROOT_DIR . '/sys/LocalEnrichment/CollectionSpotlightList.php';
 		$collectionSpotlightList = new CollectionSpotlightList();
-		$collectionSpotlightList->id = $_REQUEST['id'];
+		$collectionSpotlightList->id = $listId;     
+		
 		if ($collectionSpotlightList->find(true)) {
 			$result = [
 				'success' => true,
 				'titles' => [],
 			];
+
 			require_once ROOT_DIR . '/sys/LocalEnrichment/CollectionSpotlight.php';
 			$collectionSpotlight = new CollectionSpotlight();
 			$collectionSpotlight->id = $collectionSpotlightList->collectionSpotlightId;
@@ -277,6 +297,7 @@ class AJAX extends JSON_Action {
 
 			$interface->assign('collectionSpotlight', $collectionSpotlight);
 			$interface->assign('showViewMoreLink', $collectionSpotlight->showViewMoreLink);
+
 			if ($collectionSpotlightList->sourceListId != null && $collectionSpotlightList->sourceListId > 0) {
 				require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 				$sourceList = new UserList();
@@ -285,8 +306,7 @@ class AJAX extends JSON_Action {
 					$result['listTitle'] = $sourceList->title;
 					$result['listDescription'] = $sourceList->description;
 					$result['titles'] = $sourceList->getSpotlightTitles($collectionSpotlight);
-					$currentIndex = 0;
-					$result['currentIndex'] = $currentIndex;
+					$result['currentIndex'] = 0;
 				}
 				$result['searchUrl'] = '/MyAccount/MyList/' . $collectionSpotlightList->sourceListId;
 			} elseif ($collectionSpotlightList->sourceCourseReserveId != null && $collectionSpotlightList->sourceCourseReserveId > 0) {
@@ -297,33 +317,83 @@ class AJAX extends JSON_Action {
 					$result['listTitle'] = $sourceList->getTitle();
 					$result['listDescription'] = '';
 					$result['titles'] = $sourceList->getSpotlightTitles($collectionSpotlight);
-					$currentIndex = 0;
-					$result['currentIndex'] = $currentIndex;
+					$result['currentIndex'] = 0;
 				}
 				$result['searchUrl'] = '/CourseReserves/' . $collectionSpotlightList->sourceCourseReserveId;
 			} else {
 				$searchObject = $collectionSpotlightList->getSearchObject();
-
 				$searchObject->processSearch();
 
 				$result['listTitle'] = $collectionSpotlightList->name;
 				$result['listDescription'] = '';
-				if (method_exists($searchObject, 'getSpotlightResults')) {
-					$result['titles'] = $searchObject->getSpotlightResults($collectionSpotlight);
-				}else{
-					$result['titles'] = [];
+				$result['titles'] = method_exists($searchObject, 'getSpotlightResults') 
+					? $searchObject->getSpotlightResults($collectionSpotlight) 
+					: [];
+				$result['currentIndex'] = 0;
+			}
+
+			// 3. Prepare Lightweight Payload for Caching
+			$cachePayload = $result;
+			if (!empty($cachePayload['titles'])) {
+				foreach ($cachePayload['titles'] as &$item) {
+					// Extract record ID from HTML string if not explicitly set
+					if (empty($item['id']) && !empty($item['formattedTitle'])) {
+						if (preg_match('#/GroupedWork/([^/]+)/Home#', $item['formattedTitle'], $matches)) {
+							$item['id'] = $matches[1];
+						} elseif (preg_match('#bookcover\.php\?[^"]*id=([^&"#]+)#', $item['formattedTitle'], $matches)) {
+							$item['id'] = $matches[1];
+						}
+					}
+					unset($item['formattedTitle']); // Drop bloated HTML string before storing
 				}
 
-				$currentIndex = 0;
-				$result['currentIndex'] = $currentIndex;
+				// 4. Save Lightweight Data to Cache (1 hour)
+				if ($memCache) {
+					$memCache->set($cacheKey, $cachePayload, 3600);
+				}
 			}
+
+			// 5. Ensure formattedTitle is present on live un-cached response
+			if (!empty($result['titles'])) {
+				foreach ($result['titles'] as $index => &$item) {
+					if (empty($item['id']) && !empty($item['formattedTitle'])) {
+						if (preg_match('#/GroupedWork/([^/]+)/Home#', $item['formattedTitle'], $matches)) {
+							$item['id'] = $matches[1];
+						}
+					}
+					if (!isset($item['formattedTitle']) || empty($item['id'])) {
+						$item['formattedTitle'] = $this->buildFormattedTitle($item, $scrollerName, $index, $coverSize);
+					}
+				}
+			}
+
 			return $result;
-		} else {
-			return [
-				'success' => false,
-				'message' => 'Information for the carousel list could not be found.',
-			];
 		}
+
+		return [
+			'success' => false,
+			'message' => 'Information for the carousel list could not be found.',
+		];
+	}
+
+	private function buildFormattedTitle(array $item, string $scrollerName, int $index, string $coverSize = 'medium'): string {
+		$id = htmlspecialchars($item['id'] ?? '', ENT_QUOTES);
+		$title = htmlspecialchars($item['title'] ?? '', ENT_QUOTES);
+		$type = htmlspecialchars($item['type'] ?? 'grouped_work', ENT_QUOTES);
+		$category = htmlspecialchars($item['category'] ?? 'Books', ENT_QUOTES);
+		$scrollerNameClean = preg_replace('/\W/', '', $scrollerName);
+
+		$link = "/GroupedWork/{$id}/Home";
+		$imgSrc = "/bookcover.php?id={$id}&size={$coverSize}&type={$type}&category={$category}";
+
+		return '<div id="scrollerTitle' . $scrollerNameClean . $index . '" class="carouselScrollerTitle">' .
+			'<a href="' . $link . '" tabindex="1">' .
+				'<div class="carouselScrollerTitleImage">' .
+					'<img src="' . $imgSrc . '" class="scrollerTitleCover" alt="' . $title . ' Cover" aria-hidden="true"/>' .
+				'</div>' .
+				'<div class="carouselScrollerTitleLabel"><span>' . $title . '</span></div>' .
+			'</a>' .
+		'</div>';
 	}
 
 	/** @noinspection PhpUnused */
