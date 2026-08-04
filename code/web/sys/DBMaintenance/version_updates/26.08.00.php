@@ -26,6 +26,25 @@ function getUpdates26_08_00(): array {
 		], //name
 
 		//kirstien
+		'add_twoFactorAuthSettingId_to_roles' => [
+			'title' => 'Add twoFactorAuthSettingId to roles table',
+			'description' => 'Adds a column to store a twoFactorAuthSettingId for each role.',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE roles ADD COLUMN twoFactorAuthSettingId INT(11) DEFAULT -1",
+			]
+		],
+		//add_twoFactorAuthSettingId_to_roles
+		'add_assignToUsersBy_to_two_factor_auth_settings' => [
+			'title' => 'Add assignToUsersBy to two_factor_auth_settings table',
+			'description' => 'Adds a column to store how to assign two factor auth settings to users.',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE two_factor_auth_settings ADD COLUMN assignToUsersBy VARCHAR(25) DEFAULT 'patronType'",
+				"UPDATE two_factor_auth_settings SET assignToUsersBy = 'patronType' WHERE NULL",
+			]
+		],
+		//add_assignToUsersBy_to_two_factor_auth_settings
 
 		//kodi
 		'permissions_search_settings' => [

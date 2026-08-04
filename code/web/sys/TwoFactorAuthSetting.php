@@ -10,9 +10,11 @@ class TwoFactorAuthSetting extends DataObject {
 	public $allowEmail;
 	public $allowTotp;
 	public $issuerTOTP;
+	public $assignToUsersBy;
 
 	private $_libraries;
 	private $_ptypes;
+	private $_roles;
 
 	static $_objectStructure = [];
 	static function getObjectStructure(string $context = ''): array {
@@ -29,11 +31,17 @@ class TwoFactorAuthSetting extends DataObject {
 
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Libraries'));
 		$ptypeList = PType::getPatronTypeList();
+		$roleList = Role::getRoleList();
 
 		$requiredList = [
 			'notAvailable' => 'No',
 			'optional' => 'Yes, but optional',
 			'mandatory' => 'Yes, and mandatory',
+		];
+
+		$assignToUsersByList = [
+			'patronType' => 'Require By Library and/or Patron Type (ILS)',
+			'role' => 'Require By Role (Permissions/Local)',
 		];
 
 		$structure = [
@@ -94,7 +102,15 @@ class TwoFactorAuthSetting extends DataObject {
 				'label' => 'Denied Access Message',
 				'description' => 'Instructions on account access when a user cannot authenticate.',
 				'hideInLists' => true,
-			]
+			],
+			'assignToUsers' => [
+				'property' => 'assignToUsers',
+				'type' => 'enum',
+				'label' => 'Assign to Users By',
+				'description' => 'Select how to assign this setting to users.',
+				'values' => $assignToUsersByList,
+				'onchange' => 'return AspenDiscovery.Admin.toggle2FAAssignOptions();',
+			],
 		];
 		if ($context != 'addNew') {
 			$structure['libraries'] = [
@@ -112,6 +128,14 @@ class TwoFactorAuthSetting extends DataObject {
 				'label' => 'Patron Types',
 				'values' => $ptypeList,
 				'description' => 'Define patron types that use this setting.',
+			];
+			$structure['roles'] = [
+				'property' => 'roles',
+				'type' => 'multiSelect',
+				'listStyle' => 'checkboxSimple',
+				'label' => 'Roles',
+				'values' => $roleList,
+				'description' => 'Define roles that use this setting.',
 			];
 		}
 
@@ -136,6 +160,10 @@ class TwoFactorAuthSetting extends DataObject {
 		if (isset($structure['ptypes'])) {
 			$ptypeList = PType::getPatronTypeList(false, false, $this->accountProfileId);
 			$structure['ptypes']['values'] = $ptypeList;
+		}
+		if (isset($structure['roles'])) {
+			$roleList = Role::getRoleList();
+			$structure['roles']['values'] = $roleList;
 		}
 
 		return $structure;
@@ -164,6 +192,17 @@ class TwoFactorAuthSetting extends DataObject {
 				}
 			}
 			return $this->_ptypes;
+		} elseif ($name == 'roles') {
+			if (!isset($this->_roles) && $this->id) {
+				$this->_roles = [];
+				$obj = new Role();
+				$obj->twoFactorAuthSettingId = $this->id;
+				$obj->find();
+				while ($obj->fetch()) {
+					$this->_roles[$obj->roleId] = $obj->roleId;
+				}
+			}
+			return $this->_roles;
 		} else {
 			return parent::__get($name);
 		}
@@ -174,6 +213,8 @@ class TwoFactorAuthSetting extends DataObject {
 			$this->_libraries = $value;
 		} elseif ($name == 'ptypes') {
 			$this->_ptypes = $value;
+		} elseif ($name == 'roles') {
+			$this->_roles = $value;
 		} else {
 			parent::__set($name, $value);
 		}
@@ -184,6 +225,7 @@ class TwoFactorAuthSetting extends DataObject {
 		if ($ret !== FALSE) {
 			$this->saveLibraries();
 			$this->savePatronTypes();
+			$this->saveRoles();
 		}
 		return $ret;
 	}
@@ -193,6 +235,7 @@ class TwoFactorAuthSetting extends DataObject {
 		if ($ret !== FALSE) {
 			$this->saveLibraries();
 			$this->savePatronTypes();
+			$this->saveRoles();
 		}
 		return $ret;
 	}
@@ -244,6 +287,31 @@ class TwoFactorAuthSetting extends DataObject {
 				}
 			}
 			unset($this->_ptypes);
+		}
+	}
+
+	public function saveRoles(): void {
+		if (isset ($this->_roles) && is_array($this->_roles)) {
+			$roleList = Role::getRoleList();
+			foreach ($roleList as $id => $roleName) {
+				$role = new Role();
+				$role->roleId = $id;
+				$role->find(true);
+				if (in_array($role->roleId, $this->_roles)) {
+					//We want to apply the scope to this Role
+					if ($role->twoFactorAuthSettingId != $this->id) {
+						$role->twoFactorAuthSettingId = $this->id;
+						$role->update();
+					}
+				} else {
+					//It should not be applied to this Role. Only change if it was applied to the Role
+					if ($role->twoFactorAuthSettingId == $this->id) {
+						$role->twoFactorAuthSettingId = -1;
+						$role->update();
+					}
+				}
+			}
+			unset($this->_roles);
 		}
 	}
 

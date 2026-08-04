@@ -9097,6 +9097,22 @@ AspenDiscovery.Admin = (function () {
 				$('#propertyRowissuerTOTP').hide();
 			}
 		},
+		toggle2FAAssignOptions: function () {
+			$('#propertyRowlibraries').hide();
+			$('#propertyRowptypes').hide();
+			$('#propertyRowroles').hide();
+
+			var assignBy = $("#assignToUsersSelect").val();
+			if (assignBy === "role") {
+				$('#propertyRowlibraries').hide();
+				$('#propertyRowptypes').hide();
+				$('#propertyRowroles').show();
+			} else {
+				$('#propertyRowlibraries').show();
+				$('#propertyRowptypes').show();
+				$('#propertyRowroles').hide();
+			}
+		},
 		configureRateLimits: function () {
 			var url = Globals.path + "/OAuth2/RateLimitingAJAX";
 			var params = {
@@ -13459,7 +13475,6 @@ AspenDiscovery.GroupedWork = (function(){
 
 			document.getElementById('selectedEditionOption').value = value;
 
-			// Preserve existing behavior that ran on the select's onchange
 			AspenDiscovery.GroupedWork.showEditionSwiper();
 		},
 		showEditionSwiper: function () {
@@ -16701,7 +16716,7 @@ AspenDiscovery.Record = (function () {
 			$('input[name="hyperholdRecord[]"]:checked').each(function () {
 				selected.push($(this).val());
 			});
-			
+
 			const pickupBranch = $('#hyperholdPickupBranch').val();
 
 			const params = {
@@ -18537,37 +18552,38 @@ AspenDiscovery.WebBuilder = function () {
 			});
 		},
 
-		getWebResource(id, fromPlacard = false, existingTab = null) {
+		getWebResource(id, fromPlacard = false) {
 			const url = `${Globals.path}/WebBuilder/AJAX`;
-			const params = { method: "getWebResource", resourceId: id };
-
-			// Open the tab synchronously on the ORIGINAL click, while we still have
-			// a user gesture. On the retry-after-login call we reuse the same tab
-			// instead of opening a new one (which would be blocked by most browsers).
-			let newTab = existingTab;
-			if (newTab === null) {
-				newTab = window.open("", '_blank');
-			}
+			const params = {
+				method: "getWebResource",
+				resourceId: id
+			};
 
 			$.getJSON(url, params, (data) => {
 				const { requireLogin, canView, openInNewTab, url: resourceUrl, userNoAccessTitle, userNoAccessMessage } = data;
 
 				const openResource = () => {
 					if (openInNewTab) {
-						if (newTab) {
-							newTab.location.href = resourceUrl;
+						const newTab = window.open("", '_blank');
+						if (newTab == null) {
+							location.assign(resourceUrl);
 						} else {
-							location.assign(resourceUrl); // popup was blocked even on first click
+							newTab.location.href = resourceUrl;
 						}
 					} else {
-						if (newTab) newTab.close(); // we speculatively opened one but don't need it
 						location.assign(resourceUrl);
 					}
 				};
 
 				const trackUsage = (authType) => {
-					const trackParams = { method: "trackWebResourceUsage", id, authType };
-					if (fromPlacard) trackParams.fromPlacard = 1;
+					const trackParams = {
+						method: "trackWebResourceUsage",
+						id,
+						authType
+					};
+					if (fromPlacard) {
+						trackParams.fromPlacard = 1;
+					}
 					$.getJSON(url, trackParams, () => openResource());
 				};
 
@@ -18575,18 +18591,14 @@ AspenDiscovery.WebBuilder = function () {
 					if (Globals.loggedIn && canView) {
 						trackUsage(Globals.loggedIn ? "user" : "library");
 					} else if (Globals.loggedIn && !canView) {
-						if (newTab) newTab.close();
 						AspenDiscovery.showMessage(userNoAccessTitle, userNoAccessMessage);
 					} else {
-						AspenDiscovery.Account.ajaxLogin(null, () => AspenDiscovery.WebBuilder.getWebResource(id, fromPlacard, newTab), true);
+						AspenDiscovery.Account.ajaxLogin(null, () => AspenDiscovery.WebBuilder.getWebResource(id, fromPlacard), true);
 					}
 				} else {
 					trackUsage("none");
 				}
-			}).fail(() => {
-				if (newTab) newTab.close();
-				AspenDiscovery.ajaxFail();
-			});
+			}).fail(AspenDiscovery.ajaxFail);
 
 			return false;
 		},
