@@ -110,7 +110,7 @@ class webhooks_ExpoEASBuild extends Action {
 
 		if($expoEASBuildWebhook && $hash) {
 			foreach (getallheaders() as $name => $value) {
-				if($name == 'Expo-Signature' || $name == 'expo-signature') {
+				if(strcasecmp($name, 'Expo-Signature') === 0) {
 					$logger->log($value, Logger::LOG_ERROR);
 					if(hash_equals($hash, $value)) {
 						$logger->log('Keys match. Request validated.', Logger::LOG_ERROR);
