@@ -3154,7 +3154,7 @@ AspenDiscovery.Admin = (function () {
 			$('#propertyRowptypes').hide();
 			$('#propertyRowroles').hide();
 
-			var assignBy = $("#assignToUsersSelect").val();
+			var assignBy = $("#assignToUsersBySelect").val();
 			if (assignBy === "role") {
 				$('#propertyRowlibraries').hide();
 				$('#propertyRowptypes').hide();

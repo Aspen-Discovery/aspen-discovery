@@ -103,8 +103,8 @@ class TwoFactorAuthSetting extends DataObject {
 				'description' => 'Instructions on account access when a user cannot authenticate.',
 				'hideInLists' => true,
 			],
-			'assignToUsers' => [
-				'property' => 'assignToUsers',
+			'assignToUsersBy' => [
+				'property' => 'assignToUsersBy',
 				'type' => 'enum',
 				'label' => 'Assign to Users By',
 				'description' => 'Select how to assign this setting to users.',
