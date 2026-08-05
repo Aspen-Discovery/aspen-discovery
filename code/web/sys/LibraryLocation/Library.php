@@ -2801,7 +2801,7 @@ class Library extends DataObject {
 								'type' => 'checkbox',
 								'label' => 'Enable Patron ILS Registration By Staff',
 								'description' => 'If enabled, staff with the Register Patrons permission can create ILS patron accounts from within Aspen.',
-								'note' => 'Applies to Koha only', // true at the point of submission of DIS-2287
+								'note' => 'Applies to Koha only. Enabling this allows staff members to access the \'Register Patron\' feature on this library site, makes this library\'s branches selectable as a new patron\'s home library from any library\'s staff registration form, and allows registrations of new patrons by staff to this library.', // true at the point of submission of DIS-2287
 								'hideInLists' => true,
 							],
 							'messageBeeSettingId' => [
