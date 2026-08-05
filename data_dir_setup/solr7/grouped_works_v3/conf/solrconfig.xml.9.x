@@ -914,11 +914,13 @@
         corporate_name_facet^50
         content_rating
         accelerated_reader_interest_level
+        mpaa_rating
       </str>
       <str name="mlt.mintf">1</str>
       <str name="mlt.mindf">2</str>
       <str name="mlt.maxdf">10000</str>
       <str name="mlt.boost">true</str>
+      <str name="mlt.useDocValuesForFields">true</str>
     </lst>
   </requestHandler>
 
@@ -1044,7 +1046,7 @@
   <searchComponent name="suggest" class="solr.SuggestComponent">
     <lst name="suggester">
       <str name="name">title_suggestions</str>
-      <str name="lookupImpl">BlendedInfixLookupFactory</str>
+      <str name="lookupImpl">FuzzyLookupFactory</str>
       <str name="dictionaryImpl">DocumentDictionaryFactory</str>
       <str name="field">title_suggestions</str>
       <str name="weightField">popularity</str>
@@ -1066,7 +1068,7 @@
     </lst>
     <lst name="suggester">
       <str name="name">author_suggestions</str>
-      <str name="lookupImpl">BlendedInfixLookupFactory</str>
+      <str name="lookupImpl">FuzzyLookupFactory</str>
       <str name="dictionaryImpl">DocumentDictionaryFactory</str>
       <str name="field">author_suggestions</str>
       <str name="weightField">popularity</str>
@@ -1088,7 +1090,7 @@
     </lst>
     <lst name="suggester">
       <str name="name">subject_suggestions</str>
-      <str name="lookupImpl">BlendedInfixLookupFactory</str>
+      <str name="lookupImpl">FuzzyLookupFactory</str>
       <str name="dictionaryImpl">DocumentDictionaryFactory</str>
       <str name="field">subject_suggestions</str>
       <str name="weightField">popularity</str>

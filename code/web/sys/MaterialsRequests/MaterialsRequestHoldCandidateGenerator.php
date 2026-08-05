@@ -211,7 +211,7 @@ function checkForExistingTitleForRequest($format, $title, $author, $isbn, $issn,
 	require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestFormat.php';
 	require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestFormatMapping.php';
 
-	/** @var SearchObject_GroupedWorkSearcher2 $searchObject */
+	/** @var SearchObject_AbstractGroupedWorkSearcher $searchObject */
 	$searchObject = SearchObjectFactory::initSearchObject();
 	$searchObject->init();
 	$searchObject->clearFacets();

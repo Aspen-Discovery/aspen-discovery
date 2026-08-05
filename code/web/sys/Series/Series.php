@@ -320,7 +320,7 @@ class Series extends DataObject {
 			}
 
 			//Filter to remove anything that is not part of this scope.
-			/** @var SearchObject_GroupedWorkSearcher2|false $searchObject */
+			/** @var SearchObject_AbstractGroupedWorkSearcher|false $searchObject */
 			$searchObject = SearchObjectFactory::initSearchObject($source);
 			if ($searchObject === false) {
 				AspenError::raiseError("Unknown Series Member Source $source");
@@ -449,7 +449,7 @@ class Series extends DataObject {
 		//Load the actual items from each source
 		$listResults = [];
 		foreach ($filteredIdsBySource as $sourceType => $sourceIds) {
-			/** @var SearchObject_GroupedWorkSearcher2|false $searchObject */
+			/** @var SearchObject_AbstractGroupedWorkSearcher|false $searchObject */
 			$searchObject = SearchObjectFactory::initSearchObject($sourceType);
 			if ($searchObject === false) {
 				AspenError::raiseError("Unknown Series Member Source $sourceType");

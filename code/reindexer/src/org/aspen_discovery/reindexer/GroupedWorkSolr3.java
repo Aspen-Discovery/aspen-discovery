@@ -13,15 +13,15 @@ import org.apache.solr.common.SolrInputField;
 import java.util.*;
 import java.util.regex.Pattern;
 
-public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneable {
+public class GroupedWorkSolr3 extends AbstractGroupedWorkSolr implements Cloneable {
 
 
-	public GroupedWorkSolr2(GroupedWorkIndexer groupedWorkIndexer, Logger logger) {
+	public GroupedWorkSolr3(GroupedWorkIndexer groupedWorkIndexer, Logger logger) {
 		super(groupedWorkIndexer, logger);
 	}
 
-	public GroupedWorkSolr2 clone() throws CloneNotSupportedException {
-		GroupedWorkSolr2 clonedWork = (GroupedWorkSolr2) super.clone();
+	public GroupedWorkSolr3 clone() throws CloneNotSupportedException {
+		GroupedWorkSolr3 clonedWork = (GroupedWorkSolr3) super.clone();
 		super.cloneCollectionData(clonedWork);
 
 		return clonedWork;
@@ -64,15 +64,6 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 			if (primaryAuthor != null && !primaryAuthor.isEmpty()){ //skip if empty so titles with no author are sorted last
 				primaryAuthor = primaryAuthor.toLowerCase();
 				doc.addField("author_sort", primaryAuthor);
-
-				if (author2Role != null) { // remove primary author from author2-role field only if the role is also "author"
-					String normalizedPrimaryAuthor = primaryAuthor.trim().toLowerCase();
-					author2Role.removeIf(role -> {
-						if (role == null) return false;
-						String normalizedRole = role.trim().toLowerCase();
-						return normalizedRole.contains(normalizedPrimaryAuthor) && normalizedRole.contains("author");
-					});
-				}
 			}
 
 			doc.addField("auth_author2", authAuthor2);
@@ -396,19 +387,6 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 	protected void addScopedFieldsToDocument(SolrInputDocument doc, BaseIndexingLogEntry logEntry) {
 		//Load information based on scopes.  This has some pretty severe performance implications since we potentially
 		//have a lot of scopes and a lot of items & records.
-		boolean storeRecordDetailsInSolr = groupedWorkIndexer.isStoreRecordDetailsInSolr();
-		try {
-			if (storeRecordDetailsInSolr) {
-				for (RecordInfo curRecord : relatedRecords.values()) {
-					doc.addField("record_details", curRecord.getDetails());
-					for (ItemInfo curItem : curRecord.getRelatedItems()) {
-						doc.addField("item_details", curItem.getDetails(logEntry));
-					}
-				}
-			}
-		}catch (Exception e){
-			logEntry.incErrors("Error setting up record details and item details for " + id, e);
-		}
 
 		HashSet<String> editionInfo = new HashSet<>();
 
@@ -428,8 +406,6 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 		for (String scopeName : relatedScopes.keySet()){
 			try{
 				int numAvailableCopies = 0;
-
-				HashSet<String> scopingDetailsForScope = new HashSet<>();
 
 				HashSet<String> localCallNumbersForScope = new HashSet<>();
 
@@ -453,10 +429,6 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 
 				//Process all items for the scope
 				for (ScopingInfo scopingInfo : itemsWithScopingInfoForActiveScope) {
-					if (storeRecordDetailsInSolr) {
-						scopingDetailsForScope.add(scopingInfo.getScopingDetails());
-					}
-
 					ArrayList<String> formatsForItem;
 					ArrayList<String> formatsCategoriesForItem;
 					HashSet<String> availableAtForItem = new HashSet<>();
@@ -617,9 +589,6 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 				if (formats.contains(scopeName + "#VOX Books")) {
 					formatCategories.add(scopeName + "#Books");
 					formatCategories.add(scopeName + "#Audio Books");
-				}
-				if (storeRecordDetailsInSolr) {
-					doc.addField("scoping_details_" + scopeName, scopingDetailsForScope);
 				}
 
 				if (daysSinceAddedForScope != null){
