@@ -76,6 +76,11 @@ class Admin_StaffRegisterPatron extends Admin_Admin {
 			return;
 		}
 
+		if (!$this->isBranchEnabledForStaffRegistration($branchcode)) {
+			$this->renderForm('Staff patron registration is not enabled for the selected home library.', $input);
+			return;
+		}
+
 		if (!$this->canRegisterPatronForBranch($branchcode)) {
 			$this->renderForm('You do not have permission to register patrons for the selected home library.', $input);
 			return;
@@ -149,6 +154,17 @@ class Admin_StaffRegisterPatron extends Admin_Admin {
 		}
 
 		return $user->canRegisterIlsPatronForLocation($location);
+	}
+
+	private function isBranchEnabledForStaffRegistration(string $branchcode): bool {
+		$location = new Location();
+		$location->code = $branchcode;
+		if (!$location->find(true)) {
+			return false;
+		}
+
+		$library = $location->getParentLibrary();
+		return $library != null && !empty($library->enablePatronIlsRegistrationByStaff);
 	}
 
 	private function displayError(string $error): void {
