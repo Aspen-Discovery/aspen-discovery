@@ -467,6 +467,10 @@
 		<field name="user_not_interested_link" type="integer" indexed="true" stored="false" multiValued="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 		<field name="user_reading_history_link" type="integer" indexed="true" stored="false" multiValued="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 
+		<field name="list_link" type="integer" indexed="true" stored="false" multiValued="true"/>
+		<dynamicField name="list_entry_weight_*" type="integer" indexed="true" docValues="true" stored="false" multiValued="true"/>
+		<dynamicField name="list_entry_date_added_*" type="integer" indexed="true" docValues="true" stored="false" multiValued="true"/>
+
 		<!-- This is used for Context Filter Query when loading suggestions -->
 		<field name="suggestions_context_filter" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 
