@@ -58,7 +58,7 @@ class SeriesIndexer {
 			System.exit(-7);
 		}
 		//Get the search version from system variables
-		int searchVersion = 1;
+		int searchVersion = 2;
 		try {
 			PreparedStatement searchVersionStmt = dbConn.prepareStatement("SELECT searchVersion from system_variables");
 			ResultSet searchVersionRS = searchVersionStmt.executeQuery();
@@ -70,11 +70,9 @@ class SeriesIndexer {
 			logger.error("Error loading search version", e);
 		}
 		Http2SolrClient.Builder groupedWorkHttpBuilder;
-		if (searchVersion == 1) {
-			groupedWorkHttpBuilder = new Http2SolrClient.Builder("http://" + solrHost + ":" + solrPort + "/solr/grouped_works");
-		}else{
+		//if (searchVersion == 2) {
 			groupedWorkHttpBuilder = new Http2SolrClient.Builder("http://" + solrHost + ":" + solrPort + "/solr/grouped_works_v2");
-		}
+		//}
 		groupedWorkServer = groupedWorkHttpBuilder.build();
 
 		scopes = IndexingUtils.loadScopes(dbConn, logger);

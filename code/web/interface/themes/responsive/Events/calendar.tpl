@@ -22,6 +22,10 @@
 				<input type="hidden" name="month" value="{$monthNumber}">
 				<input type="hidden" name="year" value="{$yearNumber}">
 				{if $useWeek}<input type="hidden" name="week" value="{$weekNumber}">{/if}
+				{if !empty($embedSuffix)}
+					<input type="hidden" name="embed" value="true">
+					{if strstr($embedSuffix, 'resizeIframe')}<input type="hidden" name="resizeIframe" value="on">{/if}
+				{/if}
 			</form>
 		</div>
 	</div>

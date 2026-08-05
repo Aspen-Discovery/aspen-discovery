@@ -30,7 +30,7 @@ mv /etc/my.cnf /etc/my.cnf.old
 cp my.cnf /etc/my.cnf
 systemctl start mariadb
 systemctl enable mariadb
-yum -y install java-1.8.0-openjdk
+yum -y install java-17-openjdk
 yum -y install unzip
 yum -y install strace
 yum -y install mytop
@@ -63,6 +63,8 @@ mysql_secure_installation
 echo "Enter the timezone of the server"
 read timezone
 timedatectl set-timezone $timezone
+
+bash ./install_solr_9.sh
 
 #Setup LogRotate
 cp install/logrotate.conf /etc/logrotate.d/aspen_discovery

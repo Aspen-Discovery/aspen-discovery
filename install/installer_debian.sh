@@ -19,6 +19,8 @@ cp 60-aspen.cnf /etc/mysql/mariadb.conf.d/
 a2enmod rewrite
 systemctl restart apache2 mysql
 
+bash ./install_solr_9.sh
+
 # Create temp smarty directories
 mkdir -m 0755 -p /usr/local/aspen-discovery/tmp
 chown -R www-data:www-data /usr/local/aspen-discovery/tmp
