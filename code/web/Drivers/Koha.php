@@ -3966,7 +3966,7 @@ class Koha extends AbstractIlsDriver {
 	}
 
 	function getSelfRegistrationFields($type = 'selfReg') {
-		$fields = $this->buildRegistrationFieldStructure($type);
+		$fields = $this->buildSelfRegistrationFieldStructure($type);
 
 		if ($type === 'selfReg') {
 			$mandatorySyspref = 'PatronSelfRegistrationBorrowerMandatoryField';
@@ -4005,12 +4005,6 @@ class Koha extends AbstractIlsDriver {
 		}
 		$results->close();
 
-		if ($type !== 'selfReg' || strlen($kohaPreferences['PatronSelfRegistrationLibraryList']) == 0) {
-			$validLibraries = [];
-		} else {
-			$validLibraries = array_flip(explode('|', $kohaPreferences['PatronSelfRegistrationLibraryList']));
-		}
-
 		$validTitles = [
 			'' => ''
 		];
@@ -4021,104 +4015,11 @@ class Koha extends AbstractIlsDriver {
 		}
 
 		$fields = [];
-		$location = new Location();
-
-		$pickupLocations = [];
-		if ($type == 'selfReg') {
-			if ($library->selfRegistrationLocationRestrictions == 1) {
-				//Library Locations
-				$location->libraryId = $library->libraryId;
-				$location->orderBy('isMainBranch DESC, displayName');
-			} elseif ($library->selfRegistrationLocationRestrictions == 2) {
-				//Valid pickup locations
-				$location->whereAdd('validSelfRegistrationBranch <> 2');
-				$location->orderBy('isMainBranch DESC, displayName');
-			} elseif ($library->selfRegistrationLocationRestrictions == 3) {
-				//Valid pickup locations
-				$location->libraryId = $library->libraryId;
-				$location->whereAdd('validSelfRegistrationBranch <> 2');
-				$location->orderBy('isMainBranch DESC, displayName');
-			}
-			if ($location->find()) {
-				while ($location->fetch()) {
-					if (count($validLibraries) == 0 || array_key_exists($location->code, $validLibraries)) {
-						$pickupLocations[$location->code] = $location->displayName;
-					}
-				}
-				//Do not sort branches because they sorted by main branch and then display name above.
-				//asort($pickupLocations);
-			}
-		} else {
-			if (UserAccount::isLoggedIn()) {
-				$patron = UserAccount::getActiveUserObj();
-				if (!empty($patron)) {
-					$userPickupLocations = $patron->getValidPickupBranches($patron->getAccountProfile()->recordSource);
-					$pickupLocations = [];
-					foreach ($userPickupLocations as $key => $location) {
-						if ($location instanceof Location) {
-							$pickupLocations[$location->code] = $location->displayName;
-						} else {
-							if ($key == '0default') {
-								$pickupLocations[-1] = $location;
-							}
-						}
-					}
-				}
-			}
-		}
 
 		if ($library->requireNumericPhoneNumbersWhenUpdatingProfile) {
 			$phoneFormat = '';
 		} else {
 			$phoneFormat = ' (xxx-xxx-xxxx)';
-		}
-
-		//Library
-		if (count($pickupLocations) == 1) {
-			$selectedPickupLocation = '';
-			foreach ($pickupLocations as $code => $name) {
-				$selectedPickupLocation = $code;
-			}
-			$fields['borrower_branchcode'] = [
-				'property' => 'borrower_branchcode',
-				'type' => 'hidden',
-				'label' => 'Home Library',
-				'description' => 'Please choose the Library location you would prefer to use',
-				'default' => $selectedPickupLocation,
-				'required' => true,
-			];
-		} else {
-			$allowHomeLibraryUpdates = $type == 'selfReg' || $library->allowHomeLibraryUpdates;
-
-			// Try to set default based on physical location (IP address).
-			$defaultBranchCode = null;
-			if ($type == 'selfReg') {
-				global $locationSingleton;
-				$physicalLocation = $locationSingleton->getPhysicalLocation();
-				if ($physicalLocation != null && isset($pickupLocations[$physicalLocation->code])) {
-					$defaultBranchCode = $physicalLocation->code;
-				}
-			}
-
-			$fields['librarySection'] = [
-				'property' => 'librarySection',
-				'type' => 'section',
-				'label' => 'Library',
-				'hideInLists' => true,
-				'expandByDefault' => true,
-				'properties' => [
-					'borrower_branchcode' => [
-						'property' => 'borrower_branchcode',
-						'type' => 'enum',
-						'label' => 'Home Library',
-						'description' => 'Please choose the Library location you would prefer to use',
-						'values' => $pickupLocations,
-						'default' => $defaultBranchCode,
-						'required' => true,
-						'readOnly' => !$allowHomeLibraryUpdates,
-					],
-				],
-			];
 		}
 
 		//Identity
@@ -4699,6 +4600,119 @@ class Koha extends AbstractIlsDriver {
 		return $fields;
 	}
 
+	private function buildSelfRegistrationFieldStructure(string $type = 'selfReg'): array {
+		$fields = $this->buildRegistrationFieldStructure($type);
+		return array_merge($this->buildHomeLibraryField($type), $fields);
+	}
+
+	private function buildHomeLibraryField(string $type): array {
+		global $library;
+
+		$pickupLocations = $this->resolveRegistrationPickupLocations($type);
+
+		if (count($pickupLocations) == 1) {
+			return [
+				'borrower_branchcode' => [
+					'property' => 'borrower_branchcode',
+					'type' => 'hidden',
+					'label' => 'Home Library',
+					'description' => 'Please choose the Library location you would prefer to use',
+					'default' => array_key_first($pickupLocations),
+					'required' => true,
+				],
+			];
+		}
+
+		$allowHomeLibraryUpdates = $type == 'selfReg' || $library->allowHomeLibraryUpdates;
+
+		$defaultBranchCode = null;
+		if ($type == 'selfReg') {
+			global $locationSingleton;
+			$physicalLocation = $locationSingleton->getPhysicalLocation();
+			if ($physicalLocation != null && isset($pickupLocations[$physicalLocation->code])) {
+				$defaultBranchCode = $physicalLocation->code;
+			}
+		}
+
+		return [
+			'librarySection' => [
+				'property' => 'librarySection',
+				'type' => 'section',
+				'label' => 'Library',
+				'hideInLists' => true,
+				'expandByDefault' => true,
+				'properties' => [
+					'borrower_branchcode' => [
+						'property' => 'borrower_branchcode',
+						'type' => 'enum',
+						'label' => 'Home Library',
+						'description' => 'Please choose the Library location you would prefer to use',
+						'values' => $pickupLocations,
+						'default' => $defaultBranchCode,
+						'required' => true,
+						'readOnly' => !$allowHomeLibraryUpdates,
+					],
+				],
+			],
+		];
+	}
+
+	private function resolveRegistrationPickupLocations(string $type): array {
+		if ($type !== 'selfReg') {
+			return $this->buildPatronPickupLocationMap();
+		}
+
+		global $library;
+		$location = new Location();
+		if ($library->selfRegistrationLocationRestrictions == 1) {
+			$location->libraryId = $library->libraryId;
+			$location->orderBy('isMainBranch DESC, displayName');
+		} elseif ($library->selfRegistrationLocationRestrictions == 2) {
+			$location->whereAdd('validSelfRegistrationBranch <> 2');
+			$location->orderBy('isMainBranch DESC, displayName');
+		} elseif ($library->selfRegistrationLocationRestrictions == 3) {
+			$location->libraryId = $library->libraryId;
+			$location->whereAdd('validSelfRegistrationBranch <> 2');
+			$location->orderBy('isMainBranch DESC, displayName');
+		}
+
+		if (!$location->find()) {
+			return [];
+		}
+
+		$libraryList = $this->getKohaSystemPreference('PatronSelfRegistrationLibraryList', '');
+		$validLibraries = strlen($libraryList) == 0 ? [] : array_flip(explode('|', $libraryList));
+
+		$pickupLocations = [];
+		while ($location->fetch()) {
+			if (empty($validLibraries) || array_key_exists($location->code, $validLibraries)) {
+				$pickupLocations[$location->code] = $location->displayName;
+			}
+		}
+		return $pickupLocations;
+	}
+
+	private function buildPatronPickupLocationMap(): array {
+		if (!UserAccount::isLoggedIn()) {
+			return [];
+		}
+		$patron = UserAccount::getActiveUserObj();
+		if (empty($patron)) {
+			return [];
+		}
+
+		$pickupLocations = [];
+		$branches = $patron->getValidPickupBranches($patron->getAccountProfile()->recordSource);
+		foreach ($branches as $key => $branch) {
+			if ($branch instanceof Location) {
+				$pickupLocations[$branch->code] = $branch->displayName;
+			} elseif ($key === '0default') {
+				$pickupLocations[-1] = $branch;
+			}
+		}
+		return $pickupLocations;
+	}
+
 	private function filterRegistrationFieldsBySysprefs(array $fields, string $mandatorySyspref, string $unwantedSyspref, array $options = []): array {
 		$hideBothRequiredUnwanted = !empty($options['hideBothRequiredUnwanted']);
 
@@ -5223,7 +5237,7 @@ class Koha extends AbstractIlsDriver {
 	 * BorrowerMandatoryField entries are marked required.
 	 */
 	private function buildStaffRegistrationFieldStructure(): array {
-		$fields = $this->buildRegistrationFieldStructure('selfReg');
+		$fields = $this->buildSelfRegistrationFieldStructure('selfReg');
 
 		$mandatoryRaw = $this->getKohaSystemPreference('BorrowerMandatoryField');
 		$quickAddRaw = $this->getKohaSystemPreference('PatronQuickAddFields');
