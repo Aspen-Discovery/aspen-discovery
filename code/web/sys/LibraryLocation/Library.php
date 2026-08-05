@@ -84,6 +84,7 @@ class Library extends DataObject {
 	public $_themes;
 	public $layoutSettingId;  //Link to LayoutSetting
 	public $groupedWorkDisplaySettingId; //Link to GroupedWorkDisplaySettings
+	public $searchSettingId;
 
 	public $browseCategoryGroupId;
 
@@ -4079,6 +4080,7 @@ class Library extends DataObject {
 						'type' => 'text',
 						'label' => 'External Materials Request URL',
 						'description' => 'A link to an external Materials Request System to be used instead of the built in Aspen Discovery system',
+						'maxLength' => 512,
 						'hideInList' => true,
 					],
 					'maxRequestsPerYear' => [

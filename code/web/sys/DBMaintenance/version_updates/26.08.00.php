@@ -16,10 +16,72 @@ function getUpdates26_08_00(): array {
 		 ], //name*/
 
 		//mark n
+		'increase_user_username_column' => [
+			'title' => 'Increase username column in user table',
+			'description' => 'Increase username column in user table',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE user CHANGE COLUMN username username VARCHAR(255) NOT NULL',
+			]
+		], //name
 
 		//kirstien
 
 		//kodi
+		'permissions_search_settings' => [
+			'title' => 'Alter permissions for Search Settings',
+			'description' => 'Create permissions for Search Settings',
+			'sql' => [
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Searching', 'Administer All Search Settings', '', 0, 'Allows the user to administer search settings for all libraries.')",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer All Search Settings'))",
+			],
+		], // permissions_search_settings
+		'search_settings' => [
+			'title' => 'Search Settings Table',
+			'description' => 'Set up table to store search settings.',
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS search_settings (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					name varchar(255) NOT NULL
+				)',
+			],
+		], // search_settings
+		'search_types' => [
+			'title' => 'Search Types Table',
+			'description' => 'Set up table to store search types and their related settings.',
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS search_types (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					searchSettingId INT NOT NULL,
+					type varchar(255) NOT NULL,
+					label varchar(255) NOT NULL,
+					defaultLabel varchar(255) NOT NULL,
+					enabled tinyint(1) NOT NULL DEFAULT 1
+				)',
+			],
+		], // search_types
+		'sort_options' => [
+			'title' => 'Sort Options Table',
+			'description' => 'Set up table to store sort options and their related settings.',
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS sort_options (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					searchSettingId INT NOT NULL,
+					type varchar(255) NOT NULL,
+					label varchar(255) NOT NULL,
+					defaultLabel varchar(255) NOT NULL,
+					enabled tinyint(1) NOT NULL DEFAULT 1
+				)',
+			],
+		], // sort_options
+		'search_settings_library_location_id' => [
+			'title' => 'Search Settings Id',
+			'description' => 'Add searchSettingId column to library and location tables',
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN searchSettingId int(11) NOT NULL DEFAULT -1',
+				'ALTER TABLE location ADD COLUMN searchSettingId int(11) NOT NULL DEFAULT -1',
+			]
+		], //search_settings_library_location_id
 		'display_sort_term_values' => [
 			'title' => 'Display Sort Term Values',
 			'description' => 'Add configuration option to dynamically show sort term values for total checkouts, date added, number of holds, and call number.',
@@ -42,7 +104,7 @@ function getUpdates26_08_00(): array {
 		//galen
 
 		//chloe
-	
+
 		//pedro
 
 		//mark j
@@ -71,6 +133,16 @@ function getUpdates26_08_00(): array {
 		], //add_edited_status_to_user_payments
 
 		//other
+
+		//jacob - OpenFifth
+		'external_materials_request_url_length' => [
+			'title' => 'Increase External Materials Request URL length',
+			'description' => 'Allow External Materials Request URLs longer than 255 characters',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE library CHANGE COLUMN externalMaterialsRequestUrl externalMaterialsRequestUrl VARCHAR(512)',
+			]
+		], //external_materials_request_url_length
 
 	];
 }

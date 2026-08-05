@@ -103,7 +103,7 @@ class AssabetIndexer {
 		if (rssFeed != null){
 
 			try {
-				solrUpdateServer.deleteByQuery("type:event AND source:" + this.settingsId);
+				solrUpdateServer.deleteByQuery("type:event_assabet AND source:" + this.settingsId);
 			} catch (BaseHttpSolrClient.RemoteSolrException rse) {
 				logEntry.incErrors("Solr is not running properly, try restarting " + rse);
 				System.exit(-1);

@@ -6,13 +6,13 @@
 					{if !empty($expiredMessage)}
 						{translate text=$expiredMessage isPublicFacing=true}
 					{else}
-						{translate text="Your library card expired on %1%." 1=$ilsSummary->expirationDate|date_format:"%D" isPublicFacing=true}
+						{translate text="Your library card expired on %1%." 1="{$ilsSummary->expirationDate|format_date_locale:'short'}" isPublicFacing=true}
 					{/if}
 				{else}
 					{if !empty($expirationNearMessage)}
 						{translate text=$expirationNearMessage isPublicFacing=true}
 					{else}
-						{translate text="Your library card will expire on %1%." 1=$ilsSummary->expirationDate|date_format:"%D" isPublicFacing=true}
+						{translate text="Your library card will expire on %1%." 1="{$ilsSummary->expirationDate|format_date_locale:'short'}" isPublicFacing=true}
 					{/if}
 				{/if}
 			</div>
