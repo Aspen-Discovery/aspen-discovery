@@ -264,6 +264,45 @@ AspenDiscovery.Searches = (function(){
 			);
 		},
 
+		updateSearchTypeLayout() {
+			var searchSourceEl = document.getElementById('searchSource');
+			var searchSource = searchSourceEl ? searchSourceEl.value : '';
+			var showDropdown = (searchSource === 'events' || searchSource === 'lists' || searchSource === 'series' || searchSource === 'websites');
+
+			// search bar container sizing
+			var container = document.getElementById('searchTypeContainer');
+			if (container) {
+				var managedClasses = ['col-lg-10', 'col-md-10', 'col-lg-9', 'col-md-9', 'col-lg-7', 'col-md-7'];
+				managedClasses.forEach(function(cls) {
+					container.classList.remove(cls);
+				});
+
+				if (showDropdown) {
+					container.classList.add('col-lg-7', 'col-md-7');
+				} else {
+					var defaultClasses = container.getAttribute('data-default-class');
+					if (defaultClasses) {
+						defaultClasses.split(' ').forEach(function(cls) {
+							if (cls) {
+								container.classList.add(cls);
+							}
+						});
+					}
+				}
+			}
+
+			// searchIndex dropdown visibility
+			var indexContainer = document.getElementById('searchIndexContainer');
+			if (indexContainer) {
+				if (showDropdown) {
+					indexContainer.style.display = '';
+				} else {
+					var defaultHidden = indexContainer.getAttribute('data-default-hidden') === 'true';
+					indexContainer.style.display = defaultHidden ? 'none' : '';
+				}
+			}
+		},
+
 		loadExploreMoreBar: function(section, searchTerm){
 			var url = Globals.path + "/Search/AJAX";
 			var params = "method=loadExploreMoreBar&section=" + encodeURIComponent(section);

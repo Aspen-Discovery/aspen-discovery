@@ -4521,6 +4521,13 @@ class User extends DataObject {
 				'View Community Engagement Dashboard',
 			]);
 		}
+
+		$sections['searching'] = new AdminSection('Searching');
+		$searchSettingAction = new AdminAction('Search Settings', 'Define various search settings for libraries and locations.', '/Admin/SearchSettings');
+		$sections['searching']->addAction($searchSettingAction, [
+			'Administer All Search Settings',
+		]);
+
 		$sections['cataloging'] = new AdminSection('Catalog / Grouped Works');
 		$groupedWorkAction = new AdminAction('Grouped Work Display', 'Define information about what is displayed for Grouped Works in search results and full record displays.', '/Admin/GroupedWorkDisplay');
 		$groupedWorkAction->addSubAction(new AdminAction('eContent Sorting', 'Define how eContent sources are sorted within a Grouped Work.', '/Admin/GroupedWorkEContentSorting'), [
@@ -4608,6 +4615,7 @@ class User extends DataObject {
 
 		$sections['third_party_enrichment'] = new AdminSection('Third Party Enrichment');
 		$sections['third_party_enrichment']->addAction(new AdminAction('Accelerated Reader Settings', 'Define settings to load Accelerated Reader information directly from Renaissance Learning.', '/Enrichment/ARSettings'), 'Administer Third Party Enrichment API Keys');
+		$sections['third_party_enrichment']->addAction(new AdminAction('BDS Settings', 'Define settings for BDS cover image integration.', '/Enrichment/BDSSettings'), 'Administer BDS');
 		$sections['third_party_enrichment']->addAction(new AdminAction('ChiliFresh Settings', 'Define settings for ChiliFresh integration.', '/Enrichment/ChiliFreshSettings'), 'Administer Third Party Enrichment API Keys');
 		$sections['third_party_enrichment']->addAction(new AdminAction('Coce Server Settings', 'Define settings to load covers from a Coce server.', '/Enrichment/CoceServerSettings'), 'Administer Third Party Enrichment API Keys');
 		$sections['third_party_enrichment']->addAction(new AdminAction('ContentCafe Settings', 'Define settings for ContentCafe integration.', '/Enrichment/ContentCafeSettings'), 'Administer Third Party Enrichment API Keys');
@@ -5967,6 +5975,9 @@ class User extends DataObject {
 		$pushToken->deviceModel = $device;
 		$pushToken->onboardAppNotifications = 0;
 		$pushToken->tokenType = $tokenType;
+		$pushToken->notifyAccount = 1;
+		$pushToken->notifyCustom = 1;
+		$pushToken->notifySavedSearch = 1;
 		if ($pushToken->find(true)) {
 			return true;
 		} else {

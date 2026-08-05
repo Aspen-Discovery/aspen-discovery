@@ -84,6 +84,7 @@ class Library extends DataObject {
 	public $_themes;
 	public $layoutSettingId;  //Link to LayoutSetting
 	public $groupedWorkDisplaySettingId; //Link to GroupedWorkDisplaySettings
+	public $searchSettingId;
 
 	public $browseCategoryGroupId;
 
@@ -248,6 +249,7 @@ class Library extends DataObject {
 	public $novelistSettingId;
 	public $syndeticsSettingId;
 	public $loralSettingId;
+	public $bdsSettingId;
 	public $allowAutomaticSearchReplacements;
 	public $enableSearchInterpreter;
 
@@ -701,6 +703,17 @@ class Library extends DataObject {
 		$loral->find();
 		while ($loral->fetch()) {
 			$availableLoralSettings[$loral->id] = $loral->name;
+		}
+
+		require_once ROOT_DIR . '/sys/Enrichment/BDSSetting.php';
+		$bds = new BDSSetting();
+		$availableBdsSettings = [
+			'-1' => 'None',
+		];
+		$bds->orderBy('name');
+		$bds->find();
+		while ($bds->fetch()) {
+			$availableBdsSettings[$bds->id] = $bds->name;
 		}
 
 		$materialsRequestOptions = [
@@ -3806,6 +3819,15 @@ class Library extends DataObject {
 						'description' => 'The Loral Settings to use',
 						'default' => '-1',
 						'hideInLists' => true,
+					],
+					'bdsSettingId' => [
+						'property' => 'bdsSettingId',
+						'type' => 'enum',
+						'values' => $availableBdsSettings,
+						'label' => 'BDS Setting',
+						'description' => 'The BDS Settings to use for cover images',
+						'default' => '-1',
+						'hideInLists' => true,
 					]
 				],
 			],
@@ -4079,6 +4101,7 @@ class Library extends DataObject {
 						'type' => 'text',
 						'label' => 'External Materials Request URL',
 						'description' => 'A link to an external Materials Request System to be used instead of the built in Aspen Discovery system',
+						'maxLength' => 512,
 						'hideInList' => true,
 					],
 					'maxRequestsPerYear' => [

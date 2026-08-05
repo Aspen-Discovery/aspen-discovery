@@ -11,6 +11,14 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 	private bool $automaticFacetsApplied = false;
 
 	/**
+	 * True only while building the facet list for the advanced search form/popup
+	 * (initAdvancedFacets()). Distinct from isAdvanced(), which also stays true for
+	 * the results page after an advanced search is submitted -- that page's facet
+	 * sidebar must keep following showInResults, not showInAdvancedSearch.
+	 */
+	private bool $buildingAdvancedFacetList = false;
+
+	/**
 	 * This determines if Aspen applies the default availability toggle for the library
 	 * or location if no value is provided. It needs to be disabled to search across libraries
 	 * and locations.
@@ -297,6 +305,11 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 		global $locationSingleton;
 		// Call the standard initialization routine in the parent:
 		parent::init();
+
+		// This is building the facet list for the advanced search screen, so treat it as an advanced search
+		// context even though no query has been submitted yet (isAdvanced would otherwise stay false).
+		$this->isAdvanced = true;
+		$this->buildingAdvancedFacetList = true;
 
 		$searchLibrary = Library::getActiveLibrary();
 
@@ -1184,10 +1197,193 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 	}
 
 	public function getSearchIndexes() : array {
+		global $library;
+		global $location;
+
 		$titleSearch = 'Title';
 		$systemVariables = SystemVariables::getSystemVariables();
 		if ($systemVariables && (int)$systemVariables->titleSearchBehavior == 2) {
 			$titleSearch = 'AllTitles';
+		}
+
+		$searchIndexes = [];
+
+		if ($location && $location->searchSettingId != -1 || $library->searchSettingId != -1) {
+			require_once ROOT_DIR . '/sys/SearchObject/SearchSetting.php';
+			$searchSetting = new SearchSetting();
+			if ($location && $location->searchSettingId != -1) {
+				$searchSetting->id = $location->searchSettingId;
+			} else {
+				$searchSetting->id = $library->searchSettingId;
+			}
+			if ($searchSetting->find(true)) {
+				require_once ROOT_DIR . '/sys/SearchObject/SearchTypes.php';
+				$searchTypes = new SearchTypes();
+				$searchTypes->searchSettingId = $searchSetting->id;
+				$searchTypes->enabled = 1;
+				$searchTypes->find();
+				while ($searchTypes->fetch()) {
+					$searchType = $searchTypes->type;
+					if ($searchType == 'Title') {
+						$searchType = $titleSearch;
+					}
+					$searchIndexes[$searchType] = translate([
+						'text' => $searchTypes->label,
+						'isPublicFacing' => true,
+						'inAttribute' => true,
+					]);
+				}
+				if (empty($searchIndexes)) {
+					$searchIndexes['Keyword'] = translate([
+						'text' => 'Keyword',
+						'isPublicFacing' => true,
+						'inAttribute' => true,
+					]);
+				}
+			}
+			return $searchIndexes;
+		} else {
+			return [
+				'Keyword' => translate([
+					'text' => 'Keyword',
+					'isPublicFacing' => true,
+					'inAttribute' => true,
+				]),
+				$titleSearch => translate([
+					'text' => 'Title',
+					'isPublicFacing' => true,
+					'inAttribute' => true,
+				]),
+				'StartOfTitle' => translate([
+					'text' => 'Start of Title',
+					'isPublicFacing' => true,
+					'inAttribute' => true,
+				]),
+				'Series' => translate([
+					'text' => 'Series',
+					'isPublicFacing' => true,
+					'inAttribute' => true,
+				]),
+				'PrimaryAuthor' => translate([
+					'text' => 'Author',
+					'isPublicFacing' => true,
+					'inAttribute' => true,
+				]),
+				'Author' => translate([
+					'text' => 'Authors and Contributors',
+					'isPublicFacing' => true,
+					'inAttribute' => true,
+				]),
+				'Subject' => translate([
+					'text' => 'Subject',
+					'isPublicFacing' => true,
+					'inAttribute' => true,
+				]),
+				'LocalCallNumber' => translate([
+					'text' => 'Call Number',
+					'isPublicFacing' => true,
+					'inAttribute' => true,
+				]),
+			];
+		}
+	}
+
+	public function getAdvancedSearchIndexes() : array {
+		global $library;
+		global $locationSingleton;
+		$location = $locationSingleton->getActiveLocation();
+
+		$searchIndexes = [];
+
+
+		if ($location && $location->searchSettingId != -1 || $library->searchSettingId != -1) {
+			require_once ROOT_DIR . '/sys/SearchObject/SearchSetting.php';
+			$searchSetting = new SearchSetting();
+			if ($location && $location->searchSettingId != -1) {
+				$searchSetting->id = $location->searchSettingId;
+			} else {
+				$searchSetting->id = $library->searchSettingId;
+			}
+			if ($searchSetting->find(true)) {
+				require_once ROOT_DIR . '/sys/SearchObject/SearchTypes.php';
+				$searchTypes = new SearchTypes();
+				$searchTypes->searchSettingId = $searchSetting->id;
+				$searchTypes->find();
+				while ($searchTypes->fetch()) {
+					if ($searchTypes->enabled != 0) {
+						$searchType = $searchTypes->type;
+						$searchIndexes[$searchType] = translate([
+							'text' => $searchTypes->label,
+							'isPublicFacing' => true,
+							'inAttribute' => true,
+						]);
+					}
+				}
+			}
+			return $searchIndexes;
+		} else {
+			return [
+				'Keyword' => translate([
+					'text' => 'Keyword',
+					'isPublicFacing' => true,
+					'inAttribute' => true,
+				]),
+				'Title' => translate([
+					'text' => 'Title',
+					'isPublicFacing' => true,
+					'inAttribute' => true,
+				]),
+				'StartOfTitle' => translate([
+					'text' => 'Start of Title',
+					'isPublicFacing' => true,
+					'inAttribute' => true,
+				]),
+				'Author' => translate([
+					'text' => 'Author',
+					'isPublicFacing' => true,
+					'inAttribute' => true,
+				]),
+				'Subject' => translate([
+					'text' => 'Subject',
+					'isPublicFacing' => true,
+					'inAttribute' => true,
+				]),
+				'ISN' => translate([
+					'text' => 'ISBN/ISSN/UPC',
+					'isPublicFacing' => true,
+					'inAttribute' => true,
+				]),
+				'publisher' => translate([
+					'text' => 'Publisher',
+					'isPublicFacing' => true,
+					'inAttribute' => true,
+				]),
+				'year' => translate([
+					'text' => 'Year of Publication',
+					'isPublicFacing' => true,
+					'inAttribute' => true,
+				]),
+				'Series' => translate([
+					'text' => 'Series',
+					'isPublicFacing' => true,
+					'inAttribute' => true,
+				]),
+				'toc' => translate([
+					'text' => 'Table of Contents',
+					'isPublicFacing' => true,
+					'inAttribute' => true,
+				]),
+				'id' => translate([
+					'text' => 'Record Number',
+					'isPublicFacing' => true,
+					'inAttribute' => true,
+				]),
+				'LocalCallNumber' => translate([
+					'text' => 'Call Number',
+					'isPublicFacing' => true,
+					'inAttribute' => true,
+				]),
+			];
 		}
 		return [
 			'Keyword' => translate([
@@ -1283,13 +1479,16 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 				//Adjust facet name for local scoping
 				$facet->facetName = $this->getScopedFieldName($facet->getFacetName($this->searchVersion));
 
-				global $action;
-				if ($action == 'Advanced') {
+				if ($this->buildingAdvancedFacetList) {
 					if ($facet->showInAdvancedSearch == 1) {
 						$facetConfig[$facet->facetName] = $facet;
 					}
 				} else {
-					if ($facet->showInResults == 1) {
+					// Also include facets that aren't normally shown in results but were
+					// actively filtered on (e.g. via the advanced search form) -- needed both
+					// to build the Solr filter query for that field and to surface it as a
+					// removable facet in the sidebar.
+					if ($facet->showInResults == 1 || isset($this->filterList[$facet->facetName])) {
 						$facetConfig[$facet->facetName] = $facet;
 					}
 				}

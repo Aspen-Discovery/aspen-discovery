@@ -27,7 +27,7 @@
 							<label for="code" class="control-label">{translate text="6-digit code" isPublicFacing=true}</label>
 						</div>
 						<div class="col-xs-12 col-sm-8">
-							<input type="text" class="form-control" id="code" name="code" maxlength="6" spellcheck="false" autocomplete="false">
+							<input type="text" class="form-control" id="code" name="code" maxlength="6" spellcheck="false" autocomplete="false" autofocus>
 						</div>
 						<script type="text/javascript">
 							{literal}
@@ -162,9 +162,11 @@
 				$(this).addClass('active');
 				$('.alt-method-form').hide();
 				$(target).show();
+				$(target).find('input, textarea, select').first().trigger('focus');
 			});
 			$('.alt-method-form').hide();
 			$('.alt-method-toggle').removeClass('active');
+			$(function () {		$('#code').trigger('focus');	});
 		</script>
 	</div>
 {/strip}

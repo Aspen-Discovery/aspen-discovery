@@ -17,7 +17,7 @@
                     {/if}
 					<div class="form-group">
 						<label for="code">{translate text="6-digit code" isPublicFacing=true}</label>
-						<input type="text" class="form-control" id="code" name="code" maxlength="6" spellcheck="false" autocomplete="false">
+						<input type="text" class="form-control" id="code" name="code" maxlength="6" spellcheck="false" autocomplete="false" autofocus>
 					</div>
 					{if $hasEmail && !$hasTotp}
 						<a class="btn btn-xs btn-link" style="margin-top: 2em" onclick="return AspenDiscovery.Account.new2FACode();">{translate text="Code expired? Send another" isPublicFacing=true}</a>
@@ -102,8 +102,10 @@
 			$(this).addClass('active');
 			$('.alt-method-form').hide();
 			$(target).show();
+			$(target).find('input, textarea, select').first().trigger('focus');
 		});
 		$('.alt-method-form').hide();
 		$('.alt-method-toggle').removeClass('active');
+		$(function () {		$('#code').trigger('focus');	});
 	</script>
 </div>

@@ -64,6 +64,15 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 			if (primaryAuthor != null && !primaryAuthor.isEmpty()){ //skip if empty so titles with no author are sorted last
 				primaryAuthor = primaryAuthor.toLowerCase();
 				doc.addField("author_sort", primaryAuthor);
+
+				if (author2Role != null) { // remove primary author from author2-role field only if the role is also "author"
+					String normalizedPrimaryAuthor = primaryAuthor.trim().toLowerCase();
+					author2Role.removeIf(role -> {
+						if (role == null) return false;
+						String normalizedRole = role.trim().toLowerCase();
+						return normalizedRole.contains(normalizedPrimaryAuthor) && normalizedRole.contains("author");
+					});
+				}
 			}
 
 			doc.addField("auth_author2", authAuthor2);
