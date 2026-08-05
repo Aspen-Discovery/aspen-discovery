@@ -3444,6 +3444,21 @@ class User extends DataObject {
 		}
 	}
 
+	public function canRegisterIlsPatronForLocation(Location $location): bool {
+		if ($this->hasPermission('Register New ILS Patrons for any home library')) {
+			return true;
+		}
+		if ($this->hasPermission('Register New ILS Patrons for patrons with same home location')
+			&& $location->locationId == $this->homeLocationId) {
+			return true;
+		}
+		if ($this->hasPermission('Register New ILS Patrons for patrons with same home library')) {
+			$homeLibrary = $this->getHomeLibrary();
+			return $homeLibrary != null && $location->libraryId == $homeLibrary->libraryId;
+		}
+		return false;
+	}
+
 	/**
 	 * @param mixed $materialsRequestReplyToAddress
 	 */

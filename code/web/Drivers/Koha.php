@@ -4558,7 +4558,7 @@ class Koha extends AbstractIlsDriver {
 			$fields['privacySection'] = $this->getSelfRegistrationFormPrivacySection();
 		}
 
-		if ($type == 'selfReg') {
+		if ($type == 'selfReg' || $type == 'staffReg') {
 			$passwordLabel = $library->loginFormPasswordLabel;
 			$passwordNotes = $library->selfRegistrationPasswordNotes;
 			$pinValidationRules = $this->getPasswordPinValidationRules();
@@ -4610,7 +4610,7 @@ class Koha extends AbstractIlsDriver {
 
 		$pickupLocations = $this->resolveRegistrationPickupLocations($type);
 
-		if (count($pickupLocations) == 1) {
+		if ($type != 'staffReg' && count($pickupLocations) == 1) {
 			return [
 				'borrower_branchcode' => [
 					'property' => 'borrower_branchcode',
@@ -4623,7 +4623,7 @@ class Koha extends AbstractIlsDriver {
 			];
 		}
 
-		$allowHomeLibraryUpdates = $type == 'selfReg' || $library->allowHomeLibraryUpdates;
+		$allowHomeLibraryUpdates = $type == 'selfReg' || $type == 'staffReg' || $library->allowHomeLibraryUpdates;
 
 		$defaultBranchCode = null;
 		if ($type == 'selfReg') {
@@ -4658,6 +4658,9 @@ class Koha extends AbstractIlsDriver {
 	}
 
 	private function resolveRegistrationPickupLocations(string $type): array {
+		if ($type === 'staffReg') {
+			return $this->buildStaffRegistrationPickupLocationMap();
+		}
 		if ($type !== 'selfReg') {
 			return $this->buildPatronPickupLocationMap();
 		}
@@ -4710,6 +4713,41 @@ class Koha extends AbstractIlsDriver {
 				$pickupLocations[-1] = $branch;
 			}
 		}
+		return $pickupLocations;
+	}
+
+	private function buildStaffRegistrationPickupLocationMap(): array {
+		$user = UserAccount::getActiveUserObj();
+		if ($user == null) {
+			return [];
+		}
+
+		$library = new Library();
+		$library->enablePatronIlsRegistrationByStaff = 1;
+		$library->find();
+		$enabledLibraryIds = [];
+		while ($library->fetch()) {
+			$enabledLibraryIds[] = $library->libraryId;
+		}
+		if (empty($enabledLibraryIds)) {
+			return [];
+		}
+
+		$location = new Location();
+		$location->whereAdd('libraryId IN (' . implode(',', $enabledLibraryIds) . ')');
+		$location->orderBy('isMainBranch DESC, displayName');
+
+		if (!$location->find()) {
+			return [];
+		}
+
+		$pickupLocations = [];
+		while ($location->fetch()) {
+			if ($user->canRegisterIlsPatronForLocation($location)) {
+				$pickupLocations[$location->code] = $location->displayName;
+			}
+		}
+
 		return $pickupLocations;
 	}
 
@@ -5237,7 +5275,7 @@ class Koha extends AbstractIlsDriver {
 	 * BorrowerMandatoryField entries are marked required.
 	 */
 	private function buildStaffRegistrationFieldStructure(): array {
-		$fields = $this->buildSelfRegistrationFieldStructure('selfReg');
+		$fields = $this->buildSelfRegistrationFieldStructure('staffReg');
 
 		$mandatoryRaw = $this->getKohaSystemPreference('BorrowerMandatoryField');
 		$quickAddRaw = $this->getKohaSystemPreference('PatronQuickAddFields');

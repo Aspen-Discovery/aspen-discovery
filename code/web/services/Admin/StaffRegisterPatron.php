@@ -141,9 +141,6 @@ class Admin_StaffRegisterPatron extends Admin_Admin {
 		if ($user == null) {
 			return false;
 		}
-		if ($user->hasPermission('Register New ILS Patrons for any home library')) {
-			return true;
-		}
 
 		$location = new Location();
 		$location->code = $branchcode;
@@ -151,17 +148,7 @@ class Admin_StaffRegisterPatron extends Admin_Admin {
 			return false;
 		}
 
-		if ($user->hasPermission('Register New ILS Patrons for patrons with same home location')
-			&& $location->locationId == $user->homeLocationId) {
-			return true;
-		}
-
-		if ($user->hasPermission('Register New ILS Patrons for patrons with same home library')) {
-			$homeLibrary = $user->getHomeLibrary();
-			return $homeLibrary != null && $location->libraryId == $homeLibrary->libraryId;
-		}
-
-		return false;
+		return $user->canRegisterIlsPatronForLocation($location);
 	}
 
 	private function displayError(string $error): void {
