@@ -795,7 +795,6 @@ class SearchAPI extends AbstractAPI {
 		global $timer;
 
 		// Include Search Engine Class
-		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
 		$timer->logTime('Include search engine');
 
 		//set up the results array.
@@ -1002,7 +1001,6 @@ class SearchAPI extends AbstractAPI {
 		global $timer;
 
 		// Include Search Engine Class
-		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
 		$timer->logTime('Include search engine');
 
 		// Initialise from the current search globals
@@ -1043,7 +1041,6 @@ class SearchAPI extends AbstractAPI {
 		global $timer;
 
 		// Include Search Engine Class
-		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
 		$timer->logTime('Include search engine');
 
 		// Initialise from the current search globals
@@ -1089,7 +1086,6 @@ class SearchAPI extends AbstractAPI {
 		global $timer;
 
 		// Include Search Engine Class
-		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
 		$timer->logTime('Include search engine');
 
 		//set up the results
@@ -3269,12 +3265,6 @@ class SearchAPI extends AbstractAPI {
 		}
 		$searchEngine = ucfirst($searchEngine);
 
-		// Include Search Engine Class
-		if($searchEngine == 'Events') {
-			require_once ROOT_DIR . '/sys/SolrConnector/EventsSolrConnector.php';
-		} else {
-			require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
-		}
 		$timer->logTime('Include search engine');
 
 		// Initialise from the current search globals
@@ -3762,7 +3752,6 @@ class SearchAPI extends AbstractAPI {
 	 * @return mixed - false if no search is found, a Search Object if the search can be restored, or an AspenError if the user does not have access to the search
 	 */
 	public function restoreSearch(string|int $id, bool $processSearch = true): mixed {
-		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
 		$search = new SearchEntry();
 		$search->id = $id;
 		if ($search->find(true)) {
@@ -3792,7 +3781,6 @@ class SearchAPI extends AbstractAPI {
 				'message' => 'A valid search id not provided',
 			];
 		}
-		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
 		$id = $_REQUEST['id'];
 		$search = new SearchEntry();
 		$search->id = $id;
@@ -3846,7 +3834,6 @@ class SearchAPI extends AbstractAPI {
 				'message' => 'A valid search id not provided',
 			];
 		}
-		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
 		$id = $_REQUEST['id'];
 		$searchObj = $this->restoreSearch($id);
 		if ($searchObj) {
@@ -4178,7 +4165,6 @@ class SearchAPI extends AbstractAPI {
 				'message' => 'A valid search id not provided',
 			];
 		}
-		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
 		$id = $_REQUEST['id'];
 		$search = new SearchEntry();
 		$search->id = $id;
