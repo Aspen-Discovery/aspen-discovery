@@ -945,15 +945,15 @@ public class GroupedWorkIndexer implements AutoCloseable {
 			} catch (Exception e) {
 				logEntry.incErrors("Error calling final commit", e);
 			}
-			if (indexVersion == 2 && searchVersion == 1){
-				//Update the search version to version 2
-				try {
-					logEntry.addNote("Updating search version to version 2");
-					dbConn.prepareStatement("UPDATE system_variables set searchVersion = 2 WHERE true").executeUpdate();
-				} catch (Exception e) {
-					logEntry.incErrors("Error updating search version", e);
-				}
-			}
+//			if (indexVersion == 2 && searchVersion == 1){
+//				//Update the search version to version 2
+//				try {
+//					logEntry.addNote("Updating search version to version 2");
+//					dbConn.prepareStatement("UPDATE system_variables set searchVersion = 2 WHERE true").executeUpdate();
+//				} catch (Exception e) {
+//					logEntry.incErrors("Error updating search version", e);
+//				}
+//			}
 			if (regroupAllRecords){
 				try {
 					logEntry.addNote("Turning off regroupAllRecords");
@@ -1168,11 +1168,9 @@ public class GroupedWorkIndexer implements AutoCloseable {
 	synchronized void processGroupedWork(Long id, String permanentId, String grouping_category, boolean allowRegrouping) throws SQLException {
 		//Create a solr record for the grouped work
 		AbstractGroupedWorkSolr groupedWork;
-		if (indexVersion == 2) {
+		//if (indexVersion == 2) {
 			groupedWork = new GroupedWorkSolr2(this, logger);
-		}else{
-			groupedWork = new GroupedWorkSolr(this, logger);
-		}
+		//}
 
 		//Check to see if we should enable debugging while indexing
 		getDebugInfoStmt.setString(1, permanentId);

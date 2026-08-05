@@ -663,15 +663,17 @@ abstract class MarcRecordProcessor {
 			return "Not Rated";
 		}
 
+		// Check TV ratings first
+		String tvRating = getRatingFromPatterns(val, tvRatingRegex1, tvRatingRegex2, tvRatingRegex3, tvRatingRegex4);
+		if (tvRating != null) {
+			return normalizeTvRating(tvRating) + " Rated";
+		}
+
 		String mpaaRating = getRatingFromPatterns(val, mpaaRatingRegex1, mpaaRatingRegex2, mpaaRatingRegex3, mpaaRatingRegex4);
 		if (mpaaRating != null) {
 			return mpaaRating + " Rated";
 		}
 
-		String tvRating = getRatingFromPatterns(val, tvRatingRegex1, tvRatingRegex2, tvRatingRegex3, tvRatingRegex4);
-		if (tvRating != null) {
-			return normalizeTvRating(tvRating) + " Rated";
-		}
 		return null;
 	}
 

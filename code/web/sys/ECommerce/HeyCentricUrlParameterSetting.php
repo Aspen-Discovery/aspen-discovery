@@ -18,11 +18,17 @@ class HeyCentricUrlParameterSetting extends DataObject {
 		}
 		global $library;
 		$accountProfile = $library->getAccountProfile();
-		$catalogDriverName = trim($accountProfile->driver);
-		$catalogDriver = CatalogFactory::getCatalogConnectionInstance($catalogDriverName, $accountProfile);
-		$additionalFineFields = $catalogDriver->hasAdditionalFineFields() ? $catalogDriver->getAdditionalFieldNames('accountlines:debit', null) : null;
-		$additionalDebitTypeFields = $catalogDriver->hasAdditionalFineFields() ? $catalogDriver->getAdditionalFieldNames('account_debit_types', null) : null;
-		$additionalLibraryBranchFields = $catalogDriver->hasAdditionalFineFields() ? $catalogDriver->getAdditionalFieldNames('branches', null) : null;
+		if ($accountProfile !== false) {
+			$catalogDriverName = trim($accountProfile->driver);
+			$catalogDriver = CatalogFactory::getCatalogConnectionInstance($catalogDriverName, $accountProfile);
+			$additionalFineFields = $catalogDriver->hasAdditionalFineFields() ? $catalogDriver->getAdditionalFieldNames('accountlines:debit', null) : null;
+			$additionalDebitTypeFields = $catalogDriver->hasAdditionalFineFields() ? $catalogDriver->getAdditionalFieldNames('account_debit_types', null) : null;
+			$additionalLibraryBranchFields = $catalogDriver->hasAdditionalFineFields() ? $catalogDriver->getAdditionalFieldNames('branches', null) : null;
+		}else{
+			$additionalFineFields = null;
+			$additionalDebitTypeFields = null;
+			$additionalLibraryBranchFields = null;
+		}
 		
 		$urlParam = new HeyCentricUrlParameter();
 		$urlParam = $urlParam->fetchAll();

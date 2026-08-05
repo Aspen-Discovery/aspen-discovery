@@ -4101,6 +4101,7 @@ class Library extends DataObject {
 						'type' => 'text',
 						'label' => 'External Materials Request URL',
 						'description' => 'A link to an external Materials Request System to be used instead of the built in Aspen Discovery system',
+						'maxLength' => 512,
 						'hideInList' => true,
 					],
 					'maxRequestsPerYear' => [

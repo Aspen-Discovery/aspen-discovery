@@ -134,6 +134,7 @@ function getUpdates26_08_00(): array {
 
 		//other
 
+    //jacob - OpenFifth
 		'bds_settings' => [
 			'title' => 'BDS Integration',
 			'description' => 'Create settings table for BDS cover image integration',
@@ -150,6 +151,14 @@ function getUpdates26_08_00(): array {
 				"INSERT IGNORE INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer BDS'))",
 			]
 		], //bds_settings
+		'external_materials_request_url_length' => [
+			'title' => 'Increase External Materials Request URL length',
+			'description' => 'Allow External Materials Request URLs longer than 255 characters',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE library CHANGE COLUMN externalMaterialsRequestUrl externalMaterialsRequestUrl VARCHAR(512)',
+			]
+		], //external_materials_request_url_length
 
 	];
 }
