@@ -139,13 +139,11 @@ class OAuth2RateLimiter {
 	}
 
 	/**
-	 * Get client IP address, handling proxies
+	 * Get client IP address
+	 * Note: proxies handling will require apache config (eg mod_remoteip)
 	 */
 	private static function getClientIP(): string {
 		$ipKeys = [
-			'HTTP_CF_CONNECTING_IP',
-			'HTTP_X_FORWARDED_FOR',
-			'HTTP_X_REAL_IP',
 			'REMOTE_ADDR'
 		];
 

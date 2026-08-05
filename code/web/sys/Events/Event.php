@@ -193,12 +193,11 @@ class Event extends DataObject {
 				'hideInLists' => true,
 			],
 			'instanceCount' => [
-				'property' => 'instanceCount',
-				'type' => 'integer',
+				'property' => '_instanceCount',
+				'type' => 'calculatedInteger',
 				'label' => 'Total Upcoming Events',
 				'hiddenByDefault' => true,
 				'readOnly' => true,
-				'canSort' => false
 			],
 			'dateUpdated' => [
 				'property' => 'dateUpdated',
@@ -707,6 +706,14 @@ class Event extends DataObject {
 		];
 	}
 
+	public static function getCalculatedColumns() : array {
+		$todayDate = date('Y-m-d');
+		$todayTime = date('H:i:s');
+		return [
+			'_instanceCount' => "SELECT COUNT(1) FROM event_instance WHERE eventId=event.id AND deleted = 0 AND date > '$todayDate' OR (date = '$todayDate' AND time > '$todayTime')"
+		];
+	}
+
 	public function getAdditionalListActions(): array {
 		$objectActions[] = [
 			'text' => 'Edit Specific Dates',
@@ -939,16 +946,15 @@ class Event extends DataObject {
 	}
 
 	public function getInstanceCount() {
-		if (!isset($this->_instanceCount) && $this->id) {
-			$this->_instanceCount = '';
-			$instance = new EventInstance();
-			$instance->eventId = $this->id;
-			$todayDate = date('Y-m-d');
-			$todayTime = date('H:i:s');
-			$instance->whereAdd("deleted = 0 AND date > '$todayDate' OR (date = '$todayDate' and time > '$todayTime')");
-			$this->_instanceCount = $instance->count();
+		if(empty($this->id)) {
+			return $this->_instanceCount;
 		}
-		return $this->_instanceCount;
+
+		// Fetch this same event from the database, to ensure the count is fresh
+		$event = new Event();
+		$event->id = $this->id;
+		$event->find(true);
+		return $event->_instanceCount;
 	}
 
 	public function saveFields() : void {

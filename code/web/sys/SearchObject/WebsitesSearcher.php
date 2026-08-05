@@ -203,4 +203,9 @@ class SearchObject_WebsitesSearcher extends SearchObject_SolrSearcher {
 	public function getDefaultIndex() {
 		return 'WebsiteKeyword';
 	}
+
+	public function getAdvancedSearchIndexes()
+	{
+		// TODO: Implement getAdvancedSearchIndexes() method.
+	}
 }
