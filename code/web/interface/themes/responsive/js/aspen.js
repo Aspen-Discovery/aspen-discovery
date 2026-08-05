@@ -1865,28 +1865,54 @@ var AspenDiscovery = (function(){
 				return (slide ? slide.offsetWidth : 0) + 12;
 			}
 
-			// --- Accessibility ARIA setup ---
-			wrapper.setAttribute('role', 'listbox');
-			slides.forEach(function (slide, idx) {
-				slide.setAttribute('role', 'option');
-				slide.setAttribute('tabindex', '0');
-				slide.setAttribute('aria-selected', idx === 0 ? 'true' : 'false');
-				slide.id = slide.id || ('slide-' + container.id + '-' + idx);
+			// Focusable control should own focus/selection semantics.
+			// Layering role="option"/tabindex="0" on the slide as well
+			// creates nested focusable elements, which is invalid and confuses screen readers.
+			function getInnerControl(slide) {
+				return slide.querySelector('input, select, textarea, button, a[href]');
+			}
+			var hasInnerControls = slides.length > 0 && Array.prototype.every.call(slides, function (slide) {
+				return !!getInnerControl(slide);
 			});
-			wrapper.setAttribute('aria-activedescendant', slides[0].id);
 
-			function focusSlide(index, doFocus = false, doScroll = false) {
+			// --- Accessibility ARIA setup ---
+			if (hasInnerControls) {
+				// Native controls (e.g. a radio group) provide semantics and keyboard behavior.
+				//  Don't add a redundant listbox pattern on top of them.
+				wrapper.removeAttribute('role');
+				wrapper.removeAttribute('aria-activedescendant');
+				slides.forEach(function (slide) {
+					slide.removeAttribute('role');
+					slide.removeAttribute('tabindex');
+					slide.removeAttribute('aria-selected');
+				});
+			} else {
+				wrapper.setAttribute('role', 'listbox');
+				slides.forEach(function (slide, idx) {
+					slide.setAttribute('role', 'option');
+					slide.setAttribute('tabindex', '0');
+					slide.setAttribute('aria-selected', idx === 0 ? 'true' : 'false');
+					slide.id = slide.id || ('slide-' + container.id + '-' + idx);
+				});
+				wrapper.setAttribute('aria-activedescendant', slides[0].id);
+			}
+
+			function setActiveSlide(index, doFocus = false, doScroll = false) {
 				slides.forEach(function (slide, i) {
-					slide.setAttribute('aria-selected', i === index ? 'true' : 'false');
+					if (!hasInnerControls) {
+						slide.setAttribute('aria-selected', i === index ? 'true' : 'false');
+					}
 					if (i === index) {
 						slide.classList.add('active');
-						if (doFocus) slide.focus();
+						if (doFocus && !hasInnerControls) slide.focus();
 						if (doScroll) slides[index].scrollIntoView({block: 'nearest', inline: 'center'});
 					} else {
 						slide.classList.remove('active');
 					}
 				});
-				wrapper.setAttribute('aria-activedescendant', slides[index].id);
+				if (!hasInnerControls) {
+					wrapper.setAttribute('aria-activedescendant', slides[index].id);
+				}
 				currentIndex = index;
 			}
 
@@ -1912,41 +1938,47 @@ var AspenDiscovery = (function(){
 				}
 			});
 
-			slides.forEach(function (slide, i) {
-				slide.addEventListener('click', function (e) {
-					// If this click is the tail end of a real drag gesture, ignore it
-					if (wrapper.dataset.dragMoved === 'true') return;
-
-					slides.forEach(function (s) {
-						s.classList.remove('active');
-						s.setAttribute('aria-selected', 'false');
+			if (hasInnerControls) {
+				// Let the inner control (radio) drive selection
+				// keep the visual "active" state and the callback in sync with it
+				// make sure the active slide scrolls into view
+				// This works for click, Space, and native radio-group arrow-key navigation
+				slides.forEach(function (slide, i) {
+					var control = getInnerControl(slide);
+					control.addEventListener('change', function () {
+						// Ignore the tail end of a real drag gesture
+						if (wrapper.dataset.dragMoved === 'true') return;
+						setActiveSlide(i, false, true);
+						onSlideClick(slide);
 					});
-					slide.classList.add('active');
-					slide.setAttribute('aria-selected', 'true');
-					wrapper.setAttribute('aria-activedescendant', slide.id);
-					slide.focus(); // keep keyboard nav anchored on the clicked slide
-					currentIndex = i;
-					onSlideClick(slide);
 				});
+			} else {
+				slides.forEach(function (slide, i) {
+					slide.addEventListener('click', function () {
+						if (wrapper.dataset.dragMoved === 'true') return;
+						setActiveSlide(i, false, false);
+						slide.focus();
+						onSlideClick(slide);
+					});
 
-				// Keyboard navigation for slides
-				slide.addEventListener('keydown', function (e) {
-					if (e.key === 'ArrowRight') {
-						if (i < slides.length - 1) {
+					slide.addEventListener('keydown', function (e) {
+						if (e.key === 'ArrowRight') {
+							if (i < slides.length - 1) {
+								e.preventDefault();
+								setActiveSlide(i + 1, true, true);
+							}
+						} else if (e.key === 'ArrowLeft') {
+							if (i > 0) {
+								e.preventDefault();
+								setActiveSlide(i - 1, true, true);
+							}
+						} else if (e.key === 'Enter' || e.key === ' ') {
 							e.preventDefault();
-							focusSlide(i + 1, true, true);
+							slide.click();
 						}
-					} else if (e.key === 'ArrowLeft') {
-						if (i > 0) {
-							e.preventDefault();
-							focusSlide(i - 1, true, true);
-						}
-					} else if (e.key === 'Enter' || e.key === ' ') {
-						e.preventDefault();
-						slide.click();
-					}
+					});
 				});
-			});
+			}
 
 			// Prevent native image/link drag from hijacking pointer gestures
 			wrapper.addEventListener('dragstart', function (e) {
@@ -9305,7 +9337,38 @@ AspenDiscovery.Admin = (function () {
 				'</div>'
 			);
 			$('body').append($overlay);
-		}
+		},
+		updateStaffRegFormForCategory: function() {
+			const container = document.getElementById('staffRegistrationFormContainer');
+			const categoryMeta = container ? JSON.parse(container.dataset.patronCategoryMeta || '{}') : {};
+			const childNeedsGuarantor = container ? container.dataset.childNeedsGuarantor === '1' : false;
+			const select = document.getElementById('category_idSelect');
+			const categoryId = select ? select.value : '';
+			const meta = categoryMeta[categoryId] || {};
+			const isOrg = meta.category_type === 'I';
+			const canBeGuarantee = !!meta.can_be_guarantee;
+			const guarantorRequired = childNeedsGuarantor && (meta.category_type === 'C' || canBeGuarantee);
+
+			['borrower_title', 'borrower_firstname', 'borrower_sex'].forEach(function(field) {
+				const row = document.getElementById('propertyRow' + field);
+				if (row) row.style.display = isOrg ? 'none' : '';
+			});
+
+			const surnameLabel = document.querySelector('label[for="borrower_surname"]');
+			if (surnameLabel) surnameLabel.textContent = isOrg ? 'Name' : 'Surname';
+
+			const identityTitle = document.getElementById('panelToggle_identitySection');
+			if (identityTitle) identityTitle.textContent = isOrg ? 'Organisation Identity' : 'Identity';
+
+			const guarantorPanel = document.getElementById('panelStatus_Guarantor');
+			if (guarantorPanel) guarantorPanel.style.display = canBeGuarantee ? '' : 'none';
+
+			const guarantorInput = document.getElementById('guarantorPatronId');
+			if (guarantorInput) {
+				guarantorInput.required = guarantorRequired;
+				guarantorInput.classList.toggle('required', guarantorRequired);
+			}
+		},
 	};
 }(AspenDiscovery.Admin || {}));
 AspenDiscovery.Authors = (function () {
@@ -13459,7 +13522,6 @@ AspenDiscovery.GroupedWork = (function(){
 
 			document.getElementById('selectedEditionOption').value = value;
 
-			// Preserve existing behavior that ran on the select's onchange
 			AspenDiscovery.GroupedWork.showEditionSwiper();
 		},
 		showEditionSwiper: function () {
@@ -16701,7 +16763,7 @@ AspenDiscovery.Record = (function () {
 			$('input[name="hyperholdRecord[]"]:checked').each(function () {
 				selected.push($(this).val());
 			});
-			
+
 			const pickupBranch = $('#hyperholdPickupBranch').val();
 
 			const params = {
@@ -17190,6 +17252,45 @@ AspenDiscovery.Searches = (function(){
 					}
 				}
 			);
+		},
+
+		updateSearchTypeLayout() {
+			var searchSourceEl = document.getElementById('searchSource');
+			var searchSource = searchSourceEl ? searchSourceEl.value : '';
+			var showDropdown = (searchSource === 'events' || searchSource === 'lists' || searchSource === 'series' || searchSource === 'websites');
+
+			// search bar container sizing
+			var container = document.getElementById('searchTypeContainer');
+			if (container) {
+				var managedClasses = ['col-lg-10', 'col-md-10', 'col-lg-9', 'col-md-9', 'col-lg-7', 'col-md-7'];
+				managedClasses.forEach(function(cls) {
+					container.classList.remove(cls);
+				});
+
+				if (showDropdown) {
+					container.classList.add('col-lg-7', 'col-md-7');
+				} else {
+					var defaultClasses = container.getAttribute('data-default-class');
+					if (defaultClasses) {
+						defaultClasses.split(' ').forEach(function(cls) {
+							if (cls) {
+								container.classList.add(cls);
+							}
+						});
+					}
+				}
+			}
+
+			// searchIndex dropdown visibility
+			var indexContainer = document.getElementById('searchIndexContainer');
+			if (indexContainer) {
+				if (showDropdown) {
+					indexContainer.style.display = '';
+				} else {
+					var defaultHidden = indexContainer.getAttribute('data-default-hidden') === 'true';
+					indexContainer.style.display = defaultHidden ? 'none' : '';
+				}
+			}
 		},
 
 		loadExploreMoreBar: function(section, searchTerm){
@@ -18498,37 +18599,38 @@ AspenDiscovery.WebBuilder = function () {
 			});
 		},
 
-		getWebResource(id, fromPlacard = false, existingTab = null) {
+		getWebResource(id, fromPlacard = false) {
 			const url = `${Globals.path}/WebBuilder/AJAX`;
-			const params = { method: "getWebResource", resourceId: id };
-
-			// Open the tab synchronously on the ORIGINAL click, while we still have
-			// a user gesture. On the retry-after-login call we reuse the same tab
-			// instead of opening a new one (which would be blocked by most browsers).
-			let newTab = existingTab;
-			if (newTab === null) {
-				newTab = window.open("", '_blank');
-			}
+			const params = {
+				method: "getWebResource",
+				resourceId: id
+			};
 
 			$.getJSON(url, params, (data) => {
 				const { requireLogin, canView, openInNewTab, url: resourceUrl, userNoAccessTitle, userNoAccessMessage } = data;
 
 				const openResource = () => {
 					if (openInNewTab) {
-						if (newTab) {
-							newTab.location.href = resourceUrl;
+						const newTab = window.open("", '_blank');
+						if (newTab == null) {
+							location.assign(resourceUrl);
 						} else {
-							location.assign(resourceUrl); // popup was blocked even on first click
+							newTab.location.href = resourceUrl;
 						}
 					} else {
-						if (newTab) newTab.close(); // we speculatively opened one but don't need it
 						location.assign(resourceUrl);
 					}
 				};
 
 				const trackUsage = (authType) => {
-					const trackParams = { method: "trackWebResourceUsage", id, authType };
-					if (fromPlacard) trackParams.fromPlacard = 1;
+					const trackParams = {
+						method: "trackWebResourceUsage",
+						id,
+						authType
+					};
+					if (fromPlacard) {
+						trackParams.fromPlacard = 1;
+					}
 					$.getJSON(url, trackParams, () => openResource());
 				};
 
@@ -18536,18 +18638,14 @@ AspenDiscovery.WebBuilder = function () {
 					if (Globals.loggedIn && canView) {
 						trackUsage(Globals.loggedIn ? "user" : "library");
 					} else if (Globals.loggedIn && !canView) {
-						if (newTab) newTab.close();
 						AspenDiscovery.showMessage(userNoAccessTitle, userNoAccessMessage);
 					} else {
-						AspenDiscovery.Account.ajaxLogin(null, () => AspenDiscovery.WebBuilder.getWebResource(id, fromPlacard, newTab), true);
+						AspenDiscovery.Account.ajaxLogin(null, () => AspenDiscovery.WebBuilder.getWebResource(id, fromPlacard), true);
 					}
 				} else {
 					trackUsage("none");
 				}
-			}).fail(() => {
-				if (newTab) newTab.close();
-				AspenDiscovery.ajaxFail();
-			});
+			}).fail(AspenDiscovery.ajaxFail);
 
 			return false;
 		},

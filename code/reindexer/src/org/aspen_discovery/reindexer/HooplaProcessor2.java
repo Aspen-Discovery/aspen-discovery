@@ -411,7 +411,12 @@ class HooplaProcessor2 {
 						JSONObject curArtist = artists.getJSONObject(i);
 						String artistName = AspenStringUtils.swapFirstLastNames(curArtist.getString("name"));
 						artistsToAdd.add(artistName);
-						artistsWithRoleToAdd.add(artistName + "|" + StringUtils.capitalize(curArtist.getString("relationship").toLowerCase()));
+						if (curArtist.getString("relationship").toLowerCase().equals("reader")) {
+							artistsToAdd.add(artistName);
+							artistsWithRoleToAdd.add(artistName + "|Narrator");
+						} else {
+							artistsWithRoleToAdd.add(artistName + "|" + StringUtils.capitalize(curArtist.getString("relationship").toLowerCase()));
+						}
 					}
 					groupedWork.addAuthor2(artistsToAdd);
 					groupedWork.addAuthor2Role(artistsWithRoleToAdd);

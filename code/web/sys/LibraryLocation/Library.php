@@ -84,6 +84,7 @@ class Library extends DataObject {
 	public $_themes;
 	public $layoutSettingId;  //Link to LayoutSetting
 	public $groupedWorkDisplaySettingId; //Link to GroupedWorkDisplaySettings
+	public $searchSettingId;
 
 	public $browseCategoryGroupId;
 
@@ -216,6 +217,7 @@ class Library extends DataObject {
 	public $alwaysDisplayRenewalCount;
 	public $allowRenewingOutOfHoldGroupCheckouts;
 	public $enableSelfRegistration;
+	public $enablePatronIlsRegistrationByStaff;
 	public $selfRegistrationPasswordNotes;
 	public $selfRegistrationUrl;
 	public $selfRegistrationLocationRestrictions;
@@ -248,6 +250,7 @@ class Library extends DataObject {
 	public $novelistSettingId;
 	public $syndeticsSettingId;
 	public $loralSettingId;
+	public $bdsSettingId;
 	public $allowAutomaticSearchReplacements;
 	public $enableSearchInterpreter;
 
@@ -701,6 +704,17 @@ class Library extends DataObject {
 		$loral->find();
 		while ($loral->fetch()) {
 			$availableLoralSettings[$loral->id] = $loral->name;
+		}
+
+		require_once ROOT_DIR . '/sys/Enrichment/BDSSetting.php';
+		$bds = new BDSSetting();
+		$availableBdsSettings = [
+			'-1' => 'None',
+		];
+		$bds->orderBy('name');
+		$bds->find();
+		while ($bds->fetch()) {
+			$availableBdsSettings[$bds->id] = $bds->name;
 		}
 
 		$materialsRequestOptions = [
@@ -2782,6 +2796,14 @@ class Library extends DataObject {
 								'description' => 'Whether or not patrons can self register on the site',
 								'hideInLists' => true,
 							],
+							'enablePatronIlsRegistrationByStaff' => [
+								'property' => 'enablePatronIlsRegistrationByStaff',
+								'type' => 'checkbox',
+								'label' => 'Enable Patron ILS Registration By Staff',
+								'description' => 'If enabled, staff with the Register Patrons permission can create ILS patron accounts from within Aspen.',
+								'note' => 'Applies to Koha only. Enabling this allows staff members to access the \'Register Patron\' feature on this library site, makes this library\'s branches selectable as a new patron\'s home library from any library\'s staff registration form, and allows registrations of new patrons by staff to this library.', // true at the point of submission of DIS-2287
+								'hideInLists' => true,
+							],
 							'messageBeeSettingId' => [
 								'property' => 'messageBeeSettingId',
 								'type' => 'enum',
@@ -3806,6 +3828,15 @@ class Library extends DataObject {
 						'description' => 'The Loral Settings to use',
 						'default' => '-1',
 						'hideInLists' => true,
+					],
+					'bdsSettingId' => [
+						'property' => 'bdsSettingId',
+						'type' => 'enum',
+						'values' => $availableBdsSettings,
+						'label' => 'BDS Setting',
+						'description' => 'The BDS Settings to use for cover images',
+						'default' => '-1',
+						'hideInLists' => true,
 					]
 				],
 			],
@@ -4079,6 +4110,7 @@ class Library extends DataObject {
 						'type' => 'text',
 						'label' => 'External Materials Request URL',
 						'description' => 'A link to an external Materials Request System to be used instead of the built in Aspen Discovery system',
+						'maxLength' => 512,
 						'hideInList' => true,
 					],
 					'maxRequestsPerYear' => [

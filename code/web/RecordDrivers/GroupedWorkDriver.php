@@ -1017,9 +1017,10 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		return "";
 	}
 
-	private $detailedContributors = null;
+	private ?array $detailedContributors = null;
 
-	public function getDetailedContributors() {
+	/** @noinspection PhpUnused */
+	public function getDetailedContributors(): array {
 		if ($this->detailedContributors == null) {
 			$this->detailedContributors = [];
 			if (isset($this->fields['author2-role'])) {
