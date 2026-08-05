@@ -204,7 +204,7 @@ class SystemVariables extends DataObject {
 							3 => 'Version 3 (Optimization of solr fields)'
 						],
 						'label' => 'Grouped Work Search Version',
-						'description' => 'The Solr Core Version to search with.  In 22.08 and above this should be version 3 in most cases.',
+						'description' => 'The Solr Core Version to search with.  In 26.08 and above this should be version 3 in most cases.',
 						'required' => true,
 						'default' => 2,
 					],
