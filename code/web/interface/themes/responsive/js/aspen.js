@@ -9337,7 +9337,38 @@ AspenDiscovery.Admin = (function () {
 				'</div>'
 			);
 			$('body').append($overlay);
-		}
+		},
+		updateStaffRegFormForCategory: function() {
+			const container = document.getElementById('staffRegistrationFormContainer');
+			const categoryMeta = container ? JSON.parse(container.dataset.patronCategoryMeta || '{}') : {};
+			const childNeedsGuarantor = container ? container.dataset.childNeedsGuarantor === '1' : false;
+			const select = document.getElementById('category_idSelect');
+			const categoryId = select ? select.value : '';
+			const meta = categoryMeta[categoryId] || {};
+			const isOrg = meta.category_type === 'I';
+			const canBeGuarantee = !!meta.can_be_guarantee;
+			const guarantorRequired = childNeedsGuarantor && (meta.category_type === 'C' || canBeGuarantee);
+
+			['borrower_title', 'borrower_firstname', 'borrower_sex'].forEach(function(field) {
+				const row = document.getElementById('propertyRow' + field);
+				if (row) row.style.display = isOrg ? 'none' : '';
+			});
+
+			const surnameLabel = document.querySelector('label[for="borrower_surname"]');
+			if (surnameLabel) surnameLabel.textContent = isOrg ? 'Name' : 'Surname';
+
+			const identityTitle = document.getElementById('panelToggle_identitySection');
+			if (identityTitle) identityTitle.textContent = isOrg ? 'Organisation Identity' : 'Identity';
+
+			const guarantorPanel = document.getElementById('panelStatus_Guarantor');
+			if (guarantorPanel) guarantorPanel.style.display = canBeGuarantee ? '' : 'none';
+
+			const guarantorInput = document.getElementById('guarantorPatronId');
+			if (guarantorInput) {
+				guarantorInput.required = guarantorRequired;
+				guarantorInput.classList.toggle('required', guarantorRequired);
+			}
+		},
 	};
 }(AspenDiscovery.Admin || {}));
 AspenDiscovery.Authors = (function () {

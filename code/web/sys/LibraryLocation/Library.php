@@ -217,6 +217,7 @@ class Library extends DataObject {
 	public $alwaysDisplayRenewalCount;
 	public $allowRenewingOutOfHoldGroupCheckouts;
 	public $enableSelfRegistration;
+	public $enablePatronIlsRegistrationByStaff;
 	public $selfRegistrationPasswordNotes;
 	public $selfRegistrationUrl;
 	public $selfRegistrationLocationRestrictions;
@@ -2793,6 +2794,14 @@ class Library extends DataObject {
 								'values' => $validSelfRegistrationOptions,
 								'label' => 'Enable Self Registration',
 								'description' => 'Whether or not patrons can self register on the site',
+								'hideInLists' => true,
+							],
+							'enablePatronIlsRegistrationByStaff' => [
+								'property' => 'enablePatronIlsRegistrationByStaff',
+								'type' => 'checkbox',
+								'label' => 'Enable Patron ILS Registration By Staff',
+								'description' => 'If enabled, staff with the Register Patrons permission can create ILS patron accounts from within Aspen.',
+								'note' => 'Applies to Koha only. Enabling this allows staff members to access the \'Register Patron\' feature on this library site, makes this library\'s branches selectable as a new patron\'s home library from any library\'s staff registration form, and allows registrations of new patrons by staff to this library.', // true at the point of submission of DIS-2287
 								'hideInLists' => true,
 							],
 							'messageBeeSettingId' => [

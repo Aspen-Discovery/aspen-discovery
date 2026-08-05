@@ -3444,6 +3444,21 @@ class User extends DataObject {
 		}
 	}
 
+	public function canRegisterIlsPatronForLocation(Location $location): bool {
+		if ($this->hasPermission('Register New ILS Patrons for any home library')) {
+			return true;
+		}
+		if ($this->hasPermission('Register New ILS Patrons for patrons with same home location')
+			&& $location->locationId == $this->homeLocationId) {
+			return true;
+		}
+		if ($this->hasPermission('Register New ILS Patrons for patrons with same home library')) {
+			$homeLibrary = $this->getHomeLibrary();
+			return $homeLibrary != null && $location->libraryId == $homeLibrary->libraryId;
+		}
+		return false;
+	}
+
 	/**
 	 * @param mixed $materialsRequestReplyToAddress
 	 */
@@ -4735,6 +4750,15 @@ class User extends DataObject {
 			'View System Reports',
 		]);
 		$sections['ils_integration']->addAction(new AdminAction('Test Self Check', 'Test Self Check functionality within Aspen and Aspen / LiDA.', '/ILS/SelfCheckTester'), 'Test Self Check');
+
+		if ($library != null && !empty($library->enablePatronIlsRegistrationByStaff)) {
+			$sections['patron_management'] = new AdminSection('Patron Management');
+			$sections['patron_management']->addAction(new AdminAction('Register Patron', 'Register a new ILS patron account.', '/Admin/StaffRegisterPatron'), [
+				'Register New ILS Patrons for any home library',
+				'Register New ILS Patrons for patrons with same home library',
+				'Register New ILS Patrons for patrons with same home location',
+			]);
+		}
 
 		$sections['ill_integration'] = new AdminSection('Interlibrary Loan');
 		$sections['ill_integration']->addAction(new AdminAction('Hold Groups', 'Modify Hold Groups for creating interlibrary loan holds.', '/InterLibraryLoan/HoldGroups'), 'Administer Hold Groups');
