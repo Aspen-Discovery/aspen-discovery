@@ -19,12 +19,17 @@ public class UpdateReadingHistoryTask implements Runnable {
 	private static final AtomicLong loginUnsuccessfulCount = new AtomicLong();
 	private static final AtomicLong userNotFoundCount = new AtomicLong();
 	private final String aspenUrl;
+	private final int readingHistoryBaseUrlType; //0 = use localhost, 1 = use server url
 	private final String ilsBarcode;
 	private final String ilsPassword;
 	private final CronProcessLogEntry processLog;
 	private final Logger logger;
-	UpdateReadingHistoryTask(String aspenUrl, String ilsBarcode, String ilsPassword, CronProcessLogEntry processLog, Logger logger) {
+	UpdateReadingHistoryTask(String aspenUrl, int readingHistoryBaseUrlType, String ilsBarcode, String ilsPassword, CronProcessLogEntry processLog, Logger logger) {
+		if (aspenUrl.endsWith("/")) {
+			aspenUrl = aspenUrl.substring(0, aspenUrl.length() -1);
+		}
 		this.aspenUrl = aspenUrl;
+		this.readingHistoryBaseUrlType = readingHistoryBaseUrlType;
 		this.ilsBarcode = ilsBarcode;
 		this.ilsPassword = ilsPassword;
 		this.processLog = processLog;
@@ -67,11 +72,17 @@ public class UpdateReadingHistoryTask implements Runnable {
 				}
 				retry = false;
 				// Call the patron API to get their checked out items.
-				// Use localhost to avoid the request leaving the server and being subject to WAF rules.
-				// The Host header routes the request to the correct virtual host. Sending it requires
-				// allowing restricted headers, which is enabled in Cron.main().
+				URL patronApiUrl;
 				String hostName = new URL(aspenUrl).getHost();
-				URL patronApiUrl = new URL("http://localhost/API/UserAPI?method=updatePatronReadingHistory&username=" + URLEncoder.encode(ilsBarcode, StandardCharsets.UTF_8));
+				if (readingHistoryBaseUrlType == 0) {
+					// Use localhost to avoid the request leaving the server and being subject to WAF rules.
+					// The Host header routes the request to the correct virtual host. Sending it requires
+					// allowing restricted headers, which is enabled in Cron.main().
+					patronApiUrl = new URL("http://localhost/API/UserAPI?method=updatePatronReadingHistory&username=" + URLEncoder.encode(ilsBarcode, StandardCharsets.UTF_8));
+				}else{
+					// Use the original server url. The request will go to the net, but this can be useful in complex server setups.
+					patronApiUrl = new URL(aspenUrl + "/API/UserAPI?method=updatePatronReadingHistory&username=" + URLEncoder.encode(ilsBarcode, StandardCharsets.UTF_8));
+				}
 				HttpURLConnection conn = (HttpURLConnection) patronApiUrl.openConnection();
 				conn.setRequestProperty("Host", hostName);
 				// Give 10 seconds for connection timeout and 10 minutes for read timeout.

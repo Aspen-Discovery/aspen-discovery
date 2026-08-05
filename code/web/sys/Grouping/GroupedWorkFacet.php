@@ -33,6 +33,7 @@ class GroupedWorkFacet extends FacetSetting {
 			"content_rating" => "Content Rating",
 			"literary_form" => "Form",
 			"authorStr" => "Author",
+			"author2-role" => "Contributor",
 			"language" => "Language (Primary Only)",
 			"all_languages" => "Language (All)",
 			"translation" => "Translations",
