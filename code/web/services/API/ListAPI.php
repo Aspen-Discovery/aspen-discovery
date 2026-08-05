@@ -2352,8 +2352,6 @@ class ListAPI extends AbstractAPI {
 
 		// We need to add titles to the list //
 
-		// Include Search Engine Class
-		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
 		// Include UserListEntry Class
 		require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 

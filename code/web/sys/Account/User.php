@@ -4615,6 +4615,7 @@ class User extends DataObject {
 
 		$sections['third_party_enrichment'] = new AdminSection('Third Party Enrichment');
 		$sections['third_party_enrichment']->addAction(new AdminAction('Accelerated Reader Settings', 'Define settings to load Accelerated Reader information directly from Renaissance Learning.', '/Enrichment/ARSettings'), 'Administer Third Party Enrichment API Keys');
+		$sections['third_party_enrichment']->addAction(new AdminAction('BDS Settings', 'Define settings for BDS cover image integration.', '/Enrichment/BDSSettings'), 'Administer BDS');
 		$sections['third_party_enrichment']->addAction(new AdminAction('ChiliFresh Settings', 'Define settings for ChiliFresh integration.', '/Enrichment/ChiliFreshSettings'), 'Administer Third Party Enrichment API Keys');
 		$sections['third_party_enrichment']->addAction(new AdminAction('Coce Server Settings', 'Define settings to load covers from a Coce server.', '/Enrichment/CoceServerSettings'), 'Administer Third Party Enrichment API Keys');
 		$sections['third_party_enrichment']->addAction(new AdminAction('ContentCafe Settings', 'Define settings for ContentCafe integration.', '/Enrichment/ContentCafeSettings'), 'Administer Third Party Enrichment API Keys');
@@ -5974,6 +5975,9 @@ class User extends DataObject {
 		$pushToken->deviceModel = $device;
 		$pushToken->onboardAppNotifications = 0;
 		$pushToken->tokenType = $tokenType;
+		$pushToken->notifyAccount = 1;
+		$pushToken->notifyCustom = 1;
+		$pushToken->notifySavedSearch = 1;
 		if ($pushToken->find(true)) {
 			return true;
 		} else {

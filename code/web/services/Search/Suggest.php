@@ -19,10 +19,7 @@ class Suggest extends Action {
 
 		$url = $configArray['Index']['url'];
 		$systemVariables = SystemVariables::getSystemVariables();
-		if ($systemVariables->searchVersion == 1) {
-			require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
-			$db = new GroupedWorksSolrConnector($url);
-		} else {
+		if ($systemVariables->searchVersion == 2) {
 			require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector2.php';
 			$db = new GroupedWorksSolrConnector2($url);
 		}

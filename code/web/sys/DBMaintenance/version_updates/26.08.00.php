@@ -134,7 +134,23 @@ function getUpdates26_08_00(): array {
 
 		//other
 
-		//jacob - OpenFifth
+    //jacob - OpenFifth
+		'bds_settings' => [
+			'title' => 'BDS Integration',
+			'description' => 'Create settings table for BDS cover image integration',
+			'continueOnError' => false,
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS bds_settings (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					name TINYTEXT DEFAULT \'default\' UNIQUE,
+					dbmCode VARCHAR(250),
+					enabled TINYINT(1) DEFAULT 1
+				)',
+				"ALTER TABLE library ADD COLUMN IF NOT EXISTS bdsSettingId INT DEFAULT -1",
+				"INSERT IGNORE INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Third Party Enrichment', 'Administer BDS', '', 40, 'Allows users to administer BDS cover image integration.')",
+				"INSERT IGNORE INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer BDS'))",
+			]
+		], //bds_settings
 		'external_materials_request_url_length' => [
 			'title' => 'Increase External Materials Request URL length',
 			'description' => 'Allow External Materials Request URLs longer than 255 characters',
