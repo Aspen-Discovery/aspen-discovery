@@ -5974,6 +5974,9 @@ class User extends DataObject {
 		$pushToken->deviceModel = $device;
 		$pushToken->onboardAppNotifications = 0;
 		$pushToken->tokenType = $tokenType;
+		$pushToken->notifyAccount = 1;
+		$pushToken->notifyCustom = 1;
+		$pushToken->notifySavedSearch = 1;
 		if ($pushToken->find(true)) {
 			return true;
 		} else {
