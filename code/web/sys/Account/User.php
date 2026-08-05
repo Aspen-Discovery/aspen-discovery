@@ -4521,6 +4521,13 @@ class User extends DataObject {
 				'View Community Engagement Dashboard',
 			]);
 		}
+
+		$sections['searching'] = new AdminSection('Searching');
+		$searchSettingAction = new AdminAction('Search Settings', 'Define various search settings for libraries and locations.', '/Admin/SearchSettings');
+		$sections['searching']->addAction($searchSettingAction, [
+			'Administer All Search Settings',
+		]);
+
 		$sections['cataloging'] = new AdminSection('Catalog / Grouped Works');
 		$groupedWorkAction = new AdminAction('Grouped Work Display', 'Define information about what is displayed for Grouped Works in search results and full record displays.', '/Admin/GroupedWorkDisplay');
 		$groupedWorkAction->addSubAction(new AdminAction('eContent Sorting', 'Define how eContent sources are sorted within a Grouped Work.', '/Admin/GroupedWorkEContentSorting'), [
@@ -5967,6 +5974,9 @@ class User extends DataObject {
 		$pushToken->deviceModel = $device;
 		$pushToken->onboardAppNotifications = 0;
 		$pushToken->tokenType = $tokenType;
+		$pushToken->notifyAccount = 1;
+		$pushToken->notifyCustom = 1;
+		$pushToken->notifySavedSearch = 1;
 		if ($pushToken->find(true)) {
 			return true;
 		} else {

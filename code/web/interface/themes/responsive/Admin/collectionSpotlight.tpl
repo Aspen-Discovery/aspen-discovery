@@ -63,7 +63,7 @@
 				<p>{translate text="Width and height can be adjusted as needed to fit within your site." isAdminFacing=true}</p>
 				<blockquote class="alert-warning">{translate text="Note: Percentage-based values for iframe width and height are not consistently honored on iPads and other iOS devices or browsers. It is recommended to use fixed pixel values instead." isAdminFacing=true}</blockquote>
 				<blockquote class="alert-warning">{translate text="Note: 'Text Only List' spotlights use the frame's scrollbar to allow vertical scrolling." isAdminFacing=true}</blockquote>
-				<blockquote class="alert-warning">{translate text='Recommend: Set iframe attribute frameborder="0" and apply any desired border styling through your stylesheet (CSS file).' isAdminFacing=true}</blockquote>
+				<blockquote class="alert-warning">{translate text='Recommendation: Set iframe attribute frameborder="0" and apply any desired border styling through your stylesheet (CSS file).' isAdminFacing=true}</blockquote>
 			</div>
 		</div>
 

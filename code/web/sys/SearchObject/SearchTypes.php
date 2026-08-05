@@ -1,0 +1,69 @@
+<?php /** @noinspection PhpMissingFieldTypeInspection */
+
+class SearchTypes extends DataObject {
+	public $__table = 'search_types';
+	public $id;
+	public $searchSettingId;
+	public $type;
+	public $label;
+	public $defaultLabel;
+	public $enabled;
+
+	static $_objectStructure = [];
+
+	static function getObjectStructure(string $context = ''): array
+	{
+		if (isset(self::$_objectStructure[$context]) && self::$_objectStructure[$context] !== null) {
+			return self::$_objectStructure[$context];
+		}
+
+		$structure = [
+			'id' => [
+				'property' => 'id',
+				'type' => 'label',
+				'label' => 'Id',
+				'description' => 'The unique id within the database.',
+				'uniqueProperty' => true,
+			],
+			'searchSettingId' => [
+				'property' => 'searchSettingId',
+				'type' => 'label',
+				'label' => 'Search Setting Id',
+				'description' => 'The unique id within the database for the search setting.',
+			],
+			'type' => [
+				'property' => 'type',
+				'type' => 'text',
+				'label' => 'Search Type',
+				'description' => 'The type of search.',
+				'readOnly' => true,
+			],
+			'defaultLabel' => [
+				'property' => 'defaultLabel',
+				'type' => 'text',
+				'label' => 'Default Label',
+				'readOnly' => true,
+			],
+			'label' => [
+				'property' => 'label',
+				'type' => 'text',
+				'label' => 'Label',
+				'description' => 'The label for the search type..',
+			],
+			'enabled' => [
+				'property' => 'enabled',
+				'type' => 'enum',
+				'values' => [
+					0 => 'Disabled',
+					1 => 'Enabled for Basic and Advanced Search',
+					2 => 'Enabled for Advanced Search Only'
+				],
+				'label' => 'Enabled?',
+				'description' => 'Setting for where the search type is enabled.',
+			]
+		];
+
+		self::$_objectStructure[$context] = $structure;
+		return self::$_objectStructure[$context];
+	}
+}

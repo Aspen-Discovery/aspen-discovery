@@ -928,4 +928,8 @@ BODY;
 		return $libKeyDriver->getLibKeyResult($uniqueIdentifierList);
 	}
 
+	public function getAdvancedSearchIndexes() : array {
+		// TODO: Implement getAdvancedSearchIndexes() method.
+		return [];
+	}
 }
