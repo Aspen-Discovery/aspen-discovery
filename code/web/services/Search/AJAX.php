@@ -258,11 +258,19 @@ class AJAX extends JSON_Action {
 	 * @noinspection PhpUnused
 	 */
 	function getSpotlightTitles(): array {
-		global $interface, $memCache;
-
 		$listId = $_REQUEST['id'] ?? 0;
 		$scrollerName = strip_tags($_REQUEST['scrollerName'] ?? ('List' . $listId));
 		$coverSize = $_REQUEST['coverSize'] ?? 'medium';
+		return $this->getSpotlightTitlesForList($listId, $scrollerName, $coverSize, !empty($_REQUEST['reload']));
+	}
+
+	/**
+	 * Gets a spotlight list's title data for either the AJAX endpoint or the
+	 * initial embedded-spotlight response.
+	 */
+	function getSpotlightTitlesForList(int $listId, string $scrollerName, string $coverSize = 'medium', bool $reload = false): array {
+		global $interface, $memCache;
+
 		$cacheKey = "spotlight_titles_" . $listId;
 
 		$interface->assign('listName', $scrollerName);
@@ -270,7 +278,10 @@ class AJAX extends JSON_Action {
 		// 1. Check Cache
 		if ($memCache) {
 			$cachedResult = $memCache->get($cacheKey);
-			if ($cachedResult !== false && empty($_REQUEST['reload'])) {
+			if ($cachedResult !== false && !$reload) {
+				$cachedResult['success'] = true;
+				$cachedResult['currentIndex'] = $cachedResult['currentIndex']
+					?? (count($cachedResult['titles']) > 5 ? floor(count($cachedResult['titles']) / 2) : 0);
 				// Re-hydrate formattedTitle for cached titles
 				foreach ($cachedResult['titles'] as $index => &$item) {
 					$item['formattedTitle'] = $this->buildFormattedTitle($item, $scrollerName, $index, $coverSize);
@@ -306,6 +317,8 @@ class AJAX extends JSON_Action {
 		$interface->assign('showViewMoreLink', $collectionSpotlight->showViewMoreLink);
 
 		$result = $this->resolveSpotlightSource($collectionSpotlightList, $collectionSpotlight);
+		$result['success'] = true;
+		$result['currentIndex'] = count($result['titles']) > 5 ? floor(count($result['titles']) / 2) : 0;
 		
 		// 3. Prepare Lightweight Payload for Caching
 		$cachePayload = $result;
@@ -331,6 +344,9 @@ class AJAX extends JSON_Action {
 		// 5. Ensure formattedTitle is present on live un-cached response
 		if (!empty($result['titles'])) {
 			foreach ($result['titles'] as $index => &$item) {
+				if (!empty($item['formattedTitle'])) {
+					$item['formattedTitle'] = $this->rewriteSpotlightCoverUrls($item['formattedTitle']);
+				}
 				if (empty($item['id']) && !empty($item['formattedTitle'])) {
 					if (preg_match('#/GroupedWork/([^/]+)/Home#', $item['formattedTitle'], $matches)) {
 						$item['id'] = $matches[1];
@@ -402,7 +418,7 @@ class AJAX extends JSON_Action {
 		$scrollerNameClean = preg_replace('/\W/', '', $scrollerName);
 
 		$link = "/GroupedWork/{$id}/Home";
-		$imgSrc = "/bookcover.php?id={$id}&size={$coverSize}&type={$type}&category={$category}";
+		$imgSrc = "/API/SearchAPI?method=getCollectionSpotlightCover&amp;id={$id}&amp;size={$coverSize}&amp;type={$type}&amp;category={$category}";
 
 		return '<div id="scrollerTitle' . $scrollerNameClean . $index . '" class="carouselScrollerTitle">' .
 			'<a href="' . $link . '" tabindex="1">' .
@@ -412,6 +428,18 @@ class AJAX extends JSON_Action {
 				'<div class="carouselScrollerTitleLabel"><span>' . $title . '</span></div>' .
 			'</a>' .
 		'</div>';
+	}
+
+	/**
+	 * Routes spotlight cover requests through SearchAPI so an embedded spotlight
+	 * does not require direct access to /bookcover.php.
+	 */
+	private function rewriteSpotlightCoverUrls(string $formattedTitle): string {
+		return preg_replace(
+			'#(?:(?:https?:)?//[^/]+)?/bookcover\\.php\\?#',
+			'/API/SearchAPI?method=getCollectionSpotlightCover&amp;',
+			$formattedTitle
+		);
 	}
 
 	/** @noinspection PhpUnused */

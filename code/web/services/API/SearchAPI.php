@@ -12,6 +12,7 @@ class SearchAPI extends AbstractAPI {
 		if (in_array($method, [
 			'getListWidget',
 			'getCollectionSpotlight',
+			'getCollectionSpotlightCover',
 			'getEmbeddableEventsCalendar'
 		])) {
 			header('Content-type: text/html');
@@ -23,6 +24,41 @@ class SearchAPI extends AbstractAPI {
 		}
 
 		$this->handleAPIRequestAuto($method, 'search_api');
+	}
+
+	/**
+	 * Serves a cover requested by an embedded collection spotlight.
+	 *
+	 * Keeping these requests under SearchAPI lets an embedding site allow-list the
+	 * spotlight and its covers through the same API path while retaining the
+	 * BookCoverProcessor's existing cache, conditional-response, and redirect logic.
+	 */
+	function getCollectionSpotlightCover() : void {
+		global $aspenUsage;
+		global $configArray;
+		global $timer;
+		global $logger;
+
+		$aspenUsage->coverViews++;
+		require_once ROOT_DIR . '/sys/Covers/BookCoverProcessor.php';
+
+		$processor = new BookCoverProcessor();
+		$processor->loadCover($configArray, $timer, $logger);
+		if ($processor->error) {
+			header('Content-type: text/plain');
+			$logger->log("Error processing cover " . $processor->error, Logger::LOG_ERROR);
+			echo $processor->error;
+		}
+
+		try {
+			if (!empty($aspenUsage->__get('id'))) {
+				$aspenUsage->update();
+			} else {
+				$aspenUsage->insert();
+			}
+		} catch (Exception $e) {
+			// The usage table may not have been created yet.
+		}
 	}
 
 	// The time intervals in seconds beyond which we consider the status as not current
@@ -980,6 +1016,7 @@ class SearchAPI extends AbstractAPI {
 		$collectionSpotlight->id = $id;
 		if ($collectionSpotlight->find(true)) {
 			$interface->assign('collectionSpotlight', $collectionSpotlight);
+			$interface->assign('collectionSpotlightTitleData', $this->getCollectionSpotlightTitleData($collectionSpotlight, !empty($_REQUEST['reload'])));
 
 			if (!empty($_REQUEST['resizeIframe'])) {
 				$interface->assign('resizeIframe', true);
@@ -989,6 +1026,34 @@ class SearchAPI extends AbstractAPI {
 		} else {
 			return '';
 		}
+	}
+
+	/**
+	 * Loads the visible spotlight lists while rendering the iframe so the client
+	 * does not need to call /Search/AJAX?method=getSpotlightTitles.
+	 */
+	private function getCollectionSpotlightTitleData(CollectionSpotlight $collectionSpotlight, bool $reload): string {
+		global $loggedIn;
+		$user = UserAccount::getLoggedInUser();
+
+		require_once ROOT_DIR . '/services/Search/AJAX.php';
+		$spotlightAjax = new AJAX();
+		$titleData = [];
+		foreach ($collectionSpotlight->lists as $list) {
+			$shouldDisplay = $list->displayFor === 'all'
+				|| ($list->displayFor === 'loggedIn' && $loggedIn && ($user === null || $user->disableRecommendations == 0))
+				|| ($list->displayFor === 'notLoggedIn' && !$loggedIn);
+			if ($shouldDisplay) {
+				$titleData[$list->id] = $spotlightAjax->getSpotlightTitlesForList(
+					(int)$list->id,
+					(string)$list->id,
+					$collectionSpotlight->coverSize,
+					$reload
+				);
+			}
+		}
+
+		return json_encode($titleData, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
 	}
 
 	/** @noinspection PhpUnused */

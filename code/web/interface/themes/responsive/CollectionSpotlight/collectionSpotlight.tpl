@@ -18,6 +18,9 @@
 			<link rel="stylesheet" type="text/css" href="{$collectionSpotlight->customCss}" />
 		{/if}
 		<base href="" target="_parent" />
+		<script type="text/javascript">
+			window.collectionSpotlightTitleData = {$collectionSpotlightTitleData nofilter};
+		</script>
 	</head>
 
 	<body class="embeddedCollectionSpotlightBody">
