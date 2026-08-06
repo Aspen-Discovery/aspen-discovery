@@ -3776,13 +3776,17 @@ class MyAccount_AJAX extends JSON_Action {
 
 		$filteredHolds = [];
 
-		// Check if we're filtering by a specific user
+		// A filter option's value may be derived from more than the matching Hold
+		// property (for example, Available and Unavailable status values). Always
+		// use getHoldFilterValue() so building options and applying filters agree.
 		foreach ($allHolds as $group => $holdGroup) {
 			$filteredHolds[$group] = [];
 			foreach ($holdGroup as $hold) {
 				$holdIsValid = true;
 				foreach ($filters as $field => $filterInformation) {
-					if (!in_array($hold->$field, $filterInformation['selected'])) {
+					$filterValue = $this->getHoldFilterValue($hold, $field);
+					$selectedValues = array_map('strval', $filterInformation['selected']);
+					if ($filterValue === null || !in_array($filterValue['value'], $selectedValues, true)) {
 						$holdIsValid = false;
 						break;
 					}
@@ -4151,35 +4155,46 @@ class MyAccount_AJAX extends JSON_Action {
 	}
 
 	/** Hold Filtering Functions */
-	private function getHoldFilterValue(Hold|array $hold, string $field): ?array {
-		if (is_array($hold)) {
-			$fieldValue = isset($hold[$field]) ? (string)$hold[$field] : null;
-		}else{
-			$fieldValue = $hold->$field;
+	private function getHoldPropertyValue(Hold|array $hold, string $field): mixed {
+		return is_array($hold) ? ($hold[$field] ?? null) : $hold->$field;
+	}
+
+	private function getHoldFilterFieldValue(Hold|array $hold, string $field): ?string {
+		$fieldValue = $this->getHoldPropertyValue($hold, $field);
+
+		if ($field === 'status') {
+			if ($this->getHoldPropertyValue($hold, 'available')) {
+				return 'available';
+			}
+			return empty($fieldValue) ? 'unavailable' : (string)$fieldValue;
 		}
+
+		return $fieldValue === null ? null : (string)$fieldValue;
+	}
+
+	private function getHoldFilterValue(Hold|array $hold, string $field): ?array {
+		$fieldValue = $this->getHoldFilterFieldValue($hold, $field);
 
 		$label = $fieldValue;
 		//Do special processing of some fields
 		switch ($field) {
 			case "userId":
-				$label = $hold->getUserName();
+				$label = is_array($hold) ? $fieldValue : $hold->getUserName();
 				break;
 			case "status":
-				if ($hold->available) {
+				if ($fieldValue === 'available') {
 					$label = translate(['text' => 'Available', 'isPublicFacing' => true]);
-				}else{
-					if (empty($hold->status)) {
-						$label = translate(['text' => 'Unavailable', 'isPublicFacing' => true]);
-					}else{
-						$label = translate(['text' => (string)$hold->$field, 'isPublicFacing' => true]);
-					}
+				} elseif ($fieldValue === 'unavailable') {
+					$label = translate(['text' => 'Unavailable', 'isPublicFacing' => true]);
+				} else {
+					$label = translate(['text' => (string)$fieldValue, 'isPublicFacing' => true]);
 				}
 				break;
 			case "format":
-				$label = translate(['text' => (string)$hold->$field, 'isPublicFacing' => true]);
+				$label = translate(['text' => (string)$fieldValue, 'isPublicFacing' => true]);
 				break;
 			case "source":
-				switch ($hold->source) {
+				switch ($fieldValue) {
 					case 'ils':
 						$sourceUntranslated = 'Physical Materials';
 						break;
@@ -4202,7 +4217,7 @@ class MyAccount_AJAX extends JSON_Action {
 				$label = translate(['text' => $sourceUntranslated, 'isPublicFacing' => true]);
 				break;
 			default:
-				$label = (string)$hold->$field;
+				$label = (string)$fieldValue;
 		}
 		return [
 			'value' => $fieldValue,
