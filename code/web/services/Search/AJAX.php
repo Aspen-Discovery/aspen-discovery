@@ -282,97 +282,115 @@ class AJAX extends JSON_Action {
 		// 2. Cache Miss: Execute regular fetch logic
 		require_once ROOT_DIR . '/sys/LocalEnrichment/CollectionSpotlightList.php';
 		$collectionSpotlightList = new CollectionSpotlightList();
-		$collectionSpotlightList->id = $listId;     
-		
-		if ($collectionSpotlightList->find(true)) {
-			$result = [
-				'success' => true,
-				'titles' => [],
+		$collectionSpotlightList->id = $listId;
+
+		if (!$collectionSpotlightList->find(true)) {
+			return [
+				'success' => false,
+				'message' => 'Information for the carousel list could not be found.',
 			];
-
-			require_once ROOT_DIR . '/sys/LocalEnrichment/CollectionSpotlight.php';
-			$collectionSpotlight = new CollectionSpotlight();
-			$collectionSpotlight->id = $collectionSpotlightList->collectionSpotlightId;
-			$collectionSpotlight->find(true);
-
-			$interface->assign('collectionSpotlight', $collectionSpotlight);
-			$interface->assign('showViewMoreLink', $collectionSpotlight->showViewMoreLink);
-
-			if ($collectionSpotlightList->sourceListId != null && $collectionSpotlightList->sourceListId > 0) {
-				require_once ROOT_DIR . '/sys/UserLists/UserList.php';
-				$sourceList = new UserList();
-				$sourceList->id = $collectionSpotlightList->sourceListId;
-				if ($sourceList->find(true)) {
-					$result['listTitle'] = $sourceList->title;
-					$result['listDescription'] = $sourceList->description;
-					$result['titles'] = $sourceList->getSpotlightTitles($collectionSpotlight);
-					$result['currentIndex'] = 0;
-				}
-				$result['searchUrl'] = '/MyAccount/MyList/' . $collectionSpotlightList->sourceListId;
-			} elseif ($collectionSpotlightList->sourceCourseReserveId != null && $collectionSpotlightList->sourceCourseReserveId > 0) {
-				require_once ROOT_DIR . '/sys/CourseReserves/CourseReserve.php';
-				$sourceList = new CourseReserve();
-				$sourceList->id = $collectionSpotlightList->sourceCourseReserveId;
-				if ($sourceList->find(true)) {
-					$result['listTitle'] = $sourceList->getTitle();
-					$result['listDescription'] = '';
-					$result['titles'] = $sourceList->getSpotlightTitles($collectionSpotlight);
-					$result['currentIndex'] = 0;
-				}
-				$result['searchUrl'] = '/CourseReserves/' . $collectionSpotlightList->sourceCourseReserveId;
-			} else {
-				$searchObject = $collectionSpotlightList->getSearchObject();
-				$searchObject->processSearch();
-
-				$result['listTitle'] = $collectionSpotlightList->name;
-				$result['listDescription'] = '';
-				$result['titles'] = method_exists($searchObject, 'getSpotlightResults') 
-					? $searchObject->getSpotlightResults($collectionSpotlight) 
-					: [];
-				$result['currentIndex'] = 0;
-			}
-
-			// 3. Prepare Lightweight Payload for Caching
-			$cachePayload = $result;
-			if (!empty($cachePayload['titles'])) {
-				foreach ($cachePayload['titles'] as &$item) {
-					// Extract record ID from HTML string if not explicitly set
-					if (empty($item['id']) && !empty($item['formattedTitle'])) {
-						if (preg_match('#/GroupedWork/([^/]+)/Home#', $item['formattedTitle'], $matches)) {
-							$item['id'] = $matches[1];
-						} elseif (preg_match('#bookcover\.php\?[^"]*id=([^&"#]+)#', $item['formattedTitle'], $matches)) {
-							$item['id'] = $matches[1];
-						}
-					}
-					unset($item['formattedTitle']); // Drop bloated HTML string before storing
-				}
-
-				// 4. Save Lightweight Data to Cache (1 hour)
-				if ($memCache) {
-					$memCache->set($cacheKey, $cachePayload, 3600);
-				}
-			}
-
-			// 5. Ensure formattedTitle is present on live un-cached response
-			if (!empty($result['titles'])) {
-				foreach ($result['titles'] as $index => &$item) {
-					if (empty($item['id']) && !empty($item['formattedTitle'])) {
-						if (preg_match('#/GroupedWork/([^/]+)/Home#', $item['formattedTitle'], $matches)) {
-							$item['id'] = $matches[1];
-						}
-					}
-					if (!isset($item['formattedTitle']) || empty($item['id'])) {
-						$item['formattedTitle'] = $this->buildFormattedTitle($item, $scrollerName, $index, $coverSize);
-					}
-				}
-			}
-
-			return $result;
 		}
 
+		// List found, setup result
+		$result = [
+			'success' => true,
+			'titles' => [],
+		];
+
+		require_once ROOT_DIR . '/sys/LocalEnrichment/CollectionSpotlight.php';
+		$collectionSpotlight = new CollectionSpotlight();
+		$collectionSpotlight->id = $collectionSpotlightList->collectionSpotlightId;
+		$collectionSpotlight->find(true);
+
+		$interface->assign('collectionSpotlight', $collectionSpotlight);
+		$interface->assign('showViewMoreLink', $collectionSpotlight->showViewMoreLink);
+
+		$result = $this->resolveSpotlightSource($collectionSpotlightList, $collectionSpotlight);
+		
+		// 3. Prepare Lightweight Payload for Caching
+		$cachePayload = $result;
+		if (!empty($cachePayload['titles'])) {
+			foreach ($cachePayload['titles'] as &$item) {
+				// Extract record ID from HTML string if not explicitly set
+				if (empty($item['id']) && !empty($item['formattedTitle'])) {
+					if (preg_match('#/GroupedWork/([^/]+)/Home#', $item['formattedTitle'], $matches)) {
+						$item['id'] = $matches[1];
+					} elseif (preg_match('#bookcover\.php\?[^"]*id=([^&"#]+)#', $item['formattedTitle'], $matches)) {
+						$item['id'] = $matches[1];
+					}
+				}
+				unset($item['formattedTitle']); // Drop bloated HTML string before storing
+			}
+
+			// 4. Save Lightweight Data to Cache (1 hour)
+			if ($memCache) {
+				$memCache->set($cacheKey, $cachePayload, 3600);
+			}
+		}
+
+		// 5. Ensure formattedTitle is present on live un-cached response
+		if (!empty($result['titles'])) {
+			foreach ($result['titles'] as $index => &$item) {
+				if (empty($item['id']) && !empty($item['formattedTitle'])) {
+					if (preg_match('#/GroupedWork/([^/]+)/Home#', $item['formattedTitle'], $matches)) {
+						$item['id'] = $matches[1];
+					}
+				}
+				if (!isset($item['formattedTitle']) || empty($item['id'])) {
+					$item['formattedTitle'] = $this->buildFormattedTitle($item, $scrollerName, $index, $coverSize);
+				}
+			}
+		}
+
+		return $result;
+	}
+
+	private function resolveSpotlightSource($collectionSpotlightList, $collectionSpotlight): array {
+		$sourceListId = $collectionSpotlightList->sourceListId;
+		$courseReserveId = $collectionSpotlightList->sourceCourseReserveId;
+
+		// 1. User List Source
+		if (!empty($sourceListId)) {
+			require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+			$source = new UserList();
+			$source->id = $sourceListId;
+
+			if ($source->find(true)) {
+				return [
+					'listTitle'       => $source->title,
+					'listDescription' => $source->description ?? '',
+					'titles'          => $source->getSpotlightTitles($collectionSpotlight),
+					'searchUrl'       => '/MyAccount/MyList/' . $sourceListId,
+				];
+			}
+		}
+
+		// 2. Course Reserve Source
+		if (!empty($courseReserveId)) {
+			require_once ROOT_DIR . '/sys/CourseReserves/CourseReserve.php';
+			$source = new CourseReserve();
+			$source->id = $courseReserveId;
+
+			if ($source->find(true)) {
+				return [
+					'listTitle'       => $source->getTitle(),
+					'listDescription' => '',
+					'titles'          => $source->getSpotlightTitles($collectionSpotlight),
+					'searchUrl'       => '/CourseReserves/' . $courseReserveId,
+				];
+			}
+		}
+
+		// 3. Search Object Fallback
+		$searchObject = $collectionSpotlightList->getSearchObject();
+		$searchObject->processSearch();
+
 		return [
-			'success' => false,
-			'message' => 'Information for the carousel list could not be found.',
+			'listTitle'       => $collectionSpotlightList->name,
+			'listDescription' => '',
+			'titles'          => method_exists($searchObject, 'getSpotlightResults')
+				? $searchObject->getSpotlightResults($collectionSpotlight)
+				: [],
 		];
 	}
 
