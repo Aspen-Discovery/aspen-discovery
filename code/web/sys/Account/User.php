@@ -5868,25 +5868,32 @@ class User extends DataObject {
 				$permissionRoles = $this->getRoles();
 				if (!empty($permissionRoles)) {
 					foreach ($permissionRoles as $role) {
-						$this->_twoFactorAuthenticationSetting->id = $role->twoFactorAuthSettingId;
-						if ($this->_twoFactorAuthenticationSetting->find(true)) {
-							if ($this->_twoFactorAuthenticationSetting->assignToUsersBy == "role") {
-								return $this->_twoFactorAuthenticationSetting;
-							}
+						if (empty($role->twoFactorAuthSettingId)) {
+							continue;
+						}
+						$roleSetting = new TwoFactorAuthSetting();
+						$roleSetting->id = $role->twoFactorAuthSettingId;
+						if ($roleSetting->find(true) && $roleSetting->assignToUsersBy == "role") {
+							$this->_twoFactorAuthenticationSetting = $roleSetting;
+							return $this->_twoFactorAuthenticationSetting;
 						}
 					}
 				}
 
 				// As a backup, we will check if the user is required to use 2FA based on their patron type or account profile.
-				$patronType = $this->getPTypeObj();
-				//If the user has a patron type, we will use that to determine the two factor authentication settings.
-				//Otherwise, we can use the account profile.
-				if (!empty($patronType)) {
-					$this->_twoFactorAuthenticationSetting->id = $patronType->twoFactorAuthSettingId;
+				$fallbackSetting = new TwoFactorAuthSetting();
+				if (!empty($patronType) && !empty($patronType->twoFactorAuthSettingId)) {
+					$fallbackSetting->id = $patronType->twoFactorAuthSettingId;
 				} else {
-					$this->_twoFactorAuthenticationSetting->accountProfileId = $this->getAccountProfile()->id;
+					$accountProfile = $this->getAccountProfile();
+					if (!empty($accountProfile)) {
+						$fallbackSetting->accountProfileId = $accountProfile->id;
+					}
 				}
-				if (!$this->_twoFactorAuthenticationSetting->find(true)) {
+
+				if ($fallbackSetting->find(true)) {
+					$this->_twoFactorAuthenticationSetting = $fallbackSetting;
+				} else {
 					$this->_twoFactorAuthenticationSetting = null;
 				}
 			}
