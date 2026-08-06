@@ -19,6 +19,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.TreeSet;
 
 class SeriesIndexer {
@@ -26,7 +27,7 @@ class SeriesIndexer {
 	private final Logger logger;
 	private ConcurrentUpdateHttp2SolrClient updateServer;
 	private Http2SolrClient groupedWorkServer;
-	private TreeSet<Scope> scopes;
+	private HashMap<String, Scope> scopes;
 
 	SeriesIndexer(Ini configIni, Connection dbConn, Logger logger){
 		this.dbConn = dbConn;
@@ -284,7 +285,7 @@ class SeriesIndexer {
 		}
 
 	}
-	TreeSet<Scope> getScopes() {
+	HashMap<String, Scope> getScopes() {
 		return this.scopes;
 	}
 }

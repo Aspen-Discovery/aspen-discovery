@@ -1,21 +1,22 @@
 package org.aspen_discovery.reindexer;
 
 import com.turning_leaf_technologies.dates.DateUtils;
-import com.turning_leaf_technologies.indexing.GroupedWorkDisplaySettings;
-import com.turning_leaf_technologies.indexing.Scope;
 import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.common.SolrInputDocument;
-import org.apache.solr.common.SolrInputField;
 
 import java.util.*;
-import java.util.regex.Pattern;
 
+/**
+ * Represents a grouped work withing Solr
+ *
+ * Compatible with the grouped_work_v3 schema
+ *
+ * Utilizes nested documents for better faceting
+ */
 public class GroupedWorkSolr3 extends AbstractGroupedWorkSolr implements Cloneable {
-
-
 	public GroupedWorkSolr3(GroupedWorkIndexer groupedWorkIndexer, Logger logger) {
 		super(groupedWorkIndexer, logger);
 	}
@@ -27,21 +28,31 @@ public class GroupedWorkSolr3 extends AbstractGroupedWorkSolr implements Cloneab
 		return clonedWork;
 	}
 
+	/**
+	 * Create a solr document to store the majority of the grouped work data.
+	 * There is also a child document that contains information about the scoped records which allows filtering by
+	 *
+	 *
+	 * @param logEntry
+	 * @return
+	 */
+	@SuppressWarnings("DuplicatedCode")
 	SolrInputDocument getSolrDocument(BaseIndexingLogEntry logEntry) {
-		SolrInputDocument doc = new SolrInputDocument();
+		SolrInputDocument groupedWorkDoc = new SolrInputDocument();
 		//Main identification
-		doc.addField("id", id);
-		doc.addField("last_indexed", new Date());
-		doc.addField("alternate_ids", alternateIds);
-		doc.addField("recordtype", "grouped_work");
+
+		groupedWorkDoc.addField("id", id);
+		groupedWorkDoc.addField("last_indexed", new Date());
+		groupedWorkDoc.addField("alternate_ids", alternateIds);
+		groupedWorkDoc.addField("recordtype", "grouped_work");
 		try {
 			//Title and variations
 			String fullTitle = title;
 			if (subTitle != null) {
 				fullTitle += " " + subTitle;
 			}
-			doc.addField("title", fullTitle);
-			doc.addField("title_display", displayTitle);
+			groupedWorkDoc.addField("title", fullTitle);
+			groupedWorkDoc.addField("title_display", displayTitle);
 			//This is set lower now with additional titles added with formats
 			//doc.addField("title_full", fullTitles);
 			HashSet<String> startOfTitle = new HashSet<>();
@@ -49,38 +60,37 @@ public class GroupedWorkSolr3 extends AbstractGroupedWorkSolr implements Cloneab
 			String sortableTitle = AspenStringUtils.makeValueSortable(fullTitle);
 			startOfTitle.add(sortableTitle);
 			startOfTitle.add(titleSort);
-			doc.addField("title_left", startOfTitle);
+			groupedWorkDoc.addField("title_left", startOfTitle);
 
-			doc.addField("subtitle_display", subTitle);
-			doc.addField("title_short", title);
-			doc.addField("title_sort", titleSort);
-			doc.addField("title_alt", titleAlt);
-			doc.addField("title_new", titleNew);
+			groupedWorkDoc.addField("subtitle_display", subTitle);
+			groupedWorkDoc.addField("title_short", title);
+			groupedWorkDoc.addField("title_sort", titleSort);
+			groupedWorkDoc.addField("title_alt", titleAlt);
+			groupedWorkDoc.addField("title_new", titleNew);
 
 			//author and variations
 			String primaryAuthor = getPrimaryAuthor();
-			doc.addField("auth_author", authAuthor);
-			doc.addField("author", primaryAuthor);
+			groupedWorkDoc.addField("auth_author", authAuthor);
+			groupedWorkDoc.addField("author", primaryAuthor);
 			if (primaryAuthor != null && !primaryAuthor.isEmpty()){ //skip if empty so titles with no author are sorted last
 				primaryAuthor = primaryAuthor.toLowerCase();
-				doc.addField("author_sort", primaryAuthor);
+				groupedWorkDoc.addField("author_sort", primaryAuthor);
 			}
 
-			doc.addField("auth_author2", authAuthor2);
-			doc.addField("author2", author2);
-			doc.addField("author2-role", author2Role);
-			doc.addField("author_additional", authorAdditional);
-			doc.addField("author_display", authorDisplay);
+			groupedWorkDoc.addField("auth_author2", authAuthor2);
+			groupedWorkDoc.addField("author2", author2);
+			groupedWorkDoc.addField("author2-role", author2Role);
+			groupedWorkDoc.addField("author_additional", authorAdditional);
+			groupedWorkDoc.addField("author_display", authorDisplay);
 
 			//title auth
 			HashSet<String> titleAuthors = new HashSet<>();
 			titleAuthors.add(fullTitle + " " + getPrimaryAuthor());
-			doc.addField("title_author", titleAuthors);
+			groupedWorkDoc.addField("title_author", titleAuthors);
 
-			//format
-			doc.addField("grouping_category", groupingCategory);
-
-			doc.addField("format_boost", getTotalFormatBoost());
+			//format related items at grouped work level
+			groupedWorkDoc.addField("grouping_category", groupingCategory);
+			groupedWorkDoc.addField("format_boost", getTotalFormatBoost());
 
 			//language related fields
 			//Check to see if we have Unknown plus a valid value
@@ -90,68 +100,68 @@ public class GroupedWorkSolr3 extends AbstractGroupedWorkSolr implements Cloneab
 			if (languages.isEmpty()) {
 				languages.add(groupedWorkIndexer.getTreatUnknownLanguageAs());
 			}
-			doc.addField("all_languages", languages);
-			doc.addField("language", primaryLanguage);
-			doc.addField("translation", translations);
-			doc.addField("language_boost", languageBoost);
-			doc.addField("language_boost_es", languageBoostSpanish);
+			groupedWorkDoc.addField("all_languages", languages);
+			groupedWorkDoc.addField("language", primaryLanguage);
+			groupedWorkDoc.addField("translation", translations);
+			groupedWorkDoc.addField("language_boost", languageBoost);
+			groupedWorkDoc.addField("language_boost_es", languageBoostSpanish);
 			//Publication related fields
-			doc.addField("publisher", publishers);
-			doc.addField("publishDate", publicationDates);
-			doc.addField("placeOfPublication", placesOfPublication);
+			groupedWorkDoc.addField("publisher", publishers);
+			groupedWorkDoc.addField("publishDate", publicationDates);
+			groupedWorkDoc.addField("placeOfPublication", placesOfPublication);
 			//Sorting will use the earliest date published
-			doc.addField("publishDateSort", earliestPublicationDate);
+			groupedWorkDoc.addField("publishDateSort", earliestPublicationDate);
 
 			//faceting and refined searching
-			doc.addField("physical", physicals);
-			doc.addField("duration", durations);
-			doc.addField("edition", editions);
-			doc.addField("dateSpan", dateSpans);
-			//series.values().removeAll(GroupedWorkIndexer.hideSeries);
-			//Get series names from the series
+			groupedWorkDoc.addField("physical", physicals);
+			groupedWorkDoc.addField("duration", durations);
+			groupedWorkDoc.addField("edition", editions);
+
+			//Series fields
 			SeriesInfo[] sortedSeriesWithVolume = series.values().stream()
 				.sorted(Comparator.comparingInt(SeriesInfo::getPriorityScore).reversed())
 				.toArray(SeriesInfo[]::new);
 			if (isDebugEnabled() && !series.isEmpty()) {
 				addDebugMessage("Series Priority Values", 1);
 			}
-			//seriesWithVolume.values().removeAll(GroupedWorkIndexer.hideSeries);
 			boolean isFirstSeries = true;
 			for (SeriesInfo seriesInfo : sortedSeriesWithVolume) {
 				if (isDebugEnabled()) {
 					addDebugMessage(seriesInfo.getSeriesName() + " priority: " + seriesInfo.getVolumes(), 2);
 				}
-				doc.addField("series", seriesInfo.getSeriesName());
+				groupedWorkDoc.addField("series", seriesInfo.getSeriesName());
 
 				for (String volume : seriesInfo.getVolumes()) {
-					doc.addField("series_with_volume", seriesInfo.getSeriesName() + "|" + volume);
+					groupedWorkDoc.addField("series_with_volume", seriesInfo.getSeriesName() + "|" + volume);
 				}
 				if (isFirstSeries) {
-					doc.addField("series_author", seriesInfo.getSeriesName() + " " + getPrimaryAuthor());
+					groupedWorkDoc.addField("series_author", seriesInfo.getSeriesName() + " " + getPrimaryAuthor());
 					isFirstSeries = false;
 				}
 			}
 
-			doc.addField("topic", topics);
+			//Subject related fields
+			groupedWorkDoc.addField("topic", topics);
 			topicFacets.removeAll(groupedWorkIndexer.hideSubjects);
-			doc.addField("topic_facet", topicFacets);
+			groupedWorkDoc.addField("topic_facet", topicFacets);
 			subjects.removeAll(groupedWorkIndexer.hideSubjects);
-			doc.addField("subject_facet", subjects);
-			doc.addField("lc_subject", lcSubjects);
-			doc.addField("bisac_subject", bisacSubjects);
-			doc.addField("genre", genres);
+			groupedWorkDoc.addField("subject_facet", subjects);
+			groupedWorkDoc.addField("lc_subject", lcSubjects);
+			groupedWorkDoc.addField("bisac_subject", bisacSubjects);
+			groupedWorkDoc.addField("genre", genres);
 			genreFacets.removeAll(groupedWorkIndexer.hideSubjects);
-			doc.addField("genre_facet", genreFacets);
-			doc.addField("geographic", geographic);
+			groupedWorkDoc.addField("genre_facet", genreFacets);
+			groupedWorkDoc.addField("geographic", geographic);
 			geographicFacets.removeAll(groupedWorkIndexer.hideSubjects);
-			doc.addField("geographic_facet", geographicFacets);
+			groupedWorkDoc.addField("geographic_facet", geographicFacets);
 			personalNameSubjects.removeAll(groupedWorkIndexer.hideSubjects);
-			doc.addField("personal_name_facet", personalNameSubjects);
+			groupedWorkDoc.addField("personal_name_facet", personalNameSubjects);
 			corporateNameSubjects.removeAll(groupedWorkIndexer.hideSubjects);
-			doc.addField("corporate_name_facet", corporateNameSubjects);
+			groupedWorkDoc.addField("corporate_name_facet", corporateNameSubjects);
 			eras.removeAll(groupedWorkIndexer.hideSubjects);
-			doc.addField("era", eras);
-			//Check default values and inconsistent forms
+			groupedWorkDoc.addField("era", eras);
+
+			//Literary Forms
 			checkDefaultValue(literaryFormFull, "Not Coded");
 			checkDefaultValue(literaryFormFull, "Other");
 			checkDefaultValue(literaryFormFull, "Unknown");
@@ -174,8 +184,10 @@ public class GroupedWorkSolr3 extends AbstractGroupedWorkSolr implements Cloneab
 			//Add field
 			if (this.debugEnabled) {this.addDebugMessage("Literary form is " + literaryForm.keySet(), 2);}
 			if (this.debugEnabled) {this.addDebugMessage("Full literary form is " + literaryFormFull.keySet(), 2);}
-			doc.addField("literary_form_full", literaryFormFull.keySet());
-			doc.addField("literary_form", literaryForm.keySet());
+			groupedWorkDoc.addField("literary_form_full", literaryFormFull.keySet());
+			groupedWorkDoc.addField("literary_form", literaryForm.keySet());
+
+			//Target Audiences
 			if (targetAudienceFull.size() > 1 || !groupedWorkIndexer.isTreatUnknownAudienceAsUnknown()) {
 				targetAudienceFull.remove("Unknown");
 			}
@@ -186,7 +198,7 @@ public class GroupedWorkSolr3 extends AbstractGroupedWorkSolr implements Cloneab
 			if (targetAudienceFull.isEmpty()) {
 				targetAudienceFull.add(groupedWorkIndexer.getTreatUnknownAudienceAs());
 			}
-			doc.addField("target_audience_full", targetAudienceFull);
+			groupedWorkDoc.addField("target_audience_full", targetAudienceFull);
 			if (targetAudience.size() > 1 || !groupedWorkIndexer.isTreatUnknownAudienceAsUnknown()) {
 				targetAudience.remove("Unknown");
 			}
@@ -198,11 +210,11 @@ public class GroupedWorkSolr3 extends AbstractGroupedWorkSolr implements Cloneab
 			}
 			if (this.isDebugEnabled()) {this.addDebugMessage("Final target audience is " + targetAudience, 1);}
 			if (this.isDebugEnabled()) {this.addDebugMessage("Final full target audience is " + targetAudienceFull, 1);}
-			doc.addField("target_audience", targetAudience);
-			doc.addField("system_list", systemLists);
+			groupedWorkDoc.addField("target_audience", targetAudience);
+
 			//Date added to catalog
 			Date dateAdded = getDateAdded();
-			doc.addField("date_added", dateAdded);
+			groupedWorkDoc.addField("date_added", dateAdded);
 
 			//Check to see if all items are on order.  If so, add on order keywords
 			boolean allItemsOnOrder = true;
@@ -252,7 +264,7 @@ public class GroupedWorkSolr3 extends AbstractGroupedWorkSolr implements Cloneab
 				fullTitles.add(fullTitle + " " + StringUtils.join(uniqueFormats, ", "));
 				addKeywords(uniqueFormats);
 			}
-			doc.addField("title_full", fullTitles);
+			groupedWorkDoc.addField("title_full", fullTitles);
 
 			if (numItems == 0) {
 				allItemsOnOrder = false;
@@ -260,16 +272,16 @@ public class GroupedWorkSolr3 extends AbstractGroupedWorkSolr implements Cloneab
 			if (allItemsOnOrder) {
 				addKeywords("On Order");
 				addKeywords("Coming Soon");
-				doc.addField("days_since_added", -1);
-				doc.addField("time_since_added", "On Order");
+				groupedWorkDoc.addField("days_since_added", -1);
+				groupedWorkDoc.addField("time_since_added", "On Order");
 			} else if (allItemsInProcess) {
 				addKeywords("In Processing");
-				doc.addField("days_since_added", -2);
-				doc.addField("time_since_added", "In Processing");
+				groupedWorkDoc.addField("days_since_added", -2);
+				groupedWorkDoc.addField("time_since_added", "In Processing");
 			} else if (allItemsUnderConsideration) {
 				addKeywords("Under Consideration");
-				doc.addField("days_since_added", Integer.MAX_VALUE);
-				doc.addField("time_since_added", "Under Consideration");
+				groupedWorkDoc.addField("days_since_added", Integer.MAX_VALUE);
+				groupedWorkDoc.addField("time_since_added", "Under Consideration");
 			} else {
 				//Check to see if all items are either on order or
 				if (dateAdded == null) {
@@ -282,481 +294,127 @@ public class GroupedWorkSolr3 extends AbstractGroupedWorkSolr implements Cloneab
 						long indexTime = new Date().getTime();
 						long publicationTime = publicationDate.getTime().getTime();
 						long bibDaysSinceAdded = (indexTime - publicationTime) / (long) (1000 * 60 * 60 * 24);
-						doc.addField("days_since_added", Long.toString(bibDaysSinceAdded));
-						doc.addField("time_since_added", DateUtils.getTimeSinceAddedForDate(publicationDate.getTime()));
+						groupedWorkDoc.addField("days_since_added", Long.toString(bibDaysSinceAdded));
+						groupedWorkDoc.addField("time_since_added", DateUtils.getTimeSinceAddedForDate(publicationDate.getTime()));
 					} else {
-						doc.addField("days_since_added", Long.toString(Integer.MAX_VALUE));
+						groupedWorkDoc.addField("days_since_added", Long.toString(Integer.MAX_VALUE));
 					}
 				} else {
-					doc.addField("days_since_added", DateUtils.getDaysSinceAddedForDate(dateAdded));
-					doc.addField("time_since_added", DateUtils.getTimeSinceAddedForDate(dateAdded));
+					groupedWorkDoc.addField("days_since_added", DateUtils.getDaysSinceAddedForDate(dateAdded));
+					groupedWorkDoc.addField("time_since_added", DateUtils.getTimeSinceAddedForDate(dateAdded));
 				}
 			}
 
-			doc.addField("barcode", barcodes);
 			//Awards and ratings
-			doc.addField("content_rating", contentRatings);
-			doc.addField("awards_facet", awards);
+			groupedWorkDoc.addField("content_rating", contentRatings);
+			groupedWorkDoc.addField("awards_facet", awards);
 			if (lexileScore.isEmpty()) {
-				doc.addField("lexile_score", -1);
+				groupedWorkDoc.addField("lexile_score", -1);
 			} else {
-				doc.addField("lexile_score", lexileScore);
+				groupedWorkDoc.addField("lexile_score", lexileScore);
 			}
 			if (!lexileCode.isEmpty()) {
-				doc.addField("lexile_code", AspenStringUtils.trimTrailingPunctuation(lexileCode));
+				groupedWorkDoc.addField("lexile_code", AspenStringUtils.trimTrailingPunctuation(lexileCode));
 			}
 			if (!fountasPinnell.isEmpty()) {
-				doc.addField("fountas_pinnell", fountasPinnell);
+				groupedWorkDoc.addField("fountas_pinnell", fountasPinnell);
 			}
-			doc.addField("accelerated_reader_interest_level", AspenStringUtils.trimTrailingPunctuation(acceleratedReaderInterestLevel));
+			groupedWorkDoc.addField("accelerated_reader_interest_level", AspenStringUtils.trimTrailingPunctuation(acceleratedReaderInterestLevel));
 			if (AspenStringUtils.isNumeric(acceleratedReaderReadingLevel)) {
-				doc.addField("accelerated_reader_reading_level", acceleratedReaderReadingLevel);
+				groupedWorkDoc.addField("accelerated_reader_reading_level", acceleratedReaderReadingLevel);
 			}
 			if (AspenStringUtils.isNumeric(acceleratedReaderPointValue)) {
-				doc.addField("accelerated_reader_point_value", acceleratedReaderPointValue);
+				groupedWorkDoc.addField("accelerated_reader_point_value", acceleratedReaderPointValue);
 			}
+
+			// Add some special values to keywords
 			HashSet<String> eContentSources = getAllEContentSources();
 			keywords.addAll(eContentSources);
 
 			keywords.addAll(isbns.keySet());
 			keywords.addAll(oclcs);
-			keywords.addAll(barcodes);
 			keywords.addAll(issns);
 			keywords.addAll(lccns);
 			keywords.addAll(upcs.keySet());
 
 			HashSet<String> callNumbers = getAllCallNumbers();
 			keywords.addAll(callNumbers);
-			doc.addField("keywords", Util.getCRSeparatedStringFromSet(keywords));
+			groupedWorkDoc.addField("keywords", Util.getCRSeparatedStringFromSet(keywords));
 
-			doc.addField("table_of_contents", contents);
+			groupedWorkDoc.addField("table_of_contents", contents);
 			//broad search terms
 			//identifiers
-			doc.addField("lccn", lccns);
-			doc.addField("oclc", oclcs);
+			groupedWorkDoc.addField("lccn", lccns);
+			groupedWorkDoc.addField("oclc", oclcs);
 			//Get the primary isbn
-			doc.addField("primary_isbn", primaryIsbn);
-			doc.addField("isbn", isbns.keySet());
-			doc.addField("issn", issns);
-			doc.addField("primary_upc", getPrimaryUpc());
-			doc.addField("upc", upcs.keySet());
+			groupedWorkDoc.addField("primary_isbn", primaryIsbn);
+			groupedWorkDoc.addField("isbn", isbns.keySet());
+			groupedWorkDoc.addField("issn", issns);
+			groupedWorkDoc.addField("primary_upc", getPrimaryUpc());
+			groupedWorkDoc.addField("upc", upcs.keySet());
 
 			//call numbers
-			doc.addField("callnumber-first", callNumberFirst);
-			doc.addField("callnumber-subject", callNumberSubject);
+			groupedWorkDoc.addField("callnumber-first", callNumberFirst);
+			groupedWorkDoc.addField("callnumber-subject", callNumberSubject);
 			//relevance determiners
-			doc.addField("popularity", Long.toString((long) popularity));
-			doc.addField("total_holds", Long.toString(totalHolds));
-			doc.addField("num_holdings", numHoldings);
+			groupedWorkDoc.addField("popularity", Long.toString((long) popularity));
+			groupedWorkDoc.addField("total_holds", Long.toString(totalHolds));
+			groupedWorkDoc.addField("num_holdings", numHoldings);
 			//aspen-discovery enrichment
-			doc.addField("rating", rating == -1f ? 2.5 : rating);
-			doc.addField("rating_facet", getRatingFacet(rating));
+			groupedWorkDoc.addField("rating", rating == -1f ? 2.5 : rating);
+			groupedWorkDoc.addField("rating_facet", getRatingFacet(rating));
 
 			//Links to users
-			doc.addField("user_rating_link", userRatingLink);
-			doc.addField("user_not_interested_link", userNotInterestedLink);
-			doc.addField("user_reading_history_link", userReadingHistoryLink);
-			doc.addField("list_link", listLink);
+			groupedWorkDoc.addField("user_rating_link", userRatingLink);
+			groupedWorkDoc.addField("user_not_interested_link", userNotInterestedLink);
+			groupedWorkDoc.addField("user_reading_history_link", userReadingHistoryLink);
+			groupedWorkDoc.addField("list_link", listLink);
 			for (Long listId : listEntryWeights.keySet()) {
-				doc.addField("list_entry_weight_" + listId, listEntryWeights.get(listId));
+				groupedWorkDoc.addField("list_entry_weight_" + listId, listEntryWeights.get(listId));
 			}
 			for (Long listId : listEntryDatesAdded.keySet()) {
-				doc.addField("list_entry_date_added_" + listId, listEntryDatesAdded.get(listId));
+				groupedWorkDoc.addField("list_entry_date_added_" + listId, listEntryDatesAdded.get(listId));
 			}
 
-			doc.addField("description", Util.getCRSeparatedString(description));
-			doc.addField("display_description", displayDescription);
-			doc.addField("ils_description", ilsDescription);
+			groupedWorkDoc.addField("description", Util.getCRSeparatedString(description));
+			groupedWorkDoc.addField("display_description", displayDescription);
+			//This possibly could move to the record, but that would also make the index significantly larger
+			groupedWorkDoc.addField("ils_description", ilsDescription);
 
 			for (Integer customFacetNumber : customFacetValues.keySet()) {
-				doc.addField("custom_facet_" + customFacetNumber, customFacetValues.get(customFacetNumber));
+				groupedWorkDoc.addField("custom_facet_" + customFacetNumber, customFacetValues.get(customFacetNumber));
 			}
 		}catch (Exception e){
 			logEntry.incErrors("Error creating solr document for grouped work " + id, e);
 		}
 		try{
 			//Save information from scopes
-			addScopedFieldsToDocument(doc, logEntry);
+			addScopedFieldsToDocument(groupedWorkDoc, logEntry);
 		}catch (Exception e){
 			logEntry.incErrors("Error adding scoped fields to grouped work " + id, e);
 		}
 
-		return doc;
+		Long daysAddedSincePubDate = null;
+		if (earliestPublicationDate != null) {
+			//Return number of days since the given year
+			Calendar publicationDate = GregorianCalendar.getInstance();
+			//We don't know when in the year it is published, so assume January 1st which could be wrong
+			publicationDate.set(earliestPublicationDate.intValue(), Calendar.JANUARY, 1);
+			daysAddedSincePubDate = DateUtils.getDaysSinceAddedForDate(publicationDate.getTime());
+		}
+
+		for (RecordInfo recordInfo : relatedRecords.values()) {
+			ArrayList<SolrInputDocument> recordDocuments = recordInfo.getRecordScopeSolrDocuments(groupedWorkIndexer, daysAddedSincePubDate);
+			if (recordDocuments != null) {
+				groupedWorkDoc.addChildDocuments(recordDocuments);
+			}
+		}
+
+		return groupedWorkDoc;
 	}
 
+	@Override
 	protected void addScopedFieldsToDocument(SolrInputDocument doc, BaseIndexingLogEntry logEntry) {
-		//Load information based on scopes.  This has some pretty severe performance implications since we potentially
-		//have a lot of scopes and a lot of items & records.
-
-		HashSet<String> editionInfo = new HashSet<>();
-
-		HashSet<String> formats = new HashSet<>();
-		HashSet<String> formatCategories = new HashSet<>();
-		HashSet<String> owningLibraries = new HashSet<>();
-		HashSet<String> owningLocations = new HashSet<>();
-		HashSet<String> collections = new HashSet<>();
-		HashSet<String> detailedLocations = new HashSet<>();
-		HashSet<String> shelfLocations = new HashSet<>();
-		HashSet<String> iTypes = new HashSet<>();
-		HashSet<String> eContentSources = new HashSet<>();
-		HashSet<String> availableAt = new HashSet<>();
-		HashSet<String> availabilityToggleValues = new HashSet<>();
-		AvailabilityToggleInfo availabilityToggleForScope = new AvailabilityToggleInfo();
-		AvailabilityToggleInfo availabilityToggleForItem = new AvailabilityToggleInfo();
-		for (String scopeName : relatedScopes.keySet()){
-			try{
-				int numAvailableCopies = 0;
-
-				HashSet<String> localCallNumbersForScope = new HashSet<>();
-
-				availabilityToggleForScope.reset();
-
-
-				String sortableCallNumberForScope = null;
-				Long daysSinceAddedForScope = null;
-				long libBoost = 1;
-
-				ArrayList<ScopingInfo> itemsWithScopingInfoForActiveScope = relatedScopes.get(scopeName);
-				String scopePrefix = scopeName + "#";
-				Scope curScope = null;
-				String scopeFacetLabel = null;
-				GroupedWorkDisplaySettings scopeDisplaySettings = null;
-				if (!itemsWithScopingInfoForActiveScope.isEmpty()) {
-					curScope = itemsWithScopingInfoForActiveScope.get(0).getScope();
-					scopeFacetLabel = curScope.getFacetLabel();
-					scopeDisplaySettings  = curScope.getGroupedWorkDisplaySettings();
-				}
-
-				//Process all items for the scope
-				for (ScopingInfo scopingInfo : itemsWithScopingInfoForActiveScope) {
-					ArrayList<String> formatsForItem;
-					ArrayList<String> formatsCategoriesForItem;
-					HashSet<String> availableAtForItem = new HashSet<>();
-					availabilityToggleForItem.reset();
-
-					String readerName = "Libby";
-
-					ItemInfo curItem = scopingInfo.getItem();
-					try {
-						formatsForItem = curItem.getFormatsForIndexing();
-						formatsCategoriesForItem = curItem.getFormatCategoriesForIndexing();
-						loadScopedFormatInfo(formats, formatCategories, scopePrefix, formatsForItem, formatsCategoriesForItem);
-
-						boolean addAllOwningLocations = false;
-						boolean addAllOwningLocationsToAvailableAt = false;
-						boolean locallyOwned = scopingInfo.isLocallyOwned();
-						boolean libraryOwned = scopingInfo.isLibraryOwned();
-						boolean isAvailable = curItem.isAvailable();
-						boolean isEContent = curItem.isEContent();
-						if (isEContent) {
-							String trimmedEContentSource = curItem.getTrimmedEContentSource();
-							if (trimmedEContentSource.equals("overdrive")){
-								trimmedEContentSource = readerName;
-							}
-							addAvailabilityToggle(locallyOwned || libraryOwned, scopeDisplaySettings.isIncludeOnlineMaterialsInAvailableToggle() && isAvailable, isAvailable, availabilityToggleForItem);
-							owningLibraries.add(scopePrefix + trimmedEContentSource);
-							if (isAvailable) {
-								availableAtForItem.add(trimmedEContentSource);
-								numAvailableCopies += curItem.getNumCopies();
-							}
-							eContentSources.add(scopePrefix + trimmedEContentSource);
-						} else { //physical materials
-							if (locallyOwned) {
-								addAvailabilityToggle(locallyOwned, isAvailable, false, availabilityToggleForItem);
-								if (isAvailable) {
-									availableAtForItem.add(scopeFacetLabel);
-								}
-								//For physical materials, only locally owned means it is a location/branch scope and that branch owns it
-								owningLocations.add(scopePrefix + scopeFacetLabel);
-								//This can be a library scope if it is both a library and location scope
-								owningLibraries.add(scopePrefix  + (curScope.isLibraryScope() ? scopeFacetLabel : curScope.getLibraryScope().getFacetLabel()));
-
-								if (curScope.isIncludeAllLibraryBranchesInFacets()) {
-									//Include other branches of this library that own the title within the owning locations
-									//isIncludeAllLibraryBranchesInFacets is only a setting at the location level
-									addAllOwningLocations = true;
-								}
-							}
-							if (libraryOwned) {
-								if (curScope.isLibraryScope() || (curScope.isLocationScope() && !scopeDisplaySettings.isBaseAvailabilityToggleOnLocalHoldingsOnly())) {
-									addAvailabilityToggle(libraryOwned, isAvailable, false, availabilityToggleForItem);
-								}
-								if (isAvailable) {
-									addAllOwningLocationsToAvailableAt = true;
-								}
-								owningLibraries.add(scopePrefix + scopeFacetLabel);
-								//For owning locations, add all locations within the library that own it
-								addAllOwningLocations = true;
-							}
-							//If it is not library or location owned, we might still add to the availability toggles
-							if (!locallyOwned && !libraryOwned && !scopeDisplaySettings.isBaseAvailabilityToggleOnLocalHoldingsOnly()) {
-								addAvailabilityToggle(false, isAvailable, false, availabilityToggleForItem);
-								if (isAvailable) {
-									addAllOwningLocationsToAvailableAt = true;
-								}
-							}
-							if (isAvailable && curScope.getAdditionalLocationsToShowAvailabilityForPattern() != null && curItem.getLocationCode() != null) {
-								//We might include the item in the owning and availability facets if it matched the available locations
-								if (curScope.getAdditionalLocationsToShowAvailabilityForPattern().matcher(curItem.getLocationCode()).matches()) {
-									addAllOwningLocationsToAvailableAt = true;
-								}
-							}
-
-							if (!curScope.isRestrictOwningLibraryAndLocationFacets() || curScope.isConsortialCatalog()) {
-								for (String libraryOwnedName : curItem.getLibraryOwnedNames()) {
-									owningLibraries.add(scopePrefix + libraryOwnedName);
-								}
-								addAllOwningLocations = true;
-							}
-							if (isAvailable) {
-								numAvailableCopies += curItem.getNumCopies();
-							}
-						}
-
-						if (addAllOwningLocations){
-							addAllWithPrefix(owningLocations, scopePrefix, curItem.getLocationOwnedNames(), null);
-						}
-						if (addAllOwningLocationsToAvailableAt){
-							availableAtForItem.addAll(curItem.getLocationOwnedNames());
-						}
-
-						//Filter by locationsToExcludeAvailabilityFor
-						addAllWithPrefix(availableAt, scopePrefix, availableAtForItem, curScope.getLocationsToExcludeAvailabilityForPattern());
-
-						availabilityToggleForScope.local = availabilityToggleForScope.local || availabilityToggleForItem.local;
-						availabilityToggleForScope.available = availabilityToggleForScope.available || availabilityToggleForItem.available;
-						availabilityToggleForScope.availableOnline = availabilityToggleForScope.availableOnline || availabilityToggleForItem.availableOnline;
-
-						loadScopedEditionInformation(editionInfo, scopePrefix, formatsForItem, formatsCategoriesForItem, availableAtForItem, availabilityToggleForItem);
-
-						if (locallyOwned || libraryOwned || scopeDisplaySettings.isIncludeAllRecordsInShelvingFacets()) {
-							String collection = curItem.getCollection();
-							if (collection != null && !collection.isEmpty()) {
-								collections.add(scopePrefix + curItem.getCollection());
-							}
-							String detailedLocation = curItem.getDetailedLocation();
-							if (detailedLocation != null && !detailedLocation.isEmpty()) {
-								detailedLocations.add(scopePrefix + curItem.getDetailedLocation());
-							}
-							String shelfLocation = curItem.getShelfLocation();
-							if (shelfLocation != null && !shelfLocation.isEmpty() && (scopeDisplaySettings.includeEContentInShelvingLocations() || !isEContent)) {
-								shelfLocations.add(scopePrefix + curItem.getShelfLocation());
-							}
-						}
-						if (isEContent || locallyOwned || libraryOwned || scopeDisplaySettings.isIncludeAllRecordsInDateAddedFacets()) {
-							Long daysSinceAdded = loadScopedDaysAdded(curItem);
-							if (daysSinceAddedForScope == null || daysSinceAdded > daysSinceAddedForScope) {
-								daysSinceAddedForScope = daysSinceAdded;
-							}
-						}
-
-						if (locallyOwned || libraryOwned) {
-							if (isAvailable) {
-								if (libBoost < groupedWorkIndexer.availableAtBoostValue) {
-									libBoost = groupedWorkIndexer.availableAtBoostValue;
-								}
-							} else {
-								if (libBoost < groupedWorkIndexer.ownedByBoostValue) {
-									libBoost = groupedWorkIndexer.ownedByBoostValue;
-								}
-							}
-						}
-
-						String trimmedIType = curItem.getTrimmedIType();
-						if (trimmedIType != null) {
-							iTypes.add(scopePrefix + trimmedIType);
-						}
-
-						if (locallyOwned || libraryOwned || !scopingInfo.getScope().isRestrictOwningLibraryAndLocationFacets()) {
-							localCallNumbersForScope.add(curItem.getCallNumber());
-							if (sortableCallNumberForScope == null) {
-								sortableCallNumberForScope = curItem.getSortableCallNumber();
-							}
-						}
-					}catch (Exception e){
-						logEntry.incErrors("Error setting up scope information for " + id + " scope " + scopeName + " item " + curItem.getItemIdentifier(), e);
-					}
-				} // end item loop
-
-				//eAudiobooks are considered both Audiobooks and eBooks by some people
-				if (formats.contains(scopeName + "#eAudiobook")) {
-					formatCategories.add(scopeName + "#eBook");
-				}
-				if (formats.contains(scopeName + "#CD + Book")) {
-					formatCategories.add(scopeName + "#Books");
-					formatCategories.add(scopeName + "#Audio Books");
-				}
-				if (formats.contains(scopeName + "#VOX Books")) {
-					formatCategories.add(scopeName + "#Books");
-					formatCategories.add(scopeName + "#Audio Books");
-				}
-
-				if (daysSinceAddedForScope != null){
-					doc.addField("local_days_since_added_" + scopeName, daysSinceAddedForScope);
-				}
-				doc.addField("lib_boost_" + scopeName, libBoost);
-				doc.addField("local_callnumber_" + scopeName, localCallNumbersForScope);
-				doc.addField("callnumber_sort_" + scopeName, sortableCallNumberForScope);
-				doc.addField("available_copies_" + scopeName, numAvailableCopies);
-
-				for (String availabilityToggleValue : availabilityToggleForScope.getValues()){
-					availabilityToggleValues.add(scopePrefix + availabilityToggleValue);
-				}
-
-				SolrInputField field = doc.getField("local_days_since_added_" + scopeName);
-				if (field != null) {
-					Long daysSinceAdded = (Long) field.getFirstValue();
-					doc.addField("local_time_since_added_" + scopeName, DateUtils.getTimeSinceAdded(daysSinceAdded));
-				}
-			} catch (Exception e){
-				logEntry.incErrors("Error setting up scope information for " + id + " scope " + scopeName, e);
-			}
-		} //End scope loop
-		doc.addField("edition_info", editionInfo);
-		doc.addField("format", formats);
-		doc.addField("format_category", formatCategories);
-		doc.addField("owning_library", owningLibraries);
-		doc.addField("owning_location", owningLocations);
-		doc.addField("collection", collections);
-		doc.addField("detailed_location", detailedLocations);
-		doc.addField("shelf_location", shelfLocations);
-		doc.addField("itype", iTypes);
-		doc.addField("econtent_source", eContentSources);
-
-		doc.addField("availability_toggle", availabilityToggleValues);
-		doc.addField("available_at", availableAt);
-
-		//logger.info("Work " + id + " processed " + relatedScopes.size() + " scopes");
-	}
-
-	private void loadScopedEditionInformation(HashSet<String> editionInfo, String scopePrefix, ArrayList<String> formatsForItem, ArrayList<String> formatsCategoriesForItem, HashSet<String> availableAtForItem, AvailabilityToggleInfo availabilityToggleForItem) {
-		if (formatsCategoriesForItem.isEmpty()){
-			formatsCategoriesForItem.add("");
-		}
-		if (availableAtForItem.isEmpty()) {
-			availableAtForItem.add("none");
-		}
-		ArrayList<String> availabilityToggleValues = availabilityToggleForItem.getValues();
-		ArrayList<String> availableAtForItemArray = new ArrayList<>(availableAtForItem);
-		for (String formatCategory : formatsCategoriesForItem) {
-			String scopeAndFormatCategory = scopePrefix + formatCategory.replace(' ', '_');
-			for (String format : formatsForItem) {
-				String scopeFormatCategoryFormat = scopeAndFormatCategory  + "#" + format.replace(' ', '_');
-				for (String availabilityToggle : availabilityToggleValues) {
-					StringBuilder baseEditionBuilder = new StringBuilder(scopeFormatCategoryFormat)
-						.append("#")
-						.append(availabilityToggle)
-						.append("#");
-
-					for (String availableAtLocation : availableAtForItemArray) {
-						String editionString = baseEditionBuilder + availableAtLocation.replace(' ', '_') + "#"; // Get the final String
-						editionInfo.add(editionString);
-					}
-				}
-			}
-		}
-	}
-
-	private Long daysAddedSincePubDate = null;
-	private Long loadScopedDaysAdded(ItemInfo curItem) {
-		Long daysSinceAdded;
-		if (curItem.isOrderItem() ||
-			curItem.getStatusCode() != null &&
-			(curItem.getGroupedStatus().equals("On Order") ||
-			curItem.getGroupedStatus().equals("In Processing") ||
-			curItem.getDetailedStatus().equals("Coming Soon") || // Falls under the "On Order" facet, so only consider the item's status to find it.
-			curItem.getGroupedStatus().equals("Under Consideration")))
-		{
-			if (curItem.getGroupedStatus().equals("Under Consideration")) {
-				daysSinceAdded = (long)Integer.MAX_VALUE;
-			} else if (curItem.getGroupedStatus().equals("In Processing")) {
-				daysSinceAdded = -1000L;
-			} else {
-				//copying the code below but adding a few steps, if we copy a 3rd time
-				//consider extracting a separate function instead
-				//Date Added To Catalog needs to be the earliest date added for the catalog.
-				Date dateAdded = curItem.getDateAdded();
-				//See if we need to override based on publication date if not provided.
-				//Should be set by individual driver though.
-				if (dateAdded == null) {
-					if (earliestPublicationDate != null) {
-						if (daysAddedSincePubDate == null) {
-							//Return number of days since the given year
-							Calendar publicationDate = GregorianCalendar.getInstance();
-							//We don't know when in the year it is published, so assume January 1st which could be wrong
-							publicationDate.set(earliestPublicationDate.intValue(), Calendar.JANUARY, 1);
-							daysAddedSincePubDate = DateUtils.getDaysSinceAddedForDate(publicationDate.getTime());
-						}
-						daysSinceAdded = daysAddedSincePubDate;
-					} else {
-						//this is still okay because if we get this
-						//the end value will get clamped and end up as -1
-						daysSinceAdded = Long.MAX_VALUE;
-					}
-				} else {
-					daysSinceAdded = DateUtils.getDaysSinceAddedForDate(dateAdded);
-				}
-				//in order to make this appear before anything else we are going to shift it by -999
-				daysSinceAdded -= 999L;
-				//clamping to -1 in case we get a value > 998
-				//worst case scenario we are getting the previous behavior.
-				if(daysSinceAdded < -999L)
-				{
-					daysSinceAdded = -999L;
-				}
-				else if(daysSinceAdded > -1L)
-				{
-					daysSinceAdded = -1L;
-				}
-				//removing this because we need to support back to Java 11.
-				// If we ever get up to java 21 we can simplify the above to this statement
-				//daysSinceAdded = Math.clamp(daysSinceAdded, -999L, -1L);
-			}
-		} else {
-			//Date Added To Catalog needs to be the earliest date added for the catalog.
-			Date dateAdded = curItem.getDateAdded();
-			//See if we need to override based on publication date if not provided.
-			//Should be set by individual driver though.
-			if (dateAdded == null) {
-				if (earliestPublicationDate != null) {
-					if (daysAddedSincePubDate == null) {
-						//Return number of days since the given year
-						Calendar publicationDate = GregorianCalendar.getInstance();
-						//We don't know when in the year it is published, so assume January 1st which could be wrong
-						publicationDate.set(earliestPublicationDate.intValue(), Calendar.JANUARY, 1);
-						daysAddedSincePubDate = DateUtils.getDaysSinceAddedForDate(publicationDate.getTime());
-					}
-					daysSinceAdded = daysAddedSincePubDate;
-				} else {
-					daysSinceAdded = Long.MAX_VALUE;
-				}
-			} else {
-				daysSinceAdded = DateUtils.getDaysSinceAddedForDate(dateAdded);
-			}
-		}
-		return daysSinceAdded;
-	}
-
-	private void loadScopedFormatInfo(HashSet<String> scopedFormats, HashSet<String> scopedFormatCategories, String scopePrefix, ArrayList<String> formatsForItem, ArrayList<String> formatsCategoriesForItem) {
-		for (String format : formatsForItem) {
-			scopedFormats.add(scopePrefix + format);
-		}
-		for (String formatCategory : formatsCategoriesForItem) {
-			scopedFormatCategories.add(scopePrefix + formatCategory);
-		}
-	}
-
-	private void addAllWithPrefix(HashSet<String> fieldValues, String scopePrefix, HashSet<String> valuesToAdd, Pattern valuesToSkip) {
-		for (String valueToAdd : valuesToAdd){
-			if (valuesToSkip == null || !valuesToSkip.matcher(valueToAdd).matches()) {
-				fieldValues.add(scopePrefix + valueToAdd);
-			}
-		}
-	}
-
-	protected void addAvailabilityToggle(boolean local, boolean available, boolean availableOnline, AvailabilityToggleInfo availabilityToggleForItem){
-		availabilityToggleForItem.local = availabilityToggleForItem.local || local;
-		availabilityToggleForItem.available = availabilityToggleForItem.available || available;
-		availabilityToggleForItem.availableOnline = availabilityToggleForItem.availableOnline || availableOnline;
+		//This is a no-op for GroupedWork Solr 3, instead it adds child documents
 	}
 }

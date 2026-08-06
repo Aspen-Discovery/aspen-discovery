@@ -58,7 +58,7 @@ class UserListSolr {
 
 		int numValidScopes = 0;
 		HashSet<String> relevantScopes = new HashSet<>();
-		for (Scope scope: userListIndexer.getScopes()) {
+		for (Scope scope: userListIndexer.getScopes().values()) {
 			boolean okToInclude;
 			if (scope.isLibraryScope()) {
 				okToInclude = (scope.getPublicListsToInclude() == 2) || //All public lists

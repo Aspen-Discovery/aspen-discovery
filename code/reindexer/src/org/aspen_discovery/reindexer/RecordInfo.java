@@ -1,11 +1,15 @@
 package org.aspen_discovery.reindexer;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Objects;
+import com.turning_leaf_technologies.dates.DateUtils;
+import com.turning_leaf_technologies.indexing.GroupedWorkDisplaySettings;
+import com.turning_leaf_technologies.indexing.Scope;
+import org.apache.solr.common.SolrInputDocument;
+
+import java.util.*;
+import java.util.regex.Pattern;
 
 public class RecordInfo {
+	private long databaseId;
 	private String source;
 	private String subSource;
 	private String recordIdentifier;
@@ -13,12 +17,19 @@ public class RecordInfo {
 	//Formats exist at both the item and record level because
 	//Various systems define them in both ways.
 	private HashSet<String> formats = new HashSet<>();
+	// A record can have multiple format categories if the items within it have different formats when
+	// format is defined based on properties for the item rather than being defined at the bib record
+	// When this happens,
 	private HashSet<String> formatCategories = new HashSet<>();
 	private long formatBoost = 1;
 
 	private String edition;
 	private String audience;
 	private String primaryLanguage;
+	private final HashSet<String> languages = new HashSet<>();
+	protected HashSet<String> translations = new HashSet<>();
+	protected Long languageBoost = 1L;
+	protected Long languageBoostSpanish = 1L;
 	private String publisher;
 	private String publicationDate;
 	private String placeOfPublication;
@@ -81,6 +92,32 @@ public class RecordInfo {
 
 	String getPrimaryLanguage(){
 		return primaryLanguage;
+	}
+
+	void setLanguageBoost(Long languageBoost) {
+		if (languageBoost > this.languageBoost) {
+			this.languageBoost = languageBoost;
+		}
+	}
+
+	void setLanguageBoostSpanish(Long languageBoostSpanish) {
+		if (languageBoostSpanish > this.languageBoostSpanish) {
+			this.languageBoostSpanish = languageBoostSpanish;
+		}
+	}
+
+	public void addLanguage(String language) {
+		this.languages.add(language);
+		if (this.primaryLanguage == null) {
+			this.setPrimaryLanguage(language);
+		}
+	}
+
+	void setLanguages(HashSet<String> languages) {
+		this.languages.addAll(languages);
+		if (this.primaryLanguage == null) {
+			setPrimaryLanguage(languages.iterator().next());
+		}
 	}
 
 	void setPublisher(String publisher) {
@@ -457,5 +494,235 @@ public class RecordInfo {
 		this.notForLoan = notForLoan;
 	}
 
+	@SuppressWarnings("DuplicatedCode")
+	public ArrayList<SolrInputDocument> getRecordScopeSolrDocuments(GroupedWorkIndexer groupedWorkIndexer, Long daysAddedSincePubDate) {
+		if (databaseId == -1) {
+			//This did not save for some reason
+			return null;
+		}
 
+		HashSet<String> relatedScopes = getRelatedScopes();
+		if (relatedScopes.isEmpty()) {
+			return null;
+		}
+
+		ArrayList<SolrInputDocument> recordSolrScopeDocuments = new ArrayList<>();
+		HashSet<String> formatsForRecord = getFormats();
+		HashSet<String> formatCategoriesForRecord = getFormatCategories();
+		if (formatsForRecord.contains("eAudiobook")) {
+			formatCategoriesForRecord.add("eBook");
+		}
+		if (formatsForRecord.contains("CD + Book")) {
+			formatCategoriesForRecord.add("Books");
+			formatCategoriesForRecord.add("#udio Books");
+		}
+		if (formatsForRecord.contains("VOX Books")) {
+			formatCategoriesForRecord.add("Books");
+			formatCategoriesForRecord.add("Audio Books");
+		}
+
+		for (String scopeName : relatedScopes) {
+			Scope curScope = groupedWorkIndexer.getScopes().get(scopeName);
+			if (curScope == null) {
+				continue;
+			}
+			SolrInputDocument recordDoc = new SolrInputDocument();
+			recordDoc.setField("id", "record_" + databaseId + "_" + scopeName);
+			recordDoc.setField("_nest_path_", "/record_scoping");
+			recordDoc.setField("recordtype", "record_scoping");
+			recordDoc.setField("scope", scopeName);
+			recordDoc.setField("format", formatsForRecord);
+			recordDoc.setField("format_category", formatCategoriesForRecord);
+
+			AvailabilityToggleInfo availabilityToggleValuesForScope = new AvailabilityToggleInfo();
+			int availableCopiesForScope = 0;
+			Long daysSinceAddedForScope = null;
+			String sortableCallNumberForScope = null;
+			int libraryBoostForScope = 0;
+
+			String scopeFacetLabel = curScope.getFacetLabel();
+			GroupedWorkDisplaySettings scopeDisplaySettings = curScope.getGroupedWorkDisplaySettings();
+
+			for (ItemInfo curItem : relatedItems) {
+				ScopingInfo scopingInfo = curItem.getScopingInfo().get(scopeName);
+				if (scopingInfo == null) {
+					continue;
+				}
+				Long daysSinceAdded = curItem.getDaysSinceAdded(daysAddedSincePubDate);
+				String trimmedIType = curItem.getTrimmedIType();
+
+				if (curItem.getFormat() != null) {
+					formatsForRecord.add(curItem.getFormat());
+				}
+				if (curItem.getFormatCategory() != null) {
+					formatsForRecord.add(curItem.getFormatCategory());
+				}
+
+				boolean addAllOwningLocations = false;
+				boolean addAllOwningLocationsToAvailableAt = false;
+				boolean locallyOwned = scopingInfo.isLocallyOwned();
+				boolean libraryOwned = scopingInfo.isLibraryOwned();
+				boolean isAvailable = curItem.isAvailable();
+				boolean isEContent = curItem.isEContent();
+
+				if (isEContent) {
+					String trimmedEContentSource = curItem.getTrimmedEContentSource();
+					if (trimmedEContentSource == null) {
+						trimmedEContentSource = "Unknown";
+					}
+					if (trimmedEContentSource.equals("overdrive")) {
+						trimmedEContentSource = "Libby";
+					}
+					availabilityToggleValuesForScope.updateToggleValues(locallyOwned || libraryOwned, scopeDisplaySettings.isIncludeOnlineMaterialsInAvailableToggle() && isAvailable, isAvailable);
+					recordDoc.addField("owning_library", trimmedEContentSource);
+					if (isAvailable) {
+						recordDoc.addField("available_at", trimmedEContentSource);
+						availableCopiesForScope += curItem.getNumCopies();
+					}
+					recordDoc.addField("econtent_source", trimmedEContentSource);
+				} else { //physical materials
+					if (locallyOwned) {
+						availabilityToggleValuesForScope.updateToggleValues(locallyOwned, isAvailable, false);
+						if (isAvailable) {
+							recordDoc.addField("available_at", scopeFacetLabel);
+						}
+						recordDoc.addField("owning_location", scopeFacetLabel);
+						recordDoc.addField("owning_library", curScope.isLibraryScope() ? scopeFacetLabel : curScope.getLibraryScope().getFacetLabel());
+						if (curScope.isIncludeAllLibraryBranchesInFacets()) {
+							//Include other branches of this library that own the title within the owning locations
+							//isIncludeAllLibraryBranchesInFacets is only a setting at the location level
+							addAllOwningLocations = true;
+						}
+					}
+					if (libraryOwned) {
+						if (curScope.isLibraryScope() || (curScope.isLocationScope() && !scopeDisplaySettings.isBaseAvailabilityToggleOnLocalHoldingsOnly())) {
+							availabilityToggleValuesForScope.updateToggleValues(libraryOwned, isAvailable, false);
+						}
+						if (isAvailable) {
+							addAllOwningLocationsToAvailableAt = true;
+						}
+						recordDoc.addField("owning_library", scopeFacetLabel);
+						addAllOwningLocations = true;
+					}
+					if (!locallyOwned && !libraryOwned && !scopeDisplaySettings.isBaseAvailabilityToggleOnLocalHoldingsOnly()) {
+						availabilityToggleValuesForScope.updateToggleValues(false, isAvailable, false);
+						if (isAvailable) {
+							addAllOwningLocationsToAvailableAt = true;
+						}
+					}
+					if (isAvailable && curScope.getAdditionalLocationsToShowAvailabilityForPattern() != null && curItem.getLocationCode() != null) {
+						//We might include the item in the owning and availability facets if it matched the available locations
+						if (curScope.getAdditionalLocationsToShowAvailabilityForPattern().matcher(curItem.getLocationCode()).matches()) {
+							addAllOwningLocationsToAvailableAt = true;
+						}
+					}
+
+					if (!curScope.isRestrictOwningLibraryAndLocationFacets() || curScope.isConsortialCatalog()) {
+						for (String libraryOwnedName : curItem.getLibraryOwnedNames()) {
+							recordDoc.addField("owning_library", libraryOwnedName);
+						}
+						addAllOwningLocations = true;
+					}
+					if (isAvailable) {
+						availableCopiesForScope += curItem.getNumCopies();
+					}
+				}
+
+				if (addAllOwningLocations) {
+					recordDoc.addField("owning_location", curItem.getLocationOwnedNames());
+				}
+				if (addAllOwningLocationsToAvailableAt) {
+					recordDoc.addField("available_at", curItem.getLocationOwnedNames());
+				}
+
+				if (locallyOwned || libraryOwned || scopeDisplaySettings.isIncludeAllRecordsInShelvingFacets()) {
+					String collection = curItem.getCollection();
+					if (collection != null && !collection.isEmpty()) {
+						recordDoc.addField("collection", curItem.getCollection());
+					}
+					String detailedLocation = curItem.getDetailedLocation();
+					if (detailedLocation != null && !detailedLocation.isEmpty()) {
+						recordDoc.addField("detailed_location", curItem.getDetailedLocation());
+					}
+					String shelfLocation = curItem.getShelfLocation();
+					if (shelfLocation != null && !shelfLocation.isEmpty() && (scopeDisplaySettings.includeEContentInShelvingLocations() || !isEContent)) {
+						recordDoc.addField("shelf_location", curItem.getShelfLocation());
+					}
+				}
+
+				if (isEContent || locallyOwned || libraryOwned || scopeDisplaySettings.isIncludeAllRecordsInDateAddedFacets()) {
+					if (daysSinceAddedForScope == null || daysSinceAdded > daysSinceAddedForScope) {
+						daysSinceAddedForScope = daysSinceAdded;
+					}
+				}
+
+				if (locallyOwned || libraryOwned) {
+					if (isAvailable) {
+						if (libraryBoostForScope < groupedWorkIndexer.availableAtBoostValue) {
+							libraryBoostForScope = groupedWorkIndexer.availableAtBoostValue;
+						}
+					} else {
+						if (libraryBoostForScope < groupedWorkIndexer.ownedByBoostValue) {
+							libraryBoostForScope = groupedWorkIndexer.ownedByBoostValue;
+						}
+					}
+				}
+
+				if (trimmedIType != null) {
+					recordDoc.addField("itype", trimmedIType);
+				}
+
+				if (locallyOwned || libraryOwned || !scopingInfo.getScope().isRestrictOwningLibraryAndLocationFacets()) {
+					recordDoc.addField("local_callnumber", curItem.getCallNumber());
+					if (sortableCallNumberForScope == null) {
+						sortableCallNumberForScope = curItem.getSortableCallNumber();
+					}
+				}
+			} // End looping through items
+
+			recordDoc.addField("availability_toggle", availabilityToggleValuesForScope.getValues());
+			if (curScope.getLocationsToExcludeAvailabilityForPattern() != null) {
+				//Filter available At by locationsToExcludeAvailabilityFor
+				ArrayList<String> availableAtFiltered = filterCollection(recordDoc.getField("available_at").getValues(), curScope.getLocationsToExcludeAvailabilityForPattern());
+				recordDoc.setField("available_at", availableAtFiltered);
+			}
+			if (daysSinceAddedForScope != null) {
+				recordDoc.addField("local_days_since_added", daysSinceAddedForScope);
+				recordDoc.addField("local_time_since_added", DateUtils.getTimeSinceAdded(daysSinceAddedForScope));
+			}
+			recordDoc.addField("lib_boost", libraryBoostForScope);
+			recordDoc.addField("available_copies", availableCopiesForScope);
+			recordDoc.addField("callnumber_sort", sortableCallNumberForScope);
+
+			recordSolrScopeDocuments.add(recordDoc);
+		}
+
+		return recordSolrScopeDocuments;
+	}
+
+	private ArrayList<String> filterCollection(Collection<Object> collectionToFilter, Pattern valuesToSkip) {
+		ArrayList<String> filteredCollection = new ArrayList<>();
+		for (Object valueToAdd : collectionToFilter){
+			if (valueToAdd instanceof String) {
+				String valueToAddStr = (String)valueToAdd;
+				if (valuesToSkip == null || !valuesToSkip.matcher(valueToAddStr).matches()) {
+					filteredCollection.add(valueToAddStr);
+				}
+			}
+		}
+		return filteredCollection;
+	}
+
+
+	public void setDatabaseId(long recordId) {
+		this.databaseId = recordId;
+	}
+
+	public HashSet<String> getRelatedScopes() {
+		HashSet<String> relatedScopes = new HashSet<>();
+		for (ItemInfo itemInfo : relatedItems) {
+			relatedScopes.addAll(itemInfo.getScopingInfo().keySet());
+		}
+		return relatedScopes;
+	}
 }

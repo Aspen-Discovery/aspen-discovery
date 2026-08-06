@@ -189,18 +189,24 @@
 	</types>
 
 	<fields>
+		<!-- Setup fields to define the hierarchy required by solr -->
+		<field name="_root_" type="unchanged_string" indexed="true" stored="true" docValues="true" multiValued="false"/>
+		<field name="_nest_path_" type="unchanged_string" indexed="true" stored="true" docValues="true" multiValued="false" />
+		<field name="_nest_parent_" type="unchanged_string" indexed="true" stored="true" docValues="true" multiValued="false" />
+
+		<!-- Create fields to determine the document id -->
 		<!-- This is returned -->
 		<field name="id" type="unchanged_string" indexed="true" stored="true" multiValued="false" required="true" omitNorms="true" omitTermFreqAndPositions="true"/>
-		<!-- This is returned -->
+		<!-- This is returned and is the unique type for the record (grouped_work, record_scoping) -->
 		<field name="recordtype" type="unchanged_string" indexed="true" stored="true" multiValued="false" required="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<!-- The scope for this record if the recordtype is record_scoping -->
+		<field name="scope" type="unchanged_string" indexed="false" stored="false" docValues="true" omitNorms="true" omitTermFreqAndPositions="true" />
 		<field name="_version_" type="long" indexed="true" stored="true"/>
 
+		<!-- Grouped Work Level Fields -->
 		<!-- Used for diagnostic information in staff view -->
 		<!-- This is returned -->
 		<field name="last_indexed" type="date" indexed="false" stored="true"/>
-
-		<!-- IDs of records that make up the work -->
-		<field name="alternate_ids" type="unchanged_string" indexed="true" stored="false" multiValued="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 
 		<!-- TITLE information -->
 		<!-- indexed title without subtitle -->
@@ -260,20 +266,25 @@
 
 		<field name="series_author" type="searchable_text" indexed="true" stored="false" multiValued="true"/>
 
-		<!-- The popularity of a title in terms of circulation activity -->
-		<!-- This is used for sorting and boost function -->
-		<field name="popularity" type="integer" indexed="false" stored="false" default="0" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
-		<!-- This is used for sorting and boost function -->
-		<field name="total_holds" type="integer" indexed="false" stored="false" default="0" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
-
 		<!-- Format information -->
 		<field name="grouping_category" type="unchanged_string" indexed="false" stored="false" multiValued="false" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+
 		<!-- This is returned and used as a facet -->
 		<field name="format" type="unchanged_string" indexed="false" stored="false" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 		<!-- Used for boosting functions -->
 		<field name="format_boost" type="integer" indexed="false" stored="false" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 		<!-- This is returned and used as a facet -->
 		<field name="format_category" type="unchanged_string" indexed="false" stored="false" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+
+
+		<!-- IDs of records that make up the work -->
+		<field name="alternate_ids" type="unchanged_string" indexed="true" stored="false" multiValued="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+
+		<!-- The popularity of a title in terms of circulation activity -->
+		<!-- This is used for sorting and boost function -->
+		<field name="popularity" type="integer" indexed="false" stored="false" default="0" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<!-- This is used for sorting and boost function -->
+		<field name="total_holds" type="integer" indexed="false" stored="false" default="0" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 
 		<!-- Fields to determine ownership and location based on location codes -->
 		<!-- This is returned and used as a facet -->
@@ -293,7 +304,7 @@
 		<!-- This is returned and used as a facet -->
 		<field name="availability_toggle" type="unchanged_string" indexed="false" stored="true" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 		<!-- This is used for sorting titles within lists -->
-		<dynamicField name="available_copies_*" type="integer" indexed="false" docValues="true" stored="false" multiValued="true"/>
+		<field name="available_copies" type="integer" indexed="false" docValues="true" stored="false" multiValued="true"/>
 
 		<!-- Language Related Fields -->
 		<!-- This is used as a facet -->
@@ -325,8 +336,6 @@
 		<field name="duration" type="pints" indexed="true" stored="false" multiValued="true" default="0" docValues="true"/>
 		<!-- This is used in the grouped work driver -->
 		<field name="edition" type="unchanged_string" indexed="false" stored="true" multiValued="true"/>
-		<!-- This does not seem to be used and can likely be deleted -->
-		<field name="dateSpan" type="unchanged_string" indexed="false" stored="false" multiValued="true"/>
 		<!-- This is returned and used as a facet. -->
 		<field name="econtent_source" type="unchanged_string" indexed="false" stored="false" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 		<!-- This is returned, used as a facet, and in the mlt handler. -->
@@ -371,9 +380,9 @@
 		<!-- This is returned -->
 		<field name="days_since_added" type="integer" indexed="true" stored="false" multiValued="false" omitNorms="true" omitTermFreqAndPositions="true"/>
 		<!-- This is returned -->
-		<dynamicField name="local_time_since_added_*" type="unchanged_string" indexed="true" stored="true" multiValued="true" sortMissingLast="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<field name="local_time_since_added" type="unchanged_string" indexed="true" stored="true" multiValued="true" sortMissingLast="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 		<!-- This is returned -->
-		<dynamicField name="local_days_since_added_*" type="integer" indexed="true" stored="true" multiValued="false" sortMissingLast="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<field name="local_days_since_added" type="integer" indexed="true" stored="true" multiValued="false" sortMissingLast="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 		<!-- This is returned and used as a facet -->
 		<field name="itype" type="unchanged_string" indexed="true" stored="false" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 		<field name="barcode" type="unchanged_string" indexed="true" stored="false" multiValued="true" omitNorms="true" omitTermFreqAndPositions="true"/>
@@ -421,10 +430,7 @@
 		<field name="local_callnumber" type="callnumber-search" indexed="true" stored="true" multiValued="true"/>
 		<field name="local_callnumber_exact" type="text-exact" indexed="true" stored="false" multiValued="true"/>
 		<field name="local_callnumber_left" type="text-left" indexed="true" stored="false" multiValued="true"/>
-		<!-- This is returned -->
-		<dynamicField name="local_callnumber_*" type="callnumber-search" indexed="true" stored="true" multiValued="true"/>
-		<dynamicField name="local_callnumber_exact_*" type="text-exact" indexed="true" stored="false" multiValued="true"/>
-		<dynamicField name="local_callnumber_left_*" type="text-left" indexed="true" stored="false" multiValued="true"/>
+		<field name="callnumber_sort" type="text-exact" indexed="true" stored="false" multiValued="false"/>
 		<dynamicField name="callnumber_sort_*" type="text-exact" indexed="true" stored="false" multiValued="false"/>
 
 		<!-- Broad Search Terms -->
@@ -465,14 +471,11 @@
 		<dynamicField name="list_entry_weight_*" type="integer" indexed="true" docValues="true" stored="false" multiValued="true"/>
 		<dynamicField name="list_entry_date_added_*" type="integer" indexed="true" docValues="true" stored="false" multiValued="true"/>
 
-		<!-- Edition -->
-		<!-- This contains information about scope, format, format category, availability -->
-		<field name="edition_info" type="unchanged_string" indexed="true" stored="false" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 		<!-- This is used for Context Filter Query when loading suggestions -->
 		<field name="suggestions_context_filter" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 
 		<!-- Boosts -->
-		<dynamicField name="lib_boost_*" type="integer" indexed="true" stored="false" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<field name="lib_boost" type="integer" indexed="true" stored="false" omitNorms="true" omitTermFreqAndPositions="true"/>
 		<!-- Field to get random titles -->
 		<dynamicField name="random*" type="random" indexed="true" stored="true"/>
 	</fields>
@@ -486,7 +489,6 @@
 	<copyField source="subject_facet" dest="subject_suggestions"/>
 	<copyField source="personal_name_facet" dest="subject_suggestions"/>
 	<copyField source="corporate_name_facet" dest="subject_suggestions"/>
-	<copyField source="edition_info" dest="suggestions_context_filter"/>
 	<copyField source="language" dest="suggestions_context_filter"/>
 
 	<copyField source="title" dest="spelling"/>
@@ -514,6 +516,6 @@
 	<copyField source="geographic" dest="geographic_proper"/>
 	<copyField source="era" dest="era_proper"/>
 	<copyField source="genre" dest="genre_proper"/>
-	<copyField source="local_callnumber_*" dest="local_callnumber_exact_*"/>
-	<copyField source="local_callnumber_*" dest="local_callnumber_left_*"/>
+	<copyField source="local_callnumber" dest="local_callnumber_exact"/>
+	<copyField source="local_callnumber" dest="local_callnumber_left"/>
 </schema>

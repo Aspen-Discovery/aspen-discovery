@@ -21,7 +21,6 @@ class TopFacets implements RecommendationInterface {
 		$this->searchObject = $searchObject;
 
 		require_once ROOT_DIR . '/sys/SystemVariables.php';
-		$systemVariables = SystemVariables::getSystemVariables();
 		// Load the desired facet information:
 		if ($this->searchObject instanceof SearchObject_AbstractGroupedWorkSearcher) {
 			$searchLibrary = Library::getActiveLibrary();
@@ -32,7 +31,6 @@ class TopFacets implements RecommendationInterface {
 			} else {
 				$facets = $searchLibrary->getGroupedWorkDisplaySettings()->getFacets();
 			}
-			global $solrScope;
 			foreach ($facets as &$facet) {
 				if ($facet->showAboveResults == 1) {
 					$this->facets[$facet->facetName] = $facet;

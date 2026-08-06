@@ -169,7 +169,7 @@ class SearchObject_GroupedWorkSearcher3 extends SearchObject_AbstractGroupedWork
 			if (isset($facetConfig[$field])) {
 				/** @var FacetSetting $facetInfo */
 				$facetInfo = $facetConfig[$field];
-				$facetName = $facetInfo->getFacetName(2);
+				$facetName = $facetInfo->getFacetName(3);
 				$facetKey = empty($facetInfo->id) ? $facetName : $facetInfo->id;
 				$multiSelect = $facetInfo->multiSelect || $facetName == 'availability_toggle';
 				$fieldPrefix = "{!tag=$facetKey}";
@@ -178,7 +178,7 @@ class SearchObject_GroupedWorkSearcher3 extends SearchObject_AbstractGroupedWork
 				$tmpFieldName = substr($field, 0, strrpos($field, '_'));
 				if (isset($facetConfig[$tmpFieldName])) {
 					$facetInfo = $facetConfig[$tmpFieldName];
-					$facetName = $facetInfo->getFacetName(2);
+					$facetName = $facetInfo->getFacetName(3);
 					$field = $tmpFieldName;
 					$facetKey = empty($facetInfo->id) ? $facetName : $facetInfo->id;
 					$multiSelect = $facetInfo->multiSelect || $facetName == 'availability_toggle';
@@ -194,20 +194,11 @@ class SearchObject_GroupedWorkSearcher3 extends SearchObject_AbstractGroupedWork
 			}
 			$fieldValue = "";
 			foreach ($filter as $value) {
-				if ($facetName == 'availability_toggle' || $facetName == "availability_toggle_$solrScope") {
+				if ($facetName == 'availability_toggle') {
 					$this->selectedAvailabilityToggleValue = $value;
 					if (!empty($facetInfo)) {
 						$availabilityToggleId = $facetInfo->id;
 					}
-				} elseif ($facetName == 'available_at' || $facetName == "available_at_$solrScope") {
-					$selectedAvailableAtValues[] = $value;
-				} elseif ($facetName == 'format_category') {
-					$selectedFormatCategoryValues[] = $value;
-				} elseif ($facetName == 'format') {
-					$selectedFormatValues[] = $value;
-				}
-				if ($this->isScopedField($facetName)) {
-					$value = "$solrScope#$value";
 				}
 
 				// Special case -- allow trailing wildcards:
@@ -259,46 +250,20 @@ class SearchObject_GroupedWorkSearcher3 extends SearchObject_AbstractGroupedWork
 
 			if ($availabilityToggleId == null) {
 				foreach ($facetConfig as $facetInfo) {
-					$facetName = $facetInfo->getFacetName(2);
-					if ($facetName == 'availability_toggle' || $facetName == "availability_toggle_$solrScope") {
+					$facetName = $facetInfo->getFacetName(3);
+					if ($facetName == 'availability_toggle') {
 						$availabilityToggleId = $facetInfo->id;
 					}
 				}
 			}
 
-			$filterQuery[] = "{!tag=$availabilityToggleId}availability_toggle:\"$solrScope#$availabilityToggleValue\"";
+			$filterQuery[] = '{!parent which="recordtype:grouped_work" tag=availability_toggle_filter}(availability_toggle:' . $availabilityToggleValue . ')';
 		}
 
 		$facetSet = [];
 
 		if (empty($this->selectedAvailabilityToggleValue)) {
 			$this->selectedAvailabilityToggleValue = 'global';
-		}
-		if (empty($selectedAvailableAtValues)) {
-			$selectedAvailableAtValues[] = '*';
-		}
-		if (empty($selectedFormatCategoryValues)) {
-			$selectedFormatCategoryValues[] = '*';
-		}
-		if (empty($selectedFormatValues)) {
-			$selectedFormatValues[] = '*';
-		}
-		$allEditionFilters = [];
-		if (!$this->indexEngine->editionLimitersAreDisabled()) {
-			foreach ($selectedAvailableAtValues as $selectedAvailableAtValue) {
-				$escapedAvailableAt = str_replace([' ', '(', ')'], ['_', '\\(', '\\)'], $selectedAvailableAtValue);
-				foreach ($selectedFormatCategoryValues as $selectedFormatCategoryValue) {
-					$escapedFormatCategory = str_replace([' ', '(', ')'], ['_', '\\(', '\\)'], $selectedFormatCategoryValue);
-					foreach ($selectedFormatValues as $selectedFormatValue) {
-						$escapedFormat = str_replace([' ', '(', ')'], ['_', '\\(', '\\)'], $selectedFormatValue);
-						$allEditionFilters[] = "edition_info:$solrScope#$escapedFormatCategory#$escapedFormat#$this->selectedAvailabilityToggleValue#$escapedAvailableAt#";
-					}
-				}
-			}
-		}
-		if (count($allEditionFilters) > 0) {
-			$allEditions = '(' . implode(' OR ', $allEditionFilters) . ')';
-			$filterQuery[] = "{!tag=edition_info}$allEditions";
 		}
 
 		// If we are only searching one field use the DisMax handler
@@ -310,35 +275,59 @@ class SearchObject_GroupedWorkSearcher3 extends SearchObject_AbstractGroupedWork
 		// Build a list of facets we want from the index
 		$facetConfig = $this->getFacetConfig();
 		if ($recommendations && !empty($facetConfig)) {
+			require_once ROOT_DIR . '/sys/Grouping/GroupedWorkFacet.php';
+			$numLocations = GroupedWorkFacet::calculateDynamicFacetLimit('available_at');
+			$domainInfo = [
+				'toChildren' => 'recordtype:record_scoping',
+				'filter' => 'scope:' . $solrScope,
+				'excludeTags' => 'scope_filter'
+			];
+
 			$facetSet['limit'] = $this->facetLimit;
+			$jsonFacets = [];
 			foreach ($facetConfig as $facetField => $facetInfo) {
 				if ($facetInfo instanceof FacetSetting) {
+					$isScoped = false;
+					if (in_array($facetInfo->facetName, SearchObject_GroupedWorkSearcher3::$scopedFields)) {
+						$isScoped = true;
+					}
 					$isMultiSelect = $facetInfo->multiSelect;
-					$additionalTags = '';
-					$facetName = $facetInfo->getFacetName(2);
-					if ($facetName == 'availability_toggle' || $facetName == "availability_toggle_$solrScope") {
-						//$isEditionField = true;
+					$facetName = $facetInfo->getFacetName(3);
+					if ($facetName == 'availability_toggle') {
 						$isMultiSelect = true;
-						$additionalTags = 'edition_info,edition_info_available_at,edition_info_format_category,edition_info_format';
-					} elseif ($facetName == 'available_at' || $facetName == "available_at_$solrScope") {
-						$additionalTags = 'edition_info,edition_info_availability,edition_info_format_category,edition_info_format';
 					} elseif ($facetName == 'format_category') {
 						$isMultiSelect = true;
-						$additionalTags = 'edition_info,edition_info_availability,edition_info_available_at,edition_info_format';
-					} elseif ($facetName == 'format') {
-						$additionalTags = 'edition_info,edition_info_availability,edition_info_available_at,edition_info_format_category';
 					}
-					if ($isMultiSelect && !empty($additionalTags)) {
+					if ($isMultiSelect) {
 						$facetKey = empty($facetInfo->id) ? $facetName : $facetInfo->id;
-						$facetSet['field'][$facetField] = "{!ex=$facetKey,$additionalTags}" . $facetField;
-					} elseif ($isMultiSelect) {
-						$facetKey = empty($facetInfo->id) ? $facetName : $facetInfo->id;
-						$facetSet['field'][$facetField] = "{!ex=$facetKey}" . $facetField;
-					} elseif (!empty($additionalTags)) {
-						$facetSet['field'][$facetField] = "{!ex=$additionalTags}" . $facetField;
+						//$facetSet['field'][$facetField] = "{!ex=$facetKey}" . $facetField;
 					} else {
-						$facetSet['field'][$facetField] = $facetField;
+						//$facetSet['field'][$facetField] = $facetField;
 					}
+
+					$minCount = 1;
+					$limit = $this->facetLimit;
+					if ($facetName == 'series') {
+						$minCount = 2;
+					}elseif ($facetName == 'format') {
+						$limit = GroupedWorkFacet::calculateDynamicFacetLimit('format');
+					}elseif ($facetName == 'availability_at' || $facetName == 'owning_location') {
+						$limit = $numLocations;
+					}else{
+						$limit = $facetInfo->numTotalEntriesToShowInMore;
+					}
+
+					$jsonInfoForField = [
+						'type' => 'terms',
+						'field' => $facetName,
+						'limit' => (int)$limit,
+						'mincount' => $minCount,
+						'domain' => $domainInfo
+					];
+					if ($isScoped) {
+						$jsonInfoForField['domain'] = $domainInfo;
+					}
+					$jsonFacets[$facetName] = $jsonInfoForField;
 				} else {
 					$facetSet['field'][$facetField] = $facetInfo;
 				}
@@ -356,29 +345,7 @@ class SearchObject_GroupedWorkSearcher3 extends SearchObject_AbstractGroupedWork
 				$facetSet['sort'] = $this->facetSort;
 			}
 
-			$this->facetOptions["f.series_facet.facet.mincount"] = 2;
-			$this->facetOptions["f.target_audience_full.facet.method"] = 'enum';
-			$this->facetOptions["f.target_audience.facet.method"] = 'enum';
-			$this->facetOptions["f.literary_form_full.facet.method"] = 'enum';
-			$this->facetOptions["f.literary_form.facet.method"] = 'enum';
-			$this->facetOptions["f.lexile_code.facet.method"] = 'enum';
-			$this->facetOptions["f.content_rating.facet.method"] = 'enum';
-			$this->facetOptions["f.rating_facet.facet.method"] = 'enum';
-			$this->facetOptions["f.format_category.facet.method"] = 'enum';
-			$this->facetOptions["f.format.facet.method"] = 'enum';
-			$this->setPerFacetLimits();
-			require_once ROOT_DIR . '/sys/Grouping/GroupedWorkFacet.php';
-			$this->facetOptions["f.format.facet.limit"] = GroupedWorkFacet::calculateDynamicFacetLimit('format');
-			$numLocations = GroupedWorkFacet::calculateDynamicFacetLimit('available_at');
-			$this->facetOptions["f.available_at.facet.limit"] = $numLocations;
-			$this->facetOptions["f.owning_location.facet.limit"] = $numLocations;
-			$this->facetOptions["f.availability_toggle.facet.method"] = 'enum';
-			$this->facetOptions["f.local_time_since_added_$solrScope.facet.method"] = 'enum';
-			$this->facetOptions["f.owning_library.facet.method"] = 'enum';
-			$this->facetOptions["f.owning_location.facet.method"] = 'enum';
-			foreach (SearchObject_GroupedWorkSearcher3::$scopedFields as $facetName) {
-				$this->facetOptions["f.$facetName.facet.prefix"] = "$solrScope#";
-			}
+			$this->facetOptions["json.facet"] = json_encode($jsonFacets);
 		}
 		if (!empty($this->facetSearchTerm) && !empty($this->facetSearchField)) {
 			$this->facetOptions["f.$this->facetSearchField.facet.contains"] = $this->facetSearchTerm;
@@ -410,7 +377,7 @@ class SearchObject_GroupedWorkSearcher3 extends SearchObject_AbstractGroupedWork
 		// this null in order to achieve the desired effect with Solr:
 		$finalSort = ($this->sort == 'relevance') ? null : $this->sort;
 		if ($finalSort == 'days_since_added asc') {
-			$finalSort = 'local_days_since_added_' . $solrScope . ' asc';
+			$finalSort = 'local_days_since_added asc';
 		}
 
 		// The first record to retrieve:
@@ -480,7 +447,7 @@ class SearchObject_GroupedWorkSearcher3 extends SearchObject_AbstractGroupedWork
 			$filterQuery,      // Filter query
 			$recordStart,      // Starting record
 			$this->limit,      // Records per page
-			$facetSet,         // Fields to facet on
+			$facetSet,         // Fields to facet on - pass blank since we define json.facet above
 			$spellcheckQuery,       // Spellcheck query
 			$this->dictionary, // Spellcheck dictionary
 			$finalSort,        // Field to sort on
@@ -551,7 +518,7 @@ class SearchObject_GroupedWorkSearcher3 extends SearchObject_AbstractGroupedWork
 			}
 		}
 
-		parent::setAppliedFilters($updatedFilterList); // TODO: Change the autogenerated stub
+		parent::setAppliedFilters($updatedFilterList);
 	}
 
 	/**
@@ -570,20 +537,18 @@ class SearchObject_GroupedWorkSearcher3 extends SearchObject_AbstractGroupedWork
 			$fieldsToReturn = SearchObject_GroupedWorkSearcher3::$fields_to_return;
 			global $solrScope;
 			//We should always have a scope
-			if ($solrScope !== false) {
-				$fieldsToReturn .= ',local_days_since_added_' . $solrScope;
-				$fieldsToReturn .= ',local_time_since_added_' . $solrScope;
-				$fieldsToReturn .= ',local_callnumber_' . $solrScope;
-			} else {
-				$fieldsToReturn .= ',days_since_added';
-				$fieldsToReturn .= ',local_callnumber';
-			}
+			$fieldsToReturn .= ',local_days_since_added';
+			$fieldsToReturn .= ',local_time_since_added';
+			$fieldsToReturn .= ',local_callnumber';
 			$fieldsToReturn .= ',collection';
 			$fieldsToReturn .= ',detailed_location';
 			$fieldsToReturn .= ',owning_location';
 			$fieldsToReturn .= ',available_at';
 			$fieldsToReturn .= ',itype';
 			$fieldsToReturn .= ',score';
+			if ($solrScope !== false) {
+				$fieldsToReturn .= ' [child childFilter="scope:' . $solrScope . '"]';
+			}
 		}
 		return $fieldsToReturn;
 	}
@@ -611,7 +576,7 @@ class SearchObject_GroupedWorkSearcher3 extends SearchObject_AbstractGroupedWork
 		global $solrScope;
 		if ($solrScope) {
 			if ($field === 'time_since_added' || $field === 'local_time_since_added') {
-				$field = 'local_time_since_added_' . $solrScope;
+				$field = 'local_time_since_added';
 			}
 			$validFields = $this->getIndexEngine()->loadValidFields();
 			if (!in_array($field, $validFields)) {
@@ -661,9 +626,9 @@ class SearchObject_GroupedWorkSearcher3 extends SearchObject_AbstractGroupedWork
 		$list = [];
 
 		// If we have no facets to process, give up now
-		if (!isset($this->indexResult['facet_counts'])) {
+		if (!isset($this->indexResult['facets'])) {
 			return $list;
-		} elseif (!is_array($this->indexResult['facet_counts']['facet_fields'])) {
+		} elseif (!is_array($this->indexResult['facets'])) {
 			return $list;
 		}
 
@@ -724,12 +689,16 @@ class SearchObject_GroupedWorkSearcher3 extends SearchObject_AbstractGroupedWork
 			$relatedHomeLocationFacets = $locationSingleton->getLocationsFacetsForLibrary($homeLibrary->libraryId);
 		}
 
-		$allFacets = $this->indexResult['facet_counts']['facet_fields'];
+		$allFacets = $this->indexResult['facets'];
 		/** @var FacetSetting $facetConfig */
 		$facetConfig = $this->getFacetConfig();
 		foreach ($allFacets as $field => $data) {
 			// Skip filtered fields and empty arrays:
-			if (!in_array($field, $validFields) || count($data) < 1) {
+			if (!in_array($field, $validFields)) {
+				continue;
+			}
+			$data = $data['buckets'];
+			if (count($data) == 0) {
 				continue;
 			}
 			// Initialize the settings for the current field
@@ -762,17 +731,12 @@ class SearchObject_GroupedWorkSearcher3 extends SearchObject_AbstractGroupedWork
 			$translate = $facetConfig[$field]->translate;
 			$numValidRelatedLocations = 0;
 			$numValidLibraries = 0;
-			// Loop through values:
-			$isScopedField = $this->isScopedField($field);
 
 			foreach ($data as $facet) {
 				// Initialize the array of data about the current facet:
 				$currentSettings = [];
-				$facetValue = $facet[0];
+				$facetValue = $facet['val'];
 
-				if ($isScopedField && str_contains($facetValue, '#')) {
-					$facetValue = substr($facetValue, strpos($facetValue, '#') + 1);
-				}
 				$currentSettings['value'] = $facetValue;
 				$currentSettings['display'] = $translate ? translate([
 					'text' => $facetValue,
@@ -780,7 +744,7 @@ class SearchObject_GroupedWorkSearcher3 extends SearchObject_AbstractGroupedWork
 					'isMetadata' => true,
 					'escape' => true,
 				]) : htmlentities($facetValue);
-				$currentSettings['count'] = $facet[1];
+				$currentSettings['count'] = $facet['count'];
 				$currentSettings['isApplied'] = false;
 				$currentSettings['url'] = $this->renderLinkWithFilter($field, $facetValue);
 
@@ -1030,27 +994,5 @@ class SearchObject_GroupedWorkSearcher3 extends SearchObject_AbstractGroupedWork
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 		$record = $this->cleanScopedFieldsForRecord($record);
 		return new GroupedWorkDriver($record);
-	}
-
-	/**
-	 * Set individual facet limits based on numTotalEntriesToShowInMore configuration.
-	 */
-	private function setPerFacetLimits(): void {
-		$searchLibrary = Library::getActiveLibrary();
-		global $locationSingleton;
-		$searchLocation = $locationSingleton->getActiveLocation();
-
-		if ($searchLocation != null) {
-			$facets = $searchLocation->getGroupedWorkDisplaySettings()->getFacets();
-		} else {
-			$facets = $searchLibrary->getGroupedWorkDisplaySettings()->getFacets();
-		}
-
-		foreach ($facets as $facet) {
-			if (!empty($facet->numTotalEntriesToShowInMore)) {
-				$facetName = $this->getScopedFieldName($facet->getFacetName($this->searchVersion));
-				$this->facetOptions["f.$facetName.facet.limit"] = $facet->numTotalEntriesToShowInMore;
-			}
-		}
 	}
 }

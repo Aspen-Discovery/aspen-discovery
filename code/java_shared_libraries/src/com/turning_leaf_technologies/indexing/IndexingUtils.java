@@ -9,6 +9,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Objects;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.apache.logging.log4j.Logger;
@@ -17,8 +18,8 @@ import org.ini4j.Ini;
 public class IndexingUtils {
 	private static HashMap<String, InclusionRule> allInclusionRules = new HashMap<>();
 
-	public static TreeSet<Scope> loadScopes(Connection dbConn, Logger logger) {
-		TreeSet<Scope> scopes = new TreeSet<>();
+	public static HashMap<String, Scope> loadScopes(Connection dbConn, Logger logger) {
+		HashMap<String, Scope> scopes = new HashMap<>();
 		//Setup translation maps for system and location
 		try {
 			HashMap<Long, OverDriveScope> overDriveScopes = loadOverDriveScopes(dbConn, logger);
@@ -244,7 +245,7 @@ public class IndexingUtils {
 		return sideLoadScopes;
 	}
 
-	private static void loadLocationScopes(TreeSet<Scope> scopes, HashMap<Long, GroupedWorkDisplaySettings> groupedWorkDisplaySettings, HashMap<Long, OverDriveScope> overDriveScopes, HashMap<Long, HooplaScope> hooplaScopes, HashMap<Long, CloudLibraryScope> cloudLibraryScopes, HashMap<Long, Axis360Scope> axis360Scopes, HashMap<Long, PalaceProjectScope> palaceProjectScopes, HashMap<Long, SideLoadScope> sideLoadScopes, Connection dbConn, Logger logger) throws SQLException {
+	private static void loadLocationScopes(HashMap<String, Scope> scopes, HashMap<Long, GroupedWorkDisplaySettings> groupedWorkDisplaySettings, HashMap<Long, OverDriveScope> overDriveScopes, HashMap<Long, HooplaScope> hooplaScopes, HashMap<Long, CloudLibraryScope> cloudLibraryScopes, HashMap<Long, Axis360Scope> axis360Scopes, HashMap<Long, PalaceProjectScope> palaceProjectScopes, HashMap<Long, SideLoadScope> sideLoadScopes, Connection dbConn, Logger logger) throws SQLException {
 		// To minimize the amount of data in the index, only load locations that have more than one location within the library.
 		PreparedStatement librariesWithMoreThanOneLocationStmt = dbConn.prepareStatement("SELECT libraryId, COUNT(*) AS numLocations FROM location WHERE createSearchInterface = 1 GROUP BY libraryId HAVING numLocations > 1", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		ResultSet librariesWithMoreThanOneLocation = librariesWithMoreThanOneLocationStmt.executeQuery();
@@ -577,23 +578,23 @@ public class IndexingUtils {
 				}
 			}
 
-			if (scopes.contains(locationScopeInfo)) {
+			if (scopes.keySet().contains(locationScopeInfo.getScopeName())) {
 				locationScopeInfo.setScopeName(locationScopeInfo.getScopeName() + "loc");
 			}
 			//Connect this scope to the library scopes
-			for (Scope curScope : scopes) {
+			for (Scope curScope : scopes.values()) {
 				if (curScope.isLibraryScope() && Objects.equals(curScope.getLibraryId(), libraryId)) {
 					curScope.addLocationScope(locationScopeInfo);
 					locationScopeInfo.setLibraryScope(curScope);
 					break;
 				}
 			}
-			scopes.add(locationScopeInfo);
+			scopes.put(locationScopeInfo.getScopeName(), locationScopeInfo);
 
 		}
 	}
 
-	private static void loadLibraryScopes(TreeSet<Scope> scopes, HashMap<Long, GroupedWorkDisplaySettings> groupedWorkDisplaySettings, HashMap<Long, OverDriveScope> overDriveScopes, HashMap<Long, HooplaScope> hooplaScopes, HashMap<Long, CloudLibraryScope> cloudLibraryScopes, HashMap<Long, Axis360Scope> axis360Scopes, HashMap<Long, PalaceProjectScope> palaceProjectScopes, HashMap<Long, SideLoadScope> sideLoadScopes, Connection dbConn, Logger logger) throws SQLException {
+	private static void loadLibraryScopes(HashMap<String, Scope> scopes, HashMap<Long, GroupedWorkDisplaySettings> groupedWorkDisplaySettings, HashMap<Long, OverDriveScope> overDriveScopes, HashMap<Long, HooplaScope> hooplaScopes, HashMap<Long, CloudLibraryScope> cloudLibraryScopes, HashMap<Long, Axis360Scope> axis360Scopes, HashMap<Long, PalaceProjectScope> palaceProjectScopes, HashMap<Long, SideLoadScope> sideLoadScopes, Connection dbConn, Logger logger) throws SQLException {
 		PreparedStatement libraryInformationStmt = dbConn.prepareStatement("SELECT libraryId, ilsCode, subdomain, " +
 						"displayName, facetLabel, restrictOwningBranchesAndSystems, publicListsToInclude, isConsortialCatalog, " +
 						"additionalLocationsToShowAvailabilityFor, locationsToExcludeAvailabilityFor, courseReserveLibrariesToInclude, " +
@@ -778,7 +779,7 @@ public class IndexingUtils {
 				}
 			}
 
-			scopes.add(newScope);
+			scopes.put(subdomain, newScope);
 		}
 	}
 
