@@ -88,4 +88,10 @@ public class AvailabilityToggleInfo {
 		available = false;
 		availableOnline = false;
 	}
+
+	public void updateToggleValues(boolean local, boolean available, boolean availableOnline){
+		this.local = this.local || local;
+		this.available = this.available || available;
+		this.availableOnline = this.availableOnline || availableOnline;
+	}
 }

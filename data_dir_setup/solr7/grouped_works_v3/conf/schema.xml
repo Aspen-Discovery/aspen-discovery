@@ -1,0 +1,521 @@
+<?xml version="1.0" ?>
+<schema name="Aspen Grouped Work Index" version="3.0">
+	<types>
+		<fieldType name="unchanged_string" class="StrField"/>
+		<fieldType name="integer" class="IntPointField"/>
+		<fieldType name="long" class="LongPointField"/>
+		<fieldType name="float" class="FloatPointField"/>
+		<fieldType name="date" class="DatePointField"/>
+		<fieldType name="random" class="RandomSortField"/>
+		<fieldType name="pints" class="solr.IntPointField" docValues="true" multiValued="true"/>
+		<fieldType name="text_general" class="solr.TextField" positionIncrementGap="100">
+			<analyzer type="index">
+				<tokenizer class="solr.StandardTokenizerFactory"/>
+				<charFilter class="solr.PatternReplaceCharFilterFactory" pattern="(\&amp;)" replacement="and"/>
+				<filter class="solr.ICUFoldingFilterFactory" />
+				<filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt"  />
+				<filter class="solr.LowerCaseFilterFactory"/>
+			</analyzer>
+			<analyzer type="query">
+				<tokenizer class="solr.StandardTokenizerFactory"/>
+				<charFilter class="solr.PatternReplaceCharFilterFactory" pattern="(\&amp;)" replacement="and"/>
+				<filter class="solr.ICUFoldingFilterFactory" />
+				<filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt"  />
+				<filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
+			</analyzer>
+		</fieldType>
+		<fieldType name="searchable_text" class="solr.TextField" positionIncrementGap="100">
+			<analyzer type="index">
+				<!-- Whitespace tokenizer is needed so the Word Delimiter filter factory works properly
+				 For example, this allows E.T. The Extra-Terrestrial to be handled properly.  #ARL-168
+				-->
+				<tokenizer class="solr.StandardTokenizerFactory"/>
+				<charFilter class="solr.PatternReplaceCharFilterFactory" pattern="(\&amp;)" replacement="and"/>
+				<filter class="solr.ICUFoldingFilterFactory"/>
+				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" preserveOriginal="1"/>
+				<!-- We have not defined words so this is not needed <filter class="solr.CommonGramsFilterFactory" words="stopwords.txt" ignoreCase="true"/> -->
+				<!-- We have not defined words so this is not needed <filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/> -->
+				<filter class="solr.KeywordRepeatFilterFactory" />
+				<filter class="solr.SnowballPorterFilterFactory" language="English"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
+				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+			</analyzer>
+			<analyzer type="query">
+				<!-- Whitespace tokenizer is needed so the Word Delimiter filter factory works properly
+				 For example, this allows E.T. The Extra-Terrestrial to be handled properly.  #ARL-168
+				-->
+				<tokenizer class="solr.StandardTokenizerFactory"/>
+				<charFilter class="solr.PatternReplaceCharFilterFactory" pattern="(\&amp;)" replacement="and"/>
+				<filter class="solr.ICUFoldingFilterFactory"/>
+				<filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>
+				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" preserveOriginal="1"/>
+				<!-- We have not defined words, so this is not needed <filter class="solr.CommonGramsFilterFactory" words="stopwords.txt" ignoreCase="true"/> -->
+				<!-- We have not defined words, so this is not needed <filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/> -->
+				<!-- Need to stem the search in case the patron doesn't enter stemming in the same order -->
+				<filter class="solr.SnowballPorterFilterFactory" language="English"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
+				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+			</analyzer>
+		</fieldType>
+		<fieldType name="searchable_text_minimal_stem" class="solr.TextField" positionIncrementGap="100">
+			<analyzer type="index">
+				<!-- Whitespace tokenizer is needed so the Word Delimiter filter factory works properly.
+				 For example, this allows E.T. The Extra-Terrestrial to be handled properly.  #ARL-168
+				-->
+				<tokenizer class="solr.StandardTokenizerFactory"/>
+				<charFilter class="solr.PatternReplaceCharFilterFactory" pattern="(\&amp;)" replacement="and"/>
+				<filter class="solr.ICUFoldingFilterFactory"/>
+				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" preserveOriginal="1"/>
+				<filter class="solr.KeywordRepeatFilterFactory" />
+				<filter class="solr.KStemFilterFactory"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
+				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+			</analyzer>
+			<analyzer type="query">
+				<!-- Whitespace tokenizer is needed so the Word Delimiter filter factory works properly.
+				 For example, this allows E.T. The Extra-Terrestrial to be handled properly.  #ARL-168
+				-->
+				<tokenizer class="solr.StandardTokenizerFactory"/>
+				<charFilter class="solr.PatternReplaceCharFilterFactory" pattern="(\&amp;)" replacement="and"/>
+				<filter class="solr.ICUFoldingFilterFactory"/>
+				<filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>
+				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" preserveOriginal="1"/>
+				<filter class="solr.KeywordRepeatFilterFactory" />
+				<filter class="solr.KStemFilterFactory"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
+				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+			</analyzer>
+		</fieldType>
+		<fieldType name="searchable_text_unstemmed" class="solr.TextField" positionIncrementGap="100">
+			<analyzer type="index">
+				<!-- Whitespace tokenizer is needed so the Word Delimiter filter factory works properly.
+				 For example, this allows E.T. The Extra-Terrestrial to be handled properly.  #ARL-168
+				-->
+				<tokenizer class="solr.StandardTokenizerFactory"/>
+				<charFilter class="solr.PatternReplaceCharFilterFactory" pattern="(\&amp;)" replacement="and"/>
+				<filter class="solr.ICUFoldingFilterFactory"/>
+				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" preserveOriginal="1"/>
+				<filter class="solr.KeywordRepeatFilterFactory" />
+				<filter class="solr.LowerCaseFilterFactory"/>
+				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+			</analyzer>
+			<analyzer type="query">
+				<!-- Whitespace tokenizer is needed so the Word Delimiter filter factory works properly.
+				 For example, this allows E.T. The Extra-Terrestrial to be handled properly.  #ARL-168
+				-->
+				<tokenizer class="solr.StandardTokenizerFactory"/>
+				<charFilter class="solr.PatternReplaceCharFilterFactory" pattern="(\&amp;)" replacement="and"/>
+				<filter class="solr.ICUFoldingFilterFactory"/>
+				<filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>
+				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" preserveOriginal="1"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
+				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+			</analyzer>
+		</fieldType>
+		<fieldType name="text-exact" class="solr.TextField" sortMissingLast="true" omitNorms="true">
+			<analyzer>
+				<!-- Whitespace tokenizer is needed so the Word Delimiter filter factory works properly.
+				 For example, this allows E.T. The Extra-Terrestrial to be handled properly.  #ARL-168
+				-->
+				<tokenizer class="solr.KeywordTokenizerFactory"/>
+				<charFilter class="solr.PatternReplaceCharFilterFactory" pattern="(\&amp;)" replacement="and"/>
+				<charFilter class="solr.PatternReplaceCharFilterFactory" pattern="^\s*(.*)\s*$" replacement="aaaa $1 zzzz"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
+				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+			</analyzer>
+		</fieldType>
+		<fieldType name="text-left" class="solr.TextField" sortMissingLast="true" omitNorms="true">
+			<analyzer type="index">
+				<tokenizer class="solr.KeywordTokenizerFactory"/>
+				<charFilter class="solr.PatternReplaceCharFilterFactory" pattern="(\&amp;)" replacement="and"/>
+				<charFilter class="solr.PatternReplaceCharFilterFactory" pattern="^\s*(.*)\s*$" replacement="aaaa $1"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
+				<filter class="solr.EdgeNGramFilterFactory" minGramSize="5" maxGramSize="50"/>
+				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+			</analyzer>
+			<analyzer type="query">
+				<tokenizer class="solr.KeywordTokenizerFactory"/>
+				<charFilter class="solr.PatternReplaceCharFilterFactory" pattern="(\&amp;)" replacement="and"/>
+				<charFilter class="solr.PatternReplaceCharFilterFactory" pattern="^\s*(.*)\s*$" replacement="aaaa $1"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
+				<filter class="solr.TrimFilterFactory"/>
+			</analyzer>
+		</fieldType>
+		<!-- Text Field without Stemming, Synonyms, and stop Word removal -->
+		<fieldType name="textProper" class="solr.TextField" positionIncrementGap="100">
+			<analyzer>
+				<tokenizer class="solr.WhitespaceTokenizerFactory"/>
+				<charFilter class="solr.PatternReplaceCharFilterFactory" pattern="(\&amp;)" replacement="and"/>
+				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" preserveOriginal="1"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
+				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+			</analyzer>
+		</fieldType>
+		<fieldType name="textSpelling" class="solr.TextField">
+			<analyzer>
+				<tokenizer class="solr.WhitespaceTokenizerFactory"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
+				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" preserveOriginal="0"/>
+				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+			</analyzer>
+		</fieldType>
+		<fieldType name="textSuggest" class="solr.TextField" positionIncrementGap="100">
+			<analyzer>
+				<tokenizer class="solr.StandardTokenizerFactory"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
+				<filter class="solr.TrimFilterFactory"/>
+			</analyzer>
+		</fieldType>
+		<fieldType name="callnumber-search" class="solr.TextField">
+			<analyzer>
+				<tokenizer class="solr.WhitespaceTokenizerFactory"/>
+				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="0" catenateWords="0" catenateNumbers="1" catenateAll="0" splitOnCaseChange="0" splitOnNumerics="1" preserveOriginal="1"/>
+				<filter class="solr.LengthFilterFactory" min="2" max="100"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
+				<filter class="solr.TrimFilterFactory"/>
+			</analyzer>
+		</fieldType>
+		<!-- Text Field without Stemming, Synonyms, and stop Word removal -->
+		<fieldType name="alphaOnlySort" class="solr.TextField" sortMissingLast="true">
+			<analyzer>
+				<tokenizer class="solr.KeywordTokenizerFactory"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
+				<!-- The TrimFilter removes any leading or trailing whitespace -->
+				<filter class="solr.TrimFilterFactory"/>
+				<filter class="solr.PatternReplaceFilterFactory" pattern="([^a-z1-9\s])" replacement="" replace="all"/>
+			</analyzer>
+		</fieldType>
+	</types>
+
+	<fields>
+		<!-- Setup fields to define the hierarchy required by solr -->
+		<field name="_root_" type="unchanged_string" indexed="true" stored="true" docValues="true" multiValued="false"/>
+		<field name="_nest_path_" type="unchanged_string" indexed="true" stored="true" docValues="true" multiValued="false" />
+		<field name="_nest_parent_" type="unchanged_string" indexed="true" stored="true" docValues="true" multiValued="false" />
+
+		<!-- Create fields to determine the document id -->
+		<!-- This is returned -->
+		<field name="id" type="unchanged_string" indexed="true" stored="true" multiValued="false" required="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<!-- This is returned and is the unique type for the record (grouped_work, record_scoping) -->
+		<field name="recordtype" type="unchanged_string" indexed="true" stored="true" multiValued="false" required="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<!-- The scope for this record if the recordtype is record_scoping -->
+		<field name="scope" type="unchanged_string" indexed="false" stored="false" docValues="true" omitNorms="true" omitTermFreqAndPositions="true" />
+		<field name="_version_" type="long" indexed="true" stored="true"/>
+
+		<!-- Grouped Work Level Fields -->
+		<!-- Used for diagnostic information in staff view -->
+		<!-- This is returned -->
+		<field name="last_indexed" type="date" indexed="false" stored="true"/>
+
+		<!-- TITLE information -->
+		<!-- indexed title without subtitle -->
+		<field name="title" type="searchable_text" indexed="true" stored="false"/>
+		<!-- Title for display not including the subtitle -->
+		<!-- This is returned. It is title and subtitle -->
+		<field name="title_display" type="unchanged_string" indexed="false" stored="true"/>
+		<!-- This is returned. It is just the subtitle. -->
+		<field name="subtitle_display" type="unchanged_string" indexed="false" stored="true"/>
+		<!-- title for sorting only -->
+		<field name="title_sort" type="alphaOnlySort" indexed="true" stored="false" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<!-- variations of title for searching -->
+		<field name="title_exact" type="text-exact" indexed="true" stored="false"/>
+		<field name="title_left" type="text-left" indexed="true" stored="false" multiValued="true"/>
+		<field name="title_proper" type="textProper" indexed="true" stored="false"/>
+		<!-- Title full includes the author -->
+		<!-- This is returned -->
+		<field name="title_full" type="searchable_text" indexed="true" stored="true" multiValued="true"/>
+		<!-- This is returned. It is the title without the subtitle -->
+		<field name="title_short" type="searchable_text" indexed="false" stored="true"/>
+		<field name="title_alt" type="searchable_text" indexed="true" stored="false" multiValued="true"/>
+		<field name="title_new" type="searchable_text" indexed="true" stored="false" multiValued="true"/>
+
+		<!-- AUTHOR INFORMATION -->
+		<!-- This is returned -->
+		<field name="author" type="searchable_text_unstemmed" indexed="true" stored="false" />
+		<!-- This is returned -->
+		<!-- The author to display to the user -->
+		<field name="author_display" type="unchanged_string" indexed="false" stored="true" multiValued="false"/>
+		<!-- This is used for facet values and in the mlt handler -->
+		<field name="authorStr" type="unchanged_string" docValues="true" indexed="true" stored="false" />
+		<!-- author for sorting -->
+		<field name="author_sort" type="alphaOnlySort" indexed="true" stored="false"/>
+		<field name="author_exact" type="text-exact" indexed="true" stored="false" />
+		<field name="author_left" type="text-left" indexed="true" stored="false" />
+		<field name="auth_author" type="textProper" indexed="true" stored="false"/>
+		<field name="author2" type="searchable_text_unstemmed" indexed="true" stored="false" multiValued="true"/>
+		<!-- This is returned for Talpa only -->
+		<field name="author2Str" type="unchanged_string" indexed="false" stored="true" multiValued="true"/>
+		<!-- This is returned but not searched -->
+		<field name="author2-role" type="unchanged_string" indexed="false" stored="true" multiValued="true"/> <!-- The contributor with role and title appended -->
+		<!-- This is returned -->
+		<field name="auth_author2" type="textProper" indexed="true" stored="true" multiValued="true"/>
+		<field name="author_additional" type="searchable_text" indexed="true" stored="false" multiValued="true"/>
+
+		<!-- TITLE/AUTHOR -->
+		<field name="title_author" type="searchable_text" indexed="true" stored="false" multiValued="true"/>
+
+		<!-- SERIES Fields -->
+		<!-- This is returned -->
+		<field name="series" type="searchable_text" indexed="true" stored="true" multiValued="true"/>
+		<!-- This is used as a facet. -->
+		<field name="series_facet" type="unchanged_string" docValues="true" indexed="false" stored="false" multiValued="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<field name="series_proper" type="textProper" indexed="true" stored="false" multiValued="true"/>
+		<!-- This is returned -->
+		<field name="series_with_volume" type="textProper" indexed="false" stored="true" multiValued="true"/>
+
+		<field name="series_author" type="searchable_text" indexed="true" stored="false" multiValued="true"/>
+
+		<!-- Format information -->
+		<field name="grouping_category" type="unchanged_string" indexed="false" stored="false" multiValued="false" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+
+		<!-- This is returned and used as a facet -->
+		<field name="format" type="unchanged_string" indexed="false" stored="false" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<!-- Used for boosting functions -->
+		<field name="format_boost" type="integer" indexed="false" stored="false" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<!-- This is returned and used as a facet -->
+		<field name="format_category" type="unchanged_string" indexed="false" stored="false" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+
+
+		<!-- IDs of records that make up the work -->
+		<field name="alternate_ids" type="unchanged_string" indexed="true" stored="false" multiValued="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+
+		<!-- The popularity of a title in terms of circulation activity -->
+		<!-- This is used for sorting and boost function -->
+		<field name="popularity" type="integer" indexed="false" stored="false" default="0" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<!-- This is used for sorting and boost function -->
+		<field name="total_holds" type="integer" indexed="false" stored="false" default="0" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+
+		<!-- Fields to determine ownership and location based on location codes -->
+		<!-- This is returned and used as a facet -->
+		<field name="owning_library" type="unchanged_string" indexed="false" stored="false" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<!-- This is returned and used as a facet -->
+		<field name="owning_location" type="unchanged_string" indexed="false" stored="false" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<!-- This is returned and used as a facet -->
+		<field name="collection" type="unchanged_string" indexed="false" stored="false" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<!-- This is returned and used as a facet -->
+		<field name="detailed_location" type="unchanged_string" indexed="false" stored="false" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<!-- This is returned and used as a facet -->
+		<field name="shelf_location" type="unchanged_string" indexed="false" stored="true" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+
+		<!-- Fields to determine availability -->
+		<!-- This is returned and used as a facet -->
+		<field name="available_at" type="unchanged_string" indexed="false" stored="false" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<!-- This is returned and used as a facet -->
+		<field name="availability_toggle" type="unchanged_string" indexed="false" stored="true" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<!-- This is used for sorting titles within lists -->
+		<field name="available_copies" type="integer" indexed="false" docValues="true" stored="false" multiValued="true"/>
+
+		<!-- Language Related Fields -->
+		<!-- This is used as a facet -->
+		<field name="all_languages" type="unchanged_string" indexed="false" stored="false" multiValued="true" omitNorms="true" docValues="true"/>
+		<!-- This is returned and used as a facet and in mlt handler -->
+		<field name="language" type="unchanged_string" indexed="false" stored="false" multiValued="true" omitNorms="true" docValues="true" omitTermFreqAndPositions="true"/>
+		<!-- This is used as a facet -->
+		<field name="translation" type="unchanged_string" indexed="false" stored="true" multiValued="true" omitNorms="true" docValues="true" omitTermFreqAndPositions="true"/>
+		<!-- This is used for boost functions -->
+		<field name="language_boost" type="integer" indexed="false" stored="false" multiValued="false" omitNorms="true" docValues="true" default="1" omitTermFreqAndPositions="true"/>
+		<field name="language_boost_es" type="integer" indexed="false" stored="false" multiValued="false" omitNorms="true" docValues="true" default="1" omitTermFreqAndPositions="true"/>
+
+		<!-- Publication information -->
+		<!-- This is used for searching by publisher only -->
+		<field name="publisher" type="searchable_text_minimal_stem" indexed="true" stored="false" multiValued="true"/>
+		<!-- This is returned and used as a facet. -->
+		<field name="publisherStr" type="unchanged_string" indexed="false" stored="true" multiValued="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<!-- This is returned, can be used for searching, and is used for facets -->
+		<field name="publishDate" type="unchanged_string" indexed="false" stored="false" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<!-- This is returned and used as a facet. It is the earliest publication date -->
+		<field name="publishDateSort" type="unchanged_string" indexed="false" stored="false" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<!-- This is returned and used as a facet. -->
+		<field name="placeOfPublication" type="unchanged_string" indexed="false" stored="false" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+
+		<!-- Facets -->
+		<!-- This is returned, but just for ItemAPI and AnodeAPI -->
+		<field name="physical" type="unchanged_string" indexed="false" stored="true" multiValued="true"/>
+		<!-- This is used for the audiobook duration facet -->
+		<field name="duration" type="pints" indexed="true" stored="false" multiValued="true" default="0" docValues="true"/>
+		<!-- This is used in the grouped work driver -->
+		<field name="edition" type="unchanged_string" indexed="false" stored="true" multiValued="true"/>
+		<!-- This is returned and used as a facet. -->
+		<field name="econtent_source" type="unchanged_string" indexed="false" stored="false" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<!-- This is returned, used as a facet, and in the mlt handler. -->
+		<field name="subject_facet" type="unchanged_string" docValues="true" indexed="false" stored="false" multiValued="true"/>
+		<field name="subject" type="searchable_text_minimal_stem" indexed="true" stored="false" multiValued="true"/>
+		<field name="subject_proper" type="textProper" indexed="true" stored="false" multiValued="true"/>
+		<field name="topic" type="searchable_text_minimal_stem" indexed="true" stored="false" multiValued="true"/>
+		<field name="topic_proper" type="textProper" indexed="true" stored="false" multiValued="true"/>
+		<!-- This is returned, used as a facet, and in the mlt handler. -->
+		<field name="topic_facet" type="unchanged_string" docValues="true" indexed="false" stored="false" multiValued="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<!-- This is returned and used as a facet. -->
+		<field name="lc_subject" type="unchanged_string" docValues="true" indexed="false" stored="false" multiValued="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<!-- This is returned and used as a facet. -->
+		<field name="bisac_subject" type="unchanged_string" docValues="true" indexed="false" stored="false" multiValued="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<!-- This is returned for ItemAPI and Talpa -->
+		<field name="genre" type="searchable_text_minimal_stem" indexed="true" stored="true" multiValued="true"/>
+		<field name="genre_proper" type="textProper" indexed="true" stored="false" multiValued="true"/>
+		<!-- This is returned, used as a facet, and in the mlt handler. -->
+		<field name="genre_facet" type="unchanged_string" docValues="true" indexed="false" stored="false" multiValued="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<field name="geographic" type="searchable_text_minimal_stem" indexed="true" stored="false" multiValued="true"/>
+		<field name="geographic_proper" type="textProper" indexed="true" stored="false" multiValued="true"/>
+		<!-- This is returned, used as a facet, and in the mlt handler. -->
+		<field name="geographic_facet" type="unchanged_string" indexed="true" stored="false" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<!-- This is returned, used as a facet, and in the mlt handler. -->
+		<field name="personal_name_facet" type="unchanged_string" docValues="true" indexed="false" stored="false" multiValued="true" />
+		<!-- This is returned, used as a facet, and in the mlt handler. -->
+		<field name="corporate_name_facet" type="unchanged_string" docValues="true" indexed="false" stored="false" multiValued="true" />
+		<!-- This is returned and used as a facet, and in the mlt handler. -->
+		<field name="era" type="unchanged_string" indexed="true" stored="false" multiValued="true" docValues="true" omitNorms="true" />
+		<field name="era_proper" type="textProper" indexed="true" stored="false" multiValued="true"/>
+		<!-- This is returned and used as a facet. -->
+		<field name="literary_form_full" type="unchanged_string" indexed="false" stored="false" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<!-- This is returned and used as a facet. -->
+		<field name="literary_form" type="unchanged_string" indexed="false" stored="false" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<!-- This is returned for suggestions and used as a facet. -->
+		<field name="target_audience_full" type="unchanged_string" indexed="false" stored="true" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<!-- This is used as a facet -->
+		<field name="target_audience" type="unchanged_string" indexed="false" stored="false" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<field name="date_added" type="date" indexed="true" stored="false" multiValued="false"/>
+		<!-- This is used as a facet -->
+		<field name="time_since_added" type="unchanged_string" indexed="false" stored="false" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<!-- This is returned -->
+		<field name="days_since_added" type="integer" indexed="true" stored="false" multiValued="false" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<!-- This is returned -->
+		<field name="local_time_since_added" type="unchanged_string" indexed="true" stored="true" multiValued="true" sortMissingLast="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<!-- This is returned -->
+		<field name="local_days_since_added" type="integer" indexed="true" stored="true" multiValued="false" sortMissingLast="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<!-- This is returned and used as a facet -->
+		<field name="itype" type="unchanged_string" indexed="true" stored="false" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<field name="barcode" type="unchanged_string" indexed="true" stored="false" multiValued="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+
+		<!-- awards and ratings -->
+		<!-- This is not returned, it is used as a facet -->
+		<field name="content_rating" type="unchanged_string" indexed="true" stored="false" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<!-- This is returned, used as a facet, and in the mlt handler -->
+		<field name="mpaa_rating" type="unchanged_string" indexed="true" stored="false" multiValued="true" docValues="true" omitNorms="true" />
+		<!-- This is used as a facet and in the mlt handler -->
+		<field name="awards_facet" type="unchanged_string" indexed="true" stored="false" multiValued="true" docValues="true" />
+		<!-- This is returned and used as a facet -->
+		<field name="lexile_score" type="integer" indexed="true" stored="false" multiValued="false" default="-1" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<!-- This is returned and used as a facet -->
+		<field name="lexile_code" type="unchanged_string" indexed="true" stored="false" multiValued="false" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<!-- This is returned and used as a facet -->
+		<field name="fountas_pinnell" type="unchanged_string" indexed="true" stored="false" multiValued="false" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<!-- This is returned, used as a facet, and in the mlt handler -->
+		<field name="accelerated_reader_interest_level" type="unchanged_string" indexed="true" stored="false" multiValued="false" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<!-- This is returned and used as a facet -->
+		<field name="accelerated_reader_reading_level" type="float" indexed="true" stored="false" multiValued="false" default="0" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<!-- This is returned and used as a facet -->
+		<field name="accelerated_reader_point_value" type="float" indexed="true" stored="false" multiValued="false" default="0" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+
+		<!-- Identifiers -->
+		<!-- This is returned -->
+		<field name="lccn" type="unchanged_string" indexed="true" stored="true" multiValued="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<field name="oclc" type="unchanged_string" indexed="true" stored="false" multiValued="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<!-- This is returned -->
+		<field name="primary_isbn" type="textProper" indexed="false" stored="true" multiValued="false"/>
+		<!-- This is returned -->
+		<field name="isbn" type="textProper" indexed="true" stored="true" multiValued="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<!-- This is returned -->
+		<field name="issn" type="textProper" indexed="true" stored="true" multiValued="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<!-- This is returned -->
+		<field name="primary_upc" type="textProper" indexed="false" stored="true" multiValued="false"/>
+		<!-- This is returned -->
+		<field name="upc" type="textProper" indexed="true" stored="true" multiValued="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+
+		<!-- Call Numbers -->
+		<!-- This is used as a facet -->
+		<field name="callnumber-first" type="unchanged_string" indexed="true" stored="false" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<field name="callnumber-subject" type="unchanged_string" indexed="true" stored="false"/>
+		<!-- This is returned -->
+		<field name="local_callnumber" type="callnumber-search" indexed="true" stored="true" multiValued="true"/>
+		<field name="local_callnumber_exact" type="text-exact" indexed="true" stored="false" multiValued="true"/>
+		<field name="local_callnumber_left" type="text-left" indexed="true" stored="false" multiValued="true"/>
+		<field name="callnumber_sort" type="text-exact" indexed="true" stored="false" multiValued="false"/>
+		<dynamicField name="callnumber_sort_*" type="text-exact" indexed="true" stored="false" multiValued="false"/>
+
+		<!-- Broad Search Terms -->
+		<field name="table_of_contents" type="searchable_text" indexed="true" stored="false" multiValued="true"/>
+		<field name="table_of_contents_proper" type="textProper" indexed="true" stored="false" multiValued="true"/>
+		<field name="keywords" type="searchable_text" indexed="true" stored="false"/>
+		<field name="keywords_proper" type="textProper" indexed="true" stored="false"/>
+
+		<!-- Descriptions -->
+		<field name="description" type="searchable_text" indexed="true" stored="false"/>
+		<!-- This is returned -->
+		<field name="display_description" type="unchanged_string" indexed="false" stored="true"/>
+		<!-- This is returned -->
+		<field name="ils_description" type="unchanged_string" indexed="false" stored="true"/>
+		<!-- Total number of holdings for a work -->
+		<field name="num_holdings" type="integer" indexed="true" stored="false" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<!-- End user rating for a work 2.5 if not set -->
+		<field name="rating" type="float" indexed="true" stored="false" multiValued="false" default="2.5" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<!-- This is used as a facet -->
+		<field name="rating_facet" type="unchanged_string" indexed="false" stored="false" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+
+		<!-- Custom facets -->
+		<dynamicField name="custom_facet_*" type="unchanged_string" indexed="false" stored="false" multiValued="true" docValues="true"/>
+
+		<!-- spelling -->
+		<field name="spelling" type="textSpelling" indexed="true" stored="false" multiValued="true"/>
+		<!-- suggestions (for type ahead) -->
+		<field name="title_suggestions" type="textSuggest" indexed="true" stored="false" multiValued="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<field name="author_suggestions" type="textSuggest" indexed="true" stored="false" multiValued="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<field name="subject_suggestions" type="textSuggest" indexed="true" stored="false" multiValued="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+
+		<!-- relations to users -->
+		<field name="user_rating_link" type="integer" indexed="true" stored="false" multiValued="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<field name="user_not_interested_link" type="integer" indexed="true" stored="false" multiValued="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<field name="user_reading_history_link" type="integer" indexed="true" stored="false" multiValued="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+
+		<field name="list_link" type="integer" indexed="true" stored="false" multiValued="true"/>
+		<dynamicField name="list_entry_weight_*" type="integer" indexed="true" docValues="true" stored="false" multiValued="true"/>
+		<dynamicField name="list_entry_date_added_*" type="integer" indexed="true" docValues="true" stored="false" multiValued="true"/>
+
+		<!-- This is used for Context Filter Query when loading suggestions -->
+		<field name="suggestions_context_filter" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+
+		<!-- Boosts -->
+		<field name="lib_boost" type="integer" indexed="true" stored="false" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<!-- Field to get random titles -->
+		<dynamicField name="random*" type="random" indexed="true" stored="true"/>
+	</fields>
+
+	<uniqueKey>id</uniqueKey>
+
+	<copyField source="title" dest="title_suggestions"/>
+	<copyField source="author" dest="author_suggestions"/>
+	<copyField source="author2" dest="author_suggestions"/>
+	<copyField source="series" dest="title_suggestions"/>
+	<copyField source="subject_facet" dest="subject_suggestions"/>
+	<copyField source="personal_name_facet" dest="subject_suggestions"/>
+	<copyField source="corporate_name_facet" dest="subject_suggestions"/>
+	<copyField source="language" dest="suggestions_context_filter"/>
+
+	<copyField source="title" dest="spelling"/>
+	<copyField source="author" dest="spelling"/>
+	<copyField source="author2" dest="spelling"/>
+	<copyField source="series" dest="spelling"/>
+	<copyField source="subject_facet" dest="spelling"/>
+
+	<copyField source="author" dest="authorStr"/>
+	<copyField source="author" dest="author_exact"/>
+	<copyField source="author" dest="author_left"/>
+	<copyField source="author2" dest="author2Str"/>
+	<copyField source="publisher" dest="publisherStr"/>
+	<copyField source="series" dest="series_facet"/>
+
+	<!-- CopyFields for Proper (Unstemmed) searching -->
+	<copyField source="title" dest="title_proper"/>
+	<copyField source="title" dest="title_exact"/>
+	<copyField source="keywords" dest="keywords_proper"/>
+	<copyField source="table_of_contents" dest="table_of_contents_proper"/>
+	<copyField source="series" dest="series_proper"/>
+	<copyField source="topic" dest="topic_proper"/>
+	<copyField source="subject_facet" dest="subject"/>
+	<copyField source="subject_facet" dest="subject_proper"/>
+	<copyField source="geographic" dest="geographic_proper"/>
+	<copyField source="era" dest="era_proper"/>
+	<copyField source="genre" dest="genre_proper"/>
+	<copyField source="local_callnumber" dest="local_callnumber_exact"/>
+	<copyField source="local_callnumber" dest="local_callnumber_left"/>
+</schema>

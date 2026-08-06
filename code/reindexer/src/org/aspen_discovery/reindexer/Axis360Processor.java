@@ -124,7 +124,7 @@ class Axis360Processor {
 				groupedWork.addDescription(getFieldValue(rawResponse, "description"), formatCategory);
 
 				String language = getFieldValue(rawResponse, "language");
-				groupedWork.addLanguage(indexer.translateSystemValue("language", language, identifier));
+				groupedWork.addLanguage(indexer.translateSystemValue("language", language, identifier), axis360Record);
 
 				groupedWork.addPublisher(getFieldValue(rawResponse, "publisher"));
 
@@ -172,7 +172,7 @@ class Axis360Processor {
 					boolean isAdult = targetAudience.equals("Adult");
 					boolean isTeen = targetAudience.equals("Young Adult");
 					boolean isKids = targetAudience.equals("Juvenile");
-					for (Scope scope : indexer.getScopes()) {
+					for (Scope scope : indexer.getScopes().values()) {
 						boolean okToAdd = false;
 						Axis360Scope axis360Scope = scope.getAxis360Scope();
 						if (axis360Scope != null) {

@@ -35,7 +35,7 @@ class CourseReserveSolr {
 
 		doc.addField("title", title);
 		doc.addField("title_display", title);
-		
+
 		doc.addField("title_sort", AspenStringUtils.makeValueSortable(title));
 
 		doc.addField("library", displayLibrary);
@@ -57,7 +57,7 @@ class CourseReserveSolr {
 		//Things based on scoping
 		int numValidScopes = 0;
 		HashSet<String> relevantScopes = new HashSet<>();
-		for (Scope scope: courseReservesIndexer.getScopes()) {
+		for (Scope scope: courseReservesIndexer.getScopes().values()) {
 			boolean okToInclude = scope.isCourseReserveLibraryIncluded(courseLibrary);
 			if (okToInclude) {
 				numValidScopes++;

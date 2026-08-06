@@ -3444,6 +3444,21 @@ class User extends DataObject {
 		}
 	}
 
+	public function canRegisterIlsPatronForLocation(Location $location): bool {
+		if ($this->hasPermission('Register New ILS Patrons for any home library')) {
+			return true;
+		}
+		if ($this->hasPermission('Register New ILS Patrons for patrons with same home location')
+			&& $location->locationId == $this->homeLocationId) {
+			return true;
+		}
+		if ($this->hasPermission('Register New ILS Patrons for patrons with same home library')) {
+			$homeLibrary = $this->getHomeLibrary();
+			return $homeLibrary != null && $location->libraryId == $homeLibrary->libraryId;
+		}
+		return false;
+	}
+
 	/**
 	 * @param mixed $materialsRequestReplyToAddress
 	 */
@@ -4348,6 +4363,7 @@ class User extends DataObject {
 		$sections['system_admin']->addAction(new AdminAction('USPS Settings', 'Settings to allow Aspen Discovery to validate addresses via USPS API.', '/Admin/USPS'), 'Administer System Variables');
 		$sections['system_admin']->addAction(new AdminAction('Variables', 'Variables set by the Aspen Discovery itself as part of background processes.', '/Admin/Variables'), 'Administer System Variables');
 		$sections['system_admin']->addAction(new AdminAction('System Variables', 'Settings for Aspen Discovery that apply to all libraries on this installation.', '/Admin/SystemVariables'), 'Administer System Variables');
+		$sections['system_admin']->addAction(new AdminAction('Storage Settings', 'Configure the storage backend for uploaded files (local or S3-compatible).', '/Admin/StorageSettings'), 'Administer Storage Settings');
 		$sections['system_admin']->addAction(new AdminAction('Object Restorations', 'Restore soft-deleted objects from the recycle bin.', '/Admin/ObjectRestorations'), 'Administer Object Restoration');
 		$sections['system_admin']->addAction(new AdminAction('Manually Run Cron', 'Manually Start Cron Processes.', '/Admin/CronRunner'), 'Manually Run Cron Processes');
 		$sections['system_admin']->addAction(new AdminAction('Consolidate Reading History', 'Consolidate Reading History Entries to minimize database size.', '/Admin/ConsolidateReadingHistory'), 'Perform System Maintenance');
@@ -4615,6 +4631,7 @@ class User extends DataObject {
 
 		$sections['third_party_enrichment'] = new AdminSection('Third Party Enrichment');
 		$sections['third_party_enrichment']->addAction(new AdminAction('Accelerated Reader Settings', 'Define settings to load Accelerated Reader information directly from Renaissance Learning.', '/Enrichment/ARSettings'), 'Administer Third Party Enrichment API Keys');
+		$sections['third_party_enrichment']->addAction(new AdminAction('BDS Settings', 'Define settings for BDS cover image integration.', '/Enrichment/BDSSettings'), 'Administer BDS');
 		$sections['third_party_enrichment']->addAction(new AdminAction('ChiliFresh Settings', 'Define settings for ChiliFresh integration.', '/Enrichment/ChiliFreshSettings'), 'Administer Third Party Enrichment API Keys');
 		$sections['third_party_enrichment']->addAction(new AdminAction('Coce Server Settings', 'Define settings to load covers from a Coce server.', '/Enrichment/CoceServerSettings'), 'Administer Third Party Enrichment API Keys');
 		$sections['third_party_enrichment']->addAction(new AdminAction('ContentCafe Settings', 'Define settings for ContentCafe integration.', '/Enrichment/ContentCafeSettings'), 'Administer Third Party Enrichment API Keys');
@@ -4733,6 +4750,15 @@ class User extends DataObject {
 			'View System Reports',
 		]);
 		$sections['ils_integration']->addAction(new AdminAction('Test Self Check', 'Test Self Check functionality within Aspen and Aspen / LiDA.', '/ILS/SelfCheckTester'), 'Test Self Check');
+
+		if ($library != null && !empty($library->enablePatronIlsRegistrationByStaff)) {
+			$sections['patron_management'] = new AdminSection('Patron Management');
+			$sections['patron_management']->addAction(new AdminAction('Register Patron', 'Register a new ILS patron account.', '/Admin/StaffRegisterPatron'), [
+				'Register New ILS Patrons for any home library',
+				'Register New ILS Patrons for patrons with same home library',
+				'Register New ILS Patrons for patrons with same home location',
+			]);
+		}
 
 		$sections['ill_integration'] = new AdminSection('Interlibrary Loan');
 		$sections['ill_integration']->addAction(new AdminAction('Hold Groups', 'Modify Hold Groups for creating interlibrary loan holds.', '/InterLibraryLoan/HoldGroups'), 'Administer Hold Groups');
@@ -5996,6 +6022,9 @@ class User extends DataObject {
 		$pushToken->deviceModel = $device;
 		$pushToken->onboardAppNotifications = 0;
 		$pushToken->tokenType = $tokenType;
+		$pushToken->notifyAccount = 1;
+		$pushToken->notifyCustom = 1;
+		$pushToken->notifySavedSearch = 1;
 		if ($pushToken->find(true)) {
 			return true;
 		} else {

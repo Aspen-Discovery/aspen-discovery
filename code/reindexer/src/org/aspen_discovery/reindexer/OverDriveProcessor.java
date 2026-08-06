@@ -245,7 +245,7 @@ class OverDriveProcessor implements AutoCloseable {
 								String primaryLanguage = "English";
 								String targetAudience = "Adult";
 								if (rawMetadataDecoded != null) {
-									primaryLanguage = loadOverDriveLanguages(groupedWork, rawMetadataDecoded, identifier);
+									primaryLanguage = loadOverDriveLanguages(groupedWork, rawMetadataDecoded, identifier, overDriveRecord);
 									targetAudience = loadOverDriveSubjects(groupedWork, rawMetadataDecoded);
 								}
 
@@ -373,7 +373,7 @@ class OverDriveProcessor implements AutoCloseable {
 									boolean isTeen = targetAudience.equals("Young Adult");
 									boolean isKids = targetAudience.equals("Juvenile");
 
-									for (Scope scope : indexer.getScopes()) {
+									for (Scope scope : indexer.getScopes().values()) {
 										if (scope.isIncludeOverDriveCollection(settingId)) {
 											OverDriveScope overDriveScope = scope.getOverDriveScope(settingId);
 											String readerName = overDriveScope.getReaderName();
@@ -723,7 +723,7 @@ class OverDriveProcessor implements AutoCloseable {
 		return targetAudience;
 	}
 
-	private String loadOverDriveLanguages(AbstractGroupedWorkSolr groupedWork, JSONObject productMetadata, String identifier) throws JSONException {
+	private String loadOverDriveLanguages(AbstractGroupedWorkSolr groupedWork, JSONObject productMetadata, String identifier, RecordInfo recordInfo) throws JSONException {
 		String primaryLanguage = null;
 		if (productMetadata.has("languages")) {
 			JSONArray languagesFromMetadata = productMetadata.getJSONArray("languages");
@@ -747,17 +747,17 @@ class OverDriveProcessor implements AutoCloseable {
 				String languageBoost = indexer.translateSystemValue("language_boost", languageCode, identifier);
 				if (languageBoost != null) {
 					Long languageBoostVal = Long.parseLong(languageBoost);
-					groupedWork.setLanguageBoost(languageBoostVal);
+					groupedWork.setLanguageBoost(languageBoostVal, recordInfo);
 				}
 				String languageBoostEs = indexer.translateSystemValue("language_boost_es", languageCode, identifier);
 				if (languageBoostEs != null) {
 					Long languageBoostVal = Long.parseLong(languageBoostEs);
-					groupedWork.setLanguageBoostSpanish(languageBoostVal);
+					groupedWork.setLanguageBoostSpanish(languageBoostVal, recordInfo);
 				}
 			}
-			groupedWork.setLanguages(languages);
+			groupedWork.setLanguages(languages, recordInfo);
 		} else {
-			groupedWork.addLanguage("English");
+			groupedWork.addLanguage("English", recordInfo);
 		}
 
 		if (primaryLanguage == null) {

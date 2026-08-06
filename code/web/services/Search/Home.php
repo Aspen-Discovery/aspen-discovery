@@ -16,7 +16,6 @@ class Search_Home extends Action {
 		}
 
 		// Include Search Engine Class
-		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
 		$timer->logTime('Include search engine');
 
 		$interface->assign('showBreadcrumbs', 0);

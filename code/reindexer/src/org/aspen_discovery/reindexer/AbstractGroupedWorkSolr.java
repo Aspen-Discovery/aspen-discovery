@@ -37,7 +37,6 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 	protected String callNumberFirst;
 	protected String callNumberSubject;
 	protected HashSet<String> contents = new HashSet<>();
-	protected HashSet<String> dateSpans = new HashSet<>();
 	protected HashSet<String> description = new HashSet<>();
 	protected String displayDescription = "";
 	protected String displayDescriptionFormat = "";
@@ -92,7 +91,6 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 	protected TreeSet<String> targetAudience = new TreeSet<>();
 	protected String title;
 	protected HashSet<String> titleAlt = new HashSet<>();
-	protected HashSet<String> titleOld = new HashSet<>();
 	protected HashSet<String> titleNew = new HashSet<>();
 	protected String titleSort;
 	protected String titleFormat = "";
@@ -157,8 +155,6 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 		// noinspection unchecked
 		clonedWork.contents = (HashSet<String>) contents.clone();
 		// noinspection unchecked
-		clonedWork.dateSpans = (HashSet<String>) dateSpans.clone();
-		// noinspection unchecked
 		clonedWork.description = (HashSet<String>) description.clone();
 		// noinspection unchecked
 		clonedWork.editions = (HashSet<String>) editions.clone();
@@ -219,8 +215,6 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 		// noinspection unchecked
 		clonedWork.titleAlt = (HashSet<String>) titleAlt.clone();
 		// noinspection unchecked
-		clonedWork.titleOld = (HashSet<String>) titleOld.clone();
-		// noinspection unchecked
 		clonedWork.titleNew = (HashSet<String>) titleNew.clone();
 		// noinspection unchecked
 		clonedWork.topics = (HashSet<String>) topics.clone();
@@ -230,8 +224,6 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 		clonedWork.subjects = (HashSet<String>) subjects.clone();
 		// noinspection unchecked
 		clonedWork.upcs = (HashMap<String, Long>) upcs.clone();
-		// noinspection unchecked
-		clonedWork.systemLists = (HashSet<String>) systemLists.clone();
 		// noinspection unchecked
 		clonedWork.relatedScopes = (HashMap<String, ArrayList<ScopingInfo>>) relatedScopes.clone();
 	}
@@ -586,10 +578,6 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 
 	void addAlternateTitles(Set<String> altTitles) {
 		this.titleAlt.addAll(altTitles);
-	}
-
-	void addOldTitles(Set<String> oldTitles) {
-		this.titleOld.addAll(oldTitles);
 	}
 
 	void addNewTitles(Set<String> newTitles) {
@@ -978,10 +966,6 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 		this.physicals.add(field);
 	}
 
-	void addDateSpan(Set<String> fieldList) {
-		this.dateSpans.addAll(fieldList);
-	}
-
 	void addEditions(Set<String> fieldList) {
 		this.editions.addAll(fieldList);
 	}
@@ -1034,19 +1018,50 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 		this.eras.add(AspenStringUtils.normalizeSubject(fieldValue));
 	}
 
-	void setLanguageBoost(Long languageBoost) {
+	void setLanguageBoost(Long languageBoost, RecordInfo recordInfo) {
+		recordInfo.setLanguageBoost(languageBoost);
 		if (languageBoost > this.languageBoost) {
 			this.languageBoost = languageBoost;
 		}
 	}
 
-	void setLanguageBoostSpanish(Long languageBoostSpanish) {
+	void setLanguageBoost(Long languageBoost, HashSet<RecordInfo> records) {
+		for (RecordInfo recordInfo : records) {
+			recordInfo.setLanguageBoost(languageBoost);
+		}
+		if (languageBoost > this.languageBoost) {
+			this.languageBoost = languageBoost;
+		}
+	}
+
+	void setLanguageBoostSpanish(Long languageBoostSpanish, RecordInfo recordInfo) {
+		recordInfo.setLanguageBoostSpanish(languageBoostSpanish);
 		if (languageBoostSpanish > this.languageBoostSpanish) {
 			this.languageBoostSpanish = languageBoostSpanish;
 		}
 	}
 
-	void setLanguages(HashSet<String> languages) {
+	void setLanguageBoostSpanish(Long languageBoostSpanish, HashSet<RecordInfo> records) {
+		for (RecordInfo recordInfo : records) {
+			recordInfo.setLanguageBoostSpanish(languageBoostSpanish);
+		}
+		if (languageBoostSpanish > this.languageBoostSpanish) {
+			this.languageBoostSpanish = languageBoostSpanish;
+		}
+	}
+
+	void setLanguages(HashSet<String> languages, RecordInfo recordInfo) {
+		recordInfo.setLanguages(languages);
+		this.languages.addAll(languages);
+		if (this.primaryLanguage == null) {
+			setPrimaryLanguage(languages.iterator().next());
+		}
+	}
+
+	void setLanguages(HashSet<String> languages, HashSet<RecordInfo> records) {
+		for (RecordInfo recordInfo : records) {
+			recordInfo.setLanguages(languages);
+		}
 		this.languages.addAll(languages);
 		if (this.primaryLanguage == null) {
 			setPrimaryLanguage(languages.iterator().next());
@@ -1527,7 +1542,8 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 		return targetAudience;
 	}
 
-	void addLanguage(String language) {
+	void addLanguage(String language, RecordInfo record) {
+		record.addLanguage(language);
 		this.languages.add(language);
 		if (this.primaryLanguage == null) {
 			this.setPrimaryLanguage(language);
@@ -1703,6 +1719,7 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 				existingRecords.remove(relatedRecordKey);
 			}
 			long recordId = groupedWorkIndexer.saveGroupedWorkRecord(groupedWorkId, recordInfo, savedRecord);
+			recordInfo.setDatabaseId(recordId);
 
 			if (recordId != -1) {
 				//Get existing items for the record

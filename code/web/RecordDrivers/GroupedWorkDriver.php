@@ -1111,18 +1111,9 @@ class GroupedWorkDriver extends IndexRecordDriver {
 	 * This expects to return a string or null, but IndexRecordDriver returns an array
 	 */
 	public function getFormatCategory(): string|array|null {
-		global $solrScope;
 		require_once ROOT_DIR . '/sys/SystemVariables.php';
 		$systemVariables = SystemVariables::getSystemVariables();
-		if ($systemVariables->searchVersion == 1) {
-			if (isset($this->fields['format_category_' . $solrScope])) {
-				if (is_array($this->fields['format_category_' . $solrScope])) {
-					return reset($this->fields['format_category_' . $solrScope]);
-				} else {
-					return $this->fields['format_category_' . $solrScope];
-				}
-			}
-		} else {
+		if ($systemVariables->searchVersion == 2) {
 			if (isset($this->fields['format_category'])) {
 				if (is_array($this->fields['format_category'])) {
 					return reset($this->fields['format_category']);
@@ -1135,18 +1126,9 @@ class GroupedWorkDriver extends IndexRecordDriver {
 	}
 
 	public function getFormatCategories(): array {
-		global $solrScope;
 		require_once ROOT_DIR . '/sys/SystemVariables.php';
 		$systemVariables = SystemVariables::getSystemVariables();
-		if ($systemVariables->searchVersion == 1) {
-			if (isset($this->fields['format_category_' . $solrScope])) {
-				if (is_array($this->fields['format_category_' . $solrScope])) {
-					return $this->fields['format_category_' . $solrScope];
-				} else {
-					return [$this->fields['format_category_' . $solrScope]];
-				}
-			}
-		} else {
+		if ($systemVariables->searchVersion == 2) {
 			if (isset($this->fields['format_category'])) {
 				if (is_array($this->fields['format_category'])) {
 					return $this->fields['format_category'];
@@ -1155,7 +1137,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 				}
 			}
 		}
-		return "";
+		return [];
 	}
 
 	protected array|null|false $_indexedSeries = false;
@@ -3658,7 +3640,6 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		//Load Similar titles (from Solr)
 		global $configArray;
 		global $interface;
-		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
 		/** @var SearchObject_AbstractGroupedWorkSearcher $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject();
 		$searchObject->init();

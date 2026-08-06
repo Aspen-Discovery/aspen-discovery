@@ -69,20 +69,25 @@ public class GroupedReindexMain {
 		}else if (args.length >= 2 && args[1].equalsIgnoreCase("cleanupIndexTables")){
 			cleanupIndexTables = true;
 		}else if (args.length >= 2 && args[1].equalsIgnoreCase("singleWork")){
-			//Process a specific work
-			//Prompt for the work to process
-			System.out.print("Enter the id of the work to process: ");
+			if (args.length >= 3) {
+				individualWorkToProcess = args[2];
+				System.out.println("Processing " + individualWorkToProcess);
+			}else {
+				//Process a specific work
+				//Prompt for the work to process
+				System.out.print("Enter the id of the work to process: ");
 
-			//  open up standard input
-			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+				//  open up standard input
+				BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
-			//  read the work from the command-line; need to use try/catch with the
-			//  readLine() method
-			try {
-				individualWorkToProcess = br.readLine().trim();
-			} catch (IOException ioe) {
-				System.out.println("IO error trying to read the work to process!");
-				System.exit(1);
+				//  read the work from the command-line; need to use try/catch with the
+				//  readLine() method
+				try {
+					individualWorkToProcess = br.readLine().trim();
+				} catch (IOException ioe) {
+					System.out.println("IO error trying to read the work to process!");
+					System.exit(1);
+				}
 			}
 		}
 
