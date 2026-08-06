@@ -226,6 +226,7 @@ class TwoFactorAuthSetting extends DataObject {
 			$this->saveLibraries();
 			$this->savePatronTypes();
 			$this->saveRoles();
+			$this->clearStaleAssignmentsByMode();
 		}
 		return $ret;
 	}
@@ -236,6 +237,7 @@ class TwoFactorAuthSetting extends DataObject {
 			$this->saveLibraries();
 			$this->savePatronTypes();
 			$this->saveRoles();
+			$this->clearStaleAssignmentsByMode();
 		}
 		return $ret;
 	}
@@ -328,5 +330,46 @@ class TwoFactorAuthSetting extends DataObject {
 		$settingsList += $setting->fetchAll('id', 'name');
 
 		return $settingsList;
+	}
+
+	private function clearStaleAssignmentsByMode(): void {
+		if (!$this->id) {
+			return;
+		}
+
+		if ($this->assignToUsersBy == 'role') {
+			// In role mode, clear library assignments to this setting.
+			$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Libraries'), $this->accountProfileId);
+			foreach ($libraryList as $libraryId => $displayName) {
+				$library = new Library();
+				$library->libraryId = $libraryId;
+				if ($library->find(true) && $library->twoFactorAuthSettingId == $this->id) {
+					$library->twoFactorAuthSettingId = -1;
+					$library->update();
+				}
+			}
+
+			// In role mode, clear patron type assignments to this setting.
+			$ptypeList = PType::getPatronTypeList(false, false, $this->accountProfileId);
+			foreach ($ptypeList as $ptypeId => $ptypeName) {
+				$patronType = new PType();
+				$patronType->id = $ptypeId;
+				if ($patronType->find(true) && $patronType->twoFactorAuthSettingId == $this->id) {
+					$patronType->twoFactorAuthSettingId = -1;
+					$patronType->update();
+				}
+			}
+		} else {
+			// In patronType mode, clear role assignments to this setting.
+			$roleList = Role::getRoleList();
+			foreach ($roleList as $roleId => $roleName) {
+				$role = new Role();
+				$role->roleId = $roleId;
+				if ($role->find(true) && $role->twoFactorAuthSettingId == $this->id) {
+					$role->twoFactorAuthSettingId = -1;
+					$role->update();
+				}
+			}
+		}
 	}
 }
