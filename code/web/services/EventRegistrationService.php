@@ -50,17 +50,19 @@ class EventRegistrationService {
 
 		$registration->registeredByStaffId = $staffUserId;
 
-		if ($registration->registerUser()) {
-			UserAspenEventInstanceRegistrationAttendee::saveForRegistration((int)$registration->id, $validatedCounts);
-			self::saveToUserEvents($eventInstance, $userId, $staffUserId);
-			return [
-				'success' => true,
-				'title' => translate(['text' => 'Registration Successful', 'isPublicFacing' => true]),
-				'message' => translate(['text' => 'User has been registered for this event.', 'isPublicFacing' => true]),
-			];
+		try {
+			DataObject::runInTransaction(fn() => self::writeRegistration($registration, $validatedCounts, $eventInstance, $userId, $staffUserId));
+		} catch (\Throwable $e) {
+			global $logger;
+			$logger->log("registerUserForEvent rolled back (userId=$userId, eventInstanceId=$eventInstanceId): " . $e->getMessage(), Logger::LOG_ERROR);
+			return self::publicErrorResult(translate(['text' => 'Failed to create registration.', 'isPublicFacing' => true]));
 		}
 
-		return self::publicErrorResult(translate(['text' => 'Failed to create registration.', 'isPublicFacing' => true]));
+		return [
+			'success' => true,
+			'title' => translate(['text' => 'Registration Successful', 'isPublicFacing' => true]),
+			'message' => translate(['text' => 'User has been registered for this event.', 'isPublicFacing' => true]),
+		];
 	}
 
 	/**
@@ -411,7 +413,9 @@ class EventRegistrationService {
 		$entry->location = $location->find(true) ? $location->displayName : '';
 
 		$entry->dateAdded = time();
-		$entry->insert();
+		if ($entry->insert() === false) {
+			throw new RuntimeException("Failed to mirror registration to user_events_entry (sourceId=$sourceId, userId=$userId).");
+		}
 	}
 
 	public static function sendCancellationNotificationEmails(array $upcomingInstances, array $affectedUsersByStatus): void {
@@ -524,6 +528,14 @@ class EventRegistrationService {
 			'title' => translate(['text' => 'Error', 'isAdminFacing' => true]),
 			'message' => $message,
 		];
+	}
+
+	private static function writeRegistration(UserAspenEventInstanceRegistration $registration, array $validatedCounts, EventInstance $eventInstance, int $userId, ?int $staffUserId): void {
+		if (!$registration->registerUser()) {
+			throw new RuntimeException('Failed to create registration row.');
+		}
+		UserAspenEventInstanceRegistrationAttendee::saveForRegistration((int)$registration->id, $validatedCounts);
+		self::saveToUserEvents($eventInstance, $userId, $staffUserId);
 	}
 
 	private static function getRegistrationFor(int $userId, int $eventInstanceId): UserAspenEventInstanceRegistration|false {
