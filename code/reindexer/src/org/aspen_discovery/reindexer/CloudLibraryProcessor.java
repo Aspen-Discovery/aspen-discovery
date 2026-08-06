@@ -213,7 +213,7 @@ class CloudLibraryProcessor extends MarcRecordProcessor {
 						}
 					}
 
-					for (Scope scope : indexer.getScopes()) {
+					for (Scope scope : indexer.getScopes().values()) {
 						boolean okToAdd = false;
 						CloudLibraryScope cloudLibraryScope = scope.getCloudLibraryScope(settingId);
 						if (cloudLibraryScope != null) {

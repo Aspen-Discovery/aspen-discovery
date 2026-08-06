@@ -76,7 +76,7 @@ class SeriesSolr {
 
 		int numValidScopes = 0;
 		HashSet<String> relevantScopes = new HashSet<>();
-		for (Scope scope: seriesIndexer.getScopes()) {
+		for (Scope scope: seriesIndexer.getScopes().values()) {
 			numValidScopes++;
 			doc.addField("local_time_since_added_" + scope.getScopeName(), DateUtils.getTimeSinceAddedForDate(dateAdded));
 			doc.addField("local_days_since_added_" + scope.getScopeName(), DateUtils.getDaysSinceAddedForDate(dateAdded));

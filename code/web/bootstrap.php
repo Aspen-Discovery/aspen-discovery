@@ -308,6 +308,7 @@ function requireSystemLibraries() {
 	require_once ROOT_DIR . '/sys/Translation/Translator.php';
 	require_once ROOT_DIR . '/Drivers/AbstractIlsDriver.php';
 	require_once ROOT_DIR . '/sys/IP/IPAddress.php';
+	require_once ROOT_DIR . '/sys/Storage/StorageDriverFactory.php';
 }
 
 function initLocale() {

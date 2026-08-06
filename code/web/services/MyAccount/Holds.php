@@ -35,6 +35,12 @@ class MyAccount_Holds extends MyAccount {
 		$interface->assign('currentUserName', $user->displayName);
 		$interface->assign('selectedUser', $selectedUser);
 
+		$selectedSource = 'all';
+		if (!empty($_REQUEST['tab']) && in_array($_REQUEST['tab'], array('all', 'ils', 'overdrive', 'hoopla', 'cloud_library', 'axis360', 'palace_project'))) {
+			$selectedSource = $_REQUEST['tab'];
+		}
+		$interface->assign('selectedSource', $selectedSource);
+
 		$interface->assign('profile', $user);
 		$this->display('holds.tpl', 'Titles On Hold');
 	}

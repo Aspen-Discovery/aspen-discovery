@@ -1,6 +1,6 @@
 package org.aspen_discovery.reindexer;
 
-import org.apache.commons.lang.math.NumberUtils;
+import org.apache.solr.client.solrj.impl.BinaryResponseParser;
 import org.aspen_discovery.grouping.*;
 import com.turning_leaf_technologies.indexing.*;
 import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
@@ -87,7 +87,7 @@ public class GroupedWorkIndexer implements AutoCloseable {
 	private Long lastReindexTimeVariableId;
 	private boolean okToIndex = true;
 
-	private TreeSet<Scope> scopes ;
+	private HashMap<String, Scope> scopes ;
 
 	private PreparedStatement getGroupedWorkPrimaryIdentifiers;
 	private PreparedStatement getOverriddenRecordsForWork;
@@ -250,7 +250,7 @@ public class GroupedWorkIndexer implements AutoCloseable {
 			logEntry.incErrors("Could not load last index time from variables table ", e);
 		}
 
-		//Check to see if we should store record details in Solr
+		//Load general settings for the indexer from System Variables
 		try (PreparedStatement systemVariablesStmt = dbConn.prepareStatement("SELECT storeRecordDetailsInSolr, storeRecordDetailsInDatabase, indexVersion, searchVersion, processEmptyGroupedWorks, enableNovelistSeriesIntegration, deletionCommitInterval, waitAfterDeleteCommit, removeTheWordSeriesFromEndOfSeries, hooplaVersion, indexCommitInterval, solrThreadCount, solrQueueSize from system_variables")){
 			try (ResultSet systemVariablesRS = systemVariablesStmt.executeQuery()) {
 				if (systemVariablesRS.next()) {
@@ -419,12 +419,12 @@ public class GroupedWorkIndexer implements AutoCloseable {
 		}
 
 		String solrUrl;
-		if (indexVersion == 1) {
-			//noinspection HttpUrlsUsage
-			solrUrl = "http://" + solrHost + ":" + solrPort + "/solr/grouped_works";
-		}else{
+		if (indexVersion == 2) {
 			//noinspection HttpUrlsUsage
 			solrUrl = "http://" + solrHost + ":" + solrPort + "/solr/grouped_works_v2";
+		}else{
+			//noinspection HttpUrlsUsage
+			solrUrl = "http://" + solrHost + ":" + solrPort + "/solr/grouped_works_v3";
 		}
 		//Set a longer timeout
 		http2Client = new Http2SolrClient.Builder()
@@ -434,7 +434,7 @@ public class GroupedWorkIndexer implements AutoCloseable {
 		try {
 
 
-			updateServer = new ConcurrentUpdateHttp2SolrClient.Builder(solrUrl, http2Client)
+		updateServer = new ConcurrentUpdateHttp2SolrClient.Builder(solrUrl, http2Client)
 				.withThreadCount(solrThreadCount)
 				.withQueueSize(solrQueueSize)
 				.build();
@@ -455,7 +455,7 @@ public class GroupedWorkIndexer implements AutoCloseable {
 			loadLocationLabels();
 
 			HashMap<String, ExistingScopeInfo> existingScopes = this.getExistingScopes();
-			for (Scope scope : scopes){
+			for (Scope scope : scopes.values()){
 				String scopeKey = scope.getScopeName();
 				ExistingScopeInfo scopeInfo = existingScopes.get(scopeKey);
 				if (scopeInfo != null){
@@ -480,8 +480,6 @@ public class GroupedWorkIndexer implements AutoCloseable {
 
 		//Initialize processors based on our indexing profiles and the primary identifiers for the records.
 		try {
-			//Don't load these based on the records in the database, base it on the actual indexing profiles defined (otherwise it will not index things the first time)
-			//PreparedStatement uniqueIdentifiersStmt = dbConn.prepareStatement("SELECT DISTINCT type FROM grouped_work_primary_identifiers");
 			PreparedStatement getIndexingProfilesStmt = dbConn.prepareStatement("SELECT * from indexing_profiles");
 
 			ResultSet indexingProfilesRS = getIndexingProfilesStmt.executeQuery();
@@ -945,11 +943,11 @@ public class GroupedWorkIndexer implements AutoCloseable {
 			} catch (Exception e) {
 				logEntry.incErrors("Error calling final commit", e);
 			}
-			if (indexVersion == 2 && searchVersion == 1){
-				//Update the search version to version 2
+			if (indexVersion == 3 && searchVersion == 2){
+				//Update the search version to version 3
 				try {
-					logEntry.addNote("Updating search version to version 2");
-					dbConn.prepareStatement("UPDATE system_variables set searchVersion = 2 WHERE true").executeUpdate();
+					logEntry.addNote("Updating search version to version 3");
+					dbConn.prepareStatement("UPDATE system_variables set searchVersion = 3 WHERE true").executeUpdate();
 				} catch (Exception e) {
 					logEntry.incErrors("Error updating search version", e);
 				}
@@ -975,9 +973,9 @@ public class GroupedWorkIndexer implements AutoCloseable {
 		}else {
 			try {
 				logEntry.addNote("Doing a soft commit to make sure changes are saved");
+				updateServer.blockUntilFinished();
 				updateServer.commit(false, false, true);
 				logEntry.addNote("Shutting down the update server");
-				updateServer.blockUntilFinished();
 				updateServer.shutdownNow();
 				updateServer.close();
 				updateServer = null;
@@ -1170,46 +1168,47 @@ public class GroupedWorkIndexer implements AutoCloseable {
 		AbstractGroupedWorkSolr groupedWork;
 		if (indexVersion == 2) {
 			groupedWork = new GroupedWorkSolr2(this, logger);
-		}else{
-			groupedWork = new GroupedWorkSolr(this, logger);
+		}else {
+			groupedWork = new GroupedWorkSolr3(this, logger);
 		}
 
 		//Check to see if we should enable debugging while indexing
 		getDebugInfoStmt.setString(1, permanentId);
-		ResultSet getDebugInfoRS = getDebugInfoStmt.executeQuery();
-		if (getDebugInfoRS.next()) {
-			groupedWork.setDebugEnabled(true);
-			groupedWork.setDebugId(getDebugInfoRS.getLong("id"));
+		try (ResultSet getDebugInfoRS = getDebugInfoStmt.executeQuery()) {
+			if (getDebugInfoRS.next()) {
+				groupedWork.setDebugEnabled(true);
+				groupedWork.setDebugId(getDebugInfoRS.getLong("id"));
+			}
 		}
-		getDebugInfoRS.close();
 
 		groupedWork.setId(permanentId);
 		groupedWork.setGroupingCategory(grouping_category);
 
 		HashSet<String> overriddenRecords = new HashSet<>();
 		getOverriddenRecordsForWork.setString(1, permanentId);
-		ResultSet overriddenRecordsRS = getOverriddenRecordsForWork.executeQuery();
-		while (overriddenRecordsRS.next()) {
-			String source = overriddenRecordsRS.getString("source");
-			String recordId = overriddenRecordsRS.getString("record_id");
-			overriddenRecords.add(source + ":" + recordId);
+		try (ResultSet overriddenRecordsRS = getOverriddenRecordsForWork.executeQuery()) {
+			while (overriddenRecordsRS.next()) {
+				String source = overriddenRecordsRS.getString("source");
+				String recordId = overriddenRecordsRS.getString("record_id");
+				overriddenRecords.add(source + ":" + recordId);
+			}
 		}
-		overriddenRecordsRS.close();
 		groupedWork.setOverriddenRecords(overriddenRecords);
 
 		getGroupedWorkPrimaryIdentifiers.setLong(1, id);
-		ResultSet groupedWorkPrimaryIdentifiersRS = getGroupedWorkPrimaryIdentifiers.executeQuery();
 		ArrayList<RecordIdentifier> recordIdentifiers = new ArrayList<>();
-		while (groupedWorkPrimaryIdentifiersRS.next()){
-			String type = groupedWorkPrimaryIdentifiersRS.getString("type");
-			String identifier = groupedWorkPrimaryIdentifiersRS.getString("identifier");
-			recordIdentifiers.add(new RecordIdentifier(type, identifier));
+		try (ResultSet groupedWorkPrimaryIdentifiersRS = getGroupedWorkPrimaryIdentifiers.executeQuery()) {
+			while (groupedWorkPrimaryIdentifiersRS.next()) {
+				String type = groupedWorkPrimaryIdentifiersRS.getString("type");
+				String identifier = groupedWorkPrimaryIdentifiersRS.getString("identifier");
+				recordIdentifiers.add(new RecordIdentifier(type, identifier));
+			}
 		}
-		groupedWorkPrimaryIdentifiersRS.close();
 		int numPrimaryIdentifiers = 0;
 		HashSet<String> regroupedIdsToProcess = new HashSet<>();
 		HashSet<RecordIdentifier> regroupedIdentifiers = new HashSet<>();
 
+		//Regroup all records if needed.
 		if ((regroupAllRecords && allowRegrouping) || permanentId.endsWith("|||") || permanentId.contains(" ")){
 			if (groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Starting to regroup all records");}
 			for (RecordIdentifier recordIdentifier : recordIdentifiers) {
@@ -1280,6 +1279,7 @@ public class GroupedWorkIndexer implements AutoCloseable {
 
 		recordIdentifiers.removeAll(regroupedIdentifiers);
 
+		//Reindex all records within the Grouped Work
 		for (RecordIdentifier recordIdentifier : recordIdentifiers){
 			String type = recordIdentifier.getType();
 			String identifier = recordIdentifier.getIdentifier();
@@ -1949,7 +1949,7 @@ public class GroupedWorkIndexer implements AutoCloseable {
 			addSeriesMemberStmt.setString(2, groupedWork.getId());
 			if (!volume.isEmpty()) {
 				addSeriesMemberStmt.setString(3, AspenStringUtils.trimTo(100, volume)); // Add volume
-				long seriesWeight = NumberUtils.toLong(volume);
+				long seriesWeight = Long.parseLong(volume);
 				if (seriesWeight > Integer.MAX_VALUE) {
 					seriesWeight = Integer.MAX_VALUE;
 				}
@@ -2254,7 +2254,7 @@ public class GroupedWorkIndexer implements AutoCloseable {
 		}
 	}
 
-	TreeSet<Scope> getScopes() {
+	HashMap<String, Scope> getScopes() {
 		return this.scopes;
 	}
 
@@ -3179,12 +3179,12 @@ public class GroupedWorkIndexer implements AutoCloseable {
 			ResultSet getExistingVariationsForWorkRS = getExistingVariationsForWorkStmt.executeQuery();
 			while (getExistingVariationsForWorkRS.next()){
 				VariationInfo variation = new VariationInfo();
-				variation.id = getExistingVariationsForWorkRS.getLong("id");
+				variation.databaseId = getExistingVariationsForWorkRS.getLong("id");
 				variation.primaryLanguageId = getExistingVariationsForWorkRS.getLong("primaryLanguageId");
 				variation.eContentSourceId = getExistingVariationsForWorkRS.getLong("eContentSourceId");
 				variation.formatId = getExistingVariationsForWorkRS.getLong("formatId");
 				variation.formatCategoryId = getExistingVariationsForWorkRS.getLong("formatCategoryId");
-				existingVariations.put(variation, variation.id);
+				existingVariations.put(variation, variation.databaseId);
 			}
 			getExistingVariationsForWorkRS.close();
 		}catch (SQLException e){
@@ -3215,10 +3215,10 @@ public class GroupedWorkIndexer implements AutoCloseable {
 				addVariationForWorkStmt.executeUpdate();
 				ResultSet addVariationForWorkRS = addVariationForWorkStmt.getGeneratedKeys();
 				if (addVariationForWorkRS.next()){
-					curVariationInfo.id = addVariationForWorkRS.getLong(1);
-					existingVariations.put(curVariationInfo, curVariationInfo.id);
+					curVariationInfo.databaseId = addVariationForWorkRS.getLong(1);
+					existingVariations.put(curVariationInfo, curVariationInfo.databaseId);
 					addVariationForWorkRS.close();
-					return curVariationInfo.id;
+					return curVariationInfo.databaseId;
 				}else{
 					getIdForVariationStmt.setLong(1, groupedWorkId);
 					getIdForVariationStmt.setLong(2, curVariationInfo.primaryLanguageId);
@@ -3227,10 +3227,10 @@ public class GroupedWorkIndexer implements AutoCloseable {
 					getIdForVariationStmt.setLong(5, curVariationInfo.formatCategoryId);
 					ResultSet getIdForVariationRS = getIdForVariationStmt.executeQuery();
 					if (getIdForVariationRS.next()) {
-						curVariationInfo.id = getIdForVariationRS.getLong("id");
-						existingVariations.put(curVariationInfo, curVariationInfo.id);
+						curVariationInfo.databaseId = getIdForVariationRS.getLong("id");
+						existingVariations.put(curVariationInfo, curVariationInfo.databaseId);
 						getIdForVariationRS.close();
-						return curVariationInfo.id;
+						return curVariationInfo.databaseId;
 					}
 					getIdForVariationRS.close();
 				}

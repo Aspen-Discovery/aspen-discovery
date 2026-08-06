@@ -36,7 +36,14 @@
 				{literal}
 				$(document).ready(function() {
 					{/literal}
-					AspenDiscovery.Account.loadHolds('all');
+					{if $selectedSource == 'all'}
+						AspenDiscovery.Account.loadHolds('all');
+					{else}
+						let sourceFilter = {ldelim}
+							'source' : '{$selectedSource}'
+						{rdelim};
+						AspenDiscovery.Account.loadHolds('all',  undefined, undefined, undefined, undefined, sourceFilter);
+					{/if}
 					{literal}
 					document.getElementById('allHoldsPlaceholder').addEventListener('change', function (e) {
 						if (e.target.matches('.titleSelect')) {

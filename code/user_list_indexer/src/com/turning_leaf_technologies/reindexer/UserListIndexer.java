@@ -32,7 +32,7 @@ class UserListIndexer {
 	private final Logger logger;
 	private ConcurrentUpdateHttp2SolrClient updateServer;
 	private Http2SolrClient groupedWorkServer;
-	private TreeSet<Scope> scopes;
+	private HashMap<String, Scope> scopes;
 	private HashMap<Long, Long> librariesByHomeLocation = new HashMap<>();
 	private HashMap<Long, String> locationCodesByHomeLocation = new HashMap<>();
 	private HashSet<Long> usersThatCanShareLists = new HashSet<>();
@@ -104,7 +104,7 @@ class UserListIndexer {
 			System.exit(-7);
 		}
 		//Get the search version from system variables
-		int searchVersion = 1;
+		int searchVersion = 2;
 		try {
 			PreparedStatement searchVersionStmt = dbConn.prepareStatement("SELECT searchVersion from system_variables");
 			ResultSet searchVersionRS = searchVersionStmt.executeQuery();
@@ -115,11 +115,9 @@ class UserListIndexer {
 			logger.error("Error loading search version", e);
 		}
 		Http2SolrClient.Builder groupedWorkHttpBuilder;
-		if (searchVersion == 1) {
-			groupedWorkHttpBuilder = new Http2SolrClient.Builder("http://" + solrHost + ":" + solrPort + "/solr/grouped_works");
-		}else{
+		//if (searchVersion == 2) {
 			groupedWorkHttpBuilder = new Http2SolrClient.Builder("http://" + solrHost + ":" + solrPort + "/solr/grouped_works_v2");
-		}
+		//}
 		groupedWorkServer = groupedWorkHttpBuilder.build();
 
 		Http2SolrClient.Builder openArchivesHttpBuilder = new Http2SolrClient.Builder("http://" + solrHost + ":" + solrPort + "/solr/open_archives");
@@ -444,7 +442,7 @@ class UserListIndexer {
 		}
 		return new int[]{indexed, skippedForFewTitles};
 	}
-	TreeSet<Scope> getScopes() {
+	HashMap<String, Scope> getScopes() {
 		return this.scopes;
 	}
 

@@ -19,14 +19,7 @@ $context = stream_context_create($opts);
 set_time_limit(0);
 require_once ROOT_DIR . '/sys/SystemVariables.php';
 $systemVariables = SystemVariables::getSystemVariables();
-if ($systemVariables->searchVersion == 1) {
-	if (!file_get_contents($solrBaseUrl . '/grouped_works/suggest?suggest.build=true', false, $context)) {
-		$cronLogEntry->notes .= "<br/>Could not update suggesters for grouped_works";
-		$cronLogEntry->numErrors++;
-	}else{
-		$cronLogEntry->notes .= "<br/>Updated suggesters for grouped_works";
-	}
-} else {
+if ($systemVariables->searchVersion == 2) {
 	if (!file_get_contents($solrBaseUrl . '/grouped_works_v2/suggest?suggest.build=true', false, $context)) {
 		$cronLogEntry->notes .= "<br/>Could not update suggesters for grouped_works_v2";
 		$cronLogEntry->numErrors++;

@@ -447,41 +447,74 @@ class DataObjectUtil {
 						}
 					}
 					global $serverName;
-					if (isset($property['storagePath'])) {
+					if (isset($property['storagePath']) || isset($property['path'])) {
 						$destFileName = ($object->getPrimaryKeyValue() != null) ? $objectType."_".$serverName."_".$object->getPrimaryKeyValue().$fileType : "Temp_".$_FILES[$propertyName]["name"];
-						$destFolder = $property['storagePath'];
+						$destFolder = $property['storagePath'] ?? $property['path'];
 						$destFullPath = $destFolder . '/' . $destFileName;
 						$copyResult = copy($_FILES[$propertyName]["tmp_name"], $destFullPath);
 						$logger->log("Copied file to $destFullPath result: $copyResult", Logger::LOG_DEBUG);
-					} else {
+					} elseif (isset($property['storageKey'])) {
 						$logger->log("Creating thumbnails for $propertyName", Logger::LOG_DEBUG);
-						global $serverName;
-						if (isset($property['path'])) {
-							$destFolder = $property['path'];
-							$destFileName = ($object->getPrimaryKeyValue() != null) ? $objectType."_".$serverName."_".$object->getPrimaryKeyValue().$fileType : "Temp_".$_FILES[$propertyName]["name"];
-							if (!file_exists($destFolder)) {
-								mkdir($destFolder, 0755, true);
-							}
-							$pathToThumbs = $destFolder . '/thumbnail';
-							$pathToMedium = $destFolder . '/medium';
-						} else {
-							$destFileName = ($object->getPrimaryKeyValue() != null) ? $serverName."_".$objectType."_".$object->getPrimaryKeyValue().$fileType : "Temp_".$_FILES[$propertyName]["name"];
-							$destFolder = $configArray['Site']['local'] . '/files/original';
-							$pathToThumbs = $configArray['Site']['local'] . '/files/thumbnail';
-							$pathToMedium = $configArray['Site']['local'] . '/files/medium';
+						$storageKey = $property['storageKey'];
+						$destFileName = ($object->getPrimaryKeyValue() != null) ? $objectType."_".$serverName."_".$object->getPrimaryKeyValue().$fileType : "Temp_".$_FILES[$propertyName]["name"];
+						$storage = StorageDriverFactory::get();
+
+						$uploadTmp = $_FILES[$propertyName]["tmp_name"];
+
+						//check for previous upload that needs to be overwritten to new naming convention
+						$prevKey = $storageKey . '/Temp_' . $_FILES[$propertyName]["name"];
+						if ($storage->exists($prevKey)) {
+							$storage->delete($prevKey);
 						}
 
+						require_once ROOT_DIR . '/sys/Covers/CoverImageUtils.php';
+
+						if (isset($property['maxWidth'])) {
+							$width = $property['maxWidth'];
+							$height = isset($property['maxHeight']) ? $property['maxHeight'] : $property['maxWidth'];
+							$resizedTmp = tempnam(sys_get_temp_dir(), 'aspen_img_');
+							resizeImage($uploadTmp, $resizedTmp, $width, $height);
+							$storeSource = $resizedTmp;
+						} else {
+							$storeSource = $uploadTmp;
+						}
+
+						$copyResult = $storage->write($storageKey . '/' . $destFileName, $storeSource);
+
+						if (isset($resizedTmp)) {
+							unlink($resizedTmp);
+							unset($resizedTmp);
+						}
+
+						if ($copyResult) {
+							$derivativeBase = dirname($storageKey);
+							if (isset($property['thumbWidth'])) {
+								$thumbTmp = tempnam(sys_get_temp_dir(), 'aspen_img_');
+								resizeImage($uploadTmp, $thumbTmp, $property['thumbWidth'], $property['thumbWidth']);
+								$storage->write($derivativeBase . '/thumbnail/' . $destFileName, $thumbTmp);
+								unlink($thumbTmp);
+							}
+							if (isset($property['mediumWidth'])) {
+								$medTmp = tempnam(sys_get_temp_dir(), 'aspen_img_');
+								resizeImage($uploadTmp, $medTmp, $property['mediumWidth'], $property['mediumWidth']);
+								$storage->write($derivativeBase . '/medium/' . $destFileName, $medTmp);
+								unlink($medTmp);
+							}
+						}
+					} else {
+						global $configArray;
+						$destFileName = ($object->getPrimaryKeyValue() != null) ? $serverName."_".$objectType."_".$object->getPrimaryKeyValue().$fileType : "Temp_".$_FILES[$propertyName]["name"];
+						$destFolder = $configArray['Site']['local'] . '/files/original';
+						$pathToThumbs = $configArray['Site']['local'] . '/files/thumbnail';
+						$pathToMedium = $configArray['Site']['local'] . '/files/medium';
 						$destFullPath = $destFolder . '/' . $destFileName;
-						//check for previous upload that needs to be overwritten to new naming convention
-						$prevUpload = $destFolder . '/' . "Temp_" . $_FILES[$propertyName]["name"];
+						$prevUpload = $destFolder . '/' . 'Temp_' . $_FILES[$propertyName]['name'];
 						if (file_exists($prevUpload)) {
 							rename($prevUpload, $destFullPath);
 						}
 						$copyResult = copy($_FILES[$propertyName]["tmp_name"], $destFullPath);
-
 						if ($copyResult) {
 							require_once ROOT_DIR . '/sys/Covers/CoverImageUtils.php';
-
 							if (isset($property['thumbWidth'])) {
 								if (!resizeImage($destFullPath, "$pathToThumbs/$destFileName", $property['thumbWidth'], $property['thumbWidth'])) {
 									$logger->log("Could not create thumbnail for $propertyName at $pathToThumbs/$destFileName", Logger::LOG_ERROR);
@@ -494,7 +527,6 @@ class DataObjectUtil {
 								}
 							}
 							if (isset($property['maxWidth'])) {
-								//Create a thumbnail if needed
 								$width = $property['maxWidth'];
 								$height = $property['maxWidth'];
 								if (isset($property['maxHeight'])) {
@@ -591,23 +623,12 @@ class DataObjectUtil {
 					//return an error to the browser
 					$logger->log("Error uploading file " . $_FILES[$propertyName]["error"], Logger::LOG_ERROR);
 				} elseif (true) { //TODO: validate the file type
-					//Copy the full image to the correct location
-					//Filename is the name of the object + the original filename
-					global $configArray;
 					$destFileName = $_FILES[$propertyName]["name"];
-					$destFolder = $configArray['Site']['local'] . '/fonts';
-					$destFullPath = $destFolder . '/' . $destFileName;
-					$copyResult = copy($_FILES[$propertyName]["tmp_name"], $destFullPath);
+					$copyResult = StorageDriverFactory::get()->write('fonts/' . $destFileName, $_FILES[$propertyName]["tmp_name"]);
 					if ($copyResult) {
-						$logger->log("Copied file from {$_FILES[$propertyName]["tmp_name"]} to $destFullPath", Logger::LOG_NOTICE);
+						$logger->log("Stored font file: fonts/{$destFileName}", Logger::LOG_NOTICE);
 					} else {
-						$logger->log("Could not copy file from {$_FILES[$propertyName]["tmp_name"]} to $destFullPath", Logger::LOG_ERROR);
-						if (!file_exists($_FILES[$propertyName]["tmp_name"])) {
-							$logger->log("  Uploaded file did not exist", Logger::LOG_ERROR);
-						}
-						if (!is_writable($destFullPath)) {
-							$logger->log("  Destination is not writable", Logger::LOG_ERROR);
-						}
+						$logger->log("Could not store font file: fonts/{$destFileName}", Logger::LOG_ERROR);
 					}
 					//store the actual filename
 					$object->setProperty($propertyName, $destFileName, $property);
