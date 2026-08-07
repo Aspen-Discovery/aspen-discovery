@@ -172,7 +172,7 @@ class SearchObject_GroupedWorkSearcher3 extends SearchObject_AbstractGroupedWork
 				$facetName = $facetInfo->getFacetName(3);
 				$facetKey = empty($facetInfo->id) ? $facetName : $facetInfo->id;
 				$multiSelect = $facetInfo->multiSelect || $facetName == 'availability_toggle';
-				$fieldPrefix = "{!tag=$facetKey}";
+				$fieldPrefix = "{!parent which='recordtype:grouped_work' tag=$facetKey}";
 			} else {
 				//This is either a field we need to convert from the old schema to new schema or valid field from advanced search we aren't seeing here
 				$tmpFieldName = substr($field, 0, strrpos($field, '_'));
@@ -182,7 +182,7 @@ class SearchObject_GroupedWorkSearcher3 extends SearchObject_AbstractGroupedWork
 					$field = $tmpFieldName;
 					$facetKey = empty($facetInfo->id) ? $facetName : $facetInfo->id;
 					$multiSelect = $facetInfo->multiSelect || $facetName == 'availability_toggle';
-					$fieldPrefix = "{!tag=$facetKey}";
+					$fieldPrefix = "{!parent which='recordtype:grouped_work' tag=$facetKey}";
 				} else {
 					if (in_array($field, $validFields)) {
 						$facetName = $field;
@@ -278,7 +278,7 @@ class SearchObject_GroupedWorkSearcher3 extends SearchObject_AbstractGroupedWork
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWorkFacet.php';
 			$numLocations = GroupedWorkFacet::calculateDynamicFacetLimit('available_at');
 			$domainInfo = [
-				'toChildren' => 'recordtype:record_scoping',
+				'blockChildren' => 'recordtype:grouped_work',
 				'filter' => 'scope:' . $solrScope,
 				'excludeTags' => 'scope_filter'
 			];
@@ -294,9 +294,9 @@ class SearchObject_GroupedWorkSearcher3 extends SearchObject_AbstractGroupedWork
 					$isMultiSelect = $facetInfo->multiSelect;
 					$facetName = $facetInfo->getFacetName(3);
 					if ($facetName == 'availability_toggle') {
-						$isMultiSelect = true;
+						$isMultiSelect = false;
 					} elseif ($facetName == 'format_category') {
-						$isMultiSelect = true;
+						$isMultiSelect = false;
 					}
 					if ($isMultiSelect) {
 						$facetKey = empty($facetInfo->id) ? $facetName : $facetInfo->id;
@@ -321,8 +321,7 @@ class SearchObject_GroupedWorkSearcher3 extends SearchObject_AbstractGroupedWork
 						'type' => 'terms',
 						'field' => $facetName,
 						'limit' => (int)$limit,
-						'mincount' => $minCount,
-						'domain' => $domainInfo
+						'mincount' => $minCount
 					];
 					if ($isScoped) {
 						$jsonInfoForField['domain'] = $domainInfo;
@@ -348,8 +347,10 @@ class SearchObject_GroupedWorkSearcher3 extends SearchObject_AbstractGroupedWork
 			$this->facetOptions["json.facet"] = json_encode($jsonFacets);
 		}
 		if (!empty($this->facetSearchTerm) && !empty($this->facetSearchField)) {
-			$this->facetOptions["f.$this->facetSearchField.facet.contains"] = $this->facetSearchTerm;
-			$this->facetOptions["f.$this->facetSearchField.facet.contains.ignoreCase"] = 'true';
+			if (array_key_exists($this->facetSearchField, $jsonFacets)) {
+				$jsonFacets[$this->facetSearchField]['contains'] = $this->facetSearchTerm;
+				$jsonFacets[$this->facetSearchField]['contains.ignoreCase'] = true;
+			}
 		}
 		if (!empty($this->facetOptions)) {
 			$facetSet['additionalOptions'] = $this->facetOptions;

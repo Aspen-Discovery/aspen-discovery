@@ -575,4 +575,114 @@ class GroupedWorksSolrConnector3 extends Solr
 		$options['f.title_display.hl.fragsize'] = 1000;
 		$options['f.title_full.hl.fragsize'] = 1000;
 	}
+
+	/**
+	 * applySearchSpecs -- internal method to build query string from search parameters
+	 *
+	 * @access    private
+	 * @param array $structure the SearchSpecs-derived structure or substructure defining the search, derived from the yaml file
+	 * @param array $values the various values in an array with keys 'onephrase', 'and', 'or' (and perhaps others)
+	 * @param string $joiner
+	 * @return    string A search string suitable for adding to a query URL
+	 * @throws    AspenError
+	 * @static
+	 */
+	private function _applySearchSpecs($structure, $values, $joiner = "OR") {
+		global $solrScope;
+		$clauses = [];
+		foreach ($structure as $field => $clauseArray) {
+			if (is_numeric($field)) {
+				// shift off the join string and weight
+				$sw = array_shift($clauseArray);
+				$internalJoin = ' ' . $sw[0] . ' ';
+				// Build it up recursively
+				$searchString = '(' . $this->_applySearchSpecs($clauseArray, $values, $internalJoin) . ')';
+				// ...and add a weight if we have one
+				$weight = $sw[1];
+				if (!is_null($weight) && $weight && $weight > 0) {
+					$searchString .= '^' . $weight;
+				}
+				// push it onto the stack of clauses
+				$clauses[] = $searchString;
+			} else {
+				if ($solrScope) {
+					if ($field == 'local_callnumber' || $field == 'local_callnumber_left' || $field == 'local_callnumber_exact') {
+						$field .= '_' . $solrScope;
+					}
+				}
+
+				// Otherwise, we've got a (list of) [munge, weight] pairs to deal with
+				foreach ($clauseArray as $spec) {
+					$fieldValue = $values[$spec[0]];
+
+					if ($field == 'isbn') {
+						if (!preg_match('/^((?:\sOR\s)?["(]?\d{9,13}X?[\s")]*)+$/', $fieldValue)) {
+							continue;
+						} else {
+							require_once(ROOT_DIR . '/sys/ISBN.php');
+							$isbn = new ISBN($fieldValue);
+							if ($isbn->isValid()) {
+								$isbn10 = $isbn->get10();
+								$isbn13 = $isbn->get13();
+								if ($isbn10 && $isbn13) {
+									$fieldValue = '(' . $isbn->get10() . ' OR ' . $isbn->get13() . ')';
+								}
+							}
+						}
+					} elseif ($field == 'id') {
+						if (!preg_match('/^"?(\d+|.[boi]\d+x?|[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12})(-\w{3})?"?$/i', $fieldValue)) {
+							continue;
+						}
+					} elseif ($field == 'alternate_ids') {
+						if (!preg_match('/^"?(\d+|.?[boi]\d+x?|[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}|MWT\d+|CARL\d+)"?$/i', $fieldValue)) {
+							continue;
+						}
+					} elseif ($field == 'issn') {
+						if (!preg_match('/^"?[\d\hXx-]+"?$/', $fieldValue)) {
+							continue;
+						}
+					} elseif ($field == 'upc') {
+						if (!preg_match('/^"?\d+"?$/', $fieldValue)) {
+							continue;
+						}
+					}
+
+					//Ignore empty searches
+					if (strlen($fieldValue) == 0) {
+						continue;
+					}
+
+					// build a string like title:("one two")
+					if ($fieldValue[0] != '(') {
+						$searchString = $field . ':(' . $fieldValue . ')';
+					} else {
+						$searchString = $field . ':' . $fieldValue;
+					}
+					//Check to make sure we don't already have this clause.  We will get the same clause if we have a single word and are doing different munges
+					$okToAdd = true;
+					foreach ($clauses as $clause) {
+						if (strpos($clause, $searchString) === 0) {
+							$okToAdd = false;
+							break;
+						}
+					}
+					if (!$okToAdd) {
+						continue;
+					}
+
+					// Add the weight if we have one. Yes, I know, it's redundant code.
+					$weight = $spec[1];
+					if (!is_null($weight) && $weight && $weight > 0) {
+						$searchString .= '^' . $weight;
+					}
+
+					// ..and push it on the stack of clauses
+					$clauses[] = $searchString;
+				}
+			}
+		}
+
+		// Join it all together
+		return implode(' ' . $joiner . ' ', $clauses);
+	}
 }
