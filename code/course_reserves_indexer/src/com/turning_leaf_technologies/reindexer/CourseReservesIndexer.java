@@ -26,7 +26,7 @@ class CourseReservesIndexer {
 	private final Logger logger;
 	private ConcurrentUpdateHttp2SolrClient updateServer;
 	private Http2SolrClient groupedWorkServer;
-	private final TreeSet<Scope> scopes;
+	private final HashMap<String, Scope> scopes;
 	private final HashMap<String, String> libraryTranslations = new HashMap<>();
 
 	CourseReservesIndexer(Ini configIni, Connection dbConn, Logger logger){
@@ -223,7 +223,7 @@ class CourseReservesIndexer {
 		return indexed;
 	}
 
-	TreeSet<Scope> getScopes() {
+	HashMap<String, Scope> getScopes() {
 		return this.scopes;
 	}
 

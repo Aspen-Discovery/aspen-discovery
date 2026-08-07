@@ -10,6 +10,10 @@ require_once ROOT_DIR . '/Drivers/AbstractDriver.php';
 require_once ROOT_DIR . '/sys/SIP2.php';
 
 abstract class AbstractIlsDriver extends AbstractDriver {
+	public const ILS_REG_MODE_PUBLIC_SELF = 'publicSelf';
+	public const ILS_REG_MODE_MINIMAL_SELF = 'minimalSelf';
+	public const ILS_REG_MODE_STAFF = 'staff';
+
 	/** @var  AccountProfile $accountProfile */
 	public $accountProfile;
 	protected $webServiceURL;
@@ -169,6 +173,30 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 
 	function getSelfRegistrationFields() {
 		return [];
+	}
+
+	public function hasIlsRegistrationModeSupport(string $mode): bool {
+		return $mode === self::ILS_REG_MODE_PUBLIC_SELF;
+	}
+
+	public function getILSRegistrationFormStructure(string $mode): array {
+		if ($mode === self::ILS_REG_MODE_PUBLIC_SELF) {
+			return $this->getSelfRegistrationFields();
+		}
+		return [];
+	}
+
+	public function registerPatronToILS(string $mode, array $input): array {
+		if ($mode === self::ILS_REG_MODE_PUBLIC_SELF) {
+			return $this->selfRegister();
+		}
+		return [
+			'success' => false,
+			'message' => translate([
+				'text' => 'Registration mode not supported for this ILS.',
+				'isPublicFacing' => true,
+			]),
+		];
 	}
 
 	function updatePin(User $patron, ?string $oldPin, string $newPin) {

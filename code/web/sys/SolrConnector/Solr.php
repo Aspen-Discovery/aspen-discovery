@@ -602,7 +602,7 @@ abstract class Solr {
 				// push it onto the stack of clauses
 				$clauses[] = $searchString;
 			} else {
-				if ($solrScope) {
+				if ($solrScope && !($this instanceof GroupedWorksSolrConnector3)) {
 					if ($field == 'local_callnumber' || $field == 'local_callnumber_left' || $field == 'local_callnumber_exact') {
 						$field .= '_' . $solrScope;
 					}
@@ -1147,7 +1147,6 @@ abstract class Solr {
 	function search($query, $handler = null, $filter = null, $start = 0, $limit = 20, $facet = null, $spell = '', $dictionary = null, $sort = null, $fields = null, $method = 'POST', $returnSolrError = false) {
 		global $timer;
 		global $configArray;
-		global $solrScope;
 		// Query String Parameters
 		$options = [
 			'q' => $query,
@@ -1289,7 +1288,6 @@ abstract class Solr {
 
 		// Build Facet Options
 		if ($facet && !empty($facet['field']) && $configArray['Index']['enableFacets']) {
-			$options['facet'] = 'true';
 			$options['facet.mincount'] = 1;
 			$options['facet.method'] = 'fcs';
 			$options['facet.threads'] = 25;
@@ -2141,7 +2139,7 @@ abstract class Solr {
 				}
 				$fields = [];
 				foreach ($schemaData['fields'] as $field) {
-					if (($field['stored'] ?? false) || ($field['indexed'] ?? false)) {
+					if (($field['stored'] ?? false) || ($field['indexed'] ?? false) || ($field['docValues'] ?? false)) {
 						$fields[] = $field['name'];
 					}
 				}

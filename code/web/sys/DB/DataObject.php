@@ -92,6 +92,14 @@ abstract class DataObject implements JsonSerializable {
 
 	}
 
+	// Including SQL expressions to calculate columns here allows them to be
+	// used for sorts and filters, as they're included in every generated
+	// SELECT from the object.
+	// Example: return ['_name_length' => 'LENGTH(name)']
+	public static function getCalculatedColumns() : array {
+		return [];
+	}
+
 	function __toString() {
 		$stringProperty = $this->__primaryKey;
 		if ($this->__displayNameColumn != null) {
@@ -875,6 +883,10 @@ abstract class DataObject implements JsonSerializable {
 			if ($this->__selectAllColumns) {
 				$selectClause = '*, ' . $selectClause;
 			}
+		}
+
+		foreach($this->getCalculatedColumns() as $name => $expression) {
+			$selectClause .= ", ($expression) AS $name";
 		}
 
 		$query = 'SELECT ' . $selectClause . ' from ' . $this->__table;

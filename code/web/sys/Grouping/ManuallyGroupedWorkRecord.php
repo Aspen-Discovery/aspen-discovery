@@ -134,7 +134,7 @@ class ManuallyGroupedWorkRecord extends DataObject {
 	 */
 	private function getPrimaryIdentifierByBarcode(string $barcode, string $source): ?array {
 		require_once ROOT_DIR . '/sys/SearchObject/SearchObjectFactory.php';
-		/** @var SearchObject_GroupedWorkSearcher2 $searchObject */
+		/** @var SearchObject_AbstractGroupedWorkSearcher $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject();
 		$searchObject->init();
 		$recordData = $searchObject->getRecordByBarcode($barcode);
@@ -190,7 +190,7 @@ class ManuallyGroupedWorkRecord extends DataObject {
 		}
 
 		require_once ROOT_DIR . '/sys/SearchObject/SearchObjectFactory.php';
-		/** @var SearchObject_GroupedWorkSearcher2 $searchObject */
+		/** @var SearchObject_AbstractGroupedWorkSearcher $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject();
 		$searchObject->init();
 		$recordData = $searchObject->getRecordByIsbn($searchIsbns);

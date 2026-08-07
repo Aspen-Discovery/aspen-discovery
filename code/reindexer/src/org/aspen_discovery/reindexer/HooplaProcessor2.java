@@ -155,11 +155,11 @@ class HooplaProcessor2 {
 				String language = rawResponse.getString("language");
 				language = StringUtils.capitalize(language.toLowerCase());
 				hooplaRecord.setPrimaryLanguage(language);
-				groupedWork.addLanguage(language);
+				groupedWork.addLanguage(language, hooplaRecord);
 				if (language.equalsIgnoreCase("English")){
-					groupedWork.setLanguageBoost(10L);
+					groupedWork.setLanguageBoost(10L, hooplaRecord);
 				}else if (language.equalsIgnoreCase("Spanish")){
-					groupedWork.setLanguageBoostSpanish(10L);
+					groupedWork.setLanguageBoostSpanish(10L, hooplaRecord);
 				}
 
 				String series = rawResponse.optString("seriesName", rawResponse.optString("series", ""));
@@ -566,7 +566,7 @@ class HooplaProcessor2 {
 					}
 
 					boolean scopeAddedForLibrary = false;
-					for (Scope scope : indexer.getScopes()) {
+					for (Scope scope : indexer.getScopes().values()) {
 						boolean okToAdd;
 						Long curScopeLibraryId = scope.getLibraryId();
 						if (curScopeLibraryId == null || !curScopeLibraryId.equals(scopeLibraryId)){

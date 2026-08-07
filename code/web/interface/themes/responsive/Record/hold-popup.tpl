@@ -295,15 +295,14 @@
 							<div class="row horizontalEditionSelector">
 								<div class="col-xs-12">
 									<div class="slider-container" role="region" id="slider-edition" style="width: 0; min-width: 100%;">
-										<button type="button" class="slider-button slider-button-prev btn btn-editions" id="slider-prev-edition"><i class="fas fa-chevron-left"></i></button>
-										<div class="slider-wrapper" role="listbox" aria-activedescendant="slide-edition-0">
+										<button type="button" class="slider-button slider-button-prev btn btn-editions" id="slider-prev-edition" aria-label="{translate text="Previous edition" isPublicFacing=true}"><i class="fas fa-chevron-left" aria-hidden="true"></i></button>										<div class="slider-wrapper" role="radiogroup" aria-label="{translate text="Select edition" isPublicFacing=true}">
 											{assign var=firstEdition value=""}
 											{foreach from=$editionOptions item=edition name=editions}
-												{if $smarty.foreach.editions.index ==0}
+												{if $smarty.foreach.editions.index == 0}
 													{assign var=firstEdition value=$edition->databaseId}
 												{/if}
 												{assign var=current value=$smarty.foreach.editions.index + 1}
-												<div role="option" tabindex="0" class="slider-slide horizontal-edition-option{if $smarty.foreach.editions.index == 0} active{/if}">
+												<div class="slider-slide horizontal-edition-option{if $smarty.foreach.editions.index == 0} active{/if}">
 													<label for="editionOption{$edition->databaseId}">
 														<div class="edition-radio">
 															<input type="radio" name="editionOption" id="editionOption{$edition->databaseId}" value="{$edition->id}" {if $smarty.foreach.editions.index == 0}checked{/if}> {translate text="Select This Edition" isPublicFacing=true}
@@ -320,7 +319,7 @@
 												</div>
 											{/foreach}
 										</div>
-										<button type="button" class="slider-button slider-button-next btn btn-editions" id="slider-next-edition"><i class="fas fa-chevron-right"></i></button>
+										<button type="button" class="slider-button slider-button-next btn btn-editions" id="slider-next-edition" aria-label="{translate text="Next edition" isPublicFacing=true}"><i class="fas fa-chevron-right" aria-hidden="true"></i></button>
 								</div>
 									<script>
 										$(document).ready(function(){ldelim}

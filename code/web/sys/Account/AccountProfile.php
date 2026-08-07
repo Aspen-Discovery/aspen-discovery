@@ -419,7 +419,7 @@ class AccountProfile extends DataObject {
 						'type' => 'section',
 						'label' => 'Staff Account Information',
 						'hideInLists' => true,
-						'relatedIls' => ['carlx','evergreen','polaris','symphony'],
+						'relatedIls' => ['carlx','evergreen','evolve','polaris','symphony'],
 						'properties' => [
 							'domain' => [
 								'property' => 'domain',
@@ -437,7 +437,7 @@ class AccountProfile extends DataObject {
 								'maxLength' => 100,
 								'description' => 'The Staff Username to use when performing staff actions',
 								'required' => false,
-								'relatedIls' => ['carlx','evergreen','polaris','symphony'],
+								'relatedIls' => ['carlx','evergreen', 'evolve','polaris','symphony'],
 							],
 							'staffPassword' => [
 								'property' => 'staffPassword',
@@ -446,7 +446,7 @@ class AccountProfile extends DataObject {
 								'maxLength' => 50,
 								'description' => 'The Staff Password to use when performing staff actions',
 								'required' => false,
-								'relatedIls' => ['evergreen','polaris','symphony'],
+								'relatedIls' => ['evergreen', 'evolve','polaris','symphony'],
 							],
 						],
 					],

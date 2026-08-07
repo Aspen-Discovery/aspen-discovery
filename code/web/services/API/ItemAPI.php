@@ -59,12 +59,12 @@ class ItemAPI extends AbstractAPI {
 		// Setup Search Engine Connection
 		$url = $configArray['Index']['url'];
 		$systemVariables = SystemVariables::getSystemVariables();
-		if ($systemVariables->searchVersion == 1) {
-			require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
-			$this->db = new GroupedWorksSolrConnector($url);
-		} else {
+		if ($systemVariables->searchVersion == 2) {
 			require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector2.php';
 			$this->db = new GroupedWorksSolrConnector2($url);
+		}else if ($systemVariables->searchVersion == 3) {
+			require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector3.php';
+			$this->db = new GroupedWorksSolrConnector3($url);
 		}
 
 		//Search the database by title and author
@@ -111,12 +111,12 @@ class ItemAPI extends AbstractAPI {
 		// Setup Search Engine Connection
 		$url = $configArray['Index']['url'];
 		$systemVariables = SystemVariables::getSystemVariables();
-		if ($systemVariables->searchVersion == 1) {
-			require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
-			$this->db = new GroupedWorksSolrConnector($url);
-		} else {
+		if ($systemVariables->searchVersion == 2) {
 			require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector2.php';
 			$this->db = new GroupedWorksSolrConnector2($url);
+		}else if ($systemVariables->searchVersion == 3) {
+			require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector3.php';
+			$this->db = new GroupedWorksSolrConnector3($url);
 		}
 
 		//Search the database by title and author
@@ -169,12 +169,12 @@ class ItemAPI extends AbstractAPI {
 		// Setup Search Engine Connection
 		$url = $configArray['Index']['url'];
 		$systemVariables = SystemVariables::getSystemVariables();
-		if ($systemVariables->searchVersion == 1) {
-			require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
-			$this->db = new GroupedWorksSolrConnector($url);
-		} else {
+		if ($systemVariables->searchVersion == 2) {
 			require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector2.php';
 			$this->db = new GroupedWorksSolrConnector2($url);
+		}else if ($systemVariables->searchVersion == 3) {
+			require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector3.php';
+			$this->db = new GroupedWorksSolrConnector3($url);
 		}
 
 		// Retrieve Full Marc Record
@@ -303,12 +303,12 @@ class ItemAPI extends AbstractAPI {
 			// Setup Search Engine Connection
 			$url = $configArray['Index']['url'];
 			$systemVariables = SystemVariables::getSystemVariables();
-			if ($systemVariables->searchVersion == 1) {
-				require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
-				$this->db = new GroupedWorksSolrConnector($url);
-			} else {
+			if ($systemVariables->searchVersion == 2) {
 				require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector2.php';
 				$this->db = new GroupedWorksSolrConnector2($url);
+			}else if ($systemVariables->searchVersion == 3) {
+				require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector3.php';
+				$this->db = new GroupedWorksSolrConnector3($url);
 			}
 
 			// Retrieve Full Marc Record
@@ -566,12 +566,12 @@ class ItemAPI extends AbstractAPI {
 		// Setup Search Engine Connection
 		$url = $configArray['Index']['url'];
 		$systemVariables = SystemVariables::getSystemVariables();
-		if ($systemVariables->searchVersion == 1) {
-			require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
-			$this->db = new GroupedWorksSolrConnector($url);
-		} else {
+		if ($systemVariables->searchVersion == 2) {
 			require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector2.php';
 			$this->db = new GroupedWorksSolrConnector2($url);
+		}else if ($systemVariables->searchVersion == 3) {
+			require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector3.php';
+			$this->db = new GroupedWorksSolrConnector3($url);
 		}
 
 		// Retrieve Full Marc Record

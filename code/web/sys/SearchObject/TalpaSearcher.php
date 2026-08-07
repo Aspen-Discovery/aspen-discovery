@@ -1598,8 +1598,10 @@ class SearchObject_TalpaSearcher extends SearchObject_BaseSearcher{
 
 		}
 		if (!empty($this->facetSearchTerm) && !empty($this->facetSearchField)) {
-			$this->facetOptions["f.{$this->facetSearchField}.facet.contains"] = $this->facetSearchTerm;
-			$this->facetOptions["f.{$this->facetSearchField}.facet.contains.ignoreCase"] = 'true';
+			if (array_key_exists($this->facetSearchField, $jsonFacets)) {
+				$jsonFacets[$this->facetSearchField]['contains'] = $this->facetSearchTerm;
+				$jsonFacets[$this->facetSearchField]['contains.ignoreCase'] = true;
+			}
 		}
 		if (!empty($this->facetOptions)) {
 			$facetSet['additionalOptions'] = $this->facetOptions;

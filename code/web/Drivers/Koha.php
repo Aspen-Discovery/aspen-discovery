@@ -3966,6 +3966,32 @@ class Koha extends AbstractIlsDriver {
 	}
 
 	function getSelfRegistrationFields($type = 'selfReg') {
+		$fields = $this->buildSelfRegistrationFieldStructure($type);
+
+		if ($type === 'selfReg') {
+			$mandatorySyspref = 'PatronSelfRegistrationBorrowerMandatoryField';
+			$unwantedSyspref = 'PatronSelfRegistrationBorrowerUnwantedField';
+			return $this->filterRegistrationFieldsBySysprefs($fields, $mandatorySyspref, $unwantedSyspref, [
+				'hideBothRequiredUnwanted' => $type === 'patronUpdate',
+			]);
+		}
+
+		$unwantedSyspref = 'PatronSelfModificationBorrowerUnwantedField';
+		$mandatorySyspref = 'PatronSelfRegistrationBorrowerMandatoryField';
+
+		if ($this->getKohaSystemPreference('PatronSelfModificationBorrowerMandatoryField', null) !== null) {
+			$mandatorySyspref = 'PatronSelfModificationBorrowerMandatoryField';
+		} elseif ($this->getKohaSystemPreference('PatronSelfModificationMandatoryField', null) !== null) {
+			$mandatorySyspref = 'PatronSelfModificationMandatoryField';
+		}
+	
+		return $this->filterRegistrationFieldsBySysprefs($fields, $mandatorySyspref, $unwantedSyspref, [
+			'hideBothRequiredUnwanted' => $type === 'patronUpdate',
+		]);
+	}
+
+
+	private function buildRegistrationFieldStructure(string $type): array {
 		global $library;
 
 		$this->initDatabaseConnection();
@@ -3979,23 +4005,6 @@ class Koha extends AbstractIlsDriver {
 		}
 		$results->close();
 
-		if ($type == 'selfReg') {
-			$unwantedFields = explode('|', $kohaPreferences['PatronSelfRegistrationBorrowerUnwantedField']);
-		} else {
-			$unwantedFields = explode('|', $kohaPreferences['PatronSelfModificationBorrowerUnwantedField']);
-		}
-		$requiredFields = explode('|', $kohaPreferences['PatronSelfRegistrationBorrowerMandatoryField']);
-		if ($type != 'selfReg' && array_key_exists('PatronSelfModificationBorrowerMandatoryField', $kohaPreferences)) {
-			$requiredFields = explode('|', $kohaPreferences['PatronSelfModificationBorrowerMandatoryField']);
-		}elseif ($type != 'selfReg' && array_key_exists('PatronSelfModificationMandatoryField', $kohaPreferences)) {
-			$requiredFields = explode('|', $kohaPreferences['PatronSelfModificationMandatoryField']);
-		}
-		if ($type !== 'selfReg' || strlen($kohaPreferences['PatronSelfRegistrationLibraryList']) == 0) {
-			$validLibraries = [];
-		} else {
-			$validLibraries = array_flip(explode('|', $kohaPreferences['PatronSelfRegistrationLibraryList']));
-		}
-
 		$validTitles = [
 			'' => ''
 		];
@@ -4006,104 +4015,11 @@ class Koha extends AbstractIlsDriver {
 		}
 
 		$fields = [];
-		$location = new Location();
-
-		$pickupLocations = [];
-		if ($type == 'selfReg') {
-			if ($library->selfRegistrationLocationRestrictions == 1) {
-				//Library Locations
-				$location->libraryId = $library->libraryId;
-				$location->orderBy('isMainBranch DESC, displayName');
-			} elseif ($library->selfRegistrationLocationRestrictions == 2) {
-				//Valid pickup locations
-				$location->whereAdd('validSelfRegistrationBranch <> 2');
-				$location->orderBy('isMainBranch DESC, displayName');
-			} elseif ($library->selfRegistrationLocationRestrictions == 3) {
-				//Valid pickup locations
-				$location->libraryId = $library->libraryId;
-				$location->whereAdd('validSelfRegistrationBranch <> 2');
-				$location->orderBy('isMainBranch DESC, displayName');
-			}
-			if ($location->find()) {
-				while ($location->fetch()) {
-					if (count($validLibraries) == 0 || array_key_exists($location->code, $validLibraries)) {
-						$pickupLocations[$location->code] = $location->displayName;
-					}
-				}
-				//Do not sort branches because they sorted by main branch and then display name above.
-				//asort($pickupLocations);
-			}
-		} else {
-			if (UserAccount::isLoggedIn()) {
-				$patron = UserAccount::getActiveUserObj();
-				if (!empty($patron)) {
-					$userPickupLocations = $patron->getValidPickupBranches($patron->getAccountProfile()->recordSource);
-					$pickupLocations = [];
-					foreach ($userPickupLocations as $key => $location) {
-						if ($location instanceof Location) {
-							$pickupLocations[$location->code] = $location->displayName;
-						} else {
-							if ($key == '0default') {
-								$pickupLocations[-1] = $location;
-							}
-						}
-					}
-				}
-			}
-		}
 
 		if ($library->requireNumericPhoneNumbersWhenUpdatingProfile) {
 			$phoneFormat = '';
 		} else {
 			$phoneFormat = ' (xxx-xxx-xxxx)';
-		}
-
-		//Library
-		if (count($pickupLocations) == 1) {
-			$selectedPickupLocation = '';
-			foreach ($pickupLocations as $code => $name) {
-				$selectedPickupLocation = $code;
-			}
-			$fields['borrower_branchcode'] = [
-				'property' => 'borrower_branchcode',
-				'type' => 'hidden',
-				'label' => 'Home Library',
-				'description' => 'Please choose the Library location you would prefer to use',
-				'default' => $selectedPickupLocation,
-				'required' => true,
-			];
-		} else {
-			$allowHomeLibraryUpdates = $type == 'selfReg' || $library->allowHomeLibraryUpdates;
-
-			// Try to set default based on physical location (IP address).
-			$defaultBranchCode = null;
-			if ($type == 'selfReg') {
-				global $locationSingleton;
-				$physicalLocation = $locationSingleton->getPhysicalLocation();
-				if ($physicalLocation != null && isset($pickupLocations[$physicalLocation->code])) {
-					$defaultBranchCode = $physicalLocation->code;
-				}
-			}
-
-			$fields['librarySection'] = [
-				'property' => 'librarySection',
-				'type' => 'section',
-				'label' => 'Library',
-				'hideInLists' => true,
-				'expandByDefault' => true,
-				'properties' => [
-					'borrower_branchcode' => [
-						'property' => 'borrower_branchcode',
-						'type' => 'enum',
-						'label' => 'Home Library',
-						'description' => 'Please choose the Library location you would prefer to use',
-						'values' => $pickupLocations,
-						'default' => $defaultBranchCode,
-						'required' => true,
-						'readOnly' => !$allowHomeLibraryUpdates,
-					],
-				],
-			];
 		}
 
 		//Identity
@@ -4642,7 +4558,7 @@ class Koha extends AbstractIlsDriver {
 			$fields['privacySection'] = $this->getSelfRegistrationFormPrivacySection();
 		}
 
-		if ($type == 'selfReg') {
+		if ($type == 'selfReg' || $type == 'staffReg') {
 			$passwordLabel = $library->loginFormPasswordLabel;
 			$passwordNotes = $library->selfRegistrationPasswordNotes;
 			$pinValidationRules = $this->getPasswordPinValidationRules();
@@ -4681,11 +4597,169 @@ class Koha extends AbstractIlsDriver {
 			];
 		}
 
-		$unwantedFields = array_flip($unwantedFields);
+		return $fields;
+	}
+
+	private function buildSelfRegistrationFieldStructure(string $type = 'selfReg'): array {
+		$fields = $this->buildRegistrationFieldStructure($type);
+		return array_merge($this->buildHomeLibraryField($type), $fields);
+	}
+
+	private function buildHomeLibraryField(string $type): array {
+		global $library;
+
+		$pickupLocations = $this->resolveRegistrationPickupLocations($type);
+
+		if ($type != 'staffReg' && count($pickupLocations) == 1) {
+			return [
+				'borrower_branchcode' => [
+					'property' => 'borrower_branchcode',
+					'type' => 'hidden',
+					'label' => 'Home Library',
+					'description' => 'Please choose the Library location you would prefer to use',
+					'default' => array_key_first($pickupLocations),
+					'required' => true,
+				],
+			];
+		}
+
+		$allowHomeLibraryUpdates = $type == 'selfReg' || $type == 'staffReg' || $library->allowHomeLibraryUpdates;
+
+		$defaultBranchCode = null;
+		if ($type == 'selfReg') {
+			global $locationSingleton;
+			$physicalLocation = $locationSingleton->getPhysicalLocation();
+			if ($physicalLocation != null && isset($pickupLocations[$physicalLocation->code])) {
+				$defaultBranchCode = $physicalLocation->code;
+			}
+		}
+
+		return [
+			'librarySection' => [
+				'property' => 'librarySection',
+				'type' => 'section',
+				'label' => 'Library',
+				'hideInLists' => true,
+				'expandByDefault' => true,
+				'properties' => [
+					'borrower_branchcode' => [
+						'property' => 'borrower_branchcode',
+						'type' => 'enum',
+						'label' => 'Home Library',
+						'description' => 'Please choose the Library location you would prefer to use',
+						'values' => $pickupLocations,
+						'default' => $defaultBranchCode,
+						'required' => true,
+						'readOnly' => !$allowHomeLibraryUpdates,
+					],
+				],
+			],
+		];
+	}
+
+	private function resolveRegistrationPickupLocations(string $type): array {
+		if ($type === 'staffReg') {
+			return $this->buildStaffRegistrationPickupLocationMap();
+		}
+		if ($type !== 'selfReg') {
+			return $this->buildPatronPickupLocationMap();
+		}
+
+		global $library;
+		$location = new Location();
+		if ($library->selfRegistrationLocationRestrictions == 1) {
+			$location->libraryId = $library->libraryId;
+			$location->orderBy('isMainBranch DESC, displayName');
+		} elseif ($library->selfRegistrationLocationRestrictions == 2) {
+			$location->whereAdd('validSelfRegistrationBranch <> 2');
+			$location->orderBy('isMainBranch DESC, displayName');
+		} elseif ($library->selfRegistrationLocationRestrictions == 3) {
+			$location->libraryId = $library->libraryId;
+			$location->whereAdd('validSelfRegistrationBranch <> 2');
+			$location->orderBy('isMainBranch DESC, displayName');
+		}
+
+		if (!$location->find()) {
+			return [];
+		}
+
+		$libraryList = $this->getKohaSystemPreference('PatronSelfRegistrationLibraryList', '');
+		$validLibraries = strlen($libraryList) == 0 ? [] : array_flip(explode('|', $libraryList));
+
+		$pickupLocations = [];
+		while ($location->fetch()) {
+			if (empty($validLibraries) || array_key_exists($location->code, $validLibraries)) {
+				$pickupLocations[$location->code] = $location->displayName;
+			}
+		}
+		return $pickupLocations;
+	}
+
+	private function buildPatronPickupLocationMap(): array {
+		if (!UserAccount::isLoggedIn()) {
+			return [];
+		}
+		$patron = UserAccount::getActiveUserObj();
+		if (empty($patron)) {
+			return [];
+		}
+
+		$pickupLocations = [];
+		$branches = $patron->getValidPickupBranches($patron->getAccountProfile()->recordSource);
+		foreach ($branches as $key => $branch) {
+			if ($branch instanceof Location) {
+				$pickupLocations[$branch->code] = $branch->displayName;
+			} elseif ($key === '0default') {
+				$pickupLocations[-1] = $branch;
+			}
+		}
+		return $pickupLocations;
+	}
+
+	private function buildStaffRegistrationPickupLocationMap(): array {
+		$user = UserAccount::getActiveUserObj();
+		if ($user == null) {
+			return [];
+		}
+
+		$library = new Library();
+		$library->enablePatronIlsRegistrationByStaff = 1;
+		$library->find();
+		$enabledLibraryIds = [];
+		while ($library->fetch()) {
+			$enabledLibraryIds[] = $library->libraryId;
+		}
+		if (empty($enabledLibraryIds)) {
+			return [];
+		}
+
+		$location = new Location();
+		$location->whereAdd('libraryId IN (' . implode(',', $enabledLibraryIds) . ')');
+		$location->orderBy('isMainBranch DESC, displayName');
+
+		if (!$location->find()) {
+			return [];
+		}
+
+		$pickupLocations = [];
+		while ($location->fetch()) {
+			if ($user->canRegisterIlsPatronForLocation($location)) {
+				$pickupLocations[$location->code] = $location->displayName;
+			}
+		}
+
+		return $pickupLocations;
+	}
+
+	private function filterRegistrationFieldsBySysprefs(array $fields, string $mandatorySyspref, string $unwantedSyspref, array $options = []): array {
+		$hideBothRequiredUnwanted = !empty($options['hideBothRequiredUnwanted']);
+
+		$unwantedFields = array_flip(explode('|', $this->getKohaSystemPreference($unwantedSyspref)));
+		$requiredFields = array_flip(explode('|', $this->getKohaSystemPreference($mandatorySyspref)));
+
 		if (array_key_exists('password', $unwantedFields)) {
 			$unwantedFields['password2'] = true;
 		}
-		$requiredFields = array_flip($requiredFields);
 		if (array_key_exists('password', $requiredFields)) {
 			$requiredFields['password2'] = true;
 		}
@@ -4698,25 +4772,26 @@ class Koha extends AbstractIlsDriver {
 						//There is a case here where a field is marked as both unwanted and required.  If that is the case, do not unset it, just change the type to hidden.
 						if (array_key_exists($fieldName, $requiredFields)) {
 							$section['properties'][$fieldKey]['type'] = 'hidden';
-						} else {
-							unset($section['properties'][$fieldKey]);
+							continue;
 						}
-					} elseif ($type == 'patronUpdate') {
-						if ((array_key_exists($fieldName, $unwantedFields) && array_key_exists($fieldName, $requiredFields))) {
-							$section['properties'][$fieldKey]['type'] = 'hidden';
-							$section['properties'][$fieldKey]['required'] = false;
-						} else {
-							$field['required'] = array_key_exists($fieldName, $requiredFields);
-						}
-					} else {
-						$field['required'] = array_key_exists($fieldName, $requiredFields);
+						unset($section['properties'][$fieldKey]);
+						continue;
 					}
+
+					if ($hideBothRequiredUnwanted && array_key_exists($fieldName, $unwantedFields) && array_key_exists($fieldName, $requiredFields)) {
+						$section['properties'][$fieldKey]['type'] = 'hidden';
+						$section['properties'][$fieldKey]['required'] = false;
+						continue;
+					}
+
+					$field['required'] = array_key_exists($fieldName, $requiredFields);
+
 					if (array_key_exists($fieldKey, $section['properties']) && $section['properties'][$fieldKey]['type'] != 'hidden') {
 						$allFieldsHidden = false;
 					}
 				}
 				if (empty($section['properties'])) {
-					unset ($fields[$sectionKey]);
+					unset($fields[$sectionKey]);
 				} elseif ($allFieldsHidden) {
 					$section['label'] = '';
 				}
@@ -4992,7 +5067,7 @@ class Koha extends AbstractIlsDriver {
 			}
 		}
 
-		$result = $this->postSelfRegistrationToKoha($postVariables);
+		$result = $this->submitPatronRegistrationToKoha($postVariables, ['input' => $_REQUEST]);
 
 		if (!$library->ilsConsentEnabled) {
 			return $result;
@@ -5015,11 +5090,85 @@ class Koha extends AbstractIlsDriver {
 		return $result;
 	}
 
-	private function postSelfRegistrationToKoha($postVariables) : array {
+	private function buildPatronRegistrationPostVariables(array $input, string $mode): array {
+		global $library;
+		$upper = $library->useAllCapsWhenSubmittingSelfRegistration;
+		$stripPhone = $library->requireNumericPhoneNumbersWhenUpdatingProfile;
+
+		$postVariables = [];
+		$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'address', 'borrower_address', $upper, false, [], $input);
+		$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'address2', 'borrower_address2', $upper, false, [], $input);
+		$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'altaddress_address', 'borrower_B_address', $upper, false, [], $input);
+		$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'altaddress_address2', 'borrower_B_address2', $upper, false, [], $input);
+		$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'altaddress_city', 'borrower_B_city', $upper, false, [], $input);
+		$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'altaddress_country', 'borrower_B_country', $upper, false, [], $input);
+		$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'altaddress_email', 'borrower_B_email', $upper, false, [], $input);
+		$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'altaddress_phone', 'borrower_B_phone', $upper, $stripPhone, [], $input);
+		$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'altaddress_postal_code', 'borrower_B_zipcode', $upper, false, [], $input);
+		$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'altaddress_state', 'borrower_B_state', $upper, false, [], $input);
+		$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'altcontact_address', 'borrower_altcontactaddress1', $upper, false, [], $input);
+		$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'altcontact_address2', 'borrower_altcontactaddress2', $upper, false, [], $input);
+		$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'altcontact_city', 'borrower_altcontactaddress3', $upper, false, [], $input);
+		$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'altcontact_country', 'borrower_altcontactcountry', $upper, false, [], $input);
+		$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'altcontact_firstname', 'borrower_altcontactfirstname', $upper, false, [], $input);
+		$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'altcontact_phone', 'borrower_altcontactphone', $upper, $stripPhone, [], $input);
+		$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'altcontact_postal_code', 'borrower_altcontactzipcode', $upper, false, [], $input);
+		$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'altcontact_state', 'borrower_altcontactstate', $upper, false, [], $input);
+		$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'altcontact_surname', 'borrower_altcontactsurname', $upper, false, [], $input);
+		$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'city', 'borrower_city', $upper, false, [], $input);
+		$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'country', 'borrower_country', $upper, false, [], $input);
+		if (!empty($input['borrower_dateofbirth'])) {
+			$postVariables['date_of_birth'] = $input['borrower_dateofbirth'];
+		}
+		$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'email', 'borrower_email', $upper, false, [], $input);
+		$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'fax', 'borrower_fax', $upper, $stripPhone, [], $input);
+		$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'firstname', 'borrower_firstname', $upper, false, [], $input);
+		if ($this->getKohaVersion() >= 24.11) {
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'preferred_name', 'borrower_preferred_name', $upper, false, [], $input);
+		}
+		$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'gender', 'borrower_sex', $upper, false, [], $input);
+		$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'initials', 'borrower_initials', $upper, false, [], $input);
+		$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'library_id', 'borrower_branchcode', $upper, false, [], $input);
+		$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'mobile', 'borrower_mobile', $upper, false, [], $input);
+		$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'opac_notes', 'borrower_contactnote', $upper, false, [], $input);
+		$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'other_name', 'borrower_othernames', $upper, false, [], $input);
+		$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'phone', 'borrower_phone', $upper, $stripPhone, [], $input);
+		$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'postal_code', 'borrower_zipcode', $upper, false, [], $input);
+		$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'secondary_email', 'borrower_emailpro', $upper, false, [], $input);
+		$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'secondary_phone', 'borrower_phonepro', $upper, $stripPhone, [], $input);
+		$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'state', 'borrower_state', $upper, false, [], $input);
+		$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'surname', 'borrower_surname', $upper, false, [], $input);
+		$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'title', 'borrower_title', $upper, false, [], $input);
+		$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'userid', 'userid', $upper, false, [], $input);
+		$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'cardnumber', 'cardnumber', $upper, false, [], $input);
+		if (array_key_exists('category_id', $input)) {
+			$postVariables['category_id'] = $input['category_id'];
+		}
+		if ($this->getKohaVersion() >= 22.11) {
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'pronouns', 'borrower_pronouns', $upper, false, [], $input);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'middle_name', 'borrower_middle_name', $upper, false, [], $input);
+		}
+		if ($this->getKohaVersion() > 21.05) {
+			$extendedAttributes = $this->setExtendedAttributes();
+			if (!empty($extendedAttributes)) {
+				foreach ($extendedAttributes as $attribute) {
+					$postVariables = $this->setPostFieldWithDifferentName($postVariables, "borrower_attribute_" . $attribute['code'], $attribute['code'], $library->useAllCapsWhenUpdatingProfile, false, [], $input);
+				}
+			}
+		}
+		if (!empty($input['guarantorPatronId'])) {
+			$postVariables['guarantors'] = [['patron_id' => (int)$input['guarantorPatronId']]];
+		}
+		return $postVariables;
+	}
+
+	private function submitPatronRegistrationToKoha(array $postVariables, array $options = []): array {
 		$result = ['success' => false,];
 
 		$autoBarcode = $this->getKohaSystemPreference('autoMemberNum');
-		$verificationRequired = $this->getKohaSystemPreference('PatronSelfRegistrationVerifyByEmail');
+		$skipEmailVerification = !empty($options['skipEmailVerification']);
+		$requestSource = $options['input'];
+		$verificationRequired = $skipEmailVerification ? '0' : $this->getKohaSystemPreference('PatronSelfRegistrationVerifyByEmail');
 
 		$oauthToken = $this->getOAuthToken();
 		if ($oauthToken == false) {
@@ -5032,12 +5181,12 @@ class Koha extends AbstractIlsDriver {
 
 			$formattedExtendedAttributes = [];
 			foreach ($this->setExtendedAttributes() as $extendedAttribute) {
-				if (!isset($_REQUEST["borrower_attribute_" . $extendedAttribute['code']])) {
+				if (!isset($requestSource["borrower_attribute_" . $extendedAttribute['code']])) {
 					continue;
 				}
 				$formattedExtendedAttributes[] = [
 					'type' =>  $extendedAttribute['code'],
-					'value' => $_REQUEST["borrower_attribute_" . $extendedAttribute['code']]
+					'value' => $requestSource["borrower_attribute_" . $extendedAttribute['code']]
 				];
 			}
 			$postVariables['extended_attributes'] = $formattedExtendedAttributes;
@@ -5086,10 +5235,10 @@ class Koha extends AbstractIlsDriver {
 					if ($autoBarcode == "1") {
 						$result['barcode'] = $jsonResponse->cardnumber;
 						$patronId = $jsonResponse->patron_id;
-						if (isset($_REQUEST['borrower_password'])) {
-							$tmpResult = $this->resetPinInKoha($patronId, $_REQUEST['borrower_password'], $oauthToken);
+						if (isset($requestSource['borrower_password'])) {
+							$tmpResult = $this->resetPinInKoha($patronId, $requestSource['borrower_password'], $oauthToken);
 							if ($tmpResult['success']) {
-								$result['password'] = $_REQUEST['borrower_password'];
+								$result['password'] = $requestSource['borrower_password'];
 							}
 						}
 						$newUser = $this->findNewUser($jsonResponse->cardnumber, null);
@@ -5104,6 +5253,156 @@ class Koha extends AbstractIlsDriver {
 			}
 		}
 		return $result;
+	}
+
+	public function hasIlsRegistrationModeSupport(string $mode): bool {
+		return in_array($mode, [
+			AbstractIlsDriver::ILS_REG_MODE_PUBLIC_SELF,
+			AbstractIlsDriver::ILS_REG_MODE_MINIMAL_SELF,
+			AbstractIlsDriver::ILS_REG_MODE_STAFF,
+		], true);
+	}
+
+	public function getILSRegistrationFormStructure(string $mode): array {
+		if ($mode === AbstractIlsDriver::ILS_REG_MODE_STAFF) {
+			return $this->buildStaffRegistrationFieldStructure();
+		}
+		return $this->getSelfRegistrationFields();
+	}
+
+	/**
+	 * Mirrors Koha's quick-add form: visible fields = BorrowerMandatoryField ∪ PatronQuickAddFields.
+	 * BorrowerMandatoryField entries are marked required.
+	 */
+	private function buildStaffRegistrationFieldStructure(): array {
+		$fields = $this->buildSelfRegistrationFieldStructure('staffReg');
+
+		$mandatoryRaw = $this->getKohaSystemPreference('BorrowerMandatoryField');
+		$quickAddRaw = $this->getKohaSystemPreference('PatronQuickAddFields');
+
+		$mandatoryFields = array_flip(array_filter(explode('|', $mandatoryRaw)));
+		$quickAddFields = array_flip(array_filter(explode('|', $quickAddRaw)));
+		$allowedFields = array_replace($quickAddFields, $mandatoryFields);
+
+		// branchcode is always required for patron creation regardless of syspref config
+		$allowedFields['branchcode'] = true;
+		$mandatoryFields['branchcode'] = true;
+
+		if (isset($allowedFields['password'])) {
+			$allowedFields['password2'] = true;
+		}
+
+		foreach ($fields as $sectionKey => &$section) {
+			if (($section['type'] ?? '') !== 'section') {
+				continue;
+			}
+			foreach ($section['properties'] as $fieldKey => &$field) {
+				$fieldName = str_replace('borrower_', '', $fieldKey);
+				if (!array_key_exists($fieldName, $allowedFields)) {
+					unset($section['properties'][$fieldKey]);
+					continue;
+				}
+				$field['required'] = array_key_exists($fieldName, $mandatoryFields);
+			}
+			if (empty($section['properties'])) {
+				unset($fields[$sectionKey]);
+			}
+		}
+
+		// Patron category — always required for creation, not part of buildRegistrationFieldStructure
+		$categoriesData = $this->fetchPatronCategoriesData();
+		$categoryValues = [];
+		foreach ($categoriesData as $category) {
+			$categoryValues[$category['patron_category_id']] = $category['name'];
+		}
+		$defaultCategory = $this->getKohaSystemPreference('PatronSelfRegistrationDefaultCategory');
+
+		$categorySection = [
+			'categorySection' => [
+				'property' => 'categorySection',
+				'type' => 'section',
+				'label' => 'Patron Category',
+				'hideInLists' => true,
+				'expandByDefault' => true,
+				'properties' => [
+					'category_id' => [
+						'property' => 'category_id',
+						'type' => 'enum',
+						'label' => 'Patron Category',
+						'values' => $categoryValues,
+						'default' => $defaultCategory,
+						'required' => true,
+						'onchange' => 'AspenDiscovery.Admin.updateStaffRegFormForCategory()',
+					],
+				],
+			]
+		];
+
+		$guarantorSection = [
+			'guarantorSection' => [
+				'property' => 'guarantorSection',
+				'type' => 'section',
+				'label' => 'Guarantor',
+				'hideInLists' => true,
+				'expandByDefault' => true,
+				'properties' => [
+					'guarantorPatronId' => [
+						'property' => 'guarantorPatronId',
+						'type' => 'text',
+						'label' => 'Guarantor Patron ID',
+						'description' => 'Patron ID of the guarantor for this patron',
+						'required' => false,
+						'autocomplete' => false,
+					],
+				],
+			]
+		];
+
+		return array_merge($categorySection, $guarantorSection, $fields);
+	}
+
+	private function fetchPatronCategoriesData(): array {
+		$response = $this->kohaApiUserAgent->get('/api/v1/patron_categories', 'koha.getPatronCategories');
+		if (!$response || $response['code'] !== 200 || !is_array($response['content'])) {
+			return [];
+		}
+		return $response['content'];
+	}
+
+	public function getChildNeedsGuarantor(): bool {
+		return $this->getKohaSystemPreference('ChildNeedsGuarantor') === '1';
+	}
+
+	public function getPatronCategoryMetadata(): array {
+		$metadata = [];
+		foreach ($this->fetchPatronCategoriesData() as $category) {
+			$metadata[$category['patron_category_id']] = [
+				'category_type'    => $category['category_type'] ?? 'A',
+				'can_be_guarantee' => !empty($category['can_be_guarantee']),
+			];
+		}
+		return $metadata;
+	}
+
+	public function registerPatronToILS(string $mode, array $input): array {
+		if ($mode === AbstractIlsDriver::ILS_REG_MODE_STAFF) {
+			$postVariables = $this->buildPatronRegistrationPostVariables($input, $mode);
+			$options = $this->registrationOptionsFor($mode);
+			$options['input'] = $input;
+			return $this->submitPatronRegistrationToKoha($postVariables, $options);
+		}
+		if ($mode === AbstractIlsDriver::ILS_REG_MODE_PUBLIC_SELF || $mode === AbstractIlsDriver::ILS_REG_MODE_MINIMAL_SELF) {
+			return $this->selfRegister();
+		}
+		return parent::registerPatronToILS($mode, $input);
+	}
+
+	private function registrationOptionsFor(string $mode): array {
+		$options = [];
+		if ($mode === AbstractIlsDriver::ILS_REG_MODE_STAFF) {
+			$options['skipEmailVerification'] = true;
+		}
+		return $options;
 	}
 
 	function updatePin(User $patron, ?string $oldPin, string $newPin) {
@@ -6215,23 +6514,22 @@ class Koha extends AbstractIlsDriver {
 	 * @param array $validFieldsToUpdate
 	 * @return array
 	 */
-	private function setPostFieldWithDifferentName(array $postFields, string $postFieldName, string $requestFieldName, bool $convertToUpperCase = false, bool $stripNonNumericCharacters = false, $validFieldsToUpdate = []): array {
-		if (isset($_REQUEST[$requestFieldName])) {
-			if (!empty($validFieldsToUpdate) && !array_key_exists($requestFieldName, $validFieldsToUpdate)) {
-				return $postFields;
-			}
-			$field = $_REQUEST[$requestFieldName];
-			if ($stripNonNumericCharacters) {
-				$field = preg_replace('/[^0-9]/', '', $field);
-			}
-			$field = str_replace('’', "'", $field);
-			if ($convertToUpperCase) {
-				$postFields[$postFieldName] = strtoupper($field);
-			} else {
-				$postFields[$postFieldName] = $field;
-			}
-
+	private function setPostFieldWithDifferentName(array $postFields, string $postFieldName, string $requestFieldName, bool $convertToUpperCase = false, bool $stripNonNumericCharacters = false, $validFieldsToUpdate = [], ?array $inputSource = null): array {
+		$source = $inputSource ?? $_REQUEST;
+		if (!isset($source[$requestFieldName]) || (!empty($validFieldsToUpdate) && !array_key_exists($requestFieldName, $validFieldsToUpdate))) {
+			return $postFields;
 		}
+		$field = $source[$requestFieldName];
+		if ($stripNonNumericCharacters) {
+			$field = preg_replace('/[^0-9]/', '', $field);
+		}
+		$field = str_replace('’', "'", $field);
+		if ($convertToUpperCase) {
+			$postFields[$postFieldName] = strtoupper($field);
+		} else {
+			$postFields[$postFieldName] = $field;
+		}
+
 		return $postFields;
 	}
 
@@ -6242,19 +6540,20 @@ class Koha extends AbstractIlsDriver {
 	 * @param bool $stripNonNumericCharacters
 	 * @return array
 	 */
-	private function setPostField(array $postFields, string $variableName, $convertToUpperCase = false, $stripNonNumericCharacters = false): array {
-		if (isset($_REQUEST[$variableName])) {
-			$field = $_REQUEST[$variableName];
-			if ($stripNonNumericCharacters) {
-				$field = preg_replace('/[^0-9]/', '', $field);
-			}
-			$field = str_replace('’', "'", $field);
-			if ($convertToUpperCase) {
-				$postFields[$variableName] = strtoupper($field);
-			} else {
-				$postFields[$variableName] = $field;
-			}
-
+	private function setPostField(array $postFields, string $variableName, $convertToUpperCase = false, $stripNonNumericCharacters = false, ?array $inputSource = null): array {
+		$source = $inputSource ?? $_REQUEST;
+		if (!isset($source[$variableName])) {
+			return $postFields;
+		}
+		$field = $source[$variableName];
+		if ($stripNonNumericCharacters) {
+			$field = preg_replace('/[^0-9]/', '', $field);
+		}
+		$field = str_replace('’', "'", $field);
+		if ($convertToUpperCase) {
+			$postFields[$variableName] = strtoupper($field);
+		} else {
+			$postFields[$variableName] = $field;
 		}
 		return $postFields;
 	}
@@ -8556,7 +8855,7 @@ class Koha extends AbstractIlsDriver {
 		}
 		$postVariables['library_id'] = $patronHomeLocation;
 
-		$result = $this->postSelfRegistrationToKoha($postVariables);
+		$result = $this->submitPatronRegistrationToKoha($postVariables, ['input' => $_REQUEST]);
 
 		return $result;
 	}

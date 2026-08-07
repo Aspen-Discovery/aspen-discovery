@@ -680,7 +680,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		String itemIdentifier = itemInfo.getItemIdentifier();
 		String shelfLocation = itemInfo.getShelfLocation();
 		String collectionCode = itemInfo.getCollection();
-		for (Scope scope: indexer.getScopes()){
+		for (Scope scope: indexer.getScopes().values()){
 			Scope.InclusionResult result = scope.isItemPartOfScope(itemIdentifier, profileType, location, "", null, audiences, audiencesAsString, format, shelfLocation, collectionCode, true, true, false, record, originalUrl, groupedWork);
 			if (result.isIncluded){
 				ScopingInfo scopingInfo = itemInfo.addScope(scope);
@@ -920,8 +920,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		itemInfo.setITypeCode(MarcUtil.getItemSubfieldData(settings.getITypeSubfield(), itemField, indexer.getLogEntry(), logger));
 		itemInfo.setIType(translateValue("itype", MarcUtil.getItemSubfieldData(settings.getITypeSubfield(), itemField, indexer.getLogEntry(), logger), recordInfo.getRecordIdentifier(), true));
 
-		itemInfo.setVolumeField(MarcUtil.getItemSubfieldData(settings.getVolume(), itemField, indexer.getLogEntry(), logger));
-
 		double itemPopularity = getItemPopularity(itemField);
 		groupedWork.addPopularity(itemPopularity);
 
@@ -1023,7 +1021,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		if (format == null){
 			format = itemInfo.getRecordInfo().getPrimaryFormat();
 		}
-		for (Scope curScope : indexer.getScopes()){
+		for (Scope curScope : indexer.getScopes().values()){
 			Scope.InclusionResult result = curScope.isItemPartOfScope(itemInfo.getItemIdentifier(), profileType, itemLocation, "", null, groupedWork.getTargetAudiences(), groupedWork.getTargetAudiencesAsString(), format, "", "", false, false, false, record, "", groupedWork);
 			if (result.isIncluded){
 				ScopingInfo scopingInfo = itemInfo.addScope(curScope);
@@ -1052,7 +1050,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		if (format == null){
 			format = itemInfo.getRecordInfo().getPrimaryFormat();
 		}
-		for (Scope curScope : indexer.getScopes()){
+		for (Scope curScope : indexer.getScopes().values()){
 			Scope.InclusionResult result = curScope.isItemPartOfScope(itemInfo.getItemIdentifier(), profileType, itemLocation, "", null, groupedWork.getTargetAudiences(), groupedWork.getTargetAudiencesAsString(), format, shelfLocation, collectionCode, false, false, true, record, originalUrl, groupedWork);
 			if (result.isIncluded){
 				ScopingInfo scopingInfo = itemInfo.addScope(curScope);
@@ -1077,7 +1075,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	}
 
 	private void loadScopeInfoForVirtualChildItem(AbstractGroupedWorkSolr groupedWork, ItemInfo itemInfo, org.marc4j.marc.Record record) {
-		for (Scope curScope : indexer.getScopes()){
+		for (Scope curScope : indexer.getScopes().values()){
 			String format = itemInfo.getFormat();
 			if (format == null){
 				format = itemInfo.getRecordInfo().getPrimaryFormat();
@@ -1133,7 +1131,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		String originalUrl = itemInfo.geteContentUrl();
 		String primaryFormat = recordInfo.getPrimaryFormat();
 		String itemIdentifier = itemInfo.getItemIdentifier();
-		for (Scope curScope : indexer.getScopes()) {
+		for (Scope curScope : indexer.getScopes().values()) {
 			Scope.InclusionResult result = curScope.isItemPartOfScope(itemIdentifier, profileType, itemLocation, itemSublocation, itemInfo.getITypeCode(), audiences, audiencesAsString, primaryFormat, shelfLocation, collectionCode, isHoldableUnscoped, false, false, record, originalUrl, groupedWork);
 			if (result.isIncluded){
 				ScopingInfo scopingInfo = itemInfo.addScope(curScope);

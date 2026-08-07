@@ -85,7 +85,7 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 
 	private void loadScopeInfoForEContentItem(AbstractGroupedWorkSolr groupedWork, ItemInfo itemInfo, org.marc4j.marc.Record record, boolean isAdult, boolean isTeen, boolean isKids) {
 		String originalUrl = itemInfo.geteContentUrl();
-		for (Scope curScope : indexer.getScopes()){
+		for (Scope curScope : indexer.getScopes().values()){
 			SideLoadScope sideLoadScope = curScope.getSideLoadScope(sideLoadId);
 			if (sideLoadScope != null) {
 				boolean itemPartOfScope = sideLoadScope.isItemPartOfScope(record, isAdult, isTeen, isKids);
