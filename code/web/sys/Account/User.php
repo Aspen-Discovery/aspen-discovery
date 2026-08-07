@@ -5889,15 +5889,38 @@ class User extends DataObject {
 			}else{
 				require_once ROOT_DIR . '/sys/TwoFactorAuthSetting.php';
 				$this->_twoFactorAuthenticationSetting = new TwoFactorAuthSetting();
-				//If the user has a patron type, we will use that to determine the two factor authentication settings.
-				//Otherwise, we can use the account profile.
-				$patronType = $this->getPTypeObj();
-				if (!empty($patronType)) {
-					$this->_twoFactorAuthenticationSetting->id = $patronType->twoFactorAuthSettingId;
-				}else{
-					$this->_twoFactorAuthenticationSetting->accountProfileId = $this->getAccountProfile()->id;
+
+				// First we should check if they are required by role and have a role that requires 2FA. If so, we will return that setting.
+				$permissionRoles = $this->getRoles();
+				if (!empty($permissionRoles)) {
+					foreach ($permissionRoles as $role) {
+						if (empty($role->twoFactorAuthSettingId)) {
+							continue;
+						}
+						$roleSetting = new TwoFactorAuthSetting();
+						$roleSetting->id = $role->twoFactorAuthSettingId;
+						if ($roleSetting->find(true) && $roleSetting->assignToUsersBy == "role") {
+							$this->_twoFactorAuthenticationSetting = $roleSetting;
+							return $this->_twoFactorAuthenticationSetting;
+						}
+					}
 				}
-				if (!$this->_twoFactorAuthenticationSetting->find(true)) {
+
+				// As a backup, we will check if the user is required to use 2FA based on their patron type or account profile.
+				$patronType = $this->getPTypeObj();
+				$fallbackSetting = new TwoFactorAuthSetting();
+				if (!empty($patronType) && !empty($patronType->twoFactorAuthSettingId)) {
+					$fallbackSetting->id = $patronType->twoFactorAuthSettingId;
+				} else {
+					$accountProfile = $this->getAccountProfile();
+					if (!empty($accountProfile)) {
+						$fallbackSetting->accountProfileId = $accountProfile->id;
+					}
+				}
+
+				if ($fallbackSetting->find(true)) {
+					$this->_twoFactorAuthenticationSetting = $fallbackSetting;
+				} else {
 					$this->_twoFactorAuthenticationSetting = null;
 				}
 			}

@@ -6,6 +6,7 @@ class Role extends DataObject {
 	public $roleId;
 	public $name;
 	public $description;
+	public $twoFactorAuthSettingId;
 	protected $_permissions;
 	protected $_assignedFromPType;
 
@@ -14,7 +15,10 @@ class Role extends DataObject {
 	}
 
 	public function getNumericColumnNames(): array {
-		return ['roleId'];
+		return [
+			'roleId',
+			'twoFactorAuthSettingId'
+		];
 	}
 
 	static $_objectStructure = [];
@@ -316,5 +320,15 @@ class Role extends DataObject {
 		} else {
 			return $this->_assignedFromPType;
 		}
+	}
+
+	static function getRoleList(): array {
+		$role = new Role();
+		$role->find();
+		$roleList = [];
+		while ($role->fetch()) {
+			$roleList[$role->roleId] = $role->name;
+		}
+		return $roleList;
 	}
 }
