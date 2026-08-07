@@ -178,30 +178,75 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher {
 		$facetConfig = $this->getFacetConfig();
 		if (!empty($facetConfig)) {
 			$facetSet['limit'] = $this->facetLimit;
+			$jsonFacets = [];
 			foreach ($facetConfig as $facetField => $facetInfo) {
 				if ($facetField == 'start_date') {
 					//special processing for start_date
-					$facetName = $facetInfo->facetName;
-					$facetSet['field'][$facetField] = $facetName;
-					$this->facetOptions["facet.range"] = $facetName;
-					$this->facetOptions["f.$facetName.facet.range.start"] = "NOW/DAY";
-					$this->facetOptions["f.$facetName.facet.range.end"] = "NOW/DAY+180DAYS";
-					$this->facetOptions["f.$facetName.facet.range.gap"] = "+1DAY";
+					$facetName = $facetInfo->facetName ?? 'start_date';
+
+					$jsonFacets[$facetName] = [
+						'type'  => 'range',
+						'field' => $facetField,
+						'start' => 'NOW/DAY',
+						'end'   => 'NOW/DAY+180DAYS',
+						'gap'   => '+1DAY',
+					];
+
+					// Apply multi-select exclusions to range facet if configured
+					if ($facetInfo instanceof EventsFacet && $facetInfo->multiSelect) {
+						$facetKey = empty($facetInfo->id) ? $facetName : $facetInfo->id;
+						$jsonFacets[$facetName]['domain'] = [
+							'excludeTags' => "$facetKey"
+						];
+					}
 				} else {
 					if ($facetInfo instanceof EventsFacet) {
 						$facetName = $facetInfo->facetName;
 						$isMultiSelect = $facetInfo->multiSelect;
+
+						$facetConfigArray = [
+							'type'     => 'terms',
+							'field'    => $facetField,
+							'limit'    => 30,
+							'mincount' => 1,
+						];
+
+						// Add domain tag exclusions for multi-select faceting
 						if ($isMultiSelect) {
 							$facetKey = empty($facetInfo->id) ? $facetName : $facetInfo->id;
-							$facetSet['field'][$facetField] = "{!ex=$facetKey}" . $facetField;
-						}else{
-							$facetSet['field'][$facetField] = $facetName;
+							$facetConfigArray['domain'] = [
+								'excludeTags' => (string)$facetKey
+							];
 						}
+
+						// Include prefix filtering if defined on the facet object
+						if (!empty($facetInfo->prefix)) {
+							$facetConfigArray['prefix'] = $facetInfo->prefix;
+						}
+
+						$jsonFacets[$facetName] = $facetConfigArray;
+
 					} else {
-						$facetSet['field'][$facetField] = $facetInfo;
+						// Fallback for simple scalar facet configuration values
+						$facetName = is_string($facetInfo) ? $facetInfo : $facetField;
+						$jsonFacets[$facetName] = [
+							'type'     => 'terms',
+							'field'    => $facetField,
+							'limit'    => 30,
+							'mincount' => 1,
+						];
 					}
 				}
 			}
+
+			if (!empty($this->facetSearchTerm) && !empty($this->facetSearchField)) {
+				if (array_key_exists($this->facetSearchField, $jsonFacets)) {
+					$jsonFacets[$this->facetSearchField]['contains'] = $this->facetSearchTerm;
+					$jsonFacets[$this->facetSearchField]['contains.ignoreCase'] = true;
+				}
+			}
+
+			$this->facetOptions["json.facet"] = json_encode($jsonFacets);
 			if ($this->facetOffset != null) {
 				$facetSet['offset'] = $this->facetOffset;
 			}
@@ -211,11 +256,6 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher {
 			if ($this->facetSort != null) {
 				$facetSet['sort'] = $this->facetSort;
 			}
-		}
-
-		if (!empty($this->facetSearchTerm) && !empty($this->facetSearchField)) {
-			$this->facetOptions["f.$this->facetSearchField.facet.contains"] = $this->facetSearchTerm;
-			$this->facetOptions["f.$this->facetSearchField.facet.contains.ignoreCase"] = 'true';
 		}
 
 		if (!empty($this->facetOptions)) {
