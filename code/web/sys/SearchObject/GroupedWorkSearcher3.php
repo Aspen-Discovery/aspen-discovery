@@ -287,7 +287,11 @@ class SearchObject_GroupedWorkSearcher3 extends SearchObject_AbstractGroupedWork
 				}
 			}
 
-			$filterQuery[] = '{!parent which="recordtype:grouped_work" tag=child_filter}(availability_toggle:' . $availabilityToggleValue . ' AND ' . implode(' AND ', $childDocFilters) . ')';
+			if (!empty($childDocFilters)) {
+				$filterQuery[] = '{!parent which="recordtype:grouped_work" tag=child_filter}(availability_toggle:' . $availabilityToggleValue . ' AND ' . implode(' AND ', $childDocFilters) . ')';
+			}else{
+				$filterQuery[] = '{!parent which="recordtype:grouped_work" tag=child_filter}(availability_toggle:' . $availabilityToggleValue . ')';
+			}
 		}else{
 			$filterQuery[] = '{!parent which="recordtype:grouped_work" tag=child_filter}(' . implode(' AND ', $childDocFilters) . ')';
 		}
