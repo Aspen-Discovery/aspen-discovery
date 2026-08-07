@@ -303,7 +303,7 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher {
 		$facetConfig = $this->getFacetConfig();
 		foreach ($allFacets as $field => $data) {
 			// Skip filtered fields and empty arrays:
-			if (!in_array($field, $validFields)) {
+			if (!in_array($field, $validFields) || !array_key_exists('buckets', $data)) {
 				continue;
 			}
 

@@ -660,7 +660,7 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 				$field = 'local_time_since_added_' . $solrScope;
 			}
 			$validFields = $this->getIndexEngine()->loadValidFields();
-			if (!in_array($field, $validFields)) {
+			if (!in_array($field, $validFields) || !array_key_exists('buckets', $data)) {
 				//Check to see if we need to trim off the scope
 				$tmpFieldName = substr($field, 0, strrpos($field, '_'));
 				if (in_array($tmpFieldName, $validFields)) {
@@ -775,7 +775,7 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 		$facetConfig = $this->getFacetConfig();
 		foreach ($allFacets as $field => $data) {
 			// Skip filtered fields and empty arrays:
-			if (!in_array($field, $validFields)) {
+			if (!in_array($field, $validFields) || !array_key_exists('buckets', $data)) {
 				continue;
 			}
 			if (!array_key_exists('buckets', $data)) {

@@ -126,6 +126,8 @@ class SearchObject_GroupedWorkSearcher3 extends SearchObject_AbstractGroupedWork
 
 		// Define Filter Query
 		$filterQuery = $this->hiddenFilters;
+		//restrict to our grouped works
+		$filterQuery[] = 'recordtype:grouped_work';
 		//Remove any empty filters if we get them
 		//(typically happens when a subdomain has a function disabled that is enabled in the main scope)
 		//Also fix dynamic field names
@@ -163,16 +165,32 @@ class SearchObject_GroupedWorkSearcher3 extends SearchObject_AbstractGroupedWork
 		$selectedFormatCategoryValues = [];
 		$facetConfig = $this->getFacetConfig();
 		$availabilityToggleId = null;
+		$childDocFields = [
+			'available_at',
+			'availability_toggle',
+			'callnumber_sort',
+			'collection',
+			'detailed_location',
+			'econtent_source',
+			'format',
+			'format_category',
+			'local_callnumber',
+			'local_days_since_added',
+			'local_time_since_added',
+			'lib_boost',
+			'owning_library',
+			'owning_location',
+			'shelf_location'
+		];
+		$childDocFilters = [];
 		foreach ($this->filterList as $field => $filter) {
 			$multiSelect = false;
-			$fieldPrefix = '';
 			if (isset($facetConfig[$field])) {
 				/** @var FacetSetting $facetInfo */
 				$facetInfo = $facetConfig[$field];
 				$facetName = $facetInfo->getFacetName(3);
 				$facetKey = empty($facetInfo->id) ? $facetName : $facetInfo->id;
-				$multiSelect = $facetInfo->multiSelect || $facetName == 'availability_toggle';
-				$fieldPrefix = "{!parent which='recordtype:grouped_work' tag=$facetKey}";
+				$multiSelect = $facetInfo->multiSelect;
 			} else {
 				//This is either a field we need to convert from the old schema to new schema or valid field from advanced search we aren't seeing here
 				$tmpFieldName = substr($field, 0, strrpos($field, '_'));
@@ -181,8 +199,7 @@ class SearchObject_GroupedWorkSearcher3 extends SearchObject_AbstractGroupedWork
 					$facetName = $facetInfo->getFacetName(3);
 					$field = $tmpFieldName;
 					$facetKey = empty($facetInfo->id) ? $facetName : $facetInfo->id;
-					$multiSelect = $facetInfo->multiSelect || $facetName == 'availability_toggle';
-					$fieldPrefix = "{!parent which='recordtype:grouped_work' tag=$facetKey}";
+					$multiSelect = $facetInfo->multiSelect;
 				} else {
 					if (in_array($field, $validFields)) {
 						$facetName = $field;
@@ -213,7 +230,12 @@ class SearchObject_GroupedWorkSearcher3 extends SearchObject_AbstractGroupedWork
 					if (!empty($value)) {
 						//The value is already specified as field:value
 						if (is_numeric($field)) {
-							$filterQuery[] = $value;
+							[$facetName, $fieldValue] = explode(':', $value);
+							if (in_array($field, $childDocFields)) {
+								$childDocFilters[] = "$facetName:$fieldValue";;
+							}else {
+								$filterQuery[] = "$facetName:$fieldValue";;
+							}
 						} else {
 							$okToAdd = true;
 							$value = "\"$value\"";
@@ -227,12 +249,20 @@ class SearchObject_GroupedWorkSearcher3 extends SearchObject_AbstractGroupedWork
 						}
 						$fieldValue .= $value;
 					} else {
-						$filterQuery[] = "$fieldPrefix$field:$value";
+						if (in_array($facetName, $childDocFields)) {
+							$childDocFilters[] = "$facetName:$value";
+						}else {
+							$filterQuery[] = "$facetName:$value";
+						}
 					}
 				}
 			}
 			if ($multiSelect) {
-				$filterQuery[] = "$fieldPrefix$field:($fieldValue)";
+				if (in_array($facetName, $childDocFields)) {
+					$childDocFilters[] = "$facetName:($fieldValue)";
+				}else{
+					$filterQuery[] = "$facetName:($fieldValue)";
+				}
 			}
 		}
 
@@ -257,7 +287,9 @@ class SearchObject_GroupedWorkSearcher3 extends SearchObject_AbstractGroupedWork
 				}
 			}
 
-			$filterQuery[] = '{!parent which="recordtype:grouped_work" tag=availability_toggle_filter}(availability_toggle:' . $availabilityToggleValue . ')';
+			$filterQuery[] = '{!parent which="recordtype:grouped_work" tag=child_filter}(availability_toggle:' . $availabilityToggleValue . ' AND ' . implode(' AND ', $childDocFilters) . ')';
+		}else{
+			$filterQuery[] = '{!parent which="recordtype:grouped_work" tag=child_filter}(' . implode(' AND ', $childDocFilters) . ')';
 		}
 
 		$facetSet = [];
@@ -293,17 +325,6 @@ class SearchObject_GroupedWorkSearcher3 extends SearchObject_AbstractGroupedWork
 					}
 					$isMultiSelect = $facetInfo->multiSelect;
 					$facetName = $facetInfo->getFacetName(3);
-					if ($facetName == 'availability_toggle') {
-						$isMultiSelect = false;
-					} elseif ($facetName == 'format_category') {
-						$isMultiSelect = false;
-					}
-					if ($isMultiSelect) {
-						$facetKey = empty($facetInfo->id) ? $facetName : $facetInfo->id;
-						//$facetSet['field'][$facetField] = "{!ex=$facetKey}" . $facetField;
-					} else {
-						//$facetSet['field'][$facetField] = $facetField;
-					}
 
 					$minCount = 1;
 					$limit = $this->facetLimit;
@@ -325,6 +346,9 @@ class SearchObject_GroupedWorkSearcher3 extends SearchObject_AbstractGroupedWork
 					];
 					if ($isScoped) {
 						$jsonInfoForField['domain'] = $domainInfo;
+						$jsonInfoForField['facet'] = [
+							'parent_count' => 'unique(_root_)'
+						];
 					}
 					$jsonFacets[$facetName] = $jsonInfoForField;
 				} else {
@@ -417,6 +441,11 @@ class SearchObject_GroupedWorkSearcher3 extends SearchObject_AbstractGroupedWork
 
 			$validFilters = [];
 			foreach ($filterQuery as $id => $filterTerm) {
+				//Allow the parent query through since we build it above
+				if (str_starts_with($filterTerm, '{!parent')) {
+					$validFilters[$id] = $filterTerm;
+					continue;
+				}
 				[
 					$fieldName,
 					$term,
@@ -608,21 +637,6 @@ class SearchObject_GroupedWorkSearcher3 extends SearchObject_AbstractGroupedWork
 			$filter = $this->getFacetConfig();
 		}
 
-		$selectedAvailableAtValues = [];
-		$selectedFormatValues = [];
-		$selectedFormatCategoryValues = [];
-		foreach ($this->filterList as $field => $selectedValues) {
-			foreach ($selectedValues as $value) {
-				if ($field == 'available_at') {
-					$selectedAvailableAtValues[] = $value;
-				} elseif ($field == 'format_category') {
-					$selectedFormatCategoryValues[] = $value;
-				} elseif ($field == 'format') {
-					$selectedFormatValues[] = $value;
-				}
-			}
-		}
-
 		// Start building the facet list:
 		$list = [];
 
@@ -695,7 +709,7 @@ class SearchObject_GroupedWorkSearcher3 extends SearchObject_AbstractGroupedWork
 		$facetConfig = $this->getFacetConfig();
 		foreach ($allFacets as $field => $data) {
 			// Skip filtered fields and empty arrays:
-			if (!in_array($field, $validFields)) {
+			if (!in_array($field, $validFields) || !array_key_exists('buckets', $data)) {
 				continue;
 			}
 			$data = $data['buckets'];
@@ -745,7 +759,7 @@ class SearchObject_GroupedWorkSearcher3 extends SearchObject_AbstractGroupedWork
 					'isMetadata' => true,
 					'escape' => true,
 				]) : htmlentities($facetValue);
-				$currentSettings['count'] = $facet['count'];
+				$currentSettings['count'] = $facet['parent_count'] ?? $facet['count'];
 				$currentSettings['isApplied'] = false;
 				$currentSettings['url'] = $this->renderLinkWithFilter($field, $facetValue);
 
@@ -759,17 +773,17 @@ class SearchObject_GroupedWorkSearcher3 extends SearchObject_AbstractGroupedWork
 					}
 				}
 
-				if ($field == 'availability_toggle') {
-					$currentSettings['countIsApproximate'] = (count($selectedAvailableAtValues) > 0 || count($selectedFormatCategoryValues) > 0 || count($selectedFormatValues) > 0) && $facetValue != 'global';
-				} elseif ($field == 'available_at') {
-					$currentSettings['countIsApproximate'] = $this->selectedAvailabilityToggleValue != 'global' || count($selectedFormatCategoryValues) > 0 || count($selectedFormatValues) > 0;
-				} elseif ($field == 'format_category') {
-					$currentSettings['countIsApproximate'] = $this->selectedAvailabilityToggleValue != 'global' || count($selectedAvailableAtValues) > 0 || count($selectedFormatValues) > 0;
-				} elseif ($field == 'format') {
-					$currentSettings['countIsApproximate'] = $this->selectedAvailabilityToggleValue != 'global' || count($selectedAvailableAtValues) > 0 || count($selectedFormatCategoryValues) > 0;
-				} else {
-					$currentSettings['countIsApproximate'] = false;
-				}
+//				if ($field == 'availability_toggle') {
+//					$currentSettings['countIsApproximate'] = (count($selectedAvailableAtValues) > 0 || count($selectedFormatCategoryValues) > 0 || count($selectedFormatValues) > 0) && $facetValue != 'global';
+//				} elseif ($field == 'available_at') {
+//					$currentSettings['countIsApproximate'] = $this->selectedAvailabilityToggleValue != 'global' || count($selectedFormatCategoryValues) > 0 || count($selectedFormatValues) > 0;
+//				} elseif ($field == 'format_category') {
+//					$currentSettings['countIsApproximate'] = $this->selectedAvailabilityToggleValue != 'global' || count($selectedAvailableAtValues) > 0 || count($selectedFormatValues) > 0;
+//				} elseif ($field == 'format') {
+//					$currentSettings['countIsApproximate'] = $this->selectedAvailabilityToggleValue != 'global' || count($selectedAvailableAtValues) > 0 || count($selectedFormatCategoryValues) > 0;
+//				} else {
+//					$currentSettings['countIsApproximate'] = false;
+//				}
 
 				//Set up the key to allow sorting alphabetically if needed.
 				$valueKey = $facetValue;

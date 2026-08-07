@@ -598,7 +598,7 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher {
 		$facetConfig = $this->getFacetConfig();
 		foreach ($allFacets as $field => $data) {
 			// Skip filtered fields and empty arrays:
-			if (!in_array($field, $validFields) || $data['count'] == 0) {
+			if (!in_array($field, $validFields) || !array_key_exists('buckets', $data)) {
 				continue;
 			}
 

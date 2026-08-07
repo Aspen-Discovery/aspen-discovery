@@ -2139,7 +2139,7 @@ abstract class Solr {
 				}
 				$fields = [];
 				foreach ($schemaData['fields'] as $field) {
-					if (($field['stored'] ?? false) || ($field['indexed'] ?? false) || $field['docValues']) {
+					if (($field['stored'] ?? false) || ($field['indexed'] ?? false) || ($field['docValues'] ?? false)) {
 						$fields[] = $field['name'];
 					}
 				}
