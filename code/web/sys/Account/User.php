@@ -5907,6 +5907,7 @@ class User extends DataObject {
 				}
 
 				// As a backup, we will check if the user is required to use 2FA based on their patron type or account profile.
+				$patronType = $this->getPTypeObj();
 				$fallbackSetting = new TwoFactorAuthSetting();
 				if (!empty($patronType) && !empty($patronType->twoFactorAuthSettingId)) {
 					$fallbackSetting->id = $patronType->twoFactorAuthSettingId;
