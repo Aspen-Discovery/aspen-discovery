@@ -1949,11 +1949,16 @@ public class GroupedWorkIndexer implements AutoCloseable {
 			addSeriesMemberStmt.setString(2, groupedWork.getId());
 			if (!volume.isEmpty()) {
 				addSeriesMemberStmt.setString(3, AspenStringUtils.trimTo(100, volume)); // Add volume
-				long seriesWeight = Long.parseLong(volume);
-				if (seriesWeight > Integer.MAX_VALUE) {
+				long seriesWeight = 0;
+				if (AspenStringUtils.isNumeric(volume)) {
+					seriesWeight = Long.parseLong(volume);
+					if (seriesWeight > Integer.MAX_VALUE) {
+						seriesWeight = Integer.MAX_VALUE;
+					}
+				}else{
 					seriesWeight = Integer.MAX_VALUE;
 				}
-				addSeriesMemberStmt.setLong(8, seriesWeight); // Add volume as weight if it's an integer - 0 otherwise
+				addSeriesMemberStmt.setLong(8, seriesWeight); // Add volume as weight if it's an integer - max int otherwise
 			} else {
 				addSeriesMemberStmt.setString(3, "");
 				addSeriesMemberStmt.setLong(8, 0);
@@ -1979,7 +1984,7 @@ public class GroupedWorkIndexer implements AutoCloseable {
 				setSeriesDateUpdated.executeUpdate();
 			}
 		} catch (Exception e) {
-			logEntry.incErrors("Error Adding series member with volume" + seriesInfo.getSeriesName(), e);
+			logEntry.incErrors("Error Adding series member with volume " + seriesInfo.getSeriesName() + " grouped work " + groupedWork.getId(), e);
 		}
 	}
 
