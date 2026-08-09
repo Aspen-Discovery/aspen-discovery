@@ -683,8 +683,10 @@ public class RecordInfo {
 			recordDoc.addField("availability_toggle", availabilityToggleValuesForScope.getValues());
 			if (curScope.getLocationsToExcludeAvailabilityForPattern() != null) {
 				//Filter available At by locationsToExcludeAvailabilityFor
-				ArrayList<String> availableAtFiltered = filterCollection(recordDoc.getField("available_at").getValues(), curScope.getLocationsToExcludeAvailabilityForPattern());
-				recordDoc.setField("available_at", availableAtFiltered);
+				if (recordDoc.getField("available_at") != null) {
+					ArrayList<String> availableAtFiltered = filterCollection(recordDoc.getField("available_at").getValues(), curScope.getLocationsToExcludeAvailabilityForPattern());
+					recordDoc.setField("available_at", availableAtFiltered);
+				}
 			}
 			if (daysSinceAddedForScope != null) {
 				recordDoc.addField("local_days_since_added", daysSinceAddedForScope);
