@@ -266,6 +266,9 @@ class SearchObject_GroupedWorkSearcher3 extends SearchObject_AbstractGroupedWork
 			}
 		}
 
+		//Filter by scope
+		$childDocFilters[] = "scope:$solrScope";
+
 		//Check to see if we should apply a default filter
 		if ($this->selectedAvailabilityToggleValue == null && !$this->disableDefaultAvailabilityToggle) {
 			global $library;
@@ -287,11 +290,7 @@ class SearchObject_GroupedWorkSearcher3 extends SearchObject_AbstractGroupedWork
 				}
 			}
 
-			if (!empty($childDocFilters)) {
-				$filterQuery[] = '{!parent which="recordtype:grouped_work" tag=child_filter}(availability_toggle:' . $availabilityToggleValue . ' AND ' . implode(' AND ', $childDocFilters) . ')';
-			}else{
-				$filterQuery[] = '{!parent which="recordtype:grouped_work" tag=child_filter}(availability_toggle:' . $availabilityToggleValue . ')';
-			}
+			$filterQuery[] = '{!parent which="recordtype:grouped_work" tag=child_filter}(availability_toggle:' . $availabilityToggleValue . ' AND ' . implode(' AND ', $childDocFilters) . ')';
 		}else{
 			$filterQuery[] = '{!parent which="recordtype:grouped_work" tag=child_filter}(' . implode(' AND ', $childDocFilters) . ')';
 		}
