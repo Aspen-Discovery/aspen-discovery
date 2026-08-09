@@ -315,7 +315,7 @@ class SearchObject_GroupedWorkSearcher3 extends SearchObject_AbstractGroupedWork
 			$domainInfo = [
 				'blockChildren' => 'recordtype:grouped_work',
 				'filter' => 'scope:' . $solrScope,
-				'excludeTags' => 'scope_filter'
+				'excludeTags' => 'child_filter'
 			];
 
 			$facetSet['limit'] = $this->facetLimit;
