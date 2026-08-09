@@ -660,7 +660,7 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 				$field = 'local_time_since_added_' . $solrScope;
 			}
 			$validFields = $this->getIndexEngine()->loadValidFields();
-			if (!in_array($field, $validFields) || !array_key_exists('buckets', $data)) {
+			if (!in_array($field, $validFields)) {
 				//Check to see if we need to trim off the scope
 				$tmpFieldName = substr($field, 0, strrpos($field, '_'));
 				if (in_array($tmpFieldName, $validFields)) {

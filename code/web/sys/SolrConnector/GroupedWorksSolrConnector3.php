@@ -535,11 +535,12 @@ class GroupedWorksSolrConnector3 extends Solr
 	 */
 	public function getScopingFilters($searchLibrary, $searchLocation)
 	{
-		global $solrScope;
+		//global $solrScope;
 
 		$filter = [];
 
-		$filter[] = '{!parent which="recordtype:grouped_work" tag=scope_filter}(scope:' . $solrScope . ')';
+		//This is handled as part of the regular query
+		//$filter[] = '{!parent which="recordtype:grouped_work" tag=scope_filter}(scope:' . $solrScope . ')';
 
 		global $activeLanguage;
 		if ($activeLanguage != null && $activeLanguage->code != 'en') {
