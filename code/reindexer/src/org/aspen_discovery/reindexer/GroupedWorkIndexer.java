@@ -1979,7 +1979,7 @@ public class GroupedWorkIndexer implements AutoCloseable {
 				setSeriesDateUpdated.executeUpdate();
 			}
 		} catch (Exception e) {
-			logEntry.incErrors("Adding series member " + seriesInfo.getSeriesName(), e);
+			logEntry.incErrors("Error Adding series member with volume" + seriesInfo.getSeriesName(), e);
 		}
 	}
 
