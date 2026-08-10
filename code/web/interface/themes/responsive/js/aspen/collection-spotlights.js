@@ -14,37 +14,24 @@ AspenDiscovery.CollectionSpotlights = (function(){
 		},
 		loadCarousel: function (spotlightListId, titlesUrl){
 			$.getJSON(titlesUrl, function (data) {
-				if (data.success) {
-					var html = '<ul>';
-					$.each(data.titles, function() {
-						html += '<li class="carouselTitleWrapper">' + this.formattedTitle + '</li>';
-					});
-					html += '</ul>';
-
-					var carouselElement = $('#collectionSpotlightCarousel' + spotlightListId);
-					carouselElement.html(html);
-					var jCarousel = carouselElement.jCarousel();
-					jCarousel.jcarousel('reload');
-				} else {
-					AspenDiscovery.showMessage("Error", data.message);
-				}
+				AspenDiscovery.CollectionSpotlights.loadCarouselFromData(spotlightListId, data);
 			}).fail(AspenDiscovery.ajaxFail);
 		},
-		// loadCarouselFromData: function (spotlightListId, data){
-		// 	if (data.success) {
-		// 		var html = '<ul>';
-		// 		$.each(data.titles, function() {
-		// 			html += '<li class="carouselTitleWrapper">' + this.formattedTitle + '</li>';
-		// 		});
-		// 		html += '</ul>';
+		loadCarouselFromData: function (spotlightListId, data){
+			if (data.success) {
+				var html = '<ul>';
+				$.each(data.titles, function() {
+					html += '<li class="carouselTitleWrapper">' + this.formattedTitle + '</li>';
+				});
+				html += '</ul>';
 
-		// 		var carouselElement = $('#collectionSpotlightCarousel' + spotlightListId);
-		// 		carouselElement.html(html);
-		// 		carouselElement.jcarousel().jcarousel('reload');
-		// 	} else {
-		// 		AspenDiscovery.showMessage("Error", data.message);
-		// 	}
-		// },
+				var carouselElement = $('#collectionSpotlightCarousel' + spotlightListId);
+				carouselElement.html(html);
+				carouselElement.jcarousel().jcarousel('reload');
+			} else {
+				AspenDiscovery.showMessage("Error", data.message);
+			}
+		},
 		updateSpotlightFields: function () {
 			var collectionSpotlightId = $('#collectionSpotlightId').val();
 			if (collectionSpotlightId > '0') {
