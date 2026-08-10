@@ -342,16 +342,24 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher {
 		$facetConfig = $this->getFacetConfig();
 		if (!empty($facetConfig)) {
 			$facetSet['limit'] = $this->facetLimit;
+			$jsonFacets = [];
 			foreach ($facetConfig as $facetField => $facetInfo) {
-/*				$facetSet['field'][$facetField] = $facetInfo;*/
 				$facetName = $facetInfo->facetName;
 				$isMultiSelect = $facetInfo->multiSelect;
+				$facetConfigArray = [
+					'type'     => 'terms',
+					'field'    => $facetField,
+					'limit'    => 30,
+					'mincount' => 1,
+				];
+
 				if ($isMultiSelect) {
 					$facetKey = empty($facetInfo->id) ? $facetName : $facetInfo->id;
-					$facetSet['field'][$facetField] = "{!ex=$facetKey}" . $facetField;
-				}else{
-					$facetSet['field'][$facetField] = $facetName;
+					$facetConfigArray['domain'] = [
+						'excludeTags' => (string)$facetKey
+					];
 				}
+				$jsonFacets[$facetName] = $facetConfigArray;
 			}
 			if ($this->facetOffset != null) {
 				$facetSet['offset'] = $this->facetOffset;
@@ -362,11 +370,15 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher {
 			if ($this->facetSort != null) {
 				$facetSet['sort'] = $this->facetSort;
 			}
-		}
-
-		if (!empty($this->facetSearchTerm) && !empty($this->facetSearchField)) {
-			$this->facetOptions["f.{$this->facetSearchField}.facet.contains"] = $this->facetSearchTerm;
-			$this->facetOptions["f.{$this->facetSearchField}.facet.contains.ignoreCase"] = 'true';
+			if (!empty($this->facetSearchTerm) && !empty($this->facetSearchField)) {
+				if (array_key_exists($this->facetSearchField, $jsonFacets)) {
+					$jsonFacets[$this->facetSearchField]['type'] = 'query';
+					unset($jsonFacets[$this->facetSearchField]['method']);
+					$jsonFacets[$this->facetSearchField]['q'] = "*$this->facetSearchTerm*";
+					//$jsonFacets[$this->facetSearchField]['contains.ignoreCase'] = true;
+				}
+			}
+			$this->facetOptions["json.facet"] = json_encode($jsonFacets);
 		}
 
 		if (!empty($this->facetOptions)) {
@@ -564,7 +576,7 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher {
 	 *                                  set to null to get all configured values.
 	 * @return  array   Facets data arrays
 	 */
-	public function getFacetList($filter = null) {
+	public function getFacetList($filter = null) : array {
 		// If there is no filter, we'll use all facets as the filter:
 		if (is_null($filter)) {
 			$filter = $this->getFacetConfig();
@@ -574,25 +586,24 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher {
 		$list = [];
 
 		// If we have no facets to process, give up now
-		if (!isset($this->indexResult['facet_counts'])) {
-			return $list;
-		} elseif (empty($this->indexResult['facet_counts']['facet_fields']) && empty($this->indexResult['facet_counts']['facet_dates'])) {
+		if (!isset($this->indexResult['facets'])) {
 			return $list;
 		}
 
 		// Loop through every field returned by the result set
 		$validFields = array_keys($filter);
 
-		if (isset($this->indexResult['facet_counts']['facet_dates'])) {
-			$allFacets = array_merge($this->indexResult['facet_counts']['facet_fields'], $this->indexResult['facet_counts']['facet_dates']);
-		} else {
-			$allFacets = $this->indexResult['facet_counts']['facet_fields'];
-		}
+		$allFacets = $this->indexResult['facets'];
 
 		$facetConfig = $this->getFacetConfig();
 		foreach ($allFacets as $field => $data) {
 			// Skip filtered fields and empty arrays:
-			if (!in_array($field, $validFields) || count($data) < 1) {
+			if (!in_array($field, $validFields) || !array_key_exists('buckets', $data)) {
+				continue;
+			}
+
+			$data = $data['buckets'];
+			if (count($data) == 0) {
 				continue;
 			}
 
@@ -613,34 +624,34 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher {
 			// Loop through values:
 			foreach ($data as $facet) {
 				//Don't include empty settings since they don't work properly with Solr
-				if (strlen(trim($facet[0])) == 0) {
+				if (strlen(trim($facet['val'])) == 0) {
 					continue;
 				}
 				// Initialize the array of data about the current facet:
 				$currentSettings = [];
-				$currentSettings['value'] = $facet[0];
+				$currentSettings['value'] = $facet['val'];
 				$currentSettings['display'] = $translate ? translate([
-					'text' => $facet[0],
+					'text' => $facet['val'],
 					'isPublicFacing' => true,
 					'isMetadata' => true,
-				]) : $facet[0];
-				$currentSettings['count'] = $facet[1];
+				]) : $facet['val'];
+				$currentSettings['count'] = $facet['count'];
 				$currentSettings['isApplied'] = false;
-				$currentSettings['url'] = $this->renderLinkWithFilter($field, $facet[0]);
+				$currentSettings['url'] = $this->renderLinkWithFilter($field, $facet['val']);
 				$currentSettings['countIsApproximate'] = false;
 
 				// Is this field a current filter?
 				if (in_array($field, array_keys($this->filterList))) {
 					// and is this value a selected filter?
-					if (in_array($facet[0], $this->filterList[$field])) {
+					if (in_array($facet['val'], $this->filterList[$field])) {
 						$currentSettings['isApplied'] = true;
 						$list[$field]['hasApplied'] = true;
-						$currentSettings['removalUrl'] = $this->renderLinkWithoutFilter("$field:{$facet[0]}");
+						$currentSettings['removalUrl'] = $this->renderLinkWithoutFilter("$field:{$facet['val']}");
 					}
 				}
 
 				//Setup the key to allow sorting alphabetically if needed.
-				$valueKey = $facet[0];
+				$valueKey = $facet['val'];
 
 				// Store the collected values:
 				$list[$field]['list'][$valueKey] = $currentSettings;

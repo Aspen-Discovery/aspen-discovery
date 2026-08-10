@@ -602,7 +602,7 @@ abstract class Solr {
 				// push it onto the stack of clauses
 				$clauses[] = $searchString;
 			} else {
-				if ($solrScope) {
+				if ($solrScope && !($this instanceof GroupedWorksSolrConnector3)) {
 					if ($field == 'local_callnumber' || $field == 'local_callnumber_left' || $field == 'local_callnumber_exact') {
 						$field .= '_' . $solrScope;
 					}
@@ -2139,7 +2139,7 @@ abstract class Solr {
 				}
 				$fields = [];
 				foreach ($schemaData['fields'] as $field) {
-					if (($field['stored'] ?? false) || ($field['indexed'] ?? false) || $field['docValues']) {
+					if (($field['stored'] ?? false) || ($field['indexed'] ?? false) || ($field['docValues'] ?? false)) {
 						$fields[] = $field['name'];
 					}
 				}

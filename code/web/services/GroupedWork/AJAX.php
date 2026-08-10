@@ -363,6 +363,9 @@ class GroupedWork_AJAX extends JSON_Action {
 			if ($systemVariables->searchVersion == 2) {
 				require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector2.php';
 				$db = new GroupedWorksSolrConnector2($url);
+			}else if ($systemVariables->searchVersion == 3) {
+				require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector3.php';
+				$db = new GroupedWorksSolrConnector3($url);
 			}
 
 			if ($library->moreLikeThisSettings == 1 || $library->moreLikeThisSettings == 4) {

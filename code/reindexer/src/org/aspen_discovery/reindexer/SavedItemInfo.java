@@ -41,7 +41,7 @@ public class SavedItemInfo {
 		this.shelfLocationId = getExistingItemsForRecordRS.getLong("shelfLocationId");
 		this.callNumberId = getExistingItemsForRecordRS.getLong("callNumberId");
 		this.sortableCallNumberId = getExistingItemsForRecordRS.getLong("sortableCallNumberId");
-		this.numCopies = getExistingItemsForRecordRS.getLong("isOrderItem");
+		this.numCopies = getExistingItemsForRecordRS.getLong("numCopies");
 		this.isOrderItem = getExistingItemsForRecordRS.getBoolean("isOrderItem");
 		this.statusId = getExistingItemsForRecordRS.getLong("statusId");
 		this.dateAdded = getExistingItemsForRecordRS.getLong("dateAdded");
@@ -146,7 +146,9 @@ public class SavedItemInfo {
 		}
 		if (lastCheckInDate != null || this.lastCheckInDate != null) {
 			if (lastCheckInDate == null) {
-				return true;
+				if (this.lastCheckInDate != 0) {
+					return true;
+				}
 			} else if (this.lastCheckInDate == null) {
 				return true;
 			} else if (lastCheckInDate.getTime() / 1000 != this.lastCheckInDate) {
