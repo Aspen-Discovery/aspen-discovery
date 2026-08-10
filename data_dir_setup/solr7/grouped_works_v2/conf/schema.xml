@@ -390,6 +390,7 @@
 
 		<!-- Edition -->
 		<field name="edition_info" type="unchanged_string" indexed="true" stored="false" multiValued="true" docValues="false"/>
+		<!-- This is used for Context Filter Query when loading suggestions -->
 		<field name="suggestions_context_filter" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true"/>
 
 		<!-- Boosts -->

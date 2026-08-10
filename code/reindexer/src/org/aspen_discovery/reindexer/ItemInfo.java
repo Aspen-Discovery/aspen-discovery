@@ -1,5 +1,6 @@
 package org.aspen_discovery.reindexer;
 
+import com.turning_leaf_technologies.dates.DateUtils;
 import com.turning_leaf_technologies.indexing.Scope;
 import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
@@ -486,6 +487,7 @@ public class ItemInfo{
 		this.IType = itemInfo.IType;
 		this.ITypeCode = itemInfo.ITypeCode;
 		this.eContentSource = itemInfo.eContentSource;
+		this.trimmedEContentSource = itemInfo.trimmedEContentSource;
 		this.eContentFilename = itemInfo.eContentFilename;
 		this.eContentUrl = itemInfo.eContentUrl;
 		this.statusCode = itemInfo.statusCode;
@@ -513,9 +515,6 @@ public class ItemInfo{
 
 	public String getDetailedStatus() {
 		return detailedStatus;
-	}
-
-	public void setVolumeField(String volumeField) {
 	}
 
 	private StringBuffer locationOwnedScopes = null;
@@ -638,5 +637,60 @@ public class ItemInfo{
 
 	public void setNote(String note) {
 		this.note = note;
+	}
+
+	Long daysSinceAdded = null;
+	public Long getDaysSinceAdded(Long daysAddedSincePubDate) {
+		if (daysSinceAdded == null) {
+			if (isOrderItem() ||
+				getStatusCode() != null &&
+					(this.groupedStatus.equals("On Order") ||
+						this.groupedStatus.equals("In Processing") ||
+						this.detailedStatus.equals("Coming Soon") || // Falls under the "On Order" facet, so only consider the item's status to find it.
+						this.groupedStatus.equals("Under Consideration"))) {
+				if (this.groupedStatus.equals("Under Consideration")) {
+					daysSinceAdded = (long) Integer.MAX_VALUE;
+				} else if (this.groupedStatus.equals("In Processing")) {
+					daysSinceAdded = -1000L;
+				} else {
+					//copying the code below but adding a few steps, if we copy a 3rd time
+					//consider extracting a separate function instead
+					//Date Added To Catalog needs to be the earliest date added for the catalog.
+					Date dateAdded = this.dateAdded;
+					//See if we need to override based on publication date if not provided.
+					//Should be set by individual driver though.
+					if (dateAdded == null) {
+						//this is still okay because if we get this
+						//the end value will get clamped and end up as -1
+						daysSinceAdded = Objects.requireNonNullElse(daysAddedSincePubDate, Long.MAX_VALUE);
+					} else {
+						daysSinceAdded = DateUtils.getDaysSinceAddedForDate(dateAdded);
+					}
+					//in order to make this appear before anything else we are going to shift it by -999
+					daysSinceAdded -= 999L;
+					//clamping to -1 in case we get a value > 998
+					//worst case scenario we are getting the previous behavior.
+					if (daysSinceAdded < -999L) {
+						daysSinceAdded = -999L;
+					} else if (daysSinceAdded > -1L) {
+						daysSinceAdded = -1L;
+					}
+					//removing this because we need to support back to Java 11.
+					// If we ever get up to java 21 we can simplify the above to this statement
+					//daysSinceAdded = Math.clamp(daysSinceAdded, -999L, -1L);
+				}
+			} else {
+				//Date Added To Catalog needs to be the earliest date added for the catalog.
+				Date dateAdded = this.dateAdded;
+				//See if we need to override based on publication date if not provided.
+				//Should be set by individual driver though.
+				if (dateAdded == null) {
+					daysSinceAdded = Objects.requireNonNullElse(daysAddedSincePubDate, Long.MAX_VALUE);
+				} else {
+					daysSinceAdded = DateUtils.getDaysSinceAddedForDate(dateAdded);
+				}
+			}
+		}
+		return daysSinceAdded;
 	}
 }

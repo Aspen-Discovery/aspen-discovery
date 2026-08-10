@@ -165,7 +165,7 @@ abstract class FacetSetting extends DataObject {
 	}
 
 	function getFacetName($searchVersion) : string {
-		if ($searchVersion == 2 && $this->facetName == 'collection_group') {
+		if ($searchVersion >= 2 && $this->facetName == 'collection_group') {
 			return 'collection';
 		} else {
 			return $this->facetName;

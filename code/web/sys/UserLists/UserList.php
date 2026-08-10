@@ -1245,9 +1245,6 @@ class UserList extends DataObject {
 						// invalid event source
 					}
 				}
-
-			} else {
-				require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
 			}
 			$searchObject = SearchObjectFactory::initSearchObject($sourceType);
 			if ($searchObject === false) {

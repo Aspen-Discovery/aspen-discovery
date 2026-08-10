@@ -8,7 +8,6 @@ function generateMaterialsRequestsHoldCandidates() : int {
 	require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestFormatMapping.php';
 	require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestHoldCandidate.php';
 	require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestHoldCandidateGenerationLogEntry.php';
-	require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
 
 	$logEntry = new MaterialsRequestHoldCandidateGenerationLogEntry();
 	$logEntry->startTime = time();
@@ -211,9 +210,8 @@ function checkForExistingTitleForRequest($format, $title, $author, $isbn, $issn,
 
 	require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestFormat.php';
 	require_once ROOT_DIR . '/sys/MaterialsRequests/MaterialsRequestFormatMapping.php';
-	require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
 
-	/** @var SearchObject_GroupedWorkSearcher2 $searchObject */
+	/** @var SearchObject_AbstractGroupedWorkSearcher $searchObject */
 	$searchObject = SearchObjectFactory::initSearchObject();
 	$searchObject->init();
 	$searchObject->clearFacets();

@@ -35,7 +35,7 @@
        that you fully re-index after changing this setting as it can
        affect both how text is indexed and queried.
   -->
-  <luceneMatchVersion>9.8</luceneMatchVersion>
+  <luceneMatchVersion>9.10.1</luceneMatchVersion>
 
   <!-- <lib/> directives can be used to instruct Solr to load any Jars
        identified and use them to resolve any "plugins" specified in
@@ -253,16 +253,9 @@
          is recommended (see below).
          "dir" - the target directory for transaction logs, defaults to the
                 solr data directory.
-         "numVersionBuckets" - sets the number of buckets used to keep
-                track of max version values when checking for re-ordered
-                updates; increase this value to reduce the cost of
-                synchronizing access to version buckets during high-volume
-                indexing, this requires 8 bytes (long) * numVersionBuckets
-                of heap space per Solr core.
     -->
     <updateLog>
       <str name="dir">${solr.ulog.dir:}</str>
-      <int name="numVersionBuckets">${solr.ulog.numVersionBuckets:65536}</int>
     </updateLog>
 
     <!-- AutoCommit
@@ -386,7 +379,7 @@
                       to occupy. Note that when this option is specified, the size
                       and initialSize parameters are ignored.
       -->
-    <filterCache class="solr.FastLRUCache"
+    <filterCache class="solr.CaffeineCache"
                  size="512"
                  initialSize="512"
                  autowarmCount="0"/>
@@ -399,7 +392,7 @@
             maxRamMB - the maximum amount of RAM (in MB) that this cache is allowed
                        to occupy
       -->
-    <queryResultCache class="solr.LRUCache"
+    <queryResultCache class="solr.CaffeineCache"
                       size="512"
                       initialSize="512"
                       autowarmCount="0"/>
@@ -410,14 +403,14 @@
          document).  Since Lucene internal document ids are transient,
          this cache will not be autowarmed.
       -->
-    <documentCache class="solr.LRUCache"
+    <documentCache class="solr.CaffeineCache"
                    size="512"
                    initialSize="512"
                    autowarmCount="0"/>
 
     <!-- custom cache currently used by block join -->
     <cache name="perSegFilter"
-           class="solr.search.LRUCache"
+           class="solr.CaffeineCache"
            size="10"
            initialSize="0"
            autowarmCount="10"
@@ -430,7 +423,7 @@
          even if not configured here.
       -->
     <!--
-       <fieldValueCache class="solr.FastLRUCache"
+       <fieldValueCache class="solr.CaffeineCache"
                         size="512"
                         autowarmCount="128"
                         showItems="32" />
@@ -447,7 +440,7 @@
       -->
     <!--
        <cache name="myUserCache"
-              class="solr.LRUCache"
+              class="solr.CaffeineCache"
               size="4096"
               initialSize="1024"
               autowarmCount="1024"
@@ -717,7 +710,7 @@
     -->
   <requestHandler name="/update/extract"
                   startup="lazy"
-                  class="solr.extraction.ExtractingRequestHandler" >
+                  class="solr.tika.TikaRequestHandler" >
     <lst name="defaults">
       <str name="lowernames">true</str>
       <str name="fmap.meta">ignored_</str>
@@ -1309,7 +1302,7 @@
   -->
   <!--
     <updateRequestProcessorChain name="script">
-      <processor class="solr.StatelessScriptUpdateProcessorFactory">
+      <processor class="solr.scripting.ScriptUpdateProcessorFactory">
         <str name="script">update-script.js</str>
         <lst name="params">
           <str name="config_param">example config parameter</str>
@@ -1357,7 +1350,7 @@
   <!--
      Custom response writers can be declared as needed...
     -->
-  <queryResponseWriter name="velocity" class="solr.VelocityResponseWriter" startup="lazy">
+  <queryResponseWriter name="velocity" class="velocity.VelocityResponseWriter" startup="lazy">
     <str name="template.base.dir">${velocity.template.base.dir:}</str>
     <str name="solr.resource.loader.enabled">${velocity.solr.resource.loader.enabled:true}</str>
     <str name="params.resource.loader.enabled">${velocity.params.resource.loader.enabled:false}</str>

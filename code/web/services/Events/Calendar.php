@@ -47,6 +47,14 @@ class Events_Calendar extends Action {
 		//Print settings
 		$printEndTime = isset($_REQUEST['endTime']) ? filter_var($_REQUEST['endTime'], FILTER_VALIDATE_BOOLEAN) : false;
 		$interface->assign("printEndTime", $printEndTime);
+
+		// Embedded Event Calendar
+		$embedSuffix = !empty($_REQUEST['embed']) ? '&embed=true' : '';
+		if (!empty($_REQUEST['resizeIframe'])) {
+			$embedSuffix .= '&resizeIframe=on';
+		}
+		$interface->assign('embedSuffix', $embedSuffix);
+
 		if ($useWeek) {
 			$paddedWeek = str_pad($week, 2, '0', STR_PAD_LEFT);
 			$weekFilter = $year . '-' . $paddedWeek;
@@ -56,7 +64,7 @@ class Events_Calendar extends Action {
 			$formattedWeekYear = DateUtils::formatDateLocale($calendarStartDay, 'medium') . " - " . DateUtils::formatDateLocale($calendarEndDay, 'medium');
 			$month = date("n", strtotime($calendarStart));
 			$interface->assign('calendarMonth', $formattedWeekYear);
-			$monthLink = "/Events/Calendar?month=$month&year=$year";
+			$monthLink = "/Events/Calendar?month=$month&year=$year$embedSuffix";
 			$interface->assign("monthLink", $monthLink);
 
 			$prevWeek = $week - 1;
@@ -66,7 +74,7 @@ class Events_Calendar extends Action {
 				$prevWeek = $lastWeekLastYear;
 				$prevYear--;
 			}
-			$prevLink = "/Events/Calendar?week=$prevWeek&year=$prevYear";
+			$prevLink = "/Events/Calendar?week=$prevWeek&year=$prevYear$embedSuffix";
 			$interface->assign('prevLink', $prevLink);
 
 			$nextWeek = $week + 1;
@@ -76,7 +84,7 @@ class Events_Calendar extends Action {
 				$nextWeek = 1;
 				$nextYear++;
 			}
-			$nextLink = "/Events/Calendar?week=$nextWeek&year=$nextYear";
+			$nextLink = "/Events/Calendar?week=$nextWeek&year=$nextYear$embedSuffix";
 		} else {
 			$paddedMonth = str_pad($month, 2, '0', STR_PAD_LEFT);
 			$monthFilter = $year . '-' . $paddedMonth;
@@ -87,7 +95,7 @@ class Events_Calendar extends Action {
 			$formattedMonthYear = DateUtils::formatDateLocale($calendarStartDay, 'medium', 'none', $monthDisplay ? 'MMMM yyyy' : 'MMM yyyy');
 			$week = (int)$calendarStartDay->format("W") + 1;
 			$interface->assign('calendarMonth', $formattedMonthYear);
-			$weekLink = "/Events/Calendar?week=$week&year=$year";
+			$weekLink = "/Events/Calendar?week=$week&year=$year$embedSuffix";
 			$interface->assign("weekLink", $weekLink);
 
 			$prevMonth = $month - 1;
@@ -96,7 +104,7 @@ class Events_Calendar extends Action {
 				$prevMonth = 12;
 				$prevYear--;
 			}
-			$prevLink = "/Events/Calendar?month=$prevMonth&year=$prevYear";
+			$prevLink = "/Events/Calendar?month=$prevMonth&year=$prevYear$embedSuffix";
 			$interface->assign('prevLink', $prevLink);
 
 			$nextMonth = $month + 1;
@@ -105,7 +113,7 @@ class Events_Calendar extends Action {
 				$nextMonth = 1;
 				$nextYear++;
 			}
-			$nextLink = "/Events/Calendar?month=$nextMonth&year=$nextYear";
+			$nextLink = "/Events/Calendar?month=$nextMonth&year=$nextYear$embedSuffix";
 		}
 		$interface->assign('nextLink', $nextLink);
 
@@ -469,6 +477,17 @@ class Events_Calendar extends Action {
 
 		$calendarTitle = $this->getCalendarTitle($calendarDisplaySettingId);
 		$interface->assign('calendarTitle', $calendarTitle);
+
+		// Embedded Event Calendar
+		if (!empty($_REQUEST['embed'])) {
+			global $interface;
+			if (!empty($_REQUEST['resizeIframe'])) {
+				$interface->assign('resizeIframe', true);
+			}
+			header('Content-type: text/html');
+			echo $interface->fetch('Events/embeddedEventCalendar.tpl');
+			die();
+		}
 
 		if ($useWeek) {
 			$this->display('calendar.tpl', 'Events Calendar ' . $formattedWeekYear, '');

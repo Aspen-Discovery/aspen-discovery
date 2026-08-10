@@ -470,7 +470,6 @@ abstract class MarcRecordProcessor {
 			}
 		}
 
-		groupedWork.addDateSpan(MarcUtil.getFieldList(record, "362a"));
 		groupedWork.addContents(MarcUtil.getFieldList(record, "505a:505t"));
 		//Check to see if we have any child records and if so add them as well
 		groupedWork.addIssns(MarcUtil.getFieldList(record, "022a"));
@@ -663,15 +662,17 @@ abstract class MarcRecordProcessor {
 			return "Not Rated";
 		}
 
+		// Check TV ratings first
+		String tvRating = getRatingFromPatterns(val, tvRatingRegex1, tvRatingRegex2, tvRatingRegex3, tvRatingRegex4);
+		if (tvRating != null) {
+			return normalizeTvRating(tvRating) + " Rated";
+		}
+
 		String mpaaRating = getRatingFromPatterns(val, mpaaRatingRegex1, mpaaRatingRegex2, mpaaRatingRegex3, mpaaRatingRegex4);
 		if (mpaaRating != null) {
 			return mpaaRating + " Rated";
 		}
 
-		String tvRating = getRatingFromPatterns(val, tvRatingRegex1, tvRatingRegex2, tvRatingRegex3, tvRatingRegex4);
-		if (tvRating != null) {
-			return normalizeTvRating(tvRating) + " Rated";
-		}
 		return null;
 	}
 
@@ -1547,12 +1548,12 @@ abstract class MarcRecordProcessor {
 			String languageBoost = indexer.translateSystemValue("language_boost", language, identifier);
 			if (languageBoost != null){
 				Long languageBoostVal = Long.parseLong(languageBoost);
-				groupedWork.setLanguageBoost(languageBoostVal);
+				groupedWork.setLanguageBoost(languageBoostVal, ilsRecords);
 			}
 			String languageBoostEs = indexer.translateSystemValue("language_boost_es", language, identifier);
 			if (languageBoostEs != null){
 				Long languageBoostVal = Long.parseLong(languageBoostEs);
-				groupedWork.setLanguageBoostSpanish(languageBoostVal);
+				groupedWork.setLanguageBoostSpanish(languageBoostVal, ilsRecords);
 			}
 		}
 		if (translatedLanguages.isEmpty()){
@@ -1563,15 +1564,15 @@ abstract class MarcRecordProcessor {
 			String languageBoost = indexer.translateSystemValue("language_boost", settings.getTreatUnknownLanguageAs(), identifier);
 			if (languageBoost != null){
 				Long languageBoostVal = Long.parseLong(languageBoost);
-				groupedWork.setLanguageBoost(languageBoostVal);
+				groupedWork.setLanguageBoost(languageBoostVal, ilsRecords);
 			}
 			String languageBoostEs = indexer.translateSystemValue("language_boost_es", settings.getTreatUnknownLanguageAs(), identifier);
 			if (languageBoostEs != null){
 				Long languageBoostVal = Long.parseLong(languageBoostEs);
-				groupedWork.setLanguageBoostSpanish(languageBoostVal);
+				groupedWork.setLanguageBoostSpanish(languageBoostVal, ilsRecords);
 			}
 		}
-		groupedWork.setLanguages(translatedLanguages);
+		groupedWork.setLanguages(translatedLanguages, ilsRecords);
 
 		String translationFields = "041b:041d:041h:041j";
 		Set<String> translations = MarcUtil.getFieldList(record, translationFields);
@@ -1701,8 +1702,6 @@ abstract class MarcRecordProcessor {
 		//title alt
 		//noinspection SpellCheckingInspection
 		groupedWork.addAlternateTitles(MarcUtil.getFieldList(record, "130adfgklnpst:240a:246abfgnp:700tnr:730adfgklnpst:740a:505t"));
-		//title old
-		groupedWork.addOldTitles(MarcUtil.getFieldList(record, "780ast"));
 		//title new
 		groupedWork.addNewTitles(MarcUtil.getFieldList(record, "785ast"));
 	}

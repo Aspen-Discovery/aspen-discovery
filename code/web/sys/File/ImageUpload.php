@@ -31,6 +31,10 @@ class ImageUpload extends DataObject {
 	public $pageLink;
 	public $startDate;
 	public $endDate;
+	// Which storage_settings row this upload's files actually live on.
+	// NULL means Local Storage; not part of the admin edit form, set only
+	// by the storage write path.
+	public $storageSettingId;
 
 	static $xLargeSize = 1100;
 	static $largeSize = 600;
@@ -47,6 +51,7 @@ class ImageUpload extends DataObject {
 			'aspectRatioHeight',
 			'startDate',
 			'endDate',
+			'storageSettingId',
 		];
 	}
 
@@ -55,7 +60,6 @@ class ImageUpload extends DataObject {
 		if (isset(self::$_objectStructure[$context]) && self::$_objectStructure[$context] !== null) {
 			return self::$_objectStructure[$context];
 		}
-		global $serverName;
 		$allSharingOptions = [
 			0 => 'Not Shared',
 			1 => 'Selected Library',
@@ -140,7 +144,7 @@ class ImageUpload extends DataObject {
 				'description' => 'The full size image (max width 1068px for web builder images, 3840px for hero sliders).',
 				'maxWidth' => 3840,  // 4K width - suitable for digital signage
 				'maxHeight' => 2160, // 4K height
-				'path' => '/data/aspen-discovery/' . $serverName . '/uploads/web_builder_image/full',
+				'storageKey' => 'uploads/web_builder_image/full',
 				'displayUrl' => '/WebBuilder/ViewImage?size=full&id=',
 				'hideInLists' => true,
 				'required' => true,
@@ -161,7 +165,7 @@ class ImageUpload extends DataObject {
 				'description' => 'The x-large size image (max width 1100 px).',
 				'maxWidth' => ImageUpload::$xLargeSize,
 				'maxHeight' => ImageUpload::$xLargeSize,
-				'path' => '/data/aspen-discovery/' . $serverName . '/uploads/web_builder_image/x-large',
+				'storageKey' => 'uploads/web_builder_image/x-large',
 				'displayUrl' => '/WebBuilder/ViewImage?size=x-large&id=',
 				'hideInLists' => true,
 				'note' => translate(['text' => 'Allowed formats: GIF, JPG, JPEG, PNG, SVG', 'isAdminFacing' => true]),
@@ -181,7 +185,7 @@ class ImageUpload extends DataObject {
 				'description' => 'The medium size image (max width 600px).',
 				'maxWidth' => ImageUpload::$largeSize,
 				'maxHeight' => ImageUpload::$largeSize,
-				'path' => '/data/aspen-discovery/' . $serverName . '/uploads/web_builder_image/large',
+				'storageKey' => 'uploads/web_builder_image/large',
 				'displayUrl' => '/WebBuilder/ViewImage?size=large&id=',
 				'hideInLists' => true,
 				'note' => translate(['text' => 'Allowed formats: GIF, JPG, JPEG, PNG, SVG', 'isAdminFacing' => true]),
@@ -201,7 +205,7 @@ class ImageUpload extends DataObject {
 				'description' => 'The medium size image (max width 400px).',
 				'maxWidth' => ImageUpload::$mediumSize,
 				'maxHeight' => ImageUpload::$mediumSize,
-				'path' => '/data/aspen-discovery/' . $serverName . '/uploads/web_builder_image/medium',
+				'storageKey' => 'uploads/web_builder_image/medium',
 				'displayUrl' => '/WebBuilder/ViewImage?size=medium&id=',
 				'hideInLists' => true,
 				'note' => translate(['text' => 'Allowed formats: GIF, JPG, JPEG, PNG, SVG', 'isAdminFacing' => true]),
@@ -221,7 +225,7 @@ class ImageUpload extends DataObject {
 				'description' => 'The small size image (max width 200px).',
 				'maxWidth' => ImageUpload::$smallSize,
 				'maxHeight' => ImageUpload::$smallSize,
-				'path' => '/data/aspen-discovery/' . $serverName . '/uploads/web_builder_image/small',
+				'storageKey' => 'uploads/web_builder_image/small',
 				'displayUrl' => '/WebBuilder/ViewImage?size=small&id=',
 				'note' => translate(['text' => 'Allowed formats: GIF, JPG, JPEG, PNG, SVG', 'isAdminFacing' => true]),
 				'validTypes' => ['image/gif', 'image/jpeg', 'image/png', 'image/svg+xml']
@@ -315,10 +319,9 @@ class ImageUpload extends DataObject {
 
 	private function calculateAspectRatio() : void {
 		if ($this->type === 'hero_slider' && !empty($this->fullSizePath)) {
-			global $serverName;
-			$imagePath = '/data/aspen-discovery/' . $serverName . '/uploads/web_builder_image/full/' . $this->fullSizePath;
-			if (file_exists($imagePath)) {
-				$imageInfo = getimagesize($imagePath);
+			$contents = StorageDriverFactory::getById($this->storageSettingId)->read('uploads/web_builder_image/full/' . $this->fullSizePath);
+			if ($contents !== false) {
+				$imageInfo = getimagesizefromstring($contents);
 				if ($imageInfo !== false) {
 					[$width, $height] = $imageInfo;
 					if ($width && $height) {
@@ -354,74 +357,47 @@ class ImageUpload extends DataObject {
 	}
 
 	private function generateDerivatives() : void {
+		global $logger;
 		if (!empty($this->fullSizePath) && !empty($this->id)) {
-			global $serverName;
 			require_once ROOT_DIR . '/sys/Covers/CoverImageUtils.php';
-			$fullSizeFile = '/data/aspen-discovery/' . $serverName . '/uploads/web_builder_image/full/' . $this->fullSizePath;
-			if ($this->generateXLargeSize) {
-				$xLargeFilePath = '/data/aspen-discovery/' . $serverName . '/uploads/web_builder_image/x-large/';
-				if (!file_exists($xLargeFilePath)) {
-					mkdir($xLargeFilePath, 0755, true);
+			$storage = StorageDriverFactory::getById($this->storageSettingId);
+			$logger->log("generateDerivatives: image id=$this->id storageSettingId=" . var_export($this->storageSettingId, true), Logger::LOG_DEBUG);
+
+			$sourceContents = $storage->read('uploads/web_builder_image/full/' . $this->fullSizePath);
+			if ($sourceContents === false) {
+				$logger->log("generateDerivatives: could not read source for image id=$this->id fullSizePath=$this->fullSizePath", Logger::LOG_ERROR);
+				return;
+			}
+			$srcTmp = tempnam(sys_get_temp_dir(), 'aspen_src_');
+			file_put_contents($srcTmp, $sourceContents);
+
+			foreach ([
+				'x-large' => ['flag' => 'generateXLargeSize', 'prop' => 'xLargeSizePath', 'size' => ImageUpload::$xLargeSize],
+				'large'   => ['flag' => 'generateLargeSize',   'prop' => 'largeSizePath',   'size' => ImageUpload::$largeSize],
+				'medium'  => ['flag' => 'generateMediumSize',  'prop' => 'mediumSizePath',  'size' => ImageUpload::$mediumSize],
+				'small'   => ['flag' => 'generateSmallSize',   'prop' => 'smallSizePath',   'size' => ImageUpload::$smallSize],
+			] as $variant => $cfg) {
+				if (!$this->{$cfg['flag']}) {
+					continue;
 				}
-				$xLargeFile = $xLargeFilePath . $this->fullSizePath;
 				if (!empty($_FILES['fullSizePath']['full_path'])) {
-					$prevUpload = $xLargeFilePath . "Temp_" . $_FILES['fullSizePath']['full_path'];
-					if (file_exists($prevUpload)) {
-						unlink($prevUpload);
+					$tempKey = 'uploads/web_builder_image/' . $variant . '/Temp_' . $_FILES['fullSizePath']['full_path'];
+					if ($storage->exists($tempKey)) {
+						$storage->delete($tempKey);
 					}
 				}
-				if (resizeImage($fullSizeFile, $xLargeFile, ImageUpload::$xLargeSize, ImageUpload::$xLargeSize)) {
-					$this->xLargeSizePath = $this->fullSizePath;
-				}
-			}
-			if ($this->generateLargeSize) {
-				$largeFilePath = '/data/aspen-discovery/' . $serverName . '/uploads/web_builder_image/large/';
-				if (!file_exists($largeFilePath)) {
-					mkdir($largeFilePath, 0755, true);
-				}
-				$largeFile = $largeFilePath . $this->fullSizePath;
-				if (!empty($_FILES['fullSizePath']['full_path'])) {
-					$prevUpload = $largeFilePath . "Temp_" . $_FILES['fullSizePath']['full_path'];
-					if (file_exists($prevUpload)) {
-						unlink($prevUpload);
+				$destTmp = tempnam(sys_get_temp_dir(), 'aspen_dst_');
+				if (resizeImage($srcTmp, $destTmp, $cfg['size'], $cfg['size'])) {
+					if ($storage->write('uploads/web_builder_image/' . $variant . '/' . $this->fullSizePath, $destTmp)) {
+						$this->{$cfg['prop']} = $this->fullSizePath;
+						$logger->log("generateDerivatives: wrote $variant derivative for image id=$this->id", Logger::LOG_DEBUG);
+					} else {
+						$logger->log('Failed to write ' . $variant . ' derivative image to storage for fullSizePath ' . $this->fullSizePath, Logger::LOG_ERROR);
 					}
 				}
-				if (resizeImage($fullSizeFile, $largeFile, ImageUpload::$largeSize, ImageUpload::$largeSize)) {
-					$this->largeSizePath = $this->fullSizePath;
-				}
+				unlink($destTmp);
 			}
-			if ($this->generateMediumSize) {
-				$mediumFilePath = '/data/aspen-discovery/' . $serverName . '/uploads/web_builder_image/medium/';
-				if (!file_exists($mediumFilePath)) {
-					mkdir($mediumFilePath, 0755, true);
-				}
-				$mediumFile = $mediumFilePath . $this->fullSizePath;
-				if (!empty($_FILES['fullSizePath']['full_path'])) {
-					$prevUpload = $mediumFilePath . "Temp_" . $_FILES['fullSizePath']['full_path'];
-					if (file_exists($prevUpload)) {
-						unlink($prevUpload);
-					}
-				}
-				if (resizeImage($fullSizeFile, $mediumFile, ImageUpload::$mediumSize, ImageUpload::$mediumSize)) {
-					$this->mediumSizePath = $this->fullSizePath;
-				}
-			}
-			if ($this->generateSmallSize) {
-				$smallFilePath = '/data/aspen-discovery/' . $serverName . '/uploads/web_builder_image/small/';
-				if (!file_exists($smallFilePath)) {
-					mkdir($smallFilePath, 0755, true);
-				}
-				$smallFile = $smallFilePath . $this->fullSizePath;
-				if (!empty($_FILES['fullSizePath']['full_path'])) {
-					$prevUpload = $smallFilePath . "Temp_" . $_FILES['fullSizePath']['full_path'];
-					if (file_exists($prevUpload)) {
-						unlink($prevUpload);
-					}
-				}
-				if (resizeImage($fullSizeFile, $smallFile, ImageUpload::$smallSize, ImageUpload::$smallSize)) {
-					$this->smallSizePath = $this->fullSizePath;
-				}
-			}
+			unlink($srcTmp);
 		}
 	}
 
@@ -481,22 +457,19 @@ class ImageUpload extends DataObject {
 	}
 
 	public function delete(bool $useWhere = false, bool $hardDelete = false) : bool|int {
-		global $serverName;
 		if ($hardDelete) {
-			$baseDir = '/data/aspen-discovery/' . $serverName . '/uploads/web_builder_image';
-			$variants = [
-				'full' => $this->fullSizePath,
+			global $logger;
+			$storage = StorageDriverFactory::getById($this->storageSettingId);
+			$logger->log("ImageUpload::delete: hard deleting image id=$this->id storageSettingId=" . var_export($this->storageSettingId, true), Logger::LOG_DEBUG);
+			foreach ([
+				'full'    => $this->fullSizePath,
 				'x-large' => $this->xLargeSizePath,
-				'large' => $this->largeSizePath,
-				'medium' => $this->mediumSizePath,
-				'small' => $this->smallSizePath,
-			];
-			foreach ($variants as $size => $filename) {
+				'large'   => $this->largeSizePath,
+				'medium'  => $this->mediumSizePath,
+				'small'   => $this->smallSizePath,
+			] as $size => $filename) {
 				if (!empty($filename)) {
-					$path = $baseDir . '/' . $size . '/' . $filename;
-					if (file_exists($path)) {
-						@unlink($path);
-					}
+					$storage->delete('uploads/web_builder_image/' . $size . '/' . $filename);
 				}
 			}
 		}
@@ -514,8 +487,7 @@ class ImageUpload extends DataObject {
 	 * @return int
 	 */
 	public static function purgeExpired(int $olderThanSecs = 2592000): int {
-		global $serverName;
-		$baseDir = '/data/aspen-discovery/' . $serverName . '/uploads/web_builder_image';
+		global $logger;
 		$cutOff = time() - $olderThanSecs;
 		$expiredIds = [];
 		$fetchObj = new static();
@@ -524,21 +496,17 @@ class ImageUpload extends DataObject {
 		$fetchObj->whereAdd("dateDeleted > 0 AND dateDeleted < $cutOff");
 		$fetchObj->find();
 		while ($fetchObj->fetch()) {
-			// Remove each size variant from disk.
-			$paths = [
-				'full' => $fetchObj->fullSizePath,
+			$storage = StorageDriverFactory::getById($fetchObj->storageSettingId);
+			$logger->log("ImageUpload::purgeExpired: purging image id=$fetchObj->id storageSettingId=" . var_export($fetchObj->storageSettingId, true), Logger::LOG_DEBUG);
+			foreach ([
+				'full'    => $fetchObj->fullSizePath,
 				'x-large' => $fetchObj->xLargeSizePath,
-				'large' => $fetchObj->largeSizePath,
-				'medium' => $fetchObj->mediumSizePath,
-				'small' => $fetchObj->smallSizePath,
-			];
-
-			foreach ($paths as $size => $filename) {
+				'large'   => $fetchObj->largeSizePath,
+				'medium'  => $fetchObj->mediumSizePath,
+				'small'   => $fetchObj->smallSizePath,
+			] as $size => $filename) {
 				if (!empty($filename)) {
-					$fullPath = $baseDir . '/' . $size . '/' . $filename;
-					if (file_exists($fullPath)) {
-						@unlink($fullPath);
-					}
+					$storage->delete('uploads/web_builder_image/' . $size . '/' . $filename);
 				}
 			}
 			$expiredIds[] = $fetchObj->id;

@@ -19,6 +19,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.TreeSet;
 
 class SeriesIndexer {
@@ -26,7 +27,7 @@ class SeriesIndexer {
 	private final Logger logger;
 	private ConcurrentUpdateHttp2SolrClient updateServer;
 	private Http2SolrClient groupedWorkServer;
-	private TreeSet<Scope> scopes;
+	private HashMap<String, Scope> scopes;
 
 	SeriesIndexer(Ini configIni, Connection dbConn, Logger logger){
 		this.dbConn = dbConn;
@@ -58,7 +59,7 @@ class SeriesIndexer {
 			System.exit(-7);
 		}
 		//Get the search version from system variables
-		int searchVersion = 1;
+		int searchVersion = 2;
 		try {
 			PreparedStatement searchVersionStmt = dbConn.prepareStatement("SELECT searchVersion from system_variables");
 			ResultSet searchVersionRS = searchVersionStmt.executeQuery();
@@ -70,11 +71,9 @@ class SeriesIndexer {
 			logger.error("Error loading search version", e);
 		}
 		Http2SolrClient.Builder groupedWorkHttpBuilder;
-		if (searchVersion == 1) {
-			groupedWorkHttpBuilder = new Http2SolrClient.Builder("http://" + solrHost + ":" + solrPort + "/solr/grouped_works");
-		}else{
+		//if (searchVersion == 2) {
 			groupedWorkHttpBuilder = new Http2SolrClient.Builder("http://" + solrHost + ":" + solrPort + "/solr/grouped_works_v2");
-		}
+		//}
 		groupedWorkServer = groupedWorkHttpBuilder.build();
 
 		scopes = IndexingUtils.loadScopes(dbConn, logger);
@@ -286,7 +285,7 @@ class SeriesIndexer {
 		}
 
 	}
-	TreeSet<Scope> getScopes() {
+	HashMap<String, Scope> getScopes() {
 		return this.scopes;
 	}
 }

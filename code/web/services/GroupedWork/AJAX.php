@@ -360,10 +360,7 @@ class GroupedWork_AJAX extends JSON_Action {
 			//Load Similar titles (from Solr)
 			$url = $configArray['Index']['url'];
 			$systemVariables = SystemVariables::getSystemVariables();
-			if ($systemVariables->searchVersion == 1) {
-				require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
-				$db = new GroupedWorksSolrConnector($url);
-			} else {
+			if ($systemVariables->searchVersion == 2) {
 				require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector2.php';
 				$db = new GroupedWorksSolrConnector2($url);
 			}
@@ -454,7 +451,6 @@ class GroupedWork_AJAX extends JSON_Action {
 
 			//Load Similar titles (from Solr)
 			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-			require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
 			/** @var SearchObject_AbstractGroupedWorkSearcher $searchObject */
 			$searchObject = SearchObjectFactory::initSearchObject();
 			$searchObject->init();
