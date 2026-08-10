@@ -14277,11 +14277,6 @@ AspenDiscovery.CollectionSpotlights = (function(){
 			AspenDiscovery.Account.ajaxLightbox(Globals.path + '/Admin/AJAX?method=getAddToSpotlightForm&source=search&id=' + searchId, true);
 			return false;
 		},
-		loadCarousel: function (spotlightListId, titlesUrl){
-			$.getJSON(titlesUrl, function (data) {
-				AspenDiscovery.CollectionSpotlights.loadCarouselFromData(spotlightListId, data);
-			}).fail(AspenDiscovery.ajaxFail);
-		},
 		loadCarouselFromData: function (spotlightListId, data){
 			if (data.success) {
 				var html = '<ul>';
