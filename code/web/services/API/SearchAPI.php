@@ -1033,16 +1033,22 @@ class SearchAPI extends AbstractAPI {
 	 * does not need to call /Search/AJAX?method=getSpotlightTitles.
 	 */
 	private function getCollectionSpotlightTitleData(CollectionSpotlight $collectionSpotlight, bool $reload): string {
-		global $loggedIn;
 		$user = UserAccount::getLoggedInUser();
+		$loggedIn = $user !== false;
 
 		require_once ROOT_DIR . '/services/Search/AJAX.php';
 		$spotlightAjax = new AJAX();
 		$titleData = [];
-		foreach ($collectionSpotlight->lists as $list) {
-			$shouldDisplay = $list->displayFor === 'all'
-				|| ($list->displayFor === 'loggedIn' && $loggedIn && ($user === null || $user->disableRecommendations == 0))
-				|| ($list->displayFor === 'notLoggedIn' && !$loggedIn);
+		$spotlightLists = $this->getCollectionSpotlightLists($collectionSpotlight);
+
+		foreach ($spotlightLists as $list) {
+			$shouldDisplay = match($list->displayFor) {
+				'all' => true,
+				'loggedIn' => $loggedIn && $user->disableRecommendations === 0,
+				'notLoggedIn' => !$loggedIn,
+				default => false
+			};
+			
 			if ($shouldDisplay) {
 				$titleData[$list->id] = $spotlightAjax->getSpotlightTitlesForList(
 					(int)$list->id,
@@ -1054,6 +1060,19 @@ class SearchAPI extends AbstractAPI {
 		}
 
 		return json_encode($titleData, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+	}
+
+	private function getCollectionSpotlightLists(CollectionSpotlight $spotlight) : array {
+		$spotlightList = new CollectionSpotlightList();
+		$spotlightList->collectionSpotlightId = $spotlight->id;
+		$associatedLists = [];
+
+		$spotlightList->find();
+		while($spotlightList->fetch()) {
+			$associatedLists[] = clone $spotlightList;
+		}
+
+		return $associatedLists;
 	}
 
 	/** @noinspection PhpUnused */
