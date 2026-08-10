@@ -1961,6 +1961,7 @@ var AspenDiscovery = (function(){
 						onSlideClick(slide);
 					});
 
+					// Keyboard navigation for slides
 					slide.addEventListener('keydown', function (e) {
 						if (e.key === 'ArrowRight') {
 							if (i < slides.length - 1) {
