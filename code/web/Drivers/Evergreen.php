@@ -1833,13 +1833,33 @@ class Evergreen extends AbstractIlsDriver {
 		$firstName = $userData['first_given_name'];
 		$lastName = $userData['family_name'];
 
+		//The user might have logged in with their username, make sure to set the card
+		$staffUserInfo = $this->getStaffUserInfo();
+
 		//Handle preferred name
-		if (!empty($userData['pref_first_given_name'])) {
-			$firstName = $userData['pref_first_given_name'];
+		$apiResponse = $this->getPreferredNameFromApi($user, $staffUserInfo['authToken']);
+
+		$useNewPreferredNameApi = false;
+		if ($this->apiCurlWrapper->getResponseCode() == 200) {
+			$apiResponse = json_decode($apiResponse);
+			if ($apiResponse->status !== '404' && isset($apiResponse->payload[0])) {
+				$useNewPreferredNameApi = true;
+			}
 		}
-		if (!empty($userData['pref_family_name'])) {
-			$lastName = $userData['pref_family_name'];
+
+		if ($useNewPreferredNameApi) {
+			$nameParts = $apiResponse->payload[0];
+			$firstName = $nameParts->first_given_name;
+			$lastName = $nameParts->family_name;
+		} else {
+			if (!empty($userData['pref_first_given_name'])) {
+				$firstName = $userData['pref_first_given_name'];
+			}
+			if (!empty($userData['pref_family_name'])) {
+				$lastName = $userData['pref_family_name'];
+			}
 		}
+
 		$user->_fullname = $lastName . ',' . $firstName;
 		$forceDisplayNameUpdate = false;
 		if ($user->firstname != $firstName) {
@@ -1853,9 +1873,6 @@ class Evergreen extends AbstractIlsDriver {
 		if ($forceDisplayNameUpdate) {
 			$user->displayName = '';
 		}
-
-		//The user might have logged in with their username, make sure to set the card
-		$staffUserInfo = $this->getStaffUserInfo();
 
 		if (!is_object($userData['card'])) {
 			if ($staffUserInfo['userValid']) {
@@ -2898,32 +2915,7 @@ class Evergreen extends AbstractIlsDriver {
 						}
 
 						$user->_preferredName = '';
-						if (!empty($mappedPatronData['pref_prefix'])) {
-							$user->_preferredName .= $mappedPatronData['pref_prefix'] . ' ';
-						} elseif (!empty($mappedPatronData['prefix'])) {
-							$user->_preferredName .= $mappedPatronData['prefix'] . ' ';
-						}
-						if (!empty($mappedPatronData['pref_first_given_name'])) {
-							$user->_preferredName .= $mappedPatronData['pref_first_given_name'];
-						} elseif (!empty($mappedPatronData['first_given_name'])) {
-							$user->_preferredName .= $mappedPatronData['first_given_name'];
-						}
-						if (!empty($mappedPatronData['pref_second_given_name'])) {
-							$user->_preferredName .= ' ' . $mappedPatronData['pref_second_given_name'];
-						} elseif (!empty($mappedPatronData['second_given_name'])) {
-							$user->_preferredName .= ' ' . $mappedPatronData['second_given_name'];
-						}
-						if (!empty($mappedPatronData['pref_family_name'])) {
-							$user->_preferredName .= ' ' . $mappedPatronData['pref_family_name'];
-						} elseif (!empty($mappedPatronData['family_name'])) {
-							$user->_preferredName .= ' ' . $mappedPatronData['family_name'];
-						}
-						if (!empty($mappedPatronData['pref_suffix'])) {
-							$user->_preferredName .= ' ' . $mappedPatronData['pref_suffix'];
-						} elseif (!empty($mappedPatronData['suffix'])) {
-							$user->_preferredName .= ' ' . $mappedPatronData['suffix'];
-						}
-						$user->_preferredName = trim($user->_preferredName);
+						$this->loadPreferredName($user, $staffSessionInfo, $mappedPatronData);
 
 						if (!empty($mappedPatronData['prefix'])) {
 							$user->_fullname .= $mappedPatronData['prefix'] . ' ';
@@ -2958,6 +2950,91 @@ class Evergreen extends AbstractIlsDriver {
 					}
 				}
 			}
+		}
+	}
+
+	private function getPreferredNameFromApi(User $user, $authToken): string {
+		$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
+		$headers = [
+			'Content-Type: application/x-www-form-urlencoded',
+		];
+		$this->apiCurlWrapper->addCustomHeaders($headers, false);
+		$request = 'service=open-ils.actor&method=open-ils.actor.get_preferred_name';
+		$request .= '&param=' . json_encode($authToken);
+		$request .= '&param=' . json_encode($user->unique_ils_id);
+
+		$useNewPreferredNameApi = false;
+		$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
+
+		ExternalRequestLogEntry::logRequest('evergreen.getPreferredname', 'POST', $evergreenUrl, $this->apiCurlWrapper->getHeaders(), $request, $this->apiCurlWrapper->getResponseCode(), $apiResponse, []);
+
+		return $apiResponse;
+	}
+
+	private function loadPreferredName(User $user, $staffSessionInfo, array $mappedPatronData): void {
+		// set some fields in case user wants to edit their preferred name
+		$user->_pref_prefix = $mappedPatronData['pref_prefix'];
+		$user->_pref_first_given_name = $mappedPatronData['pref_first_given_name'];
+		$user->_pref_second_given_name = $mappedPatronData['pref_second_given_name'];
+		$user->_pref_family_name = $mappedPatronData['pref_family_name'];
+		$user->_pref_suffix = $mappedPatronData['pref_suffix'];
+
+		$apiResponse = $this->getPreferredNameFromApi($user, $staffSessionInfo['authToken']);
+
+		$useNewPreferredNameApi = false;
+		if ($this->apiCurlWrapper->getResponseCode() == 200) {
+			$apiResponse = json_decode($apiResponse);
+			if ($apiResponse->status !== '404' && isset($apiResponse->payload[0])) {
+				$useNewPreferredNameApi = true;
+			}
+		}
+
+		if ($useNewPreferredNameApi) {
+			$nameParts = $apiResponse->payload[0];
+			if (!empty($nameParts->prefix)) {
+				$user->_preferredName .= $nameParts->prefix . ' ';
+			}
+			if (!empty($nameParts->first_given_name)) {
+				$user->_preferredName .= $nameParts->first_given_name . ' ';
+			}
+			if (!empty($nameParts->second_given_name)) {
+				$user->_preferredName .= $nameParts->second_given_name . ' ';
+			}
+			if (!empty($nameParts->family_name)) {
+				$user->_preferredName .= $nameParts->family_name . ' ';
+			}
+			if (!empty($nameParts->suffix)) {
+				$user->_preferredName .= $nameParts->suffix . ' ';
+			}
+			$user->_preferredName = trim($user->_preferredName);
+		} else {
+			// fall back to legacy behavior
+			if (!empty($mappedPatronData['pref_prefix'])) {
+				$user->_preferredName .= $mappedPatronData['pref_prefix'] . ' ';
+			} elseif (!empty($mappedPatronData['prefix'])) {
+				$user->_preferredName .= $mappedPatronData['prefix'] . ' ';
+			}
+			if (!empty($mappedPatronData['pref_first_given_name'])) {
+				$user->_preferredName .= $mappedPatronData['pref_first_given_name'];
+			} elseif (!empty($mappedPatronData['first_given_name'])) {
+				$user->_preferredName .= $mappedPatronData['first_given_name'];
+			}
+			if (!empty($mappedPatronData['pref_second_given_name'])) {
+				$user->_preferredName .= ' ' . $mappedPatronData['pref_second_given_name'];
+			} elseif (!empty($mappedPatronData['second_given_name'])) {
+				$user->_preferredName .= ' ' . $mappedPatronData['second_given_name'];
+			}
+			if (!empty($mappedPatronData['pref_family_name'])) {
+				$user->_preferredName .= ' ' . $mappedPatronData['pref_family_name'];
+			} elseif (!empty($mappedPatronData['family_name'])) {
+				$user->_preferredName .= ' ' . $mappedPatronData['family_name'];
+			}
+			if (!empty($mappedPatronData['pref_suffix'])) {
+				$user->_preferredName .= ' ' . $mappedPatronData['pref_suffix'];
+			} elseif (!empty($mappedPatronData['suffix'])) {
+				$user->_preferredName .= ' ' . $mappedPatronData['suffix'];
+			}
+			$user->_preferredName = trim($user->_preferredName);
 		}
 	}
 }
