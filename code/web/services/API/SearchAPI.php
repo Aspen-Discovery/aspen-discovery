@@ -39,6 +39,10 @@ class SearchAPI extends AbstractAPI {
 		global $timer;
 		global $logger;
 
+		// This cast isn't explicitly necessary, but it makes automated tools happy
+		// and doesn't hurt anything to do.
+		$configArray = (array) $configArray;
+
 		$aspenUsage->coverViews++;
 		require_once ROOT_DIR . '/sys/Covers/BookCoverProcessor.php';
 
@@ -51,11 +55,8 @@ class SearchAPI extends AbstractAPI {
 		}
 
 		try {
-			if (!empty($aspenUsage->__get('id'))) {
-				$aspenUsage->update();
-			} else {
-				$aspenUsage->insert();
-			}
+			$method = !empty($aspenUsage->__get('id')) ? "update" : "insert";
+			$aspenUsage->$method();
 		} catch (Exception $e) {
 			// The usage table may not have been created yet.
 		}
