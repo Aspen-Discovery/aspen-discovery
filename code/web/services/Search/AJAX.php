@@ -247,24 +247,6 @@ class AJAX extends JSON_Action {
 	}
 
 	/**
-	 * Gets spotlight titles using a CollectionSpotlightList ID.
-	 *
-	 * Determines the list type (UserList, CourseReserve, or search-based) and
-	 * returns title data for display in a carousel/spotlight format.
-	 *
-	 * @return array
-	 *
-	 * @see CollectionSpotlightList
-	 * @noinspection PhpUnused
-	 */
-	function getSpotlightTitles(): array {
-		$listId = $_REQUEST['id'] ?? 0;
-		$scrollerName = strip_tags($_REQUEST['scrollerName'] ?? ('List' . $listId));
-		$coverSize = $_REQUEST['coverSize'] ?? 'medium';
-		return $this->getSpotlightTitlesForList($listId, $scrollerName, $coverSize, !empty($_REQUEST['reload']));
-	}
-
-	/**
 	 * Gets a spotlight list's title data for either the AJAX endpoint or the
 	 * initial embedded-spotlight response.
 	 */
