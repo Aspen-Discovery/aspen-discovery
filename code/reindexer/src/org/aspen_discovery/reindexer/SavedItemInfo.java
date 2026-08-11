@@ -131,7 +131,10 @@ public class SavedItemInfo {
 		}
 		if (dateAdded != null || this.dateAdded != null) {
 			if (dateAdded == null) {
-				return true;
+				//Empty date added translate to 0 in the DB
+				if (this.dateAdded != 0) {
+					return true;
+				}
 			} else if (this.dateAdded == null) {
 				return true;
 			} else if (dateAdded.getTime() / 1000 != this.dateAdded) {
