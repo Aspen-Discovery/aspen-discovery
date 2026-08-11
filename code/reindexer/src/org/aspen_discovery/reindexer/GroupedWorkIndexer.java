@@ -1951,7 +1951,8 @@ public class GroupedWorkIndexer implements AutoCloseable {
 				addSeriesMemberStmt.setString(3, AspenStringUtils.trimTo(100, volume)); // Add volume
 				long seriesWeight = 0;
 				if (AspenStringUtils.isNumeric(volume)) {
-					seriesWeight = Long.parseLong(volume);
+					float seriesWeightFloat = Float.parseFloat(volume);
+					seriesWeight = (int)seriesWeightFloat;
 					if (seriesWeight > Integer.MAX_VALUE) {
 						seriesWeight = Integer.MAX_VALUE;
 					}
