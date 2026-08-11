@@ -100,8 +100,6 @@ public class HooplaExporter2 {
 			logEntry.incErrors("Error preparing Hoopla exporter2 statements", e);
 			logger.error("Error preparing Hoopla exporter2 statements", e);
 		}
-		//Get a list of all existing records in the database
-		loadExistingTitles();
 
 		processRecordsToReload(logEntry);
 	}
@@ -1328,7 +1326,18 @@ public class HooplaExporter2 {
 		return updatesRun;
 	}
 
+	private boolean existingTitlesLoaded = false;
+
+	private void ensureExistingTitlesLoaded() {
+		if (!existingTitlesLoaded) {
+			loadExistingTitles();
+			existingTitlesLoaded = true;
+		}
+	}
+
 	private void updateTitlesInDB(JSONArray responseTitles, boolean forceRegrouping, boolean doFullReload) {
+		// Load existing records only when title metadata is being processed.
+		ensureExistingTitlesLoaded();
 		for (int i = 0; i < responseTitles.length(); i++){
 			try {
 				JSONObject curTitle = responseTitles.getJSONObject(i);
@@ -1495,6 +1504,10 @@ public class HooplaExporter2 {
 
 	public void exporter2CleanUp() {
 		try{
+			if (getAllExistingHooplaItemsStmt != null) {
+				getAllExistingHooplaItemsStmt.close();
+				getAllExistingHooplaItemsStmt = null;
+			}
 			addHooplaTitleToDB.close();
 			addHooplaTitleToDB = null;
 			updateHooplaTitleInDB.close();
