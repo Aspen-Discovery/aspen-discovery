@@ -8,7 +8,11 @@
 		<input type="hidden" name="patronId" value={$profile->id|escape}>
 		<div class="form-group">
 			<div class="col-xs-4"><strong>{translate text='Full Name' isPublicFacing=true}</strong></div>
-			<div class="col-xs-8">{$profile->_fullname|escape}</div>
+			{if isEvergreen}
+				<div class="col-xs-8">{$profile->_preferredName|escape}</div>
+			{else}
+				<div class="col-xs-8">{$profile->_fullname|escape}</div>
+			{/if}
 		</div>
 		{if empty($offline)}
 			{if !empty($barcodePin)}
