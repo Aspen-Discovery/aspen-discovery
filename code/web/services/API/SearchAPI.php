@@ -1060,7 +1060,8 @@ class SearchAPI extends AbstractAPI {
 			}
 		}
 
-		return json_encode($titleData, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+		$retJSON = json_encode($titleData, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+		return $retJSON !== false ? $retJSON : "{}";
 	}
 
 	private function getCollectionSpotlightLists(CollectionSpotlight $spotlight) : array {
