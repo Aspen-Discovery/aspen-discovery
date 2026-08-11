@@ -1,4 +1,8 @@
 {strip}
+	<form action="" method="post" class="form-horizontal" id="evergreenPreferredNameUpdateForm">
+		<input type="hidden" name="patronId" value={$profile->id|escape}>
+		<input type="hidden" name="updateScope" value="preferredName">
+	</form>
 	<form action="" method="post" class="form-horizontal" id="contactUpdateForm">
 		<input type="hidden" name="updateScope" value="contact">
 		<input type="hidden" name="patronId" value={$profile->id|escape}>
@@ -21,7 +25,52 @@
 			{if !empty($showPreferredNameInProfile)}
 				<div class="form-group">
 					<div class="col-xs-4"><label for="preferredName">{translate text='Preferred Name' isPublicFacing=true}</label></div>
-					<div class="col-xs-8">{if !empty($edit) && $canUpdateContactInfo && $allowUpdatesOfPreferredName}<input name="preferredName" id="preferredName" value="{$profile->_preferredName|escape}" size="50" maxlength="100" class="form-control">{else}{$profile->_preferredName|escape}{/if}</div>
+					<div class="col-xs-8">
+						{if !empty($edit) && $canUpdateContactInfo && $allowUpdatesOfPreferredName}
+							{if isEvergreen}
+								<div>{$profile->_preferredName|escape}</div>
+								<div class="row">
+									<div class="col-xs-4"><label for="pref_prefix">{translate text='Prefix' isPublicFacing=true}</label></div>
+									<div class="col-xs-8">
+										<input form="evergreenPreferredNameUpdateForm" name="pref_prefix" id="pref_prefix" value="{$profile->_pref_prefix|escape}" size="50" maxlength="100" class="form-control">
+									</div>
+								</div>
+								<div class="row">
+									<div class="col-xs-4"><label for="pref_first_given_name">{translate text='First Name' isPublicFacing=true}</label></div>
+									<div class="col-xs-8">
+										<input form="evergreenPreferredNameUpdateForm" name="pref_first_given_name" id="pref_first_given_name" value="{$profile->_pref_first_given_name|escape}" size="50" maxlength="100" class="form-control">
+									</div>
+								</div>
+								<div class="row">
+									<div class="col-xs-4"><label for="pref_second_given_name">{translate text='Middle Name' isPublicFacing=true}</label></div>
+									<div class="col-xs-8">
+										<input form="evergreenPreferredNameUpdateForm" name="pref_second_given_name" id="pref_second_given_name" value="{$profile->_pref_second_given_name|escape}" size="50" maxlength="100" class="form-control">
+									</div>
+								</div>
+								<div class="row">
+									<div class="col-xs-4"><label for="pref_family_name">{translate text='Surname' isPublicFacing=true}</label></div>
+									<div class="col-xs-8">
+										<input form="evergreenPreferredNameUpdateForm" name="pref_family_name" id="pref_family_name" value="{$profile->_pref_family_name|escape}" size="50" maxlength="100" class="form-control">
+									</div>
+								</div>
+								<div class="row">
+									<div class="col-xs-4"><label for="pref_suffix_name">{translate text='Suffix' isPublicFacing=true}</label></div>
+									<div class="col-xs-8">
+										<input form="evergreenPreferredNameUpdateForm" name="pref_suffix_name" id="pref_suffix_name" value="{$profile->_pref_suffix_name|escape}" size="50" maxlength="100" class="form-control">
+									</div>
+								</div>
+								<div class="row">
+									<div class="col-xs-8 col-xs-offset-4">
+										<button type="submit" name="updateEvergreenPreferredName" class="btn btn-sm btn-primary" form="evergreenPreferredNameUpdateForm">{translate text="Update Preferred Name" isPublicFacing=true}</button>
+									</div>
+								</div>
+							{else}
+								<input name="preferredName" id="preferredName" value="{$profile->_preferredName|escape}" size="50" maxlength="100" class="form-control">
+							{/if}
+						{else}
+							{$profile->_preferredName|escape}
+						{/if}
+					</div>
 				</div>
 			{/if}
 		{/if}
