@@ -55,4 +55,27 @@ require_once '../../code/web/bootstrap_aspen.php';
 global $interface;
 $interface = new UInterface();
 
+function applyPendingDatabaseUpdates() : void {
+	require_once ROOT_DIR . '/services/API/SystemAPI.php';
+	$systemAPI = new SystemAPI();
+	$pendingUpdates = $systemAPI->getPendingDatabaseUpdates();
+	$numFailed = 0;
+	foreach (array_keys($pendingUpdates) as $updateKey) {
+		$updateResult = $systemAPI->runDatabaseUpdate($pendingUpdates, $updateKey);
+		if ($updateResult['success']) {
+			continue;
+		}
+		$numFailed++;
+		$updateMessage = strip_tags(str_replace('<br/>', "\n", $updateResult['message']));
+		echo "Database update $updateKey failed: $updateMessage\n";
+	}
+	$numApplied = count($pendingUpdates) - $numFailed;
+	echo "Applied $numApplied pending database updates, $numFailed failed\n";
+}
+
+$runPendingDatabaseUpdates = !empty(getenv('ASPEN_TESTS_RUN_DB_UPDATES'));
+if ($runPendingDatabaseUpdates) {
+	applyPendingDatabaseUpdates();
+}
+
 echo "Aspen Discovery PHPUnit tests starting\n";
