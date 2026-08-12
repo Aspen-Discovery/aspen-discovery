@@ -1597,7 +1597,7 @@ class Evergreen extends AbstractIlsDriver {
 							'date' => date('M j, Y', strtotime($transactionObj['xact_start'])),
 							'type' => $transactionObj['xact_type'],
 							'reason' => $transactionObj['last_billing_type'],
-							'message' => $reason,
+							'message' => $reason ?? '',
 							'amountVal' => $transactionObj['total_owed'],
 							'amountOutstandingVal' => $transactionObj['balance_owed'],
 							'amount' => $currencyFormatter->formatCurrency($transactionObj['total_owed'], $currencyCode),
