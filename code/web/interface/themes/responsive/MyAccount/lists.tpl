@@ -68,7 +68,7 @@
 					<div class="btn-toolbar">
 						<button class="btn btn-sm btn-default" onclick="return AspenDiscovery.Account.showCreateListForm()">{translate text="Create a New List" isPublicFacing=true}</button>
  	 	 	 	 	 	{if !empty($showConvertListsFromClassic)}
-							<a class="btn btn-sm btn-default" onclick="return AspenDiscovery.Lists.importListsFromClassic();">{translate text="Import From Old Catalog" isPublicFacing=true}</a>
+							<button class="btn btn-sm btn-default" onclick="return AspenDiscovery.Lists.importListsFromClassic();">{translate text="Import From Old Catalog" isPublicFacing=true}</button>
  	 	 	 	 	 	{/if}
 					</div>
 				</div>
@@ -102,7 +102,7 @@
  	 	 	 	 	 	{/if}
 						<button class="btn btn-sm btn-default" onclick="return AspenDiscovery.Account.showCreateListGroupForm('-1')">{translate text="Create a New List Group" isPublicFacing=true}</button>
  	 	 	 	 	 	{if !empty($showConvertListsFromClassic)}
-							<a class="btn btn-sm btn-default" onclick="return AspenDiscovery.Lists.importListsFromClassic();">{translate text="Import From Old Catalog" isPublicFacing=true}</a>
+							<button class="btn btn-sm btn-default" onclick="return AspenDiscovery.Lists.importListsFromClassic();">{translate text="Import From Old Catalog" isPublicFacing=true}</button>
  	 	 	 	 	 	{/if}
 					</div>
 				</div>
