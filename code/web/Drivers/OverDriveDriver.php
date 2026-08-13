@@ -367,28 +367,26 @@ class OverDriveDriver extends AbstractEContentDriver {
 
 	public function _callUrl(Library $activeLibrary, OverDriveSetting $settings, string $url, string $methodName) {
 		$tokenData = $this->_connectToAPI($activeLibrary, $settings, false, "callUrl");
-		if ($tokenData) {
-			$this->initCurlWrapper();
-			$this->apiCurlWrapper->setOption(CURLOPT_USERAGENT, "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
-			$this->apiCurlWrapper->setOption(CURLOPT_RETURNTRANSFER, true);
-			$this->apiCurlWrapper->setOption(CURLOPT_FOLLOWLOCATION, 1);
-			global $interface;
-			$this->apiCurlWrapper->addCustomHeaders([
-				"Authorization: $tokenData->token_type $tokenData->access_token",
-				"User-Agent: Aspen Discovery " . $interface->getVariable('aspenVersion'),
-			], true);
-
-			$content = $this->apiCurlWrapper->curlGetPage($url);
-			ExternalRequestLogEntry::logRequest('overdrive.callUrl_' . $methodName, 'GET', $url, $this->apiCurlWrapper->getHeaders(), false, $this->apiCurlWrapper->getResponseCode(), $content, []);
-			$response = json_decode($content);
-			//print_r($returnVal);
-			if ($response != null) {
-				if (!isset($response->message) || $response->message != 'An unexpected error has occurred.') {
-					return $response;
-				}
-			}
+		if (!$tokenData) {
+			return null;
 		}
-		return null;
+
+		$this->initCurlWrapper();
+		$this->apiCurlWrapper->setOption(CURLOPT_USERAGENT, "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
+		$this->apiCurlWrapper->setOption(CURLOPT_RETURNTRANSFER, true);
+		$this->apiCurlWrapper->setOption(CURLOPT_FOLLOWLOCATION, 1);
+		global $interface;
+		$this->apiCurlWrapper->addCustomHeaders([
+			"Authorization: $tokenData->token_type $tokenData->access_token",
+			"User-Agent: Aspen Discovery " . $interface->getVariable('aspenVersion'),
+		], true);
+
+		$content = $this->apiCurlWrapper->curlGetPage($url);
+		ExternalRequestLogEntry::logRequest('overdrive.callUrl_' . $methodName, 'GET', $url, $this->apiCurlWrapper->getHeaders(), false, $this->apiCurlWrapper->getResponseCode(), $content, []);
+		$response = json_decode($content);
+		$validResponse = $response && $response->message != 'An unexpected error has occurred.' && !isset($response["errorCode"]);
+		
+		return $validResponse ? $response : null;
 	}
 
 	private function getILSName(OverDriveSetting $settings, User $user) : ?string {
