@@ -384,7 +384,7 @@ class OverDriveDriver extends AbstractEContentDriver {
 		$content = $this->apiCurlWrapper->curlGetPage($url);
 		ExternalRequestLogEntry::logRequest('overdrive.callUrl_' . $methodName, 'GET', $url, $this->apiCurlWrapper->getHeaders(), false, $this->apiCurlWrapper->getResponseCode(), $content, []);
 		$response = json_decode($content);
-		$validResponse = $response && $response->message != 'An unexpected error has occurred.' && !$response->errorCode;
+		$validResponse = $response && !$response->errorCode;
 		
 		return $validResponse ? $response : null;
 	}
