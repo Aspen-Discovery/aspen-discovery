@@ -1755,7 +1755,7 @@ class Evergreen extends AbstractIlsDriver {
 				]),
 			];
 
-			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $params);
+			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, http_build_query($params, '', '&', PHP_QUERY_RFC3986));
 			ExternalRequestLogEntry::logRequest('evergreen.getStaffUserInfo', 'POST', $evergreenUrl, $this->apiCurlWrapper->getHeaders(), http_build_query($params), $this->apiCurlWrapper->getResponseCode(), $apiResponse, ['password' => $this->accountProfile->staffPassword]);
 			if ($this->apiCurlWrapper->getResponseCode() == 200) {
 				$apiResponse = json_decode($apiResponse);
@@ -2166,7 +2166,7 @@ class Evergreen extends AbstractIlsDriver {
 					'identifier' => trim($username),
 				]),
 			];
-			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $params);
+			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, http_build_query($params, '', '&', PHP_QUERY_RFC3986));
 			ExternalRequestLogEntry::logRequest('evergreen.validatePatronAndGetAuthToken', 'POST', $evergreenUrl, $this->apiCurlWrapper->getHeaders(), http_build_query($params), $this->apiCurlWrapper->getResponseCode(), $apiResponse, ['password' => $password]);
 			if ($this->apiCurlWrapper->getResponseCode() == 200) {
 				$apiResponse = json_decode($apiResponse);
