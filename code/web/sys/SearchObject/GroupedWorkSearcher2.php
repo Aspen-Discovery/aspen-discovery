@@ -578,7 +578,13 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 		}
 	}
 
-	function getSearchHandler() : string {
+	/**
+	 * Returns the search handler to be used for searching with the ability to convert to proper searches.
+	 * Returns null for the default handler
+	 *
+	 * @return string|null
+	 */
+	function getSearchHandler() : ?string {
 		$handler = $this->index;
 		if (preg_match('/^"[^\"]+?\"$/', $this->query)) {
 			if ($handler == 'Keyword') {
