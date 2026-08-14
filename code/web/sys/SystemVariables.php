@@ -554,8 +554,6 @@ class SystemVariables extends DataObject {
 		if (!UserAccount::isLoggedIn() || !UserAccount::getActiveUserObj()->isAspenAdminUser()) {
 			$objectStructure['indexingSection']['properties']['storeRecordDetailsInSolr']['type'] = 'hidden';
 			$objectStructure['indexingSection']['properties']['storeRecordDetailsInDatabase']['type'] = 'hidden';
-			$objectStructure['indexingSection']['properties']['indexVersion']['type'] = 'hidden';
-			$objectStructure['indexingSection']['properties']['searchVersion']['type'] = 'hidden';
 			$objectStructure['indexingSection']['properties']['hooplaVersion']['type'] = 'hidden';
 		}
 
