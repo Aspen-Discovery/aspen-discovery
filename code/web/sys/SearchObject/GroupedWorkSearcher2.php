@@ -1095,7 +1095,7 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 	}
 
 	/**
-	 * Retrieves a document specified by the ID.
+	 * Retrieves record drivers for each of the specified IDs.
 	 *
 	 * @param string[] $ids An array of documents to retrieve from Solr
 	 * @param ?string $fieldsToReturn A comma-delimited list of fields to return

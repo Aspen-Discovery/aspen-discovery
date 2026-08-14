@@ -785,19 +785,6 @@ class SearchObject_GroupedWorkSearcher3 extends SearchObject_GroupedWorkSearcher
 		return $this->indexEngine->getRecord($id, $this->getFieldsToReturn());
 	}
 
-	/**
-	 * Retrieves a document specified by the ID.
-	 *
-	 * @param string[] $ids An array of documents to retrieve from Solr
-	 * @param ?string $fieldsToReturn A comma-delimited list of fields to return
-	 * @access  public
-	 * @return  array             Record Drivers for the results
-	 * @throws  AspenError
-	 */
-	function getRecords($ids, ?string $fieldsToReturn = null) : array {
-		return $this->indexEngine->getRecords($ids, $this->getFieldsToReturn());
-	}
-
 	function getScopedRecordIds($ids) : array {
 		return $this->indexEngine->getRecords($ids, 'id', true);
 	}
