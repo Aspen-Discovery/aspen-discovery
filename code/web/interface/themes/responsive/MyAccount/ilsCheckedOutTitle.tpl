@@ -1,5 +1,5 @@
 {strip}
-	<div id="record{$record->source}_{$record->sourceId|escape}" class="result row{if $record->isOverdue()} bg-overdue{/if}">
+	<div id="record{$record->source}_{$record->sourceId|escape}" class="result row{if $record->isOverdue()} bg-overdue{/if}" data-record-type="ils" data-record-id="{$record->recordId}">
 
 		{* Cover Column *}
 		{if !empty($showCovers)}
