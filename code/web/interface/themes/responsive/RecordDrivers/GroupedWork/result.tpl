@@ -5,7 +5,7 @@
 			<div class="hidden" id="scoreExplanationValue{$summId|escape}">{$summExplain}</div>
 		{/if}
 
-		<div class="row">
+		<div class="row" data-work-id="{$summId|escape}">
 			{if !empty($showCovers)}
 				<div class="coversColumn col-xs-3 col-sm-3{if !empty($viewingCombinedResults)} col-md-3 col-lg-2{/if} text-center" aria-hidden="true" role="presentation">
 					{if $disableCoverArt != 1}
