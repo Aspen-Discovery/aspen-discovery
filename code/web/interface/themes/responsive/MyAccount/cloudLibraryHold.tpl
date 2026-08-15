@@ -1,5 +1,5 @@
 {strip}
-	<div class="result row" id="cloudLibraryHold_{$record->sourceId}">
+	<div class="result row" id="cloudLibraryHold_{$record->sourceId}" data-record-type="cloudlibrary" data-record-id="{$record->recordId}">
 		<div class="selectTitle col-xs-12 col-sm-1">
 			<input type="checkbox" name="selected[{$record->userId}|{$record->sourceId}|{$record->cancelId}]" class="titleSelect" id="selected{$record->cancelId}">
 		</div>
