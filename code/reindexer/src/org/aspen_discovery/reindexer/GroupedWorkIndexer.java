@@ -740,7 +740,11 @@ public class GroupedWorkIndexer implements AutoCloseable {
 		logger.info("Clearing existing MARC records from index");
 		try {
 			updateServer.deleteByQuery("recordtype:grouped_work");
-			//3-19-2019 Don't commit so the index does not get cleared during run (but will clear at the end).
+			if (indexVersion == 3) {
+				updateServer.deleteByQuery("recordtype:record_scoping");
+			}
+			//Make sure the delete gets processed.
+			updateServer.blockUntilFinished();
 		} catch (BaseHttpSolrClient.RemoteSolrException rse) {
 			logEntry.incErrors("Solr is not running properly, try restarting", rse);
 			System.exit(-1);

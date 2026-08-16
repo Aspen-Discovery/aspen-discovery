@@ -177,13 +177,22 @@
 			</analyzer>
 		</fieldType>
 		<!-- Text Field without Stemming, Synonyms, and stop Word removal -->
-		<fieldType name="alphaOnlySort" class="solr.TextField" sortMissingLast="true">
+		<fieldType name="alphaOnlySort" class="solr.SortableTextField" sortMissingLast="true" stored="false" indexed="false">
 			<analyzer>
 				<tokenizer class="solr.KeywordTokenizerFactory"/>
 				<filter class="solr.LowerCaseFilterFactory"/>
 				<!-- The TrimFilter removes any leading or trailing whitespace -->
 				<filter class="solr.TrimFilterFactory"/>
 				<filter class="solr.PatternReplaceFilterFactory" pattern="([^a-z1-9\s])" replacement="" replace="all"/>
+			</analyzer>
+		</fieldType>
+		<!-- Text Field without Stemming, Synonyms, and stop Word removal -->
+		<fieldType name="sortableText" class="solr.SortableTextField" sortMissingLast="true" stored="false" indexed="false">
+			<analyzer>
+				<tokenizer class="solr.KeywordTokenizerFactory"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
+				<!-- The TrimFilter removes any leading or trailing whitespace -->
+				<filter class="solr.TrimFilterFactory"/>
 			</analyzer>
 		</fieldType>
 	</types>
@@ -217,7 +226,7 @@
 		<!-- This is returned. It is just the subtitle. -->
 		<field name="subtitle_display" type="unchanged_string" indexed="false" stored="true"/>
 		<!-- title for sorting only -->
-		<field name="title_sort" type="alphaOnlySort" indexed="true" stored="false" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<field name="title_sort" type="alphaOnlySort"/>
 		<!-- variations of title for searching -->
 		<field name="title_exact" type="text-exact" indexed="true" stored="false"/>
 		<field name="title_left" type="text-left" indexed="true" stored="false" multiValued="true"/>
@@ -239,7 +248,7 @@
 		<!-- This is used for facet values and in the mlt handler -->
 		<field name="authorStr" type="unchanged_string" docValues="true" indexed="true" stored="false" />
 		<!-- author for sorting -->
-		<field name="author_sort" type="alphaOnlySort" indexed="true" stored="false"/>
+		<field name="author_sort" type="alphaOnlySort" />
 		<field name="author_exact" type="text-exact" indexed="true" stored="false" />
 		<field name="author_left" type="text-left" indexed="true" stored="false" />
 		<field name="auth_author" type="textProper" indexed="true" stored="false"/>
@@ -430,8 +439,7 @@
 		<field name="local_callnumber" type="callnumber-search" indexed="true" stored="true" multiValued="true"/>
 		<field name="local_callnumber_exact" type="text-exact" indexed="true" stored="false" multiValued="true"/>
 		<field name="local_callnumber_left" type="text-left" indexed="true" stored="false" multiValued="true"/>
-		<field name="callnumber_sort" type="text-exact" indexed="true" stored="false" multiValued="false"/>
-		<dynamicField name="callnumber_sort_*" type="text-exact" indexed="true" stored="false" multiValued="false"/>
+		<field name="callnumber_sort" type="sortableText" indexed="true" stored="false" multiValued="false"/>
 
 		<!-- Broad Search Terms -->
 		<field name="table_of_contents" type="searchable_text" indexed="true" stored="false" multiValued="true"/>
