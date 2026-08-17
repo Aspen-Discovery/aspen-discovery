@@ -246,7 +246,7 @@
 		<!-- The author to display to the user -->
 		<field name="author_display" type="unchanged_string" indexed="false" stored="true" multiValued="false"/>
 		<!-- This is used for facet values and in the mlt handler -->
-		<field name="authorStr" type="unchanged_string" docValues="true" indexed="true" stored="false" />
+		<field name="authorStr" type="unchanged_string" docValues="true" indexed="true" stored="true" termVectors="true" />
 		<!-- author for sorting -->
 		<field name="author_sort" type="alphaOnlySort" />
 		<field name="author_exact" type="text-exact" indexed="true" stored="false" />
@@ -348,13 +348,13 @@
 		<!-- This is returned and used as a facet. -->
 		<field name="econtent_source" type="unchanged_string" indexed="false" stored="false" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 		<!-- This is returned, used as a facet, and in the mlt handler. -->
-		<field name="subject_facet" type="unchanged_string" docValues="true" indexed="false" stored="false" multiValued="true"/>
+		<field name="subject_facet" type="unchanged_string" docValues="true" indexed="true" stored="true" multiValued="true" termVectors="true"/>
 		<field name="subject" type="searchable_text_minimal_stem" indexed="true" stored="false" multiValued="true"/>
 		<field name="subject_proper" type="textProper" indexed="true" stored="false" multiValued="true"/>
 		<field name="topic" type="searchable_text_minimal_stem" indexed="true" stored="false" multiValued="true"/>
 		<field name="topic_proper" type="textProper" indexed="true" stored="false" multiValued="true"/>
 		<!-- This is returned, used as a facet, and in the mlt handler. -->
-		<field name="topic_facet" type="unchanged_string" docValues="true" indexed="false" stored="false" multiValued="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<field name="topic_facet" type="unchanged_string" docValues="true" indexed="true" stored="true" termVectors="true" multiValued="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 		<!-- This is returned and used as a facet. -->
 		<field name="lc_subject" type="unchanged_string" docValues="true" indexed="false" stored="false" multiValued="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 		<!-- This is returned and used as a facet. -->
@@ -363,17 +363,17 @@
 		<field name="genre" type="searchable_text_minimal_stem" indexed="true" stored="true" multiValued="true"/>
 		<field name="genre_proper" type="textProper" indexed="true" stored="false" multiValued="true"/>
 		<!-- This is returned, used as a facet, and in the mlt handler. -->
-		<field name="genre_facet" type="unchanged_string" docValues="true" indexed="false" stored="false" multiValued="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<field name="genre_facet" type="unchanged_string" docValues="true" indexed="true" stored="true" termVectors="true" multiValued="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 		<field name="geographic" type="searchable_text_minimal_stem" indexed="true" stored="false" multiValued="true"/>
 		<field name="geographic_proper" type="textProper" indexed="true" stored="false" multiValued="true"/>
 		<!-- This is returned, used as a facet, and in the mlt handler. -->
-		<field name="geographic_facet" type="unchanged_string" indexed="true" stored="false" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<field name="geographic_facet" type="unchanged_string" indexed="true" stored="true" termVectors="true" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 		<!-- This is returned, used as a facet, and in the mlt handler. -->
-		<field name="personal_name_facet" type="unchanged_string" docValues="true" indexed="false" stored="false" multiValued="true" />
+		<field name="personal_name_facet" type="unchanged_string" docValues="true" indexed="true" stored="true" termVectors="true" multiValued="true" />
 		<!-- This is returned, used as a facet, and in the mlt handler. -->
-		<field name="corporate_name_facet" type="unchanged_string" docValues="true" indexed="false" stored="false" multiValued="true" />
+		<field name="corporate_name_facet" type="unchanged_string" docValues="true" indexed="true" stored="true" termVectors="true" multiValued="true" />
 		<!-- This is returned and used as a facet, and in the mlt handler. -->
-		<field name="era" type="unchanged_string" indexed="true" stored="false" multiValued="true" docValues="true" omitNorms="true" />
+		<field name="era" type="unchanged_string" indexed="true" stored="true" termVectors="true" multiValued="true" docValues="true" omitNorms="true" />
 		<field name="era_proper" type="textProper" indexed="true" stored="false" multiValued="true"/>
 		<!-- This is returned and used as a facet. -->
 		<field name="literary_form_full" type="unchanged_string" indexed="false" stored="false" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
@@ -398,11 +398,11 @@
 
 		<!-- awards and ratings -->
 		<!-- This is not returned, it is used as a facet -->
-		<field name="content_rating" type="unchanged_string" indexed="true" stored="false" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<field name="content_rating" type="unchanged_string" indexed="true" stored="true" termVectors="true" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 		<!-- This is returned, used as a facet, and in the mlt handler -->
-		<field name="mpaa_rating" type="unchanged_string" indexed="true" stored="false" multiValued="true" docValues="true" omitNorms="true" />
+		<field name="mpaa_rating" type="unchanged_string" indexed="true" stored="true" termVectors="true" multiValued="true" docValues="true" omitNorms="true" />
 		<!-- This is used as a facet and in the mlt handler -->
-		<field name="awards_facet" type="unchanged_string" indexed="true" stored="false" multiValued="true" docValues="true" />
+		<field name="awards_facet" type="unchanged_string" indexed="true" stored="true" termVectors="true" multiValued="true" docValues="true" />
 		<!-- This is returned and used as a facet -->
 		<field name="lexile_score" type="integer" indexed="true" stored="false" multiValued="false" default="-1" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 		<!-- This is returned and used as a facet -->
@@ -410,7 +410,7 @@
 		<!-- This is returned and used as a facet -->
 		<field name="fountas_pinnell" type="unchanged_string" indexed="true" stored="false" multiValued="false" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 		<!-- This is returned, used as a facet, and in the mlt handler -->
-		<field name="accelerated_reader_interest_level" type="unchanged_string" indexed="true" stored="false" multiValued="false" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<field name="accelerated_reader_interest_level" type="unchanged_string" indexed="true" stored="true" termVectors="true" multiValued="false" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 		<!-- This is returned and used as a facet -->
 		<field name="accelerated_reader_reading_level" type="float" indexed="true" stored="false" multiValued="false" default="0" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 		<!-- This is returned and used as a facet -->
@@ -448,7 +448,7 @@
 		<field name="keywords_proper" type="textProper" indexed="true" stored="false"/>
 
 		<!-- Descriptions -->
-		<field name="description" type="searchable_text" indexed="true" stored="false"/>
+		<field name="description" type="searchable_text" indexed="true" stored="true" termVectors="true" termPositions="false" termOffsets="false" omitNorms="false" omitTermFreqAndPositions="false" />
 		<!-- This is returned -->
 		<field name="display_description" type="unchanged_string" indexed="false" stored="true"/>
 		<!-- This is returned -->
