@@ -2246,23 +2246,7 @@ class UserAPI extends AbstractAPI {
 						$recordId = $_REQUEST['recordId'];
 					}
 					if (!empty($recordId)) {
-						$systemVariables = SystemVariables::getSystemVariables();
-						if ($systemVariables && $systemVariables->exactLocationMatching){ $exactMatch = true }
-						$getPickupLocationsFromILS = $catalogDriver->getValidPickupLocationsForRecordFromILS($recordId, $patron);
-						if (!empty($getPickupLocationsFromILS['locationCodes']) && $getPickupLocationsFromILS['success']) {
-							$validLocationCodesFromILS = $getPickupLocationsFromILS['locationCodes'];
-							$pickupLocations = array_filter($pickupLocations, function ($location) use ($validLocationCodesFromILS) {
-								foreach ($validLocationCodesFromILS as $validCode) {
-									if ( ($exactMatch && strcasecmp($validCode, $location['locationCode'])) ||  str_starts_with($validCode, $location->['locationCode'])) {
-										return true;
-									}
-								}
-								return false;
-							});
-							$pickupLocations = array_values($pickupLocations);
-						} elseif (empty($getPickupLocationsFromILS['useDefaultLocationFiltering'])) {
-							$pickupLocations = [];
-						}
+						$pickupLocations = $catalogDriver->getValidPickupLocationsForRecordFromILS($recordId, $patron, $pickupLocations);
 					}
 				}
 				$preferredPickupLocationIsValid = false;

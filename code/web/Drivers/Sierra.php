@@ -499,12 +499,13 @@ class Sierra extends AbstractIlsDriver {
 	}
 
 	/**
-	 * Retrieves valid pickup locations for this patron for this record.
+	 * Returns an array of valid pickup locations for this patron for this record.
 	 * @param string $recordId
 	 * @param User $patron
+	 * @param array $locations
 	 * @return array An array containing valid pickup locations
 	 */
-	public function getValidPickupLocationsForRecordFromILS($recordId, $patron): array {
+	public function getValidPickupLocationsForRecordFromILS($recordId, $patron, $locationSingleton): array {
 		if ($recordId == null) {
 			return [
 				'success' => false,
@@ -521,27 +522,32 @@ class Sierra extends AbstractIlsDriver {
 		$pickupLocationsResponse = $this->_callUrl('sierra.getPickupLocationsForRecord', $sierraUrl);
 
 		if (!empty($pickupLocationsResponse) && !empty($pickupLocationsResponse->holdshelf)) {
-			$locationCodes = [];
+			$systemVariables = SystemVariables::getSystemVariables();
+			if ($systemVariables && $systemVariables->exactLocationMatching){ $exactMatch = true }
+			$locationCodesFromILS = [];
 			if (!empty($pickupLocationsResponse->holdshelf->selected)) {
-				$locationCodes[] = $pickupLocationsResponse->holdshelf->selected->code;
+				$locationCodesFromILS[] = $pickupLocationsResponse->holdshelf->selected->code;
 			}
 			foreach ($pickupLocationsResponse->holdshelf->locations as $location) {
-				$locationCodes[] = trim($location->code);
+				$locationCodesFromILS[] = trim($location->code);
 			}
-			return [
-				'success' => true,
-				'message' => 'Pickup locations found',
-				'locationCodes' => $locationCodes,
-			];
+			// We filter the list returned from the ILS against the Aspen locations
+			// either as a 'starts_with' or 'exact' match
+			$pickupBranches = array_filter($locations, function ($location) use ($locationCodesFromILS) {
+				if (!is_object($location)) {
+					return true;
+				}
+				foreach ($locationCodesFromILS as $validCode) {
+					if ( ($exactMatch && strcasecmp($validCode, $location->code)) ||  str_starts_with($validCode, $location->code)) {
+						return true;
+					}
+				}
+				return false;
+			});
+			
 		} else {
-			$message = 'Unable to retrieve valid pickup locations from Sierra. ';
-			$message .= $pickupLocationsResponse->name ?? '';
-			$message .= !empty($pickupLocationsResponse->description) ? ': ' . $pickupLocationsResponse->description : '';
-			return [
-				'success' => false,
-				'message' => $message,
-				'useDefaultLocationFiltering' => true,
-			];
+			// If we didn't get a valid response we return the locations unaltered
+			return $locations;
 		}
 	}
 	/**
