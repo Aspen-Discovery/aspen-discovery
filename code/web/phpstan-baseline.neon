@@ -1,0 +1,1081 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Attribute class JetBrains\\PhpStorm\\NoReturn does not exist\.$#'
+			identifier: attribute.notFound
+			count: 1
+			path: Action.php
+
+		-
+			message: '#^Method phpCAS\:\:client\(\) should return a but return statement is missing\.$#'
+			identifier: return.missing
+			count: 1
+			path: CAS-1.3.4/CAS.php
+
+		-
+			message: '#^Method phpCAS\:\:getAttributes\(\) should return array but return statement is missing\.$#'
+			identifier: return.missing
+			count: 1
+			path: CAS-1.3.4/CAS.php
+
+		-
+			message: '#^Method phpCAS\:\:getUser\(\) should return string but return statement is missing\.$#'
+			identifier: return.missing
+			count: 1
+			path: CAS-1.3.4/CAS.php
+
+		-
+			message: '#^Method phpCAS\:\:hasAttribute\(\) should return bool but return statement is missing\.$#'
+			identifier: return.missing
+			count: 1
+			path: CAS-1.3.4/CAS.php
+
+		-
+			message: '#^Method phpCAS\:\:hasAttributes\(\) should return bool but return statement is missing\.$#'
+			identifier: return.missing
+			count: 1
+			path: CAS-1.3.4/CAS.php
+
+		-
+			message: '#^Method phpCAS\:\:proxy\(\) should return a but return statement is missing\.$#'
+			identifier: return.missing
+			count: 1
+			path: CAS-1.3.4/CAS.php
+
+		-
+			message: '#^Method phpCAS\:\:retrievePT\(\) should return string but return statement is missing\.$#'
+			identifier: return.missing
+			count: 1
+			path: CAS-1.3.4/CAS.php
+
+		-
+			message: '#^Class phpCAS referenced with incorrect case\: phpCas\.$#'
+			identifier: class.nameCase
+			count: 6
+			path: CAS-1.3.4/CAS/Client.php
+
+		-
+			message: '#^Class phpCAS referenced with incorrect case\: phpcas\.$#'
+			identifier: class.nameCase
+			count: 1
+			path: CAS-1.3.4/CAS/Client.php
+
+		-
+			message: '#^Method CAS_Client\:\:getAttribute\(\) should return string but return statement is missing\.$#'
+			identifier: return.missing
+			count: 1
+			path: CAS-1.3.4/CAS/Client.php
+
+		-
+			message: '#^Access to an undefined property CAS_PGTStorage_Db\:\:\$_driver_options\.$#'
+			identifier: property.notFound
+			count: 1
+			path: CAS-1.3.4/CAS/PGTStorage/Db.php
+
+		-
+			message: '#^Method CAS_Request_CurlMultiRequest\:\:send\(\) should return bool but return statement is missing\.$#'
+			identifier: return.missing
+			count: 1
+			path: CAS-1.3.4/CAS/Request/CurlMultiRequest.php
+
+		-
+			message: '#^Method CatalogConnection\:\:sendAspenPasswordResetEmailForBarcode\(\) invoked with 1 parameter, 2 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: CatalogConnection.php
+
+		-
+			message: '#^Undefined variable\: \$logger$#'
+			identifier: variable.undefined
+			count: 1
+			path: Drivers/CarlX.php
+
+		-
+			message: '#^Deprecated in PHP 8\.0\: Required parameter \$pmtAmount follows optional parameter \$pmtType\.$#'
+			identifier: parameter.requiredAfterOptional
+			count: 1
+			path: Drivers/Nashville.php
+
+		-
+			message: '#^Path in require_once\(\) "JSMin\.php" is not a file or it does not exist\.$#'
+			identifier: requireOnce.fileNotFound
+			count: 1
+			path: Minify/Controller/Page.php
+
+		-
+			message: '#^Access to an undefined property Minify_HTML\:\:\$_html\.$#'
+			identifier: property.notFound
+			count: 4
+			path: Minify/HTML.php
+
+		-
+			message: '#^Undefined variable\: \$c$#'
+			identifier: variable.undefined
+			count: 1
+			path: Minify/HTML/Helper.php
+
+		-
+			message: '#^Path in require_once\(\) "JSMin\.php" is not a file or it does not exist\.$#'
+			identifier: requireOnce.fileNotFound
+			count: 1
+			path: Minify/JS/ClosureCompiler.php
+
+		-
+			message: '#^Call to static method getAcceptedEncoding\(\) on an unknown class HTTP_Encoder\.$#'
+			identifier: class.notFound
+			count: 1
+			path: Minify/Minify.php
+
+		-
+			message: '#^Call to static method isBuggyIe\(\) on an unknown class HTTP_Encoder\.$#'
+			identifier: class.notFound
+			count: 1
+			path: Minify/Minify.php
+
+		-
+			message: '#^Instantiated class HTTP_ConditionalGet not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: Minify/Minify.php
+
+		-
+			message: '#^Path in require_once\(\) "HTTP/ConditionalGet\.php" is not a file or it does not exist\.$#'
+			identifier: requireOnce.fileNotFound
+			count: 1
+			path: Minify/Minify.php
+
+		-
+			message: '#^Path in require_once\(\) "HTTP/Encoder\.php" is not a file or it does not exist\.$#'
+			identifier: requireOnce.fileNotFound
+			count: 1
+			path: Minify/Minify.php
+
+		-
+			message: '#^Instantiated class JavascriptPacker not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: Minify/Packer.php
+
+		-
+			message: '#^Path in include\(\) "class\.JavaScriptPacker\.php" is not a file or it does not exist\.$#'
+			identifier: include.fileNotFound
+			count: 1
+			path: Minify/Packer.php
+
+		-
+			message: '#^Method BasicPageRecordDriver\:\:getStaffView\(\) should return string but return statement is missing\.$#'
+			identifier: return.missing
+			count: 1
+			path: RecordDrivers/BasicPageRecordDriver.php
+
+		-
+			message: '#^Method CustomResourcePagesRecordDriver\:\:getStaffView\(\) should return string but return statement is missing\.$#'
+			identifier: return.missing
+			count: 1
+			path: RecordDrivers/CustomResourcePagesRecordDriver.php
+
+		-
+			message: '#^Method GrapesPageRecordDriver\:\:getStaffView\(\) should return string but return statement is missing\.$#'
+			identifier: return.missing
+			count: 1
+			path: RecordDrivers/GrapesPageRecordDriver.php
+
+		-
+			message: '#^Access to an undefined property GroupedWorkSubDriver\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: RecordDrivers/GroupedWorkSubDriver.php
+
+		-
+			message: '#^Method OpenArchivesRecordDriver\:\:getStaffView\(\) should return string but return statement is missing\.$#'
+			identifier: return.missing
+			count: 1
+			path: RecordDrivers/OpenArchivesRecordDriver.php
+
+		-
+			message: '#^Method PortalPageRecordDriver\:\:getStaffView\(\) should return string but return statement is missing\.$#'
+			identifier: return.missing
+			count: 1
+			path: RecordDrivers/PortalPageRecordDriver.php
+
+		-
+			message: '#^Call to an undefined method RecordInterface\:\:getId\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: RecordDrivers/RecordInterface.php
+
+		-
+			message: '#^Call to an undefined method RecordInterface\:\:getPrimaryAuthor\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: RecordDrivers/RecordInterface.php
+
+		-
+			message: '#^Access to an undefined property TalpaRecordDriver\:\:\$author\.$#'
+			identifier: property.notFound
+			count: 1
+			path: RecordDrivers/TalpaRecordDriver.php
+
+		-
+			message: '#^Access to an undefined property TalpaRecordDriver\:\:\$title\.$#'
+			identifier: property.notFound
+			count: 1
+			path: RecordDrivers/TalpaRecordDriver.php
+
+		-
+			message: '#^Method WebResourceRecordDriver\:\:getStaffView\(\) should return string but return statement is missing\.$#'
+			identifier: return.missing
+			count: 1
+			path: RecordDrivers/WebResourceRecordDriver.php
+
+		-
+			message: '#^Method WebsitePageRecordDriver\:\:getStaffView\(\) should return string but return statement is missing\.$#'
+			identifier: return.missing
+			count: 1
+			path: RecordDrivers/WebsitePageRecordDriver.php
+
+		-
+			message: '#^Access to static property \$scopingLocationCode on an unknown class Millennium\.$#'
+			identifier: class.notFound
+			count: 2
+			path: bootstrap_aspen.php
+
+		-
+			message: '#^Attribute class JetBrains\\PhpStorm\\NoReturn does not exist\.$#'
+			identifier: attribute.notFound
+			count: 1
+			path: cron/consolidateReadingHistory.php
+
+		-
+			message: '#^Function validateGroupedWork invoked with 6 parameters, 8 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: migrations/cleanupPikaReadingHistory.php
+
+		-
+			message: '#^Function getUserIdForBarcode invoked with 3 parameters, 4 required\.$#'
+			identifier: arguments.count
+			count: 5
+			path: migrations/importPikaData.php
+
+		-
+			message: '#^Function validateGroupedWork invoked with 7 parameters, 8 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: migrations/importPikaData.php
+
+		-
+			message: '#^Array has 2 duplicate keys with value ''format'' \(''format'', ''format''\)\.$#'
+			identifier: array.duplicateKey
+			count: 2
+			path: services/API/ItemAPI.php
+
+		-
+			message: '#^Access to an undefined property UserAPI\:\:\$recordDriver\.$#'
+			identifier: property.notFound
+			count: 4
+			path: services/API/UserAPI.php
+
+		-
+			message: '#^Undefined variable\: \$hold_result$#'
+			identifier: variable.undefined
+			count: 2
+			path: services/API/UserAPI.php
+
+		-
+			message: '#^Attribute class JetBrains\\PhpStorm\\NoReturn does not exist\.$#'
+			identifier: attribute.notFound
+			count: 1
+			path: services/Admin/ObjectEditor.php
+
+		-
+			message: '#^Attribute class JetBrains\\PhpStorm\\NoReturn does not exist\.$#'
+			identifier: attribute.notFound
+			count: 3
+			path: services/Admin/ObjectRestorations.php
+
+		-
+			message: '#^Attribute class JetBrains\\PhpStorm\\NoReturn does not exist\.$#'
+			identifier: attribute.notFound
+			count: 1
+			path: services/Admin/PermissionsReport.php
+
+		-
+			message: '#^Attribute class JetBrains\\PhpStorm\\NoReturn does not exist\.$#'
+			identifier: attribute.notFound
+			count: 1
+			path: services/Admin/SSOSettings.php
+
+		-
+			message: '#^Attribute class JetBrains\\PhpStorm\\NoReturn does not exist\.$#'
+			identifier: attribute.notFound
+			count: 1
+			path: services/Admin/SystemVariables.php
+
+		-
+			message: '#^Function mcrypt_create_iv not found\.$#'
+			identifier: function.notFound
+			count: 2
+			path: services/Authentication/SAML/extlib/xmlseclibs/xmlseclibs.php
+
+		-
+			message: '#^Function mcrypt_enc_get_block_size not found\.$#'
+			identifier: function.notFound
+			count: 1
+			path: services/Authentication/SAML/extlib/xmlseclibs/xmlseclibs.php
+
+		-
+			message: '#^Function mcrypt_enc_get_iv_size not found\.$#'
+			identifier: function.notFound
+			count: 2
+			path: services/Authentication/SAML/extlib/xmlseclibs/xmlseclibs.php
+
+		-
+			message: '#^Function mcrypt_generic not found\.$#'
+			identifier: function.notFound
+			count: 1
+			path: services/Authentication/SAML/extlib/xmlseclibs/xmlseclibs.php
+
+		-
+			message: '#^Function mcrypt_generic_deinit not found\.$#'
+			identifier: function.notFound
+			count: 2
+			path: services/Authentication/SAML/extlib/xmlseclibs/xmlseclibs.php
+
+		-
+			message: '#^Function mcrypt_generic_init not found\.$#'
+			identifier: function.notFound
+			count: 2
+			path: services/Authentication/SAML/extlib/xmlseclibs/xmlseclibs.php
+
+		-
+			message: '#^Function mcrypt_module_close not found\.$#'
+			identifier: function.notFound
+			count: 2
+			path: services/Authentication/SAML/extlib/xmlseclibs/xmlseclibs.php
+
+		-
+			message: '#^Function mcrypt_module_open not found\.$#'
+			identifier: function.notFound
+			count: 2
+			path: services/Authentication/SAML/extlib/xmlseclibs/xmlseclibs.php
+
+		-
+			message: '#^Function mdecrypt_generic not found\.$#'
+			identifier: function.notFound
+			count: 1
+			path: services/Authentication/SAML/extlib/xmlseclibs/xmlseclibs.php
+
+		-
+			message: '#^Method XMLSecEnc\:\:encryptNode\(\) should return DOMElement but return statement is missing\.$#'
+			identifier: return.missing
+			count: 1
+			path: services/Authentication/SAML/extlib/xmlseclibs/xmlseclibs.php
+
+		-
+			message: '#^Access to an undefined property OneLogin_Saml2_Auth\:\:\$_paths\.$#'
+			identifier: property.notFound
+			count: 1
+			path: services/Authentication/SAML/lib/Saml2/Auth.php
+
+		-
+			message: '#^Method OneLogin_Saml2_Auth\:\:setSchemasPath\(\) should return \$this\(OneLogin_Saml2_Auth\) but return statement is missing\.$#'
+			identifier: return.missing
+			count: 1
+			path: services/Authentication/SAML/lib/Saml2/Auth.php
+
+		-
+			message: '#^Method OneLogin_Saml2_Settings\:\:setSchemasPath\(\) should return \$this\(OneLogin_Saml2_Settings\) but return statement is missing\.$#'
+			identifier: return.missing
+			count: 1
+			path: services/Authentication/SAML/lib/Saml2/Settings.php
+
+		-
+			message: '#^Attribute class JetBrains\\PhpStorm\\NoReturn does not exist\.$#'
+			identifier: attribute.notFound
+			count: 12
+			path: services/CommunityEngagement/AJAX.php
+
+		-
+			message: '#^Class Logger referenced with incorrect case\: LOGGER\.$#'
+			identifier: class.nameCase
+			count: 1
+			path: services/CommunityEngagement/AJAX.php
+
+		-
+			message: '#^Class UserAccount referenced with incorrect case\: userAccount\.$#'
+			identifier: class.nameCase
+			count: 1
+			path: services/Events/Calendar.php
+
+		-
+			message: '#^Inner named functions are not supported by PHPStan\. Consider refactoring to an anonymous function, class method, or a top\-level\-defined function\. See issue \#165 \(https\://github\.com/phpstan/phpstan/issues/165\) for more details\.$#'
+			identifier: function.inner
+			count: 1
+			path: services/Greenhouse/AspenLiDABuildTracker.php
+
+		-
+			message: '#^Attribute class JetBrains\\PhpStorm\\NoReturn does not exist\.$#'
+			identifier: attribute.notFound
+			count: 1
+			path: services/MyAccount/AJAX.php
+
+		-
+			message: '#^Function _campaignMilestoneProgressEntryObjectAlreadyExists not found\.$#'
+			identifier: function.notFound
+			count: 1
+			path: services/MyAccount/AJAX.php
+
+		-
+			message: '#^Function mask not found\.$#'
+			identifier: function.notFound
+			count: 2
+			path: services/MyAccount/AJAX.php
+
+		-
+			message: '#^Function mask_email not found\.$#'
+			identifier: function.notFound
+			count: 1
+			path: services/MyAccount/AJAX.php
+
+		-
+			message: '#^Inner named functions are not supported by PHPStan\. Consider refactoring to an anonymous function, class method, or a top\-level\-defined function\. See issue \#165 \(https\://github\.com/phpstan/phpstan/issues/165\) for more details\.$#'
+			identifier: function.inner
+			count: 2
+			path: services/MyAccount/AJAX.php
+
+		-
+			message: '#^Access to an undefined property PayOnlineNashville\:\:\$cc_fullname\.$#'
+			identifier: property.notFound
+			count: 2
+			path: services/MyAccount/PayOnlineNashville.php
+
+		-
+			message: '#^Access to an undefined property PayOnlineNashville\:\:\$cc_zipcode\.$#'
+			identifier: property.notFound
+			count: 2
+			path: services/MyAccount/PayOnlineNashville.php
+
+		-
+			message: '#^Access to an undefined property PayOnlineNashville\:\:\$librarycard\.$#'
+			identifier: property.notFound
+			count: 3
+			path: services/MyAccount/PayOnlineNashville.php
+
+		-
+			message: '#^Access to an undefined property MyAccount_RegisterRosenLevelUP\:\:\$parent_pw\.$#'
+			identifier: property.notFound
+			count: 1
+			path: services/MyAccount/RegisterRosenLevelUP.php
+
+		-
+			message: '#^Access to an undefined property MyAccount_RegisterRosenLevelUP\:\:\$student_pw\.$#'
+			identifier: property.notFound
+			count: 1
+			path: services/MyAccount/RegisterRosenLevelUP.php
+
+		-
+			message: '#^Undefined variable\: \$validLibraries$#'
+			identifier: variable.undefined
+			count: 1
+			path: services/SideLoads/AJAX.php
+
+		-
+			message: '#^Attribute class JetBrains\\PhpStorm\\NoReturn does not exist\.$#'
+			identifier: attribute.notFound
+			count: 2
+			path: services/Translation/Translations.php
+
+		-
+			message: '#^Attribute class JetBrains\\PhpStorm\\NoReturn does not exist\.$#'
+			identifier: attribute.notFound
+			count: 2
+			path: services/WebBuilder/AJAX.php
+
+		-
+			message: '#^Class LibraryWebResource referenced with incorrect case\: libraryWebResource\.$#'
+			identifier: class.nameCase
+			count: 2
+			path: services/WebBuilder/CustomWebResourcePage.php
+
+		-
+			message: '#^Class LibraryWebResource referenced with incorrect case\: libraryWebResource\.$#'
+			identifier: class.nameCase
+			count: 1
+			path: services/WebBuilder/ResourceAudience.php
+
+		-
+			message: '#^Class LibraryWebResource referenced with incorrect case\: libraryWebResource\.$#'
+			identifier: class.nameCase
+			count: 1
+			path: services/WebBuilder/ResourceCategory.php
+
+		-
+			message: '#^Undefined variable\: \$existingObject$#'
+			identifier: variable.undefined
+			count: 1
+			path: services/WebBuilder/Template.php
+
+		-
+			message: '#^Class PType referenced with incorrect case\: pType\.$#'
+			identifier: class.nameCase
+			count: 3
+			path: sys/Account/PType.php
+
+		-
+			message: '#^Method CASAuthentication\:\:validateAccount\(\) should return AspenError\|bool\|string but return statement is missing\.$#'
+			identifier: return.missing
+			count: 1
+			path: sys/Authentication/CASAuthentication.php
+
+		-
+			message: '#^Access to an undefined property OAuth2AccessTokenEntity\:\:\$client\.$#'
+			identifier: property.notFound
+			count: 2
+			path: sys/Authentication/OAuth2/Entities/OAuth2AccessTokenEntity.php
+
+		-
+			message: '#^Access to an undefined property OAuth2AccessTokenEntity\:\:\$expiryDateTime\.$#'
+			identifier: property.notFound
+			count: 2
+			path: sys/Authentication/OAuth2/Entities/OAuth2AccessTokenEntity.php
+
+		-
+			message: '#^Access to an undefined property OAuth2AccessTokenEntity\:\:\$identifier\.$#'
+			identifier: property.notFound
+			count: 2
+			path: sys/Authentication/OAuth2/Entities/OAuth2AccessTokenEntity.php
+
+		-
+			message: '#^Access to an undefined property OAuth2AccessTokenEntity\:\:\$privateKey\.$#'
+			identifier: property.notFound
+			count: 1
+			path: sys/Authentication/OAuth2/Entities/OAuth2AccessTokenEntity.php
+
+		-
+			message: '#^Access to an undefined property OAuth2AccessTokenEntity\:\:\$scopes\.$#'
+			identifier: property.notFound
+			count: 2
+			path: sys/Authentication/OAuth2/Entities/OAuth2AccessTokenEntity.php
+
+		-
+			message: '#^Access to an undefined property OAuth2AccessTokenEntity\:\:\$userIdentifier\.$#'
+			identifier: property.notFound
+			count: 2
+			path: sys/Authentication/OAuth2/Entities/OAuth2AccessTokenEntity.php
+
+		-
+			message: '#^Access to an undefined property OAuth2AuthCodeEntity\:\:\$client\.$#'
+			identifier: property.notFound
+			count: 2
+			path: sys/Authentication/OAuth2/Entities/OAuth2AuthCodeEntity.php
+
+		-
+			message: '#^Access to an undefined property OAuth2AuthCodeEntity\:\:\$expiryDateTime\.$#'
+			identifier: property.notFound
+			count: 2
+			path: sys/Authentication/OAuth2/Entities/OAuth2AuthCodeEntity.php
+
+		-
+			message: '#^Access to an undefined property OAuth2AuthCodeEntity\:\:\$identifier\.$#'
+			identifier: property.notFound
+			count: 2
+			path: sys/Authentication/OAuth2/Entities/OAuth2AuthCodeEntity.php
+
+		-
+			message: '#^Access to an undefined property OAuth2AuthCodeEntity\:\:\$redirecturi\.$#'
+			identifier: property.notFound
+			count: 2
+			path: sys/Authentication/OAuth2/Entities/OAuth2AuthCodeEntity.php
+
+		-
+			message: '#^Access to an undefined property OAuth2AuthCodeEntity\:\:\$scopes\.$#'
+			identifier: property.notFound
+			count: 2
+			path: sys/Authentication/OAuth2/Entities/OAuth2AuthCodeEntity.php
+
+		-
+			message: '#^Access to an undefined property OAuth2AuthCodeEntity\:\:\$userIdentifier\.$#'
+			identifier: property.notFound
+			count: 2
+			path: sys/Authentication/OAuth2/Entities/OAuth2AuthCodeEntity.php
+
+		-
+			message: '#^Access to an undefined property OAuth2ClientEntity\:\:\$identifier\.$#'
+			identifier: property.notFound
+			count: 2
+			path: sys/Authentication/OAuth2/Entities/OAuth2ClientEntity.php
+
+		-
+			message: '#^Access to an undefined property OAuth2ClientEntity\:\:\$isConfidential\.$#'
+			identifier: property.notFound
+			count: 2
+			path: sys/Authentication/OAuth2/Entities/OAuth2ClientEntity.php
+
+		-
+			message: '#^Access to an undefined property OAuth2ClientEntity\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 2
+			path: sys/Authentication/OAuth2/Entities/OAuth2ClientEntity.php
+
+		-
+			message: '#^Access to an undefined property OAuth2ClientEntity\:\:\$redirectUri\.$#'
+			identifier: property.notFound
+			count: 2
+			path: sys/Authentication/OAuth2/Entities/OAuth2ClientEntity.php
+
+		-
+			message: '#^Access to an undefined property OAuth2RefreshTokenEntity\:\:\$accessToken\.$#'
+			identifier: property.notFound
+			count: 2
+			path: sys/Authentication/OAuth2/Entities/OAuth2RefreshTokenEntity.php
+
+		-
+			message: '#^Access to an undefined property OAuth2RefreshTokenEntity\:\:\$expiryDateTime\.$#'
+			identifier: property.notFound
+			count: 2
+			path: sys/Authentication/OAuth2/Entities/OAuth2RefreshTokenEntity.php
+
+		-
+			message: '#^Access to an undefined property OAuth2RefreshTokenEntity\:\:\$identifier\.$#'
+			identifier: property.notFound
+			count: 2
+			path: sys/Authentication/OAuth2/Entities/OAuth2RefreshTokenEntity.php
+
+		-
+			message: '#^Instantiated class SimpleSAML\\Auth\\Simple not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: sys/Authentication/SAML2Authentication.php
+
+		-
+			message: '#^Path in require_once\(\) "/usr/share/simplesamlphp/lib/_autoload\.php" is not a file or it does not exist\.$#'
+			identifier: requireOnce.fileNotFound
+			count: 1
+			path: sys/Authentication/SAML2Authentication.php
+
+		-
+			message: '#^Method UserCampaign\:\:calculateUserCompletedCampaignMilestones\(\) should return int but return statement is missing\.$#'
+			identifier: return.missing
+			count: 1
+			path: sys/CommunityEngagement/UserCampaign.php
+
+		-
+			message: '#^Deprecated in PHP 8\.0\: Required parameter \$displayBranchOnThumbnail follows optional parameter \$branch\.$#'
+			identifier: parameter.requiredAfterOptional
+			count: 1
+			path: sys/Covers/EventCoverBuilder.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: sys/DB/DataObject.php
+
+		-
+			message: '#^Array has 2 duplicate keys with value ''drop_date_of_birth_from_user_table'' \(''drop_date_of_birth_from_user_table'', ''drop_date_of_birth_from_user_table''\)\.$#'
+			identifier: array.duplicateKey
+			count: 1
+			path: sys/DBMaintenance/community_engagement_updates.php
+
+		-
+			message: '#^Array has 2 duplicate keys with value ''web_builder_custom_form_increase_email'' \(''web_builder_custom_form_increase_email'', ''web_builder_custom_form_increase_email''\)\.$#'
+			identifier: array.duplicateKey
+			count: 1
+			path: sys/DBMaintenance/version_updates/24.08.00.php
+
+		-
+			message: '#^Instantiated class Greew\\OAuth2\\Client\\Provider\\Azure not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: sys/Email/PHPMailer-6.9.1/get_oauth_token.php
+
+		-
+			message: '#^Instantiated class Hayageek\\OAuth2\\Client\\Provider\\Yahoo not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: sys/Email/PHPMailer-6.9.1/get_oauth_token.php
+
+		-
+			message: '#^Instantiated class League\\OAuth2\\Client\\Provider\\Google not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: sys/Email/PHPMailer-6.9.1/get_oauth_token.php
+
+		-
+			message: '#^Instantiated class Stevenmaguire\\OAuth2\\Client\\Provider\\Microsoft not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: sys/Email/PHPMailer-6.9.1/get_oauth_token.php
+
+		-
+			message: '#^Instantiated class League\\OAuth2\\Client\\Grant\\RefreshToken not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: sys/Email/PHPMailer-6.9.1/src/OAuth.php
+
+		-
+			message: '#^Class Psr\\Log\\LoggerInterface not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: sys/Email/PHPMailer-6.9.1/src/PHPMailer.php
+
+		-
+			message: '#^Class Psr\\Log\\LoggerInterface not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: sys/Email/PHPMailer-6.9.1/src/SMTP.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 2
+			path: sys/File/FileUpload.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 2
+			path: sys/File/ImageUpload.php
+
+		-
+			message: '#^Method File_MARC_Control_Field\:\:delete\(\) should return true but return statement is missing\.$#'
+			identifier: return.missing
+			count: 1
+			path: sys/File/MARC/Control_Field.php
+
+		-
+			message: '#^Method File_MARC_Data_Field\:\:appendSubfield\(\) should return File_MARC_Subfield but return statement is missing\.$#'
+			identifier: return.missing
+			count: 1
+			path: sys/File/MARC/Data_Field.php
+
+		-
+			message: '#^Method File_MARC_Data_Field\:\:delete\(\) should return true but return statement is missing\.$#'
+			identifier: return.missing
+			count: 1
+			path: sys/File/MARC/Data_Field.php
+
+		-
+			message: '#^Call to an undefined method File_MARC_Field\:\:getData\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: sys/File/MARC/Field.php
+
+		-
+			message: '#^Call to an undefined method File_MARC_Field\:\:getSubfields\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: sys/File/MARC/Field.php
+
+		-
+			message: '#^Call to static method isbn10\(\) on an unknown class Validate_ISPN\.$#'
+			identifier: class.notFound
+			count: 2
+			path: sys/File/MARC/Lint.php
+
+		-
+			message: '#^Call to static method isbn13\(\) on an unknown class Validate_ISPN\.$#'
+			identifier: class.notFound
+			count: 1
+			path: sys/File/MARC/Lint.php
+
+		-
+			message: '#^Path in require_once\(\) "Validate/ISPN\.php" is not a file or it does not exist\.$#'
+			identifier: requireOnce.fileNotFound
+			count: 1
+			path: sys/File/MARC/Lint.php
+
+		-
+			message: '#^Method File_MARC_Record\:\:addWarning\(\) should return true but return statement is missing\.$#'
+			identifier: return.missing
+			count: 1
+			path: sys/File/MARC/Record.php
+
+		-
+			message: '#^Method File_MARC_Subfield\:\:delete\(\) should return true but return statement is missing\.$#'
+			identifier: return.missing
+			count: 1
+			path: sys/File/MARC/Subfield.php
+
+		-
+			message: '#^Access to an undefined property File_MARCJSON\:\:\$text\.$#'
+			identifier: property.notFound
+			count: 2
+			path: sys/File/MARCJSON.php
+
+		-
+			message: '#^Undefined variable\: \$configArray$#'
+			identifier: variable.undefined
+			count: 1
+			path: sys/Interface.php
+
+		-
+			message: '#^Class PType referenced with incorrect case\: pType\.$#'
+			identifier: class.nameCase
+			count: 2
+			path: sys/LibraryLocation/LibraryLink.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: sys/Parsedown/Parsedown.php
+
+		-
+			message: '#^Class GroupedWorksSolrConnector not found\.$#'
+			identifier: class.notFound
+			count: 4
+			path: sys/SearchObject/AbstractGroupedWorkSearcher.php
+
+		-
+			message: '#^Method SearchObject_CloudSourceSearcher\:\:buildRSS\(\) should return string but return statement is missing\.$#'
+			identifier: return.missing
+			count: 1
+			path: sys/SearchObject/CloudSourceSearcher.php
+
+		-
+			message: '#^Method SearchObject_EbscoEdsSearcher\:\:buildRSS\(\) should return string but return statement is missing\.$#'
+			identifier: return.missing
+			count: 1
+			path: sys/SearchObject/EbscoEdsSearcher.php
+
+		-
+			message: '#^Method SearchObject_EbscohostSearcher\:\:buildRSS\(\) should return string but return statement is missing\.$#'
+			identifier: return.missing
+			count: 1
+			path: sys/SearchObject/EbscohostSearcher.php
+
+		-
+			message: '#^Method SearchObject_GaleSearcher\:\:buildRSS\(\) should return string but return statement is missing\.$#'
+			identifier: return.missing
+			count: 1
+			path: sys/SearchObject/GaleSearcher.php
+
+		-
+			message: '#^Cannot unset offset ''method'' on array\{type\: ''query'', field\: \(int\|string\), limit\: 30, mincount\: 1, domain\?\: array\{excludeTags\: string\}\}\.$#'
+			identifier: unset.offset
+			count: 1
+			path: sys/SearchObject/SolrSearcher.php
+
+		-
+			message: '#^Undefined variable\: \$orderedListOfIDs$#'
+			identifier: variable.undefined
+			count: 1
+			path: sys/SearchObject/SolrSearcher.php
+
+		-
+			message: '#^Method SearchObject_SummonSearcher\:\:buildRSS\(\) should return string but return statement is missing\.$#'
+			identifier: return.missing
+			count: 1
+			path: sys/SearchObject/SummonSearcher.php
+
+		-
+			message: '#^Access to an undefined property SearchObject_TalpaSearcher\:\:\$selectedAvailabilityToggleValue\.$#'
+			identifier: property.notFound
+			count: 4
+			path: sys/SearchObject/TalpaSearcher.php
+
+		-
+			message: '#^Access to an undefined property SearchObject_TalpaSearcher\:\:\$sessionId\.$#'
+			identifier: property.notFound
+			count: 1
+			path: sys/SearchObject/TalpaSearcher.php
+
+		-
+			message: '#^Method SearchObject_TalpaSearcher\:\:buildRSS\(\) should return string but return statement is missing\.$#'
+			identifier: return.missing
+			count: 1
+			path: sys/SearchObject/TalpaSearcher.php
+
+		-
+			message: '#^Undefined variable\: \$jsonFacets$#'
+			identifier: variable.undefined
+			count: 1
+			path: sys/SearchObject/TalpaSearcher.php
+
+		-
+			message: '#^Method SessionInterface\:\:gc\(\) should return int\|false but return statement is missing\.$#'
+			identifier: return.missing
+			count: 1
+			path: sys/Session/SessionInterface.php
+
+		-
+			message: '#^Method SessionInterface\:\:read\(\) should return string\|false but return statement is missing\.$#'
+			identifier: return.missing
+			count: 1
+			path: sys/Session/SessionInterface.php
+
+		-
+			message: '#^Method SessionInterface\:\:write\(\) should return bool but return statement is missing\.$#'
+			identifier: return.missing
+			count: 1
+			path: sys/Session/SessionInterface.php
+
+		-
+			message: '#^Function smarty_function_html_checkboxes\(\) should return string but return statement is missing\.$#'
+			identifier: return.missing
+			count: 1
+			path: sys/Smarty/plugins/function.html_checkboxes.php
+
+		-
+			message: '#^Function smarty_function_html_radios\(\) should return string but return statement is missing\.$#'
+			identifier: return.missing
+			count: 1
+			path: sys/Smarty/plugins/function.html_radios.php
+
+		-
+			message: '#^Undefined variable\: \$all_empty$#'
+			identifier: variable.undefined
+			count: 3
+			path: sys/Smarty/plugins/function.html_select_date.php
+
+		-
+			message: '#^Undefined variable\: \$day_empty$#'
+			identifier: variable.undefined
+			count: 1
+			path: sys/Smarty/plugins/function.html_select_date.php
+
+		-
+			message: '#^Undefined variable\: \$month_empty$#'
+			identifier: variable.undefined
+			count: 1
+			path: sys/Smarty/plugins/function.html_select_date.php
+
+		-
+			message: '#^Undefined variable\: \$month_names$#'
+			identifier: variable.undefined
+			count: 1
+			path: sys/Smarty/plugins/function.html_select_date.php
+
+		-
+			message: '#^Undefined variable\: \$year_empty$#'
+			identifier: variable.undefined
+			count: 1
+			path: sys/Smarty/plugins/function.html_select_date.php
+
+		-
+			message: '#^Undefined variable\: \$_hour$#'
+			identifier: variable.undefined
+			count: 2
+			path: sys/Smarty/plugins/function.html_select_time.php
+
+		-
+			message: '#^Undefined variable\: \$_hour12$#'
+			identifier: variable.undefined
+			count: 1
+			path: sys/Smarty/plugins/function.html_select_time.php
+
+		-
+			message: '#^Undefined variable\: \$_html_meridian$#'
+			identifier: variable.undefined
+			count: 1
+			path: sys/Smarty/plugins/function.html_select_time.php
+
+		-
+			message: '#^Undefined variable\: \$_minute$#'
+			identifier: variable.undefined
+			count: 2
+			path: sys/Smarty/plugins/function.html_select_time.php
+
+		-
+			message: '#^Undefined variable\: \$_second$#'
+			identifier: variable.undefined
+			count: 2
+			path: sys/Smarty/plugins/function.html_select_time.php
+
+		-
+			message: '#^Method Smarty_Internal_Compile_Private_Special_Variable\:\:compile\(\) should return string but return statement is missing\.$#'
+			identifier: return.missing
+			count: 1
+			path: sys/Smarty/sysplugins/smarty_internal_compile_private_special_variable.php
+
+		-
+			message: '#^Access to an undefined property Smarty_Internal_Data\:\:\$smarty\.$#'
+			identifier: property.notFound
+			count: 1
+			path: sys/Smarty/sysplugins/smarty_internal_data.php
+
+		-
+			message: '#^Undefined variable\: \$content$#'
+			identifier: variable.undefined
+			count: 1
+			path: sys/Smarty/sysplugins/smarty_internal_template.php
+
+		-
+			message: '#^Access to an undefined property Smarty_Internal_TemplateBase\:\:\$inheritance\.$#'
+			identifier: property.notFound
+			count: 1
+			path: sys/Smarty/sysplugins/smarty_internal_templatebase.php
+
+		-
+			message: '#^Undefined variable\: \$savedConfigVars$#'
+			identifier: variable.undefined
+			count: 1
+			path: sys/Smarty/sysplugins/smarty_internal_templatebase.php
+
+		-
+			message: '#^Undefined variable\: \$savedTplVars$#'
+			identifier: variable.undefined
+			count: 1
+			path: sys/Smarty/sysplugins/smarty_internal_templatebase.php
+
+		-
+			message: '#^Method Smarty_Internal_TemplateCompilerBase\:\:compilePHPFunctionCall\(\) should return string but return statement is missing\.$#'
+			identifier: return.missing
+			count: 2
+			path: sys/Smarty/sysplugins/smarty_internal_templatecompilerbase.php
+
+		-
+			message: '#^Method Smarty_Internal_TemplateCompilerBase\:\:compileTag2\(\) should return string but return statement is missing\.$#'
+			identifier: return.missing
+			count: 1
+			path: sys/Smarty/sysplugins/smarty_internal_templatecompilerbase.php
+
+		-
+			message: '#^Access to an undefined property Smarty_Security\:\:\$smarty\.$#'
+			identifier: property.notFound
+			count: 10
+			path: sys/Smarty/sysplugins/smarty_security.php
+
+		-
+			message: '#^Method Smarty_Template_Compiled\:\:render\(\) should return string but return statement is missing\.$#'
+			identifier: return.missing
+			count: 2
+			path: sys/Smarty/sysplugins/smarty_template_compiled.php
+
+		-
+			message: '#^Undefined variable\: \$library$#'
+			identifier: variable.undefined
+			count: 1
+			path: sys/TwoFactorAuthTOTPSecret.php
+
+		-
+			message: '#^Class PType referenced with incorrect case\: pType\.$#'
+			identifier: class.nameCase
+			count: 2
+			path: sys/WebBuilder/BasicPage.php
+
+		-
+			message: '#^Class PType referenced with incorrect case\: pType\.$#'
+			identifier: class.nameCase
+			count: 2
+			path: sys/WebBuilder/CustomWebResourcePage.php
+
+		-
+			message: '#^Cannot unset offset ''templateSelect'' on array\{id\: array\{property\: ''id'', type\: ''label'', label\: ''Id'', description\: ''The unique id…''\}, title\: array\{property\: ''title'', type\: ''text'', label\: ''Title'', description\: ''The title of the…'', size\: ''40'', maxLength\: 100, required\: true\}, showTitleOnPage\: array\{property\: ''showTitleOnPage'', type\: ''checkbox'', label\: ''Display Title on…'', description\: ''Whether or not to…'', default\: 1\}, urlAlias\: array\{property\: ''urlAlias'', type\: ''text'', label\: ''URL Alias \(no…'', description\: ''The url of the page…'', size\: ''40'', maxLength\: 100, required\: true\}, teaser\: array\{property\: ''teaser'', type\: ''textarea'', label\: ''Teaser'', description\: ''Teaser for page…'', maxLength\: 512, hideInLists\: true\}, templatesSelect\: array\{property\: ''templatesSelect'', type\: ''enum'', label\: ''Templates'', required\: true, values\: array\}, libraries\: array\{property\: ''libraries'', type\: ''multiSelect'', listStyle\: ''checkboxSimple'', label\: ''Libraries'', description\: ''Define libraries…'', values\: array, hideInLists\: true\}, htmlData\: array\{property\: ''htmlData'', type\: ''hidden'', label\: ''htmlData'', description\: ''html data'', hideInLists\: true\}, \.\.\.\}\.$#'
+			identifier: unset.offset
+			count: 1
+			path: sys/WebBuilder/GrapesPage.php
+
+		-
+			message: '#^Class PType referenced with incorrect case\: pType\.$#'
+			identifier: class.nameCase
+			count: 2
+			path: sys/WebBuilder/PortalPage.php
+
+		-
+			message: '#^Call to an undefined method WebResource\:\:clearLibraries\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: sys/WebBuilder/WebResource.php
