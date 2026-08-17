@@ -7,6 +7,11 @@ jobs:
   phpstan:
     name: Run PHPStan
     runs-on: ubuntu-latest
+    
+    # Set the working directory for all run steps in this job
+    defaults:
+      run:
+        working-directory: code/web
 
     steps:
       - name: Checkout code
@@ -15,7 +20,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.2' # Adjust to match your project's PHP version
+          php-version: '8.2'
           tools: composer
           coverage: none
 
@@ -27,7 +32,8 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          # Update the hash path to match your composer.lock location
+          key: ${{ runner.os }}-composer-${{ hashFiles('code/web/composer.lock') }}
           restore-keys: |
             ${{ runner.os }}-composer-
 
