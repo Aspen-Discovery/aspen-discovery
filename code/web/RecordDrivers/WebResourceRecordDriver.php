@@ -41,6 +41,7 @@ class WebResourceRecordDriver extends IndexRecordDriver {
 		global $interface;
 
 		$interface->assign('id', $this->getId());
+		$interface->assign('idNumber', $this->getNumericId());
 		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
 		$interface->assign('pageUrl', $this->getLinkUrl());
 		$interface->assign('website_name', $this->fields['website_name']);
@@ -118,7 +119,7 @@ class WebResourceRecordDriver extends IndexRecordDriver {
 				$libraryId = $activeLibrary->libraryId;
 			}
 
-			return $webResource->getUrlForLibrary($libraryId);
+			return $webResource->getUrlForLibrary($libraryId, $this->fields['source_url']);
 		}
 
 		return $this->fields['source_url'];

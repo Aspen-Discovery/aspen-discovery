@@ -590,8 +590,8 @@ class WebResource extends DB_LibraryLinkedObject {
 	 * @param int|null $libraryId The library ID to get the URL for. If null, returns base URL.
 	 * @return string The URL for the library.
 	 */
-	public function getUrlForLibrary(int $libraryId = null): string {
-		$url = $this->url;
+	public function getUrlForLibrary(int $libraryId = null, $url = null): string {
+		$url ??= $this->url;
 		if ($libraryId !== null) {
 			$libraries = $this->getLibraries();
 			if (isset($libraries[$libraryId]) && !empty($libraries[$libraryId]['url'])) {
