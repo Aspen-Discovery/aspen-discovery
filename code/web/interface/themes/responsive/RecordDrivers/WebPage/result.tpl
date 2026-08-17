@@ -17,9 +17,9 @@
 			<div class="col-xs-12">
 				<span class="result-index">{$resultIndex})</span>&nbsp;
 				{if preg_match('/webresource/i', $id)}
-				<a href="{$resourceUrl}" class="result-title notranslate" onclick="return AspenDiscovery.WebBuilder.getWebResource('{$idNumber}');" aria-label="{translate text='Open Resource' isPublicFacing=true}{if $openInNewTab} ({translate text='opens in new tab' isPublicFacing=true}){/if}">
-					{if !$title|removeTrailingPunctuation} {translate text='Title not available' isPublicFacing=true}{else}{$title|removeTrailingPunctuation|highlight|truncate:180:"..."}{/if}
-				</a>
+					<a class="result-title notranslate" onclick="return AspenDiscovery.WebBuilder.getWebResource('{$idNumber}');" aria-label="{translate text='Open Resource' isPublicFacing=true}{if !empty($openInNewTab)} ({translate text='opens in new tab' isPublicFacing=true}){/if}">
+						{if !$title|removeTrailingPunctuation} {translate text='Title not available' isPublicFacing=true}{else}{$title|removeTrailingPunctuation|highlight|truncate:180:"..."}{/if}
+					</a>
 				{else}
 					<a href="{$pageUrl}" class="result-title notranslate" onclick="AspenDiscovery.Websites.trackUsage('{$id}')">
 						{if !$title|removeTrailingPunctuation} {translate text='Title not available' isPublicFacing=true}{else}{$title|removeTrailingPunctuation|highlight|truncate:180:"..."}{/if}
