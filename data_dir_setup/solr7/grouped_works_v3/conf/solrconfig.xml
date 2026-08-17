@@ -240,7 +240,7 @@
 			 have some sort of hard autoCommit to limit the log size.
 		  -->
 		<autoCommit>
-			<maxTime>${solr.autoCommit.maxTime:15000}</maxTime>
+			<maxTime>${solr.autoCommit.maxTime:120000}</maxTime>
 			<openSearcher>false</openSearcher>
 		</autoCommit>
 
@@ -251,7 +251,7 @@
 		  -->
 
 		<autoSoftCommit>
-			<maxTime>${solr.autoSoftCommit.maxTime:5000}</maxTime>
+			<maxTime>${solr.autoSoftCommit.maxTime:60000}</maxTime>
 		</autoSoftCommit>
 
 		<!-- Update Related Event Listeners
@@ -350,7 +350,7 @@
 		  -->
 		<filterCache size="2048"
 		             initialSize="512"
-		             autowarmCount="128"/>
+		             autowarmCount="4"/>
 
 		<!-- Query Result Cache
 
@@ -362,7 +362,7 @@
 		  -->
 		<queryResultCache size="4096"
 		                  initialSize="512"
-		                  autowarmCount="128"/>
+		                  autowarmCount="0"/>
 
 		<!-- Document Cache
 
@@ -478,10 +478,142 @@
 		  -->
 		<listener event="newSearcher" class="solr.QuerySenderListener">
 			<arr name="queries">
-				<!--
-				   <lst><str name="q">solr</str><str name="sort">price asc</str></lst>
-				   <lst><str name="q">rocks</str><str name="sort">weight asc</str></lst>
-				  -->
+				<lst>
+					<!-- Use the normal search handler. -->
+					<str name="qt">/select</str>
+
+					<!-- Match all documents, then restrict the domain to valid parents. -->
+					<str name="q">title:dog</str>
+
+					<arr name="fq">
+						<str>recordtype:grouped_work</str>
+						<str><![CDATA[
+          {!parent which="recordtype:grouped_work" tag=child_filter}
+        ]]></str>
+					</arr>
+
+					<!-- Do not retrieve documents or run unrelated components. -->
+					<str name="rows">0</str>
+					<str name="start">0</str>
+					<str name="fl">id</str>
+					<str name="spellcheck">false</str>
+					<str name="debugQuery">false</str>
+					<str name="hl">false</str>
+					<str name="stats">false</str>
+					<str name="terms">false</str>
+					<str name="mlt">false</str>
+					<str name="indent">false</str>
+
+					<!-- Warm every child-domain facet using the optimized block-count path. -->
+					<str name="json.facet"><![CDATA[
+{
+  "format_category": {
+    "type": "terms",
+    "field": "format_category",
+    "limit": -1,
+    "mincount": 1,
+    "domain": {
+      "blockChildren": "recordtype:grouped_work",
+      "excludeTags": "child_filter"
+    },
+    "facet": {
+      "parent_count": "uniqueBlock(_root_)"
+    }
+  },
+  "availability_toggle": {
+    "type": "terms",
+    "field": "availability_toggle",
+    "limit": -1,
+    "mincount": 1,
+    "domain": {
+      "blockChildren": "recordtype:grouped_work",
+      "excludeTags": "child_filter"
+    },
+    "facet": {
+      "parent_count": "uniqueBlock(_root_)"
+    }
+  },
+  "format": {
+    "type": "terms",
+    "field": "format",
+    "limit": -1,
+    "mincount": 1,
+    "domain": {
+      "blockChildren": "recordtype:grouped_work",
+      "excludeTags": "child_filter"
+    },
+    "facet": {
+      "parent_count": "uniqueBlock(_root_)"
+    }
+  },
+  "available_at": {
+    "type": "terms",
+    "field": "available_at",
+    "limit": -1,
+    "mincount": 1,
+    "domain": {
+      "blockChildren": "recordtype:grouped_work",
+      "excludeTags": "child_filter"
+    },
+    "facet": {
+      "parent_count": "uniqueBlock(_root_)"
+    }
+  },
+  "local_time_since_added": {
+    "type": "terms",
+    "field": "local_time_since_added",
+    "limit": -1,
+    "mincount": 1,
+    "domain": {
+      "blockChildren": "recordtype:grouped_work",
+      "excludeTags": "child_filter"
+    },
+    "facet": {
+      "parent_count": "uniqueBlock(_root_)"
+    }
+  },
+  "collection": {
+    "type": "terms",
+    "field": "collection",
+    "limit": -1,
+    "mincount": 1,
+    "domain": {
+      "blockChildren": "recordtype:grouped_work",
+      "excludeTags": "child_filter"
+    },
+    "facet": {
+      "parent_count": "uniqueBlock(_root_)"
+    }
+  },
+  "econtent_source": {
+    "type": "terms",
+    "field": "econtent_source",
+    "limit": -1,
+    "mincount": 1,
+    "domain": {
+      "blockChildren": "recordtype:grouped_work",
+      "excludeTags": "child_filter"
+    },
+    "facet": {
+      "parent_count": "uniqueBlock(_root_)"
+    }
+  },
+  "owning_location": {
+    "type": "terms",
+    "field": "owning_location",
+    "limit": -1,
+    "mincount": 1,
+    "domain": {
+      "blockChildren": "recordtype:grouped_work",
+      "excludeTags": "child_filter"
+    },
+    "facet": {
+      "parent_count": "uniqueBlock(_root_)"
+    }
+  }
+}
+      ]]></str>
+				</lst>
 			</arr>
 		</listener>
 		<listener event="firstSearcher" class="solr.QuerySenderListener">
