@@ -809,26 +809,8 @@ class MyAccount_AJAX extends JSON_Action {
 				}
 
 				$catalogDriver = $user->getCatalogDriver();
-				$systemVariables = SystemVariables::getSystemVariables();
-				if ($systemVariables && $systemVariables->exactLocationMatching){ $exactMatch = true }
 				if (!empty($catalogDriver) && $catalogDriver->restrictValidPickupLocationsForRecordByILS()) {
-					$getPickupLocationsFromILS = $catalogDriver->getValidPickupLocationsForRecordFromILS($marcRecord->getUniqueID(), $user);
-					if (!empty($getPickupLocationsFromILS['locationCodes']) && $getPickupLocationsFromILS['success']) {
-						$validLocationCodesFromILS = $getPickupLocationsFromILS['locationCodes'];
-						$pickupBranches = array_filter($pickupBranches, function ($location) use ($validLocationCodesFromILS) {
-							if (!is_object($location)) {
-								return true;
-							}
-							foreach ($validLocationCodesFromILS as $validCode) {
-								if ( ($exactMatch && strcasecmp($validCode, $location->code)) ||  str_starts_with($validCode, $location->code)) {
-									return true;
-								}
-							}
-							return false;
-						});
-					} elseif (empty($getPickupLocationsFromILS['useDefaultLocationFiltering'])) {
-						$pickupBranches = [];
-					}
+					$pickupBranches = $catalogDriver->getValidPickupLocationsForRecordFromILS($marcRecord->getUniqueID(), $user, $pickupBranches);
 				}
 			}
 
@@ -1987,26 +1969,8 @@ class MyAccount_AJAX extends JSON_Action {
 			}
 
 			$catalogDriver = $user->getCatalogDriver();
-			$systemVariables = SystemVariables::getSystemVariables();
-			if ($systemVariables && $systemVariables->exactLocationMatching){ $exactMatch = true }
 			if (!empty($catalogDriver) && $catalogDriver->restrictValidPickupLocationsForRecordByILS()) {
-				$getPickupLocationsFromILS = $catalogDriver->getValidPickupLocationsForRecordFromILS($marcRecord->getUniqueID(), $user);
-				if (!empty($getPickupLocationsFromILS['locationCodes']) && $getPickupLocationsFromILS['success']) {
-					$validLocationCodesFromILS = $getPickupLocationsFromILS['locationCodes'];
-					$pickupBranches = array_filter($pickupBranches, function ($location) use ($validLocationCodesFromILS) {
-						if (!is_object($location)) {
-							return true;
-						}
-						foreach ($validLocationCodesFromILS as $validCode) {
-							if ( ($exactMatch && strcasecmp($validCode, $location->code)) ||  str_starts_with($validCode, $location->code)) {
-								return true;
-							}
-						}
-						return false;
-					});
-				} elseif (empty($getPickupLocationsFromILS['useDefaultLocationFiltering'])) {
-					$pickupBranches = [];
-				}
+			    $pickupBranches = $catalogDriver->getValidPickupLocationsForRecordFromILS($marcRecord->getUniqueID(), $user, $pickupBranches);
 			}
 		}
 
