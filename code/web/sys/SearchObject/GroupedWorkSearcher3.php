@@ -277,8 +277,9 @@ class SearchObject_GroupedWorkSearcher3 extends SearchObject_GroupedWorkSearcher
 					];
 					if (in_array($facetName, $childDocFields)) {
 						$jsonInfoForField['domain'] = $domainInfo;
+						$jsonInfoForField['limit'] = -1;
 						$jsonInfoForField['facet'] = [
-							'parent_count' => 'unique(_root_)'
+							'parent_count' => 'uniqueBlock(_root_)'
 						];
 					}
 					$jsonFacets[$facetName] = $jsonInfoForField;
@@ -298,7 +299,6 @@ class SearchObject_GroupedWorkSearcher3 extends SearchObject_GroupedWorkSearcher
 			if ($this->facetSort != null) {
 				$facetSet['sort'] = $this->facetSort;
 			}
-
 			$this->facetOptions["json.facet"] = json_encode($jsonFacets);
 		}
 		$this->applyFacetSearch($jsonFacets);
