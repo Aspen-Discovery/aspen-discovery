@@ -809,6 +809,8 @@ class MyAccount_AJAX extends JSON_Action {
 				}
 
 				$catalogDriver = $user->getCatalogDriver();
+				$systemVariables = SystemVariables::getSystemVariables();
+				if ($systemVariables && $systemVariables->exactLocationMatching){ $exactMatch = true }
 				if (!empty($catalogDriver) && $catalogDriver->restrictValidPickupLocationsForRecordByILS()) {
 					$getPickupLocationsFromILS = $catalogDriver->getValidPickupLocationsForRecordFromILS($marcRecord->getUniqueID(), $user);
 					if (!empty($getPickupLocationsFromILS['locationCodes']) && $getPickupLocationsFromILS['success']) {
@@ -818,7 +820,7 @@ class MyAccount_AJAX extends JSON_Action {
 								return true;
 							}
 							foreach ($validLocationCodesFromILS as $validCode) {
-								if (str_starts_with($validCode, $location->code)) {
+								if ( ($exactMatch && strcasecmp($validCode, $location->code)) ||  str_starts_with($validCode, $location->code)) {
 									return true;
 								}
 							}
@@ -1985,6 +1987,8 @@ class MyAccount_AJAX extends JSON_Action {
 			}
 
 			$catalogDriver = $user->getCatalogDriver();
+			$systemVariables = SystemVariables::getSystemVariables();
+			if ($systemVariables && $systemVariables->exactLocationMatching){ $exactMatch = true }
 			if (!empty($catalogDriver) && $catalogDriver->restrictValidPickupLocationsForRecordByILS()) {
 				$getPickupLocationsFromILS = $catalogDriver->getValidPickupLocationsForRecordFromILS($marcRecord->getUniqueID(), $user);
 				if (!empty($getPickupLocationsFromILS['locationCodes']) && $getPickupLocationsFromILS['success']) {
@@ -1994,7 +1998,7 @@ class MyAccount_AJAX extends JSON_Action {
 							return true;
 						}
 						foreach ($validLocationCodesFromILS as $validCode) {
-							if (str_starts_with($validCode, $location->code)) {
+							if ( ($exactMatch && strcasecmp($validCode, $location->code)) ||  str_starts_with($validCode, $location->code)) {
 								return true;
 							}
 						}
