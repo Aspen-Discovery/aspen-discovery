@@ -16,6 +16,9 @@ class GroupedWorksSolrConnector3 extends GroupedWorksSolrConnector2
 		return SearchObject_GroupedWorkSearcher3::$fields_to_return;
 	}
 
+	protected $mltPrefixThese = '{!mlt qf="language^1000 subject_facet^800 topic_facet^600 awards_facet^100 authorStr^75 era^50 genre_facet^50 geographic_facet^50 personal_name_facet^50 corporate_name_facet^50 content_rating accelerated_reader_interest_level mpaa_rating" mlt.fl=language,subject_facet,topic_facet,awards_facet,authorStr,era,genre_facet,geographic_facet,personal_name_facet,corporate_name_facet,content_rating,accelerated_reader_interest_level,mpaa_rating mintf=1 mindf=2}';
+	protected $mltPrefixThis = '{!mlt qf="language^1000,subject_facet^800,topic_facet^600,awards_facet^100,authorStr^75,era^50,genre_facet^50,geographic_facet^50,personal_name_facet^50,corporate_name_facet^50,content_rating,accelerated_reader_interest_level,mpaa_rating" mintf=1 mindf=2}';
+
 	/**
 	 * Get records similar to one record
 	 * Uses MoreLikeThis Request Handler
@@ -39,7 +42,7 @@ class GroupedWorksSolrConnector3 extends GroupedWorksSolrConnector2
 			$fieldsToReturn = $this->getDefaultFieldsToReturn();
 		}
 		$options = [
-			'q' => "id:$id",
+			'q' => "$this->mltPrefixThis$id",
 			'mlt.interestingTerms' => 'details',
 			'rows' => 25,
 			'fl' => $fieldsToReturn,
@@ -49,9 +52,9 @@ class GroupedWorksSolrConnector3 extends GroupedWorksSolrConnector2
 			//Apply scoping filter
 			global $solrScope;
 			if ($availableOnly) {
-				$options['fq'][] = "(availability_toggle:\"$solrScope#available\") OR (availability_toggle:\"$solrScope#available_online\")";
+				$options['fq'][] = "{!parent which=\"recordtype:grouped_work\" tag=child_filter}((availability_toggle:\"available\") OR (availability_toggle:\"available_online\") AND scope:$solrScope)";
 			} else {
-				$options['fq'][] = "availability_toggle:\"$solrScope#$selectedAvailabilityToggle\"";
+				$options['fq'][] = "{!parent which=\"recordtype:grouped_work\" tag=child_filter}(availability_toggle:\"$selectedAvailabilityToggle\" AND scope:$solrScope)";
 			}
 			if (isset($originalResult['target_audience_full'])) {
 				if (is_array($originalResult['target_audience_full'])) {
@@ -167,7 +170,10 @@ class GroupedWorksSolrConnector3 extends GroupedWorksSolrConnector2
 			$options['rows'] = $limit;
 		}
 
-		$result = $this->_select('POST', $options, false, 'mlt');
+		//$options['debugQuery'] = "true";
+		//$debugInfo = print_r($options, true);
+
+		$result = $this->_select('POST', $options);
 		if ($result instanceof AspenError) {
 			AspenError::raiseError($result);
 		}
@@ -194,26 +200,28 @@ class GroupedWorksSolrConnector3 extends GroupedWorksSolrConnector2
 	{
 		// Query String Parameters
 		$idString = '';
+		$idStringWithoutFieldPrefix = '';
 		$numIdsProcessed = 0;
 		foreach ($ids as $index => $ratingInfo) {
 			if (strlen($idString) > 0) {
 				$idString .= ' OR ';
+				$idStringWithoutFieldPrefix .= ' OR ';
 			}
 			if (empty($ratingInfo['rating'])) {
-				$idString .= "id:{$ratingInfo['workId']}";
+				$idString .= "$this->mltPrefixThese{$ratingInfo['workId']}";
 			} else {
 				$ratingBoost = $ratingInfo['rating'];
-				$idString .= "id:{$ratingInfo['workId']}^$ratingBoost";
+				$idString .= "($this->mltPrefixThese{$ratingInfo['workId']})^$ratingBoost";
 			}
+			$idStringWithoutFieldPrefix .= $ratingInfo['workId'];
 			$numIdsProcessed++;
 			//Only process up to 500 IDs at a time to avoid overwhelming solr
 			if ($numIdsProcessed >= 500) {
 				break;
 			}
 		}
-		//$idString = implode(' OR ', $ids);
 		$options = [
-			'q' => $idString,
+			'q' => "$idString",
 			'mlt.interestingTerms' => 'details',
 			'mlt.boost' => 'true',
 			'start' => ($page - 1) * $limit,
@@ -230,11 +238,8 @@ class GroupedWorksSolrConnector3 extends GroupedWorksSolrConnector2
 			$options['fq'][] = '-user_not_interested_link:' . UserAccount::getActiveUserId();
 			$options['fq'][] = '-user_reading_history_link:' . UserAccount::getActiveUserId();
 		}
-		if (count($notInterestedIds) > 0) {
-			$notInterestedString = implode(' OR ', $notInterestedIds);
-			$options['fq'][] = "-id:($notInterestedString)";
-		}
-		$options['fq'][] = "-id:($idString)";
+		$options['fq'][] = 'recordtype:grouped_work';
+		$options['fq'][] = "-id:($idStringWithoutFieldPrefix)";
 		foreach ($scopingFilters as $filter) {
 			$options['fq'][] = $filter;
 		}
@@ -243,7 +248,9 @@ class GroupedWorksSolrConnector3 extends GroupedWorksSolrConnector2
 			$options['bf'] = $boostFactors;
 		}
 
-		$result = $this->_select('POST', $options, true, 'mlt');
+		$debugInfo = print_r($options, true);
+
+		$result = $this->_select('POST', $options, true);
 		if ($result instanceof AspenError) {
 			AspenError::raiseError($result);
 		}
