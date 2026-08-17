@@ -275,13 +275,13 @@ public class PalaceProjectExtractor {
 					logEntry.incDeleted();
 				}
 				if (numRecordsToReloadProcessed % 250 == 0) {
-					getGroupedWorkIndexer().commitChanges();
+					//getGroupedWorkIndexer().commitChanges();
 					logEntry.saveResults();
 				}
 			}
 			if (numRecordsToReloadProcessed > 0){
 				logEntry.addNote("Regrouped " + numRecordsToReloadProcessed + " records marked for reprocessing");
-				getGroupedWorkIndexer().commitChanges();
+				//getGroupedWorkIndexer().commitChanges();
 			}
 			getRecordsToReloadRS.close();
 		}catch (Exception e){
@@ -710,7 +710,7 @@ public class PalaceProjectExtractor {
 				logEntry.incErrors("Error updating palace project data", e);
 			}
 		}
-		getGroupedWorkIndexer().commitChanges();
+		//getGroupedWorkIndexer().commitChanges();
 	}
 
 	private boolean updatePalaceProjectTitleAvailability(JSONObject curTitle, long collectionId, HashMap<Long, PalaceProjectTitleAvailability> titlesForCollection, long indexTime, long titleId) throws SQLException {

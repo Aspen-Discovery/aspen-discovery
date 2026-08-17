@@ -144,7 +144,14 @@ function getUpdates26_08_00(): array {
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Register New ILS Patrons for any home library'))",
 			],
 		], //add_register_new_ils_patrons_permissions
-	
+		'add_minimal_self_registration_modal_setting' => [
+			'title' => 'Add Minimal Self Registration Modal Setting',
+			'description' => 'Add a per-library toggle to present a minimal ILS self registration form in a modal rather than redirecting to the full self registration page',
+			'sql' => [
+				"ALTER TABLE library ADD COLUMN useMinimalSelfRegistrationModal TINYINT(1) DEFAULT 0",
+			],
+		], //add_minimal_self_registration_modal_setting
+
 		//pedro
 
 		//mark j

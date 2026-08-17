@@ -6,7 +6,10 @@ require_once ROOT_DIR . '/sys/SystemVariables.php';
 
 class GroupedWorksSolrConnector2 extends Solr {
 	function __construct($host, $index = '') {
-		parent::__construct($host, 'grouped_works_v2');
+		if (empty($index)) {
+			$index = 'grouped_works_v2';
+		}
+		parent::__construct($host, $index);
 	}
 
 	function getSearchSpecs()
@@ -25,7 +28,7 @@ class GroupedWorksSolrConnector2 extends Solr {
 			global $logger;
 			$logger->log("Custom grouped work search specs is not an accessible file. Interpreting as yaml text instead of a path for system variables", Logger::LOG_WARNING);
 		}
-		return $specs;			
+		return $specs;
 	}
 
 	/**
@@ -44,11 +47,15 @@ class GroupedWorksSolrConnector2 extends Solr {
 
 	}
 
+	function getDefaultFieldsToReturn() : string {
+		return SearchObject_GroupedWorkSearcher2::$fields_to_return;
+	}
+
 	function getRecordByBarcode($barcode) : ?array {
 		// Query String Parameters
 		$options = [
 			'q' => "barcode:\"$barcode\"",
-			'fl' => SearchObject_GroupedWorkSearcher2::$fields_to_return,
+			'fl' => $this->getDefaultFieldsToReturn(),
 		];
 		$result = $this->_select('GET', $options);
 		if ($result instanceof AspenError) {
@@ -61,7 +68,7 @@ class GroupedWorksSolrConnector2 extends Solr {
 	function getRecordByIsbn($isbns, $fieldsToReturn = null) : ?array {
 		// Query String Parameters
 		if ($fieldsToReturn == null) {
-			$fieldsToReturn = SearchObject_GroupedWorkSearcher2::$fields_to_return;
+			$fieldsToReturn = $this->getDefaultFieldsToReturn();
 		}
 		$options = [
 			'q' => 'isbn:' . implode(' OR ', $isbns),
@@ -155,7 +162,7 @@ class GroupedWorksSolrConnector2 extends Solr {
 		$options = [
 			'q' => $idString,
 			'rows' => count($ids),
-			'fl' => SearchObject_GroupedWorkSearcher2::$fields_to_return,
+			'fl' => $this->getDefaultFieldsToReturn(),
 		];
 		$result = $this->_select('GET', $options);
 		if ($result instanceof AspenError) {
@@ -183,7 +190,7 @@ class GroupedWorksSolrConnector2 extends Solr {
 		$originalResult = $this->getRecord($id, 'target_audience_full,content_rating,literary_form,language,isbn,upc,series');
 		// Query String Parameters
 		if ($fieldsToReturn == null) {
-			$fieldsToReturn = SearchObject_GroupedWorkSearcher2::$fields_to_return;
+			$fieldsToReturn = $this->getDefaultFieldsToReturn();
 		}
 		$options = [
 			'q' => "id:$id",
@@ -586,5 +593,115 @@ class GroupedWorksSolrConnector2 extends Solr {
 		$options['f.ils_description.hl.fragsize'] = 50000;
 		$options['f.title_display.hl.fragsize'] = 1000;
 		$options['f.title_full.hl.fragsize'] = 1000;
+	}
+
+	/**
+	 * applySearchSpecs -- internal method to build query string from search parameters
+	 *
+	 * @access    private
+	 * @param array $structure the SearchSpecs-derived structure or substructure defining the search, derived from the yaml file
+	 * @param array $values the various values in an array with keys 'onephrase', 'and', 'or' (and perhaps others)
+	 * @param string $joiner
+	 * @return    string A search string suitable for adding to a query URL
+	 * @throws    AspenError
+	 * @static
+	 */
+	protected function _applySearchSpecs($structure, $values, $joiner = "OR") : string  {
+		global $solrScope;
+		$clauses = [];
+		foreach ($structure as $field => $clauseArray) {
+			if (is_numeric($field)) {
+				// shift off the join string and weight
+				$sw = array_shift($clauseArray);
+				$internalJoin = ' ' . $sw[0] . ' ';
+				// Build it up recursively
+				$searchString = '(' . $this->_applySearchSpecs($clauseArray, $values, $internalJoin) . ')';
+				// ...and add a weight if we have one
+				$weight = $sw[1];
+				if ($weight && $weight > 0) {
+					$searchString .= '^' . $weight;
+				}
+				// push it onto the stack of clauses
+				$clauses[] = $searchString;
+			} else {
+				if ($solrScope && !($this instanceof GroupedWorksSolrConnector3)) {
+					if ($field == 'local_callnumber' || $field == 'local_callnumber_left' || $field == 'local_callnumber_exact') {
+						$field .= '_' . $solrScope;
+					}
+				}
+
+				// Otherwise, we've got a (list of) [munge, weight] pairs to deal with
+				foreach ($clauseArray as $spec) {
+					$fieldValue = $values[$spec[0]];
+
+					if ($field == 'isbn') {
+						if (!preg_match('/^((?:\sOR\s)?["(]?\d{9,13}X?[\s")]*)+$/', $fieldValue)) {
+							continue;
+						} else {
+							require_once(ROOT_DIR . '/sys/ISBN.php');
+							$isbn = new ISBN($fieldValue);
+							if ($isbn->isValid()) {
+								$isbn10 = $isbn->get10();
+								$isbn13 = $isbn->get13();
+								if ($isbn10 && $isbn13) {
+									$fieldValue = '(' . $isbn->get10() . ' OR ' . $isbn->get13() . ')';
+								}
+							}
+						}
+					} elseif ($field == 'id') {
+						if (!preg_match('/^"?(\d+|.[boi]\d+x?|[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12})(-\w{3})?"?$/i', $fieldValue)) {
+							continue;
+						}
+					} elseif ($field == 'alternate_ids') {
+						if (!preg_match('/^"?(\d+|.?[boi]\d+x?|[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}|MWT\d+|CARL\d+)"?$/i', $fieldValue)) {
+							continue;
+						}
+					} elseif ($field == 'issn') {
+						if (!preg_match('/^"?[\d\hXx-]+"?$/', $fieldValue)) {
+							continue;
+						}
+					} elseif ($field == 'upc') {
+						if (!preg_match('/^"?\d+"?$/', $fieldValue)) {
+							continue;
+						}
+					}
+
+					//Ignore empty searches
+					if (strlen($fieldValue) == 0) {
+						continue;
+					}
+
+					// build a string like title:("one two")
+					if ($fieldValue[0] != '(') {
+						$searchString = $field . ':(' . $fieldValue . ')';
+					} else {
+						$searchString = $field . ':' . $fieldValue;
+					}
+					//Check to make sure we don't already have this clause.  We will get the same clause if we have a single word and are doing different munges
+					$okToAdd = true;
+					foreach ($clauses as $clause) {
+						if (str_starts_with($clause, $searchString)) {
+							$okToAdd = false;
+							break;
+						}
+					}
+					if (!$okToAdd) {
+						continue;
+					}
+
+					// Add the weight if we have one. Yes, I know, it's redundant code.
+					$weight = $spec[1];
+					if ($weight && $weight > 0) {
+						$searchString .= '^' . $weight;
+					}
+
+					// ..and push it on the stack of clauses
+					$clauses[] = $searchString;
+				}
+			}
+		}
+
+		// Join it all together
+		return implode(' ' . $joiner . ' ', $clauses);
 	}
 }
