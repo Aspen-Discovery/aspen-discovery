@@ -1,0 +1,13 @@
+parameters:
+    level: 0
+    paths:
+        - .
+    scanDirectories:
+        - vendor
+    excludePaths:
+        analyse:
+            - vendor/*
+            - sys/mobileesp/mdetect.php
+            - sys/mobile_device_detect.php
+            - Minify/FirePHP.php
+            - Minify/ImportProcessor.php
