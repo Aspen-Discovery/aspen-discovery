@@ -218,25 +218,7 @@ class Events_Calendar extends Action {
 		} else {
 			$searchObject->addHiddenFilter("event_month", '"' . $monthFilter . '"');
 		}
-		// Check permissions before showing private events
-		if (!UserAccount::userHasPermission('View Private Events for All Locations')) {
-			if (!UserAccount::userHasPermission([
-				'View Private Events for Home Library Locations',
-				'View Private Events for Home Location'
-			])) {
-				$searchObject->addHiddenFilter('-private', "private");
-			} else {
-				if (!UserAccount::userHasPermission('View Private Events for Home Library Locations')) {
-					$user = UserAccount::getLoggedInUser();
-					$locations = array_values($user->getAdditionalAdministrationLocations());
-					$locations[] = $user->getHomeLocationName();
-					$searchObject->addHiddenFilter('private', '("' . implode('" OR "private_', $locations) . '" OR "public")');
-				} else {
-					$locations = array_values(Location::getLocationList(true));
-					$searchObject->addHiddenFilter('private', '("private_' . implode('" OR "private_', $locations) . '" OR "public")');
-				}
-			}
-		}
+		$searchObject->addPrivateEventFilters();
 		$searchObject->setSort('start_date_sort asc, title_sort asc');
 
 		$timer->logTime('Setup Search');
