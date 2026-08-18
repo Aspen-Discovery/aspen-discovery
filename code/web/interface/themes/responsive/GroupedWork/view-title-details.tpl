@@ -38,7 +38,7 @@
 	{/if}
 
 	{if $recordDriver->getISBNs()}
-		<div class="full-record-isbn row">
+		<div class="full-record-property full-record-isbn row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='ISBN' isPublicFacing=true}</div>
 			<div class="result-value col-sm-8 col-xs-12">
 				{foreach from=$recordDriver->getISBNs() item=tmpIsbn name=loop}
@@ -68,7 +68,7 @@
 
 	{if $recordDriver->getAcceleratedReaderData() != null}
 		{assign var="arData" value=$recordDriver->getAcceleratedReaderData()}
-		<div class="full-record-accelerated-reader row">
+		<div class="full-record-property full-record-accelerated-reader row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='Accelerated Reader' isPublicFacing=true}</div>
 			<div class="result-value col-sm-8 col-xs-12">
 				{if !empty($arData.interestLevel)}
@@ -89,7 +89,7 @@
 	{/if}
 
 	{if $recordDriver->getFountasPinnellLevel()}
-		<div class="full-record-fountas-pinnell row">
+		<div class="full-record-property full-record-fountas-pinnell row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='Fountas & Pinnell' isPublicFacing=true}</div>
 			<div class="result-value col-sm-8 col-xs-12">
 				{$recordDriver->getFountasPinnellLevel()|escape}

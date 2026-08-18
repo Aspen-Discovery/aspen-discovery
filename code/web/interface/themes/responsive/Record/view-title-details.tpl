@@ -78,7 +78,7 @@
 	{/if}
 
 	{if !empty($showPublicationDetails) && $recordDriver->getPublicationDetails()}
-		<div class="full-record-publication-details row">
+		<div class="full-record-property full-record-publication-details row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='Published' isPublicFacing=true}</div>
 			<div class="result-value col-sm-8 col-xs-12">
 				{implode subject=$recordDriver->getPublicationDetails() glue=", "}
@@ -87,7 +87,7 @@
 	{/if}
 
 	{if !empty($showFormats)}
-	<div class="full-record-format row">
+	<div class="full-record-property full-record-format row">
 		<div class="result-label col-sm-4 col-xs-12">{translate text='Format' isPublicFacing=true}</div>
 		<div class="result-value col-sm-8 col-xs-12">
 			{implode subject=$recordFormat glue=", " translate=true isPublicFacing=true}
@@ -96,7 +96,7 @@
 	{/if}
 
 	{if !empty($showEditions) && $recordDriver->getEditions()}
-		<div class="full-record-edition row">
+		<div class="full-record-property full-record-edition row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='Edition' isPublicFacing=true}</div>
 			<div class="result-value col-sm-8 col-xs-12">
 				{implode subject=$recordDriver->getEditions() glue=", "}
@@ -104,7 +104,7 @@
 		</div>
 	{/if}
 	{if !empty($showISBNs) && count($recordDriver->getISBNs()) > 0}
-		<div class="full-record-isbn row">
+		<div class="full-record-property full-record-isbn row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='ISBN' isPublicFacing=true}</div>
 			<div class="result-value col-sm-8 col-xs-12">
 				{implode subject=$recordDriver->getISBNs() glue=", "}
@@ -122,7 +122,7 @@
 	{/if}
 
 	{if !empty($showPhysicalDescriptions) && !empty($physicalDescriptions)}
-		<div class="full-record-physical-description row">
+		<div class="full-record-property full-record-physical-description row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='Physical Desc' isPublicFacing=true}</div>
 			<div class="result-value col-sm-8 col-xs-12">
 				{implode subject=$physicalDescriptions glue="<br>"}
@@ -153,7 +153,7 @@
 	{/if}
 
 	{if !empty($showArInfo) && $recordDriver->getAcceleratedReaderDisplayString()}
-		<div class="full-record-accelerated-reader row">
+		<div class="full-record-property full-record-accelerated-reader row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='Accelerated Reader' isPublicFacing=true} </div>
 			<div class="result-value col-sm-8 col-xs-12">
 				{$recordDriver->getAcceleratedReaderDisplayString()}
@@ -171,7 +171,7 @@
 	{/if}
 
 	{if !empty($showFountasPinnell) && $recordDriver->getFountasPinnellLevel()}
-		<div class="full-record-fountas-pinnell row">
+		<div class="full-record-property full-record-fountas-pinnell row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='Fountas & Pinnell' isPublicFacing=true}</div>
 			<div class="result-value col-sm-8 col-xs-12">
 				{$recordDriver->getFountasPinnellLevel()|escape}
