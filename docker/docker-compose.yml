@@ -106,6 +106,10 @@ services:
       precreate-core grouped_works_v2 /opt/solr/server/solr/configsets/grouped_works_v2
       cp -r /opt/solr/server/solr/configsets/grouped_works_v2/* grouped_works_v2
 
+      # Grouped Works v3 core
+      precreate-core grouped_works_v3 /opt/solr/server/solr/configsets/grouped_works_v3
+      cp -r /opt/solr/server/solr/configsets/grouped_works_v3/* grouped_works_v3
+
       # Lists core
       precreate-core lists /opt/solr/server/solr/configsets/lists
       cp -r /opt/solr/server/solr/configsets/lists/* lists
