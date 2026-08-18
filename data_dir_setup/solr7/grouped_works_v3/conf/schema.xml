@@ -209,7 +209,7 @@
 		<!-- This is returned and is the unique type for the record (grouped_work, record_scoping) -->
 		<field name="recordtype" type="unchanged_string" indexed="true" stored="true" multiValued="false" required="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 		<!-- The scope for this record if the recordtype is record_scoping -->
-		<field name="scope" type="unchanged_string" indexed="false" stored="false" docValues="true" omitNorms="true" omitTermFreqAndPositions="true" />
+		<field name="scope" type="unchanged_string" indexed="true" stored="false" docValues="true" omitNorms="true" omitTermFreqAndPositions="true" />
 		<field name="_version_" type="long" indexed="true" stored="true"/>
 
 		<!-- Grouped Work Level Fields -->
@@ -311,7 +311,7 @@
 		<!-- This is returned and used as a facet -->
 		<field name="available_at" type="unchanged_string" indexed="false" stored="false" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 		<!-- This is returned and used as a facet -->
-		<field name="availability_toggle" type="unchanged_string" indexed="false" stored="true" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
+		<field name="availability_toggle" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 		<!-- This is used for sorting titles within lists -->
 		<field name="available_copies" type="integer" indexed="false" docValues="true" stored="false" multiValued="true"/>
 
