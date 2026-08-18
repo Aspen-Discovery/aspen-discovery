@@ -28,7 +28,7 @@
 	{/if}
 
 	{if $recordDriver->getStreetDate()}
-		<div class="full-record-street-date row">
+		<div class="full-record-property full-record-street-date row">
 			<div class="result-label col-md-3">{translate text='Street Date' isPublicFacing=true}</div>
 			<div class="col-md-9 result-value">
 				{$recordDriver->getStreetDate()|escape}
@@ -53,7 +53,7 @@
 	{/if}
 
 	{if count($recordDriver->getUPCs()) > 0}
-		<div class="full-record-upc row">
+		<div class="full-record-property full-record-upc row">
 			<div class="result-label col-md-3">{translate text='UPC' isPublicFacing=true}</div>
 			<div class="col-md-9 result-value">
 				{implode subject=$recordDriver->getUPCs() glue=", "}
@@ -102,7 +102,7 @@
 	{/if}
 
 	{if $recordDriver->getSubjects()}
-		<div class="full-record-subjects row">
+		<div class="full-record-property full-record-subjects row">
 			<div class="result-label col-md-3">{translate text='Subjects' isPublicFacing=true}</div>
 			<div class="col-md-9 result-value">
 				{assign var="subjects" value=$recordDriver->getSubjects()}

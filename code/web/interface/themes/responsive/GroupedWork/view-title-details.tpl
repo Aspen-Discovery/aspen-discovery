@@ -1,6 +1,6 @@
 {strip}
 	{if $recordDriver->getDetailedContributors()}
-		<div class="full-record-contributors row">
+		<div class="full-record-property full-record-contributors row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='Contributors' isPublicFacing=true}</div>
 			<div class="result-value col-sm-8 col-xs-12">
 				{foreach from=$recordDriver->getDetailedContributors() item=contributor name=loop}
@@ -31,7 +31,7 @@
 	{/if}
 
 	{if !empty($recordDriver->getContentRating())}
-		<div class="full-record-content-rating row">
+		<div class="full-record-property full-record-content-rating row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='Content Rating' isPublicFacing=true}</div>
 			<div class="result-value col-sm-8 col-xs-12">{implode subject=$recordDriver->getContentRating() glue=", " translate=true isPublicFacing=true isMetadata=true}</div>
 		</div>
@@ -49,14 +49,14 @@
 	{/if}
 
 	{if $recordDriver->getISSNs()}
-		<div class="full-record-issn row">
+		<div class="full-record-property full-record-issn row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='ISSN' isPublicFacing=true}</div>
 			<div class="result-value col-sm-8 col-xs-12">{implode subject=$recordDriver->getISSNs()}</div>
 		</div>
 	{/if}
 
 	{if $recordDriver->getUPCs()}
-		<div class="full-record-upc row">
+		<div class="full-record-property full-record-upc row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='UPC' isPublicFacing=true}</div>
 			<div class="result-value col-sm-8 col-xs-12">
 				{foreach from=$recordDriver->getUPCs() item=tmpUpc name=loop}
@@ -80,7 +80,7 @@
 	{/if}
 
 	{if $recordDriver->getLexileDisplayString()}
-		<div class="full-record-lexile row">
+		<div class="full-record-property full-record-lexile-measure row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='Lexile measure' isPublicFacing=true}</div>
 			<div class="result-value col-sm-8 col-xs-12">
 				{$recordDriver->getLexileDisplayString()|escape}

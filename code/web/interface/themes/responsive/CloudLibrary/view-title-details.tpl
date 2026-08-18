@@ -1,7 +1,7 @@
 {strip}
 	{* Display more information about the title*}
 	{if $recordDriver->getPrimaryAuthor()}
-		<div class="full-record-author row">
+		<div class="full-record-property full-record-author row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text="Author" isPublicFacing=true} </div>
 			<div class="result-value col-sm-8 col-xs-12">
 				<a href='/Author/Home?author="{$recordDriver->getPrimaryAuthor()|escape:"url"}"'>{$recordDriver->getPrimaryAuthor()|highlight}</a>
@@ -60,7 +60,7 @@
 	{/if}
 
 	{if !empty($showLexileInfo) && $recordDriver->getLexileDisplayString()}
-		<div class="full-record-lexile row">
+		<div class="full-record-property full-record-lexile-measure row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='Lexile measure' isPublicFacing=true} </div>
 			<div class="result-value col-sm-8 col-xs-12">
 				{$recordDriver->getLexileDisplayString()}
@@ -81,7 +81,7 @@
 
 	{include file="GroupedWork/readingHistoryIndicator.tpl" isSearchResults=false}
 
-	<div class="full-record-status row">
+	<div class="full-record-property full-record-status row">
 		<div class="result-label col-sm-4 col-xs-12">{translate text='Status' isPublicFacing=true}</div>
 		<div class="result-value col-sm-8 col-xs-12 result-value-bold statusValue {$holdingsSummary.class}" id="statusValue">{translate text=$holdingsSummary.status isPublicFacing=true}</div>
 	</div>

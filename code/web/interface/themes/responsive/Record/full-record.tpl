@@ -19,7 +19,7 @@
 				{if empty($recordDriver->getTitle()) && !empty($recordDriver->get880Title())}
 					{$recordDriver->get880Title()|removeTrailingPunctuation}
 				{else}
-					{$recordDriver->getTitle()|removeTrailingPunctuation}{if !empty($recordDriver->get880Title())} <span class="full-record-alternate-title agrTitle">({$recordDriver->get880Title()|removeTrailingPunctuation})</span>{/if}
+					{$recordDriver->getTitle()|removeTrailingPunctuation}{if !empty($recordDriver->get880Title())} <span class="agrTitle">({$recordDriver->get880Title()|removeTrailingPunctuation})</span>{/if}
 				{/if}
 				{if $recordDriver->getFormats()}
 					<br>
@@ -81,7 +81,7 @@
                                     {include file="Record/view-title-details-horiz.tpl" hasMultipleVariations=$recordDriver->hasMultipleVariations()}
                                     {if !($recordDriver->hasMultipleVariations())}
                                         {* Detailed status information *}
-			                            <div class="full-record-variation-info row variationInfo">
+			                            <div class="full-record-property full-record-variation-info row variationInfo">
 				                            <div class="col-xs-12">
 					                            <div class="row">
 		                                            {if !empty($statusSummary)}

@@ -2,7 +2,7 @@
 {* Display more information about the title*}
 
 {if $recordDriver->getUniformTitle()}
-	<div class="full-record-uniform-title row">
+	<div class="full-record-property full-record-uniform-title row">
 		<div class="result-label col-sm-4 col-xs-12">{translate text="Uniform Title" isPublicFacing=true} </div>
 		<div class="result-value col-sm-8 col-xs-12">
             {foreach from=$recordDriver->getUniformTitle() item=uniformTitle}
@@ -13,7 +13,7 @@
 {/if}
 
 {if !empty($recordDriver->getAuthor()) || !empty($recordDriver->get880Authors())}
-	<div class="full-record-author row">
+	<div class="full-record-property full-record-author row">
 		<div class="result-label col-sm-4 col-xs-12">{translate text="Author" isPublicFacing=true} </div>
 		<div class="result-value col-sm-8 col-xs-12">
             {if empty($recordDriver->getAuthor()) && !empty($recordDriver->get880Authors())}
@@ -26,7 +26,7 @@
 {/if}
 
 {if $recordDriver->getDetailedContributors()}
-<div class="full-record-contributors row">
+<div class="full-record-property full-record-contributors row">
 	<div class="result-label col-sm-4 col-xs-12">{translate text='Contributors' isPublicFacing=true}</div>
 	<div class="result-value col-sm-8 col-xs-12">
         {foreach from=$recordDriver->getDetailedContributors() item=contributor name=loop}
@@ -114,7 +114,7 @@
 
     {if !empty($showISBNs) && count($recordDriver->getISSNs()) > 0}
         {if $recordDriver->getISSNs()}
-			<div class="full-record-issn row">
+			<div class="full-record-property full-record-issn row">
 				<div class="result-label col-sm-4 col-xs-12">{translate text='ISSN' isPublicFacing=true}</div>
 				<div class="result-value col-sm-8 col-xs-12">{implode subject=$recordDriver->getISSNs()}</div>
 			</div>
@@ -134,7 +134,7 @@
     {/if}
 
 	{if !empty($showPhysicalDescriptions) && !empty($duration)}
-		<div class="full-record-duration row">
+		<div class="full-record-property full-record-duration row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='Duration' isPublicFacing=true}</div>
 			<div class="result-value col-sm-8 col-xs-12">
 				{math equation="floor(x/60)" x=$duration assign="hours"}
@@ -162,7 +162,7 @@
     {/if}
 
     {if !empty($showLexileInfo) && $recordDriver->getLexileDisplayString()}
-		<div class="full-record-lexile row">
+		<div class="full-record-property full-record-lexile-measure row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='Lexile measure' isPublicFacing=true} </div>
 			<div class="result-value col-sm-8 col-xs-12">
                 {$recordDriver->getLexileDisplayString()}
@@ -180,14 +180,14 @@
     {/if}
 
     {if !empty($contentRating)}
-		<div class="full-record-content-rating row">
+		<div class="full-record-property full-record-content-rating row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='Content Rating' isPublicFacing=true}</div>
 			<div class="result-value col-sm-8 col-xs-12">{implode subject=$contentRating glue=", " translate=true isPublicFacing=true}</div>
 		</div>
     {/if}
 
     {if !empty($showAudience) && $recordDriver->getAudience()}
-		<div class="full-record-audience row result-audience result-{str_replace(" ", "-", join(" ", $recordDriver->getFormats()))|lower}">
+		<div class="full-record-property full-record-audience row result-audience result-{str_replace(" ", "-", join(" ", $recordDriver->getFormats()))|lower}">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='Audience' isPublicFacing=true} </div>
 			<div class="result-value col-sm-8 col-xs-12">
                 {$recordDriver->getAudience()}

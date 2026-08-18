@@ -10,7 +10,7 @@
 	{/if}
 
 	{if !empty($showSeries)}
-		<div class="full-record-series series row" id="seriesPlaceholder{$recordDriver->getPermanentId()}"></div>
+		<div class="full-record-property full-record-series series row" id="seriesPlaceholder{$recordDriver->getPermanentId()}"></div>
 	{/if}
 
 	{if !empty($showPublicationDetails) && $recordDriver->getPublicationDetails()}
@@ -50,7 +50,7 @@
 	{/if}
 
 	{if !empty($showLexileInfo) && $recordDriver->getLexileDisplayString()}
-		<div class="full-record-lexile row">
+		<div class="full-record-property full-record-lexile-measure row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='Lexile measure' isPublicFacing=true} </div>
 			<div class="result-value col-sm-8 col-xs-12">
 				{$recordDriver->getLexileDisplayString()}

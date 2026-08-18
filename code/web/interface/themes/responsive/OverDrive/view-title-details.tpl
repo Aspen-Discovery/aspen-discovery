@@ -1,7 +1,7 @@
 {strip}
 	{* Display more information about the title*}
 	{if $recordDriver->getAuthor()}
-		<div class="full-record-author row">
+		<div class="full-record-property full-record-author row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text="Author" isPublicFacing=true} </div>
 			<div class="result-value col-sm-8 col-xs-12">
 				<a href='/Author/Home?author="{$recordDriver->getAuthor()|escape:"url"}"'>{$recordDriver->getAuthor()|highlight}</a>
@@ -10,7 +10,7 @@
 	{/if}
 
 	{if $recordDriver->getDetailedContributors()}
-		<div class="full-record-contributors row">
+		<div class="full-record-property full-record-contributors row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='Contributors' isPublicFacing=true}</div>
 			<div class="result-value col-sm-8 col-xs-12">
 				{foreach from=$recordDriver->getDetailedContributors() item=contributor name=loop}
@@ -41,7 +41,7 @@
 	{/if}
 
 	{if !empty($showSeries)}
-		<div class="full-record-series series row" id="seriesPlaceholder{$recordDriver->getPermanentId()}"></div>
+		<div class="full-record-property full-record-series series row" id="seriesPlaceholder{$recordDriver->getPermanentId()}"></div>
 	{/if}
 
 	{if !empty($showPublicationDetails) && $recordDriver->getPublicationDetails()}
@@ -72,7 +72,7 @@
 	{/if}
 
 	{if !empty($showPhysicalDescriptions) && $recordDriver->getDuration()}
-		<div class="full-record-duration row">
+		<div class="full-record-property full-record-duration row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='Duration' isPublicFacing=true}</div>
 			<div class="result-value col-sm-8 col-xs-12">
 				{math equation="floor(x/60)" x=$recordDriver->getDuration() assign="hours"}
@@ -110,7 +110,7 @@
 	{/if}
 
 	{if !empty($showLexileInfo) && $recordDriver->getLexileDisplayString()}
-		<div class="full-record-lexile row">
+		<div class="full-record-property full-record-lexile-measure row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='Lexile measure' isPublicFacing=true} </div>
 			<div class="result-value col-sm-8 col-xs-12">
 				{$recordDriver->getLexileDisplayString()}
@@ -131,7 +131,7 @@
 
 	{include file="GroupedWork/readingHistoryIndicator.tpl" isSearchResults=false}
 
-	<div class="full-record-status row">
+	<div class="full-record-property full-record-status row">
 		<div class="result-label col-sm-4 col-xs-12">{translate text='Status' isPublicFacing=true}</div>
 		<div class="result-value col-sm-8 col-xs-12 result-value-bold statusValue {$holdingsSummary.class}" id="statusValue">{translate text=$holdingsSummary.status isPublicFacing=true}</div>
 	</div>

@@ -44,7 +44,7 @@
 	{/if}
 
 	{if count($recordDriver->getUPCs()) > 0}
-		<div class="full-record-upc row">
+		<div class="full-record-property full-record-upc row">
 			<div class="result-label col-sm-3">{translate text='UPC' isPublicFacing=true}</div>
 			<div class="col-sm-9 result-value">
 				{implode subject=$recordDriver->getUPCs() glue=", "}
@@ -95,7 +95,7 @@
 	{if !empty($notes)}
 		<h4>{translate text='Notes' isPublicFacing=true}</h4>
 		{foreach from=$notes item=note name=loop}
-			<div class="full-record-notes row">
+			<div class="full-record-property full-record-notes row">
 				<div class="result-label col-sm-3">{translate text=$note.label isPublicFacing=true isMetadata=true}</div>
 				<div class="col-sm-9 result-value">{$note.note}</div>
 			</div>
