@@ -270,7 +270,10 @@ class Events_Calendar extends Action {
 
 		EventsFacet::addToSearchObject($dropdownSearchObject, ['branch']);
 
-		$dropdownSearchObject->processSearch(true, false);
+		$dropdownResult = $dropdownSearchObject->processSearch(true, false);
+		if ($dropdownResult instanceof AspenError) {
+			AspenError::raiseError($dropdownResult->getMessage());
+		}
 
 		$locationFacets = $dropdownSearchObject->getFacetList(['branch' => 'Branch']);
 		$dropdownSearchObject->close();
