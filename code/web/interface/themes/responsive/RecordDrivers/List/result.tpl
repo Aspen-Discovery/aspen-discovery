@@ -1,5 +1,5 @@
 {strip}
-<div id="record{$summId|escape}" class="resultsList row">
+<div id="record{$summId|escape}" class="resultsList-list resultsList row">
 	{if !empty($showCovers)}
 		<div class="coversColumn col-xs-3 col-sm-3 col-md-3 col-lg-2 text-center" aria-hidden="true" role="presentation">
 			{if $disableCoverArt != 1}
@@ -14,7 +14,7 @@
 	<div class="{if empty($showCovers)}col-xs-12{else}col-xs-9 col-sm-9 col-md-9 col-lg-10{/if}">{* May turn out to be more than one situation to consider here *}
 		{* Title Row *}
 
-		<div class="row">
+		<div class="result-title-row row">
 			<div class="col-xs-12">
 	<span class="result-index">{$resultIndex})</span>&nbsp;
 				<a href="/MyAccount/MyList/{$summShortId}" class="result-title notranslate">
@@ -26,7 +26,7 @@
 			</div>
 		</div>
 		{if !empty($summAuthor)}
-			<div class="row">
+			<div class="result-author row">
 				<div class="result-label col-tn-3">{translate text="Created By" isPublicFacing=true} </div>
 				<div class="result-value col-tn-9 notranslate">
 					{if is_array($summAuthor)}
@@ -41,7 +41,7 @@
 		{/if}
  
 		{if !empty($summNumTitles)}
-			<div class="row">
+			<div class="result-number-of-titles row">
 				<div class="result-label col-tn-3">{translate text="Number of Titles" isPublicFacing=true} </div>
 				<div class="result-value col-tn-9 notranslate">
 					{translate text="%1% titles are in this list." 1=$summNumTitles isPublicFacing=true}
@@ -50,7 +50,7 @@
 		{/if}
 
 		{if count($appearsOnLists) > 0}
-			<div class="row">
+			<div class="result-lists row">
 				<div class="result-label col-tn-3">
 					{if count($appearsOnLists) > 1}
 						{translate text="Appears on these lists" isPublicFacing=true}
@@ -79,12 +79,12 @@
 
 		{* Description Section *}
 		{if !empty($summDescription)}
-			<div class="row visible-xs">
+			<div class="result-description-standard row visible-xs">
 				<div class="result-label col-tn-3 col-xs-3">{translate text="Description" isPublicFacing=true}</div>
 				<div class="result-value col-tn-9 col-xs-9"><a id="descriptionLink{$summId|escape}" href="#" onclick="$('#descriptionValue{$summId|escape},#descriptionLink{$summId|escape}').toggleClass('hidden-xs');return false;">{translate text="Click to view" isPublicFacing=true}</a></div>
 			</div>
 
-			<div class="row">
+			<div class="result-description-mobile row">
 				{* Hide in mobile view *}
 				<div class="result-value hidden-xs col-sm-12" id="descriptionValue{$summId|escape}">
 					{$summDescription|highlight|truncate_html:450:"..."}

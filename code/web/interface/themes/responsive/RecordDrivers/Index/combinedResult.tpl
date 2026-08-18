@@ -17,7 +17,7 @@
 			{/if}
 			<div class="{if !empty($showCovers)}col-xs-9{else}col-xs-12{/if}">{* May turn out to be more than one situation to consider here *}
 				{* Title Row *}
-				<div class="row">
+				<div class="result-title-row row">
 					<div class="col-xs-12">
 						<span class="result-index">{$resultIndex})</span>&nbsp;
 						<a href="{$summUrl}" class="result-title notranslate">
@@ -31,7 +31,7 @@
 				</div>
 
 				{if !empty($summAuthor)}
-					<div class="row">
+					<div class="result-author row">
 						<div class="result-label col-tn-3">{translate text="Author" isPublicFacing=true}</div>
 						<div class="result-value col-tn-8 notranslate">
 							{if is_array($summAuthor)}
@@ -47,7 +47,7 @@
 
 				{* Description Section *}
 				{if !empty($summDescription)}
-					<div class="row">
+					<div class="result-description row">
 						{* Hide in mobile view *}
 						<div class="result-value col-sm-12" id="descriptionValue{$summId|escape}">
 							{$summDescription|highlight|truncate_html:450:"..."}

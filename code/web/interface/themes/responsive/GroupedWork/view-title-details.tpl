@@ -1,6 +1,6 @@
 {strip}
 	{if $recordDriver->getDetailedContributors()}
-		<div class="row">
+		<div class="full-record-contributors row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='Contributors' isPublicFacing=true}</div>
 			<div class="result-value col-sm-8 col-xs-12">
 				{foreach from=$recordDriver->getDetailedContributors() item=contributor name=loop}
@@ -31,14 +31,14 @@
 	{/if}
 
 	{if !empty($recordDriver->getContentRating())}
-		<div class="row">
+		<div class="full-record-content-rating row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='Content Rating' isPublicFacing=true}</div>
 			<div class="result-value col-sm-8 col-xs-12">{implode subject=$recordDriver->getContentRating() glue=", " translate=true isPublicFacing=true isMetadata=true}</div>
 		</div>
 	{/if}
 
 	{if $recordDriver->getISBNs()}
-		<div class="row">
+		<div class="full-record-isbn row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='ISBN' isPublicFacing=true}</div>
 			<div class="result-value col-sm-8 col-xs-12">
 				{foreach from=$recordDriver->getISBNs() item=tmpIsbn name=loop}
@@ -49,14 +49,14 @@
 	{/if}
 
 	{if $recordDriver->getISSNs()}
-		<div class="row">
+		<div class="full-record-issn row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='ISSN' isPublicFacing=true}</div>
 			<div class="result-value col-sm-8 col-xs-12">{implode subject=$recordDriver->getISSNs()}</div>
 		</div>
 	{/if}
 
 	{if $recordDriver->getUPCs()}
-		<div class="row">
+		<div class="full-record-upc row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='UPC' isPublicFacing=true}</div>
 			<div class="result-value col-sm-8 col-xs-12">
 				{foreach from=$recordDriver->getUPCs() item=tmpUpc name=loop}
@@ -68,7 +68,7 @@
 
 	{if $recordDriver->getAcceleratedReaderData() != null}
 		{assign var="arData" value=$recordDriver->getAcceleratedReaderData()}
-		<div class="row">
+		<div class="full-record-accelerated-reader row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='Accelerated Reader' isPublicFacing=true}</div>
 			<div class="result-value col-sm-8 col-xs-12">
 				{if !empty($arData.interestLevel)}
@@ -80,7 +80,7 @@
 	{/if}
 
 	{if $recordDriver->getLexileDisplayString()}
-		<div class="row">
+		<div class="full-record-lexile row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='Lexile measure' isPublicFacing=true}</div>
 			<div class="result-value col-sm-8 col-xs-12">
 				{$recordDriver->getLexileDisplayString()|escape}
@@ -89,7 +89,7 @@
 	{/if}
 
 	{if $recordDriver->getFountasPinnellLevel()}
-		<div class="row">
+		<div class="full-record-fountas-pinnell row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='Fountas & Pinnell' isPublicFacing=true}</div>
 			<div class="result-value col-sm-8 col-xs-12">
 				{$recordDriver->getFountasPinnellLevel()|escape}

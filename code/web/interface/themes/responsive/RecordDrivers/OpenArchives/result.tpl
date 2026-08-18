@@ -1,5 +1,5 @@
 {strip}
-<div id="openArchivesResult{$resultIndex|escape}" class="resultsList row">
+<div id="openArchivesResult{$resultIndex|escape}" class="resultsList-open-archives resultsList row">
 	{if !empty($showCovers)}
 		<div class="coversColumn col-xs-3 col-sm-3 col-md-3 col-lg-2 text-center" aria-hidden="true" role="presentation">
 			{if $disableCoverArt != 1}
@@ -14,7 +14,7 @@
 	<div class="{if empty($showCovers)}col-xs-12{else}col-xs-9 col-sm-9 col-md-9 col-lg-10{/if}">{* May turn out to be more than one situation to consider here *}
 		{* Title Row *}
 
-		<div class="row">
+		<div class="result-title-row row">
 			<div class="col-xs-12">
 				<span class="result-index">{$resultIndex})</span>&nbsp;
 				<a href="{$openArchiveUrl}" class="result-title notranslate" onclick="AspenDiscovery.OpenArchives.trackUsage('{$id}')" target="_blank">
@@ -27,7 +27,7 @@
 		</div>
 
 		{if !empty($type)}
-			<div class="row">
+			<div class="row result-type">
 				<div class="result-label col-tn-3">{translate text="Type" isPublicFacing=true} </div>
 				<div class="result-value col-tn-8 notranslate">
 					{implode subject=$type}
@@ -36,7 +36,7 @@
 		{/if}
 
 		{if !empty($source)}
-			<div class="row">
+			<div class="row result-source">
 				<div class="result-label col-tn-3">{translate text="Source" isPublicFacing=true} </div>
 				<div class="result-value col-tn-8 notranslate">
 					{implode subject=$source glue="<br/>"}
@@ -45,7 +45,7 @@
 		{/if}
 
 		{if !empty($publisher)}
-			<div class="row">
+			<div class="row result-publisher">
 				<div class="result-label col-tn-3">{translate text="Publisher" isPublicFacing=true} </div>
 				<div class="result-value col-tn-8 notranslate">
 					{implode subject=$publisher}
@@ -54,7 +54,7 @@
 		{/if}
 
 		{if !empty($date)}
-			<div class="row">
+			<div class="row result-date">
 				<div class="result-label col-tn-3">{translate text="Date" isPublicFacing=true} </div>
 				<div class="result-value col-tn-8 notranslate">
 					{implode subject=$date}
@@ -63,7 +63,7 @@
 		{/if}
 
 		{if count($appearsOnLists) > 0}
-			<div class="row">
+			<div class="row result-lists">
 				<div class="result-label col-tn-3">
 					{if count($appearsOnLists) > 1}
 						{translate text="Appears on these lists" isPublicFacing=true}
@@ -92,7 +92,7 @@
 
 		{* Description Section *}
 		{if !empty($description)}
-			<div class="row visible-xs">
+			<div class="row result-description visible-xs">
 				<div class="result-label col-tn-3 col-xs-3">{translate text="Description" isPublicFacing=true}</div>
 				<div class="result-value col-tn-9 col-xs-9"><a id="descriptionLink{$resultIndex|escape}" href="#" onclick="$('#descriptionValue{$resultIndex|escape},#descriptionLink{$resultIndex|escape}').toggleClass('hidden-xs');return false;">{translate text="Click to view" isPublicFacing=true}</a></div>
 			</div>

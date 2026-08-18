@@ -2,7 +2,7 @@
 	{* Display more information about the title*}
 
 	{if $recordDriver->getUniformTitle()}
-		<div class="row">
+		<div class="full-record-uniform-title row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text="Uniform Title" isPublicFacing=true} </div>
 			<div class="result-value col-sm-8 col-xs-12">
 				{foreach from=$recordDriver->getUniformTitle() item=uniformTitle}
@@ -13,7 +13,7 @@
 	{/if}
 
 	{if !empty($recordDriver->getAuthor()) || !empty($recordDriver->get880Authors())}
-		<div class="row">
+		<div class="full-record-author row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text="Author" isPublicFacing=true} </div>
 			<div class="result-value col-sm-8 col-xs-12">
 				{if empty($recordDriver->getAuthor()) && !empty($recordDriver->get880Authors())}
@@ -26,7 +26,7 @@
 	{/if}
 
 	{if $recordDriver->getDetailedContributors()}
-		<div class="row">
+		<div class="full-record-contributors row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='Contributors' isPublicFacing=true}</div>
 			<div class="result-value col-sm-8 col-xs-12">
 				{foreach from=$recordDriver->getDetailedContributors() item=contributor name=loop}
@@ -78,7 +78,7 @@
 	{/if}
 
 	{if !empty($showPublicationDetails) && $recordDriver->getPublicationDetails()}
-		<div class="row">
+		<div class="full-record-publication-details row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='Published' isPublicFacing=true}</div>
 			<div class="result-value col-sm-8 col-xs-12">
 				{implode subject=$recordDriver->getPublicationDetails() glue=", "}
@@ -87,7 +87,7 @@
 	{/if}
 
 	{if !empty($showFormats)}
-	<div class="row">
+	<div class="full-record-format row">
 		<div class="result-label col-sm-4 col-xs-12">{translate text='Format' isPublicFacing=true}</div>
 		<div class="result-value col-sm-8 col-xs-12">
 			{implode subject=$recordFormat glue=", " translate=true isPublicFacing=true}
@@ -96,7 +96,7 @@
 	{/if}
 
 	{if !empty($showEditions) && $recordDriver->getEditions()}
-		<div class="row">
+		<div class="full-record-edition row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='Edition' isPublicFacing=true}</div>
 			<div class="result-value col-sm-8 col-xs-12">
 				{implode subject=$recordDriver->getEditions() glue=", "}
@@ -104,7 +104,7 @@
 		</div>
 	{/if}
 	{if !empty($showISBNs) && count($recordDriver->getISBNs()) > 0}
-		<div class="row">
+		<div class="full-record-isbn row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='ISBN' isPublicFacing=true}</div>
 			<div class="result-value col-sm-8 col-xs-12">
 				{implode subject=$recordDriver->getISBNs() glue=", "}
@@ -114,7 +114,7 @@
 
 	{if !empty($showISBNs) && count($recordDriver->getISSNs()) > 0}
 		{if $recordDriver->getISSNs()}
-			<div class="row">
+			<div class="full-record-issn row">
 				<div class="result-label col-sm-4 col-xs-12">{translate text='ISSN' isPublicFacing=true}</div>
 				<div class="result-value col-sm-8 col-xs-12">{implode subject=$recordDriver->getISSNs()}</div>
 			</div>
@@ -122,7 +122,7 @@
 	{/if}
 
 	{if !empty($showPhysicalDescriptions) && !empty($physicalDescriptions)}
-		<div class="row">
+		<div class="full-record-physical-description row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='Physical Desc' isPublicFacing=true}</div>
 			<div class="result-value col-sm-8 col-xs-12">
 				{implode subject=$physicalDescriptions glue="<br>"}
@@ -134,7 +134,7 @@
 	{/if}
 
 	{if !empty($showPhysicalDescriptions) && !empty($duration)}
-		<div class="row">
+		<div class="full-record-duration row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='Duration' isPublicFacing=true}</div>
 			<div class="result-value col-sm-8 col-xs-12">
 				{math equation="floor(x/60)" x=$duration assign="hours"}
@@ -153,7 +153,7 @@
 	{/if}
 
 	{if !empty($showArInfo) && $recordDriver->getAcceleratedReaderDisplayString()}
-		<div class="row">
+		<div class="full-record-accelerated-reader row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='Accelerated Reader' isPublicFacing=true} </div>
 			<div class="result-value col-sm-8 col-xs-12">
 				{$recordDriver->getAcceleratedReaderDisplayString()}
@@ -162,7 +162,7 @@
 	{/if}
 
 	{if !empty($showLexileInfo) && $recordDriver->getLexileDisplayString()}
-		<div class="row">
+		<div class="full-record-lexile row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='Lexile measure' isPublicFacing=true} </div>
 			<div class="result-value col-sm-8 col-xs-12">
 				{$recordDriver->getLexileDisplayString()}
@@ -171,7 +171,7 @@
 	{/if}
 
 	{if !empty($showFountasPinnell) && $recordDriver->getFountasPinnellLevel()}
-		<div class="row">
+		<div class="full-record-fountas-pinnell row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='Fountas & Pinnell' isPublicFacing=true}</div>
 			<div class="result-value col-sm-8 col-xs-12">
 				{$recordDriver->getFountasPinnellLevel()|escape}
@@ -180,14 +180,14 @@
 	{/if}
 
 	{if !empty($contentRating)}
-		<div class="row">
+		<div class="full-record-content-rating row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='Content Rating' isPublicFacing=true}</div>
 			<div class="result-value col-sm-8 col-xs-12">{implode subject=$contentRating glue=", " translate=true isPublicFacing=true}</div>
 		</div>
 	{/if}
 
 	{if !empty($showAudience) && $recordDriver->getAudience()}
-		<div class="row result-audience result-{str_replace(" ", "-", join(" ", $recordDriver->getFormats()))|lower}">
+		<div class="full-record-audience row result-audience result-{str_replace(" ", "-", join(" ", $recordDriver->getFormats()))|lower}">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='Audience' isPublicFacing=true} </div>
 			<div class="result-value col-sm-8 col-xs-12">
 				{$recordDriver->getAudience()}
@@ -201,7 +201,7 @@
 
 	{if !($recordDriver->hasMultipleVariations())}
 	{* Detailed status information *}
-	<div class="row">
+	<div class="full-record-status row">
 		<div class="result-label col-sm-4 col-xs-12">{translate text='Status' isPublicFacing=true}</div>
 		<div class="result-value col-sm-8 col-xs-12">
 			{if !empty($statusSummary)}
