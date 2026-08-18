@@ -11,6 +11,16 @@ class EventsFacet extends FacetSetting {
 		return $numericColumns;
 	}
 
+	public static function addToSearchObject(SearchObject_EventsSearcher $searchObject, array $facetNames): void {
+		foreach ($facetNames as $facetName) {
+			$facet = new EventsFacet();
+			$facet->facetName = $facetName;
+			$facet->multiSelect = false;
+			$facet->canLock = false;
+			$facet->translate = false;
+			$searchObject->addFacet($facetName, $facet);
+		}
+	}
 
 	public static function getAvailableFacets() : array {
 		$availableFacets = [

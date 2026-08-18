@@ -14,6 +14,7 @@ class Events_Calendar extends Action {
 		// Include Search Engine Class
 		require_once ROOT_DIR . '/sys/SolrConnector/Solr.php';
 		require_once ROOT_DIR . '/sys/Utils/DateUtils.php';
+		require_once ROOT_DIR . '/sys/Events/EventsFacet.php';
 
 		$today = new DateTime();
 		$useWeek = 0;
@@ -247,7 +248,7 @@ class Events_Calendar extends Action {
 		$dropdownSearchObject = SearchObjectFactory::initSearchObject('Events');
 		$dropdownSearchObject->init();
 		$dropdownSearchObject->setPrimarySearch(false);
-		$dropdownSearchObject->setLimit(1000);
+		$dropdownSearchObject->setLimit(0);
 		$dropdownSearchObject->clearHiddenFilters();
 
 		if ($useWeek) {
@@ -265,21 +266,16 @@ class Events_Calendar extends Action {
 			}
 		}
 
-		$dropdownSearchObject->processSearch(true, true);
-		$allEvents = $dropdownSearchObject->getResultRecordSet();
+		$dropdownSearchObject->addPrivateEventFilters();
+
+		EventsFacet::addToSearchObject($dropdownSearchObject, ['branch']);
+
+		$dropdownSearchObject->processSearch(true, false);
+
+		$locationFacets = $dropdownSearchObject->getFacetList(['branch' => 'Branch']);
 		$dropdownSearchObject->close();
 
-		$locationsWithEvents = [];
-		foreach ($allEvents as $result) {
-			if (!empty($result['branch'])) {
-				foreach ($result['branch'] as $branchName) {
-					$locationCode = array_search($branchName, $allLocations);
-					if ($locationCode !== false && !isset($locationsWithEvents[$locationCode])) {
-						$locationsWithEvents[$locationCode] = $branchName;
-					}
-				}
-			}
-		}
+		$locationsWithEvents = array_intersect($allLocations, array_column($locationFacets['branch']['list'] ?? [], 'value'));
 
 		if (!empty($locationsWithEvents)) {
 			if (isset($allLocations['all'])) {
