@@ -77,14 +77,14 @@
 
 			{* Description Section *}
             {if !empty($description) && $printInterface === false}
-				<div class="result-description-standard row visible-xs">
+				<div class="result-description-label row visible-xs">
 					<div class="result-label col-tn-3 col-xs-3">{translate text="Description" isPublicFacing=true}</div>
 					<div class="result-value col-tn-9 col-xs-9"><a id="descriptionLink{$resultIndex|escape}" href="#" onclick="$('#descriptionValue{$resultIndex|escape},#descriptionLink{$resultIndex|escape}').toggleClass('hidden-xs');return false;">Click to view</a></div>
 				</div>
             {/if}
 
             {if (!empty($description) && $printInterface === false) || ($printInterface === true && $printEntryDescription === true)}
-				<div class="result-description-mobile row">
+				<div class="result-description-text row">
 					{* Hide in mobile view *}
 					<div class="result-value hidden-xs col-sm-12" id="descriptionValue{$resultIndex|escape}">
 						{$description|highlight|truncate_html:450:"..."}

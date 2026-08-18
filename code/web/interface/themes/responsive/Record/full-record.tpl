@@ -94,7 +94,7 @@
 				                                            </div>
 							                            {if ($statusSummary->showCopySummary())}</div>{/if}
 			                                                <div class="col-tn-4">
-				                                                <div id="recordTools">
+				                                                <div id="recordTools" class="full-record-tools">
                                                                     {include file="Record/result-tools.tpl" showMoreInfo=false summShortId=$shortId module=$activeRecordProfileModule summId=$id summTitle=$recordDriver->getTitle()}
 				                                                </div>
 			                                                </div>

@@ -66,7 +66,7 @@
 
 				{* Description Section *}
 				{if !empty($summDescription)}
-					<div class="result-description-standard row">
+					<div class="result-description-text row">
 						{* Hide in mobile view *}
 						<div class="result-value col-sm-12" id="descriptionValue{$summId|escape}">
 							{$summDescription|highlight|truncate_html:450:"..."}

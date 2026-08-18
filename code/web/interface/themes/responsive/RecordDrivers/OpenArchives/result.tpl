@@ -92,12 +92,12 @@
 
 		{* Description Section *}
 		{if !empty($description)}
-			<div class="row result-description visible-xs">
+			<div class="row result-description-label visible-xs">
 				<div class="result-label col-tn-3 col-xs-3">{translate text="Description" isPublicFacing=true}</div>
 				<div class="result-value col-tn-9 col-xs-9"><a id="descriptionLink{$resultIndex|escape}" href="#" onclick="$('#descriptionValue{$resultIndex|escape},#descriptionLink{$resultIndex|escape}').toggleClass('hidden-xs');return false;">{translate text="Click to view" isPublicFacing=true}</a></div>
 			</div>
 
-			<div class="row">
+			<div class="result-description-text row">
 				{* Hide in mobile view *}
 				<div class="result-value hidden-xs col-sm-12" id="descriptionValue{$resultIndex|escape}">
 					{$description|highlight|truncate_html:450:"..."}

@@ -26,10 +26,10 @@
 			{/if}
 
 			<div class="{if empty($showCovers)}col-xs-12{else}col-xs-9 col-sm-9{if !empty($viewingCombinedResults)} col-md-9 col-lg-10{/if}{/if}">{* May turn out to be more than one situation to consider here *}
-				<div class="result-title-row row">
+				<div class="row">
 {*					 Title Row*}
 
-					<div class="col-xs-12">
+					<div class="result-title-row col-xs-12">
 						<h2 style="margin:0;font-size:inherit;"><span class="result-index">{$resultIndex})</span>&nbsp;
 							{if !$talpaResult}
 								<a href="{$summUrl}" class="result-title notranslate" aria-label="{$summTitle|removeTrailingPunctuation|escapeCSS} {if !empty($summSubTitle)}{if $summSubTitle|removeTrailingPunctuation} {$summSubTitle|removeTrailingPunctuation|highlight|escapeCSS|truncate:180:'...'}{/if}{/if}">
@@ -235,14 +235,14 @@
 							{if empty($viewingCombinedResults)}
 								{* Description Section *}
 								{if !empty($summDescription)}
-									<div class="result-description visible-xs">
+									<div class="result-description-label visible-xs">
 										<div class="result-label col-sm-4 col-xs-12">{translate text="Description" isPublicFacing=true}</div>
 										<div class="result-value col-sm-8 col-xs-12"><a id="descriptionLink{$summId|escape}" href="#" onclick="$('#descriptionValue{$summId|escape},#descriptionLink{$summId|escape}').toggleClass('hidden-xs');return false;">{translate text="Read Description" isPublicFacing=true}</a></div>
 									</div>
 
 									{* Mobile Description *}
 									{* Hide in mobile view *}
-									<div class="result-description hidden-xs result-value col-sm-12" id="descriptionValue{$summId|escape}">
+									<div class="result-description-text hidden-xs result-value col-sm-12" id="descriptionValue{$summId|escape}">
 										{$summDescription|highlight|truncate_html:450:"..."}
 									</div>
 								{/if}

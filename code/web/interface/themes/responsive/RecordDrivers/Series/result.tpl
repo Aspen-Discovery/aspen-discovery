@@ -103,12 +103,12 @@
 
 		{* Description Section *}
 		{if !empty($summDescription)}
-			<div class="result-description row visible-xs">
+			<div class="result-description-label row visible-xs">
 				<div class="result-label col-tn-3 col-xs-3">{translate text="Description" isPublicFacing=true}</div>
 				<div class="result-value col-tn-9 col-xs-9"><a id="descriptionLink{$summId|escape}" href="#" onclick="$('#descriptionValue{$summId|escape},#descriptionLink{$summId|escape}').toggleClass('hidden-xs');return false;">{translate text="Click to view" isPublicFacing=true}</a></div>
 			</div>
 
-			<div class="result-description row">
+			<div class="result-description-text row">
 				{* Hide in mobile view *}
 				<div class="result-value hidden-xs col-sm-12" id="descriptionValue{$summId|escape}">
 					{$summDescription|highlight|truncate_html:450:"..."}

@@ -1,7 +1,7 @@
 {strip}
 	{* Details not shown in the Top/Main Section of the Record view should be shown here *}
 	{if !empty($recordDriver) && empty($showPublicationDetails) && $recordDriver->getPublicationDetails()}
-		<div class="row">
+		<div class="full-record-publication-details row">
 			<div class="result-label col-xs-3">{translate text='Published' isPublicFacing=true}</div>
 			<div class="col-xs-9 result-value">
 				{implode subject=$recordDriver->getPublicationDetails() glue=", "}
@@ -10,7 +10,7 @@
 	{/if}
 
 	{if empty($showFormats)}
-		<div class="row">
+		<div class="full-record-format row">
 			<div class="result-label col-xs-3">{translate text='Format' isPublicFacing=true}</div>
 			<div class="col-xs-9 result-value">
 				{implode subject=$recordFormat glue=", "}
@@ -19,7 +19,7 @@
 	{/if}
 
 	{if !empty($recordDriver) && empty($showEditions) && $recordDriver->getEditions()}
-		<div class="row">
+		<div class="full-record-edition row">
 			<div class="result-label col-xs-3">{translate text='Edition' isPublicFacing=true}</div>
 			<div class="col-xs-9 result-value">
 				{implode subject=$recordDriver->getEditions() glue=", "}
@@ -28,7 +28,7 @@
 	{/if}
 
 	{if empty($showPhysicalDescriptions) && !empty($physicalDescriptions)}
-		<div class="row">
+		<div class="full-record-physical-description row">
 			<div class="result-label col-xs-3">{translate text='Physical Desc' isPublicFacing=true}</div>
 			<div class="col-xs-9 result-value">
 				{implode subject=$physicalDescriptions glue="<br/>"}
@@ -37,7 +37,7 @@
 	{/if}
 
 	{if !empty($streetDate)}
-		<div class="row">
+		<div class="full-record-street-date row">
 			<div class="result-label col-xs-3">{translate text='Street Date' isPublicFacing=true}</div>
 			<div class="col-xs-9 result-value">
 				{$streetDate|escape}
@@ -45,7 +45,7 @@
 		</div>
 	{/if}
 
-	<div class="row">
+	<div class="full-record-language row">
 		<div class="result-label col-xs-3">{translate text='Language' isPublicFacing=true}</div>
 		<div class="col-xs-9 result-value">
 			{implode subject=$recordLanguage glue=", "}
@@ -54,7 +54,7 @@
 
 	{if !empty($recordDriver) && empty($showISBNs)}
 		{if count($recordDriver->getISBNs()) > 0}
-			<div class="row">
+			<div class="full-record-isbn row">
 				<div class="result-label col-xs-3">{translate text='ISBN' isPublicFacing=true}</div>
 				<div class="col-xs-9 result-value">
 					{implode subject=$recordDriver->getISBNs() glue=", "}
@@ -62,7 +62,7 @@
 			</div>
 		{/if}
 		{if count($recordDriver->getISSNs()) > 0}
-			<div class="row">
+			<div class="full-record-issn row">
 				<div class="result-label col-xs-3">{translate text='ISSN' isPublicFacing=true}</div>
 				<div class="col-xs-9 result-value">
 					{implode subject=$recordDriver->getISSNs() glue=", "}
@@ -72,7 +72,7 @@
 	{/if}
 
 	{if !empty($recordDriver) && count($recordDriver->getUPCs()) > 0}
-		<div class="row">
+		<div class="full-record-upc row">
 			<div class="result-label col-xs-3">{translate text='UPC' isPublicFacing=true}</div>
 			<div class="col-xs-9 result-value">
 				{implode subject=$recordDriver->getUPCs() glue=", "}
@@ -82,7 +82,7 @@
 
 	{if !empty($recordDriver) && $recordDriver->getAcceleratedReaderData() != null}
 		{assign var="arData" value=$recordDriver->getAcceleratedReaderData()}
-		<div class="row">
+		<div class="full-record-accelerated-reader row">
 			<div class="result-label col-xs-3">{translate text='Accelerated Reader' isPublicFacing=true}</div>
 			<div class="col-xs-9 result-value">
 				{$arData.interestLevel|escape}<br/>
@@ -92,7 +92,7 @@
 	{/if}
 
 	{if !empty($recordDriver) && $recordDriver->getLexileCode()}
-		<div class="row">
+		<div class="full-record-lexile-code row">
 			<div class="result-label col-xs-3">{translate text='Lexile code' isPublicFacing=true}</div>
 			<div class="col-xs-9 result-value">
 				{$recordDriver->getLexileCode()|escape}
@@ -101,7 +101,7 @@
 	{/if}
 
 	{if !empty($recordDriver) && $recordDriver->getLexileScore()}
-		<div class="row">
+		<div class="full-record-lexile-measure row">
 			<div class="result-label col-xs-3">{translate text='Lexile measure' isPublicFacing=true}</div>
 			<div class="col-xs-9 result-value">
 				{$recordDriver->getLexileScore()|escape}
@@ -110,7 +110,7 @@
 	{/if}
 
 	{if !empty($recordDriver) && $recordDriver->getFountasPinnellLevel()}
-		<div class="row">
+		<div class="full-record-fountas-pinnell row">
 			<div class="result-label col-md-3">{translate text='Fountas & Pinnell' isPublicFacing=true}</div>
 			<div class="col-md-9 result-value">
 				{$recordDriver->getFountasPinnellLevel()|escape}
@@ -123,7 +123,7 @@
 			<span style="display: inline-block; font-size: 18px;">{translate text='Notes' isPublicFacing=true}</span>
 		</div>
 		{foreach from=$notes item=note name=loop}
-			<div class="row">
+			<div class="full-record-notes row">
 				<div class="result-label col-sm-3">{translate text=$note.label isPublicFacing=true isMetadata=true}</div>
 				<div class="col-sm-9 result-value">{$note.note}{if !empty($note.agr)} <span class="agrNote">({$note.agr})</span> {/if}</div>
 			</div>
