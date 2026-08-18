@@ -63,7 +63,7 @@
 				</div>
 			{/if}
 
-			{if (!empty($listEntryNotes) && $printInterface === false) || (!empty($listEntryNotes) && $printInterface === true && $printNotes === true)}
+			{if (!empty($listEntryNotes) && $printInterface === false) || (!empty($listEntryNotes) && $printInterface === true && $printEntryNotes === true)}
 				<div class="result-notes row">
 					<div class="result-label col-md-3">{translate text="Notes" isPublicFacing=true} </div>
 					<div class="user-list-entry-note result-value col-md-9">
