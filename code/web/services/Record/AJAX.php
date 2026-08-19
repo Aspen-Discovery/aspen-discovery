@@ -1964,6 +1964,7 @@ class Record_AJAX extends JSON_Action {
 		//If it is a non-fiction work, we will prompt the user for the edition if they aren't placing a hold on the latest
 		if ($isNonFiction) {
 			$selectedRecordLatestPubDate = 0;
+			$hasHoldEditionPromptMessage = false;
 			foreach ($marcRecord->getPublicationDates() as $selectedRecordPubDate) {
 				if (preg_match('/(\d{4})/', $selectedRecordPubDate, $matches)) {
 					$selectedRecordLatestPubDate = max($selectedRecordLatestPubDate, $matches[1]);
@@ -1975,15 +1976,18 @@ class Record_AJAX extends JSON_Action {
 					foreach ($relatedRecord->getDriver()->getPublicationDates() as $relatedRecordPubDate) {
 						if (preg_match('/(\d{4})/', $relatedRecordPubDate, $matches)) {
 							if ($matches[1] > $selectedRecordLatestPubDate) {
-								$holdPromptForEditions = 2;
+								if ($holdPromptForEditions != 1) {
+									$holdPromptForEditions = 2;
+								}
 								$promptForEdition = true;
+								$hasHoldEditionPromptMessage = true;
 								$interface->assign('holdEditionPromptMessage', 'You are placing a hold on an earlier version of this title. If you need the latest information, you can request the newer edition instead, though wait times may be longer.');
 								break;
 							}
 						}
 					}
 				}
-				if ($promptForEdition && $holdPromptForEditions == 2) {
+				if ($promptForEdition && $hasHoldEditionPromptMessage) {
 					break;
 				}
 			}
