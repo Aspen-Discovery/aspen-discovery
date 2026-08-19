@@ -46,13 +46,15 @@ class AspenUsage extends AbstractUsage {
 
 	public function getNumericColumnNames(): array {
 		return [
+			'year',
+			'month',
+			'day',
 			'pageViews',
 			'pageViewsByBots',
 			'pageViewsByAuthenticatedUsers',
 			'pagesWithErrors',
-			'slowPages',
+			'sessionsStarted',
 			'ajaxRequests',
-			'slowAjaxRequests',
 			'coverViews',
 			'genealogySearches',
 			'groupedWorkSearches',
@@ -60,11 +62,15 @@ class AspenUsage extends AbstractUsage {
 			'userListSearches',
 			'websiteSearches',
 			'eventsSearches',
+			'ebscoEdsSearches',
+			'ebscohostSearches',
+			'galeSearches',
+			'summonSearches',
+			'blockedRequests',
+			'blockedApiRequests',
 			'timedOutSearches',
 			'timedOutSearchesWithHighLoad',
 			'searchesWithErrors',
-			'ebscohostSearches',
-			'galeSearches',
 			'emailsSent',
 			'emailsFailed'
 		];
