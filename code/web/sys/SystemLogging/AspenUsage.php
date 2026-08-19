@@ -227,7 +227,21 @@ class AspenUsage extends AbstractUsage {
 		$this->$fieldName++;
 		try {
 			if (empty($this->id)) {
-				return $this->insert() !== false;
+				//insert catches PDO exceptions internally and returns false, a duplicate key error does not throw
+				if ($this->insert() !== false) {
+					return true;
+				}
+				//Another request created the row for today first, load it and increment atomically
+				$today = new AspenUsage();
+				$today->instance = $this->instance;
+				$today->year = $this->year;
+				$today->month = $this->month;
+				$today->day = $this->day;
+				if ($today->find(true)) {
+					$this->id = $today->id;
+					return $this->query("UPDATE aspen_usage SET $fieldName = $fieldName + 1 WHERE id = $this->id");
+				}
+				return false;
 			}else{
 				return $this->query("UPDATE aspen_usage SET $fieldName = $fieldName + 1 WHERE id = $this->id");
 			}
