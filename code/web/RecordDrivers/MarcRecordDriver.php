@@ -945,7 +945,6 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 			$agrContributors = $this->get880Contributors();
 			/** @var File_MARC_Data_Field[] $sevenHundredFields */
 			$sevenHundredFields = $this->getMarcRecord()->getFields('700|710', true);
-			$narratorValues = ['nrt', 'reader', 'narrator'];
 			foreach ($sevenHundredFields as $field) {
 				$nameSubfieldArray = $this->getSubfieldArray($field, [
 					'a',
@@ -969,15 +968,11 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 				if ($field->getSubfield('4') != null) {
 					$contributorRole = $field->getSubfield('4')->getData();
 					$contributorRole = preg_replace('/[\s,.;]+$/', '', $contributorRole);
-					if (in_array(strtolower($contributorRole), $narratorValues, true)) {
-						$curContributor['roles'][] = 'Narrator';
-					} else {
-						$curContributor['roles'][] = mapValue('contributor_role', $contributorRole);
-					}
+					$curContributor['roles'][] = mapValue('contributor_role', $contributorRole);
 				} elseif ($field->getSubfield('e') != null) {
 					$contributorRole = $field->getSubfield('e')->getData();
 					$normalizedRole = strtolower(rtrim(trim($contributorRole), '.'));
-					if (in_array($normalizedRole, $narratorValues, true)) {
+					if ($normalizedRole == 'reader') {
 						$curContributor['roles'][] = 'Narrator';
 					} else {
 						$curContributor['roles'][] = ucfirst(strtolower(trim($contributorRole)));
