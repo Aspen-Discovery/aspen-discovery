@@ -1032,9 +1032,19 @@ class GroupedWorkDriver extends IndexRecordDriver {
 				foreach ($contributorsInIndex as $contributor) {
 					if (strpos($contributor, '|')) {
 						$contributorInfo = explode('|', $contributor);
+						$roles = explode(',', $contributorInfo[1]);
+						foreach ($roles as &$role) {
+							$normalizedRole = strtolower(rtrim(trim($role), '.'));
+							if ($normalizedRole == "nrt" || $normalizedRole == "reader") {
+								$role = 'Narrator';
+							} else {
+								$role = ucfirst(strtolower(trim($role)));
+							}
+						}
+						unset($role);
 						$curContributor = [
 							'name' => $contributorInfo[0],
-							'roles' => explode(',', $contributorInfo[1]),
+							'roles' => $roles,
 						];
 						ksort($curContributor['roles']);
 					} else {
