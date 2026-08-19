@@ -51,7 +51,6 @@ class SideLoads_UsageGraphs extends Admin_AbstractUsageGraphs {
 		$dataSeries = [];
 		$columnLabels = [];
 		$usage = [];
-		$groupByTimeframe = implode(',', $timeframes);
 
 		if ($_REQUEST['sideloadId']) {
 			$sideloadId = $_REQUEST['sideloadId'];
@@ -69,11 +68,7 @@ class SideLoads_UsageGraphs extends Admin_AbstractUsageGraphs {
 		if (is_array($custom)) {
 			$usage->buildCustomPeriodQuery($custom);
 		} else {
-			$usage->groupBy($groupByTimeframe);
-			foreach ($timeframes as $timeframe) {
-				$usage->selectAdd($timeframe);
-			}
-			$usage->orderBy($groupByTimeframe);
+			$usage->buildTimeframeQuery($timeframes);
 		}
 		$usage->sideloadId = $sideloadId;
 
