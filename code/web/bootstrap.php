@@ -230,8 +230,7 @@ try {
 
 //Check to see if we should be blocking based on the IP address
 if (IPAddress::isClientIpBlocked()) {
-	$aspenUsage->blockedRequests++;
-	$aspenUsage->update();
+	$aspenUsage->incBlockedRequests();
 
 	$usageByIPAddress->incrementNumBlockedRequests();
 
