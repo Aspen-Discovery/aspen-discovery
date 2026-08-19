@@ -6,10 +6,14 @@ parameters:
         - .
     scanDirectories:
         - vendor
+        - sys/File
     excludePaths:
         analyse:
+            - Minify/*
             - vendor/*
             - sys/mobileesp/mdetect.php
             - sys/mobile_device_detect.php
-            - Minify/FirePHP.php
-            - Minify/ImportProcessor.php
+            - sys/Smarty/sysplugins/*
+            - sys/File/MARC/*
+            - sys/Smarty/plugins/*
+            - CAS-1.3.4/*

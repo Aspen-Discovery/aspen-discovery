@@ -352,7 +352,7 @@ class LibraryLink extends DataObject {
 				$userPatronType = $user->patronType;
 				$userId = $user->id;
 				require_once ROOT_DIR . '/sys/Account/PType.php';
-				$patronType = new pType();
+				$patronType = new PType();
 				$patronType->pType = $userPatronType;
 				if ($patronType->find(true)) {
 					$patronTypeId = $patronType->id;
@@ -400,7 +400,7 @@ class LibraryLink extends DataObject {
 			$userPatronType = $user->patronType;
 			$userId = $user->id;
 			require_once ROOT_DIR . '/sys/Account/PType.php';
-			$patronType = new pType();
+			$patronType = new PType();
 			$patronType->pType = $userPatronType;
 			if ($patronType->find(true)) {
 				$patronTypeId = $patronType->id;

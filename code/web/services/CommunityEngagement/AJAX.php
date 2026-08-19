@@ -1,7 +1,5 @@
 <?php
 
-use JetBrains\PhpStorm\NoReturn;
-
 require_once ROOT_DIR . '/JSON_Action.php';
 require_once ROOT_DIR . '/sys/CommunityEngagement/Campaign.php';
 require_once ROOT_DIR . '/sys/CommunityEngagement/UserCampaign.php';
@@ -15,9 +13,7 @@ class CommunityEngagement_AJAX extends JSON_Action {
 		parent::launch($method);
 	}
 
-	/** @noinspection PhpUnused */
-	#[NoReturn]
-	function campaignRewardGivenUpdate() : void {
+	function campaignRewardGivenUpdate() : never {
 		$this->checkRequiredPermission(['View Community Engagement Dashboard']);
 		$this->checkRequiredParameters(['userId', 'campaignId']);
 		$userId = $_GET['userId'];
@@ -39,9 +35,7 @@ class CommunityEngagement_AJAX extends JSON_Action {
 		exit;
 	}
 
-	/** @noinspection PhpUnused */
-	#[NoReturn]
-	function milestoneRewardGivenUpdate() : void {
+	function milestoneRewardGivenUpdate() : never {
 		$this->checkRequiredPermission(['View Community Engagement Dashboard']);
 		$this->checkRequiredParameters(['userId', 'campaignId', 'milestoneId']);
 		ob_start();
@@ -76,9 +70,7 @@ class CommunityEngagement_AJAX extends JSON_Action {
 		exit;
 	}
 
-	/** @noinspection PhpUnused */
-	#[NoReturn]
-	function filterCampaigns() : void {
+	function filterCampaigns() : never {
 		$this->checkRequiredPermission(['View Community Engagement Dashboard']);
 
 		global $interface;
@@ -339,9 +331,7 @@ class CommunityEngagement_AJAX extends JSON_Action {
 		}
 	}
 
-	/** @noinspection PhpUnused */
-	#[NoReturn]
-	public function filterBranchLeaderboardCampaigns() : void {
+	public function filterBranchLeaderboardCampaigns() : never {
 		$this->checkRequiredPermission(['View Community Engagement Dashboard']);
 
 		require_once ROOT_DIR . '/sys/CommunityEngagement/Campaign.php';
@@ -399,10 +389,10 @@ class CommunityEngagement_AJAX extends JSON_Action {
 				'message' => 'Error retrieving campaign information'
 			]);
 		}
+		exit;
 	}
-
-	#[NoReturn]
-	public function manuallyProgressUserMilestone($milestoneId = null, $userId = null, $campaignId = null) : void {
+	
+	public function manuallyProgressUserMilestone($milestoneId = null, $userId = null, $campaignId = null) : never {
 		require_once ROOT_DIR . '/sys/CommunityEngagement/Campaign.php';
 		require_once ROOT_DIR . '/sys/CommunityEngagement/Milestone.php';
 		require_once ROOT_DIR . '/sys/CommunityEngagement/UserCampaign.php';
@@ -440,8 +430,7 @@ class CommunityEngagement_AJAX extends JSON_Action {
  
 	}
 
-	#[NoReturn]
-	public function campaignLeaderboardOptIn() : void {
+	public function campaignLeaderboardOptIn() : never {
 		$this->requireLoggedInUser();
 		$this->checkRequiredParameters(['userId', 'campaignId']);
 
@@ -471,8 +460,7 @@ class CommunityEngagement_AJAX extends JSON_Action {
 		exit;
 	}
 
-	#[NoReturn]
-	public function campaignLeaderboardOptOut() : void {
+	public function campaignLeaderboardOptOut() : never {
 		$this->requireLoggedInUser();
 		$this->checkRequiredParameters(['userId', 'campaignId']);
 
@@ -700,9 +688,8 @@ class CommunityEngagement_AJAX extends JSON_Action {
 		}
 	}
 
-	/** @noinspection PhpUnused */
-	#[NoReturn]
-	public function saveLeaderboardChanges(): void {
+	
+	public function saveLeaderboardChanges(): never {
 		$this->requireLoggedInUser();
 		$this->checkRequiredPermission(['Administer All Grapes Pages', 'Administer Library Grapes Pages']);
 		$this->checkRequiredParameters(['html', 'css', 'templateName']);
@@ -772,7 +759,7 @@ class CommunityEngagement_AJAX extends JSON_Action {
 		}
 
 		if (!$success) {
-			$logger->log("Failed to save template: " . print_r($grapesTemplate->getLastError(), true), LOGGER::LOG_ERROR);
+			$logger->log("Failed to save template: " . print_r($grapesTemplate->getLastError(), true), Logger::LOG_ERROR);
 		}
 	}
 
@@ -791,9 +778,8 @@ class CommunityEngagement_AJAX extends JSON_Action {
 		return null;
 	}
 
-	/** @noinspection PhpUnused */
-	#[NoReturn]
-	public function resetLeaderboardDisplay() : void {
+	
+	public function resetLeaderboardDisplay() : never {
 		$this->requireLoggedInUser();
 		$this->checkRequiredPermission(['Administer All Grapes Pages', 'Administer Library Grapes Pages']);
 
@@ -829,9 +815,7 @@ class CommunityEngagement_AJAX extends JSON_Action {
 		exit;
 	}
 
-	/** @noinspection PhpUnused */
-	#[NoReturn]
-	public function campaignEmailOptIn() : void {
+	public function campaignEmailOptIn() : never {
 		$this->checkRequiredParameters(['userId', 'campaignId']);
 
 		$userId = $_GET['userId'];
@@ -861,9 +845,7 @@ class CommunityEngagement_AJAX extends JSON_Action {
 		exit;
 	}
 
-	/** @noinspection PhpUnused */
-	#[NoReturn]
-	public function campaignEmailOptOut() : void {
+	public function campaignEmailOptOut() : never {
 		$this->checkRequiredParameters(['userId', 'campaignId']);
 		$userId = $_GET['userId'];
 		$campaignId = $_GET['campaignId'];
@@ -1092,8 +1074,8 @@ class CommunityEngagement_AJAX extends JSON_Action {
 		];
 	}
 
-	#[NoReturn]
-	public function addProgressToExtraCreditActivities($extraCreditActivityId = null, $userId = null, $campaignId = null) : void {
+	
+	public function addProgressToExtraCreditActivities($extraCreditActivityId = null, $userId = null, $campaignId = null) : never {
 		require_once ROOT_DIR . '/sys/CommunityEngagement/Campaign.php';
 		require_once ROOT_DIR . '/sys/CommunityEngagement/ExtraCredit.php';
 		require_once ROOT_DIR . '/sys/CommunityEngagement/UserCampaign.php';

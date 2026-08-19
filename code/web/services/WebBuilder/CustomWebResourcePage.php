@@ -83,7 +83,7 @@ class WebBuilder_CustomWebResourcePage extends Action {
 					$resourcesForAudience->audienceId = $audienceId;
 					$resourcesForAudience->find();
 					while ($resourcesForAudience->fetch()) {
-						$webResourceLibrary = new libraryWebResource();
+						$webResourceLibrary = new LibraryWebResource();
 						$webResourceLibrary->webResourceId = $resourcesForAudience->webResourceId;
 						$webResourceLibrary->libraryId = $library->libraryId;
 						if ($webResourceLibrary->find()) {
@@ -100,7 +100,7 @@ class WebBuilder_CustomWebResourcePage extends Action {
 					$resourcesForCategory->categoryId = $categoryId;
 					$resourcesForCategory->find();
 					while ($resourcesForCategory->fetch()) {
-						$webResourceLibrary = new libraryWebResource();
+						$webResourceLibrary = new LibraryWebResource();
 						$webResourceLibrary->webResourceId = $resourcesForCategory->webResourceId;
 						$webResourceLibrary->libraryId = $library->libraryId;
 						if ($webResourceLibrary->find()) {

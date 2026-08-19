@@ -1,7 +1,5 @@
 <?php
 
-use JetBrains\PhpStorm\NoReturn;
-
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/ObjectRestoration.php';
 
@@ -380,8 +378,7 @@ class Admin_ObjectRestorations extends ObjectEditor {
 	/**
 	 * Restore a single object from the "recycle-bin" back to an active state.
 	 */
-	#[NoReturn]
-	public function restore(): void {
+	public function restore(): never {
 		$compositeId = $_REQUEST['id'] ?? '';
 		$user = UserAccount::getActiveUserObj();
 		if (str_contains($compositeId, '_')) {
@@ -416,8 +413,7 @@ class Admin_ObjectRestorations extends ObjectEditor {
 	 *
 	 * @noinspection PhpUnused
 	 */
-	#[NoReturn]
-	public function hardDeleteSingle(): void {
+	public function hardDeleteSingle(): never {
 		$compositeId = $_REQUEST['id'] ?? '';
 		$user = UserAccount::getActiveUserObj();
 		if (str_contains($compositeId, '_')) {
@@ -454,8 +450,7 @@ class Admin_ObjectRestorations extends ObjectEditor {
 	 *
 	 * @noinspection PhpUnused
 	 */
-	#[NoReturn]
-	public function batchHardDelete(): void {
+	public function batchHardDelete(): never {
 		$selected = $_REQUEST['selectedObject'] ?? [];
 		if (empty($selected)) {
 			$selected = $this->getAllCompositeIdsFromDatabase();

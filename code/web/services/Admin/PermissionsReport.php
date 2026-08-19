@@ -1,7 +1,5 @@
 <?php
 
-use JetBrains\PhpStorm\NoReturn;
-
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/sys/Administration/Role.php';
 require_once ROOT_DIR . '/sys/Administration/Permission.php';
@@ -57,8 +55,7 @@ class Admin_PermissionsReport extends Admin_Admin {
 	 * @param array $permissionSections
 	 * @return void
 	 */
-	#[NoReturn]
-	function exportToCsv(array $roles, array $permissionSections) : void {
+	function exportToCsv(array $roles, array $permissionSections) : never {
 		header('Content-Type: text/csv; charset=utf-8');
 		header('Content-Disposition: attachment;filename="PermissionsByRole.csv"');
 		header('Cache-Control: max-age=0');

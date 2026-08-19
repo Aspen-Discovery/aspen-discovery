@@ -1,7 +1,5 @@
 <?php
 
-use JetBrains\PhpStorm\NoReturn;
-
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/sys/User/PageDefaults.php';
@@ -689,7 +687,6 @@ abstract class ObjectEditor extends Admin_Admin {
 		$interface->setTemplate(ROOT_DIR . '/interface/themes/responsive/Admin/objectEditor.tpl');
 	}
 
-	#[NoReturn]
 	function editObject($objectAction, $structure) : void {
 		$errorOccurred = false;
 		$user = UserAccount::getLoggedInUser();

@@ -1,7 +1,5 @@
 <?php
 
-use JetBrains\PhpStorm\NoReturn;
-
 require_once ROOT_DIR . '/JSON_Action.php';
 require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 
@@ -10676,9 +10674,7 @@ class MyAccount_AJAX extends JSON_Action {
 		return $result;
 	}
 
-	/** @noinspection PhpUnused */
-	#[NoReturn]
-	function getYearInReviewSlideImage() : void {
+	function getYearInReviewSlideImage() : never {
 		$gotImage = false;
 		//This returns an image to the browser
 		if (UserAccount::isLoggedIn()) {

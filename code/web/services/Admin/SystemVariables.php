@@ -1,7 +1,5 @@
 <?php
 
-use JetBrains\PhpStorm\NoReturn;
-
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 
@@ -86,9 +84,7 @@ class Admin_SystemVariables extends ObjectEditor {
 		return $objectActions;
 	}
 
-	/** @noinspection PhpUnused */
-	#[NoReturn]
-	function clearCachedValues(): void {
+	function clearCachedValues(): never {
 		require_once ROOT_DIR . '/sys/MemoryCache/CachedValue.php';
 		$user = UserAccount::getActiveUserObj();
 		$success = CachedValue::clearAllCachedValues();

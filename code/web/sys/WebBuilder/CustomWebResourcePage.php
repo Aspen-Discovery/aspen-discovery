@@ -438,7 +438,7 @@ class CustomWebResourcePage extends DB_LibraryLinkedObject {
 					//No patron types defined, everyone can access
 					$okToAccess = true;
 				} else {
-					$patronType = new pType();
+					$patronType = new PType();
 					$patronType->pType = $userPatronType;
 					if ($patronType->find(true)) {
 						$patronTypeId = $patronType->id;
@@ -487,7 +487,7 @@ class CustomWebResourcePage extends DB_LibraryLinkedObject {
 					//No patron types defined, everyone can access
 					return '';
 				} else {
-					$patronType = new pType();
+					$patronType = new PType();
 					$patronType->pType = $userPatronType;
 					if ($patronType->find(true)) {
 						$patronTypeId = $patronType->id;

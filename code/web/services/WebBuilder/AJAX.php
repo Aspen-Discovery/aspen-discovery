@@ -1,7 +1,5 @@
 <?php
 
-use JetBrains\PhpStorm\NoReturn;
-
 require_once ROOT_DIR . '/JSON_Action.php';
 
 class WebBuilder_AJAX extends JSON_Action {
@@ -1481,9 +1479,7 @@ class WebBuilder_AJAX extends JSON_Action {
 		}
 	}
 
-	/** @noinspection PhpUnused */
-	#[NoReturn]
-	function loadGrapesPage() : void {
+	function loadGrapesPage() : never {
 		require_once ROOT_DIR . '/sys/WebBuilder/GrapesPage.php';
 		require_once ROOT_DIR . '/sys/WebBuilder/GrapesTemplate.php';
 
@@ -1529,9 +1525,7 @@ class WebBuilder_AJAX extends JSON_Action {
 		exit();
 	  }
 
-	/** @noinspection PhpUnused */
-	#[NoReturn]
-	function loadGrapesTemplate() : void {
+	function loadGrapesTemplate() : never {
 		require_once ROOT_DIR . '/sys/WebBuilder/GrapesTemplate.php';
 
 		$templateId = $_GET['id'];

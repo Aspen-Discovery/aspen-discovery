@@ -21,7 +21,7 @@ class WebBuilder_ResourceCategory extends Action
 			$webResources = [];
 			$webResourceIds = [];
 			while ($resourcesForCategory->fetch()) {
-				$webResourceLibrary = new libraryWebResource();
+				$webResourceLibrary = new LibraryWebResource();
 				$webResourceLibrary->webResourceId = $resourcesForCategory->webResourceId;
 				$webResourceLibrary->libraryId = $library->libraryId;
 				if ($webResourceLibrary->find()) {

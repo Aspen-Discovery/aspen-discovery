@@ -1,7 +1,6 @@
 <?php
 
 // Abstract Base Class for Actions
-use JetBrains\PhpStorm\NoReturn;
 
 require_once ROOT_DIR . '/sys/Breadcrumb.php';
 abstract class Action
@@ -117,8 +116,7 @@ abstract class Action
 		$interface->assign('showCovers', $showCovers);
 	}
 
-	#[NoReturn]
-	protected function forbidAPIAccess() : void
+	protected function forbidAPIAccess() : never
 	{
 		global $aspenUsage;
 		$aspenUsage->blockedApiRequests++;

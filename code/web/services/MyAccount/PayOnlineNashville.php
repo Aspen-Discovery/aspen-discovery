@@ -15,6 +15,9 @@ class PayOnlineNashville extends Action {
 	protected $port;
 	protected $path;
 	protected $cc_host;
+	protected $cc_fullname;
+	protected $cc_zipcode;
+	protected $librarycard;
 	protected $appId;
 	var $cc_ConvenienceFee;
 	var $cc_fakeit;

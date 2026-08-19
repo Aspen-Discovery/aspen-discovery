@@ -21,7 +21,7 @@ class WebBuilder_ResourceAudience extends Action
 			$webResources = [];
 			$webResourceIds = [];
 			while ($resourcesForAudience->fetch()) {
-				$webResourceLibrary = new libraryWebResource();
+				$webResourceLibrary = new LibraryWebResource();
 				$webResourceLibrary->webResourceId = $resourcesForAudience->webResourceId;
 				$webResourceLibrary->libraryId = $library->libraryId;
 				if ($webResourceLibrary->find()) {

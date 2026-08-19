@@ -214,7 +214,7 @@ class PType extends DataObject {
 	 * @return array
 	 */
 	static function getPatronTypeList(bool $addEmpty = false, bool $valueIsPType = false, int|string $accountProfileId = -1): array {
-		$patronType = new pType();
+		$patronType = new PType();
 		$patronType->orderBy('pType');
 		if ($accountProfileId != -1 && !empty($accountProfileId)) {
 			$patronType->accountProfileId = $accountProfileId;
@@ -239,7 +239,7 @@ class PType extends DataObject {
 	}
 
 	static function getAccountLinkingSetting($pType): string {
-		$pTypeSetting = new pType();
+		$pTypeSetting = new PType();
 		$pTypeSetting->pType = $pType;
 		if ($pTypeSetting->find(true)) {
 			return $pTypeSetting->accountLinkingSetting;
@@ -249,7 +249,7 @@ class PType extends DataObject {
 	}
 
 	static function getAccountLinkRemoveSetting($pType): string {
-		$pTypeSetting = new pType();
+		$pTypeSetting = new PType();
 		$pTypeSetting->pType = $pType;
 		if ($pTypeSetting->find(true)) {
 			return $pTypeSetting->accountLinkRemoveSetting;

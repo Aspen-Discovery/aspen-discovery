@@ -1,7 +1,5 @@
 <?php
 
-use JetBrains\PhpStorm\NoReturn;
-
 require_once __DIR__ . '/../bootstrap.php';
 require_once __DIR__ . '/../bootstrap_aspen.php';
 
@@ -217,8 +215,7 @@ function logMessage (string $message, ?BackgroundProcess $backgroundProcess) : v
 	}
 }
 
-#[NoReturn]
-function finish (string $message, ?BackgroundProcess $backgroundProcess) : void {
+function finish (string $message, ?BackgroundProcess $backgroundProcess) : never {
 	logMessage($message, $backgroundProcess);
 	if ($backgroundProcess !== null) {
 		$backgroundProcess->endProcess(null);

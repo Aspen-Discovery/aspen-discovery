@@ -288,7 +288,6 @@ class WebResource extends DB_LibraryLinkedObject {
 	public function delete(bool $useWhere = false, bool $hardDelete = false) : bool|int {
 		$ret = parent::delete($useWhere, $hardDelete);
 		if ($ret && $hardDelete && !empty($this->id)) {
-			$this->clearLibraries();
 			$this->clearAudiences();
 			$this->clearCategories();
 			$this->clearAllowableLibraries();

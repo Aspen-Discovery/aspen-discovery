@@ -1,7 +1,5 @@
 <?php
 
-use JetBrains\PhpStorm\NoReturn;
-
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 
@@ -140,8 +138,7 @@ class Translation_Translations extends Admin_Admin {
 		$this->display('translations.tpl', 'Translations');
 	}
 
-	#[NoReturn]
-	private function exportAllTranslations() : void {
+	private function exportAllTranslations() : never {
 		set_time_limit(0);
 		ini_set('memory_limit', '1G');
 		header('Content-type: application/csv');
@@ -209,8 +206,7 @@ class Translation_Translations extends Admin_Admin {
 		exit();
 	}
 
-	#[NoReturn]
-	private function exportForBulkTranslation() : void {
+	private function exportForBulkTranslation() : never {
 		set_time_limit(0);
 		header('Content-type: application/txt');
 		header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1

@@ -153,7 +153,7 @@ class Events_Calendar extends Action {
 
 		if ($eventsDefaultCalendarView == 1 && $library->aspenEventsToInclude != 2) {
 			if (UserAccount::isLoggedIn()) {
-				$user = userAccount::getActiveUserObj();
+				$user = UserAccount::getActiveUserObj();
 				if ($user) {
 					if ($user->getHomeLibrary() != null) {
 						$selectedLocation = $user->getHomeLibrary();
