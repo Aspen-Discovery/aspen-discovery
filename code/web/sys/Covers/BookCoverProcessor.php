@@ -1824,7 +1824,7 @@ class BookCoverProcessor {
 					$expressions = preg_split("/[\r\n]+/", $sourceCollection->imageRegex);
 					foreach ($expressions as $expression) {
 						if (!empty($expression) && preg_match('~' . $expression . '~i', $pageContents, $matches)) {
-							$bookcoverUrl = str_replace('&amp;', '&', $matches[1]);
+							$bookcoverUrl = html_entity_decode($matches[1]);
 							if ($this->processImageURL('open_archives', $bookcoverUrl)) {
 								return true;
 							}
