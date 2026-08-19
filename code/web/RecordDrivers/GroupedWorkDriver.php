@@ -1035,7 +1035,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 						$roles = explode(',', $contributorInfo[1]);
 						foreach ($roles as &$role) {
 							$normalizedRole = strtolower(rtrim(trim($role), '.'));
-							if ($normalizedRole == "nrt" || $normalizedRole == "reader") {
+							if ($normalizedRole == "reader") {
 								$role = 'Narrator';
 							} else {
 								$role = ucfirst(strtolower(trim($role)));
