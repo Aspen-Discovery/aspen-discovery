@@ -443,6 +443,10 @@ abstract class RecordInterface {
 		return $result;
 	}
 
+	function getId() {}
+
+	function getPrimaryAuthor() {}
+
 	function setListNotes($listNotes) {
 		$this->listNotes = $listNotes;
 	}

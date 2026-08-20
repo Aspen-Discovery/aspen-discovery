@@ -713,7 +713,7 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher {
 	 * @param array|null $result Existing result set (null to do new search)
 	 * @return  string                  XML document
 	 */
-	public function buildRSS($result = null) {
+	public function buildRSS($result = null): string {
 		global $configArray;
 		// XML HTTP header
 		header('Content-type: text/xml', true);

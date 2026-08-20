@@ -514,8 +514,9 @@ class SearchObject_GaleSearcher extends SearchObject_BaseSearcher {
 		// TODO: Implement getIndexError() method.
 	}
 
-	public function buildRSS($result = null) {
+	public function buildRSS($result = null): string {
 		// TODO: Implement buildRSS() method.
+		return '';
 	}
 
 	public function buildExcel($result = null) {

@@ -688,8 +688,9 @@ BODY;
 		// TODO: Implement getIndexError() method.
 	}
 
-	public function buildRSS($result = null) {
+	public function buildRSS($result = null): string {
 		// TODO: Implement buildRSS() method.
+		return '';
 	}
 
 	public function buildExcel($result = null) {

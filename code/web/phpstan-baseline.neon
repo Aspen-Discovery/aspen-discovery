@@ -7,58 +7,10 @@ parameters:
 			path: CatalogConnection.php
 
 		-
-			message: '#^Undefined variable\: \$logger$#'
-			identifier: variable.undefined
-			count: 1
-			path: Drivers/CarlX.php
-
-		-
 			message: '#^Deprecated in PHP 8\.0\: Required parameter \$pmtAmount follows optional parameter \$pmtType\.$#'
 			identifier: parameter.requiredAfterOptional
 			count: 1
 			path: Drivers/Nashville.php
-
-		-
-			message: '#^Method BasicPageRecordDriver\:\:getStaffView\(\) should return string but return statement is missing\.$#'
-			identifier: return.missing
-			count: 1
-			path: RecordDrivers/BasicPageRecordDriver.php
-
-		-
-			message: '#^Method CustomResourcePagesRecordDriver\:\:getStaffView\(\) should return string but return statement is missing\.$#'
-			identifier: return.missing
-			count: 1
-			path: RecordDrivers/CustomResourcePagesRecordDriver.php
-
-		-
-			message: '#^Access to an undefined property GroupedWorkSubDriver\:\:\$id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: RecordDrivers/GroupedWorkSubDriver.php
-
-		-
-			message: '#^Method OpenArchivesRecordDriver\:\:getStaffView\(\) should return string but return statement is missing\.$#'
-			identifier: return.missing
-			count: 1
-			path: RecordDrivers/OpenArchivesRecordDriver.php
-
-		-
-			message: '#^Method PortalPageRecordDriver\:\:getStaffView\(\) should return string but return statement is missing\.$#'
-			identifier: return.missing
-			count: 1
-			path: RecordDrivers/PortalPageRecordDriver.php
-
-		-
-			message: '#^Call to an undefined method RecordInterface\:\:getId\(\)\.$#'
-			identifier: method.notFound
-			count: 2
-			path: RecordDrivers/RecordInterface.php
-
-		-
-			message: '#^Call to an undefined method RecordInterface\:\:getPrimaryAuthor\(\)\.$#'
-			identifier: method.notFound
-			count: 2
-			path: RecordDrivers/RecordInterface.php
 
 		-
 			message: '#^Access to an undefined property TalpaRecordDriver\:\:\$author\.$#'
@@ -71,18 +23,6 @@ parameters:
 			identifier: property.notFound
 			count: 1
 			path: RecordDrivers/TalpaRecordDriver.php
-
-		-
-			message: '#^Method WebResourceRecordDriver\:\:getStaffView\(\) should return string but return statement is missing\.$#'
-			identifier: return.missing
-			count: 1
-			path: RecordDrivers/WebResourceRecordDriver.php
-
-		-
-			message: '#^Method WebsitePageRecordDriver\:\:getStaffView\(\) should return string but return statement is missing\.$#'
-			identifier: return.missing
-			count: 1
-			path: RecordDrivers/WebsitePageRecordDriver.php
 
 		-
 			message: '#^Access to static property \$scopingLocationCode on an unknown class Millennium\.$#'
@@ -115,76 +55,10 @@ parameters:
 			path: services/API/ItemAPI.php
 
 		-
-			message: '#^Access to an undefined property UserAPI\:\:\$recordDriver\.$#'
-			identifier: property.notFound
-			count: 4
-			path: services/API/UserAPI.php
-
-		-
 			message: '#^Undefined variable\: \$hold_result$#'
 			identifier: variable.undefined
 			count: 2
 			path: services/API/UserAPI.php
-
-		-
-			message: '#^Function mcrypt_create_iv not found\.$#'
-			identifier: function.notFound
-			count: 2
-			path: services/Authentication/SAML/extlib/xmlseclibs/xmlseclibs.php
-
-		-
-			message: '#^Function mcrypt_enc_get_block_size not found\.$#'
-			identifier: function.notFound
-			count: 1
-			path: services/Authentication/SAML/extlib/xmlseclibs/xmlseclibs.php
-
-		-
-			message: '#^Function mcrypt_enc_get_iv_size not found\.$#'
-			identifier: function.notFound
-			count: 2
-			path: services/Authentication/SAML/extlib/xmlseclibs/xmlseclibs.php
-
-		-
-			message: '#^Function mcrypt_generic not found\.$#'
-			identifier: function.notFound
-			count: 1
-			path: services/Authentication/SAML/extlib/xmlseclibs/xmlseclibs.php
-
-		-
-			message: '#^Function mcrypt_generic_deinit not found\.$#'
-			identifier: function.notFound
-			count: 2
-			path: services/Authentication/SAML/extlib/xmlseclibs/xmlseclibs.php
-
-		-
-			message: '#^Function mcrypt_generic_init not found\.$#'
-			identifier: function.notFound
-			count: 2
-			path: services/Authentication/SAML/extlib/xmlseclibs/xmlseclibs.php
-
-		-
-			message: '#^Function mcrypt_module_close not found\.$#'
-			identifier: function.notFound
-			count: 2
-			path: services/Authentication/SAML/extlib/xmlseclibs/xmlseclibs.php
-
-		-
-			message: '#^Function mcrypt_module_open not found\.$#'
-			identifier: function.notFound
-			count: 2
-			path: services/Authentication/SAML/extlib/xmlseclibs/xmlseclibs.php
-
-		-
-			message: '#^Function mdecrypt_generic not found\.$#'
-			identifier: function.notFound
-			count: 1
-			path: services/Authentication/SAML/extlib/xmlseclibs/xmlseclibs.php
-
-		-
-			message: '#^Method XMLSecEnc\:\:encryptNode\(\) should return DOMElement but return statement is missing\.$#'
-			identifier: return.missing
-			count: 1
-			path: services/Authentication/SAML/extlib/xmlseclibs/xmlseclibs.php
 
 		-
 			message: '#^Access to an undefined property OneLogin_Saml2_Auth\:\:\$_paths\.$#'
@@ -209,12 +83,6 @@ parameters:
 			identifier: function.inner
 			count: 1
 			path: services/Greenhouse/AspenLiDABuildTracker.php
-
-		-
-			message: '#^Function _campaignMilestoneProgressEntryObjectAlreadyExists not found\.$#'
-			identifier: function.notFound
-			count: 1
-			path: services/MyAccount/AJAX.php
 
 		-
 			message: '#^Function mask not found\.$#'
@@ -251,12 +119,6 @@ parameters:
 			identifier: variable.undefined
 			count: 1
 			path: services/SideLoads/AJAX.php
-
-		-
-			message: '#^Undefined variable\: \$existingObject$#'
-			identifier: variable.undefined
-			count: 1
-			path: services/WebBuilder/Template.php
 
 		-
 			message: '#^Method CASAuthentication\:\:validateAccount\(\) should return AspenError\|bool\|string but return statement is missing\.$#'
@@ -403,12 +265,6 @@ parameters:
 			path: sys/Covers/EventCoverBuilder.php
 
 		-
-			message: '#^Unsafe usage of new static\(\)\.$#'
-			identifier: new.static
-			count: 1
-			path: sys/DB/DataObject.php
-
-		-
 			message: '#^Array has 2 duplicate keys with value ''drop_date_of_birth_from_user_table'' \(''drop_date_of_birth_from_user_table'', ''drop_date_of_birth_from_user_table''\)\.$#'
 			identifier: array.duplicateKey
 			count: 1
@@ -463,18 +319,6 @@ parameters:
 			path: sys/Email/PHPMailer-6.9.1/src/SMTP.php
 
 		-
-			message: '#^Unsafe usage of new static\(\)\.$#'
-			identifier: new.static
-			count: 2
-			path: sys/File/FileUpload.php
-
-		-
-			message: '#^Unsafe usage of new static\(\)\.$#'
-			identifier: new.static
-			count: 2
-			path: sys/File/ImageUpload.php
-
-		-
 			message: '#^Access to an undefined property File_MARCJSON\:\:\$text\.$#'
 			identifier: property.notFound
 			count: 2
@@ -487,40 +331,10 @@ parameters:
 			path: sys/Interface.php
 
 		-
-			message: '#^Unsafe usage of new static\(\)\.$#'
-			identifier: new.static
-			count: 1
-			path: sys/Parsedown/Parsedown.php
-
-		-
 			message: '#^Class GroupedWorksSolrConnector not found\.$#'
 			identifier: class.notFound
 			count: 4
 			path: sys/SearchObject/AbstractGroupedWorkSearcher.php
-
-		-
-			message: '#^Method SearchObject_CloudSourceSearcher\:\:buildRSS\(\) should return string but return statement is missing\.$#'
-			identifier: return.missing
-			count: 1
-			path: sys/SearchObject/CloudSourceSearcher.php
-
-		-
-			message: '#^Method SearchObject_EbscoEdsSearcher\:\:buildRSS\(\) should return string but return statement is missing\.$#'
-			identifier: return.missing
-			count: 1
-			path: sys/SearchObject/EbscoEdsSearcher.php
-
-		-
-			message: '#^Method SearchObject_EbscohostSearcher\:\:buildRSS\(\) should return string but return statement is missing\.$#'
-			identifier: return.missing
-			count: 1
-			path: sys/SearchObject/EbscohostSearcher.php
-
-		-
-			message: '#^Method SearchObject_GaleSearcher\:\:buildRSS\(\) should return string but return statement is missing\.$#'
-			identifier: return.missing
-			count: 1
-			path: sys/SearchObject/GaleSearcher.php
 
 		-
 			message: '#^Cannot unset offset ''method'' on array\{type\: ''query'', field\: \(int\|string\), limit\: 30, mincount\: 1, domain\?\: array\{excludeTags\: string\}\}\.$#'
@@ -533,30 +347,6 @@ parameters:
 			identifier: variable.undefined
 			count: 1
 			path: sys/SearchObject/SolrSearcher.php
-
-		-
-			message: '#^Method SearchObject_SummonSearcher\:\:buildRSS\(\) should return string but return statement is missing\.$#'
-			identifier: return.missing
-			count: 1
-			path: sys/SearchObject/SummonSearcher.php
-
-		-
-			message: '#^Access to an undefined property SearchObject_TalpaSearcher\:\:\$selectedAvailabilityToggleValue\.$#'
-			identifier: property.notFound
-			count: 4
-			path: sys/SearchObject/TalpaSearcher.php
-
-		-
-			message: '#^Access to an undefined property SearchObject_TalpaSearcher\:\:\$sessionId\.$#'
-			identifier: property.notFound
-			count: 1
-			path: sys/SearchObject/TalpaSearcher.php
-
-		-
-			message: '#^Method SearchObject_TalpaSearcher\:\:buildRSS\(\) should return string but return statement is missing\.$#'
-			identifier: return.missing
-			count: 1
-			path: sys/SearchObject/TalpaSearcher.php
 
 		-
 			message: '#^Undefined variable\: \$jsonFacets$#'

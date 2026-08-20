@@ -12,7 +12,7 @@ class SearchObject_TalpaSearcher extends SearchObject_BaseSearcher{
 	private $talpaBaseApi ='https://www.librarything.com/api_talpa.php';
 
 	/**Build URL */
-//	private $sessionId;
+	private $sessionId;
 //	private $version = '2.0.0';
 //	private $service = 'search';
 	private $responseType = "json";
@@ -59,6 +59,7 @@ class SearchObject_TalpaSearcher extends SearchObject_BaseSearcher{
 		/** @var string */
 	protected $searchSource = 'local';
 	protected $searchType = 'basic';
+	protected $selectedAvailabilityToggleValue = '';
 
 /** Values for the options array*/
 	protected $holdings = true;
@@ -1397,8 +1398,9 @@ class SearchObject_TalpaSearcher extends SearchObject_BaseSearcher{
 		// TODO: Implement getIndexError() method.
 	}
 
-	public function buildRSS($result = null) {
+	public function buildRSS($result = null): string {
 		// TODO: Implement buildRSS() method.
+		return '';
 	}
 
 	public function buildExcel($result = null) {

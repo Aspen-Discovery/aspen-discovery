@@ -96,8 +96,9 @@ class WebResourceRecordDriver extends IndexRecordDriver {
 		return 'WebBuilder';
 	}
 
-	public function getStaffView() {
+	public function getStaffView(): string {
 		// TODO: Implement getStaffView() method.
+		return '';
 	}
 
 	public function getDescription() {

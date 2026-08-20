@@ -10597,38 +10597,38 @@ class MyAccount_AJAX extends JSON_Action {
 		return $entities;
 	}
 
-	private function processCampaignMilestones($entity, $campaignId, $entityId) : void {
-		$this->checkRequiredModule('Community Engagement');
+	// private function processCampaignMilestones($entity, $campaignId, $entityId) : void {
+	// 	$this->checkRequiredModule('Community Engagement');
 
-		require_once ROOT_DIR . '/sys/CommunityEngagement/CampaignMilestone.php';
-		require_once ROOT_DIR . '/sys/CommunityEngagement/Milestone.php';
-		require_once ROOT_DIR . '/sys/CommunityEngagement/CampaignMilestoneProgressEntry.php';
-		require_once ROOT_DIR . '/sys/CommunityEngagement/action-hooks.php';
+	// 	require_once ROOT_DIR . '/sys/CommunityEngagement/CampaignMilestone.php';
+	// 	require_once ROOT_DIR . '/sys/CommunityEngagement/Milestone.php';
+	// 	require_once ROOT_DIR . '/sys/CommunityEngagement/CampaignMilestoneProgressEntry.php';
+	// 	require_once ROOT_DIR . '/sys/CommunityEngagement/action-hooks.php';
 
-		$campaignMilestone = new CampaignMilestone();
-		$campaignMilestone->campaignId = $campaignId;
+	// 	$campaignMilestone = new CampaignMilestone();
+	// 	$campaignMilestone->campaignId = $campaignId;
 
-		if ($campaignMilestone->find()) {
-			while ($campaignMilestone->fetch()) {
-				$milestone = new Milestone();
-				$milestone->id = $campaignMilestone->milestoneId;
+	// 	if ($campaignMilestone->find()) {
+	// 		while ($campaignMilestone->fetch()) {
+	// 			$milestone = new Milestone();
+	// 			$milestone->id = $campaignMilestone->milestoneId;
 
-				if (!$milestone->find(true)) {
-					continue;
-				}
+	// 			if (!$milestone->find(true)) {
+	// 				continue;
+	// 			}
 
-				if ($milestone->milestoneType !== $entity->type) {
-					continue;
-				}
+	// 			if ($milestone->milestoneType !== $entity->type) {
+	// 				continue;
+	// 			}
 
-				if (_campaignMilestoneProgressEntryObjectAlreadyExists($entity, $campaignMilestone)) {
-					continue;
-				}
+	// 			if (_campaignMilestoneProgressEntryObjectAlreadyExists($entity, $campaignMilestone)) {
+	// 				continue;
+	// 			}
 
-				$campaignMilestone->addCampaignMilestoneProgressEntry($entity, $entity->userId, $entityId);
-			}
-		}
-	}
+	// 			$campaignMilestone->addCampaignMilestoneProgressEntry($entity, $entity->userId, $entityId);
+	// 		}
+	// 	}
+	// }
 
 	/**
 	 * Returns polling results for toast notifications about community engagement progress.

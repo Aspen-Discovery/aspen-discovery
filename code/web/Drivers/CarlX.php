@@ -24,12 +24,12 @@ class CarlX extends AbstractIlsDriver {
 	}
 
 	function initDatabaseConnection(): void {
+		global $logger;
 		if (!isset($this->dbConnection)) {
 			$port = empty($this->accountProfile->databasePort) ? '1521' : $this->accountProfile->databasePort;
 			$ociConnection = $this->accountProfile->databaseHost . ':' . $port . '/' . $this->accountProfile->databaseName;
 			$this->dbConnection = oci_connect($this->accountProfile->databaseUser, $this->accountProfile->databasePassword, $ociConnection, 'AL32UTF8');
 			if (!$this->dbConnection || oci_error($this->dbConnection) != 0) {
-				global $logger;
 				$logger->log("Error connecting to CARL.X database " . oci_error($this->dbConnection), Logger::LOG_ERROR);
 				$this->dbConnection = null;
 			}
@@ -49,11 +49,12 @@ class CarlX extends AbstractIlsDriver {
 	 * @return stdClass|false Returns the SOAP response object or false on failure.
 	 */
 	protected function doSoapRequest(string $requestName, stdClass $request, string $WSDL = '', array $soapRequestOptions = [], array $dataToSanitize = []): stdClass|false {
+		global $logger;
+
 		if (empty($WSDL)) { // Let the patron WSDL be the assumed default WSDL when not specified.
 			if (!empty($this->patronWsdl)) {
 				$WSDL = $this->patronWsdl;
 			} else {
-				global $logger;
 				$logger->log('No Default Patron WSDL defined for SOAP calls in CarlX Driver.', Logger::LOG_ERROR);
 				return false;
 			}
@@ -83,7 +84,6 @@ class CarlX extends AbstractIlsDriver {
 					$soapClient = new SoapClient($WSDL, $soapRequestOptions);
 					$result = $soapClient->$requestName($request);
 				} catch (SoapFault $e) {
-					global $logger;
 					$logger->log("SOAP Fault calling $requestName: " . $e->getMessage(), Logger::LOG_ERROR);
 					throw $e;
 				}
@@ -114,7 +114,6 @@ class CarlX extends AbstractIlsDriver {
 					}
 				}
 			} catch (SoapFault $e) {
-				global $logger;
 				$logger->log("Error connecting to SOAP " . $e->getMessage(), Logger::LOG_ERROR);
 				// Create a result object with error information.
 				if ($result === false) {
@@ -133,6 +132,7 @@ class CarlX extends AbstractIlsDriver {
 
 	public function patronLogin($username, $password, $validatedViaSSO) {
 		global $timer;
+		global $logger;
 
 		//CARL.X supports 3 different login methods:
 		//  Patron Barcode & PIN
@@ -219,7 +219,6 @@ class CarlX extends AbstractIlsDriver {
 						unset($location);
 						$user->homeLocationId = 0;
 						// Logging for Diagnosing PK-1846
-						global $logger;
 						$logger->log('CarlX Driver: No Location found, user\'s homeLocationId being set to 0. User : ' . $user->id, Logger::LOG_WARNING);
 					}
 
@@ -235,7 +234,6 @@ class CarlX extends AbstractIlsDriver {
 							$location->orderBy('isMainBranch desc'); // gets the main branch first or the first location
 							if (!$location->find(true)) {
 								// Seriously no locations even?
-								global $logger;
 								$logger->log('Failed to find any location to assign to user as home location', Logger::LOG_ERROR);
 								unset($location);
 							}
@@ -638,7 +636,6 @@ class CarlX extends AbstractIlsDriver {
 
 		$itemsToLoad = [];
 		if (!$result) {
-			global $logger;
 			$logger->log('Failed to retrieve user Check outs from CarlX API call.', Logger::LOG_WARNING);
 		} else {
 			//TLC provides both ChargeItems and OverdueItems as separate elements, we can combine for loading
@@ -692,6 +689,7 @@ class CarlX extends AbstractIlsDriver {
 	}
 
 	function updatePin(User $patron, ?string $oldPin, string $newPin) {
+		global $logger;
 		$request = $this->getSearchbyPatronIdRequest($patron);
 		$request->Patron = new stdClass();
 		$request->Patron->PatronPIN = $newPin;
@@ -718,7 +716,6 @@ class CarlX extends AbstractIlsDriver {
 				];
 			}
 		} else {
-			global $logger;
 			$logger->log('CarlX ILS gave no response when attempting to update Patron PIN.', Logger::LOG_ERROR);
 			return [
 				'success' => false,
@@ -731,6 +728,7 @@ class CarlX extends AbstractIlsDriver {
 	}
 
 	public function updateHomeLibrary(User $patron, string $homeLibraryCode) {
+		global $logger;
 		$result = [
 			'success' => false,
 			'messages' => [],
@@ -757,7 +755,6 @@ class CarlX extends AbstractIlsDriver {
 
 		} else {
 			$result['messages'][] = 'Unable to update your pickup location.';
-			global $logger;
 			$logger->log('Unable to read XML from CarlX response when attempting to update pickup location.', Logger::LOG_ERROR);
 		}
 		if ($result['success'] == false && empty($result['messages'])) {
@@ -773,6 +770,7 @@ class CarlX extends AbstractIlsDriver {
 	 * @return array
 	 */
 	public function updatePatronInfo(User $patron, $canUpdateContactInfo, $fromMasquerade): array {
+		global $logger;
 		$result = [
 			'success' => false,
 			'messages' => [],
@@ -886,7 +884,6 @@ class CarlX extends AbstractIlsDriver {
 
 			} else {
 				$result['messages'][] = 'Unable to update your information.';
-				global $logger;
 				$logger->log('Unable to read XML from CarlX response when attempting to update Patron Information.', Logger::LOG_ERROR);
 			}
 
@@ -908,6 +905,7 @@ class CarlX extends AbstractIlsDriver {
 	 * @return array
 	 */
 	public function updatePatronUserDefinedFields(User $patron, bool $enableThirdPartySMS): array {
+		global $logger;
 		$result = [
 			'success' => false,
 			'messages' => [],
@@ -942,14 +940,12 @@ class CarlX extends AbstractIlsDriver {
 					}
 				} else {
 					$result['messages'][] = 'Unexpected response format when updating SMS preferences.';
-					global $logger;
 					$logger->log("CarlX: Unexpected response structure: " . print_r($soapResult, true), Logger::LOG_ERROR);
 				}
 			} else {
 				$result['messages'][] = 'Unable to update SMS preferences.';
 			}
 		} catch (Exception $e) {
-			global $logger;
 			$logger->log('Exception when updating CarlX User Defined Fields: ' . $e->getMessage(), Logger::LOG_ERROR);
 			$result['messages'][] = 'Error updating SMS preferences: ' . $e->getMessage();
 		}
@@ -968,6 +964,7 @@ class CarlX extends AbstractIlsDriver {
 	 * @return boolean
 	 */
 	public function getThirdPartySMSOptInStatus(User $patron): bool {
+		global $logger;
 		$patronHomeLibrary = $patron->getHomeLibrary(true);
 		if (!$patronHomeLibrary || !$patronHomeLibrary->enableThirdPartySMSNotifications) {
 			return false;
@@ -990,7 +987,6 @@ class CarlX extends AbstractIlsDriver {
 				}
 			}
 		} catch (Exception $e) {
-			global $logger;
 			$logger->log('Exception when retrieving third-party SMS status from CarlX: ' . $e->getMessage(), Logger::LOG_ERROR);
 		}
 
@@ -1127,7 +1123,7 @@ class CarlX extends AbstractIlsDriver {
 
 	function selfRegister(): array {
 		require_once ROOT_DIR . '/sys/SelfRegistrationForms/CarlXSelfRegistrationForm.php';
-		global $library, $active_ip, $interface;
+		global $library, $active_ip, $interface, $logger;
 		$selfRegistrationForm = null;
 		if ($library->selfRegistrationFormId > 0){
 			$selfRegistrationForm = new CarlXSelfRegistrationForm();
@@ -1183,7 +1179,6 @@ class CarlX extends AbstractIlsDriver {
 						$patronIdsMatching = array_column($result->Patrons, 'PatronID');
 						$patronIdsMatching = implode(", ", $patronIdsMatching);
 					}
-					global $logger;
 					$logger->log('Online Registration Email already exists in Carl. Email: ' . $email . ' IP: ' . $active_ip . ' PatronIDs: ' . $patronIdsMatching, Logger::LOG_NOTICE);
 
 					$selfRegResult = [
@@ -1248,7 +1243,6 @@ class CarlX extends AbstractIlsDriver {
 						$patronIdsMatching = array_column($result->Patrons, 'PatronID');
 						$patronIdsMatching = implode(", ", $patronIdsMatching);
 					}
-					global $logger;
 					$logger->log('Online Registration Name+Birthdate already exists in Carl. Name: ' . $firstName . ' ' . $lastName . ' IP: ' . $active_ip . ' PatronIDs: ' . $patronIdsMatching, Logger::LOG_NOTICE);
 
 					$selfRegResult = [
@@ -1331,7 +1325,6 @@ class CarlX extends AbstractIlsDriver {
 						$errorMessage .= "... " . $result->ResponseStatuses->ResponseStatus->LongMessage;
 					}
 					if (strpos($errorMessage, 'A patron with that id already exists') !== false) {
-						global $logger;
 						$logger->log('While self-registering user for CarlX, temp id number was reported in use. Increasing internal counter', Logger::LOG_ERROR);
 						// Increment the temp patron id number.
 						$selfRegistrationForm->lastPatronBarcode = $currentPatronIDNumber;
@@ -1346,7 +1339,6 @@ class CarlX extends AbstractIlsDriver {
 				} else {
 					$selfRegistrationForm->lastPatronBarcode = $currentPatronIDNumber;
 					if (!$selfRegistrationForm->update()) {
-						global $logger;
 						$logger->log('Failed to update Variables table with new value ' . $currentPatronIDNumber . ' for "last_selfreg_patron_id" in CarlX Driver', Logger::LOG_ERROR);
 					}
 					// Get Patron
@@ -1370,7 +1362,6 @@ class CarlX extends AbstractIlsDriver {
 					if ($result) {
 						$success = stripos($result->ResponseStatuses->ResponseStatus[0]->ShortMessage, 'Success') !== false;
 						if (!$success) {
-							global $logger;
 							$logger->log('Unable to write IP address in Patron Note.', Logger::LOG_ERROR);
 							// Return Success Any way, because the account was created.
 							$selfRegResult = [
@@ -1409,11 +1400,9 @@ class CarlX extends AbstractIlsDriver {
 					];
 				}
 			} else {
-				global $logger;
 				$logger->log('Unable to read XML from CarlX response when attempting to create Patron.', Logger::LOG_ERROR);
 			}
 		} else {
-			global $logger;
 			$logger->log('No value for "last_selfreg_patron_id" set in Variables table. Can not self-register patron in CarlX Driver.', Logger::LOG_ERROR);
 		}
 		return $selfRegResult;
@@ -1435,6 +1424,7 @@ class CarlX extends AbstractIlsDriver {
 	 * @throws Exception
 	 */
 	public function getReadingHistory(User $patron): array {
+		global $logger;
 		$readHistoryEnabledInCarlX = false;
 		$request = $this->getSearchbyPatronIdRequest($patron);
 		$result = $this->doSoapRequest('getPatronInformation', $request, $this->patronWsdl);
@@ -1510,7 +1500,6 @@ class CarlX extends AbstractIlsDriver {
 					'numTitles' => $numTitles,
 				];
 			} else {
-				global $logger;
 				$logger->log('CarlX ILS gave no response when attempting to get reading history.', Logger::LOG_ERROR);
 			}
 		}
@@ -1527,6 +1516,7 @@ class CarlX extends AbstractIlsDriver {
 	}
 
 	public function doReadingHistoryAction(User $patron, string $action, array $selectedTitles): ?array {
+		global $logger;
 		if ($action == 'optIn' || $action == 'optOut') {
 			$request = $this->getSearchbyPatronIdRequest($patron);
 			if (!isset ($request->Patron)) {
@@ -1538,11 +1528,9 @@ class CarlX extends AbstractIlsDriver {
 				$success = stripos($result->ResponseStatuses->ResponseStatus->ShortMessage, 'Success') !== false;
 				if (!$success) {
 					$errorMessage = $result->ResponseStatuses->ResponseStatus->LongMessage;
-					global $logger;
 					$logger->log("Unable to modify reading history status $errorMessage", Logger::LOG_ERROR);
 				}
 			} else {
-				global $logger;
 				$logger->log('Unable to read XML from CarlX response when attempting to update Patron Information.', Logger::LOG_ERROR);
 			}
 		}

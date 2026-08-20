@@ -4,13 +4,20 @@ parameters:
     level: 0
     paths:
         - .
+    scanFiles:
+        - sys/Parsedown/Parsedown.php
     scanDirectories:
         - vendor
         - sys/File
+        - services/Authentication/SAML/extlib/xmlseclibs
+        - services/Authentication/SAML/extlib/xmlseclibs
     excludePaths:
         analyse:
             - Minify/*
             - vendor/*
+            - services/WebBuilder/Template.php
+            - services/Authentication/SAML/extlib/xmlseclibs/*
+            - sys/Parsedown/Parsedown.php
             - sys/mobileesp/mdetect.php
             - sys/mobile_device_detect.php
             - sys/Smarty/sysplugins/*

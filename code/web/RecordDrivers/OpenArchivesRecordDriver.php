@@ -130,8 +130,9 @@ class OpenArchivesRecordDriver extends IndexRecordDriver {
 		return 'OpenArchives';
 	}
 
-	public function getStaffView() {
+	public function getStaffView(): string {
 		// TODO: Implement getStaffView() method.
+		return '';
 	}
 
 	public function getDescription() {

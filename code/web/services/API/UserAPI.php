@@ -4,6 +4,8 @@ require_once ROOT_DIR . '/services/API/AbstractAPI.php';
 require_once ROOT_DIR . '/CatalogConnection.php';
 
 class UserAPI extends AbstractAPI {
+	
+	protected $recordDriver;
 	/**
      * Define required OAuth2 scopes for specific API methods
      * @param string $method The API method name

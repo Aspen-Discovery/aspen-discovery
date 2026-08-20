@@ -13,6 +13,7 @@ abstract class GroupedWorkSubDriver extends RecordInterface {
 	 */
 	protected $groupedWork;
 	protected $groupedWorkDriver = null;
+	protected $id;
 
 	/**
 	 * Constructor.  We build the object using all the data retrieved

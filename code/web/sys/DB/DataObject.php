@@ -1,4 +1,6 @@
 <?php
+use sys\DB\DataObjectInterface;
+
 /** @noinspection PhpMissingFieldTypeInspection */
 require_once ROOT_DIR . '/sys/Hooks/registry.php';
 /**
@@ -11,7 +13,7 @@ require_once ROOT_DIR . '/sys/Hooks/registry.php';
  * Each property that starts with _ is runtime data that is reset for each object
  * Each property that starts with [a-zA-Z] is a property that is saved to the database
  */
-abstract class DataObject implements JsonSerializable {
+abstract class DataObject implements JsonSerializable, DataObjectInterface {
 	public $__table;
 	public $__primaryKey = 'id';
 	public $__displayNameColumn = null;
@@ -40,6 +42,12 @@ abstract class DataObject implements JsonSerializable {
 	public $_deleteOnSave;
 
 	public bool $_includeDeleted = false; // When true, find()/count() will include deleted rows.
+
+	#[Override]
+	public function __construct()
+	{
+		throw new \Exception('Not implemented');
+	}
 
 	function objectHistoryEnabled() : bool {
 		return true;
