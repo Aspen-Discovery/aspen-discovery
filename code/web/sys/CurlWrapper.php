@@ -11,8 +11,7 @@ class CurlWrapper {
 	public $responseHeaders = [];
 	public $cookies = [];
 
-	private $requestInterval = -1;
-	private $lastRequest = [];
+	private $throttler = null;
 
 	public function __construct($userAgent = "", $requestInterval = -1) {
 		global $interface;
@@ -50,7 +49,8 @@ class CurlWrapper {
 			CURLOPT_ENCODING => '',
 		];
 		$this->options = $default_options;
-		$this->configureRequestInterval($requestInterval);
+		require_once ROOT_DIR . '/sys/Throttler.php';
+		$this->throttler = new Throttler($requestInterval);
 	}
 
 	public function __destruct() {
@@ -135,7 +135,7 @@ class CurlWrapper {
 	 * @return bool|string   The response from the web page if any
 	 */
 	public function curlGetPage(string $url) : bool|string {
-		$this->throttle($url);
+		$this->throttler->throttle($url);
 		$this->curl_connect($url);
 		curl_setopt($this->curl_connection, CURLOPT_CUSTOMREQUEST, null);
 		curl_setopt($this->curl_connection, CURLOPT_HTTPGET, true);
@@ -165,7 +165,7 @@ class CurlWrapper {
 	 * @return string|bool   The response from the web page if any
 	 */
 	public function curlPostPage(string $url, string|array $postParams, $curlOptions = null) : string|bool {
-		$this->throttle($url);
+		$this->throttler->throttle($url);
 		if (is_string($postParams)) {
 			$post_string = $postParams;
 		} else {
@@ -202,7 +202,7 @@ class CurlWrapper {
 	 * @return string   The response from the web page if any
 	 */
 	public function curlPostBodyData($url, $postParams, $jsonEncode = true) {
-		$this->throttle($url);
+		$this->throttler->throttle($url);
 		if ($jsonEncode) {
 			$post_string = json_encode($postParams);
 		} else {
@@ -223,112 +223,8 @@ class CurlWrapper {
 		return $return;
 	}
 
-	public function configureRequestInterval(int $requestInterval = -1) : void
-	{
-		//any negative value doesn't make sense
-		//just turning off requests at this point
-		if($requestInterval < 0)
-		{
-			$requestInterval = -1;
-		}
-		//if we were passed an interval just use that
-		if($requestInterval != -1)
-		{
-			$this->requestInterval = $requestInterval;
-			return;
-		}
-
-		//if we weren't passed an interval check the config for one'
-		//config values of 0 will be ignored but skipping checking
-		//will be identical to a 0ms interval anyway
-		global $configArray;
-		if(empty($configArray['CurlWrapper']) 
-			|| empty($configArray['CurlWrapper']['requestInterval']))
-		{
-			//no log here because if they haven't configured this
-			//we don't want to bother them about it.
-			return;
-		}
-		$rawInterval = $configArray['CurlWrapper']['requestInterval'];
-		if(!is_numeric($rawInterval))
-		{
-			global $logger;
-			$logger->log("rate limiting skipped because of poorly configured requestInterval: ".$rawInterval, Logger::LOG_WARNING);
-			return;//skip limiting if not configured properly
-		}
-		if($rawInterval < 0)
-		{
-			global $logger;
-			$logger->log("Negative request interval set: ".$rawInterval. " ignoring.", Logger::LOG_WARNING);
-			$rawInterval = -1;
-		}
-		$this->requestInterval = intval($rawInterval);
-	}
-	/**
-	 * if rate limiting is turned on for this wrapper 
-	 * we will check if this endpoint has been hit recently
-	 * and if so wait before returning.
-	 * @param string $url the url we are checking. 
-	 */
-	public function throttle(string $url) : void {
-		//skip limiting if not turned on in config or explicitly set
-		if($this->requestInterval === -1)
-		{
-			return;
-		}
-		$endpoint = parse_url($url, PHP_URL_HOST);
-		if(empty($endpoint))
-		{
-			//looks like we have a malformed $url
-			//let this get handled upstream
-			global $logger;
-			$logger->log("Failed to determine endpoint for: ".$url, Logger::LOG_WARNING);
-			return;
-		}
-		
-		//constants for shifting between microseconds and milliseconds for utime
-		// and between seconds and milliseconds for microtime
-		$MICRO_PER_MILLI = $MILLI_PER_SEC = 1000;
-		//if we don't have any previous requests for this url
-		//go ahead and send it after recording the last request
-		if(empty($this->lastRequest[$endpoint]))
-		{
-			$this->lastRequest[$endpoint] = floor($MILLI_PER_SEC * microtime(true));
-			return;
-		}
-		$request_time = floor($MILLI_PER_SEC * microtime(true));
-		$time_diff = $request_time - $this->lastRequest[$endpoint];
-		if($time_diff >= $this->requestInterval)
-		{
-			$this->lastRequest[$endpoint] = floor($MILLI_PER_SEC * microtime(true));
-			return;
-		}
-
-		//log too frequent requests so they can be corrected upstream
-		global $logger;
-		$logger->log(
-			"Attempting to send too many requests to "
-			. $endpoint . 
-			" slowing requests down to "
-			. $this->requestInterval . 
-			" milliseconds between requests", Logger::LOG_WARNING);
-
-		//loop until we have waited long enough
-		//we should only need to wait once since
-		//a separate thread would have a separate
-		//CurlWrapper object but being cautious.
-		while($time_diff < $this->requestInterval)
-		{
-			usleep(($this->requestInterval - $time_diff) * $MICRO_PER_MILLI);
-			$current_time = floor($MILLI_PER_SEC * microtime(true));
-			$time_diff = $current_time - $this->lastRequest[$endpoint];
-		}
-		//update last request time in case and return control
-		$this->lastRequest[$endpoint] = floor($MILLI_PER_SEC * microtime(true));
-	}
-
 	public function curlSendPage(string $url, string $httpMethod, $body = null) {
-		$this->throttle($url);
+		$this->throttler->throttle($url);
 		$this->curl_connect($url);
 		curl_setopt($this->curl_connection, CURLOPT_CUSTOMREQUEST, null);
 		if ($httpMethod == 'GET') {
