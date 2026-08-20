@@ -277,22 +277,28 @@ class Pay360_Client  {
 			$amountInMinorUnits = $this->getMinorUnitsAmount($fineDetails['amountVal']);
 			$item = [
 				'itemSummary' =>[
-					'description' => $fineDetails['reason'],
+					'description' =>  mb_substr($fineDetails['reason'], 0, 100),
 					'amountInMinorUnits' => $amountInMinorUnits,
-					'displayableReference' => $fineDetails['reason'], 
+					'displayableReference' => mb_substr($fineDetails['reason'], 0, 50),
 				],
-				'IgItemDetails' => [
-					'additionalReference' => $fineDetails['reason'],
-					'narrative' => $fineDetails['reason'],
-					'customerInfo' => $fineDetails['message'],
+				'lgItemDetails' => [
+					'additionalReference' => mb_substr($fineDetails['reason'], 0, 50),
+					'narrative' => mb_substr($fineDetails['reason'], 0, 50),
+				],
+				'customerInfo' => [
+					'customerString1' => mb_substr($fineDetails['message'], 0, 50),
 				],
 				'lineId' => $fineDetails['fineId']
 			];
 			if (isset($fineDetails['vatCode'])) {
-				$item['tax'] = $fineDetails['vatCode'];
+				$item['tax']['vat'] = [
+					'vatCode' => $fineDetails['vatCode'],
+					'vatRate' => "",
+					'vatAmountInMinorUnits' => "",
+				];
 			}
 			if (isset($fineDetails['fundCode'])) {
-				$item['IgItemDetails']['fundCode'] = $fineDetails['fundCode'];
+				$item['lgItemDetails']['fundCode'] = $fineDetails['fundCode'];
 			}
 			if (isset($fineDetails['reference'])) {
 				$item['itemSummary']['reference'] = $fineDetails['reference'];

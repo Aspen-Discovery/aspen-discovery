@@ -189,8 +189,9 @@ class SearchObject_WebsitesSearcher extends SearchObject_SolrSearcher {
                 foreach ($facets as &$facet) {
                     $facetConfig[$facet->facetName] = $facet;
                 }
-                $this->facetConfig = $facetConfig;
+                
             }
+            $this->facetConfig = $facetConfig;
         }
 
         return $this->facetConfig;

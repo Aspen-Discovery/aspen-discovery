@@ -22,6 +22,9 @@ class Suggest extends Action {
 		if ($systemVariables->searchVersion == 2) {
 			require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector2.php';
 			$db = new GroupedWorksSolrConnector2($url);
+		}else if ($systemVariables->searchVersion == 3) {
+			require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector3.php';
+			$db = new GroupedWorksSolrConnector3($url);
 		}
 
 		$results = $db->getSuggestion(strtolower(strip_tags($_GET['lookfor'])), 'title_sort', 10);

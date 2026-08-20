@@ -590,6 +590,8 @@ class BookCoverProcessor {
 
 	private function returnImage($localPath) : void {
 		header('Content-type: image/png');
+		//Remove all cookies
+		header_remove("Set-Cookie");
 		if ($this->addModificationHeaders($localPath)) {
 			$this->logTime("Added modification headers");
 			$this->addCachingHeader();
@@ -602,8 +604,6 @@ class BookCoverProcessor {
 		} else {
 			$this->logTime("Added modification headers");
 		}
-		//Remove all cookies
-		header_remove("Set-Cookie");
 	}
 
 	private function getCoverFromProvider() : bool {
@@ -1824,7 +1824,7 @@ class BookCoverProcessor {
 					$expressions = preg_split("/[\r\n]+/", $sourceCollection->imageRegex);
 					foreach ($expressions as $expression) {
 						if (!empty($expression) && preg_match('~' . $expression . '~i', $pageContents, $matches)) {
-							$bookcoverUrl = str_replace('&amp;', '&', $matches[1]);
+							$bookcoverUrl = html_entity_decode($matches[1]);
 							if ($this->processImageURL('open_archives', $bookcoverUrl)) {
 								return true;
 							}

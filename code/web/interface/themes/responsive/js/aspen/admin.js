@@ -3149,6 +3149,22 @@ AspenDiscovery.Admin = (function () {
 				$('#propertyRowissuerTOTP').hide();
 			}
 		},
+		toggle2FAAssignOptions: function () {
+			$('#propertyRowlibraries').hide();
+			$('#propertyRowptypes').hide();
+			$('#propertyRowroles').hide();
+
+			var assignBy = $("#assignToUsersBySelect").val();
+			if (assignBy === "role") {
+				$('#propertyRowlibraries').hide();
+				$('#propertyRowptypes').hide();
+				$('#propertyRowroles').show();
+			} else {
+				$('#propertyRowlibraries').show();
+				$('#propertyRowptypes').show();
+				$('#propertyRowroles').hide();
+			}
+		},
 		configureRateLimits: function () {
 			var url = Globals.path + "/OAuth2/RateLimitingAJAX";
 			var params = {
