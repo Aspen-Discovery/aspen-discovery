@@ -8,5 +8,8 @@
         "platform": {
             "php": "8.3.30"
         }
+    },
+    "require-dev": {
+        "phpstan/phpstan": "^2.2"
     }
 }
