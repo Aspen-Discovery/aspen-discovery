@@ -12,7 +12,13 @@ class OAuth2AuthCodeEntity implements AuthCodeEntityInterface {
 
 	protected ?string $codeChallenge = null;
 	protected ?string $codeChallengeMethod = null;
-
+	protected string $redirecturi;
+	protected string $identifier;
+	protected DateTimeImmutable $expiryDateTime;
+	protected string $userIdentifier;
+	protected ClientEntityInterface $client;
+	protected array $scopes;
+	
 	/**
 	 * Get the code challenge (PKCE)
 	 */

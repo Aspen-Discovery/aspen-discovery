@@ -7,13 +7,13 @@ use League\OAuth2\Server\Entities\UserEntityInterface;
  * Since League OAuth2 Server doesn't provide a concrete UserEntity class
  */
 class OAuth2UserEntity implements UserEntityInterface {
-	private $identifier;
+	private string $identifier;
 
 	public function getIdentifier(): string {
 		return $this->identifier;
 	}
 
-	public function setIdentifier($identifier): void {
+	public function setIdentifier(string $identifier): void {
 		$this->identifier = $identifier;
 	}
 }

@@ -1,11 +1,18 @@
 <?php
 
 use League\OAuth2\Server\Entities\RefreshTokenEntityInterface;
-
+use \League\OAuth2\Server\Entities\AccessTokenEntityInterface;
 /**
  * OAuth2 Refresh Token Entity implementation
  */
 class OAuth2RefreshTokenEntity implements RefreshTokenEntityInterface {
+	/**
+	 * Declare Properties
+	 */
+	protected string $identifier;
+	protected DateTimeImmutable $expiryDateTime;
+	protected AccessTokenEntityInterface $accessToken;
+
 	/**
 	 * Get the token's identifier.
 	 *
@@ -41,14 +48,14 @@ class OAuth2RefreshTokenEntity implements RefreshTokenEntityInterface {
 	/**
 	 * Set the access token that the refresh token was associated with.
 	 */
-	public function setAccessToken(\League\OAuth2\Server\Entities\AccessTokenEntityInterface $accessToken): void {
+	public function setAccessToken(AccessTokenEntityInterface $accessToken): void {
 		$this->accessToken = $accessToken;
 	}
 
 	/**
 	 * Get the access token that the refresh token was originally associated with.
 	 */
-	public function getAccessToken(): \League\OAuth2\Server\Entities\AccessTokenEntityInterface {
+	public function getAccessToken(): AccessTokenEntityInterface {
 		return $this->accessToken;
 	}
 }

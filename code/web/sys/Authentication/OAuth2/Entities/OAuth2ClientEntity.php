@@ -7,6 +7,11 @@ use League\OAuth2\Server\Entities\ClientEntityInterface;
  */
 class OAuth2ClientEntity implements ClientEntityInterface {
 
+	private string $name;
+	private string|array $redirectUri;
+	private bool $isConfidential;
+	private string $identifier;
+	
 	public function setName($name): void {
 		$this->name = $name;
 	}
