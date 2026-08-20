@@ -128,7 +128,7 @@ class UserCampaign extends DataObject {
 	 * @param int $userId
 	 * @return int
 	 */
-	public function calculateUserCompletedCampaignMilestones($userId) {
+	public function calculateUserCompletedCampaignMilestones($userId): int {
 		$userCampaign = new UserCampaign();
 		$userEnrolledCampaigns = [];
 		$userCampaign->whereAdd("userId = '$userId'");
@@ -139,13 +139,11 @@ class UserCampaign extends DataObject {
 		$totalCompletedCampaignMilestones = 0;
 		foreach ($userEnrolledCampaigns as $userEnrolledCampaign) {
 			$campaignMilestoneCompletionStatus = $userEnrolledCampaign->checkCampaignMilestoneCompletionStatus();
-			$completedCampaignMilestones = array_filter($campaignMilestoneCompletionStatus, function($status) {
-				return $status === true;
-			});
+			$completedCampaignMilestones = array_filter($campaignMilestoneCompletionStatus, fn($status) => $status === true);
 			//Add the completed milestones count to the total 
 			$totalCompletedCampaignMilestones += count($completedCampaignMilestones);
-			return $totalCompletedCampaignMilestones;
 		}
+		return $totalCompletedCampaignMilestones;
 	}
 	/**
 	 * Calculate the user's rank based on completed milestones

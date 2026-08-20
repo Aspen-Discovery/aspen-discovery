@@ -18,7 +18,7 @@ class SideLoads_AJAX extends JSON_Action {
 		$sideLoadConfiguration->id = $id;
 		if ($sideLoadConfiguration->find(true) && !empty($sideLoadConfiguration->marcPath)) {
 			if (!UserAccount::userHasPermission(['Administer All Side Loads'])) {
-				$library = Library::getLibraryList(true);
+				$validLibraries = Library::getLibraryList(true);
 				$libraryIds = empty($validLibraries) ? [-1] : array_keys($validLibraries);
 				if (($sideLoadConfiguration->owningLibrary != -1 && in_array($sideLoadConfiguration->owningLibrary, $libraryIds)) || ($sideLoadConfiguration->owningLibrary == -1 && $sideLoadConfiguration->sharing != 1)) {
 					return [

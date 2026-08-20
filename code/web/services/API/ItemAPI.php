@@ -349,7 +349,7 @@ class ItemAPI extends AbstractAPI {
 				$itemData['allIssn'] = $record['issn'];
 				$itemData['issn'] = $record['issn'];
 			}
-			$itemData['format'] = isset($record['format']) ? $record['format'][0] : '';
+			$itemData['format'] = $record['format'][0] ?? '';
 			$itemData['formatCategory'] = $record['format_category'][0];
 			$itemData['language'] = $record['language'];
 			$itemData['cover'] = $this->recordDriver->getBookcoverUrl('medium', true);

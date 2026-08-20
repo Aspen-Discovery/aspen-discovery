@@ -13,18 +13,6 @@ parameters:
 			path: Drivers/Nashville.php
 
 		-
-			message: '#^Access to an undefined property TalpaRecordDriver\:\:\$author\.$#'
-			identifier: property.notFound
-			count: 1
-			path: RecordDrivers/TalpaRecordDriver.php
-
-		-
-			message: '#^Access to an undefined property TalpaRecordDriver\:\:\$title\.$#'
-			identifier: property.notFound
-			count: 1
-			path: RecordDrivers/TalpaRecordDriver.php
-
-		-
 			message: '#^Access to static property \$scopingLocationCode on an unknown class Millennium\.$#'
 			identifier: class.notFound
 			count: 2
@@ -61,24 +49,6 @@ parameters:
 			path: services/API/UserAPI.php
 
 		-
-			message: '#^Access to an undefined property OneLogin_Saml2_Auth\:\:\$_paths\.$#'
-			identifier: property.notFound
-			count: 1
-			path: services/Authentication/SAML/lib/Saml2/Auth.php
-
-		-
-			message: '#^Method OneLogin_Saml2_Auth\:\:setSchemasPath\(\) should return \$this\(OneLogin_Saml2_Auth\) but return statement is missing\.$#'
-			identifier: return.missing
-			count: 1
-			path: services/Authentication/SAML/lib/Saml2/Auth.php
-
-		-
-			message: '#^Method OneLogin_Saml2_Settings\:\:setSchemasPath\(\) should return \$this\(OneLogin_Saml2_Settings\) but return statement is missing\.$#'
-			identifier: return.missing
-			count: 1
-			path: services/Authentication/SAML/lib/Saml2/Settings.php
-
-		-
 			message: '#^Inner named functions are not supported by PHPStan\. Consider refactoring to an anonymous function, class method, or a top\-level\-defined function\. See issue \#165 \(https\://github\.com/phpstan/phpstan/issues/165\) for more details\.$#'
 			identifier: function.inner
 			count: 1
@@ -103,24 +73,6 @@ parameters:
 			path: services/MyAccount/AJAX.php
 
 		-
-			message: '#^Access to an undefined property MyAccount_RegisterRosenLevelUP\:\:\$parent_pw\.$#'
-			identifier: property.notFound
-			count: 1
-			path: services/MyAccount/RegisterRosenLevelUP.php
-
-		-
-			message: '#^Access to an undefined property MyAccount_RegisterRosenLevelUP\:\:\$student_pw\.$#'
-			identifier: property.notFound
-			count: 1
-			path: services/MyAccount/RegisterRosenLevelUP.php
-
-		-
-			message: '#^Undefined variable\: \$validLibraries$#'
-			identifier: variable.undefined
-			count: 1
-			path: services/SideLoads/AJAX.php
-
-		-
 			message: '#^Method CASAuthentication\:\:validateAccount\(\) should return AspenError\|bool\|string but return statement is missing\.$#'
 			identifier: return.missing
 			count: 1
@@ -139,12 +91,6 @@ parameters:
 			path: sys/Authentication/SAML2Authentication.php
 
 		-
-			message: '#^Method UserCampaign\:\:calculateUserCompletedCampaignMilestones\(\) should return int but return statement is missing\.$#'
-			identifier: return.missing
-			count: 1
-			path: sys/CommunityEngagement/UserCampaign.php
-
-		-
 			message: '#^Deprecated in PHP 8\.0\: Required parameter \$displayBranchOnThumbnail follows optional parameter \$branch\.$#'
 			identifier: parameter.requiredAfterOptional
 			count: 1
@@ -155,54 +101,6 @@ parameters:
 			identifier: array.duplicateKey
 			count: 1
 			path: sys/DBMaintenance/community_engagement_updates.php
-
-		-
-			message: '#^Array has 2 duplicate keys with value ''web_builder_custom_form_increase_email'' \(''web_builder_custom_form_increase_email'', ''web_builder_custom_form_increase_email''\)\.$#'
-			identifier: array.duplicateKey
-			count: 1
-			path: sys/DBMaintenance/version_updates/24.08.00.php
-
-		-
-			message: '#^Instantiated class Greew\\OAuth2\\Client\\Provider\\Azure not found\.$#'
-			identifier: class.notFound
-			count: 1
-			path: sys/Email/PHPMailer-6.9.1/get_oauth_token.php
-
-		-
-			message: '#^Instantiated class Hayageek\\OAuth2\\Client\\Provider\\Yahoo not found\.$#'
-			identifier: class.notFound
-			count: 1
-			path: sys/Email/PHPMailer-6.9.1/get_oauth_token.php
-
-		-
-			message: '#^Instantiated class League\\OAuth2\\Client\\Provider\\Google not found\.$#'
-			identifier: class.notFound
-			count: 1
-			path: sys/Email/PHPMailer-6.9.1/get_oauth_token.php
-
-		-
-			message: '#^Instantiated class Stevenmaguire\\OAuth2\\Client\\Provider\\Microsoft not found\.$#'
-			identifier: class.notFound
-			count: 1
-			path: sys/Email/PHPMailer-6.9.1/get_oauth_token.php
-
-		-
-			message: '#^Instantiated class League\\OAuth2\\Client\\Grant\\RefreshToken not found\.$#'
-			identifier: class.notFound
-			count: 1
-			path: sys/Email/PHPMailer-6.9.1/src/OAuth.php
-
-		-
-			message: '#^Class Psr\\Log\\LoggerInterface not found\.$#'
-			identifier: class.notFound
-			count: 1
-			path: sys/Email/PHPMailer-6.9.1/src/PHPMailer.php
-
-		-
-			message: '#^Class Psr\\Log\\LoggerInterface not found\.$#'
-			identifier: class.notFound
-			count: 1
-			path: sys/Email/PHPMailer-6.9.1/src/SMTP.php
 
 		-
 			message: '#^Access to an undefined property File_MARCJSON\:\:\$text\.$#'
@@ -239,33 +137,3 @@ parameters:
 			identifier: variable.undefined
 			count: 1
 			path: sys/SearchObject/TalpaSearcher.php
-
-		-
-			message: '#^Method SessionInterface\:\:gc\(\) should return int\|false but return statement is missing\.$#'
-			identifier: return.missing
-			count: 1
-			path: sys/Session/SessionInterface.php
-
-		-
-			message: '#^Method SessionInterface\:\:read\(\) should return string\|false but return statement is missing\.$#'
-			identifier: return.missing
-			count: 1
-			path: sys/Session/SessionInterface.php
-
-		-
-			message: '#^Method SessionInterface\:\:write\(\) should return bool but return statement is missing\.$#'
-			identifier: return.missing
-			count: 1
-			path: sys/Session/SessionInterface.php
-
-		-
-			message: '#^Undefined variable\: \$library$#'
-			identifier: variable.undefined
-			count: 1
-			path: sys/TwoFactorAuthTOTPSecret.php
-
-		-
-			message: '#^Cannot unset offset ''templateSelect'' on array\{id\: array\{property\: ''id'', type\: ''label'', label\: ''Id'', description\: ''The unique id…''\}, title\: array\{property\: ''title'', type\: ''text'', label\: ''Title'', description\: ''The title of the…'', size\: ''40'', maxLength\: 100, required\: true\}, showTitleOnPage\: array\{property\: ''showTitleOnPage'', type\: ''checkbox'', label\: ''Display Title on…'', description\: ''Whether or not to…'', default\: 1\}, urlAlias\: array\{property\: ''urlAlias'', type\: ''text'', label\: ''URL Alias \(no…'', description\: ''The url of the page…'', size\: ''40'', maxLength\: 100, required\: true\}, teaser\: array\{property\: ''teaser'', type\: ''textarea'', label\: ''Teaser'', description\: ''Teaser for page…'', maxLength\: 512, hideInLists\: true\}, templatesSelect\: array\{property\: ''templatesSelect'', type\: ''enum'', label\: ''Templates'', required\: true, values\: array\}, libraries\: array\{property\: ''libraries'', type\: ''multiSelect'', listStyle\: ''checkboxSimple'', label\: ''Libraries'', description\: ''Define libraries…'', values\: array, hideInLists\: true\}, htmlData\: array\{property\: ''htmlData'', type\: ''hidden'', label\: ''htmlData'', description\: ''html data'', hideInLists\: true\}, \.\.\.\}\.$#'
-			identifier: unset.offset
-			count: 1
-			path: sys/WebBuilder/GrapesPage.php

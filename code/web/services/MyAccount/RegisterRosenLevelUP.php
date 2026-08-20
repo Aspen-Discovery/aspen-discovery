@@ -26,6 +26,8 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount {
 	private $student_school_code;
 	private $student_school_name;
 	private $student_username;
+	private $parent_pw;
+	private $student_pw;
 
 	function launch() {
 		global $interface;

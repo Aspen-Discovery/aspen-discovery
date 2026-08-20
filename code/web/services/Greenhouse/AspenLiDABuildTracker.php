@@ -106,14 +106,13 @@ class Greenhouse_AspenLiDABuildTracker extends Admin_Admin {
 		$interface->assign('allBuilds', $allBuilds);
 		$interface->assign('appToShowOptions', $appToShowOptions);
 
-		function getDownloadExtension($params) : array|string {
-			return pathinfo($params['url'], PATHINFO_EXTENSION);
-		}
-
-		/** @noinspection PhpUnhandledExceptionInspection */
 		$interface->registerPlugin('function', 'file_ext', 'getDownloadExtension');
 
 		$this->display('aspenLiDABuildTracker.tpl', 'Aspen LiDA Build Tracker', false);
+	}
+
+	function getDownloadExtension(array $params) : array|string {
+		return pathinfo($params['url'], PATHINFO_EXTENSION);
 	}
 
 	function canAddNew() : bool {

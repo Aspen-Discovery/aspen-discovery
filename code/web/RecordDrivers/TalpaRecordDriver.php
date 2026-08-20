@@ -6,12 +6,15 @@ class TalpaRecordDriver extends RecordInterface {
 	private $record;
 	private $isn;
 	private $upc;
+	private $author;
+	private $title;
+	
 	/**
 	 * Constructor.  We build the object using all the data retrieved
 	 * @param array|File_MARC_Record||string   $recordData     Data to construct the driver from
 	 * @access  public
 	 */
-	public function __construct($record) {
+	public function __construct(mixed $record) {
 
 		if(is_array($record)) {
 			$this->record= $record;
@@ -248,7 +251,7 @@ class TalpaRecordDriver extends RecordInterface {
 	 */
 	public function getTitle() {
 		if (isset($this->record['Title'])) {
-			$title=$this->record['Title'][0];
+			$title = $this->record['Title'][0];
 			if (isset($this->record['Subtitle'])) {
 				$title .= ': ' . $this->record['Subtitle'][0];
 			}

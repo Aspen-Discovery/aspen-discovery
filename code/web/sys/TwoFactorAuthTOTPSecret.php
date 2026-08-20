@@ -157,7 +157,8 @@ class TwoFactorAuthTOTPSecret extends DataObject {
 
 	public static function generateQRCodeURI(TwoFactorAuthTOTPSecret $secret, string $issuer, User $user = null): string {
 		global $configArray;
-
+		global $library;
+		
 		if ($user === null) {
 			$user = new User();
 			$user->id = UserAccount::getActiveUserId();

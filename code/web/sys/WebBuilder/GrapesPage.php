@@ -122,9 +122,6 @@ class GrapesPage extends DB_LibraryLinkedObject {
 				'hideInLists' => true,
 			],
 		];
-		if ($context == 'addNew') {
-			unset($structure['templateSelect']);
-		}
 
 		if ($context != 'addNew') {
 			unset($structure['templateContent']);
