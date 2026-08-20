@@ -590,6 +590,8 @@ class BookCoverProcessor {
 
 	private function returnImage($localPath) : void {
 		header('Content-type: image/png');
+		//Remove all cookies
+		header_remove("Set-Cookie");
 		if ($this->addModificationHeaders($localPath)) {
 			$this->logTime("Added modification headers");
 			$this->addCachingHeader();
@@ -602,8 +604,6 @@ class BookCoverProcessor {
 		} else {
 			$this->logTime("Added modification headers");
 		}
-		//Remove all cookies
-		header_remove("Set-Cookie");
 	}
 
 	private function getCoverFromProvider() : bool {

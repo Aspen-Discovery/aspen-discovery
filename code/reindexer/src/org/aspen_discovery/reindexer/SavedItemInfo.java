@@ -41,7 +41,7 @@ public class SavedItemInfo {
 		this.shelfLocationId = getExistingItemsForRecordRS.getLong("shelfLocationId");
 		this.callNumberId = getExistingItemsForRecordRS.getLong("callNumberId");
 		this.sortableCallNumberId = getExistingItemsForRecordRS.getLong("sortableCallNumberId");
-		this.numCopies = getExistingItemsForRecordRS.getLong("isOrderItem");
+		this.numCopies = getExistingItemsForRecordRS.getLong("numCopies");
 		this.isOrderItem = getExistingItemsForRecordRS.getBoolean("isOrderItem");
 		this.statusId = getExistingItemsForRecordRS.getLong("statusId");
 		this.dateAdded = getExistingItemsForRecordRS.getLong("dateAdded");
@@ -131,7 +131,10 @@ public class SavedItemInfo {
 		}
 		if (dateAdded != null || this.dateAdded != null) {
 			if (dateAdded == null) {
-				return true;
+				//Empty date added translate to 0 in the DB
+				if (this.dateAdded != 0) {
+					return true;
+				}
 			} else if (this.dateAdded == null) {
 				return true;
 			} else if (dateAdded.getTime() / 1000 != this.dateAdded) {
@@ -146,7 +149,9 @@ public class SavedItemInfo {
 		}
 		if (lastCheckInDate != null || this.lastCheckInDate != null) {
 			if (lastCheckInDate == null) {
-				return true;
+				if (this.lastCheckInDate != 0) {
+					return true;
+				}
 			} else if (this.lastCheckInDate == null) {
 				return true;
 			} else if (lastCheckInDate.getTime() / 1000 != this.lastCheckInDate) {
