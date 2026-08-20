@@ -1,6 +1,7 @@
 parameters:
 	ignoreErrors:
 		-
+<<<<<<< HEAD
 			message: '#^Attribute class JetBrains\\PhpStorm\\NoReturn does not exist\.$#'
 			identifier: attribute.notFound
 			count: 1
@@ -79,24 +80,30 @@ parameters:
 			path: CAS-1.3.4/CAS/Request/CurlMultiRequest.php
 
 		-
+=======
+>>>>>>> 46afa3be00 (DIS-2840: Updated baseline, fix a couple minor bugs, update config file)
 			message: '#^Method CatalogConnection\:\:sendAspenPasswordResetEmailForBarcode\(\) invoked with 1 parameter, 2 required\.$#'
 			identifier: arguments.count
 			count: 1
 			path: CatalogConnection.php
 
 		-
+<<<<<<< HEAD
 			message: '#^Undefined variable\: \$logger$#'
 			identifier: variable.undefined
 			count: 1
 			path: Drivers/CarlX.php
 
 		-
+=======
+>>>>>>> 46afa3be00 (DIS-2840: Updated baseline, fix a couple minor bugs, update config file)
 			message: '#^Deprecated in PHP 8\.0\: Required parameter \$pmtAmount follows optional parameter \$pmtType\.$#'
 			identifier: parameter.requiredAfterOptional
 			count: 1
 			path: Drivers/Nashville.php
 
 		-
+<<<<<<< HEAD
 			message: '#^Path in require_once\(\) "JSMin\.php" is not a file or it does not exist\.$#'
 			identifier: requireOnce.fileNotFound
 			count: 1
@@ -235,18 +242,23 @@ parameters:
 			path: RecordDrivers/WebsitePageRecordDriver.php
 
 		-
+=======
+>>>>>>> 46afa3be00 (DIS-2840: Updated baseline, fix a couple minor bugs, update config file)
 			message: '#^Access to static property \$scopingLocationCode on an unknown class Millennium\.$#'
 			identifier: class.notFound
 			count: 2
 			path: bootstrap_aspen.php
 
 		-
+<<<<<<< HEAD
 			message: '#^Attribute class JetBrains\\PhpStorm\\NoReturn does not exist\.$#'
 			identifier: attribute.notFound
 			count: 1
 			path: cron/consolidateReadingHistory.php
 
 		-
+=======
+>>>>>>> 46afa3be00 (DIS-2840: Updated baseline, fix a couple minor bugs, update config file)
 			message: '#^Function validateGroupedWork invoked with 6 parameters, 8 required\.$#'
 			identifier: arguments.count
 			count: 1
@@ -271,18 +283,22 @@ parameters:
 			path: services/API/ItemAPI.php
 
 		-
+<<<<<<< HEAD
 			message: '#^Access to an undefined property UserAPI\:\:\$recordDriver\.$#'
 			identifier: property.notFound
 			count: 4
 			path: services/API/UserAPI.php
 
 		-
+=======
+>>>>>>> 46afa3be00 (DIS-2840: Updated baseline, fix a couple minor bugs, update config file)
 			message: '#^Undefined variable\: \$hold_result$#'
 			identifier: variable.undefined
 			count: 2
 			path: services/API/UserAPI.php
 
 		-
+<<<<<<< HEAD
 			message: '#^Attribute class JetBrains\\PhpStorm\\NoReturn does not exist\.$#'
 			identifier: attribute.notFound
 			count: 1
@@ -425,6 +441,78 @@ parameters:
 			identifier: function.notFound
 			count: 1
 			path: services/MyAccount/AJAX.php
+=======
+			message: '#^Call to static method fromGlobals\(\) on an unknown class Laminas\\Diactoros\\ServerRequestFactory\.$#'
+			identifier: class.notFound
+			count: 1
+			path: services/Authentication/OAuth2_Authorize.php
+
+		-
+			message: '#^Caught class League\\OAuth2\\Server\\Exception\\OAuthServerException not found\.$#'
+			identifier: class.notFound
+			count: 2
+			path: services/Authentication/OAuth2_Authorize.php
+
+		-
+			message: '#^Instantiated class Laminas\\Diactoros\\Response not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: services/Authentication/OAuth2_Authorize.php
+
+		-
+			message: '#^Method Authentication_OAuth2_Authorize\:\:createResponse\(\) has invalid return type Psr\\Http\\Message\\ResponseInterface\.$#'
+			identifier: class.notFound
+			count: 1
+			path: services/Authentication/OAuth2_Authorize.php
+
+		-
+			message: '#^Method Authentication_OAuth2_Authorize\:\:createServerRequest\(\) has invalid return type Psr\\Http\\Message\\ServerRequestInterface\.$#'
+			identifier: class.notFound
+			count: 1
+			path: services/Authentication/OAuth2_Authorize.php
+
+		-
+			message: '#^Parameter \$exception of method Authentication_OAuth2_Authorize\:\:handleOAuthError\(\) has invalid type League\\OAuth2\\Server\\Exception\\OAuthServerException\.$#'
+			identifier: class.notFound
+			count: 1
+			path: services/Authentication/OAuth2_Authorize.php
+
+		-
+			message: '#^Parameter \$response of method Authentication_OAuth2_Authorize\:\:sendPsr7Response\(\) has invalid type Psr\\Http\\Message\\ResponseInterface\.$#'
+			identifier: class.notFound
+			count: 1
+			path: services/Authentication/OAuth2_Authorize.php
+
+		-
+			message: '#^Call to static method fromGlobals\(\) on an unknown class Laminas\\Diactoros\\ServerRequestFactory\.$#'
+			identifier: class.notFound
+			count: 1
+			path: services/Authentication/OAuth2_Token.php
+
+		-
+			message: '#^Caught class League\\OAuth2\\Server\\Exception\\OAuthServerException not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: services/Authentication/OAuth2_Token.php
+
+		-
+			message: '#^Instantiated class Laminas\\Diactoros\\Response not found\.$#'
+			identifier: class.notFound
+			count: 2
+			path: services/Authentication/OAuth2_Token.php
+
+		-
+			message: '#^Parameter \$response of method Authentication_OAuth2_Token\:\:addIDTokenToResponse\(\) has invalid type Psr\\Http\\Message\\ResponseInterface\.$#'
+			identifier: class.notFound
+			count: 1
+			path: services/Authentication/OAuth2_Token.php
+
+		-
+			message: '#^Parameter \$response of method Authentication_OAuth2_Token\:\:sendPsr7Response\(\) has invalid type Psr\\Http\\Message\\ResponseInterface\.$#'
+			identifier: class.notFound
+			count: 1
+			path: services/Authentication/OAuth2_Token.php
+>>>>>>> 46afa3be00 (DIS-2840: Updated baseline, fix a couple minor bugs, update config file)
 
 		-
 			message: '#^Function mask not found\.$#'
@@ -445,6 +533,7 @@ parameters:
 			path: services/MyAccount/AJAX.php
 
 		-
+<<<<<<< HEAD
 			message: '#^Access to an undefined property PayOnlineNashville\:\:\$cc_fullname\.$#'
 			identifier: property.notFound
 			count: 2
@@ -523,12 +612,107 @@ parameters:
 			path: sys/Account/PType.php
 
 		-
+=======
+>>>>>>> 46afa3be00 (DIS-2840: Updated baseline, fix a couple minor bugs, update config file)
 			message: '#^Method CASAuthentication\:\:validateAccount\(\) should return AspenError\|bool\|string but return statement is missing\.$#'
 			identifier: return.missing
 			count: 1
 			path: sys/Authentication/CASAuthentication.php
 
 		-
+<<<<<<< HEAD
+=======
+			message: '#^Call to static method fromGlobals\(\) on an unknown class Laminas\\Diactoros\\ServerRequestFactory\.$#'
+			identifier: class.notFound
+			count: 1
+			path: sys/Authentication/OAuth2/OAuth2Middleware.php
+
+		-
+			message: '#^Caught class League\\OAuth2\\Server\\Exception\\OAuthServerException not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: sys/Authentication/OAuth2/OAuth2Middleware.php
+
+		-
+			message: '#^Method OAuth2Middleware\:\:createPsr7Request\(\) has invalid return type Psr\\Http\\Message\\ServerRequestInterface\.$#'
+			identifier: class.notFound
+			count: 1
+			path: sys/Authentication/OAuth2/OAuth2Middleware.php
+
+		-
+			message: '#^Parameter \$exception of method OAuth2Middleware\:\:sendOAuthErrorResponse\(\) has invalid type League\\OAuth2\\Server\\Exception\\OAuthServerException\.$#'
+			identifier: class.notFound
+			count: 1
+			path: sys/Authentication/OAuth2/OAuth2Middleware.php
+
+		-
+			message: '#^Property OAuth2Middleware\:\:\$resourceServer has unknown class League\\OAuth2\\Server\\ResourceServer as its type\.$#'
+			identifier: class.notFound
+			count: 1
+			path: sys/Authentication/OAuth2/OAuth2Middleware.php
+
+		-
+			message: '#^Instantiated class League\\OAuth2\\Server\\AuthorizationServer not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: sys/Authentication/OAuth2/OAuth2ServerConfig.php
+
+		-
+			message: '#^Instantiated class League\\OAuth2\\Server\\Grant\\AuthCodeGrant not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: sys/Authentication/OAuth2/OAuth2ServerConfig.php
+
+		-
+			message: '#^Instantiated class League\\OAuth2\\Server\\Grant\\ClientCredentialsGrant not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: sys/Authentication/OAuth2/OAuth2ServerConfig.php
+
+		-
+			message: '#^Instantiated class League\\OAuth2\\Server\\Grant\\PasswordGrant not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: sys/Authentication/OAuth2/OAuth2ServerConfig.php
+
+		-
+			message: '#^Instantiated class League\\OAuth2\\Server\\Grant\\RefreshTokenGrant not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: sys/Authentication/OAuth2/OAuth2ServerConfig.php
+
+		-
+			message: '#^Instantiated class League\\OAuth2\\Server\\ResourceServer not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: sys/Authentication/OAuth2/OAuth2ServerConfig.php
+
+		-
+			message: '#^Method OAuth2ServerConfig\:\:getAuthorizationServer\(\) has invalid return type League\\OAuth2\\Server\\AuthorizationServer\.$#'
+			identifier: class.notFound
+			count: 1
+			path: sys/Authentication/OAuth2/OAuth2ServerConfig.php
+
+		-
+			message: '#^Method OAuth2ServerConfig\:\:getResourceServer\(\) has invalid return type League\\OAuth2\\Server\\ResourceServer\.$#'
+			identifier: class.notFound
+			count: 1
+			path: sys/Authentication/OAuth2/OAuth2ServerConfig.php
+
+		-
+			message: '#^Property OAuth2ServerConfig\:\:\$authorizationServer has unknown class League\\OAuth2\\Server\\AuthorizationServer as its type\.$#'
+			identifier: class.notFound
+			count: 1
+			path: sys/Authentication/OAuth2/OAuth2ServerConfig.php
+
+		-
+			message: '#^Property OAuth2ServerConfig\:\:\$resourceServer has unknown class League\\OAuth2\\Server\\ResourceServer as its type\.$#'
+			identifier: class.notFound
+			count: 1
+			path: sys/Authentication/OAuth2/OAuth2ServerConfig.php
+
+		-
+>>>>>>> 46afa3be00 (DIS-2840: Updated baseline, fix a couple minor bugs, update config file)
 			message: '#^Instantiated class SimpleSAML\\Auth\\Simple not found\.$#'
 			identifier: class.notFound
 			count: 1
@@ -541,30 +725,37 @@ parameters:
 			path: sys/Authentication/SAML2Authentication.php
 
 		-
+<<<<<<< HEAD
 			message: '#^Method UserCampaign\:\:calculateUserCompletedCampaignMilestones\(\) should return int but return statement is missing\.$#'
 			identifier: return.missing
 			count: 1
 			path: sys/CommunityEngagement/UserCampaign.php
 
 		-
+=======
+>>>>>>> 46afa3be00 (DIS-2840: Updated baseline, fix a couple minor bugs, update config file)
 			message: '#^Deprecated in PHP 8\.0\: Required parameter \$displayBranchOnThumbnail follows optional parameter \$branch\.$#'
 			identifier: parameter.requiredAfterOptional
 			count: 1
 			path: sys/Covers/EventCoverBuilder.php
 
 		-
+<<<<<<< HEAD
 			message: '#^Unsafe usage of new static\(\)\.$#'
 			identifier: new.static
 			count: 1
 			path: sys/DB/DataObject.php
 
 		-
+=======
+>>>>>>> 46afa3be00 (DIS-2840: Updated baseline, fix a couple minor bugs, update config file)
 			message: '#^Array has 2 duplicate keys with value ''drop_date_of_birth_from_user_table'' \(''drop_date_of_birth_from_user_table'', ''drop_date_of_birth_from_user_table''\)\.$#'
 			identifier: array.duplicateKey
 			count: 1
 			path: sys/DBMaintenance/community_engagement_updates.php
 
 		-
+<<<<<<< HEAD
 			message: '#^Array has 2 duplicate keys with value ''web_builder_custom_form_increase_email'' \(''web_builder_custom_form_increase_email'', ''web_builder_custom_form_increase_email''\)\.$#'
 			identifier: array.duplicateKey
 			count: 1
@@ -625,6 +816,8 @@ parameters:
 			path: sys/File/ImageUpload.php
 
 		-
+=======
+>>>>>>> 46afa3be00 (DIS-2840: Updated baseline, fix a couple minor bugs, update config file)
 			message: '#^Access to an undefined property File_MARCJSON\:\:\$text\.$#'
 			identifier: property.notFound
 			count: 2
@@ -637,6 +830,7 @@ parameters:
 			path: sys/Interface.php
 
 		-
+<<<<<<< HEAD
 			message: '#^Class PType referenced with incorrect case\: pType\.$#'
 			identifier: class.nameCase
 			count: 2
@@ -649,12 +843,15 @@ parameters:
 			path: sys/Parsedown/Parsedown.php
 
 		-
+=======
+>>>>>>> 46afa3be00 (DIS-2840: Updated baseline, fix a couple minor bugs, update config file)
 			message: '#^Class GroupedWorksSolrConnector not found\.$#'
 			identifier: class.notFound
 			count: 4
 			path: sys/SearchObject/AbstractGroupedWorkSearcher.php
 
 		-
+<<<<<<< HEAD
 			message: '#^Method SearchObject_CloudSourceSearcher\:\:buildRSS\(\) should return string but return statement is missing\.$#'
 			identifier: return.missing
 			count: 1
@@ -679,6 +876,8 @@ parameters:
 			path: sys/SearchObject/GaleSearcher.php
 
 		-
+=======
+>>>>>>> 46afa3be00 (DIS-2840: Updated baseline, fix a couple minor bugs, update config file)
 			message: '#^Cannot unset offset ''method'' on array\{type\: ''query'', field\: \(int\|string\), limit\: 30, mincount\: 1, domain\?\: array\{excludeTags\: string\}\}\.$#'
 			identifier: unset.offset
 			count: 1
@@ -691,6 +890,7 @@ parameters:
 			path: sys/SearchObject/SolrSearcher.php
 
 		-
+<<<<<<< HEAD
 			message: '#^Method SearchObject_SummonSearcher\:\:buildRSS\(\) should return string but return statement is missing\.$#'
 			identifier: return.missing
 			count: 1
@@ -715,10 +915,13 @@ parameters:
 			path: sys/SearchObject/TalpaSearcher.php
 
 		-
+=======
+>>>>>>> 46afa3be00 (DIS-2840: Updated baseline, fix a couple minor bugs, update config file)
 			message: '#^Undefined variable\: \$jsonFacets$#'
 			identifier: variable.undefined
 			count: 1
 			path: sys/SearchObject/TalpaSearcher.php
+<<<<<<< HEAD
 
 		-
 			message: '#^Function smarty_function_html_checkboxes\(\) should return string but return statement is missing\.$#'
@@ -887,3 +1090,5 @@ parameters:
 			identifier: method.notFound
 			count: 1
 			path: sys/WebBuilder/WebResource.php
+=======
+>>>>>>> 46afa3be00 (DIS-2840: Updated baseline, fix a couple minor bugs, update config file)

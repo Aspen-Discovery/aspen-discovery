@@ -516,5 +516,6 @@ abstract class SIP2Driver extends AbstractIlsDriver {
 				break;
 			}
 		}
+		return $holds;
 	}
 }

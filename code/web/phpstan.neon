@@ -7,6 +7,7 @@ parameters:
     scanFiles:
         - sys/Session/SessionInterface.php
         - sys/Session/MySQLSession.php
+<<<<<<< HEAD
         - Drivers/SIP2Driver.php
         - RecordDrivers/Axis360RecordDriver.php
         - RecordDrivers/HooplaRecordDriver.php
@@ -20,6 +21,18 @@ parameters:
         - vendor
         - sys/File/MARC
         - sys/Authentication/OAuth2
+=======
+        - sys/Account/ExpiredPasswordError.php
+        - sys/Account/TwoFactorAuthenticationError.php
+    scanDirectories:
+        - vendor
+        - sys/File
+        - services/Authentication/SAML/extlib/xmlseclibs
+        - services/Authentication/SAML/extlib/xmlseclibs
+        - sys/Email/PHPMailer-6.9.1
+        - sys/Authentication/OAuth2
+        - RecordDrivers
+>>>>>>> 46afa3be00 (DIS-2840: Updated baseline, fix a couple minor bugs, update config file)
     excludePaths:
         analyse:
             - sys/File/MARC
@@ -31,6 +44,7 @@ parameters:
             - sys/Session/SessionInterface.php 
             - sys/mobileesp/mdetect.php
             - sys/mobile_device_detect.php
+<<<<<<< HEAD
             - Minify/FirePHP.php
             - Minify/ImportProcessor.php
             - Drivers/SIP2Driver.php
@@ -40,3 +54,23 @@ parameters:
             - RecordDrivers/OverDriveRecordDriver.php
             - RecordDrivers/PalaceProjectRecordDriver.php
             - services/SnapPay/Complete.php
+=======
+            - sys/Session/SessionInterface.php
+            - sys/Session/MySQLSession.php   
+            - sys/Smarty/sysplugins/*
+            - sys/Email/PHPMailer-6.9.1/
+            - sys/File/MARC/*
+            - sys/Smarty/plugins/*
+            - CAS-1.3.4/*
+            - services/Authentication/SAML/lib/Saml2/Settings.php
+            - sys/Authentication/OAuth2/Entities/*
+            - sys/Authentication/OAuth2/Repositories
+            - RecordDrivers/Axis360RecordDriver.php
+            - RecordDrivers/PalaceProjectRecordDriver.php
+            - RecordDrivers/OverDriveRecordDriver.php
+            - RecordDrivers/MarcRecordDriver.php
+            - RecordDrivers/HooplaRecordDriver.php
+            - RecordDrivers/GroupedWorkSubDriver.php
+            - sys/Account/ExpiredPasswordError.php
+            - sys/Account/TwoFactorAuthenticationError.php
+>>>>>>> 46afa3be00 (DIS-2840: Updated baseline, fix a couple minor bugs, update config file)
