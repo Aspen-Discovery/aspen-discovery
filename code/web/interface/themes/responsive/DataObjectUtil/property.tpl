@@ -202,11 +202,13 @@
 					{literal}
 					$("#panelToggle_{/literal}{$property.property}{literal}").on('click keydown', function(event) {
 						var toggleButton = $(this);
-						if (event.type === 'keydown' && event.key !== 'Enter' && event.key !== ' ') {
+						var key = event.key || event.which;
+						if (event.type === 'keydown' && key !== 'Enter' && key !== ' ' && key !== 'Spacebar' && key !== 13 && key !== 32) {
 							return;
 						}
 						if (event.type === 'keydown') {
 							event.preventDefault();
+							event.stopPropagation();
 						}
 						$(this).toggleClass('expanded');
 						$(this).toggleClass('collapsed');
