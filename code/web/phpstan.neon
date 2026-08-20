@@ -14,6 +14,8 @@ parameters:
         - RecordDrivers/OverDriveRecordDriver.php
         - RecordDrivers/PalaceProjectRecordDriver.php
         - services/SnapPay/Complete.php
+        - services/Authentication/OAuth2_Token.php
+        - services/Authentication/OAuth2_Authorize.php
     scanDirectories:
         - vendor
         - sys/File/MARC
@@ -21,6 +23,8 @@ parameters:
     excludePaths:
         analyse:
             - sys/File/MARC
+            - services/Authentication/OAuth2_Authorize.php
+            - services/Authentication/OAuth2_Token.php
             - sys/Authentication/OAuth2/*
             - vendor/*
             - sys/Session/MySQLSession.php    
