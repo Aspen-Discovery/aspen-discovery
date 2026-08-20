@@ -4175,50 +4175,28 @@ class MyAccount_AJAX extends JSON_Action {
 	private function getHoldFilterValue(Hold|array $hold, string $field): ?array {
 		$fieldValue = $this->getHoldFilterFieldValue($hold, $field);
 
-		$label = $fieldValue;
-		//Do special processing of some fields
-		switch ($field) {
-			case "userId":
-				$label = is_array($hold) ? $fieldValue : $hold->getUserName();
-				break;
-			case "status":
-				if ($fieldValue === 'available') {
-					$label = translate(['text' => 'Available', 'isPublicFacing' => true]);
-				} elseif ($fieldValue === 'unavailable') {
-					$label = translate(['text' => 'Unavailable', 'isPublicFacing' => true]);
-				} else {
-					$label = translate(['text' => (string)$fieldValue, 'isPublicFacing' => true]);
-				}
-				break;
-			case "format":
-				$label = translate(['text' => (string)$fieldValue, 'isPublicFacing' => true]);
-				break;
-			case "source":
-				switch ($fieldValue) {
-					case 'ils':
-						$sourceUntranslated = 'Physical Materials';
-						break;
-					case 'overdrive':
-						$readerName = new OverDriveDriver();
-						$sourceUntranslated = $readerName->getReaderName();
-						break;
-					case 'cloud_library':
-						$sourceUntranslated = 'Cloud Library';
-						break;
-					case 'hoopla':
-						$sourceUntranslated = 'Hoopla';
-						break;
-					case 'axis360':
-						$sourceUntranslated = 'Boundless';
-						break;
-					default:
-						$sourceUntranslated = 'Unknown';
-				}
-				$label = translate(['text' => $sourceUntranslated, 'isPublicFacing' => true]);
-				break;
-			default:
-				$label = (string)$fieldValue;
-		}
+		$getStatus = fn($fv) => match($fv) {
+			'available' => 'Available',
+			'unavailable' => 'Unavailable',
+			default => (string) $fv
+		};
+		$getSourceUT = fn($fv) => match($fv) {
+			'ils' => 'Physical Materials',
+			'overdrive' => (new OverDriveDriver())->getReaderName(),
+			'cloud_library' => 'Cloud Library',
+			'hoopla' => 'Hoopla',
+			'axis360' => 'Boundless',
+			default => 'Unknown'
+		};
+
+		$label = match($field) {
+			'userId' => is_array($hold) ? $fieldValue : $hold->getUserName(),
+			'status' => translate(['text' => $getStatus($fieldValue), 'isPublicFacing' => true]),
+			'format' => translate(['text' => (string)$fieldValue, 'isPublicFacing' => true]),
+			'source' => translate(['text' => $getSourceUT($fieldValue), 'isPublicFacing' => true]),
+			default => (string)$fieldValue
+		};
+
 		return [
 			'value' => $fieldValue,
 			'label' => $label
