@@ -17,14 +17,12 @@ parameters:
     scanDirectories:
         - vendor
         - sys/File/MARC
-        - sys/Authentication/OAuth2/Repositories
-        - sys/Authentication/OAuth2/Entities
+        - sys/Authentication/OAuth2
     excludePaths:
         analyse:
             - sys/File/MARC
-            - sys/Authentication/OAuth2/Entities/*
+            - sys/Authentication/OAuth2/*
             - vendor/*
-            - sys/Authentication/OAuth2/Repositories/*
             - sys/Session/MySQLSession.php    
             - sys/Session/SessionInterface.php 
             - sys/mobileesp/mdetect.php
