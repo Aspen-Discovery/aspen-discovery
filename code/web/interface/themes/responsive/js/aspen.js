@@ -9468,6 +9468,36 @@ AspenDiscovery.Admin = (function () {
 				guarantorInput.classList.toggle('required', guarantorRequired);
 			}
 		},
+		updateAvailable2FAAssignToUserByOptions: function () {
+			const accountSelect = document.getElementById('accountProfileIdSelect');
+			const assignSelect = document.getElementById('assignToUsersBySelect');
+			if (!accountSelect || !assignSelect) return;
+
+			const selectedOption = accountSelect.options[accountSelect.selectedIndex];
+			const selectedLabel = selectedOption ? selectedOption.text.trim() : '';
+
+			const patronTypeOption = assignSelect.querySelector('option[value="patronType"]');
+			const roleOption = assignSelect.querySelector('option[value="role"]');
+
+			if (!patronTypeOption || !roleOption) return;
+
+			if (selectedLabel.toLowerCase() === 'admin') {
+				// Disable patronType and force role when account profile label is "admin"
+				patronTypeOption.disabled = true;
+				assignSelect.value = 'role';
+
+				// If value assignment fails for any reason, force via selected flag
+				if (assignSelect.value !== 'role') {
+					roleOption.selected = true;
+				}
+
+				// Trigger change in case other UI logic depends on this select
+				assignSelect.dispatchEvent(new Event('change', {bubbles: true}));
+			} else {
+				// Re-enable patronType for non-admin labels
+				patronTypeOption.disabled = false;
+			}
+		}
 	};
 }(AspenDiscovery.Admin || {}));
 AspenDiscovery.Authors = (function () {

@@ -59,7 +59,8 @@ class TwoFactorAuthSetting extends DataObject {
 				'description' => 'Select the Account Profile for this setting.',
 				'note' => 'If the "admin" Account Profile is selected, this setting cannot be scoped to Libraries and Patron Types.',
 				'permissions' => ['Administer Account Profiles'],
-				'readOnly' => $context != 'addNew'
+				'readOnly' => $context != 'addNew',
+				'onchange' => 'return AspenDiscovery.Admin.updateAvailable2FAAssignToUserByOptions();',
 			],
 			'name' => [
 				'property' => 'name',
