@@ -10,7 +10,7 @@
 		{/if}
 
 		{* Search Type *}
-		{assign var="totalSearchOptions" value=0}
+		{assign var="totalSearchOptions" value=1}
 		{if isset($searchIndexes)}
 			{assign var="totalSearchOptions" value=$searchIndexes|@count}
 		{/if}
@@ -21,7 +21,7 @@
 		{assign var="hideSearchIndexDropdown" value=false}
 
 		{* Switch sizing when no search type is to be displayed *}
-		{if !isset($searchIndexes) || empty($searchIndexes) || count($searchIndexes) == 1}
+		{if !isset($searchIndexes) || empty($searchIndexes) || $totalSearchOptions == 1}
 			{assign var="hideSearchIndexDropdown" value=true}
 		{/if}
 
