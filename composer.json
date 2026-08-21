@@ -13,6 +13,12 @@
         "phpstan/phpstan": "^2.2"
     },
     "autoload": {
-        "psr-4": {"AspenDiscovery\\": "./"}
+        "psr-4": {
+            "AspenDiscovery\\": "code/web/"
+        },
+        "classmap": [
+            "code/web/",
+            "tests/"
+        ]
     }
 }
