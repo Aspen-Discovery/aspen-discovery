@@ -1,0 +1,42 @@
+includes:
+    - phpstan-baseline.neon
+parameters:
+    level: 0
+    paths:
+        - code/web/
+    scanFiles:
+        - code/web/sys/Session/SessionInterface.php
+        - code/web/sys/Session/MySQLSession.php
+        - code/web/Drivers/SIP2Driver.php
+        - code/web/RecordDrivers/Axis360RecordDriver.php
+        - code/web/RecordDrivers/HooplaRecordDriver.php
+        - code/web/RecordDrivers/MarcRecordDriver.php
+        - code/web/RecordDrivers/OverDriveRecordDriver.php
+        - code/web/RecordDrivers/PalaceProjectRecordDriver.php
+        - code/web/services/SnapPay/Complete.php
+        - code/web/services/Authentication/OAuth2_Token.php
+        - code/web/services/Authentication/OAuth2_Authorize.php
+    scanDirectories:
+        - vendor
+        - code/web/sys/File/MARC
+        - code/web/sys/Authentication/OAuth2
+    excludePaths:
+        analyse:
+            - code/web/sys/File/MARC
+            - code/web/services/Authentication/OAuth2_Authorize.php
+            - code/web/services/Authentication/OAuth2_Token.php
+            - code/web/sys/Authentication/OAuth2/*
+            - vendor/*
+            - code/web/sys/Session/MySQLSession.php    
+            - code/web/sys/Session/SessionInterface.php 
+            - code/web/sys/mobileesp/mdetect.php
+            - code/web/sys/mobile_device_detect.php
+            - code/web/Minify/FirePHP.php
+            - code/web/Minify/ImportProcessor.php
+            - code/web/Drivers/SIP2Driver.php
+            - code/web/RecordDrivers/Axis360RecordDriver.php
+            - code/web/RecordDrivers/HooplaRecordDriver.php
+            - code/web/RecordDrivers/MarcRecordDriver.php
+            - code/web/RecordDrivers/OverDriveRecordDriver.php
+            - code/web/RecordDrivers/PalaceProjectRecordDriver.php
+            - code/web/services/SnapPay/Complete.php
