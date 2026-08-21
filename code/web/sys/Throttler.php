@@ -17,6 +17,10 @@ class Throttler {
 		$this->configureRequestInterval($requestInterval);
 	}
 
+	public function getInterval() : int {
+		return $this->requestInterval;
+	}
+
 	protected function configureRequestInterval(int $requestInterval = -1) : void
 	{
 		//any negative value doesn't make sense
