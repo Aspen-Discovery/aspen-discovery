@@ -4,20 +4,20 @@
 
 class Throttler {
 
-    private int $requestInterval = -1;
-    /** @var array<int> */
-    private array $lastRequest = [];
-    //constants for shifting between microseconds and milliseconds for utime
-    // and between seconds and milliseconds for microtime
-    private const int MICRO_PER_MILLI = 1000;
-    private const int MILLI_PER_SEC = 1000;
+	private int $requestInterval = -1;
+	/** @var array<int> */
+	private array $lastRequest = [];
+	//constants for shifting between microseconds and milliseconds for utime
+	// and between seconds and milliseconds for microtime
+	private const int MICRO_PER_MILLI = 1000;
+	private const int MILLI_PER_SEC = 1000;
 
-    public function __construct(int $requestInterval = -1)
-    {
-        $this->configureRequestInterval($requestInterval);
-    }
+	public function __construct(int $requestInterval = -1)
+	{
+		$this->configureRequestInterval($requestInterval);
+	}
 
-    protected function configureRequestInterval(int $requestInterval = -1) : void
+	protected function configureRequestInterval(int $requestInterval = -1) : void
 	{
 		//any negative value doesn't make sense
 		//just turning off requests at this point
@@ -59,7 +59,7 @@ class Throttler {
 		$this->requestInterval = intval($rawInterval);
 	}
 
-    /**
+	/**
 	 * if rate limiting is turned on for this wrapper 
 	 * we will check if this endpoint has been hit recently
 	 * and if so wait before returning.
