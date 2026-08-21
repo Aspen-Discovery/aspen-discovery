@@ -5,11 +5,9 @@ define('ROOT_DIR', __DIR__);
  * Load and register Composer Autoloader
  */
 global $composerActive;
-if (file_exists(ROOT_DIR . '/vendor/autoload.php')) {
-	$composerActive = true;
+$composerActive = file_exists(ROOT_DIR . '/vendor/autoload.php');
+if ($composerActive) {
 	require_once ROOT_DIR . '/vendor/autoload.php';
-} else {
-	$composerActive = false;
 }
 
 /**
