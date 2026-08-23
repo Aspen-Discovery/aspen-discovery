@@ -18794,7 +18794,12 @@ AspenDiscovery.WebBuilder = function () {
 			const params = { method: "getWebResource", resourceId: id };
 
 			$.getJSON(url, params, (data) => {
-				const { openInNewTab, url: resourceUrl } = data;
+				const { canView, openInNewTab, url: resourceUrl, userNoAccessTitle, userNoAccessMessage } = data;
+
+				if (!canView) {
+					AspenDiscovery.showMessage(userNoAccessTitle, userNoAccessMessage);
+					return;
+				}
 
 				const trackParams = { method: "trackWebResourceUsage", id, authType: "user" };
 				if (fromPlacard) trackParams.fromPlacard = 1;
