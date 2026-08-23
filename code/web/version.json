@@ -1,4 +1,9 @@
 {
+<<<<<<< HEAD
   "version": "26.09.00",
   "stage": "alpha"
+=======
+  "version": "26.08.00",
+  "stage": "beta 4"
+>>>>>>> b3c34ba6ac (Release work)
 }
