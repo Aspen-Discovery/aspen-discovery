@@ -302,7 +302,19 @@ class ImageUpload extends DataObject {
 		} else {
 			$size = 'full';
 		}
-		return '/WebBuilder/ViewImage?size=' . $size . '&id=' . $this->id;
+		$proxyUrl = '/WebBuilder/ViewImage?size=' . $size . '&id=' . $this->id;
+		if (empty($this->fullSizePath)) {
+			return $proxyUrl;
+		}
+		// Mirrors ViewImage.php's redirect-vs-proxy decision, but made at
+		// render time so a configured CDN is embedded directly in the <img>
+		// tag instead of paying a redirect round-trip on every view. Falls
+		// back to the proxy URL only when no public base URL is configured
+		// at all (e.g. Local Storage) -- see StorageDriver::url()'s docblock.
+		$storage = StorageDriverFactory::getById($this->storageSettingId);
+		$storageKey = 'uploads/web_builder_image/' . $size . '/' . $this->fullSizePath;
+		$directUrl = $storage->url($storageKey);
+		return $directUrl !== '' ? $directUrl : $proxyUrl;
 	}
 
 	public function insert(string $context = '') : int|bool {

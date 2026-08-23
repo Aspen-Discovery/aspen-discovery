@@ -201,7 +201,9 @@
 								{elseif $property.type == 'checkbox' || $property.type == 'calculatedBoolean'}
 									{if ($propValue == 1)}{translate text="Yes" isAdminFacing=true}{elseif ($propValue == 0)}{translate text="No" isAdminFacing=true}{else}{$propValue}{/if}
 								{elseif $property.type == 'image'}
-									<img src="{$property.displayUrl}{$dataItem->id}" class="img-responsive" alt="{$propName}">
+									<img src="{$property.displayUrl}{$dataItem->id}"
+										 onerror="this.onerror=null; this.src='/interface/themes/responsive/images/imageUnavailable.svg';"
+										 class="img-responsive" alt="{$propName}">
 								{elseif $property.type == 'html'}
 									{$propValue|strip_tags|truncate:255:'...'}
 								{elseif $property.type == 'textarea'}
