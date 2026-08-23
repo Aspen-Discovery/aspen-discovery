@@ -1196,6 +1196,11 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 		}
 	}
 
+	/**
+	 * Returns search indexes for basic searching
+	 *
+	 * @return array
+	 */
 	public function getSearchIndexes() : array {
 		global $library;
 		global $location;
@@ -1288,6 +1293,11 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 		}
 	}
 
+	/**
+	 * Get search indexes for advanced searching
+	 *
+	 * @return array
+	 */
 	public function getAdvancedSearchIndexes() : array {
 		global $library;
 		global $locationSingleton;
@@ -1385,6 +1395,20 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 				]),
 			];
 		}
+	}
+
+	/**
+	 * Get all valid search indexes for this searcher (for validation of input variables)
+	 *
+	 * @return array
+	 */
+	public function getAllValidSearchIndexes() : array {
+		require_once ROOT_DIR . '/sys/SearchObject/SearchTypes.php';
+		$searchTypes = new SearchTypes();
+		$searchTypes->selectAdd();
+		$searchTypes->selectAdd('DISTINCT type');
+		$searchTypes->find();
+		return $searchTypes->fetchAll('type', 'type');
 	}
 
 	public function getRecordDriverForResult($record) : GroupedWorkDriver {
