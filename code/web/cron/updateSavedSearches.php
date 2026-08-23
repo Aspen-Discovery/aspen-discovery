@@ -66,7 +66,7 @@ if ($search->getNumResults() > 0) {
 			$searchObject->removeFilterByPrefix('time_since_added');
 			$searchObject->addFilter('time_since_added:Week');
 			$searchObject->setFieldsToReturn('id,title_display,author_display');
-			$searchObject->setLimit(3);
+			$searchObject->setLimit(20);
 
 			$searchResult = $searchObject->processSearch();
 			if (!$searchResult instanceof AspenError && empty($searchResult['error'])) {
@@ -190,6 +190,7 @@ foreach ($usersWithUpdatesToEmail as $data) {
 		$activeLanguage = $validLanguages['en'];
 	}
 	$emailTemplate = EmailTemplate::getActiveTemplate('savedSearchAlert', $activeUser);
+	$numSampleTitles = $emailTemplate->numSampleTitles ?: 3;
 
 	$emailAddress = $data['user']->email;
 
@@ -214,8 +215,9 @@ foreach ($usersWithUpdatesToEmail as $data) {
 		$updatedSearchesWithSampleTitlesHtml .= "<li><strong style='font-size:125%;'><a href='{$url}'>{$title}</a></strong>";
 
 		if (!empty($updatedSearch['newTitles']) && is_array($updatedSearch['newTitles'])) {
+			$sampleTitles = array_slice($updatedSearch['newTitles'], 0, $numSampleTitles);
 			$updatedSearchesWithSampleTitlesHtml .= "<ul>";
-			foreach ($updatedSearch['newTitles'] as $newTitle) {
+			foreach ($sampleTitles as $newTitle) {
 				$titleId = $newTitle['id'] ?? null;
 				if (!$titleId) {
 					continue;

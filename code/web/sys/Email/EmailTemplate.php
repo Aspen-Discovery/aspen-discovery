@@ -10,6 +10,7 @@ class EmailTemplate extends DataObject {
 	public $subject;
 	public $plainTextBody;
 	public $htmlBody;
+	public $numSampleTitles;
 
 	private $_libraries;
 
@@ -129,6 +130,13 @@ class EmailTemplate extends DataObject {
 				'hideInLists' => true,
 				'required' => false,
 				'autocomplete' => false,
+			],
+			'numSampleTitles' => [
+				'property' => 'numSampleTitles',
+				'type' => 'integer',
+				'label' => 'Number of Sample Titles',
+				'description' => 'For Saved Search Alert emails, the number of sample titles to include per search.',
+				'default' => 3,
 			],
 			'libraries' => [
 				'property' => 'libraries',
