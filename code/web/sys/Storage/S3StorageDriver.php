@@ -45,6 +45,20 @@ class S3StorageDriver implements StorageDriver {
 		}
 	}
 
+	public function readStream(string $key) {
+		try {
+			$result = $this->client->getObject(new GetObjectRequest([
+				'Bucket' => $this->bucket,
+				'Key'    => ltrim($key, '/'),
+			]));
+			return $result->getBody()->getContentAsResource();
+		} catch (\Exception $e) {
+			global $logger;
+			$logger->log("S3StorageDriver: failed to read $key from bucket $this->bucket: " . $e->getMessage(), Logger::LOG_ERROR);
+			return false;
+		}
+	}
+
 	public function write(string $key, string $tmpPath, string $mimeType = ''): bool {
 		$handle = fopen($tmpPath, 'rb');
 		if ($handle === false) {
