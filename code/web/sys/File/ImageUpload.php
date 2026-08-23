@@ -363,8 +363,9 @@ class ImageUpload extends DataObject {
 		global $logger;
 		if (!empty($this->fullSizePath) && !empty($this->id)) {
 			require_once ROOT_DIR . '/sys/Covers/CoverImageUtils.php';
-			$storage = StorageDriverFactory::getById($this->storageSettingId);
-			$logger->log("generateDerivatives: image id=$this->id storageSettingId=" . var_export($this->storageSettingId, true), Logger::LOG_DEBUG);
+			$activeStorageSettingId = $this->storageSettingId;
+			$storage = StorageDriverFactory::getById($activeStorageSettingId);
+			$logger->log("generateDerivatives: image id=$this->id storageSettingId=" . var_export($activeStorageSettingId, true), Logger::LOG_DEBUG);
 
 			$sourceContents = $storage->read('uploads/web_builder_image/full/' . $this->fullSizePath);
 			if ($sourceContents === false) {
@@ -374,6 +375,7 @@ class ImageUpload extends DataObject {
 			$srcTmp = tempnam(sys_get_temp_dir(), 'aspen_src_');
 			file_put_contents($srcTmp, $sourceContents);
 
+			$failedVariants = [];
 			foreach ([
 				'x-large' => ['flag' => 'generateXLargeSize', 'prop' => 'xLargeSizePath', 'size' => ImageUpload::$xLargeSize],
 				'large'   => ['flag' => 'generateLargeSize',   'prop' => 'largeSizePath',   'size' => ImageUpload::$largeSize],
@@ -391,16 +393,37 @@ class ImageUpload extends DataObject {
 				}
 				$destTmp = tempnam(sys_get_temp_dir(), 'aspen_dst_');
 				if (resizeImage($srcTmp, $destTmp, $cfg['size'], $cfg['size'])) {
-					if ($storage->write('uploads/web_builder_image/' . $variant . '/' . $this->fullSizePath, $destTmp)) {
+					$destKey = 'uploads/web_builder_image/' . $variant . '/' . $this->fullSizePath;
+					$wrote = $storage->write($destKey, $destTmp);
+					if ($wrote) {
 						$this->{$cfg['prop']} = $this->fullSizePath;
 						$logger->log("generateDerivatives: wrote $variant derivative for image id=$this->id", Logger::LOG_DEBUG);
 					} else {
 						$logger->log('Failed to write ' . $variant . ' derivative image to storage for fullSizePath ' . $this->fullSizePath, Logger::LOG_ERROR);
+						$failedVariants[] = $variant;
 					}
+				} else {
+					$logger->log("generateDerivatives: failed to resize $variant derivative for image id=$this->id", Logger::LOG_ERROR);
+					$failedVariants[] = $variant;
 				}
 				unlink($destTmp);
 			}
 			unlink($srcTmp);
+
+			// The full-size image (handled separately in DataObjectUtil::processProperty)
+			// was already saved successfully by the time we get here, so a derivative
+			// failure shouldn't fail the whole object save -- but it also shouldn't be
+			// silent or silently retried elsewhere. Surface it as an admin-facing warning
+			// instead of only a log line.
+			if (!empty($failedVariants)) {
+				$user = UserAccount::getActiveUserObj();
+				if ($user) {
+					$warning = 'Could not generate the following image size(s) for "' . $this->title . '": ' . implode(', ', $failedVariants) . '. The full-size image was saved, but these sizes are missing.';
+					$user->updateMessage = !empty($user->updateMessage) ? $user->updateMessage . '<br/>' . $warning : $warning;
+					$user->updateMessageIsError = true;
+					$user->update();
+				}
+			}
 		}
 	}
 
