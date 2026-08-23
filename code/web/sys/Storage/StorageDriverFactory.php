@@ -60,18 +60,15 @@ class StorageDriverFactory {
 	// active: DataObject::update() skips null values, so a replacement
 	// written locally could not clear an S3 id left from a previous upload.
 	public static function getActiveSettingId(): ?int {
-		$setting = self::loadActiveSetting();
-		return $setting?->id;
+		return self::getActiveSetting()?->id;
 	}
 
 	private static function create(): StorageDriver {
-		$setting = self::loadActiveSetting();
-		return self::buildDriver($setting);
+		return self::buildDriver(self::getActiveSetting());
 	}
 
 	private static function createFromId(int $id): StorageDriver {
-		$setting = self::loadSettingById($id);
-		return self::buildDriver($setting);
+		return self::buildDriver(self::loadSettingById($id));
 	}
 
 	private static function buildDriver(?StorageSetting $setting): StorageDriver {
@@ -110,7 +107,7 @@ class StorageDriverFactory {
 		return self::$localInstance;
 	}
 
-	private static function loadActiveSetting(): ?StorageSetting {
+	public static function getActiveSetting(): ?StorageSetting {
 		require_once ROOT_DIR . '/sys/Storage/StorageSetting.php';
 		$setting = new StorageSetting();
 		$setting->isActive = 1;

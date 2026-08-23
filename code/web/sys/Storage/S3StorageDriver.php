@@ -21,7 +21,10 @@ class S3StorageDriver implements StorageDriver {
 
 	public function url(string $key, array $transforms = []): string {
 		if (empty($this->baseUrl)) {
-			// No public base URL configured; caller must proxy via read().
+			// No public base URL configured -- caller must proxy via read() instead.
+			// Reads always go through the CDN when one is configured; there is no
+			// fallback to reading the bucket directly if the CDN request fails --
+			// see StorageSetting::verifiedStatus for connectivity/health reporting.
 			return '';
 		}
 		$url = $this->baseUrl . '/' . ltrim($key, '/');
