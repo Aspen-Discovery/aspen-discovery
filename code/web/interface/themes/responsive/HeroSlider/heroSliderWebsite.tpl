@@ -17,11 +17,11 @@
 					<div class="swiper-slide hero-slide" data-duration="{$slide.duration}">
 						{if $slide.image->pageLink}
 							<a href="{$slide.image->pageLink}" target="_blank">
-								<img src="/WebBuilder/ViewImage?id={$slide.image->id}&size=full"
+								<img src="{$slide.image->getDisplayUrl('full')}"
 									 alt="{$slide.image->altText|escape}" />
 							</a>
 						{else}
-							<img src="/WebBuilder/ViewImage?id={$slide.image->id}&size=full"
+							<img src="{$slide.image->getDisplayUrl('full')}"
 								 alt="{$slide.image->altText|escape}" />
 						{/if}
 					</div>
