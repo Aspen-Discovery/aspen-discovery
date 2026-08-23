@@ -21,10 +21,7 @@ class S3StorageDriver implements StorageDriver {
 
 	public function url(string $key, array $transforms = []): string {
 		if (empty($this->baseUrl)) {
-			// No public base URL configured -- caller must proxy via read() instead.
-			// Reads always go through the CDN when one is configured; there is no
-			// fallback to reading the bucket directly if the CDN request fails --
-			// see StorageSetting::verifiedStatus for connectivity/health reporting.
+			// No public base URL configured; caller must proxy via read() instead.
 			return '';
 		}
 		$url = $this->baseUrl . '/' . ltrim($key, '/');
@@ -71,10 +68,11 @@ class S3StorageDriver implements StorageDriver {
 		}
 		try {
 			$this->client->putObject(new PutObjectRequest([
-				'Bucket'      => $this->bucket,
-				'Key'         => ltrim($key, '/'),
-				'Body'        => $handle,
-				'ContentType' => $mimeType ?: 'application/octet-stream',
+				'Bucket'       => $this->bucket,
+				'Key'          => ltrim($key, '/'),
+				'Body'         => $handle,
+				'ContentType'  => $mimeType ?: 'application/octet-stream',
+				'CacheControl' => 'no-cache',
 			]));
 			return true;
 		} catch (\Exception $e) {
