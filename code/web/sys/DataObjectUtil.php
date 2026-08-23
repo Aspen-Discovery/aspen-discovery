@@ -484,18 +484,30 @@ class DataObjectUtil {
 
 						$copyResult = $storage->write($storageKey . '/' . $destFileName, $storeSource);
 
-						if (!$copyResult) {
-							$logger->log("Failed to write $propertyName to storageSettingId=" . var_export($resolvedStorageSettingId, true), Logger::LOG_ERROR);
-							AspenError::raiseError(translate([
-								'text' => "Could not upload %1% -- the storage backend did not accept the file.",
-								1 => $propertyName,
-								'isAdminFacing' => true,
-							]));
-						}
-
 						if (isset($resizedTmp)) {
 							unlink($resizedTmp);
 							unset($resizedTmp);
+						}
+
+						if (!$copyResult) {
+							// Skip this property rather than aborting the whole request:
+							// AspenError::raiseError() would exit() immediately, discarding
+							// every other property on this form (title, dates, unrelated
+							// fields) along with it. Flash an admin-facing warning instead,
+							// the same pattern ImageUpload::generateDerivatives() uses for a
+							// failed derivative, and let the rest of the save proceed.
+							$logger->log("Failed to write $propertyName to storageSettingId=" . var_export($resolvedStorageSettingId, true), Logger::LOG_ERROR);
+							$user = UserAccount::getActiveUserObj();
+							if ($user) {
+								$warning = translate([
+									'text' => "Could not upload %1% -- the storage backend did not accept the file.",
+									1 => $propertyName,
+									'isAdminFacing' => true,
+								]);
+								$user->updateMessage = !empty($user->updateMessage) ? $user->updateMessage . '<br/>' . $warning : $warning;
+								$user->updateMessageIsError = true;
+								$user->update();
+							}
 						}
 
 						if ($copyResult) {

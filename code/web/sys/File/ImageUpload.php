@@ -374,6 +374,7 @@ class ImageUpload extends DataObject {
 			$srcTmp = tempnam(sys_get_temp_dir(), 'aspen_src_');
 			file_put_contents($srcTmp, $sourceContents);
 
+			$failedVariants = [];
 			foreach ([
 				'x-large' => ['flag' => 'generateXLargeSize', 'prop' => 'xLargeSizePath', 'size' => ImageUpload::$xLargeSize],
 				'large'   => ['flag' => 'generateLargeSize',   'prop' => 'largeSizePath',   'size' => ImageUpload::$largeSize],
@@ -391,16 +392,39 @@ class ImageUpload extends DataObject {
 				}
 				$destTmp = tempnam(sys_get_temp_dir(), 'aspen_dst_');
 				if (resizeImage($srcTmp, $destTmp, $cfg['size'], $cfg['size'])) {
-					if ($storage->write('uploads/web_builder_image/' . $variant . '/' . $this->fullSizePath, $destTmp)) {
+					$destKey = 'uploads/web_builder_image/' . $variant . '/' . $this->fullSizePath;
+					$wrote = $storage->write($destKey, $destTmp);
+					if ($wrote) {
 						$this->{$cfg['prop']} = $this->fullSizePath;
 						$logger->log("generateDerivatives: wrote $variant derivative for image id=$this->id", Logger::LOG_DEBUG);
 					} else {
 						$logger->log('Failed to write ' . $variant . ' derivative image to storage for fullSizePath ' . $this->fullSizePath, Logger::LOG_ERROR);
+						$failedVariants[] = $variant;
 					}
+				} else {
+					$logger->log("generateDerivatives: failed to resize $variant derivative for image id=$this->id", Logger::LOG_ERROR);
+					$failedVariants[] = $variant;
 				}
 				unlink($destTmp);
 			}
 			unlink($srcTmp);
+
+			// Full size is already saved; flag missing derivatives instead of failing the save
+			if (!empty($failedVariants)) {
+				$user = UserAccount::getActiveUserObj();
+				// insert() and update() both regenerate derivatives, so skip a warning that is already queued
+				$warning = translate([
+					'text' => 'Could not generate the following image size(s) for "%1%": %2%. The full-size image was saved, but these sizes are missing.',
+					1 => htmlspecialchars($this->title),
+					2 => implode(', ', $failedVariants),
+					'isAdminFacing' => true,
+				]);
+				if ($user && !str_contains($user->updateMessage ?? '', $warning)) {
+					$user->updateMessage = !empty($user->updateMessage) ? $user->updateMessage . '<br/>' . $warning : $warning;
+					$user->updateMessageIsError = true;
+					$user->update();
+				}
+			}
 		}
 	}
 
