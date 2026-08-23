@@ -106,6 +106,13 @@ class StorageDriverFactory {
 		return self::$localInstance;
 	}
 
+	// Public so callers that need the setting itself (not just a driver
+	// instance) -- e.g. a self-check that wants to re-verify and report on
+	// the active S3 backend's public URL -- don't have to duplicate this query.
+	public static function getActiveSetting(): ?StorageSetting {
+		return self::loadActiveSetting();
+	}
+
 	private static function loadActiveSetting(): ?StorageSetting {
 		require_once ROOT_DIR . '/sys/Storage/StorageSetting.php';
 		$setting = new StorageSetting();

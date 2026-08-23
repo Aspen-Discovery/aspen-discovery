@@ -199,6 +199,16 @@ function getUpdates26_08_00(): array {
 			],
 		], //storage_settings_s3_columns
 
+		'storage_settings_verified_status' => [
+			'title' => 'Track S3 public access verification status',
+			'description' => 'Add verifiedStatus/verifiedMessage to storage_settings so the admin UI can show whether the configured public base URL has actually been confirmed reachable, instead of assuming it works.',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE storage_settings ADD COLUMN verifiedStatus ENUM('unverified','verified','failed') NOT NULL DEFAULT 'unverified'",
+				"ALTER TABLE storage_settings ADD COLUMN verifiedMessage VARCHAR(255) NULL DEFAULT NULL",
+			],
+		], //storage_settings_verified_status
+
 		//tomas
 
 		// stephen
