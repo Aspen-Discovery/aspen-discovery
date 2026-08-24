@@ -1245,52 +1245,52 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 						'inAttribute' => true,
 					]);
 				}
+				return $searchIndexes;
 			}
-			return $searchIndexes;
-		} else {
-			return [
-				'Keyword' => translate([
-					'text' => 'Keyword',
-					'isPublicFacing' => true,
-					'inAttribute' => true,
-				]),
-				$titleSearch => translate([
-					'text' => 'Title',
-					'isPublicFacing' => true,
-					'inAttribute' => true,
-				]),
-				'StartOfTitle' => translate([
-					'text' => 'Start of Title',
-					'isPublicFacing' => true,
-					'inAttribute' => true,
-				]),
-				'Series' => translate([
-					'text' => 'Series',
-					'isPublicFacing' => true,
-					'inAttribute' => true,
-				]),
-				'PrimaryAuthor' => translate([
-					'text' => 'Author',
-					'isPublicFacing' => true,
-					'inAttribute' => true,
-				]),
-				'Author' => translate([
-					'text' => 'Authors and Contributors',
-					'isPublicFacing' => true,
-					'inAttribute' => true,
-				]),
-				'Subject' => translate([
-					'text' => 'Subject',
-					'isPublicFacing' => true,
-					'inAttribute' => true,
-				]),
-				'LocalCallNumber' => translate([
-					'text' => 'Call Number',
-					'isPublicFacing' => true,
-					'inAttribute' => true,
-				]),
-			];
 		}
+
+		return [
+			'Keyword' => translate([
+				'text' => 'Keyword',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			$titleSearch => translate([
+				'text' => 'Title',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'StartOfTitle' => translate([
+				'text' => 'Start of Title',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'Series' => translate([
+				'text' => 'Series',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'PrimaryAuthor' => translate([
+				'text' => 'Author',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'Author' => translate([
+				'text' => 'Authors and Contributors',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'Subject' => translate([
+				'text' => 'Subject',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'LocalCallNumber' => translate([
+				'text' => 'Call Number',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+		];
 	}
 
 	/**
@@ -1304,7 +1304,6 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 		$location = $locationSingleton->getActiveLocation();
 
 		$searchIndexes = [];
-
 
 		if ($location && $location->searchSettingId != -1 || $library->searchSettingId != -1) {
 			require_once ROOT_DIR . '/sys/SearchObject/SearchSetting.php';
@@ -1329,72 +1328,71 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 						]);
 					}
 				}
+				return $searchIndexes;
 			}
-			return $searchIndexes;
-		} else {
-			return [
-				'Keyword' => translate([
-					'text' => 'Keyword',
-					'isPublicFacing' => true,
-					'inAttribute' => true,
-				]),
-				'Title' => translate([
-					'text' => 'Title',
-					'isPublicFacing' => true,
-					'inAttribute' => true,
-				]),
-				'StartOfTitle' => translate([
-					'text' => 'Start of Title',
-					'isPublicFacing' => true,
-					'inAttribute' => true,
-				]),
-				'Author' => translate([
-					'text' => 'Author',
-					'isPublicFacing' => true,
-					'inAttribute' => true,
-				]),
-				'Subject' => translate([
-					'text' => 'Subject',
-					'isPublicFacing' => true,
-					'inAttribute' => true,
-				]),
-				'ISN' => translate([
-					'text' => 'ISBN/ISSN/UPC',
-					'isPublicFacing' => true,
-					'inAttribute' => true,
-				]),
-				'publisher' => translate([
-					'text' => 'Publisher',
-					'isPublicFacing' => true,
-					'inAttribute' => true,
-				]),
-				'year' => translate([
-					'text' => 'Year of Publication',
-					'isPublicFacing' => true,
-					'inAttribute' => true,
-				]),
-				'Series' => translate([
-					'text' => 'Series',
-					'isPublicFacing' => true,
-					'inAttribute' => true,
-				]),
-				'toc' => translate([
-					'text' => 'Table of Contents',
-					'isPublicFacing' => true,
-					'inAttribute' => true,
-				]),
-				'id' => translate([
-					'text' => 'Record Number',
-					'isPublicFacing' => true,
-					'inAttribute' => true,
-				]),
-				'LocalCallNumber' => translate([
-					'text' => 'Call Number',
-					'isPublicFacing' => true,
-					'inAttribute' => true,
-				]),
-			];
 		}
+		return [
+			'Keyword' => translate([
+				'text' => 'Keyword',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'Title' => translate([
+				'text' => 'Title',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'StartOfTitle' => translate([
+				'text' => 'Start of Title',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'Author' => translate([
+				'text' => 'Author',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'Subject' => translate([
+				'text' => 'Subject',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'ISN' => translate([
+				'text' => 'ISBN/ISSN/UPC',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'publisher' => translate([
+				'text' => 'Publisher',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'year' => translate([
+				'text' => 'Year of Publication',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'Series' => translate([
+				'text' => 'Series',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'toc' => translate([
+				'text' => 'Table of Contents',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'id' => translate([
+				'text' => 'Record Number',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'LocalCallNumber' => translate([
+				'text' => 'Call Number',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+		];
 	}
 
 	/**
@@ -1408,7 +1406,25 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 		$searchTypes->selectAdd();
 		$searchTypes->selectAdd('DISTINCT type');
 		$searchTypes->find();
-		return $searchTypes->fetchAll('type', 'type');
+		$searchIndexes = $searchTypes->fetchAll('type', 'type');
+		if (empty($searchIndexes)) {
+			$searchIndexes = [
+				'Keyword' => 'Keyword',
+				'Title'   => 'Title',
+				'StartOfTitle'  => 'Start of Title',
+				'Series' => 'Series',
+				'PrimaryAuthor' => 'Author',
+				'Author' => 'Authors and Contributors',
+				'Subject' => 'Subject',
+				'LocalCallNumber' => 'Call Number',
+				'ISN' => 'ISN',
+				'publisher' => 'publisher',
+				'year' => 'Year of Publication',
+				'toc' => 'Table of Contents',
+				'id' => 'Record Number',
+			];
+		}
+		return $searchIndexes;
 	}
 
 	public function getRecordDriverForResult($record) : GroupedWorkDriver {
