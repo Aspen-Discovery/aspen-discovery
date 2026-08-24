@@ -1188,7 +1188,8 @@ class Record_AJAX extends JSON_Action {
 					];
 					if (isset($return['viewHoldsAction'])) {
 						$results['viewHoldsAction'] = $return['viewHoldsAction'];
-						$results['modalButtons'] = $return['modalButtons'];
+						// Sierra place hold does not set a Go to Holds action, so modalButtons may be null
+						$results['modalButtons'] = $return['modalButtons'] ?? null;
 					}else{
 						$results['viewHoldsAction'] = '';
 					}
