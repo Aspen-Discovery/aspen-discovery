@@ -40,8 +40,8 @@ function getUpdates26_08_00(): array {
 			'description' => 'Adds a column to store how to assign two factor auth settings to users.',
 			'continueOnError' => false,
 			'sql' => [
-				"ALTER TABLE two_factor_auth_settings ADD COLUMN assignToUsersBy VARCHAR(25) DEFAULT 'patronType'",
-				"UPDATE two_factor_auth_settings SET assignToUsersBy = 'patronType' WHERE NULL",
+				"ALTER TABLE two_factor_auth_settings ADD COLUMN assignToUsersBy VARCHAR(25) DEFAULT 'accountProfile'",
+				"UPDATE two_factor_auth_settings SET assignToUsersBy = 'accountProfile' WHERE NULL",
 			]
 		],
 		//add_assignToUsersBy_to_two_factor_auth_settings

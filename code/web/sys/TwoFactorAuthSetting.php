@@ -40,6 +40,7 @@ class TwoFactorAuthSetting extends DataObject {
 		];
 
 		$assignToUsersByList = [
+			'accountProfile' => 'Require By Account Profile (all users)',
 			'patronType' => 'Require By Library and/or Patron Type (ILS)',
 			'role' => 'Require By Role (Permissions/Local)',
 		];
@@ -338,38 +339,52 @@ class TwoFactorAuthSetting extends DataObject {
 			return;
 		}
 
-		if ($this->assignToUsersBy == 'role') {
-			// In role mode, clear library assignments to this setting.
-			$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Libraries'), $this->accountProfileId);
-			foreach ($libraryList as $libraryId => $displayName) {
-				$library = new Library();
-				$library->libraryId = $libraryId;
-				if ($library->find(true) && $library->twoFactorAuthSettingId == $this->id) {
-					$library->twoFactorAuthSettingId = -1;
-					$library->update();
-				}
-			}
-
-			// In role mode, clear patron type assignments to this setting.
-			$ptypeList = PType::getPatronTypeList(false, false, $this->accountProfileId);
-			foreach ($ptypeList as $ptypeId => $ptypeName) {
-				$patronType = new PType();
-				$patronType->id = $ptypeId;
-				if ($patronType->find(true) && $patronType->twoFactorAuthSettingId == $this->id) {
-					$patronType->twoFactorAuthSettingId = -1;
-					$patronType->update();
-				}
-			}
+		if ($this->assignToUsersBy == 'accountProfile') {
+			$this->clearLibraries();
+			$this->clearPatronTypes();
+			$this->clearRoles();
+		}else if ($this->assignToUsersBy == 'role') {
+			$this->clearLibraries();
+			$this->clearPatronTypes();
 		} else {
-			// In patronType mode, clear role assignments to this setting.
-			$roleList = Role::getRoleList();
-			foreach ($roleList as $roleId => $roleName) {
-				$role = new Role();
-				$role->roleId = $roleId;
-				if ($role->find(true) && $role->twoFactorAuthSettingId == $this->id) {
-					$role->twoFactorAuthSettingId = -1;
-					$role->update();
-				}
+			$this->clearRoles();
+		}
+	}
+	private function clearLibraries() : void {
+		// In role mode, clear library assignments to this setting.
+		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Libraries'), $this->accountProfileId);
+		foreach ($libraryList as $libraryId => $displayName) {
+			$library = new Library();
+			$library->libraryId = $libraryId;
+			if ($library->find(true) && $library->twoFactorAuthSettingId == $this->id) {
+				$library->twoFactorAuthSettingId = -1;
+				$library->update();
+			}
+		}
+	}
+
+	private function clearPatronTypes() : void {
+		// In role mode, clear patron type assignments to this setting.
+		$ptypeList = PType::getPatronTypeList(false, false, $this->accountProfileId);
+		foreach ($ptypeList as $ptypeId => $ptypeName) {
+			$patronType = new PType();
+			$patronType->id = $ptypeId;
+			if ($patronType->find(true) && $patronType->twoFactorAuthSettingId == $this->id) {
+				$patronType->twoFactorAuthSettingId = -1;
+				$patronType->update();
+			}
+		}
+	}
+
+	private function clearRoles() : void {
+		// In patronType mode, clear role assignments to this setting.
+		$roleList = Role::getRoleList();
+		foreach ($roleList as $roleId => $roleName) {
+			$role = new Role();
+			$role->roleId = $roleId;
+			if ($role->find(true) && $role->twoFactorAuthSettingId == $this->id) {
+				$role->twoFactorAuthSettingId = -1;
+				$role->update();
 			}
 		}
 	}
