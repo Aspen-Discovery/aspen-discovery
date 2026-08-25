@@ -737,9 +737,11 @@ abstract class Solr {
 			$values['onephrase'] = '"' . str_replace('"', '', implode(' ', $tokenized)) . '"';
 			if (count($tokenized) > 1) {
 				$values['proximal'] = $values['onephrase'] . '~10';
+				$values['proximal2'] = $values['onephrase'] . '~2';
 				$values['single_word'] = null;
 			} else {
 				$values['proximal'] = null;
+				$values['proximal2'] = null;
 				if (!array_key_exists(0, $tokenized)) {
 					$values['single_word'] = '';
 				} else {
@@ -804,6 +806,7 @@ abstract class Solr {
 				'and' => $cleanedQuery,
 				'or' => $cleanedQuery,
 				'proximal' => $cleanedQuery,
+				'proximal2' => $cleanedQuery,
 				'single_word' => $cleanedQuery,
 				'single_word_removal' => $onephrase,
 				'exact_quoted' => $onephrase,
