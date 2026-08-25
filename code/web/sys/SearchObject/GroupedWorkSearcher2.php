@@ -858,7 +858,7 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 					$facetValue = substr($facetValue, strpos($facetValue, '#') + 1);
 				}
 				if ($field == 'author2-role') {
-					$facetDisplay = preg_replace('/\s*\|\s*/', ' - ', $facetValue);
+					$facetDisplay = preg_replace('/\s*\|\s*/', ', ', $facetValue);
 				}else{
 					$facetDisplay = null;
 				}
