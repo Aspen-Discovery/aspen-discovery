@@ -206,7 +206,7 @@ class OAuthAuthentication extends Action {
 
 	private function getResourceOwner($resourceOwnerDetailsUrl): bool {
 		if (!empty($this->idToken)) {
-			$this->resourceOwner->ssoSettingId = $this->idToken;
+			$this->resourceOwner = $this->idToken;
 			return true;
 		}
 		global $logger;
