@@ -92,6 +92,8 @@ class IndexingProfile extends DataObject {
 	public /** @noinspection PhpUnused */
 		$treatLibraryUseOnlyGroupedStatusesAsAvailable;
 	public /** @noinspection PhpUnused */
+		$itemPrice;
+	public /** @noinspection PhpUnused */
 		$totalCheckouts;
 	public /** @noinspection PhpUnused */
 		$lastYearCheckouts;
@@ -1440,6 +1442,15 @@ class IndexingProfile extends DataObject {
 						'maxLength' => 1,
 						'description' => 'A secondary subfield to divide locations',
 						'forcesReindex' => true,
+					],
+					'itemPrice' => [
+						'property' => 'itemPrice',
+						'type' => 'text',
+						'label' => 'Price',
+						'maxLength' => 1,
+						'description' => 'Subfield for price',
+						'forcesReindex' => true,
+						'relatedIls' => ['sierra']
 					],
 					'totalCheckouts' => [
 						'property' => 'totalCheckouts',

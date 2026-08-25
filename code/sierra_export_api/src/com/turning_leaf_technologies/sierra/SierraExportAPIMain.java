@@ -1257,6 +1257,10 @@ public class SierraExportAPIMain {
 					}else{
 						itemField.addSubfield(marcFactory.newSubfield(indexingProfile.getDueDateSubfield(), ""));
 					}
+					//price
+					if (fixedFields.has("62") && indexingProfile.getPriceSubfield() != ' '){
+						itemField.addSubfield(marcFactory.newSubfield(indexingProfile.getPriceSubfield(), fixedFields.getJSONObject("62").getString("value")));
+					}
 					//total checkouts
 					if (fixedFields.has("76") && indexingProfile.getTotalCheckoutsSubfield() != ' '){
 						itemField.addSubfield(marcFactory.newSubfield(indexingProfile.getTotalCheckoutsSubfield(), fixedFields.getJSONObject("76").getString("value")));
