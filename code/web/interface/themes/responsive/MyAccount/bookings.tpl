@@ -1,0 +1,26 @@
+{strip}
+	<div id="main-content">
+		{if !empty($accessWarningMessage)}
+			<div class="alert alert-danger" role="alert">{translate text=$accessWarningMessage isPublicFacing=true}</div>
+		{else}
+			{* alerts *}
+			{if !empty($profile->_web_note)}<div class="row"> <div id="web_note" class="alert alert-info text-center col-xs-12">{$profile->_web_note}</div></div>{/if}
+			{if !empty($accountMessages)}{include file='systemMessages.tpl' messages=$accountMessages}{/if}
+			{if !empty($ilsMessages)}{include file='ilsMessages.tpl' messages=$ilsMessages}{/if}
+
+			{* page container *}
+			<h1>{translate text='My Bookings' isPublicFacing=true}</h1>
+			<div id="bookings-list" aria-live="polite">
+				<div id="bookings-placeholder">{translate text="Loading bookings" isPublicFacing=true}</div>
+			</div>
+			<script type="text/javascript">
+				$(document).ready(function() {
+					AspenDiscovery.Account.loadBookings();
+				});
+			</script>
+		{/if}
+	</div>
+{/strip}
+
+
+

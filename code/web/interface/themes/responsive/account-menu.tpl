@@ -15,6 +15,11 @@
 						{translate text="Titles On Hold" isPublicFacing=true}
 					</a>
 				</div>
+				{if !empty($showBookings)}
+					<div class="header-menu-option">
+						<a href="/MyAccount/Bookings" id="bookings">{translate text='Bookings' isPublicFacing=true}</a>
+					</div>
+				{/if}
 				{if !empty($showCurbsidePickups)}
 					<div class="header-menu-option">
 						<a href="/MyAccount/CurbsidePickups">{translate text='Curbside Pickups' isPublicFacing=true}</a>

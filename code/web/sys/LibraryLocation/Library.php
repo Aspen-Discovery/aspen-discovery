@@ -206,6 +206,10 @@ class Library extends DataObject {
 	public $showHoldPosition;
 	public $showLogMeOutAfterPlacingHolds;
 	public $showHoldFeeMessage;
+	public $enableBookingDisplay;
+	public $enableBookingPlacement;
+	public $enableBookingUpdates;
+	public $enableBookingCancellations;
 	public $displayItemBarcode;
 	public $displayHoldsOnCheckout;
 	public $showCheckoutRenewalFeeMessage;
@@ -2779,6 +2783,71 @@ class Library extends DataObject {
 								'hideInLists' => true,
 								'default' => 0,
 								'relatedIls' => ['koha'],
+							],
+						],
+					],
+					'bookingsSection' => [
+						'property' => 'bookingsSection',
+						'type' => 'section',
+						'label' => 'Bookings',
+						'hideInLists' => true,
+						'helpLink' => '',
+						'permissions' => [
+							'Library ILS Connection',
+							'Library ILS Options',
+						],
+						'properties' => [
+							'enableBookingDisplay' => [
+								'property' => 'enableBookingDisplay',
+								'type' => 'checkbox',
+								'label' => "Enable Booking Display To Users On This Library's Site",
+								'description' => 'Whether or not patrons can see the bookings section in My Account on this site. Requires the Koha Bookings module to be enabled in the ILS.',
+								'hideInLists' => true,
+								'default' => 0,
+								'relatedIls' => ['koha'],
+							],
+							'ownedItemsBookingsSection' => [
+								'property' => 'ownedItemsBookingsSection',
+								'type' => 'section',
+								'label' => 'Bookings Actions Available On Bookable Items Owned By This Library',
+								'hideInLists' => true,
+								'helpLink' => '',
+								'permissions' => [
+									'Library ILS Connection',
+									'Library ILS Options',
+								],
+								'properties' => [
+									'enableBookingPlacement' => [
+										'property' => 'enableBookingPlacement',
+										'type' => 'checkbox',
+										'label' => 'Enable Booking Placement',
+										'description' => 'Whether or not patrons can place item-level bookings via Aspen. Requires the Koha Bookings module to be enabled in the ILS. Requires the item to be defined as bookable by the ILS.',
+										'note' => "Requires the following setting: Enable Booking Display To Users On This Library's Site",
+										'hideInLists' => true,
+										'default' => 0,
+										'relatedIls' => ['koha'],
+									],
+									'enableBookingUpdates' => [
+										'property' => 'enableBookingUpdates',
+										'type' => 'checkbox',
+										'label' => 'Enable Booking Updates',
+										'description' => 'Whether or not patrons can update item-level bookings via Aspen. Requires the Koha Bookings module to be enabled in the ILS. Requires the item to be defined as bookable by the ILS.',
+										'note' => "Requires Requires the following setting: Enable Booking Display To Users On This Library's Site",
+										'hideInLists' => true,
+										'default' => 0,
+										'relatedIls' => ['koha'],
+									],
+									'enableBookingCancellations' => [
+										'property' => 'enableBookingCancellations',
+										'type' => 'checkbox',
+										'label' => 'Enable Booking Cancellations',
+										'description' => 'Whether or not patrons can cancel item-level bookings via Aspen. Requires the Koha Bookings module to be enabled in the ILS. Requires the item to be defined as bookable by the ILS.',
+										'note' => "Requires Requires the following setting: Enable Booking Display To Users On This Library's Site",
+										'hideInLists' => true,
+										'default' => 0,
+										'relatedIls' => ['koha'],
+									],
+								],
 							],
 						],
 					],
@@ -6806,6 +6875,8 @@ class Library extends DataObject {
 			'allowRememberPickupLocation' => $this->allowRememberPickupLocation,
 			'allowPickupLocationUpdates' => $this->allowPickupLocationUpdates,
 			'offerImmediateHoldFreeze' => $this->offerImmediateHoldFreeze,
+			'enableBookingDisplay' => (int)$this->enableBookingDisplay,
+			'enableBookingPlacement' => (int)$this->enableBookingPlacement,
 		];
 		if (empty($this->baseUrl)) {
 			$apiInfo['baseUrl'] = $configArray['Site']['url'];

@@ -14,6 +14,15 @@ class DateUtils {
 		return $newdate;
 	}
 
+	static function formatStartOfDayUtc(string $date): string|false {
+		$dt = DateTimeImmutable::createFromFormat('!Y-m-d', $date, new DateTimeZone('UTC'));
+		$errors = DateTimeImmutable::getLastErrors();
+		if (!$dt || ($errors && ($errors['warning_count'] > 0 || $errors['error_count'] > 0))) {
+			return false;
+		}
+		return $dt->format('Y-m-d\T00:00:00\Z');
+	}
+
 	static function formatHumanDate(string $date): string {
 		$dt = DateTimeImmutable::createFromFormat('Y-m-d', $date);
 		if (!$dt) {

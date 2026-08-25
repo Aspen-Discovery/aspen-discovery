@@ -2737,4 +2737,87 @@ class Record_AJAX extends JSON_Action {
 
 		return $editions;
 	}
+
+	function getBookingForm(): array {
+		$this->requireLoggedInUser(null, 'You must be logged in to place a booking. Please close this dialog and login.');
+		$this->checkRequiredParameters(['id']);
+
+		global $interface;
+
+		$recordId = $_REQUEST['id'];
+		$shortId = strpos($recordId, ':') > 0 ? explode(':', $recordId, 2)[1] : $recordId;
+
+		require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+		$marcRecord = new MarcRecordDriver($shortId);
+
+		$catalogDriver = $marcRecord->getCatalogDriver();
+		if (!$catalogDriver || !$catalogDriver->hasBookingsSupport()) {
+			return $this->failureResult('Unable to place booking', 'Bookings are not supported for this record.');
+		}
+
+		require_once ROOT_DIR . '/services/BookingService.php';
+		$bookableItems = BookingService::filterBookableForPlacement($marcRecord->getCopies());
+		if (empty($bookableItems)) {
+			return $this->failureResult('Unable to place booking', 'No bookable items found for this record.');
+		}
+
+		$user = UserAccount::getLoggedInUser();
+		if (empty($user->unique_ils_id)) {
+			return $this->failureResult('Unable to place booking', 'You need an ILS account to use this feature.');
+		}
+
+		require_once ROOT_DIR . '/sys/LibraryLocation/Location.php';
+		$location = new Location();
+		$pickupLocations = $location->getPickupBranches($user);
+
+		$interface->assign('recordId', $recordId);
+		$interface->assign('bookableItems', $bookableItems);
+		$interface->assign('pickupLocations', $pickupLocations);
+		$interface->assign('user', $user);
+
+		return [
+			'success'      => true,
+			'title'        => translate(['text' => 'Place a Booking', 'isPublicFacing' => true]),
+			'modalBody'    => $interface->fetch('Record/booking-popup.tpl'),
+			'modalButtons' => '<button class="btn btn-primary" onclick="return AspenDiscovery.Record.submitBookingForm(this);">' . translate(['text' => 'Place Booking', 'isPublicFacing' => true]) . '</button>',
+		];
+	}
+
+	/** @noinspection PhpUnused */
+	function getItemBookedDates(): array {
+		$this->requireLoggedInUser(null, 'You must be logged in to view booking availability. Please close this dialog and login.');
+		$this->checkRequiredParameters(['itemId']);
+
+		$user = UserAccount::getLoggedInUser();
+		$driver = $user->getCatalogDriver();
+		if (!$driver || !$driver->hasBookingsSupport()) {
+			return ['success' => true, 'bookedDates' => []];
+		}
+
+		$itemId = (int)$_REQUEST['itemId'];
+		return [
+			'success'     => true,
+			'bookedDates' => $driver->getBookedRanges($itemId, $user),
+			'constraints' => method_exists($driver, 'getBookingWindowConstraints')
+				? $driver->getBookingWindowConstraints($itemId, $user)
+				: ['maxPeriod' => 0, 'maxDate' => null],
+		];
+	}
+
+	function placeBooking(): array {
+		$this->requireLoggedInUser(null, 'You must be logged in to place a booking. Please close this dialog and login.');
+		$this->checkRequiredParameters(['id', 'itemId', 'startDate', 'endDate']);
+
+		$user = UserAccount::getLoggedInUser();
+
+		$recordId     = $_REQUEST['id'];
+		$itemId       = $_REQUEST['itemId'];
+		$startDate    = $_REQUEST['startDate'];
+		$endDate      = $_REQUEST['endDate'];
+		$pickupBranch = $_REQUEST['pickupBranch'] ?? null;
+
+		$shortId = strpos($recordId, ':') > 0 ? explode(':', $recordId, 2)[1] : $recordId;
+
+		return $user->placeBooking($itemId, $shortId, $startDate, $endDate, $pickupBranch ?: null);
+	}
 }

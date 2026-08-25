@@ -1135,4 +1135,7 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 	public function hasMandatorySelfRegistrationFields(): bool {
 		return false;
 	} 
+	public function hasBookingsSupport(): bool {
+		return false;
+	}
 }

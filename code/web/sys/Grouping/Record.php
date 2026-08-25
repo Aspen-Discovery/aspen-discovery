@@ -39,6 +39,7 @@ class Grouping_Record {
 	public string $_shelfLocation = '';
 	public bool $_holdable = false;
 	public bool $_locallyHoldable = false;
+	public bool $_bookable = false;
 	public array $_itemSummary = [];
 	public ?array $_itemsDisplayedByDefault = null;
 	public array $_itemDetails = [];
@@ -178,6 +179,9 @@ class Grouping_Record {
 			}
 			$this->_statusInformation->addHoldableCopies($item->numCopies);
 		}
+		if ($item->bookable && $item->libraryOwned) {
+			$this->_bookable = true;
+		}
 
 		if ($item->isOrderItem) {
 			$this->addOnOrderCopies($item->numCopies);
@@ -282,6 +286,10 @@ class Grouping_Record {
 	 */
 	public function isHoldable(): bool {
 		return $this->_holdable;
+	}
+
+	public function isBookable(): bool {
+		return $this->_bookable;
 	}
 
 	/**

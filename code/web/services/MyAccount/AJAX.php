@@ -4455,6 +4455,152 @@ class MyAccount_AJAX extends JSON_Action {
 		return $filters;
 	}
 
+	/** @noinspection PhpUnused */
+	public function loadBookings(): array {
+		$this->requireLoggedInUser(null, 'Your login has timed out. Please login again.');
+		global $interface;
+
+		$user = UserAccount::getActiveUserObj();
+		$this->setShowCovers();
+
+		require_once ROOT_DIR . '/services/BookingService.php';
+		$recordList = ['active' => [], 'past' => []];
+		foreach (BookingService::enrichBookings($user, $user->getBookings()) as $booking) {
+			$recordList[$booking['isPast'] ? 'past' : 'active'][] = $booking;
+		}
+
+		$interface->assign('recordList', $recordList);
+
+		return [
+			'success'  => true,
+			'bookings' => $interface->fetch('MyAccount/bookingsList.tpl'),
+		];
+	}
+
+	/** @noinspection PhpUnused */
+	function getUpdateBookingForm(): array {
+		$this->requireLoggedInUser(null, 'You must be logged in to update a booking. Please close this dialog and login again.');
+		$this->checkRequiredParameters(['userId', 'bookingId']);
+
+		$bookingId = (int)$_REQUEST['bookingId'];
+		$userId    = $_REQUEST['userId'];
+		$user      = UserAccount::getLoggedInUser();
+		$user    = $user->getUserReferredTo($userId);
+
+		if ($user === false) {
+			return $this->failureResult('Update Booking', translate(['text' => 'You do not have access to update bookings for the supplied user.', 'isPublicFacing' => true]));
+		}
+
+		require_once ROOT_DIR . '/sys/User/Booking.php';
+		$stored = new Booking();
+		$stored->userId = $user->id;
+		$stored->ils_booking_id = $bookingId;
+		if (!$stored->find(true)) {
+			return $this->failureResult('Update Booking', translate(['text' => 'Booking not found.', 'isPublicFacing' => true]));
+		}
+
+		require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+		$marcRecord = new MarcRecordDriver($user->source . ':' . $stored->recordId);
+		$itemLabel = $stored->itemId;
+		if ($marcRecord->isValid()) {
+			foreach ($marcRecord->getCopies() as $item) {
+				if ($item['itemId'] == $stored->itemId) {
+					$itemLabel = $item['shelfLocation'] . ' — ' . $item['callNumber'];
+					break;
+				}
+			}
+		}
+
+		require_once ROOT_DIR . '/sys/LibraryLocation/Location.php';
+		$location = new Location();
+		$pickupLocations = $location->getPickupBranches($user);
+
+		global $interface;
+		$interface->assign('userId', $user->id);
+		$interface->assign('bookingId', $bookingId);
+		$interface->assign('itemLabel', $itemLabel);
+		$interface->assign('currentItemId', $stored->itemId);
+		$interface->assign('startDate', $stored->ils_start_date);
+		$interface->assign('endDate', $stored->ils_end_date);
+		$interface->assign('pickupLocations', $pickupLocations);
+		$interface->assign('preSelectedPickupBranch', $stored->ils_pickup_library_id);
+		$interface->assign('user', $user);
+
+		return [
+			'title'        => translate(['text' => 'Update Booking', 'isPublicFacing' => true]),
+			'modalBody'    => $interface->fetch('MyAccount/updateBooking.tpl'),
+			'modalButtons' => '<button class="btn btn-primary" onclick="return AspenDiscovery.Account.submitUpdateBooking();">' . translate(['text' => 'Update Booking', 'isPublicFacing' => true]) . '</button>',
+		];
+	}
+
+	/** @noinspection PhpUnused */
+	function submitUpdateBooking(): array {
+		$this->requireLoggedInUser(null, 'You must be logged in to update a booking. Please close this dialog and login again.');
+		$this->checkRequiredParameters(['userId', 'bookingId', 'startDate', 'endDate']);
+
+		$bookingId    = (int)$_REQUEST['bookingId'];
+		$userId       = $_REQUEST['userId'];
+		$startDate    = $_REQUEST['startDate'];
+		$endDate      = $_REQUEST['endDate'];
+		$pickupBranch = $_REQUEST['pickupBranch'] ?? null;
+		$user         = UserAccount::getLoggedInUser();
+		$user       = $user->getUserReferredTo($userId);
+
+		if ($user === false) {
+			$result = $this->failureResult('Update Booking', translate(['text' => 'You do not have access to update bookings for the supplied user.', 'isPublicFacing' => true]));
+		} else {
+			$result = $user->updateBooking($bookingId, $startDate, $endDate, $pickupBranch ?: null);
+		}
+
+		global $interface;
+		$interface->assign('updateResults', $result);
+
+		return [
+			'title'   => translate(['text' => 'Update Booking', 'isPublicFacing' => true]),
+			'body'    => $interface->fetch('MyAccount/updateBooking.tpl'),
+			'success' => $result['success'],
+		];
+	}
+
+	/** @noinspection PhpUnused */
+	function confirmCancelBooking(): array {
+		$this->requireLoggedInUser(null, 'You must be logged in to cancel a booking. Please close this dialog and login again.');
+		$this->checkRequiredParameters(['userId', 'bookingId']);
+		$userId    = $_REQUEST['userId'];
+		$bookingId = $_REQUEST['bookingId'];
+		$cancelButtonLabel = translate(['text' => 'Confirm Cancel Booking', 'isPublicFacing' => true]);
+		return [
+			'title'   => translate(['text' => 'Cancel Booking', 'isPublicFacing' => true]),
+			'body'    => translate(['text' => 'Are you sure you want to cancel this booking?', 'isPublicFacing' => true]),
+			'buttons' => "<button type='button' class='tool btn btn-primary confirmCancelButton' onclick='AspenDiscovery.Account.cancelBooking(\"$userId\", \"$bookingId\")'>$cancelButtonLabel</button>",
+		];
+	}
+
+	/** @noinspection PhpUnused */
+	function cancelBooking(): array {
+		$this->requireLoggedInUser(null, 'You must be logged in to cancel a booking. Please close this dialog and login again.');
+		$this->checkRequiredParameters(['bookingId', 'userId']);
+		$bookingId = (int)$_REQUEST['bookingId'];
+		$userId  = $_REQUEST['userId'];
+		$activeUser = UserAccount::getLoggedInUser();
+		$user    = $activeUser->getUserReferredTo($userId);
+
+		if ($user === false) {
+			$result = $this->failureResult('Cancel Booking', translate(['text' => 'You do not have access to cancel bookings for the supplied user.', 'isPublicFacing' => true]));
+		} else {
+			$result = $user->cancelBooking($bookingId);
+		}
+
+		global $interface;
+		$interface->assign('cancelResults', $result);
+
+		return [
+			'title'   => translate(['text' => 'Cancel Booking', 'isPublicFacing' => true]),
+			'body'    => $interface->fetch('MyAccount/cancelBooking.tpl'),
+			'success' => $result['success'],
+		];
+	}
+
 	private function getVendor($sourceId) : string {
 		if (str_starts_with($sourceId, 'communico')) {
 			return "communico";

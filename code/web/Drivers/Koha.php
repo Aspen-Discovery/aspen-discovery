@@ -5,6 +5,7 @@
 require_once ROOT_DIR . '/Drivers/KohaApiUserAgent.php';
 require_once ROOT_DIR . '/sys/CurlWrapper.php';
 require_once ROOT_DIR . '/Drivers/AbstractIlsDriver.php';
+require_once ROOT_DIR . '/sys/Utils/DateUtils.php';
 
 class Koha extends AbstractIlsDriver {
 	private mysqli|null $dbConnection = null;
@@ -3204,16 +3205,29 @@ class Koha extends AbstractIlsDriver {
 	}
 
 	private function getRawCirculationRule(string $ruleName, array $context): string|null {
+		return $this->getRawCirculationRules([$ruleName], $context)[$ruleName] ?? null;
+	}
+
+	/**
+	 * Fetch several effective circulation rules in a single API call.
+	 * Koha's circulation_rules endpoint accepts a comma-separated rules list
+	 * and returns them together in content[0], keyed by rule name.
+	 *
+	 * @param string[] $ruleNames
+	 * @return array<string, string|null>
+	 */
+	private function getRawCirculationRules(array $ruleNames, array $context): array {
 		['itemTypeId' => $itemTypeId, 'locationId' => $locationId, 'patronCategoryId' => $patronCategoryId] = $context;
 
-		$endpoint = "/api/v1/circulation_rules?effective=true&item_type_id=$itemTypeId&library_id=$locationId&patron_category_id=$patronCategoryId&rules=$ruleName";
-		$response = $this->kohaApiUserAgent->get($endpoint, "koha.getCirculationRule.$ruleName");
+		$rules = implode(',', $ruleNames);
+		$endpoint = "/api/v1/circulation_rules?effective=true&item_type_id=$itemTypeId&library_id=$locationId&patron_category_id=$patronCategoryId&rules=$rules";
+		$response = $this->kohaApiUserAgent->get($endpoint, 'koha.getCirculationRules');
 
 		if ($response && $response['code'] == 200) {
-			return $response['content'][0][$ruleName] ?? null;
+			return $response['content'][0] ?? [];
 		}
 
-		return null;
+		return [];
 	}
 
 	/**
@@ -9743,6 +9757,376 @@ class Koha extends AbstractIlsDriver {
 
 	public function supportsHyperholdsGrouping(): bool {
 		return $this->isDisplayAddHoldGroupsEnabledInKoha();
+	}
+
+	public function hasBookingsSupport(): bool {
+		global $library;
+		return !empty($library) && $library->enableBookingDisplay;
+	}
+
+	private function getOwningLibrariesForItems(array $itemIds): array {
+		$itemIds = array_unique(array_filter(array_map('intval', $itemIds)));
+		if (empty($itemIds)) {
+			return [];
+		}
+		require_once ROOT_DIR . '/sys/LibraryLocation/Location.php';
+		$this->initDatabaseConnection();
+		$result = mysqli_query($this->dbConnection,
+			'SELECT itemnumber, homebranch FROM items WHERE itemnumber IN (' . implode(',', $itemIds) . ')'
+		);
+		$libraries = [];
+		while ($row = mysqli_fetch_assoc($result)) {
+			$libraries[(int)$row['itemnumber']] = empty($row['homebranch'])
+				? null
+				: Location::getLibraryForCode(strtolower($row['homebranch']));
+		}
+		return $libraries;
+	}
+
+	public function placeBooking(User $patron, string $itemId, string $recordId, string $startDate, string $endDate, ?string $pickupBranch): array {
+		$title = translate(['text' => 'Unable to place booking', 'isPublicFacing' => true]);
+		$denied = $this->denyIfActionDisabled((int)$itemId, 'enableBookingPlacement', 'Booking placement is not enabled for the library that owns this item.');
+		if ($denied) {
+			return $denied + ['title' => $title];
+		}
+
+		$startDateUtc = DateUtils::formatStartOfDayUtc($startDate);
+		$endDateUtc = DateUtils::formatStartOfDayUtc($endDate);
+		if ($startDateUtc === false || $endDateUtc === false) {
+			return ['success' => false, 'title' => $title, 'message' => translate(['text' => 'Invalid booking dates.', 'isPublicFacing' => true])];
+		}
+
+		$windowError = $this->enforceMaxBookingPeriod((int)$itemId, $patron, $startDate, $endDate);
+		if ($windowError !== null) {
+			return ['success' => false, 'title' => $title, 'message' => $windowError];
+		}
+
+		$params = [
+			'patron_id'  => (int)$patron->unique_ils_id,
+			'item_id'    => (int)$itemId,
+			'biblio_id'  => (int)$recordId,
+			'start_date' => $startDateUtc,
+			'end_date'   => $endDateUtc,
+		];
+		if ($pickupBranch !== null) {
+			$params['pickup_library_id'] = $pickupBranch;
+		}
+
+		$response = $this->kohaApiUserAgent->post('/api/v1/bookings', $params, 'koha.placeBooking', [], $this->getBookingApiHeaders($patron));
+
+		if (!$response || $response['code'] !== 201) {
+			$message = translate([
+				'text' => 'Error (%1%) placing booking.',
+				1 => $response['code'] ?? 0,
+				'isPublicFacing' => true,
+			]);
+			if (!empty($response['content']['error'])) {
+				$message .= ' ' . $response['content']['error'];
+			}
+			return ['success' => false, 'title' => $title, 'message' => $message];
+		}
+
+		require_once ROOT_DIR . '/services/BookingService.php';
+		BookingService::storeBooking($patron, $itemId, $recordId, $startDate, $endDate, $pickupBranch, $response['content']);
+
+		return [
+			'success'    => true,
+			'booking_id' => $response['content']['booking_id'],
+			'title'      => translate(['text' => 'Booking placed', 'isPublicFacing' => true]),
+			'message'    => translate(['text' => 'Your booking was placed successfully.', 'isPublicFacing' => true]),
+		];
+	}
+
+
+	public function cancelBooking(User $patron, int $bookingId): array {
+		$denied = $this->denyIfActionDisabled($this->getItemIdForBooking($bookingId), 'enableBookingCancellations', 'Booking cancellation is not enabled for the library that owns this item.');
+		if ($denied) {
+			return $denied;
+		}
+
+		$response = $this->kohaApiUserAgent->delete("/api/v1/bookings/$bookingId", 'koha.cancelBooking', [], $this->getBookingApiHeaders($patron));
+
+		if ($response && $response['code'] === 204) {
+			require_once ROOT_DIR . '/services/BookingService.php';
+			BookingService::deleteStoredBooking($patron, $bookingId);
+			return ['success' => true, 'message' => translate(['text' => 'Your booking has been cancelled.', 'isPublicFacing' => true])];
+		}
+
+		return ['success' => false, 'message' => translate(['text' => 'Unable to cancel your booking.', 'isPublicFacing' => true])];
+	}
+
+	public function updateBooking(User $patron, int $bookingId, string $startDate, string $endDate, ?string $pickupBranch): array {
+		$itemId = $this->getItemIdForBooking($bookingId);
+		$denied = $this->denyIfActionDisabled($itemId, 'enableBookingUpdates', 'Booking updates are not enabled for the library that owns this item.');
+		if ($denied) {
+			return $denied;
+		}
+
+		$startDateUtc = DateUtils::formatStartOfDayUtc($startDate);
+		$endDateUtc = DateUtils::formatStartOfDayUtc($endDate);
+		if ($startDateUtc === false || $endDateUtc === false) {
+			return ['success' => false, 'message' => translate(['text' => 'Invalid booking dates.', 'isPublicFacing' => true])];
+		}
+
+		$windowError = $this->enforceMaxBookingPeriod($itemId, $patron, $startDate, $endDate);
+		if ($windowError !== null) {
+			return ['success' => false, 'message' => $windowError];
+		}
+
+		$params = ['start_date' => $startDateUtc, 'end_date' => $endDateUtc];
+		if ($pickupBranch !== null) {
+			$params['pickup_library_id'] = $pickupBranch;
+		}
+		$response = $this->kohaApiUserAgent->patch("/api/v1/bookings/$bookingId", $params, 'koha.updateBooking', [], $this->getBookingApiHeaders($patron));
+
+		if ($response && $response['code'] === 200) {
+			require_once ROOT_DIR . '/services/BookingService.php';
+			BookingService::updateStoredBooking($patron, $bookingId, $startDate, $endDate, $pickupBranch);
+			return ['success' => true, 'message' => translate(['text' => 'Your booking has been updated.', 'isPublicFacing' => true])];
+		}
+
+		return ['success' => false, 'message' => translate(['text' => 'Unable to update your booking.', 'isPublicFacing' => true])];
+	}
+
+	private function getItemIdForBooking(int $bookingId): ?int {
+		$this->initDatabaseConnection();
+		$row = mysqli_fetch_assoc(mysqli_query($this->dbConnection,
+			"SELECT item_id FROM bookings WHERE booking_id = " . (int)$bookingId . " LIMIT 1"
+		));
+		return empty($row['item_id']) ? null : (int)$row['item_id'];
+	}
+
+	private function denyIfActionDisabled(?int $itemId, string $flag, string $message): ?array {
+		$owningLibrary = empty($itemId) ? null : ($this->getOwningLibrariesForItems([$itemId])[$itemId] ?? null);
+		if (empty($owningLibrary) || empty($owningLibrary->$flag)) {
+			return ['success' => false, 'message' => translate(['text' => $message, 'isPublicFacing' => true])];
+		}
+		return null;
+	}
+
+	private function getBookingApiHeaders(User $patron): array {
+		return ['Accept-Encoding: gzip, deflate', 'x-koha-library: ' . $patron->getHomeLocationCode()];
+	}
+
+	/**
+	 * Circulation-rule context (item type, home branch, patron category) for a
+	 * given item and patron. Returns null when the item can't be found.
+	 */
+	private function getItemCirculationContext(int $itemId, User $patron): ?array {
+		$this->initDatabaseConnection();
+		$row = mysqli_fetch_assoc(mysqli_query($this->dbConnection,
+			"SELECT homebranch, itype FROM items WHERE itemnumber = $itemId LIMIT 1"
+		));
+		if (!$row) {
+			return null;
+		}
+		return [
+			'itemTypeId'       => $row['itype'],
+			'locationId'       => $row['homebranch'],
+			'patronCategoryId' => $patron->patronType,
+		];
+	}
+
+	private function getItemBookingBuffers(int $itemId, User $patron): array {
+		$context = $this->getItemCirculationContext($itemId, $patron);
+		if ($context === null) {
+			return ['lead' => 0, 'trail' => 0];
+		}
+		$rules = $this->getRawCirculationRules(['bookings_lead_period', 'bookings_trail_period'], $context);
+		return [
+			'lead'  => (int)($rules['bookings_lead_period']  ?? 0),
+			'trail' => (int)($rules['bookings_trail_period'] ?? 0),
+		];
+	}
+
+	/**
+	 * Maximum number of days a booking may span, from a rule set already fetched.
+	 *
+	 * Mirrors Koha's place_booking.js:
+	 *   issuelength + (renewalsallowed * renewalperiod)
+	 * renewalperiod falls back to issuelength when unset, matching CalcDateDue.
+	 *
+	 * @param array<string, string|null> $rules
+	 */
+	private function maxBookingPeriodFromRules(array $rules): int {
+		$issueLength     = (int)($rules['issuelength']     ?? 0);
+		$renewalsAllowed = (int)($rules['renewalsallowed'] ?? 0);
+		$renewalPeriod   = ($rules['renewalperiod'] ?? null) === null ? $issueLength : (int)$rules['renewalperiod'];
+
+		return $issueLength + ($renewalsAllowed * $renewalPeriod);
+	}
+
+	/**
+	 * Maximum number of days a booking may span for this item and patron.
+	 * Lead/trail buffers are excluded — see getItemBookingBuffers for those.
+	 */
+	private function calculateMaxBookingPeriod(int $itemId, User $patron): int {
+		$context = $this->getItemCirculationContext($itemId, $patron);
+		if ($context === null) {
+			return 0;
+		}
+		$rules = $this->getRawCirculationRules(['issuelength', 'renewalsallowed', 'renewalperiod'], $context);
+		return $this->maxBookingPeriodFromRules($rules);
+	}
+
+	/**
+	 * Cap a date at the hardduedate rule, matching Koha's CalcDateDue:
+	 * override when hardduedatecompare is 0 (exactly) or -1 (ceiling).
+	 * A compare of 1 is a floor (extends only) and never shortens.
+	 *
+	 * @param array<string, string|null> $rules
+	 */
+	private function applyHardDueDateCap(DateTime $date, array $rules): DateTime {
+		if (empty($rules['hardduedate'])) {
+			return $date;
+		}
+		$hard = new DateTime(substr($rules['hardduedate'], 0, 10));
+		$compare = (int)($rules['hardduedatecompare'] ?? 0);
+		// $hard <=> $date: -1 hard earlier, 0 equal, 1 hard later — mirrors DateTime->compare($hardduedate, $datedue).
+		$cmp = $hard <=> $date;
+		if ($compare === 0 || $compare === $cmp) {
+			return $hard;
+		}
+		return $date;
+	}
+
+	/**
+	 * Cap a date at the patron's expiry when ReturnBeforeExpiry is enabled,
+	 * matching Koha's CalcDateDue.
+	 */
+	private function applyReturnBeforeExpiryCap(DateTime $date, User $patron): DateTime {
+		if (!$this->getKohaSystemPreference('ReturnBeforeExpiry')) {
+			return $date;
+		}
+		$this->initDatabaseConnection();
+		$expiryRow = mysqli_fetch_assoc(mysqli_query($this->dbConnection,
+			"SELECT dateexpiry FROM borrowers WHERE borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->unique_ils_id) . "' LIMIT 1"
+		));
+		if ($expiryRow && !empty($expiryRow['dateexpiry'])) {
+			$expiry = new DateTime($expiryRow['dateexpiry']);
+			if ($expiry < $date) {
+				return $expiry;
+			}
+		}
+		return $date;
+	}
+
+	/**
+	 * Latest permissible booking end date for a given start, as Y-m-d:
+	 * the rule-based period ceiling, clipped by the hardduedate and expiry caps.
+	 */
+	private function calculateMaxBookingEndDate(int $itemId, User $patron, string $startDate): string {
+		$end = new DateTime(substr($startDate, 0, 10));
+
+		$context = $this->getItemCirculationContext($itemId, $patron);
+		if ($context === null) {
+			return $end->format('Y-m-d');
+		}
+
+		// One API call covers both the period and the hard-due-date cap.
+		$rules = $this->getRawCirculationRules(
+			['issuelength', 'renewalsallowed', 'renewalperiod', 'hardduedate', 'hardduedatecompare'],
+			$context
+		);
+		$end->modify('+' . $this->maxBookingPeriodFromRules($rules) . ' days');
+		$end = $this->applyHardDueDateCap($end, $rules);
+		$end = $this->applyReturnBeforeExpiryCap($end, $patron);
+
+		return $end->format('Y-m-d');
+	}
+
+	/**
+	 * Reject a booking whose end date exceeds the allowed window for its start.
+	 * Returns a public-facing error message, or null when the dates are in range.
+	 */
+	private function enforceMaxBookingPeriod(int $itemId, User $patron, string $startDate, string $endDate): ?string {
+		$maxEndDate = $this->calculateMaxBookingEndDate($itemId, $patron, $startDate);
+		if ($endDate > $maxEndDate) {
+			return translate([
+				'text' => 'The booking period is too long. For that start date the latest end date is %1%.',
+				1 => $maxEndDate,
+				'isPublicFacing' => true,
+			]);
+		}
+		return null;
+	}
+
+	/**
+	 * Selection limits for the booking date picker: the maximum span in days,
+	 * and the absolute latest selectable date from the hardduedate/expiry caps.
+	 * Both caps are independent of the chosen start, so the client can combine
+	 * them per selection as min(start + maxPeriod, maxDate) without a round trip.
+	 *
+	 * @return array{maxPeriod: int, maxDate: ?string}
+	 */
+	public function getBookingWindowConstraints(int $itemId, User $patron): array {
+		$context = $this->getItemCirculationContext($itemId, $patron);
+		if ($context === null) {
+			return ['maxPeriod' => 0, 'maxDate' => null];
+		}
+		$rules = $this->getRawCirculationRules(
+			['issuelength', 'renewalsallowed', 'renewalperiod', 'hardduedate', 'hardduedatecompare'],
+			$context
+		);
+
+		// Run the caps against a far-future sentinel to expose the absolute ceiling.
+		$sentinel = new DateTime('9999-12-31');
+		$capped = $this->applyReturnBeforeExpiryCap($this->applyHardDueDateCap($sentinel, $rules), $patron);
+
+		return [
+			'maxPeriod' => $this->maxBookingPeriodFromRules($rules),
+			'maxDate'   => $capped == $sentinel ? null : $capped->format('Y-m-d'),
+		];
+	}
+
+	public function getBookedRanges(int $itemId, User $patron): array {
+		['lead' => $lead, 'trail' => $trail] = $this->getItemBookingBuffers($itemId, $patron);
+		return $this->buildBookedRanges($this->getBookingsForItem($itemId, $patron), $lead, $trail);
+	}
+
+	private function getBookingsForItem(int $itemId, User $patron): array {
+		$extraHeaders = ['Accept-Encoding: gzip, deflate', 'x-koha-library: ' . $patron->getHomeLocationCode()];
+		$response = $this->kohaApiUserAgent->get('/api/v1/bookings?item_id=' . $itemId, 'koha.getBookingsForItem', [], $extraHeaders);
+		if (!$response || $response['code'] !== 200) {
+			return [];
+		}
+		return $response['content'];
+	}
+
+	private function buildBookedRanges(array $bookings, int $lead, int $trail): array {
+		$ranges = [];
+		foreach ($bookings as $booking) {
+			$start = new DateTime(substr($booking['start_date'], 0, 10));
+			$end   = new DateTime(substr($booking['end_date'], 0, 10));
+			if ($lead > 0) {
+				$start->modify("-{$lead} days");
+			}
+			if ($trail > 0) {
+				$end->modify("+{$trail} days");
+			}
+			$ranges[] = ['start' => $start->format('Y-m-d'), 'end' => $end->format('Y-m-d')];
+		}
+		return $ranges;
+	}
+
+	public function getBookingsForUser(User $patron): array {
+		$extraHeaders = ['Accept-Encoding: gzip, deflate', 'x-koha-library: ' . $patron->getHomeLocationCode()];
+		$response = $this->kohaApiUserAgent->get('/api/v1/bookings?patron_id=' . urlencode($patron->unique_ils_id), 'koha.getBookingsForUser', [], $extraHeaders);
+
+		if (!$response || $response['code'] !== 200) {
+			return [];
+		}
+
+		require_once ROOT_DIR . '/services/BookingService.php';
+		$bookings = BookingService::syncAndMapBookings($patron, $response['content']);
+		$owningLibraries = $this->getOwningLibrariesForItems(array_column($bookings, 'itemId'));
+		foreach ($bookings as &$booking) {
+			$owningLibrary = $owningLibraries[(int)$booking['itemId']] ?? null;
+			$booking['canUpdate'] = !empty($owningLibrary) && !empty($owningLibrary->enableBookingUpdates);
+			$booking['canCancel'] = !empty($owningLibrary) && !empty($owningLibrary->enableBookingCancellations);
+		}
+		unset($booking);
+		return $bookings;
 	}
 
 	private function isDisplayAddHoldGroupsEnabledInKoha(): bool {

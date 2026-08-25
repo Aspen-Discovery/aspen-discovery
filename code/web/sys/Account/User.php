@@ -2720,6 +2720,38 @@ class User extends DataObject {
 		return $result;
 	}
 
+	public function getBookings(): array {
+		global $library;
+		if (empty($library) || !$library->enableBookingDisplay) {
+			return [];
+		}
+		return $this->getCatalogDriver()->getBookingsForUser($this);
+	}
+
+	public function placeBooking(string $itemId, string $recordId, string $startDate, string $endDate, ?string $pickupBranch): array {
+		global $library;
+		if (empty($library) || !$library->enableBookingDisplay) {
+			return ['success' => false, 'message' => translate(['text' => 'Bookings are not enabled for your library.', 'isPublicFacing' => true])];
+		}
+		return $this->getCatalogDriver()->placeBooking($this, $itemId, $recordId, $startDate, $endDate, $pickupBranch);
+	}
+
+	public function updateBooking(int $bookingId, string $startDate, string $endDate, ?string $pickupBranch): array {
+		global $library;
+		if (empty($library) || !$library->enableBookingDisplay) {
+			return ['success' => false, 'message' => translate(['text' => 'Bookings are not enabled for your library.', 'isPublicFacing' => true])];
+		}
+		return $this->getCatalogDriver()->updateBooking($this, $bookingId, $startDate, $endDate, $pickupBranch);
+	}
+
+	public function cancelBooking(int $bookingId): array {
+		global $library;
+		if (empty($library) || !$library->enableBookingDisplay) {
+			return ['success' => false, 'message' => translate(['text' => 'Bookings are not enabled for your library.', 'isPublicFacing' => true])];
+		}
+		return $this->getCatalogDriver()->cancelBooking($this, $bookingId);
+	}
+
 	/**
 	 * Get the user referred to by id. Will return false if the specified patron id is not
 	 * the id of this user or one of the users that is linked to this user.

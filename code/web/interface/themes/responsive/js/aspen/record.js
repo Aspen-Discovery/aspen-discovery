@@ -58,6 +58,43 @@ AspenDiscovery.Record = (function () {
 			return false;
 		},
 
+		submitBookingForm: function (button) {
+			const form = document.getElementById('place-booking-form');
+			const data = $(form).serialize();
+			AspenDiscovery.toggleButtonSpinner(button, true);
+			$.getJSON(Globals.path + '/Record/AJAX?method=placeBooking&' + data, function (result) {
+				AspenDiscovery.toggleButtonSpinner(button, false);
+				AspenDiscovery.showMessage(result.title, result.message);
+			}).fail(function () {
+				AspenDiscovery.toggleButtonSpinner(button, false);
+				AspenDiscovery.ajaxFail.apply(this, arguments);
+			});
+			return false;
+		},
+
+		showPlaceBooking: function (id, button) {
+			if (Globals.loggedIn) {
+				AspenDiscovery.toggleButtonSpinner(button, true);
+				const url = Globals.path + '/Record/' + id + '/AJAX?method=getBookingForm&id=' + encodeURIComponent(id);
+				$.getJSON(url, function (data) {
+					AspenDiscovery.toggleButtonSpinner(button, false);
+					if (data.success) {
+						AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+					} else {
+						AspenDiscovery.showMessage(data.title, data.message);
+					}
+				}).fail(function () {
+					AspenDiscovery.toggleButtonSpinner(button, false);
+					AspenDiscovery.ajaxFail.apply(this, arguments);
+				});
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function () {
+					AspenDiscovery.Record.showPlaceBooking(id, button);
+				}, false);
+			}
+			return false;
+		},
+
 		showLocalIllRequest: function (module, source, id, volume) {
 			if (Globals.loggedIn) {
 				document.body.style.cursor = "wait";
@@ -855,6 +892,72 @@ AspenDiscovery.Record = (function () {
 				}
 			}).fail(function(jqXHR, textStatus, errorThrown) {
 				AspenDiscovery.ajaxFail(jqXHR, textStatus, errorThrown);
+			});
+		},
+
+		initBookingForm: function () {
+			const calendar = AspenDiscovery.Record.getBookingCalendar();
+			if (!calendar) {
+				return;
+			}
+			const tomorrow = new Date();
+			tomorrow.setDate(tomorrow.getDate() + 1);
+			tomorrow.setHours(0, 0, 0, 0);
+
+			AspenDiscovery.DateRangePicker.init(calendar, {
+				minDate: tomorrow,
+			}).then(function () {
+				document.getElementById('booking-item-select')?.addEventListener('change', function () {
+					AspenDiscovery.Record.clearBookingDateInputs();
+					AspenDiscovery.Record.loadItemBookingAvailability(this.value);
+				});
+				AspenDiscovery.Record.loadItemBookingAvailability(AspenDiscovery.Record.getSelectedBookingItemId());
+			}).catch(function () {
+				const error = document.createElement('span');
+				error.className = 'text-danger';
+				error.textContent = 'Unable to load the availability calendar.';
+				calendar.replaceWith(error);
+			});
+		},
+
+		getBookingCalendar: function () {
+			return document.getElementById('booking-calendar');
+		},
+
+		getSelectedBookingItemId: function () {
+			const source = document.getElementById('booking-item-select') ?? document.getElementById('current-item-id');
+			return source?.value ?? null;
+		},
+
+		clearBookingDateInputs: function () {
+			const calendar = AspenDiscovery.Record.getBookingCalendar();
+			if (calendar) {
+				AspenDiscovery.DateRangePicker.clear(calendar);
+			}
+		},
+
+		loadItemBookingAvailability: function (itemId) {
+			const calendar = AspenDiscovery.Record.getBookingCalendar();
+			if (!itemId || !calendar) {
+				return;
+			}
+
+			const loading = document.getElementById('booking-availability-loading');
+			if (loading) {
+				loading.hidden = false;
+			}
+
+			$.getJSON(Globals.path + '/Record/AJAX?method=getItemBookedDates&itemId=' + encodeURIComponent(itemId), function (data) {
+				const constraints = data.success ? data.constraints : null;
+				AspenDiscovery.DateRangePicker.update(calendar, {
+					maxDate:        constraints?.maxDate ? new Date(constraints.maxDate + 'T00:00:00') : null,
+					maxRangeDays:   constraints?.maxPeriod ? parseInt(constraints.maxPeriod, 10) : 0,
+					disabledRanges: data.success ? data.bookedDates : [],
+				});
+			}).fail(AspenDiscovery.ajaxFail).always(function () {
+				if (loading) {
+					loading.hidden = true;
+				}
 			});
 		},
 	};

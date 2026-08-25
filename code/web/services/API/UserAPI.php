@@ -3728,6 +3728,247 @@ class UserAPI extends AbstractAPI {
 		}
 	}
 
+	/**
+	 * Get a list of bookings the patron has placed within the ILS along with details about each booking. Bookings reserve a specific item for a date range.
+	 *
+	 * Parameters:
+	 * <ul>
+	 * <li>username - The barcode of the user.</li>
+	 * <li>password - The pin number for the user.</li>
+	 * </ul>
+	 *
+	 * Returns:
+	 * <ul>
+	 * <li>success - true if the account is valid and bookings could be loaded, false if not.</li>
+	 * <li>bookings - an array containing all of the bookings for the user. Each booking has id, recordId, itemId, startDate, endDate, status, pickupLibraryId, and (when available) title, coverUrl, linkUrl.</li>
+	 * </ul>
+	 *
+	 * Sample Call:
+	 * <code>
+	 * https://aspenurl/API/UserAPI?method=getPatronBookings&username=23025003575917&password=1234
+	 * </code>
+	 *
+	 * @noinspection PhpUnused
+	 */
+	function getPatronBookings() : array {
+		$user = $this->requireBookingsApiUser(true);
+		if (is_array($user)) return $user;
+
+		require_once ROOT_DIR . '/services/BookingService.php';
+		return [
+			'success' => true,
+			'bookings' => BookingService::enrichBookings($user, $user->getBookings()),
+		];
+	}
+
+	/**
+	 * Place a booking for a specific item over a date range. Bookings are different from holds: they reserve an item for a defined start/end window.
+	 *
+	 * Parameters:
+	 * <ul>
+	 * <li>username - The barcode of the user.</li>
+	 * <li>password - The pin number for the user.</li>
+	 * <li>recordId - The id of the bibliographic record (with or without source prefix).</li>
+	 * <li>itemId - The id of the specific item to book.</li>
+	 * <li>startDate - Start date of the booking in YYYY-MM-DD format.</li>
+	 * <li>endDate - End date of the booking in YYYY-MM-DD format.</li>
+	 * <li>pickupBranch - Optional pickup library code.</li>
+	 * <li>notes - Optional patron notes.</li>
+	 * </ul>
+	 *
+	 * Returns:
+	 * <ul>
+	 * <li>success - true if the booking was placed.</li>
+	 * <li>title - Result title (e.g. "Booking placed").</li>
+	 * <li>message - Human-readable status message.</li>
+	 * <li>booking_id - The new booking id when successful.</li>
+	 * </ul>
+	 *
+	 * Sample Call:
+	 * <code>
+	 * https://aspenurl/API/UserAPI?method=placeBooking&username=23025003575917&password=1234&recordId=12345&itemId=67890&startDate=2026-06-01&endDate=2026-06-08&pickupBranch=MAIN
+	 * </code>
+	 *
+	 * @noinspection PhpUnused
+	 */
+	function placeBooking() : array {
+		$user = $this->requireBookingsApiUser();
+		if (is_array($user)) return $user;
+
+		foreach (['recordId', 'itemId', 'startDate', 'endDate'] as $required) {
+			if (empty($_REQUEST[$required])) {
+				return [
+					'success' => false,
+					'message' => "$required must be provided",
+				];
+			}
+		}
+
+		$recordId = $_REQUEST['recordId'];
+		$shortId = strpos($recordId, ':') > 0 ? explode(':', $recordId, 2)[1] : $recordId;
+		$itemId = $_REQUEST['itemId'];
+		$startDate = $_REQUEST['startDate'];
+		$endDate = $_REQUEST['endDate'];
+		$pickupBranch = !empty($_REQUEST['pickupBranch']) ? $_REQUEST['pickupBranch'] : null;
+
+		return $user->placeBooking($itemId, $shortId, $startDate, $endDate, $pickupBranch);
+	}
+
+	/**
+	 * Cancel a booking the patron has placed within the ILS.
+	 *
+	 * Parameters:
+	 * <ul>
+	 * <li>username - The barcode of the user.</li>
+	 * <li>password - The pin number for the user.</li>
+	 * <li>bookingId - The ILS booking id to cancel.</li>
+	 * </ul>
+	 *
+	 * Returns:
+	 * <ul>
+	 * <li>success - true if the booking was cancelled.</li>
+	 * <li>message - Human-readable status message.</li>
+	 * </ul>
+	 *
+	 * Sample Call:
+	 * <code>
+	 * https://aspenurl/API/UserAPI?method=cancelBooking&username=23025003575917&password=1234&bookingId=42
+	 * </code>
+	 *
+	 * @noinspection PhpUnused
+	 */
+	function cancelBooking() : array {
+		$user = $this->requireBookingsApiUser();
+		if (is_array($user)) return $user;
+
+		if (empty($_REQUEST['bookingId'])) {
+			return [
+				'success' => false,
+				'message' => 'bookingId must be provided',
+			];
+		}
+
+		return $user->cancelBooking((int)$_REQUEST['bookingId']);
+	}
+
+	/**
+	 * Update an existing booking. Allows changing the start/end dates and pickup library.
+	 *
+	 * Parameters:
+	 * <ul>
+	 * <li>username - The barcode of the user.</li>
+	 * <li>password - The pin number for the user.</li>
+	 * <li>bookingId - The ILS booking id to update.</li>
+	 * <li>startDate - New start date in YYYY-MM-DD format.</li>
+	 * <li>endDate - New end date in YYYY-MM-DD format.</li>
+	 * <li>pickupBranch - Optional new pickup library code.</li>
+	 * </ul>
+	 *
+	 * Returns:
+	 * <ul>
+	 * <li>success - true if the booking was updated.</li>
+	 * <li>message - Human-readable status message.</li>
+	 * </ul>
+	 *
+	 * Sample Call:
+	 * <code>
+	 * https://aspenurl/API/UserAPI?method=updateBooking&username=23025003575917&password=1234&bookingId=42&startDate=2026-06-02&endDate=2026-06-09
+	 * </code>
+	 *
+	 * @noinspection PhpUnused
+	 */
+	function updateBooking() : array {
+		$user = $this->requireBookingsApiUser();
+		if (is_array($user)) return $user;
+
+		foreach (['bookingId', 'startDate', 'endDate'] as $required) {
+			if (empty($_REQUEST[$required])) {
+				return [
+					'success' => false,
+					'message' => "$required must be provided",
+				];
+			}
+		}
+
+		$pickupBranch = !empty($_REQUEST['pickupBranch']) ? $_REQUEST['pickupBranch'] : null;
+		return $user->updateBooking((int)$_REQUEST['bookingId'], $_REQUEST['startDate'], $_REQUEST['endDate'], $pickupBranch);
+	}
+
+	/**
+	 * Get the list of bookable items on a record. Used to populate booking item picker UIs in clients (e.g. LiDA). Also returns the eligible pickup locations for the calling user.
+	 *
+	 * Parameters:
+	 * <ul>
+	 * <li>username - The barcode of the user.</li>
+	 * <li>password - The pin number for the user.</li>
+	 * <li>recordId - The bibliographic record id (with or without source prefix).</li>
+	 * </ul>
+	 *
+	 * Returns:
+	 * <ul>
+	 * <li>success - true if the record was found and bookings are enabled.</li>
+	 * <li>items - array of bookable copies (itemId, callNumber, shelfLocation, etc.).</li>
+	 * <li>pickupLocations - array of valid pickup locations for the user.</li>
+	 * </ul>
+	 *
+	 * Sample Call:
+	 * <code>
+	 * https://aspenurl/API/UserAPI?method=getBookableItems&username=23025003575917&password=1234&recordId=12345
+	 * </code>
+	 *
+	 * @noinspection PhpUnused
+	 */
+	function getBookableItems() : array {
+		$user = $this->requireBookingsApiUser();
+		if (is_array($user)) return $user;
+
+		if (empty($_REQUEST['recordId'])) {
+			return [
+				'success' => false,
+				'message' => 'recordId must be provided',
+			];
+		}
+
+		$recordId = $_REQUEST['recordId'];
+		$shortId = strpos($recordId, ':') > 0 ? explode(':', $recordId, 2)[1] : $recordId;
+
+		require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+		$marcRecord = new MarcRecordDriver($shortId);
+		if (!$marcRecord->isValid()) {
+			return [
+				'success' => false,
+				'message' => translate(['text' => 'Record not found.', 'isPublicFacing' => true]),
+			];
+		}
+
+		$catalogDriver = $marcRecord->getCatalogDriver();
+		if (!$catalogDriver || !$catalogDriver->hasBookingsSupport()) {
+			return [
+				'success' => false,
+				'message' => translate(['text' => 'Bookings are not supported for this record.', 'isPublicFacing' => true]),
+			];
+		}
+
+		require_once ROOT_DIR . '/services/BookingService.php';
+		$bookableItems = BookingService::filterBookableForPlacement($marcRecord->getCopies());
+		require_once ROOT_DIR . '/sys/LibraryLocation/Location.php';
+		$location = new Location();
+		$pickupLocations = $location->getPickupBranches($user);
+
+		return [
+			'success' => true,
+			'items' => $bookableItems,
+			'pickupLocations' => array_map(static function ($pickup) {
+				$loc = is_object($pickup) && property_exists($pickup, 'location') ? $pickup->location : $pickup;
+				return [
+					'locationId' => $loc->locationId ?? null,
+					'code' => $loc->code ?? null,
+					'displayName' => $loc->displayName ?? null,
+				];
+			}, $pickupLocations),
+		];
+	}
+
 	/** @noinspection PhpUnused */
 	function submitVdxRequest() : array {
 		return [
@@ -4999,6 +5240,28 @@ class UserAPI extends AbstractAPI {
 			}
 			return $user;
 		}
+	}
+
+	private function requireBookingsApiUser(bool $emptyOnDisabled = false) : User|array {
+		$user = $this->getUserForApiCall();
+		if (!$user || $user instanceof AspenError) {
+			return [
+				'success' => false,
+				'message' => 'Login unsuccessful',
+			];
+		}
+
+		global $library;
+		if (empty($library) || !$library->enableBookingDisplay) {
+			return $emptyOnDisabled
+				? ['success' => true, 'bookings' => []]
+				: [
+					'success' => false,
+					'message' => translate(['text' => 'Bookings are not enabled for your library.', 'isPublicFacing' => true]),
+				];
+		}
+
+		return $user;
 	}
 
 	/** @noinspection PhpUnused */

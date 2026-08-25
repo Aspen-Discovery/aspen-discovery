@@ -1,0 +1,90 @@
+/* Cally ships almost unstyled by design. This sizes the calendar to ~80% of the
+   modal, centred, with square day cells (proportions preserved) */
+
+.date-range-picker {
+	container-type: inline-size;
+	width:100%;
+}
+
+.date-range-picker calendar-range {
+	width:100%;
+}
+
+.date-range-picker calendar-range::part(months) {
+	display: flex;
+	flex-wrap: wrap;
+}
+
+/* Day cells ignore font-size, so size them geometrically */
+.date-range-picker calendar-month {
+	--color-accent: var(--primary, #2b6cb0);
+	--color-text-on-accent: #fff;
+	margin: auto;
+}
+
+.date-range-picker calendar-month::part(button) {
+	width: 10cqi;
+	height: 10cqi;
+	font-size: 2.5cqi;
+	border-radius: 3px;
+}
+
+/* unavailable days. */
+.date-range-picker calendar-month::part(disallowed) {
+	background: #ffe8cc;
+	color: #b35a00;
+	text-decoration: line-through;
+}
+
+/* Square the range interior, round only the ends. */
+.date-range-picker calendar-month::part(range-inner) {
+	border-radius: 0;
+}
+
+.date-range-picker calendar-month::part(range-start) {
+	border-start-end-radius: 0;
+	border-end-end-radius: 0;
+}
+
+.date-range-picker calendar-month::part(range-end) {
+	border-start-start-radius: 0;
+	border-end-start-radius: 0;
+}
+
+.date-range-picker calendar-month::part(heading) {
+	font-size: 4cqi;
+}
+
+.date-range-picker calendar-month::part(range-start range-end) {
+	border-radius: 3px;
+}
+
+/* Previous / next month buttons. */
+.date-range-picker calendar-range::part(button) {
+	width: 26px;
+	height: 26px;
+	border: 1px solid #adb5bd;
+	background-color: #fff;
+	border-radius: 3px;
+}
+
+/* Labelled From/To fields. */
+.date-range-picker-fields {
+	display: flex;
+	align-items: flex-end;
+	gap: .75rem;
+	flex-wrap: wrap;
+	margin-bottom: 1rem;
+}
+
+.date-range-picker-field {
+	flex: 1 1 140px;
+	min-width: 130px;
+}
+
+.date-range-picker-sep {
+	padding-bottom: .45rem;
+	color: #666;
+	font-size: 1.2em;
+	line-height: 2.2;
+}
