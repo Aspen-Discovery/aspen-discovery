@@ -9481,18 +9481,18 @@ AspenDiscovery.Admin = (function () {
 			const selectedLabel = selectedOption ? selectedOption.text.trim() : '';
 
 			const patronTypeOption = assignSelect.querySelector('option[value="patronType"]');
-			const roleOption = assignSelect.querySelector('option[value="role"]');
+			const accountProfileOption = assignSelect.querySelector('option[value="accountProfile"]');
 
-			if (!patronTypeOption || !roleOption) return;
+			if (!patronTypeOption || !accountProfileOption) return;
 
 			if (selectedLabel.toLowerCase() === 'admin') {
 				// Disable patronType and force role when account profile label is "admin"
 				patronTypeOption.disabled = true;
-				assignSelect.value = 'role';
 
 				// If value assignment fails for any reason, force via selected flag
-				if (assignSelect.value !== 'role') {
-					roleOption.selected = true;
+				if (assignSelect.value !== 'role' && assignSelect.value !== 'accountProfile') {
+					assignSelect.value = 'accountProfile';
+					accountProfileOption.selected = true;
 				}
 
 				// Trigger change in case other UI logic depends on this select
