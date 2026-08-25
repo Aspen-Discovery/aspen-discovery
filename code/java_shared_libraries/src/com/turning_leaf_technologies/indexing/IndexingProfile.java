@@ -46,7 +46,6 @@ public class IndexingProfile extends BaseIndexingSettings {
 	private char collectionSubfield;
 	private char shelvingLocationSubfield;
 	private char yearToDateCheckoutsSubfield;
-	private char priceSubfield;
 	private char totalCheckoutsSubfield;
 	private boolean useItemBasedCallNumbers;
 	private String bibCallNumberFields;
