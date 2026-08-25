@@ -26,7 +26,7 @@
 		<div class="result-label col-sm-4 col-xs-12">{translate text="Publisher" isPublicFacing=true} </div>
 		<div class="result-value col-sm-8 col-xs-12">
 			{if !empty($summPublisher)}
-				{$summPublisher}
+				<a href='/Search/Results?filter[]=publisherStr:"{$summPublisher|escape:"url"}"'>{$summPublisher|highlight}</a>
 			{elseif $alwaysShowSearchResultsMainDetails}
 				{translate text="Not Supplied" isPublicFacing=true}
 			{/if}
