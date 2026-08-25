@@ -2795,9 +2795,9 @@ AspenDiscovery.Account = (function () {
 			$.getJSON(url, function (data) {
 				document.body.style.cursor = 'default';
 				if (data.success) {
-					$('#bookings-placeholder').html(data.bookings);
+					$('#bookings-list').html(data.bookings);
 				} else {
-					$('#bookings-placeholder').html(data.message);
+					$('#bookings-list').html(data.message);
 				}
 			}).fail(AspenDiscovery.ajaxFail);
 			return false;
@@ -16151,28 +16151,39 @@ AspenDiscovery.Account.ReadingHistory = (function(){
 	};
 }(AspenDiscovery.Account.ReadingHistory || {}));
 
+/*
+ * Reusable inline date-range picker on the Cally web components. The shell is
+ * authored in Record/date-range-picker.tpl; this module lazy-loads Cally and
+ * drives the per-selection state. Cally was chosen over flatpickr for accessibility:
+ * an ARIA grid with roving tabindex, fully keyboard operable, screen-reader friendly
+ *
+ * Usage:
+ *   const picker = await AspenDiscovery.DateRangePicker.init(rangeEl, config);
+ *   AspenDiscovery.DateRangePicker.update(picker, window);   // per selection
+ * init() wires the element once and reads its `locale` attribute; update()
+ * mutates the selectable window in place — no teardown/re-render.
+ *
+ * init(config):   startInput / endInput          submitted, always ISO (Y-m-d)
+ *                 start/endDisplayInput          visible, locale-formatted, never sent
+ *                 minDate                        earliest selectable (Date|ISO); default today
+ * update(window): maxDate                        latest selectable (Date|ISO)
+ *                 disabledRanges                 [{start, end}] (Y-m-d), unavailable
+ *                 maxRangeDays                   cap on a single selection's length
+ *
+ * disabledRanges / maxRangeDays are client-side UX guardrails only — the server
+ * must re-validate. maxRangeDays is a commit-time backstop, not a live cap.
+ * init() rejects if the Cally CDN is unreachable; callers surface that.
+ */
 AspenDiscovery.DateRangePicker = {
-	COMPONENT_CSS_URL: '/interface/themes/responsive/css/date-range-picker.css',
-	FLATPICKR_CSS_URL: 'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css',
-	FLATPICKR_JS_URL: 'https://cdn.jsdelivr.net/npm/flatpickr',
+	CALLY_JS_URL: 'https://unpkg.com/cally',
 
 	_libraryPromise: null,
-
-	ensureStylesheet: function (url, marker) {
-		if (document.querySelector('link[' + marker + ']')) {
-			return;
-		}
-		const link = document.createElement('link');
-		link.rel = 'stylesheet';
-		link.href = url;
-		link.setAttribute(marker, 'true');
-		document.head.appendChild(link);
-	},
 
 	loadScript: function (url) {
 		return new Promise(function (resolve, reject) {
 			const script = document.createElement('script');
 			script.src = url;
+			script.type = 'module';
 			script.onload = resolve;
 			script.onerror = reject;
 			document.head.appendChild(script);
@@ -16180,91 +16191,141 @@ AspenDiscovery.DateRangePicker = {
 	},
 
 	loadLibrary: async function () {
-		const D = AspenDiscovery.DateRangePicker;
-		// flatpickr first so the component stylesheet wins on any equal-specificity tie.
-		D.ensureStylesheet(D.FLATPICKR_CSS_URL, 'data-flatpickr-css');
-		D.ensureStylesheet(D.COMPONENT_CSS_URL, 'data-date-range-picker-css');
-		if (typeof flatpickr !== 'undefined') {
-			return;
+		if (!customElements.get('calendar-range')) {
+			if (!this._libraryPromise) {
+				this._libraryPromise = this.loadScript(this.CALLY_JS_URL);
+			}
+			await this._libraryPromise;
 		}
-		if (!D._libraryPromise) {
-			D._libraryPromise = D.loadScript(D.FLATPICKR_JS_URL);
+		await customElements.whenDefined('calendar-range');
+		await customElements.whenDefined('calendar-month');
+	},
+
+	toIsoDate: function (value) {
+		if (!value) {
+			return '';
 		}
-		await D._libraryPromise;
+		const date = value instanceof Date ? value : new Date(value);
+		if (Number.isNaN(date.getTime())) {
+			return '';
+		}
+		const month = String(date.getMonth() + 1).padStart(2, '0');
+		const day = String(date.getDate()).padStart(2, '0');
+		return date.getFullYear() + '-' + month + '-' + day;
+	},
+
+	parseIsoDate: function (iso) {
+		return new Date(iso + 'T00:00:00');
 	},
 
 	readRangeFromInputs: function (startInput, endInput) {
-		const range = [];
-		if (startInput && startInput.value) range.push(startInput.value);
-		if (endInput && endInput.value) range.push(endInput.value);
+		return [startInput, endInput].filter(input => input && input.value).map(input => input.value);
+	},
+
+	displayFormatterFor: function (displayLocale) {
+		if (!displayLocale) {
+			return date => this.toIsoDate(date);
+		}
+		const formatter = new Intl.DateTimeFormat(displayLocale, { dateStyle: 'medium' });
+		return date => formatter.format(date);
+	},
+
+	writeSelectionToInputs: function (config, startIso, endIso, formatDisplay) {
+		const write = (input, value) => {
+			if (input) {
+				input.value = value;
+			}
+		};
+		// Submitted fields always carry ISO — the wire contract. Display fields carry
+		// the locale-facing rendering and are never sent to the server.
+		write(config.startInput, startIso || '');
+		write(config.endInput, endIso || '');
+		write(config.startDisplayInput, startIso ? formatDisplay(this.parseIsoDate(startIso)) : '');
+		write(config.endDisplayInput, endIso ? formatDisplay(this.parseIsoDate(endIso)) : '');
+	},
+
+	clampRangeEnd: function (startIso, endIso, maxRangeDays) {
+		if (maxRangeDays <= 0 || !startIso || !endIso) {
+			return endIso;
+		}
+		const start = this.parseIsoDate(startIso);
+		const spanDays = Math.round((this.parseIsoDate(endIso) - start) / 86400000);
+		if (spanDays <= maxRangeDays) {
+			return endIso;
+		}
+		const capped = new Date(start.getTime());
+		capped.setDate(capped.getDate() + maxRangeDays);
+		return this.toIsoDate(capped);
+	},
+
+	init: async function (range, config) {
+		await this.loadLibrary();
+
+		const root = range.closest('.date-range-picker');
+		const startInput = root.querySelector('[data-date-role="start-value"]');
+		const endInput = root.querySelector('[data-date-role="end-value"]');
+		range._dateRangeConfig = {
+			startInput: startInput,
+			endInput: endInput,
+			startDisplayInput: root.querySelector('[data-date-role="start"]'),
+			endDisplayInput: root.querySelector('[data-date-role="end"]'),
+			formatDisplay: this.displayFormatterFor(range.getAttribute('locale')),
+			disabledRanges: [],
+			maxRangeDays: 0,
+		};
+
+		range.setAttribute('min', this.toIsoDate(config.minDate) || this.toIsoDate(new Date()));
+		range.isDateDisallowed = () => false;
+
+		const initialRange = this.readRangeFromInputs(startInput, endInput);
+		if (initialRange.length === 2) {
+			range.value = initialRange.join('/');
+		}
+
+		range.addEventListener('change', () => this.onChange(range));
 		return range;
 	},
 
-	writeSelectionToInputs: function (config, selectedDates) {
-		if (config.startInput) {
-			config.startInput.value = selectedDates[0] ? flatpickr.formatDate(selectedDates[0], 'Y-m-d') : '';
+	clear: function (range) {
+		const config = range._dateRangeConfig;
+		if (!config) {
+			return;
 		}
-		if (config.endInput) {
-			config.endInput.value = selectedDates[1] ? flatpickr.formatDate(selectedDates[1], 'Y-m-d') : '';
+		range.value = '';
+		[config.startInput, config.endInput, config.startDisplayInput, config.endDisplayInput]
+			.forEach(input => input && (input.value = ''));
+	},
+
+	update: function (range, availability) {
+		const config = range._dateRangeConfig;
+		if (!config) {
+			return;
+		}
+		const disabledRanges = availability.disabledRanges || [];
+		config.disabledRanges = disabledRanges;
+		config.maxRangeDays = availability.maxRangeDays || 0;
+
+		// Reassigning the property re-runs Cally's disable check and re-renders.
+		range.isDateDisallowed = (date) => {
+			const iso = this.toIsoDate(date);
+			return disabledRanges.some(disabled => iso >= disabled.start && iso <= disabled.end);
+		};
+
+		if (availability.maxDate) {
+			range.setAttribute('max', this.toIsoDate(availability.maxDate));
+		} else {
+			range.removeAttribute('max');
 		}
 	},
 
-	capEndDateWhileSelecting: function (instance, selectedDates, maxRangeDays, absoluteMax) {
-		// While only the start is chosen, cap the selectable end at min(start + maxRangeDays,
-		// absoluteMax); restore the ceiling once the range completes so the next start isn't stuck.
-		if (selectedDates.length === 1 && maxRangeDays > 0) {
-			const limit = new Date(selectedDates[0].getTime());
-			limit.setDate(limit.getDate() + maxRangeDays);
-			instance.set('maxDate', absoluteMax && absoluteMax < limit ? absoluteMax : limit);
-		} else if (selectedDates.length !== 1) {
-			instance.set('maxDate', absoluteMax || undefined);
+	onChange: function (range) {
+		const config = range._dateRangeConfig;
+		const [startIso, rawEndIso] = range.value ? range.value.split('/') : [];
+		const endIso = this.clampRangeEnd(startIso, rawEndIso, config.maxRangeDays);
+		if (endIso !== rawEndIso) {
+			range.value = startIso + '/' + endIso;
 		}
-	},
-
-	create: function (config) {
-		const D = AspenDiscovery.DateRangePicker;
-		const disabledRanges = config.disabledRanges || [];
-		const maxRangeDays = config.maxRangeDays || 0;
-		const absoluteMax = config.maxDate || null;
-		const initialRange = config.initialRange || D.readRangeFromInputs(config.startInput, config.endInput);
-
-		function isWithinDisabledRange(date) {
-			const iso = flatpickr.formatDate(date, 'Y-m-d');
-			return disabledRanges.some(function (range) {
-				return iso >= range.start && iso <= range.end;
-			});
-		}
-
-		config.container.classList.add('date-range-picker');
-		const anchor = document.createElement('input');
-		anchor.type = 'hidden';
-		config.container.appendChild(anchor);
-
-		return flatpickr(anchor, {
-			mode: 'range',
-			inline: true,
-			dateFormat: 'Y-m-d',
-			minDate: config.minDate || 'today',
-			maxDate: absoluteMax || undefined,
-			defaultDate: initialRange.length === 2 ? initialRange : undefined,
-			disable: [isWithinDisabledRange],
-			onChange: function (selectedDates, dateStr, instance) {
-				D.writeSelectionToInputs(config, selectedDates);
-				D.capEndDateWhileSelecting(instance, selectedDates, maxRangeDays, absoluteMax);
-			},
-		});
-	},
-
-	render: async function (container, config) {
-		const D = AspenDiscovery.DateRangePicker;
-		await D.loadLibrary();
-		if (container._dateRangePicker) {
-			container._dateRangePicker.destroy();
-		}
-		container.innerHTML = '';
-		config.container = container;
-		container._dateRangePicker = D.create(config);
-		return container._dateRangePicker;
+		this.writeSelectionToInputs(config, startIso, endIso, config.formatDisplay);
 	},
 };
 
@@ -17166,65 +17227,69 @@ AspenDiscovery.Record = (function () {
 		},
 
 		initBookingForm: function () {
-			const R          = AspenDiscovery.Record;
-			const itemSelect = document.getElementById('booking-item-select');
-
-			if (itemSelect) {
-				itemSelect.addEventListener('change', function () {
-					R.clearBookingDateInputs();
-					R.loadItemBookingAvailability(this.value);
-				});
+			const calendar = AspenDiscovery.Record.getBookingCalendar();
+			if (!calendar) {
+				return;
 			}
-
-			const itemId = R.getSelectedBookingItemId();
-			if (itemId) R.loadItemBookingAvailability(itemId);
-		},
-
-		getSelectedBookingItemId: function () {
-			const itemSelect = document.getElementById('booking-item-select');
-			if (itemSelect) return itemSelect.value;
-			const currentItem = document.getElementById('current-item-id');
-			return currentItem ? currentItem.value : null;
-		},
-
-		clearBookingDateInputs: function () {
-			const startInput = document.getElementById('start-date');
-			const endInput   = document.getElementById('end-date');
-			if (startInput) startInput.value = '';
-			if (endInput)   endInput.value   = '';
-		},
-
-		loadItemBookingAvailability: function (itemId) {
-			const R         = AspenDiscovery.Record;
-			const container = document.getElementById('booking-availability');
-			if (!container) return;
-
-			container.innerHTML = '<span class="text-muted"><em>Loading availability\u2026</em></span>';
-
-			$.getJSON(Globals.path + '/Record/AJAX?method=getItemBookedDates&itemId=' + encodeURIComponent(itemId), function (data) {
-				R.showBookingCalendar(container, data.success ? data.bookedDates : [], data.success ? data.constraints : null);
-			}).fail(function () {
-				R.showBookingCalendar(container, [], null);
-			});
-		},
-
-		showBookingCalendar: async function (container, bookedRanges, constraints) {
 			const tomorrow = new Date();
 			tomorrow.setDate(tomorrow.getDate() + 1);
 			tomorrow.setHours(0, 0, 0, 0);
 
-			try {
-				await AspenDiscovery.DateRangePicker.render(container, {
-					startInput:     document.getElementById('start-date'),
-					endInput:       document.getElementById('end-date'),
-					minDate:        tomorrow,
-					maxDate:        constraints && constraints.maxDate ? new Date(constraints.maxDate + 'T00:00:00') : null,
-					maxRangeDays:   constraints && constraints.maxPeriod ? parseInt(constraints.maxPeriod, 10) : 0,
-					disabledRanges: bookedRanges,
+			AspenDiscovery.DateRangePicker.init(calendar, {
+				minDate: tomorrow,
+			}).then(function () {
+				document.getElementById('booking-item-select')?.addEventListener('change', function () {
+					AspenDiscovery.Record.clearBookingDateInputs();
+					AspenDiscovery.Record.loadItemBookingAvailability(this.value);
 				});
-			} catch (e) {
-				container.innerHTML = '<span class="text-danger">Unable to load the availability calendar.</span>';
+				AspenDiscovery.Record.loadItemBookingAvailability(AspenDiscovery.Record.getSelectedBookingItemId());
+			}).catch(function () {
+				const error = document.createElement('span');
+				error.className = 'text-danger';
+				error.textContent = 'Unable to load the availability calendar.';
+				calendar.replaceWith(error);
+			});
+		},
+
+		getBookingCalendar: function () {
+			return document.getElementById('booking-calendar');
+		},
+
+		getSelectedBookingItemId: function () {
+			const source = document.getElementById('booking-item-select') ?? document.getElementById('current-item-id');
+			return source?.value ?? null;
+		},
+
+		clearBookingDateInputs: function () {
+			const calendar = AspenDiscovery.Record.getBookingCalendar();
+			if (calendar) {
+				AspenDiscovery.DateRangePicker.clear(calendar);
 			}
+		},
+
+		loadItemBookingAvailability: function (itemId) {
+			const calendar = AspenDiscovery.Record.getBookingCalendar();
+			if (!itemId || !calendar) {
+				return;
+			}
+
+			const loading = document.getElementById('booking-availability-loading');
+			if (loading) {
+				loading.hidden = false;
+			}
+
+			$.getJSON(Globals.path + '/Record/AJAX?method=getItemBookedDates&itemId=' + encodeURIComponent(itemId), function (data) {
+				const constraints = data.success ? data.constraints : null;
+				AspenDiscovery.DateRangePicker.update(calendar, {
+					maxDate:        constraints?.maxDate ? new Date(constraints.maxDate + 'T00:00:00') : null,
+					maxRangeDays:   constraints?.maxPeriod ? parseInt(constraints.maxPeriod, 10) : 0,
+					disabledRanges: data.success ? data.bookedDates : [],
+				});
+			}).fail(AspenDiscovery.ajaxFail).always(function () {
+				if (loading) {
+					loading.hidden = true;
+				}
+			});
 		},
 	};
 }(AspenDiscovery.Record || {}));
