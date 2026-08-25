@@ -191,7 +191,6 @@ public class IndexingProfile extends BaseIndexingSettings {
 		this.setDueDateFormat(indexingProfileRS.getString("dueDateFormat"));
 		this.setDateCreatedSubfield(getCharFromRecordSet(indexingProfileRS,"dateCreated"));
 		this.setDateCreatedFormat(indexingProfileRS.getString("dateCreatedFormat"));
-		this.setPriceSubfield(indexingProfileRS.getString("price"));
 		this.setTotalCheckoutsSubfield(getCharFromRecordSet(indexingProfileRS,"totalCheckouts"));
 		this.setYearToDateCheckoutsSubfield(getCharFromRecordSet(indexingProfileRS,"yearToDateCheckouts"));
 
@@ -644,14 +643,6 @@ public class IndexingProfile extends BaseIndexingSettings {
 
 	private void setYearToDateCheckoutsSubfield(char yearToDateCheckoutsSubfield) {
 		this.yearToDateCheckoutsSubfield = yearToDateCheckoutsSubfield;
-	}
-
-	public char getPriceSubfield() {
-		return priceSubfield;
-	}
-
-	private void setPriceSubfield(char priceSubfield) {
-		this.priceSubfield = priceSubfield;
 	}
 
 	public char getTotalCheckoutsSubfield() {
