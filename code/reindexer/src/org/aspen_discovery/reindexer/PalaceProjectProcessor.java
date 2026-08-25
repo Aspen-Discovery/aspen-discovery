@@ -255,9 +255,9 @@ public class PalaceProjectProcessor {
 				if (metadata.has("narrator")) {
 					String narrator;
 					if (metadata.get("narrator") instanceof String) {
-						narrator = metadata.getString("narrator");
+						narrator = metadata.getString("narrator").replaceAll("\\s+$", "");
 					}else{
-						narrator = metadata.getJSONObject("narrator").getString("name");
+						narrator = metadata.getJSONObject("narrator").getString("name").replaceAll("\\s+$", "");
 					}
 					HashSet<String> artistsToAdd = new HashSet<>();
 					HashSet<String> artistsWithRoleToAdd = new HashSet<>();

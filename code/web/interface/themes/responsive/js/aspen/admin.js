@@ -3155,7 +3155,11 @@ AspenDiscovery.Admin = (function () {
 			$('#propertyRowroles').hide();
 
 			var assignBy = $("#assignToUsersBySelect").val();
-			if (assignBy === "role") {
+			if (assignBy === "accountProfile") {
+				$('#propertyRowlibraries').hide();
+				$('#propertyRowptypes').hide();
+				$('#propertyRowroles').hide();
+			} else if (assignBy === "role") {
 				$('#propertyRowlibraries').hide();
 				$('#propertyRowptypes').hide();
 				$('#propertyRowroles').show();
@@ -3405,5 +3409,35 @@ AspenDiscovery.Admin = (function () {
 				guarantorInput.classList.toggle('required', guarantorRequired);
 			}
 		},
+		updateAvailable2FAAssignToUserByOptions: function () {
+			const accountSelect = document.getElementById('accountProfileIdSelect');
+			const assignSelect = document.getElementById('assignToUsersBySelect');
+			if (!accountSelect || !assignSelect) return;
+
+			const selectedOption = accountSelect.options[accountSelect.selectedIndex];
+			const selectedLabel = selectedOption ? selectedOption.text.trim() : '';
+
+			const patronTypeOption = assignSelect.querySelector('option[value="patronType"]');
+			const accountProfileOption = assignSelect.querySelector('option[value="accountProfile"]');
+
+			if (!patronTypeOption || !accountProfileOption) return;
+
+			if (selectedLabel.toLowerCase() === 'admin') {
+				// Disable patronType and force role when account profile label is "admin"
+				patronTypeOption.disabled = true;
+
+				// If value assignment fails for any reason, force via selected flag
+				if (assignSelect.value !== 'role' && assignSelect.value !== 'accountProfile') {
+					assignSelect.value = 'accountProfile';
+					accountProfileOption.selected = true;
+				}
+
+				// Trigger change in case other UI logic depends on this select
+				assignSelect.dispatchEvent(new Event('change', {bubbles: true}));
+			} else {
+				// Re-enable patronType for non-admin labels
+				patronTypeOption.disabled = false;
+			}
+		}
 	};
 }(AspenDiscovery.Admin || {}));

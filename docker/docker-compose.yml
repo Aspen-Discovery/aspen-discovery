@@ -2,7 +2,7 @@ networks:
   net-aspen:
 
 volumes:
-  solr:
+  solr-index-data:
 
 services:
   backend:
@@ -83,10 +83,12 @@ services:
       - .env
     environment:
       - SOLR_PORT=${SOLR_PORT:-8983}
+      - SOLR_HOST=${SOLR_HOST:-solr}
+      - SOLR_DATA_HOME=/var/solr/index-data
     ports:
       - "${SOLR_PORT}:${SOLR_PORT:-8983}"
     volumes:
-      - solr:/var/solr
+      - solr-index-data:/var/solr/index-data
     networks:
       - net-aspen
     entrypoint:
@@ -94,38 +96,15 @@ services:
     - '-c'
     - |
       init-var-solr
-      # Series core
-      precreate-core series /opt/solr/server/solr/configsets/series
-      cp -r /opt/solr/server/solr/configsets/series/* series
 
-      # Genealogy core
-      precreate-core genealogy /opt/solr/server/solr/configsets/genealogy
-      cp -r /opt/solr/server/solr/configsets/genealogy/* genealogy
-
-      # Grouped Works v2 core
-      precreate-core grouped_works_v2 /opt/solr/server/solr/configsets/grouped_works_v2
-      cp -r /opt/solr/server/solr/configsets/grouped_works_v2/* grouped_works_v2
-
-      # Lists core
-      precreate-core lists /opt/solr/server/solr/configsets/lists
-      cp -r /opt/solr/server/solr/configsets/lists/* lists
-
-      # Course Reserves core
-      precreate-core course_reserves /opt/solr/server/solr/configsets/course_reserves
-      cp -r /opt/solr/server/solr/configsets/course_reserves/* course_reserves
-
-      # Open Archives core
-      precreate-core open_archives /opt/solr/server/solr/configsets/open_archives
-      cp -r /opt/solr/server/solr/configsets/open_archives/* open_archives
-
-      # Website Pages core
-      precreate-core website_pages /opt/solr/server/solr/configsets/website_pages
-      cp -r /opt/solr/server/solr/configsets/website_pages/* website_pages
-
-      # Events core
-      precreate-core events /opt/solr/server/solr/configsets/events
-      cp -r /opt/solr/server/solr/configsets/events/* events
-
+      # Only the index data itself is persisted, on solr-index-data (via the
+      # solr.data.home mechanism, set through SOLR_DATA_HOME above). Everything
+      # else under /var/solr/data (conf, core.properties, solr.xml, lib) is not
+      # volume-mounted, so it always comes fresh from whatever image is running
+      # instead of being frozen at whichever image first created the volume.
+      for core in series genealogy grouped_works_v2 grouped_works_v3 lists course_reserves open_archives website_pages events; do
+        precreate-core "$$core" "/opt/solr/server/solr/configsets/$$core"
+      done
 
       chown -R solr:solr /var/solr
       runuser -u solr -- solr-foreground

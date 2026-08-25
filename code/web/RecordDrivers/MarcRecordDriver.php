@@ -970,7 +970,13 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 					$contributorRole = preg_replace('/[\s,.;]+$/', '', $contributorRole);
 					$curContributor['roles'][] = mapValue('contributor_role', $contributorRole);
 				} elseif ($field->getSubfield('e') != null) {
-					$curContributor['roles'][] = $field->getSubfield('e')->getData();
+					$contributorRole = $field->getSubfield('e')->getData();
+					$normalizedRole = strtolower(rtrim(trim($contributorRole), '.'));
+					if ($normalizedRole == 'reader') {
+						$curContributor['roles'][] = 'Narrator';
+					} else {
+						$curContributor['roles'][] = ucfirst(strtolower(trim($contributorRole)));
+					}
 				}
 				//Try to match to an AGR Contributor
 				if ($field->getSubfield('6') != null) {
