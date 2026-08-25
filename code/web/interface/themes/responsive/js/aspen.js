@@ -9218,7 +9218,11 @@ AspenDiscovery.Admin = (function () {
 			$('#propertyRowroles').hide();
 
 			var assignBy = $("#assignToUsersBySelect").val();
-			if (assignBy === "role") {
+			if (assignBy === "accountProfile") {
+				$('#propertyRowlibraries').hide();
+				$('#propertyRowptypes').hide();
+				$('#propertyRowroles').hide();
+			} else if (assignBy === "role") {
 				$('#propertyRowlibraries').hide();
 				$('#propertyRowptypes').hide();
 				$('#propertyRowroles').show();
