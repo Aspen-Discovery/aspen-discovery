@@ -61,7 +61,6 @@ class MaterialsRequest_UsageGraphs extends Admin_AbstractUsageGraphs {
 		$statusId = $_REQUEST['stat'];
 		$interface->assign('curStatus', $statusId);
 		$dataSeries = [];
-		$groupByTimeframe = implode(',', $timeframes);
 
 		$userHomeLibrary = Library::getPatronHomeLibrary();
 		if (is_null($userHomeLibrary)) {
@@ -83,11 +82,7 @@ class MaterialsRequest_UsageGraphs extends Admin_AbstractUsageGraphs {
 		if (is_array($custom)) {
 			$materialsRequestUsage->buildCustomPeriodQuery($custom);
 		} else {
-			$materialsRequestUsage->groupBy($groupByTimeframe);
-			foreach ($timeframes as $timeframe) {
-				$materialsRequestUsage->selectAdd($timeframe);
-			}
-			$materialsRequestUsage->orderBy($groupByTimeframe);
+			$materialsRequestUsage->buildTimeframeQuery($timeframes);
 		}
 
 		$materialsRequestUsage->statusId = $statusId;
