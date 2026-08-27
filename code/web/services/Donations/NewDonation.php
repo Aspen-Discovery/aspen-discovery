@@ -65,7 +65,7 @@ class Donations_NewDonation extends Action {
 				$sdkClientSecret = $donationPaymentProcessor['sdkClientSecret'];
 				$billerId = $donationPaymentProcessor['billerId'];
 				$billerAccountId = $donationPaymentProcessor['billerAccountId'];
-				$baseUrl = $donationPaymentProcessor['baseUrl'];
+				$baseUrl = $donationPaymentProcessor['aciHost'];
 				$sdkUrl = $donationPaymentProcessor['sdkUrl'];
 
 				$interface->assign('billerId', $billerId);

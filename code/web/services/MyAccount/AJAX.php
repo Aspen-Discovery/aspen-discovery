@@ -5437,8 +5437,14 @@ class MyAccount_AJAX extends JSON_Action {
 		if (isset($_REQUEST['token'])) {
 			if ($paymentType == 'square') {
 				$payment->squareToken = $_REQUEST['token'];
-			} else {
+			} elseif ($paymentType == 'ACI') {
 				$payment->aciToken = $_REQUEST['token'];
+
+				$data = random_bytes(16);
+				assert(strlen($data) == 16);
+				$data[6] = chr(ord($data[6]) & 0x0f | 0x40);
+				$data[8] = chr(ord($data[8]) & 0x3f | 0x80);
+				$payment->orderId = vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
 			}
 		}
 
@@ -7417,7 +7423,6 @@ class MyAccount_AJAX extends JSON_Action {
 		$patronId = $_REQUEST['patronId'];
 		$transactionType = $_REQUEST['type'];
 		$fundingToken = $_REQUEST['fundingToken'];
-		$accessToken = $_REQUEST['accessToken'];
 		$paymentId = $_REQUEST['paymentId'];
 		$billerAccount = $_REQUEST['billerAccountId'];
 		global $library;
@@ -7437,8 +7442,6 @@ class MyAccount_AJAX extends JSON_Action {
 				if (!$donation->find(true)) {
 					header("Location: " . $configArray['Site']['url'] . '/Donations/DonationCancelled?id=' . $payment->id);
 					return [];
-				}else{
-					return $this->failureResult(null, 'ACI Donation payment not applied.');
 				}
 			} else {
 				header("Location: " . $configArray['Site']['url'] . '/Donations/DonationCancelled?id=' . $payment->id);
@@ -7448,7 +7451,6 @@ class MyAccount_AJAX extends JSON_Action {
 			//Get the order information
 			$payment->userId = $patronId;
 			if ($payment->find(true)) {
-
 				$user = UserAccount::getLoggedInUser();
 				$patronId = $_REQUEST['patronId'];
 
@@ -7460,18 +7462,19 @@ class MyAccount_AJAX extends JSON_Action {
 				if ($systemVariables->libraryToUseForPayments == 0) {
 					$paymentLibrary = $userLibrary;
 				}
-
-				$aciSpeedpaySettings = new ACISpeedpaySetting();
-				$aciSpeedpaySettings->id = $paymentLibrary->aciSpeedpaySettingId;
-				if ($aciSpeedpaySettings->find(true)) {
-					return $aciSpeedpaySettings->submitTransaction($patron, $payment, $fundingToken, $billerAccount);
-				} else {
-					return $this->failureResult(null, 'Could not complete payment. ACI Speedpay is not setup for this library.');
-				}
 			} else {
 				return $this->failureResult(null, 'Unable to find payment in system to complete.');
 			}
 		}
+
+		$aciSpeedpaySettings = new ACISpeedpaySetting();
+		$aciSpeedpaySettings->id = $paymentLibrary->aciSpeedpaySettingId;
+		if (!$aciSpeedpaySettings->find(true)) {
+			return $this->failureResult(null, 'Could not complete payment. ACI Speedpay is not setup for this library.');
+		}
+
+		return $aciSpeedpaySettings->submitTransaction($patron ?? null, $payment, $fundingToken, $billerAccount, $donation ?? null);
+
 	}
 
 	/** @noinspection PhpUnused */
