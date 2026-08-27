@@ -189,7 +189,7 @@ class SystemVariables extends DataObject {
 						'type' => 'enum',
 						'values' => [
 							2 => 'Version 2 (Edition information)',
-							3 => 'Version 3 (Optimization of solr fields)'
+							//3 => 'Version 3 (Optimization of solr fields)'
 						],
 						'label' => 'Grouped Work Indexing Version',
 						'description' => 'The Solr Core Version to index with.  In 26.08 and above this should be version 3 in most cases.',
@@ -201,7 +201,7 @@ class SystemVariables extends DataObject {
 						'type' => 'enum',
 						'values' => [
 							2 => 'Version 2 (Edition information)',
-							3 => 'Version 3 (Optimization of solr fields)'
+							//3 => 'Version 3 (Optimization of solr fields)'
 						],
 						'label' => 'Grouped Work Search Version',
 						'description' => 'The Solr Core Version to search with.  In 26.08 and above this should be version 3 in most cases.',
@@ -554,8 +554,6 @@ class SystemVariables extends DataObject {
 		if (!UserAccount::isLoggedIn() || !UserAccount::getActiveUserObj()->isAspenAdminUser()) {
 			$objectStructure['indexingSection']['properties']['storeRecordDetailsInSolr']['type'] = 'hidden';
 			$objectStructure['indexingSection']['properties']['storeRecordDetailsInDatabase']['type'] = 'hidden';
-			$objectStructure['indexingSection']['properties']['indexVersion']['type'] = 'hidden';
-			$objectStructure['indexingSection']['properties']['searchVersion']['type'] = 'hidden';
 			$objectStructure['indexingSection']['properties']['hooplaVersion']['type'] = 'hidden';
 		}
 
