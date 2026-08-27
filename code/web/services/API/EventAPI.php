@@ -58,6 +58,7 @@ class EventAPI extends AbstractAPI {
 	function getLMEventDetails(): array {
 		require_once ROOT_DIR . '/RecordDrivers/LibraryCalendarEventRecordDriver.php';
 		$libraryCalendarDriver = new LibraryCalendarEventRecordDriver($_REQUEST['id']);
+		global $configArray;
 		if($libraryCalendarDriver->isValid()) {
 			$registrationInformation = null;
 			if($libraryCalendarDriver->getRegistrationModalBodyForAPI()) {
@@ -84,6 +85,7 @@ class EventAPI extends AbstractAPI {
 			$itemData['categories'] = null;
 			$itemData['programTypes'] = null;
 			$itemData['room'] = null;
+			$itemData['image'] = $configArray['Site']['url'] . $libraryCalendarDriver->getBookcoverUrl('medium');
 
 			// check if event has passed
 			$today = new DateTime('now');
@@ -112,6 +114,7 @@ class EventAPI extends AbstractAPI {
 	function getCommunicoEventDetails(): array {
 		require_once ROOT_DIR . '/RecordDrivers/CommunicoEventRecordDriver.php';
 		$communicoDriver = new CommunicoEventRecordDriver($_REQUEST['id']);
+		global $configArray;
 		if($communicoDriver->isValid()) {
 			$registrationInformation = null;
 			if($communicoDriver->getRegistrationModalBodyForAPI()) {
@@ -140,6 +143,7 @@ class EventAPI extends AbstractAPI {
 			$itemData['room'] = $communicoDriver->getRoom();
 			$itemData['location'] = $this->getDiscoveryBranchDetails($communicoDriver->getBranch());
 			$itemData['canAddToList'] = false;
+			$itemData['image'] = $configArray['Site']['url'] . $communicoDriver->getBookcoverUrl('medium');
 
 			// check if event has passed
 			$difference = $communicoDriver->getStartDate()->diff(new DateTime());;
@@ -164,6 +168,7 @@ class EventAPI extends AbstractAPI {
 	function getSpringshareEventDetails(): array {
 		require_once ROOT_DIR . '/RecordDrivers/SpringshareLibCalEventRecordDriver.php';
 		$springshareDriver = new SpringshareLibCalEventRecordDriver($_REQUEST['id']);
+		global $configArray;
 		if($springshareDriver->isValid()) {
 			$registrationInformation = null;
 			if($springshareDriver->getRegistrationModalBodyForAPI()) {
@@ -191,6 +196,7 @@ class EventAPI extends AbstractAPI {
 			$itemData['room'] = $springshareDriver->getRoom();
 			$itemData['location'] = $this->getDiscoveryBranchDetails($springshareDriver->getBranch());
 			$itemData['canAddToList'] = false;
+			$itemData['image'] = $configArray['Site']['url'] . $springshareDriver->getBookcoverUrl('medium');
 
 			// check if event has passed
 			$today = new DateTime('now');
@@ -215,6 +221,7 @@ class EventAPI extends AbstractAPI {
 	function getAssabetEventDetails(): array {
 		require_once ROOT_DIR . '/RecordDrivers/AssabetEventRecordDriver.php';
 		$assabetDriver = new AssabetEventRecordDriver($_REQUEST['id']);
+		global $configArray;
 		if($assabetDriver->isValid()) {
 			$registrationInformation = null;
 			if($assabetDriver->getRegistrationModalBodyForAPI()) {
@@ -241,6 +248,7 @@ class EventAPI extends AbstractAPI {
 			$itemData['categories'] = null;
 			$itemData['programTypes'] = null;
 			$itemData['room'] = null;
+			$itemData['image'] = $configArray['Site']['url'] . $assabetDriver->getBookcoverUrl('medium');
 
 			// check if event has passed
 			$today = new DateTime('now');
@@ -269,6 +277,7 @@ class EventAPI extends AbstractAPI {
 	function getLocalHopEventDetails(): array {
 		require_once ROOT_DIR . '/RecordDrivers/LocalHopEventRecordDriver.php';
 		$localHopDriver = new LocalHopEventRecordDriver($_REQUEST['id']);
+		global $configArray;
 		if($localHopDriver->isValid()) {
 			$registrationInformation = null;
 			if($localHopDriver->getRegistrationModalBodyForAPI()) {
@@ -295,6 +304,7 @@ class EventAPI extends AbstractAPI {
 			$itemData['categories'] = null;
 			$itemData['programTypes'] = null;
 			$itemData['room'] = null;
+			$itemData['image'] = $configArray['Site']['url'] . $localHopDriver->getBookcoverUrl('medium');
 
 			// check if event has passed
 			$today = new DateTime('now');
@@ -345,6 +355,7 @@ class EventAPI extends AbstractAPI {
 			$itemData['categories'] = null;
 			$itemData['programTypes'] = $aspenEventDriver->getProgramTypes();
 			$itemData['room'] = $aspenEventDriver->getRoom();
+			$itemData['image'] = $configArray['Site']['url'] . $aspenEventDriver->getBookcoverUrl('medium');
 
 			// check if event has passed
 			$today = new DateTime('now');
@@ -717,10 +728,11 @@ class EventAPI extends AbstractAPI {
 					$sourceFull = 'assabet';
 					$source = 'assabet';
 				} else if(str_starts_with($eventId, 'aspenEvent')) {
-					$sourceFull = 'aspenEvents';
-					$source = 'aspenEvents';
-				} else {
-					// something went wrong
+					$sourceFull = 'aspenEvent';
+					$source = 'aspenEvent';
+				} else if (str_starts_with($eventId, 'localhop')) {
+					$sourceFull = 'localhop';
+					$source = 'localhop';
 				}
 
 				if (array_key_exists($eventId, $eventRecords)) {
@@ -735,19 +747,19 @@ class EventAPI extends AbstractAPI {
 						$details = $this->getAssabetEventDetails();
 					} else if(str_starts_with($eventId, 'aspenEvent')) {
 						$details = $this->getAspenEventDetails();
-					} else {
-						// something went wrong
+					} else if (str_starts_with($eventId, 'localhop')) {
+						$details = $this->getLocalHopEventDetails();
 					}
 
 					if($details['success'] === true) {
 						$events[$event->sourceId]['id'] = $event->id;
 						$events[$event->sourceId]['sourceId'] = $event->sourceId;
-						$events[$event->sourceId]['title'] = $event->title;
+						$events[$event->sourceId]['title'] = $details['title'];
 						$events[$event->sourceId]['startDate'] = $details['startDate'];
 						$events[$event->sourceId]['endDate'] = $details['endDate'];
 						$events[$event->sourceId]['url'] = $details['url'];
 						$events[$event->sourceId]['bypass'] = $details['bypass'];
-						$events[$event->sourceId]['cover'] = $configArray['Site']['url'] . '/bookcover.php?id=' . $event->sourceId . '&size=medium&type=' . $sourceFull . '_event' . '&isPast=' . $hasPassed;
+						$events[$event->sourceId]['cover'] = $details['image'] . '&isPast=' . $hasPassed;
 						$events[$event->sourceId]['registrationRequired'] = $details['registrationRequired'];
 						$events[$event->sourceId]['userIsRegistered'] = $details['userIsRegistered'];
 						$events[$event->sourceId]['location'] = $details['location'];
