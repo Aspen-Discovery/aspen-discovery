@@ -1,173 +1,23 @@
 <?php
 
 require_once 'Solr.php';
+require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector2.php';
 require_once ROOT_DIR . '/sys/SearchObject/GroupedWorkSearcher3.php';
 require_once ROOT_DIR . '/sys/SystemVariables.php';
 
-class GroupedWorksSolrConnector3 extends Solr
+class GroupedWorksSolrConnector3 extends GroupedWorksSolrConnector2
 {
 	function __construct($host, $index = '')
 	{
 		parent::__construct($host, 'grouped_works_v3');
 	}
 
-	function getSearchSpecs()
-	{
-		$systemVariables = SystemVariables::getSystemVariables();
-		$useCustomSearchSpecs = $systemVariables && !empty($systemVariables->customGroupedWorkSearchSpecs);
-		if (!$useCustomSearchSpecs) {
-			// Fall back to default grouped work search specs
-			return $this->getSearchSpecsFile();
-		}
-		$specs = $systemVariables->customGroupedWorkSearchSpecs;
-		if (!file_exists($specs) || !is_readable($specs)) {
-			// Log warning if file doesn't exist or isn't readable
-			global $logger;
-			$logger->log("Custom grouped work search specs is not an accessible file. Interpreting as yaml text instead of a path for system variables", Logger::LOG_WARNING);
-		}
-		return $specs;
+	function getDefaultFieldsToReturn() : string {
+		return SearchObject_GroupedWorkSearcher3::$fields_to_return;
 	}
 
-	/**
-	 * Get the search specs file for grouped work searches
-	 * @return string
-	 */
-	function getSearchSpecsFile()
-	{
-		/** @var Library $library */
-		global $library;
-		$searchSpecsVersion = $library->getGroupedWorkDisplaySettings()->searchSpecVersion;
-		if ($searchSpecsVersion == 2) {
-			return ROOT_DIR . '/../../sites/default/conf/groupedWorksSearchSpecs2.yaml';
-		} else {
-			return ROOT_DIR . '/../../sites/default/conf/groupedWorksSearchSpecs.yaml';
-		}
-
-	}
-
-	function getRecordByBarcode($barcode): ?array
-	{
-		// Query String Parameters
-		$options = [
-			'q' => "barcode:\"$barcode\"",
-			'fl' => SearchObject_GroupedWorkSearcher3::$fields_to_return,
-		];
-		$result = $this->_select('GET', $options);
-		if ($result instanceof AspenError) {
-			AspenError::raiseError($result);
-		}
-
-		return $result['response']['docs'][0] ?? null;
-	}
-
-	function getRecordByIsbn($isbns, $fieldsToReturn = null): ?array
-	{
-		// Query String Parameters
-		if ($fieldsToReturn == null) {
-			$fieldsToReturn = SearchObject_GroupedWorkSearcher3::$fields_to_return;
-		}
-		$options = [
-			'q' => 'isbn:' . implode(' OR ', $isbns),
-			'fl' => $fieldsToReturn,
-		];
-		$result = $this->_select('GET', $options);
-		if ($result instanceof AspenError) {
-			AspenError::raiseError($result);
-		}
-
-		return $result['response']['docs'][0] ?? null;
-	}
-
-	/**
-	 * Retrieves a document specified by the ID.
-	 *
-	 * @param ?array $ids A list of document to retrieve from Solr
-	 * @param ?string $fieldsToReturn An optional list of fields to return separated by commas
-	 * @param bool $applyScoping whether scoping should be applied to the search
-	 * @return    array                            The requested resources
-	 * @throws    AspenError
-	 */
-	function getRecords(?array $ids, ?string $fieldsToReturn = null, bool $applyScoping = false): array
-	{
-		if (empty($ids)) {
-			return [];
-		}
-		//Solr does not seem to be able to return more than 50 records at a time,
-		//If we have more than 50 ids, we will need to make multiple calls and
-		//concatenate the results.
-		$records = [];
-		$startIndex = 0;
-		$batchSize = 40;
-
-		$lastBatch = false;
-		while (true) {
-			$endIndex = $startIndex + $batchSize;
-			if ($endIndex >= count($ids)) {
-				$lastBatch = true;
-				$endIndex = count($ids);
-				$batchSize = count($ids) - $startIndex;
-			}
-			$tmpIds = array_slice($ids, $startIndex, $batchSize);
-
-			// Query String Parameters
-			$idString = implode(' OR ', $tmpIds);
-			$options = ['q' => "id:($idString)"];
-			$options['fl'] = $fieldsToReturn;
-			$options['rows'] = count($tmpIds);
-
-			if ($applyScoping) {
-				global $solrScope;
-				$options['fq'] = "availability_toggle:\"$solrScope#global\"";
-			}
-
-			// Send Request
-			global $timer;
-			$timer->logTime("Prepare to send get (ids)  request to solr");
-			$getRecordsUrl = $this->host . "/select?" . http_build_query($options);
-			$result = $this->client->curlGetPage($getRecordsUrl);
-			$timer->logTime("Send data to solr for getRecords");
-
-			if ($result) {
-				$result = $this->_process($result);
-
-				foreach ($result['response']['docs'] as $record) {
-					$records[$record['id']] = $record;
-				}
-			}
-			if ($lastBatch) {
-				break;
-			} else {
-				$startIndex = $endIndex;
-			}
-		}
-		//echo("Found " . count($records) . " records.	Should have found " . count($ids) . "\r\n<br/>");
-		return $records;
-	}
-
-	function searchForRecordIds(array $ids): array
-	{
-		if (count($ids) == 0) {
-			return [];
-		}
-		// Query String Parameters
-		$idString = '';
-		foreach ($ids as $id) {
-			if (strlen($idString) > 0) {
-				$idString .= ' OR ';
-			}
-			$idString .= "id:\"$id\"";
-		}
-		$options = [
-			'q' => $idString,
-			'rows' => count($ids),
-			'fl' => SearchObject_GroupedWorkSearcher3::$fields_to_return,
-		];
-		$result = $this->_select('GET', $options);
-		if ($result instanceof AspenError) {
-			AspenError::raiseError($result);
-		}
-		return $result;
-	}
+	protected $mltPrefixThese = '{!mlt qf="language^1000 subject_facet^800 topic_facet^600 awards_facet^100 authorStr^75 era^50 genre_facet^50 geographic_facet^50 personal_name_facet^50 corporate_name_facet^50 content_rating accelerated_reader_interest_level mpaa_rating" mlt.fl=language,subject_facet,topic_facet,awards_facet,authorStr,era,genre_facet,geographic_facet,personal_name_facet,corporate_name_facet,content_rating,accelerated_reader_interest_level,mpaa_rating mintf=1 mindf=2}';
+	protected $mltPrefixThis = '{!mlt qf="language^1000,subject_facet^800,topic_facet^600,awards_facet^100,authorStr^75,era^50,genre_facet^50,geographic_facet^50,personal_name_facet^50,corporate_name_facet^50,content_rating,accelerated_reader_interest_level,mpaa_rating" mintf=1 mindf=2}';
 
 	/**
 	 * Get records similar to one record
@@ -189,10 +39,10 @@ class GroupedWorksSolrConnector3 extends Solr
 		$originalResult = $this->getRecord($id, 'target_audience_full,content_rating,literary_form,language,isbn,upc,series');
 		// Query String Parameters
 		if ($fieldsToReturn == null) {
-			$fieldsToReturn = SearchObject_GroupedWorkSearcher3::$fields_to_return;
+			$fieldsToReturn = $this->getDefaultFieldsToReturn();
 		}
 		$options = [
-			'q' => "id:$id",
+			'q' => "$this->mltPrefixThis$id",
 			'mlt.interestingTerms' => 'details',
 			'rows' => 25,
 			'fl' => $fieldsToReturn,
@@ -202,9 +52,9 @@ class GroupedWorksSolrConnector3 extends Solr
 			//Apply scoping filter
 			global $solrScope;
 			if ($availableOnly) {
-				$options['fq'][] = "(availability_toggle:\"$solrScope#available\") OR (availability_toggle:\"$solrScope#available_online\")";
+				$options['fq'][] = "{!parent which=\"recordtype:grouped_work\" tag=child_filter}((availability_toggle:\"available\") OR (availability_toggle:\"available_online\") AND scope:$solrScope)";
 			} else {
-				$options['fq'][] = "availability_toggle:\"$solrScope#$selectedAvailabilityToggle\"";
+				$options['fq'][] = "{!parent which=\"recordtype:grouped_work\" tag=child_filter}(availability_toggle:\"$selectedAvailabilityToggle\" AND scope:$solrScope)";
 			}
 			if (isset($originalResult['target_audience_full'])) {
 				if (is_array($originalResult['target_audience_full'])) {
@@ -320,7 +170,10 @@ class GroupedWorksSolrConnector3 extends Solr
 			$options['rows'] = $limit;
 		}
 
-		$result = $this->_select('POST', $options, false, 'mlt');
+		//$options['debugQuery'] = "true";
+		//$debugInfo = print_r($options, true);
+
+		$result = $this->_select('POST', $options);
 		if ($result instanceof AspenError) {
 			AspenError::raiseError($result);
 		}
@@ -347,26 +200,28 @@ class GroupedWorksSolrConnector3 extends Solr
 	{
 		// Query String Parameters
 		$idString = '';
+		$idStringWithoutFieldPrefix = '';
 		$numIdsProcessed = 0;
 		foreach ($ids as $index => $ratingInfo) {
 			if (strlen($idString) > 0) {
 				$idString .= ' OR ';
+				$idStringWithoutFieldPrefix .= ' OR ';
 			}
 			if (empty($ratingInfo['rating'])) {
-				$idString .= "id:{$ratingInfo['workId']}";
+				$idString .= "$this->mltPrefixThese{$ratingInfo['workId']}";
 			} else {
 				$ratingBoost = $ratingInfo['rating'];
-				$idString .= "id:{$ratingInfo['workId']}^$ratingBoost";
+				$idString .= "($this->mltPrefixThese{$ratingInfo['workId']})^$ratingBoost";
 			}
+			$idStringWithoutFieldPrefix .= $ratingInfo['workId'];
 			$numIdsProcessed++;
 			//Only process up to 500 IDs at a time to avoid overwhelming solr
 			if ($numIdsProcessed >= 500) {
 				break;
 			}
 		}
-		//$idString = implode(' OR ', $ids);
 		$options = [
-			'q' => $idString,
+			'q' => "$idString",
 			'mlt.interestingTerms' => 'details',
 			'mlt.boost' => 'true',
 			'start' => ($page - 1) * $limit,
@@ -383,11 +238,8 @@ class GroupedWorksSolrConnector3 extends Solr
 			$options['fq'][] = '-user_not_interested_link:' . UserAccount::getActiveUserId();
 			$options['fq'][] = '-user_reading_history_link:' . UserAccount::getActiveUserId();
 		}
-		if (count($notInterestedIds) > 0) {
-			$notInterestedString = implode(' OR ', $notInterestedIds);
-			$options['fq'][] = "-id:($notInterestedString)";
-		}
-		$options['fq'][] = "-id:($idString)";
+		$options['fq'][] = 'recordtype:grouped_work';
+		$options['fq'][] = "-id:($idStringWithoutFieldPrefix)";
 		foreach ($scopingFilters as $filter) {
 			$options['fq'][] = $filter;
 		}
@@ -396,67 +248,14 @@ class GroupedWorksSolrConnector3 extends Solr
 			$options['bf'] = $boostFactors;
 		}
 
-		$result = $this->_select('POST', $options, true, 'mlt');
+		$debugInfo = print_r($options, true);
+
+		$result = $this->_select('POST', $options, true);
 		if ($result instanceof AspenError) {
 			AspenError::raiseError($result);
 		}
 
 		return $result;
-	}
-
-	/**
-	 * Normalize a sort option.
-	 *
-	 * @param string $sort The sort option.
-	 *
-	 * @return string            The normalized sort value.
-	 * @access private
-	 */
-	protected function _normalizeSort($sort)
-	{
-		// Break apart sort into field name and sort direction (note error
-		// suppression to prevent notice when direction is left blank):
-		$sort = trim($sort);
-		@list($sortField, $sortDirection) = explode(' ', $sort);
-
-		// Default sort order (may be overridden by switch below):
-		$defaultSortDirection = 'asc';
-
-		// Translate special sort values into appropriate Solr fields:
-		switch ($sortField) {
-			case 'year':
-			case 'publishDate':
-				$sortField = 'publishDateSort';
-				$defaultSortDirection = 'desc';
-				break;
-			case 'author':
-				$sortField = 'author_sort asc, title_sort';
-				break;
-			case 'title':
-				$sortField = 'title_sort asc, author_sort';
-				break;
-			case 'callnumber_sort':
-				$searchLibrary = Library::getSearchLibrary($this->getSearchSource());
-				if ($searchLibrary != null) {
-					$sortField = 'callnumber_sort_' . $searchLibrary->subdomain;
-				}
-
-				break;
-		}
-
-		// Normalize sort direction to either "asc" or "desc":
-		$sortDirection = strtolower(trim($sortDirection));
-		if ($sortDirection != 'desc' && $sortDirection != 'asc') {
-			$sortDirection = $defaultSortDirection;
-		}
-
-		return $sortField . ' ' . $sortDirection;
-	}
-
-	/** return string */
-	public function getSearchesFile()
-	{
-		return 'groupedWorksSearches';
 	}
 
 	/**
@@ -521,7 +320,6 @@ class GroupedWorksSolrConnector3 extends Solr
 		//Add rating as part of the ranking, normalize so ratings of less that 2.5 are below unrated entries.
 		$boostFactors[] = 'max(rating,1)';
 
-		global $solrScope;
 		$boostFactors[] = "max(lib_boost,1)";
 
 		return $boostFactors;
@@ -535,12 +333,7 @@ class GroupedWorksSolrConnector3 extends Solr
 	 */
 	public function getScopingFilters($searchLibrary, $searchLocation)
 	{
-		//global $solrScope;
-
 		$filter = [];
-
-		//This is handled as part of the regular query
-		//$filter[] = '{!parent which="recordtype:grouped_work" tag=scope_filter}(scope:' . $solrScope . ')';
 
 		global $activeLanguage;
 		if ($activeLanguage != null && $activeLanguage->code != 'en') {
@@ -559,24 +352,6 @@ class GroupedWorksSolrConnector3 extends Solr
 		return $filter;
 	}
 
-	protected function getHighlightOptions($fields, &$options)
-	{
-		global $solrScope;
-		$highlightFields = $fields;
-		$highlightFields = str_replace(",related_record_ids_$solrScope", '', $highlightFields);
-		$highlightFields = str_replace(",related_items_$solrScope", '', $highlightFields);
-		$highlightFields = str_replace(",format_$solrScope", '', $highlightFields);
-		$highlightFields = str_replace(",format_category_$solrScope", '', $highlightFields);
-		$options['hl'] = 'true';
-		$options['hl.fl'] = $highlightFields;
-		$options['hl.simple.pre'] = '{{{{START_HILITE}}}}';
-		$options['hl.simple.post'] = '{{{{END_HILITE}}}}';
-		$options['f.display_description.hl.fragsize'] = 50000;
-		$options['f.ils_description.hl.fragsize'] = 50000;
-		$options['f.title_display.hl.fragsize'] = 1000;
-		$options['f.title_full.hl.fragsize'] = 1000;
-	}
-
 	/**
 	 * applySearchSpecs -- internal method to build query string from search parameters
 	 *
@@ -588,8 +363,7 @@ class GroupedWorksSolrConnector3 extends Solr
 	 * @throws    AspenError
 	 * @static
 	 */
-	private function _applySearchSpecs($structure, $values, $joiner = "OR") {
-		global $solrScope;
+	protected function _applySearchSpecs($structure, $values, $joiner = "OR") : string {
 		$clauses = [];
 		foreach ($structure as $field => $clauseArray) {
 			if (is_numeric($field)) {
@@ -606,11 +380,6 @@ class GroupedWorksSolrConnector3 extends Solr
 				// push it onto the stack of clauses
 				$clauses[] = $searchString;
 			} else {
-				if ($solrScope) {
-					if ($field == 'local_callnumber' || $field == 'local_callnumber_left' || $field == 'local_callnumber_exact') {
-						$field .= '_' . $solrScope;
-					}
-				}
 
 				// Otherwise, we've got a (list of) [munge, weight] pairs to deal with
 				foreach ($clauseArray as $spec) {

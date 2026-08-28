@@ -9,17 +9,23 @@
 			<input type="hidden" name="showCovers" value="{if !empty($showCovers)}on{else}off{/if}">
 		{/if}
 
-		{assign var="totalSearchOptions" value=$searchIndexes|@count}
+		{* Search Type *}
+		{assign var="totalSearchOptions" value=1}
+		{if isset($searchIndexes)}
+			{assign var="totalSearchOptions" value=$searchIndexes|@count}
+		{/if}
 		{if (!empty($searchIndex) && $searchIndex == 'advanced') || $showAdvancedSearchbox}
 			{assign var="totalSearchOptions" value=$totalSearchOptions+1}
 		{/if}
-		{assign var="hiddenSearchType" value=false}
+
+		{assign var="hideSearchIndexDropdown" value=false}
 
 		{* Switch sizing when no search type is to be displayed *}
-		{if empty($searchIndexes) || count($searchIndexes) == 1}
-			{assign var="hiddenSearchType" value=true}
+		{if !isset($searchIndexes) || empty($searchIndexes) || $totalSearchOptions == 1}
+			{assign var="hideSearchIndexDropdown" value=true}
 		{/if}
 
+		{* Search Source *}
 		{assign var="hiddenSearchSource" value=false}
 		{* Switch sizing when no search source is to be displayed *}
 		{if empty($searchSources) || count($searchSources) == 1}
@@ -30,8 +36,8 @@
 		<div class="col-xs-12 col-sm-10 col-md-10 col-lg-10">
 			<div class="row">
 				<div id="searchTypeContainer"
-				     class="{if !empty($hiddenSearchSource)}col-lg-10 col-md-10{elseif !empty($hiddenSearchType) && !$showAdvancedSearchbox}col-lg-9 col-md-9{else}col-lg-7 col-md-7{/if} col-sm-12 col-xs-12"
-				     data-default-class="{if !empty($hiddenSearchSource)}col-lg-10 col-md-10{elseif !empty($hiddenSearchType) && !$showAdvancedSearchbox}col-lg-9 col-md-9{else}col-lg-7 col-md-7{/if}">
+				     class="{if !empty($hiddenSearchSource) && !empty($hideSearchIndexDropdown)}col-lg-12 col-md-12{elseif !empty($hiddenSearchSource)}col-lg-10 col-md-10{elseif !empty($hideSearchIndexDropdown) && !$showAdvancedSearchbox}col-lg-9 col-md-9{else}col-lg-7 col-md-7{/if} col-sm-12 col-xs-12"
+				     data-default-class="{if !empty($hiddenSearchSource) && !empty($hideSearchIndexDropdown)}col-lg-12 col-md-12{elseif !empty($hiddenSearchSource)}col-lg-10 col-md-10{elseif !empty($hideSearchIndexDropdown) && !$showAdvancedSearchbox}col-lg-9 col-md-9{else}col-lg-7 col-md-7{/if}">
 					<div class="input-group">
 						<span class="input-group-addon"><label for="lookfor" class="label" id="lookfor-label"><i class="fas fa-search fa-lg" role="presentation"></i><span class="sr-only" aria-label="{translate text="Look for" isPublicFacing=true inAttribute=true}" role="presentation">{translate text="Look for" isPublicFacing=true}</span></label></span>
 						{* Main Search Term Box *}
@@ -53,17 +59,6 @@
 						</button>
 					</div>
 				</div>
-
-				{* Search Type *}
-				{assign var="totalSearchOptions" value=$searchIndexes|@count}
-				{if (!empty($searchIndex) && $searchIndex == 'advanced') || $showAdvancedSearchbox}
-					{assign var="totalSearchOptions" value=$totalSearchOptions+1}
-				{/if}
-
-				{assign var="hideSearchIndexDropdown" value=false}
-				{if $totalSearchOptions == 1}
-					{assign var="hideSearchIndexDropdown" value=true}
-				{/if}
 
 				<div id="searchIndexContainer" data-default-hidden="{if $hideSearchIndexDropdown}true{else}false{/if}" class="col-lg-2 col-lg-offset-0 col-md-2 col-md-offset-0 {if !empty($hiddenSearchSource)} col-sm-12 col-sm-offset-0 col-xs-12 col-xs-offset-0 {else} col-sm-6 col-sm-offset-0 col-xs-6 col-xs-offset-0{/if}"{if $hideSearchIndexDropdown} style="display: none;"{/if}>
 					<select name="searchIndex" class="searchTypeHorizontal form-control catalogType" id="searchIndex" title="The method of searching." aria-label="Search Index">
