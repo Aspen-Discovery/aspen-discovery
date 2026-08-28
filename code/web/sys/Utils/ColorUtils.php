@@ -183,4 +183,59 @@ class ColorUtils {
 		return $luminanceVal;
 	}
 
+	/**
+	 * Generates a palette of colors based on a base color and calculates the contrast ratio with a text color.
+	 *
+	 * @param string $baseHex The base color in hex format (e.g., #RRGGBB).
+	 * @param string $textHex The text color in hex format (e.g., #RRGGBB).
+	 * @return array An associative array containing the generated palette with contrast ratios and WCAG AA compliance.
+	 */
+	public static function generatePalette(string $baseHex, string $textHex): array {
+		$baseHex = ltrim($baseHex, '#');
+		if (strlen($baseHex) === 3) {
+			$baseHex = $baseHex[0] . $baseHex[0] . $baseHex[1] . $baseHex[1] . $baseHex[2] . $baseHex[2];
+		}
+
+		$r = hexdec(substr($baseHex, 0, 2));
+		$g = hexdec(substr($baseHex, 2, 2));
+		$b = hexdec(substr($baseHex, 4, 2));
+
+		$lighter = null;
+		$darker = null;
+
+		// Find the closest lighter color (tint) that passes WCAG AA against text
+		for ($weight = 0.1; $weight <= 1.0; $weight += 0.05) {
+			$tint = sprintf("#%02x%02x%02x", round($r + (255 - $r) * $weight), round($g + (255 - $g) * $weight), round($b + (255 - $b) * $weight));
+			if (self::calculateColorContrast($tint, $textHex) >= 4.5) {
+				$lighter = $tint;
+				break;
+			}
+		}
+
+		// Fallback to base if nothing else passes
+		if (!$lighter) {
+			$lighter = $baseHex;
+		}
+
+		// Find the closest darker color (shade) that passes WCAG AA against text
+		for ($weight = 0.9; $weight >= 0.0; $weight -= 0.05) {
+			$shade = sprintf("#%02x%02x%02x", round($r * $weight), round($g * $weight), round($b * $weight));
+			if (self::calculateColorContrast($shade, $textHex) >= 4.5) {
+				$darker = $shade;
+				break;
+			}
+		}
+		// Fallback to base if nothing else passes
+		if (!$darker) {
+			$darker = $baseHex;
+		}
+
+		return [
+			'lighter' => $lighter,
+			'base' => $baseHex,
+			'text' => $textHex,
+			'darker' => $darker
+		];
+	}
+
 }
