@@ -40,3 +40,4 @@ parameters:
             - code/web/RecordDrivers/OverDriveRecordDriver.php
             - code/web/RecordDrivers/PalaceProjectRecordDriver.php
             - code/web/services/SnapPay/Complete.php
+            - code/web/cros/*
