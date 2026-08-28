@@ -5103,6 +5103,10 @@ class User extends DataObject {
 				'Administer Library Aspen LiDA Home Screen Links',
 				'Administer Selected Aspen LiDA Home Screen Link Groups'
 			]);
+			$sections['aspen_lida']->addAction(new AdminAction('Themes', 'Define themes for Aspen LiDA.', '/AspenLiDA/Themes'), [
+				'Administer All Aspen LiDA Themes',
+				'Administer Library Aspen LiDA Themes',
+			]);
 		}
 		if (array_key_exists('Series', $enabledModules)) {
 			$sections['series'] = new AdminSection("Series Search");
