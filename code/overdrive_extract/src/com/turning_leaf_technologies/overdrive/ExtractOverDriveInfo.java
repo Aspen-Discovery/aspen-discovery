@@ -183,14 +183,13 @@ class ExtractOverDriveInfo implements AutoCloseable {
 					logEntry.addNote("There are " + numProductsToUpdate + " products that need to be checked for updates");
 					logEntry.saveResults();
 
+					addProductsToUpdate();
+
 					//Do some counts of the records that will be updated for logging purposes
 					int numRecordsToUpdate = 0;
 					int numNewRecords = 0;
 					int totalRecordsWithChanges = 0;
 					for (OverDriveRecordInfo curRecord : allProductsInOverDrive.values()) {
-						if (settings.getProductsToUpdate().contains(curRecord.getId().toLowerCase())){
-							curRecord.hasChanges = true;
-						}
 						//Extract data from Libby and update the database
 						if (curRecord.isNew){
 							numNewRecords++;
@@ -1133,6 +1132,24 @@ class ExtractOverDriveInfo implements AutoCloseable {
 		} catch (SQLException e) {
 			logEntry.incErrors("Error updating last seen for " + curRecord.getId());
 		}
+	}
+
+
+	private void addProductsToUpdate() {
+		for (String productId : settings.getProductsToUpdate()) {
+			OverDriveRecordInfo recordInfo = allProductsInOverDrive.get(productId);
+
+			if (recordInfo == null) {
+				recordInfo = new OverDriveRecordInfo();
+				recordInfo.setId(productId);
+				getExistingRecordInformationForProduct(recordInfo);
+				allProductsInOverDrive.put(recordInfo.getId(), recordInfo);
+			}
+
+			recordInfo.hasChanges = true;
+			logEntry.addNote("Added record " + productId + " to process queue");
+		}
+		logEntry.saveResults();
 	}
 
 	private synchronized void getExistingRecordInformationForProduct(OverDriveRecordInfo curRecord) {
