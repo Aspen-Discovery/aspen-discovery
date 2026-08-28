@@ -7,11 +7,6 @@ jobs:
   phpstan:
     name: Run PHPStan
     runs-on: ubuntu-latest
-    
-    # Set the working directory for all run steps in this job
-    defaults:
-      run:
-        working-directory: code/web
 
     steps:
       - name: Checkout code
@@ -33,7 +28,7 @@ jobs:
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
           # Update the hash path to match your composer.lock location
-          key: ${{ runner.os }}-composer-${{ hashFiles('code/web/composer.lock') }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
           restore-keys: |
             ${{ runner.os }}-composer-
 
