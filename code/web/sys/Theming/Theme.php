@@ -13,11 +13,27 @@ class Theme extends DataObject {
 	public $deleted;
 	public $dateDeleted;
 	public $deletedBy;
+
+	/**
+	 * @deprecated These Aspen LiDA-specific properties have been moved to AspenLiDATheme.
+	 * They are retained here for backward compatibility with existing data and API calls until a later release.
+	 * If Aspen LiDA Themes are configured, they will take precedence over these properties.
+	 */
 	public $logoApp;
+
+	/** @deprecated See note above */
 	public $headerLogoApp;
+
+	/** @deprecated See note above */
 	public $headerLogoAlignmentApp;
+
+	/** @deprecated See note above */
 	public $headerLogoBackgroundColorApp;
+
+	/** @deprecated See note above */
 	public static $defaultHeaderLogoBackgroundColorApp = '#FFFFFF';
+	/** @deprecated See note above */
+
 	public /** @noinspection PhpUnused */
 		$headerLogoBackgroundColorAppDefault;
 
@@ -1185,7 +1201,8 @@ class Theme extends DataObject {
 				'hideInLists' => true,
 			],
 
-			//Aspen LiDA
+
+			// DEFUNCT: these settings have been moved to Aspen LiDA Themes (AspenLiDA > Themes).
 			'lidaSection' => [
 				'property' => 'lidaSection',
 				'type' => 'section',
@@ -2642,6 +2659,12 @@ class Theme extends DataObject {
 
 		if (!UserAccount::userHasPermission('Administer All Locations')) {
 			$objectStructure['locations']['additionalOneToManyActions'] = [];
+		}
+
+		// Only show the Aspen LiDA section if the module is enabled
+		global $enabledModules;
+		if (!array_key_exists('Aspen LiDA', $enabledModules)) {
+			unset($objectStructure['lidaSection']);
 		}
 
 		self::$_objectStructure[$context] = $objectStructure;
