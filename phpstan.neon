@@ -20,6 +20,7 @@ parameters:
         - vendor
         - code/web/sys/File/MARC
         - code/web/sys/Authentication/OAuth2
+        - code/web/sys/File
     excludePaths:
         analyse:
             - code/web/sys/File/MARC
@@ -41,3 +42,4 @@ parameters:
             - code/web/RecordDrivers/PalaceProjectRecordDriver.php
             - code/web/services/SnapPay/Complete.php
             - code/web/cron/*
+            - code/web/sys/File/FileUpload.php
