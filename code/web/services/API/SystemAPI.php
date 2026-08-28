@@ -174,6 +174,73 @@ class SystemAPI extends AbstractAPI {
 		}
 	}
 
+	public function getAspenLiDAThemeInfo(): array {
+		if (isset($_REQUEST['id']) && is_numeric($_REQUEST['id'])) {
+			require_once ROOT_DIR . '/sys/AspenLiDA/Theme.php';
+			$theme = new AspenLiDATheme();
+			$theme->id = $_REQUEST['id'];
+			if ($theme->find(true)) {
+				return [
+					'success' => true,
+					'theme' => $theme->getApiInfo(),
+				];
+			} else {
+				return [
+					'success' => false,
+					'message' => 'Theme not found',
+				];
+			}
+		} else {
+			return [
+				'success' => false,
+				'message' => 'Theme id not provided',
+			];
+		}
+	}
+
+	public function getAspenLiDAThemesByLocation(): array {
+		$themes = [];
+		if (isset($_REQUEST['id']) && is_numeric($_REQUEST['id'])) {
+			require_once ROOT_DIR . '/sys/AspenLiDA/ThemeLocation.php';
+			require_once ROOT_DIR . '/sys/AspenLiDA/Theme.php';
+			$location = new AspenLiDAThemeLocation();
+			$location->locationId = $_REQUEST['id'];
+			if ($location->find()) {
+				while ($location->fetch()) {
+					$theme = new AspenLiDATheme();
+					$theme->id = $location->themeId;
+					if ($theme->find()) {
+						while ($theme->fetch()) {
+							$themes[$theme->id] = $theme->getApiInfo();
+						}
+					} else {
+						$webLocation = new LocationTheme();
+						$webLocation->locationId = $location->locationId;
+						$webTheme = new Theme();
+						$webTheme->id = $location->themeId;
+					}
+				}
+			} else {
+				return [
+					'success' => false,
+					'message' => 'Location not found',
+					'themes' => $themes,
+				];
+			}
+		} else {
+			return [
+				'success' => false,
+				'message' => 'Location id not provided',
+				'themes' => $themes,
+			];
+		}
+
+		return [
+			'success' => true,
+			'themes' => $themes,
+		];
+	}
+
 	/** @noinspection PhpUnused */
 	public function getAppSettings(): array {
 		global $configArray;
