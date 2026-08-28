@@ -5,7 +5,7 @@ define('ROOT_DIR', __DIR__);
  * Load and register Composer Autoloader
  */
 global $composerActive;
-$autoloadPath = ROOT_DIR . '../../vendor/autoload.php';
+$autoloadPath = dirname(ROOT_DIR, 2) . '/vendor/autoload.php';
 $composerActive = file_exists($autoloadPath);
 if ($composerActive) {
 	require_once $autoloadPath;
