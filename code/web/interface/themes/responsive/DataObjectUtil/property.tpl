@@ -338,12 +338,14 @@
 			{/if}
 			<div class="row">
 				<div class="col-tn-3">
-					<input type='color' name='{$propName}' id='{$propName}' value='{if $useDefault == '1'}{$property.default|escape}{else}{$propValue|escape}{/if}'  aria-label='{$property.label} color picker' class='form-control{if !empty($property.required)}required{/if}' size="7" maxlength="7" onchange="$('#{$propName}Hex').val(this.value);$('#{$propName}-default').prop('checked',false);{if !empty($property.checkContrastWith)}AspenDiscovery.Admin.checkContrast('{$propName}', '{$property.checkContrastWith}', false, '{$contrastRatio}');{/if}" {if !empty($property.readOnly)}disabled{/if}>
+					<input type='color' {if !empty($property.readOnly)}readonly{/if} name='{$propName}' id='{$propName}' value='{if $useDefault == '1'}{$property.default|escape}{else}{$propValue|escape}{/if}'  aria-label='{$property.label} color picker' class='form-control{if !empty($property.required)}required{/if}' size="7" maxlength="7" onchange="$('#{$propName}Hex').val(this.value);$('#{$propName}-default').prop('checked',false);{if !empty($property.checkContrastWith)}AspenDiscovery.Admin.checkContrast('{$propName}', '{$property.checkContrastWith}', false, '{$contrastRatio}');{/if}{if !empty($property.onchange)}{$property.onchange};{/if}" {if !empty($property.readOnly)}disabled{/if}>
 				</div>
 				<div class="col-tn-3">
-					<input type='text' id='{$propName}Hex' value='{if $useDefault == '1'}{$property.default|escape}{else}{$propValue|escape}{/if}' aria-label='{$property.label} hex code' class='form-control' size="7" maxlength="7" onchange="$('#{$propName}').val(this.value);$('#{$propName}-default').prop('checked',false);{if !empty($property.checkContrastWith)}AspenDiscovery.Admin.checkContrast('{$propName}', '{$property.checkContrastWith}', false, '{$contrastRatio}');{/if}" pattern="^#([a-fA-F0-9]{ldelim}6{rdelim})$" {if !empty($property.readOnly)}readonly{/if}>
+					<input type='text' {if !empty($property.readOnly)}readonly{/if} id='{$propName}Hex' value='{if $useDefault == '1'}{$property.default|escape}{else}{$propValue|escape}{/if}' aria-label='{$property.label} hex code' class='form-control' size="7" maxlength="7" onchange="$('#{$propName}').val(this.value);$('#{$propName}-default').prop('checked',false);{if !empty($property.checkContrastWith)}AspenDiscovery.Admin.checkContrast('{$propName}', '{$property.checkContrastWith}', false, '{$contrastRatio}');{/if}{if !empty($property.onchange)}{$property.onchange};{/if}" pattern="^#([a-fA-F0-9]{ldelim}6{rdelim})$" {if !empty($property.readOnly)}readonly{/if}>
 				</div>
+
 				<div class="col-tn-3">
+                {if empty($property.readOnly)}
 					<div class="checkbox" style="margin: 0">
 						<label for='{$propName}-default'>{translate text="Use Default" isAdminFacing=true}
 							<input type="checkbox" name='{$propName}-default' id='{$propName}-default' {if $useDefault == '1'}checked="checked"{/if} {if !empty($property.readOnly)}readonly disabled{/if}/>
@@ -363,7 +365,9 @@
 								{rdelim})
 							{rdelim});
 					</script>
+                {/if}
 				</div>
+
 				<div class="col-tn-3">
 					{if !empty($property.checkContrastWith)}
 						&nbsp;{translate text='Contrast Ratio' isAdminFacing=true}&nbsp;<span id="contrast_{$propName}" class="contrast_warning"></span>
