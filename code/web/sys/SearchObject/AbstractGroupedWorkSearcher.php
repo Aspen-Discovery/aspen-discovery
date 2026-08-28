@@ -1401,29 +1401,22 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 	 * @return array
 	 */
 	public function getAllValidSearchIndexes() : array {
-		require_once ROOT_DIR . '/sys/SearchObject/SearchTypes.php';
-		$searchTypes = new SearchTypes();
-		$searchTypes->selectAdd();
-		$searchTypes->selectAdd('DISTINCT type');
-		$searchTypes->find();
-		$searchIndexes = $searchTypes->fetchAll('type', 'type');
-		if (empty($searchIndexes)) {
-			$searchIndexes = [
-				'Keyword' => 'Keyword',
-				'Title'   => 'Title',
-				'StartOfTitle'  => 'Start of Title',
-				'Series' => 'Series',
-				'PrimaryAuthor' => 'Author',
-				'Author' => 'Authors and Contributors',
-				'Subject' => 'Subject',
-				'LocalCallNumber' => 'Call Number',
-				'ISN' => 'ISN',
-				'publisher' => 'publisher',
-				'year' => 'Year of Publication',
-				'toc' => 'Table of Contents',
-				'id' => 'Record Number',
-			];
-		}
+		return [
+			'Keyword' => 'Keyword',
+			'Title'   => 'Title',
+			'AllTitles'   => 'Title',
+			'StartOfTitle'  => 'Start of Title',
+			'Series' => 'Series',
+			'PrimaryAuthor' => 'Author',
+			'Author' => 'Authors and Contributors',
+			'Subject' => 'Subject',
+			'LocalCallNumber' => 'Call Number',
+			'ISN' => 'ISN',
+			'publisher' => 'publisher',
+			'year' => 'Year of Publication',
+			'toc' => 'Table of Contents',
+			'id' => 'Record Number',
+		];
 		return $searchIndexes;
 	}
 
