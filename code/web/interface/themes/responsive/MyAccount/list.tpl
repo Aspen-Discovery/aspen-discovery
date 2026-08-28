@@ -71,6 +71,41 @@
 				{include file=$recommendations}
 			{/foreach}
 		{/if}
+
+		{* Information about the search *}
+		{if !empty($solrSearchDebug)}
+			<div class="result-head">
+
+				{if !empty($solrSearchDebug)}
+					<div id="solrSearchOptionsToggle" onclick="$('#solrSearchOptions').toggle()">{translate text="Show Search Options" isAdminFacing=true}</div>
+					<div id="solrSearchOptions" style="display:none">
+						<pre>{translate text="Search options" isPublicFacing=true} {$solrSearchDebug}</pre>
+					</div>
+				{/if}
+
+				{if !empty($solrLinkDebug)}
+					<div id='solrLinkToggle' onclick='$("#solrLink").toggle()'>{translate text="Show Solr Link" isAdminFacing=true}</div>
+					<div id='solrLink' style='display:none'>
+						<pre>{$solrLinkDebug}</pre>
+					</div>
+				{/if}
+
+				{if !empty($debugTiming)}
+					<div id='solrTimingToggle' onclick='$("#solrTiming").toggle()'>{translate text="Show Solr Timing" isAdminFacing=true}</div>
+					<div id='solrTiming' style='display:none'>
+						<pre>{$debugTiming}</pre>
+					</div>
+				{/if}
+
+				{if !empty($solrError)}
+					<div id='solrErrorToggle' onclick='$("#solrError").toggle()'>{translate text="Show Solr Error" isAdminFacing=true}</div>
+					<div id='solrError' style='display:none'>
+						<pre>{implode subject=$solrError glue="<br/>"}</pre>
+					</div>
+				{/if}
+				<div class="clearer"></div>
+			</div>
+		{/if}
 	{/if}
 
 	{if $userList->deleted == 0}

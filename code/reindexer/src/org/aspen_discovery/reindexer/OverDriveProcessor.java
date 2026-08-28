@@ -4,6 +4,7 @@ import com.turning_leaf_technologies.indexing.OverDriveScope;
 import com.turning_leaf_technologies.indexing.Scope;
 import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -217,8 +218,10 @@ class OverDriveProcessor implements AutoCloseable {
 									HashSet<String> authorsWithRole = new HashSet<>();
 									for (int i = 0; i < creators.length(); i++) {
 										JSONObject creator = creators.getJSONObject(i);
-										authors.add(creator.getString("fileAs"));
-										authorsWithRole.add(creator.getString("fileAs") + "|" + creator.getString("role"));
+										String author = creator.getString("fileAs").replaceAll("\\s+$", "");
+										String role = StringUtils.capitalize(creator.getString("role").toLowerCase());
+										authors.add(author);
+										authorsWithRole.add(author + "|" + role);
 									}
 									groupedWork.addAuthor2(authors);
 									groupedWork.addAuthor2Role(authorsWithRole);

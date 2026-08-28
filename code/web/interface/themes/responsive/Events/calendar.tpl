@@ -1,11 +1,11 @@
 {strip}
-<div class="calendar-page">
+<div class="calendar-page" {if !empty($embedSuffix)}style="padding: 10px" {/if}>
 {if !empty($headerImage) && !empty($loggedIn) && in_array('Print Calendars with Header Images and Footer', $userPermissions)}
 	<div class="calendar-header-image">
 		<img src="{$headerImage}" {if !empty($headerAlt)}alt="{translate text=$headerAlt inAttribute=true isPublicFacing=true}" title="{translate text=$headerAlt inAttribute=true isPublicFacing=true}"{/if} id="calendar-header">
 	</div>
 {/if}
-<h1 class="calendar-event-h1">{translate text=($calendarTitle) isPublicFacing=true}</h1>
+	<h1 class="calendar-event-h1">{translate text=($calendarTitle) isPublicFacing=true}</h1>
 	<div class="row" style="display: flex; align-items: center; flex-wrap: wrap;">
 		<div class="col-xs-12 col-sm-6 calendar-nav-cell">
 			<a class="btn btn-default" href="" onclick='return AspenDiscovery.Events.getPrintListOptions({if !empty($weekNumber)}{$weekNumber}{else}""{/if}, {if !empty($monthNumber)}{$monthNumber}{else}""{/if}, {$yearNumber})'>{translate text="Print Options" isPublicFacing=true}</a>
@@ -31,27 +31,27 @@
 	</div>
 	<div class="calendar {if $useWeek}week-view{/if}">
 		<div class="row calendar-nav" id="fullScreenCalendar">
-			<div class="calendar-nav-cell col-tn-2 col-sm-1 align"><a class="btn btn-default" href="{$prevLink}" style="position:absolute;left: 0;"><i class="fas fa-caret-left {if $isRTL}fa-flip-horizontal{/if}" role="presentation"></i> {translate text="Previous" isPublicFacing=true}</a></div>
+			<div class="calendar-nav-cell col-tn-2 col-sm-1 align"><a class="btn btn-default" href="{$prevLink}" style="position:absolute;left: 0;" {if !empty($embedSuffix)}target="_self" {/if}><i class="fas fa-caret-left {if $isRTL}fa-flip-horizontal{/if}" role="presentation"></i> {translate text="Previous" isPublicFacing=true}</a></div>
 			<div class="calendar-nav-cell col-tn-8 col-sm-10 text-center calendar-current-month">{$calendarMonth}</div>
 			{if $useWeek}
-				<div class="calendar-nav-cell col-tn-2 col-sm-1"><a class="btn btn-default" href="{$monthLink}" style="position:absolute;right: 0">{translate text="Show Month" isPublicFacing=true} </a></div>
+				<div class="calendar-nav-cell col-tn-2 col-sm-1"><a class="btn btn-default" href="{$monthLink}" style="position:absolute;right: 0" {if !empty($embedSuffix)}target="_self" {/if}>{translate text="Show Month" isPublicFacing=true} </a></div>
 			{else}
-				<div class="calendar-nav-cell col-tn-2 col-sm-1"><a class="btn btn-default" href="{$weekLink}" style="position:absolute;right: 0">{translate text="Show Week" isPublicFacing=true} </a></div>
+				<div class="calendar-nav-cell col-tn-2 col-sm-1"><a class="btn btn-default" href="{$weekLink}" style="position:absolute;right: 0" {if !empty($embedSuffix)}target="_self" {/if}>{translate text="Show Week" isPublicFacing=true} </a></div>
 			{/if}
-			<div class="calendar-nav-cell col-tn-2 col-sm-1"><a class="btn btn-default" href="{$nextLink}" style="position:absolute;right: 0">{translate text="Next" isPublicFacing=true} <i class="fas fa-caret-right {if $isRTL}fa-flip-horizontal{/if}"></i></a></div>
+			<div class="calendar-nav-cell col-tn-2 col-sm-1"><a class="btn btn-default" href="{$nextLink}" style="position:absolute;right: 0" {if !empty($embedSuffix)}target="_self" {/if}>{translate text="Next" isPublicFacing=true} <i class="fas fa-caret-right {if $isRTL}fa-flip-horizontal{/if}"></i></a></div>
 		</div>
 		<div id="smallScreenCalendar">
 			<div class="row calendar-nav">
 				<div class="calendar-nav-cell col-tn-12 text-center calendar-current-month">{$calendarMonth}</div>
 			</div>
 			<div class="row calendar-nav">
-				<div class="calendar-nav-cell col-tn-4"><a class="btn btn-default" href="{$prevLink}"><i class="fas fa-caret-left {if $isRTL}fa-flip-horizontal{/if}" role="presentation"></i> {translate text="Previous" isPublicFacing=true}</a></div>
+				<div class="calendar-nav-cell col-tn-4"><a class="btn btn-default" href="{$prevLink}" {if !empty($embedSuffix)}target="_self" {/if}><i class="fas fa-caret-left {if $isRTL}fa-flip-horizontal{/if}" role="presentation"></i> {translate text="Previous" isPublicFacing=true}</a></div>
 				{if $useWeek}
-					<div class="calendar-nav-cell col-tn-4"><a class="btn btn-default" href="{$monthLink}">{translate text="Show Month" isPublicFacing=true} </a></div>
+					<div class="calendar-nav-cell col-tn-4"><a class="btn btn-default" href="{$monthLink}" {if !empty($embedSuffix)}target="_self" {/if}>{translate text="Show Month" isPublicFacing=true} </a></div>
 				{else}
-					<div class="calendar-nav-cell col-tn-4"><a class="btn btn-default" href="{$weekLink}">{translate text="Show Week" isPublicFacing=true} </a></div>
+					<div class="calendar-nav-cell col-tn-4"><a class="btn btn-default" href="{$weekLink}" {if !empty($embedSuffix)}target="_self" {/if}>{translate text="Show Week" isPublicFacing=true} </a></div>
 				{/if}
-				<div class="calendar-nav-cell col-tn-4"><a class="btn btn-default" href="{$nextLink}">{translate text="Next" isPublicFacing=true} <i class="fas fa-caret-right {if $isRTL}fa-flip-horizontal{/if}"></i></a></div>
+				<div class="calendar-nav-cell col-tn-4"><a class="btn btn-default" href="{$nextLink}" {if !empty($embedSuffix)}target="_self" {/if}>{translate text="Next" isPublicFacing=true} <i class="fas fa-caret-right {if $isRTL}fa-flip-horizontal{/if}"></i></a></div>
 			</div>
 		</div>
 

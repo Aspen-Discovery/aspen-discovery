@@ -94,6 +94,12 @@
 				<span class="menu-bar-label hidden-inline-block-xs" id="login-button-label">{translate text="Sign in" isPublicFacing=true}</span>
 			</a>
 			{/if}
+			{if !empty($showMinimalSelfRegButton)}
+			<a href="/MyAccount/SelfReg" id="signUpLink" onclick="return AspenDiscovery.Account.showMinimalSelfRegForm(this);" class="menu-icon menu-bar-option" title="{translate text='Quick Register' inAttribute=true isPublicFacing=true}">
+				<i class="fas fa-user-plus fa-lg" role="presentation"></i>
+				<span class="menu-bar-label hidden-inline-block-xs">{translate text="Quick Register" isPublicFacing=true}</span>
+			</a>
+			{/if}
 		{/if}
 
 		<div class="dropdown menuToggleButton headerMenu" style="display:inline-block;"><a class="dropdown-toggle menu-icon menu-bar-option" tabindex="0" role="button" title="{translate text="Show Menu" inAttribute=true isPublicFacing=true}"  aria-label="{translate text="Show Menu" inAttribute=true isPublicFacing=true}" aria-haspopup="true" aria-expanded="false" id="header-menu-dropdown">

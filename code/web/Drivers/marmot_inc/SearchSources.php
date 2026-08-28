@@ -189,16 +189,23 @@ class SearchSources {
 				];
 			}
 
+			$numArticleAndDatabaseSearchSources = 0;
+			$numArticleAndDatabaseSearchSources += $searchEbscoEDS ? 1 : 0;
+			$numArticleAndDatabaseSearchSources += $searchEbscohost ? 1 : 0;
+			$numArticleAndDatabaseSearchSources += $searchGale ? 1 : 0;
+			$numArticleAndDatabaseSearchSources += $searchSummon ? 1 : 0;
+			$numArticleAndDatabaseSearchSources += $searchCloudSource ? 1 : 0;
+
 			if ($searchEbscoEDS) {
 				$searchOptions['ebsco_eds'] = [
-					'name' => 'Articles & Databases',
+					'name' => $numArticleAndDatabaseSearchSources > 1 ? 'EBSCO EDS' : 'Articles & Databases',
 					'description' => 'EBSCO EDS - Articles and Database',
 					'catalogType' => 'ebsco_eds',
 					'hasAdvancedSearch' => false,
 				];
 			} elseif ($searchEbscohost) {
 				$searchOptions['ebscohost'] = [
-					'name' => 'Articles & Databases',
+					'name' => $numArticleAndDatabaseSearchSources > 1 ? 'EBSCOhost' : 'Articles & Databases',
 					'description' => 'EBSCOhost - Articles and Database',
 					'catalogType' => 'ebscohost',
 					'hasAdvancedSearch' => false,
@@ -207,7 +214,7 @@ class SearchSources {
 
 			if ($searchGale) {
 				$searchOptions['gale'] = [
-					'name' => 'Articles & Databases',
+					'name' => $numArticleAndDatabaseSearchSources > 1 ? 'Gale' : 'Articles & Databases',
 					'description' => 'Gale - Articles and Database',
 					'catalogType' => 'gale',
 					'hasAdvancedSearch' => false,
@@ -216,7 +223,7 @@ class SearchSources {
 
 			if ($searchSummon) {
 				$searchOptions['summon'] = [
-					'name' => 'Articles & Databases',
+					'name' => $numArticleAndDatabaseSearchSources > 1 ? 'Summon' : 'Articles & Databases',
 					'description' => 'Summon - Articles and Database',
 					'catalogType' => 'summon',
 					'hasAdvancedSearch' => false,
@@ -225,7 +232,7 @@ class SearchSources {
 
 			if ($searchCloudSource) {
 				$searchOptions['cloudsource'] = [
-					'name' => 'Articles & Databases',
+					'name' => $numArticleAndDatabaseSearchSources > 1 ? 'CloudSource' : 'Articles & Databases',
 					'description' => 'CloudSource - Articles and Database',
 					'catalogType' => 'cloudsource',
 					'hasAdvancedSearch' => false,
