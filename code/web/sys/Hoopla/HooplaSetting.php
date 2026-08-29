@@ -23,6 +23,7 @@ class HooplaSetting extends DataObject {
 	public $recordExtractionBatchSize;
 	public $hooplaFlexBatchSize;
 	public $indexingTime;
+	public $productsToUpdate;
 	// Legacy Hoopla v1 columns
 	public $libraryId;
 	public $runFullUpdateInstant;
@@ -377,6 +378,13 @@ class HooplaSetting extends DataObject {
 		];
 		if ($isVersion2) {
 			$indexingProperties += [
+				'productsToUpdate' => [
+					'property' => 'productsToUpdate',
+					'type' => 'textarea',
+					'label' => 'Records To Reindex',
+					'description' => 'A list of Hoopla record IDs to update on the next export run. Enter one record ID per line.',
+					'default' => '',
+				],
 				'lastUpdateOfChangedRecords' => [
 					'property' => 'lastUpdateOfChangedRecords',
 					'type' => 'timestamp',

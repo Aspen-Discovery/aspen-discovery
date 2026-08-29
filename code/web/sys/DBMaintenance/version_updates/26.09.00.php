@@ -22,6 +22,13 @@ function getUpdates26_09_00(): array {
 		//kodi
 
 		//yanjun
+		'add_hoopla_products_to_update' => [
+			'title' => 'Add Records To Reindex to Hoopla Settings',
+			'description' => 'Add a queue of Hoopla record IDs to refresh and reindex.',
+			'sql' => [
+				'ALTER TABLE hoopla_settings ADD COLUMN productsToUpdate MEDIUMTEXT NULL',
+			],
+		],
 
 		//imani
 

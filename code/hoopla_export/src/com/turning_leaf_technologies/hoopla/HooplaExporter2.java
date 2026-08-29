@@ -399,6 +399,9 @@ public class HooplaExporter2 {
 					continue;
 				}
 
+				// Process Records to Reindex
+				updatesRun |= processProductsToUpdate(settings);
+
 				// Extract Global Content
 				if (!globalContentUpdated) {
 					globalContentUpdated = exportHooplaContent(settings);
@@ -1180,7 +1183,7 @@ public class HooplaExporter2 {
 		return Collections.emptySet();
 	}
 
-	public boolean exportSingleHooplaTitle(String singleWorkId) {
+	public boolean exportSingleHooplaTitle(String singleWorkId, boolean flushAfterRetrieve) {
 		boolean updatesRun = false;
 		try{
 			logEntry.addNote("Doing extract of single work " + singleWorkId);
@@ -1313,7 +1316,9 @@ public class HooplaExporter2 {
 				if (updatesRun) {
 					// Add the title to the list regardless
 					titlesNeedingReindex.add(numericSingleWorkId);
-					flushRecordsToReindex();
+					if (flushAfterRetrieve) {
+						flushRecordsToReindex();
+					}
 				}
 				logEntry.addNote("Completed extract of single work " + singleWorkId + " for setting " + settings.getSettingsId());
 				logEntry.saveResults();
@@ -1325,6 +1330,42 @@ public class HooplaExporter2 {
 		}catch (Exception e){
 			logEntry.incErrors("Error exporting single hoopla title", e);
 		}
+		return updatesRun;
+	}
+
+	private boolean processProductsToUpdate(HooplaSettings2 settings) {
+		if (settings.getProductsToUpdate().isEmpty()) {
+			return false;
+		}
+
+		boolean updatesRun = false;
+
+		for (String hooplaId : settings.getProductsToUpdate()) {
+			try {
+				Long.parseLong(hooplaId);
+
+				if (exportSingleHooplaTitle(hooplaId, false)) {
+					updatesRun = true;
+				} else {
+					logEntry.addNote("Failed to retrieve Hoopla record " + hooplaId + ".");
+				}
+			} catch (NumberFormatException e) {
+				logEntry.addNote("Skipped invalid Hoopla record ID " + hooplaId);
+			}
+		}
+		logEntry.saveResults();
+
+		if (updatesRun) {
+			flushRecordsToReindex();
+		}
+
+		try (PreparedStatement clearProductsToUpdateStmt = aspenConn.prepareStatement("UPDATE hoopla_settings SET productsToUpdate = '' WHERE id = ?")) {
+			clearProductsToUpdateStmt.setLong(1, settings.getSettingsId());
+			clearProductsToUpdateStmt.executeUpdate();
+		} catch (SQLException e) {
+			logEntry.incErrors("Error clearing Hoopla Products To Reindex", e);
+		}
+
 		return updatesRun;
 	}
 
