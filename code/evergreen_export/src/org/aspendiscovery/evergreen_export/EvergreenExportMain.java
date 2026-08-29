@@ -736,7 +736,7 @@ public class EvergreenExportMain {
 				logEntry.incProducts();
 				logEntry.incUpdated();
 				if (numRecordsToReloadProcessed > 0 && numRecordsToReloadProcessed % 250 == 0) {
-					getGroupedWorkIndexer().commitChanges();
+					//getGroupedWorkIndexer().commitChanges();
 					logEntry.saveResults();
 				}
 			}
@@ -1011,7 +1011,7 @@ public class EvergreenExportMain {
 						logEntry.incAdded();
 						numRestored++;
 						if (numRestored > 0 && numRestored % 250 == 0) {
-							indexer.commitChanges();
+							//indexer.commitChanges();
 							logEntry.saveResults();
 						}
 					}
@@ -1319,9 +1319,9 @@ public class EvergreenExportMain {
 									logEntry.incSkipped();
 									lastRecordProcessed = recordIdentifier.getIdentifier();
 								}
-								if (totalChanges > 0 && totalChanges % 5000 == 0) {
+								/*if (totalChanges > 0 && totalChanges % 5000 == 0) {
 									indexer.commitChanges();
-								}
+								}*/
 								//Mark that the record was processed
 								recordGroupingProcessor.removeExistingRecord(recordIdentifier.getIdentifier());
 							} else {
@@ -1721,7 +1721,7 @@ public class EvergreenExportMain {
 							}
 						}
 						if (logEntry.getNumProducts() > 0 && logEntry.getNumProducts() % 250 == 0) {
-							getGroupedWorkIndexer().commitChanges();
+							//getGroupedWorkIndexer().commitChanges();
 							logEntry.saveResults();
 						}
 						response.numChanges++;

@@ -177,7 +177,7 @@
 			</analyzer>
 		</fieldType>
 		<!-- Text Field without Stemming, Synonyms, and stop Word removal -->
-		<fieldType name="alphaOnlySort" class="solr.TextField" sortMissingLast="true">
+		<fieldType name="alphaOnlySort" class="solr.TextField" sortMissingLast="true" uninvertible="true">
 			<analyzer>
 				<tokenizer class="solr.KeywordTokenizerFactory"/>
 				<filter class="solr.LowerCaseFilterFactory"/>
