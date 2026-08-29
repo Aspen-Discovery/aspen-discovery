@@ -183,6 +183,10 @@ class ExtractOverDriveInfo implements AutoCloseable {
 					logEntry.addNote("There are " + numProductsToUpdate + " products that need to be checked for updates");
 					logEntry.saveResults();
 
+					// Add any records that have been marked for Force Reindex
+					processRecordsToReload(logEntry);
+
+					// Add any records entered in Records To Reindex
 					addProductsToUpdate();
 
 					//Do some counts of the records that will be updated for logging purposes
@@ -317,9 +321,6 @@ class ExtractOverDriveInfo implements AutoCloseable {
 						saveProductsToUpdateStmt.setLong(2, settings.getId());
 						saveProductsToUpdateStmt.executeUpdate();
 					}
-
-					//For any records that have been marked to reload, regroup and reindex the records
-					processRecordsToReload(logEntry);
 
 					//Finally, process any records that seem to be unlinked
 					//MDN 3/6/24 - This is no longer needed.
@@ -460,23 +461,22 @@ class ExtractOverDriveInfo implements AutoCloseable {
 					while (getRecordsToReloadRS.next()) {
 						long recordToReloadId = getRecordsToReloadRS.getLong("id");
 						String overDriveId = getRecordsToReloadRS.getString("identifier");
-						//Regroup the record
-						String groupedWorkId = getRecordGroupingProcessor().processOverDriveRecord(overDriveId);
-						//Reindex the record
-						getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
+
+						settings.addProductToUpdate(overDriveId);
 
 						markRecordToReloadAsProcessedStmt.setLong(1, recordToReloadId);
 						markRecordToReloadAsProcessedStmt.executeUpdate();
 						numRecordsToReloadProcessed++;
 					}
 					if (numRecordsToReloadProcessed > 0) {
-						logEntry.addNote("Regrouped " + numRecordsToReloadProcessed + " records marked for reprocessing");
+						logEntry.addNote("Added " + numRecordsToReloadProcessed + " records from Force Reindex to the update queue.");
 					}
 				}
 			}
 		}catch (Exception e){
 			logEntry.incErrors("Error processing records to reload ", e);
 		}
+		logEntry.saveResults();
 	}
 
 	private void initOverDriveExtract(Connection dbConn, OverDriveExtractLogEntry logEntry) throws SQLException {

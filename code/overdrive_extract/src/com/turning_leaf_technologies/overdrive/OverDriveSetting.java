@@ -97,6 +97,10 @@ public class OverDriveSetting {
 		return productsToUpdate;
 	}
 
+	public void addProductToUpdate(String overDriveId) {
+		productsToUpdate.add(overDriveId);
+	}
+
 	public synchronized void addProductToUpdateNextTime(String overDriveId){
 		productsToUpdateNextTime.add(overDriveId);
 	}
