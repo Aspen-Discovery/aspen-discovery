@@ -106,11 +106,12 @@ public class HooplaExporter2 {
 	}
 
 	private void processRecordsToReload(HooplaExtractLogEntry2 logEntry) {
-		try {
+		try (
 			PreparedStatement getRecordsToReloadStmt = aspenConn.prepareStatement("SELECT * from record_identifiers_to_reload WHERE processed = 0 and type='hoopla'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			PreparedStatement markRecordToReloadAsProcessedStmt = aspenConn.prepareStatement("UPDATE record_identifiers_to_reload SET processed = 1 where id = ?");
 			PreparedStatement getItemDetailsForRecordStmt = aspenConn.prepareStatement("SELECT UNCOMPRESS(rawResponse) as rawResponse FROM hoopla_export where hooplaId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			ResultSet getRecordsToReloadRS = getRecordsToReloadStmt.executeQuery();
+		) {
 			int numRecordsToReloadProcessed = 0;
 			while (getRecordsToReloadRS.next()){
 				long recordToReloadId = getRecordsToReloadRS.getLong("id");
@@ -126,7 +127,6 @@ public class HooplaExporter2 {
 			if (numRecordsToReloadProcessed > 0){
 				logEntry.addNote("Added " + numRecordsToReloadProcessed + " records from Force Reindex to the update queue.");
 			}
-			getRecordsToReloadRS.close();
 		}catch (Exception e){
 			logEntry.incErrors("Error processing records to reload ", e);
 		}
