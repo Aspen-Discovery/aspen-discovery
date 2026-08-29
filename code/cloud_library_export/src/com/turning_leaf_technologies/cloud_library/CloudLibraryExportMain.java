@@ -169,7 +169,9 @@ public class CloudLibraryExportMain {
 				CloudLibrarySettings settings = new CloudLibrarySettings(getSettingsRS);
 				numSettings++;
 				CloudLibraryExporter exporter = new CloudLibraryExporter(serverName, configIni, settings, logger, aspenConn);
-				numChanges += exporter.extractSingleRecord(singleRecordId);
+				if (exporter.extractSingleRecord(singleRecordId)) {
+					numChanges++;
+				}
 			}
 			if (numSettings == 0) {
 				logger.error("Unable to find settings for CloudLibrary; please add settings to the database.");

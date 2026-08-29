@@ -266,8 +266,9 @@ public class CloudLibraryExporter {
 	 * @param singleRecordId The CloudLibrary ID of the record to extract.
 	 * @return Number of changes made.
 	 */
-	public int extractSingleRecord(String singleRecordId) {
-		int numChanges = 0;
+	public boolean extractSingleRecord(String singleRecordId) {
+		boolean marcLoaded = false;
+		boolean availabilityLoaded = false;
 
 		loadExistingTitles(settings.getSettingsId());
 
@@ -303,9 +304,7 @@ public class CloudLibraryExporter {
 					SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
 					SAXParser saxParser = saxParserFactory.newSAXParser();
 					saxParser.parse(new ByteArrayInputStream(response.getMessage().getBytes(StandardCharsets.UTF_8)), handler);
-
-					numChanges += handler.getNumDocuments();
-					logEntry.saveResults();
+					marcLoaded = true;
 				} catch (SAXException | ParserConfigurationException | IOException e) {
 					logger.error("Error parsing response:", e);
 					logEntry.incErrors("Error parsing response: ", e);
@@ -313,13 +312,10 @@ public class CloudLibraryExporter {
 				break;
 			}
 		}
+		logEntry.saveResults();
 
 		CloudLibraryAvailability availability = loadAvailabilityForRecord(singleRecordId);
-		if (availability != null) {
-			numChanges++;
-		}
-
-		processRecordsToReload(logEntry);
+		availabilityLoaded = !availability.getRawResponse().isEmpty();
 
 		if (recordGroupingProcessorSingleton != null) {
 			recordGroupingProcessorSingleton.close();
@@ -333,10 +329,9 @@ public class CloudLibraryExporter {
 			existingRecords = null;
 		}
 
-		logger.info("Finished extracting single record: {} change(s).", numChanges);
 		logEntry.setFinished();
 
-		return numChanges;
+		return marcLoaded && availabilityLoaded;
 	}
 
 	private void createDbLogEntry(Date startTime, Connection aspenConn) {
