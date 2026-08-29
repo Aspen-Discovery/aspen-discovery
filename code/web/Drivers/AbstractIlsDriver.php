@@ -1131,4 +1131,8 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 	public function supportsMultiCopyHolds() : bool {
 		return false;
 	}
+
+	public function hasMandatorySelfRegistrationFields(): bool {
+		return false;
+	} 
 }

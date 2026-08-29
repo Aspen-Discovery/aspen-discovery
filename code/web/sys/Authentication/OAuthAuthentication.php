@@ -11,6 +11,7 @@ class OAuthAuthentication extends Action {
 	protected $gateway;
 	protected $accessToken;
 	protected $refreshToken;
+	protected $idToken;
 	protected $grantType;
 	protected $resourceOwner;
 	protected $redirectUri;
@@ -161,6 +162,15 @@ class OAuthAuthentication extends Action {
 			if (!empty($decodedResponse['refresh_token'])) {
 				$this->refreshToken = $decodedResponse['refresh_token'];
 			}
+			if (!empty($decodedResponse['id_token'])) {
+				$parts = explode('.', $decodedResponse['id_token']);
+				$this->idToken = json_decode(base64_decode($parts[1]), true);
+				if (IPAddress::showDebuggingInformation()) {
+					global $logger;
+					$logger->log("ID Token", Logger::LOG_ERROR);
+					$logger->log($this->idToken, Logger::LOG_ERROR);
+				}
+			}
 			if ($returnToken) {
 				return $decodedResponse['access_token'];
 			}
@@ -195,6 +205,10 @@ class OAuthAuthentication extends Action {
 	}
 
 	private function getResourceOwner($resourceOwnerDetailsUrl): bool {
+		if (!empty($this->idToken)) {
+			$this->resourceOwner = $this->idToken;
+			return true;
+		}
 		global $logger;
 		$this->initCurlWrapper();
 		if ($this->gateway == 'google') {
@@ -286,11 +300,9 @@ class OAuthAuthentication extends Action {
 		$result = false;
 		foreach ($array as $key => $obj) {
 			if (is_array($obj)) {
-				foreach ($obj as $n) {
-					if (array_key_exists($needle, $n)) {
-						$result = $n[$needle];
-						break;
-					}
+				$result = $this->searchArray($obj, $needle);
+				if ($result !== false) {
+					return $result;
 				}
 			} else if ($key == $needle) {
 				$result = $obj;
@@ -351,7 +363,7 @@ class OAuthAuthentication extends Action {
 		if (!$location->find(true)) {
 			$tmpUser->homeLocationId = 0;
 		} else {
-			$tmpUser->homeLocationId = $location->code;
+			$tmpUser->homeLocationId = $location->locationId;
 		}
 		$tmpUser->myLocation1Id = 0;
 		$tmpUser->myLocation2Id = 0;
@@ -360,6 +372,8 @@ class OAuthAuthentication extends Action {
 		if($tmpUser->insert()) {
 			return true;
 		}
+		global $logger;
+		$logger->log($tmpUser->getLastError(), Logger::LOG_ERROR);
 		return false;
 	}
 

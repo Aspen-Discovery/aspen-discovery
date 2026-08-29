@@ -592,7 +592,7 @@ public class EvolveExportMain {
 					}
 				}
 				if (logEntry.getNumProducts() > 0 && logEntry.getNumProducts() % 250 == 0) {
-					getGroupedWorkIndexer().commitChanges();
+					//getGroupedWorkIndexer().commitChanges();
 					logEntry.saveResults();
 				}
 			}
@@ -956,9 +956,9 @@ public class EvolveExportMain {
 								} else {
 									logEntry.incSkipped();
 								}
-								if (totalChanges > 0 && totalChanges % 5000 == 0) {
+								/*if (totalChanges > 0 && totalChanges % 5000 == 0) {
 									indexer.commitChanges();
-								}
+								}*/
 								//Mark that the record was processed
 								recordGroupingProcessor.removeExistingRecord(recordIdentifier.getIdentifier());
 							} else {

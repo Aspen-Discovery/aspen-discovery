@@ -409,7 +409,7 @@ class HooplaProcessor2 {
 					HashSet<String> artistsWithRoleToAdd = new HashSet<>();
 					for (int i = 0; i < artists.length(); i++) {
 						JSONObject curArtist = artists.getJSONObject(i);
-						String artistName = AspenStringUtils.swapFirstLastNames(curArtist.getString("name"));
+						String artistName = AspenStringUtils.swapFirstLastNames(curArtist.getString("name")).replaceAll("\\s+$", "");
 						artistsToAdd.add(artistName);
 						if (curArtist.getString("relationship").toLowerCase().equals("reader")) {
 							artistsToAdd.add(artistName);

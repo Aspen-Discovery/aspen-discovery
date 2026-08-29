@@ -13,13 +13,18 @@
 
 	<div class="{if empty($showCovers)}col-xs-12{else}col-xs-9 col-sm-9 col-md-9 col-lg-10{/if}">{* May turn out to be more than one situation to consider here *}
 		{* Title Row *}
-
 		<div class="row">
 			<div class="col-xs-12">
 				<span class="result-index">{$resultIndex})</span>&nbsp;
-				<a href="{$pageUrl}" class="result-title notranslate" onclick="AspenDiscovery.Websites.trackUsage('{$id}')">
-					{if !$title|removeTrailingPunctuation} {translate text='Title not available' isPublicFacing=true}{else}{$title|removeTrailingPunctuation|highlight|truncate:180:"..."}{/if}
-				</a>
+				{if preg_match('/webresource/i', $id)}
+					<a class="result-title notranslate" onclick="return AspenDiscovery.WebBuilder.getWebResource('{$idNumber}');" aria-label="{translate text='Open Resource' isPublicFacing=true}{if !empty($openInNewTab)} ({translate text='opens in new tab' isPublicFacing=true}){/if}">
+						{if !$title|removeTrailingPunctuation} {translate text='Title not available' isPublicFacing=true}{else}{$title|removeTrailingPunctuation|highlight|truncate:180:"..."}{/if}
+					</a>
+				{else}
+					<a href="{$pageUrl}" class="result-title notranslate" onclick="AspenDiscovery.Websites.trackUsage('{$id}')">
+						{if !$title|removeTrailingPunctuation} {translate text='Title not available' isPublicFacing=true}{else}{$title|removeTrailingPunctuation|highlight|truncate:180:"..."}{/if}
+					</a>
+				{/if}
 				{if isset($summScore)}
 					&nbsp;(<a href="#" onclick="return AspenDiscovery.showElementInPopup('Score Explanation', '#scoreExplanationValue{$summId|escape}');">{$summScore}</a>)
 				{/if}
