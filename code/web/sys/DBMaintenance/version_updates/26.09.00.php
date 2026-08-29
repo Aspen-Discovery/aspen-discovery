@@ -22,6 +22,14 @@ function getUpdates26_09_00(): array {
 		//kodi
 
 		//yanjun
+		'hoopla_store_raw_response_length' => [
+			'title' => 'Store Raw Response Length for Hoopla',
+			'description' => 'Store Raw Response Length for Hoopla and index for performance',
+			'sql' => [
+				'ALTER TABLE hoopla_export ADD COLUMN rawResponseLength INT AS (UNCOMPRESSED_LENGTH(rawResponse)) STORED',
+				'ALTER TABLE hoopla_export ADD INDEX responseIndex(hooplaId, rawChecksum, rawResponseLength)',
+			],
+		], //hoopla_store_raw_response_length
 
 		//imani
 

@@ -78,7 +78,7 @@ public class HooplaExporter2 {
 		startTimeForLogging = startTime.getTime() / 1000;
 
 		try {
-			getAllExistingHooplaItemsStmt = aspenConn.prepareStatement("SELECT id, hooplaId, rawChecksum, UNCOMPRESSED_LENGTH(rawResponse) as rawResponseLength from hoopla_export");
+			getAllExistingHooplaItemsStmt = aspenConn.prepareStatement("SELECT id, hooplaId, rawChecksum, rawResponseLength from hoopla_export");
 			addHooplaTitleToDB = aspenConn.prepareStatement("INSERT INTO hoopla_export (hooplaId, title, format, pa, demo, profanity, rating, abridged, children, ppuPrice, rawChecksum, rawResponse, dateFirstDetected) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,COMPRESS(?),?) ");
 			updateHooplaTitleInDB = aspenConn.prepareStatement("UPDATE hoopla_export set title = ?, format = ?, pa = ?, demo = ?, profanity = ?, rating = ?, abridged = ?, children = ?, ppuPrice = ?, rawChecksum = ?, rawResponse = COMPRESS(?) where id = ?");
 			deleteHooplaItemStmt = aspenConn.prepareStatement("DELETE FROM hoopla_export where id = ?");
