@@ -41,6 +41,7 @@ public class HooplaExporter {
 
 	//Existing records
 	private static HashMap<Long, HooplaTitle> existingRecords = new HashMap<>();
+	private static boolean existingTitlesLoaded = false;
 
 	//For Checksums
 	private static final CRC32 checksumCalculator = new CRC32();
@@ -68,9 +69,6 @@ public class HooplaExporter {
 			logger.error("Error preparing Hoopla exporter statements", e);
 			logEntry.addNote("Error preparing Hoopla exporter statements" + e);
 		}
-		//Get a list of all existing records in the database
-		loadExistingTitles();
-
 		processRecordsToReload(logEntry);
 
 	}
@@ -132,6 +130,7 @@ public class HooplaExporter {
 	}
 
 	private static void deleteItems(String hooplaType) {
+		ensureExistingTitlesLoaded();
 		int numDeleted = 0;
 		try {
 			for (HooplaTitle hooplaTitle : existingRecords.values()) {
@@ -192,6 +191,13 @@ public class HooplaExporter {
 			logger.error("Error loading existing titles", e);
 			logEntry.addNote("Error loading existing titles" + e);
 			System.exit(-1);
+		}
+	}
+
+	private static void ensureExistingTitlesLoaded() {
+		if (!existingTitlesLoaded) {
+			loadExistingTitles();
+			existingTitlesLoaded = true;
 		}
 	}
 
@@ -757,6 +763,8 @@ public class HooplaExporter {
 	}
 
 	private static void updateTitlesInDB(JSONArray responseTitles, boolean forceRegrouping, boolean doFullReload, String hooplaType) {
+		// Load existing records only when title metadata is being processed.
+		ensureExistingTitlesLoaded();
 		logEntry.incNumProducts(responseTitles.length());
 		for (int i = 0; i < responseTitles.length(); i++){
 			try {
@@ -954,6 +962,10 @@ public class HooplaExporter {
 
 	public void exporterCleanUp() {
 		try{
+			if (getAllExistingHooplaItemsStmt != null) {
+				getAllExistingHooplaItemsStmt.close();
+				getAllExistingHooplaItemsStmt = null;
+			}
 			addHooplaTitleToDB.close();
 			addHooplaTitleToDB = null;
 			updateHooplaTitleInDB.close();
