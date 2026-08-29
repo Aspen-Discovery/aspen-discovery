@@ -103,7 +103,6 @@ public class HooplaExporter2 {
 		//Get a list of all existing records in the database
 		loadExistingTitles();
 
-		processRecordsToReload(logEntry);
 	}
 
 	private void processRecordsToReload(HooplaExtractLogEntry2 logEntry) {
@@ -115,36 +114,17 @@ public class HooplaExporter2 {
 			int numRecordsToReloadProcessed = 0;
 			while (getRecordsToReloadRS.next()){
 				long recordToReloadId = getRecordsToReloadRS.getLong("id");
-				String recordId = getRecordsToReloadRS.getString("identifier");
-				long hooplaId = Long.parseLong(StringUtils.replace(recordId,"MWT", ""));
-				//Regroup the record
-				getItemDetailsForRecordStmt.setLong(1, hooplaId);
-				ResultSet getItemDetailsForRecordRS = getItemDetailsForRecordStmt.executeQuery();
-				if (getItemDetailsForRecordRS.next()){
-					String rawResponse = getItemDetailsForRecordRS.getString("rawResponse");
-					try {
-						JSONObject itemDetails = new JSONObject(rawResponse);
-						String groupedWorkId =  getRecordGroupingProcessor().groupHooplaRecord(itemDetails, hooplaId);
-						//Reindex the record
-						getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
-
+				String hooplaId = StringUtils.replace(getRecordsToReloadRS.getString("identifier"), "MWT", "");
+				if (exportSingleHooplaTitle(hooplaId, false)) {
 						markRecordToReloadAsProcessedStmt.setLong(1, recordToReloadId);
 						markRecordToReloadAsProcessedStmt.executeUpdate();
 						numRecordsToReloadProcessed++;
-					}catch (JSONException e){
-						logEntry.incErrors("Could not parse item details for record to reload " + hooplaId, e);
-					}
-				}else{
-					//The record has likely been deleted
-					logEntry.addNote("Could not get details for Hoopla record to reload " + hooplaId + " it has been deleted");
-					markRecordToReloadAsProcessedStmt.setLong(1, recordToReloadId);
-					markRecordToReloadAsProcessedStmt.executeUpdate();
-					numRecordsToReloadProcessed++;
+				} else {
+					logEntry.addNote("Failed to retrieve Hoopla record " + hooplaId + " from Force Reindex.");
 				}
-				getItemDetailsForRecordRS.close();
 			}
 			if (numRecordsToReloadProcessed > 0){
-				logEntry.addNote("Regrouped " + numRecordsToReloadProcessed + " records marked for reprocessing");
+				logEntry.addNote("Added " + numRecordsToReloadProcessed + " records from Force Reindex to the update queue.");
 			}
 			getRecordsToReloadRS.close();
 		}catch (Exception e){
@@ -398,6 +378,9 @@ public class HooplaExporter2 {
 					logEntry.saveResults();
 					continue;
 				}
+
+				// Process records that have been marked for Force Reindex
+				processRecordsToReload(logEntry);
 
 				// Process Records to Reindex
 				updatesRun |= processProductsToUpdate(settings);
