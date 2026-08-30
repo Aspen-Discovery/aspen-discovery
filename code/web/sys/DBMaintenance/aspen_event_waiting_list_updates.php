@@ -26,7 +26,19 @@ function getAspenEventWaitingListUpdates() {
 				'ALTER TABLE user_aspen_event_instance_registrations ADD COLUMN IF NOT EXISTS createdAt DATETIME DEFAULT CURRENT_TIMESTAMP',
 				'ALTER TABLE user_aspen_event_instance_registrations ADD COLUMN IF NOT EXISTS notifiedAt DATETIME DEFAULT NULL',
 				'ALTER TABLE user_aspen_event_instance_registrations ADD COLUMN IF NOT EXISTS status VARCHAR(20) NOT NULL DEFAULT "waiting"',
-				'UPDATE user_aspen_event_instance_registrations SET status = "registered" WHERE registered = 1',
+				"SELECT count(*)
+					INTO @exist
+					FROM information_schema.columns
+					WHERE table_schema = database()
+					and COLUMN_NAME = 'registered'
+					AND table_name = 'user_aspen_event_instance_registrations';
+
+					set @query = IF(@exist > 0, 'UPDATE user_aspen_event_instance_registrations SET status = \'registered\' WHERE registered = 1', 'select \'Column Does Not Exist\' status');
+
+					prepare stmt from @query;
+
+					EXECUTE stmt;
+					DEALLOCATE PREPARE stmt;",
 				'ALTER TABLE user_aspen_event_instance_registrations DROP COLUMN IF EXISTS registered',
 			],
 		], // replace_registered_with_status_in_user_aspen_event_instance_registrations
