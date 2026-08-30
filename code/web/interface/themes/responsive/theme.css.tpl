@@ -36,9 +36,59 @@ body{ldelim}
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     font-smooth: always;
-    font-size: 14px;
 {rdelim}
 {/if}
+
+{* Font Size *}
+{* Everything below is sized relative to --aspen-base-font-size using calc rather than em so that nested
+   elements (a .btn inside an h2, a .badge inside a .panel-title, etc) do not compound the scaling. The
+   ratios are Bootstrap's own px sizes divided by its 14px base, so 'small' reproduces the stock sizes. *}
+{* Declared on :root rather than body so elements rendered outside body's subtree can still read it.
+   Note: html's own font-size stays at the stock 62.5% - changing it would rescale every existing rem value. *}
+:root{ldelim}
+	--aspen-base-font-size: {$fontSize};
+{rdelim}
+
+body{ldelim}
+    font-size: var(--aspen-base-font-size);
+{rdelim}
+
+h1, .h1{ldelim}
+    font-size: calc(var(--aspen-base-font-size) * 2.5714);
+{rdelim}
+h2, .h2{ldelim}
+    font-size: calc(var(--aspen-base-font-size) * 2.1429);
+{rdelim}
+h3, .h3{ldelim}
+    font-size: calc(var(--aspen-base-font-size) * 1.7143);
+{rdelim}
+h4, .h4{ldelim}
+    font-size: calc(var(--aspen-base-font-size) * 1.2857);
+{rdelim}
+h5, .h5{ldelim}
+    font-size: var(--aspen-base-font-size);
+{rdelim}
+h6, .h6{ldelim}
+    font-size: calc(var(--aspen-base-font-size) * 0.8571);
+{rdelim}
+
+.panel-title{ldelim}
+    font-size: calc(var(--aspen-base-font-size) * 1.1429);
+{rdelim}
+
+input, button, select, textarea, label,
+.btn, .form-control, .input-group-addon, .ms-choice, .ms-drop{ldelim}
+    font-size: var(--aspen-base-font-size);
+{rdelim}
+
+.btn-lg, .input-lg, .input-group-lg > .form-control, .input-group-lg > .input-group-addon, .input-group-lg > .input-group-btn > .btn{ldelim}
+    font-size: calc(var(--aspen-base-font-size) * 1.2857);
+{rdelim}
+
+.btn-sm, .btn-xs, .input-sm, .input-group-sm > .form-control, .input-group-sm > .input-group-addon, .input-group-sm > .input-group-btn > .btn, .badge{ldelim}
+    font-size: calc(var(--aspen-base-font-size) * 0.8571);
+{rdelim}
+
 h1 small, h2 small, h3 small, h4 small, h5 small{ldelim}
     color: {$bodyTextColor};
 {rdelim}

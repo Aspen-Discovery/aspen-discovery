@@ -45,19 +45,27 @@
 @font-family-monospace:   Menlo, Monaco, Consolas, "Courier New", monospace;
 @font-family-base:        @font-family-sans-serif;
 
-@font-size-base:          14px;
-@font-size-large:         ceil(@font-size-base * 1.25); // ~18px
-@font-size-small:         ceil(@font-size-base * 0.85); // ~12px
+// 1. Hook directly into your PHP variable
+@font-size-base: var(--aspen-base-font-size);
 
-@font-size-h1:            floor(@font-size-base * 2.6); // ~36px
-@font-size-h2:            floor(@font-size-base * 2.15); // ~30px
-@font-size-h3:            ceil(@font-size-base * 1.7); // ~24px
-@font-size-h4:            ceil(@font-size-base * 1.25); // ~18px
-@font-size-h5:            @font-size-base;
-@font-size-h6:            ceil(@font-size-base * 0.85); // ~12px
+// 2. Relative font sizing tiers (Using exact multipliers for clean scaling)
+@font-size-large: calc(var(--aspen-base-font-size) * 1.2857); // Target: ~18px at 14px base
+@font-size-small: calc(var(--aspen-base-font-size) * 0.8571); // Target: ~12px at 14px base
 
-@line-height-base:        1.428571429; // 20/14
-@line-height-computed:    floor(@font-size-base * @line-height-base); // ~20px
+// 3. Headings Structure (Converted to safe browser math)
+@font-size-h1: calc(var(--aspen-base-font-size) * 2.5714); // Target: ~36px
+@font-size-h2: calc(var(--aspen-base-font-size) * 2.1429); // Target: ~30px
+@font-size-h3: calc(var(--aspen-base-font-size) * 1.7143); // Target: ~24px
+@font-size-h4: calc(var(--aspen-base-font-size) * 1.2857); // Target: ~18px
+@font-size-h5: @font-size-base;                           // Target: Base size
+@font-size-h6: calc(var(--aspen-base-font-size) * 0.8571); // Target: ~12px
+
+// 4. Line Height Engine
+@line-height-base: 1.428571429; // Unitless: 20/14 baseline
+
+// 5. Line Height Computation (Escaped string passes safely directly to browser)
+@line-height-computed: ~"calc(var(--aspen-base-font-size) * 1.428571429)";
+
 
 @headings-font-family:    @font-family-base;
 @headings-font-weight:    500;
@@ -163,9 +171,18 @@
 
 @input-color-placeholder:        @gray-light;
 
-@input-height-base:              (@line-height-computed + (@padding-base-vertical * 2) + 2);
-@input-height-large:             (ceil(@font-size-large * @line-height-large) + (@padding-large-vertical * 2) + 2);
-@input-height-small:             (floor(@font-size-small * @line-height-small) + (@padding-small-vertical * 2) + 2);
+// 1. Base Input Height Layout Engine
+// Formula: line-height + (padding * 2) + 2px border space
+@input-height-base: ~"calc((var(--aspen-base-font-size) * @{line-height-base}) + (@{padding-base-vertical} * 2) + 2px)";
+
+// 2. Large Input Height Layout Engine
+// Formula: (font-size * line-height) + (padding * 2) + 2px border space
+@input-height-large: ~"calc((@{font-size-large} * @{line-height-large}) + (@{padding-large-vertical} * 2) + 2px)";
+
+// 3. Small Input Height Layout Engine
+// Formula: (font-size * line-height) + (padding * 2) + 2px border space
+@input-height-small: ~"calc((@{font-size-small} * @{line-height-small}) + (@{padding-small-vertical} * 2) + 2px)";
+
 
 @legend-color:                   @gray-dark;
 @legend-border-color:            #e5e5e5;
@@ -280,7 +297,8 @@
 @navbar-margin-bottom:             @line-height-computed;
 @navbar-border-radius:             @border-radius-base;
 @navbar-padding-horizontal:        (@grid-gutter-width / 2);
-@navbar-padding-vertical:          ((@navbar-height - @line-height-computed) / 2);
+@navbar-padding-vertical: ~"calc((@{navbar-height} - @{line-height-computed}) / 2)";
+
 
 @navbar-default-color:             #777;
 @navbar-default-bg:                #f8f8f8;
@@ -390,7 +408,8 @@
 @jumbotron-color:                inherit;
 @jumbotron-bg:                   @gray-lighter;
 @jumbotron-heading-color:        inherit;
-@jumbotron-font-size:            ceil(@font-size-base * 1.5);
+@jumbotron-font-size: calc(var(--aspen-base-font-size) * 1.5); // Target: 21px (at 14px base)
+
 
 
 // Form states and alerts

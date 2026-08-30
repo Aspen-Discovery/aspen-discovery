@@ -24,9 +24,9 @@ code {
 // Blocks of code
 pre {
   display: block;
-  padding: ((@line-height-computed - 1) / 2);
-  margin: 0 0 (@line-height-computed / 2);
-  font-size: (@font-size-base - 1); // 14px to 13px
+  padding: ~"calc((@line-height-computed - 1) / 2)";
+  margin: 0 0 ~"calc(@{line-height-computed} / 2)";
+  font-size: calc(var(--aspen-base-font-size) * 0.9286); // 14px to 13px
   line-height: @line-height-base;
   word-break: break-all;
   word-wrap: break-word;
