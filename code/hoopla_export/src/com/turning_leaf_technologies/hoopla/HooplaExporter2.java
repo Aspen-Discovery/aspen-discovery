@@ -1355,10 +1355,6 @@ public class HooplaExporter2 {
 		}
 		logEntry.saveResults();
 
-		if (updatesRun) {
-			flushRecordsToReindex();
-		}
-
 		try (PreparedStatement clearProductsToUpdateStmt = aspenConn.prepareStatement("UPDATE hoopla_settings SET productsToUpdate = '' WHERE id = ?")) {
 			clearProductsToUpdateStmt.setLong(1, settings.getSettingsId());
 			clearProductsToUpdateStmt.executeUpdate();
