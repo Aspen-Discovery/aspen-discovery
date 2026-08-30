@@ -400,7 +400,7 @@ public class HooplaExporter2 {
 				}
 
 				// Process Records to Reindex
-				updatesRun |= processProductsToUpdate(settings);
+				processProductsToUpdate(settings);
 
 				// Extract Global Content
 				if (!globalContentUpdated) {
@@ -1333,9 +1333,9 @@ public class HooplaExporter2 {
 		return updatesRun;
 	}
 
-	private boolean processProductsToUpdate(HooplaSettings2 settings) {
+	private void processProductsToUpdate(HooplaSettings2 settings) {
 		if (settings.getProductsToUpdate().isEmpty()) {
-			return false;
+			return;
 		}
 
 		boolean updatesRun = false;
@@ -1344,9 +1344,7 @@ public class HooplaExporter2 {
 			try {
 				Long.parseLong(hooplaId);
 
-				if (exportSingleHooplaTitle(hooplaId, false)) {
-					updatesRun = true;
-				} else {
+				if (!exportSingleHooplaTitle(hooplaId, false)) {
 					logEntry.addNote("Failed to retrieve Hoopla record " + hooplaId + ".");
 				}
 			} catch (NumberFormatException e) {
@@ -1361,8 +1359,6 @@ public class HooplaExporter2 {
 		} catch (SQLException e) {
 			logEntry.incErrors("Error clearing Hoopla Products To Reindex", e);
 		}
-
-		return updatesRun;
 	}
 
 	private void updateTitlesInDB(JSONArray responseTitles, boolean forceRegrouping, boolean doFullReload) {
