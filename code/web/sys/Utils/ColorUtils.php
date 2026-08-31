@@ -232,7 +232,7 @@ class ColorUtils {
 
 		return [
 			'lighter' => $lighter,
-			'base' => $baseHex,
+			'base' => '#' . $baseHex,
 			'text' => $textHex,
 			'darker' => $darker
 		];

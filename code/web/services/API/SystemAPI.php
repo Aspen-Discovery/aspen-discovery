@@ -201,43 +201,56 @@ class SystemAPI extends AbstractAPI {
 	public function getAspenLiDAThemesByLocation(): array {
 		$themes = [];
 		if (isset($_REQUEST['id']) && is_numeric($_REQUEST['id'])) {
-			require_once ROOT_DIR . '/sys/AspenLiDA/ThemeLocation.php';
-			require_once ROOT_DIR . '/sys/AspenLiDA/Theme.php';
-			$location = new AspenLiDAThemeLocation();
+			$location = new Location();
 			$location->locationId = $_REQUEST['id'];
-			if ($location->find()) {
-				while ($location->fetch()) {
+			if ($location->find(true)) {
+				$temp = $location->getAspenLiDAThemes();
+				if (!$location->useLibraryThemesForAspenLiDA || !empty($temp)) {
+					$aspenLiDAThemes = $temp;
+				} else {
+					$aspenLiDAThemes = $location->getParentLibrary()->getAspenLiDAThemes();
+				}
+
+				require_once ROOT_DIR . '/sys/AspenLiDA/Theme.php';
+				foreach ($aspenLiDAThemes as $aspenLiDATheme) {
 					$theme = new AspenLiDATheme();
-					$theme->id = $location->themeId;
-					if ($theme->find()) {
-						while ($theme->fetch()) {
-							$themes[$theme->id] = $theme->getApiInfo();
-						}
-					} else {
-						$webLocation = new LocationTheme();
-						$webLocation->locationId = $location->locationId;
-						$webTheme = new Theme();
-						$webTheme->id = $location->themeId;
+					$theme->id = $aspenLiDATheme->themeId;
+					if ($theme->find(true)) {
+						$themes[] = $theme->getApiInfo();
 					}
 				}
+
+				if (empty($themes)) {
+					$webThemes = $location->getThemes();
+					if (!$location->useLibraryThemes || !empty($webThemes)) {
+						$themes = $webThemes;
+					} else {
+						$themes = $location->getParentLibrary()->getThemes();
+					}
+				}
+
+				if (empty($themes)) {
+					return [
+						'success' => false,
+						'message' => 'No themes found for location or parent library',
+					];
+				}
+
+				return [
+					'success' => true,
+					'themes' => $themes,
+				];
 			} else {
 				return [
 					'success' => false,
 					'message' => 'Location not found',
-					'themes' => $themes,
 				];
 			}
-		} else {
-			return [
-				'success' => false,
-				'message' => 'Location id not provided',
-				'themes' => $themes,
-			];
 		}
 
 		return [
-			'success' => true,
-			'themes' => $themes,
+			'success' => false,
+			'message' => 'Location id not provided',
 		];
 	}
 
