@@ -18,7 +18,7 @@
 		</h1>
 
 		{if !$minimalInterface}
-		<div class="full-record-main row">
+		<div class="full-record-main row" data-work-id="{$recordDriver->getPermanentId()}">
 			<div class="col-xs-4 col-sm-5 col-md-4 col-lg-3 text-center">
 				{if $disableCoverArt != 1}
 					<div id="recordCover" class="text-center row">

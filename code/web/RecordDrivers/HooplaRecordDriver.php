@@ -67,9 +67,15 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 			$rawData = $this->hooplaRawMetadata;
 			foreach ($rawData->artists as $artist) {
 				if (!array_key_exists($artist->name, $this->detailedContributors)) {
+					$normalizedRole = strtolower(trim($artist->relationship));
+					if ($normalizedRole == 'reader') {
+						$role = 'Narrator';
+					} else {
+						$role = ucfirst(strtolower($artist->relationship));
+					}
 					$this->detailedContributors[$artist->name] = [
 						'name' => $artist->name,
-						'role' =>  ucfirst(strtolower($artist->relationship)),
+						'role' => $role,
 					];
 				}
 			}

@@ -1693,6 +1693,7 @@ class MyAccount_AJAX extends JSON_Action {
 		$interface->assign('isPrimaryAccountAuthenticationSSO', $isPrimaryAccountAuthenticationSSO);
 
 		$interface->assign('enableSelfRegistration', $library->enableSelfRegistration);
+		$interface->assign('useMinimalSelfRegistrationModal', $library->useMinimalSelfRegistrationModal);
 		$interface->assign('selfRegistrationUrl', $library->selfRegistrationUrl);
 		$interface->assign('checkRememberMe', 0);
 		if ($library->defaultRememberMe && !$locationSingleton->getOpacStatus()) {
@@ -1889,6 +1890,134 @@ class MyAccount_AJAX extends JSON_Action {
 			'body' => $interface->fetch('MyAccount/ajax-login.tpl'),
 			'buttons' => $loginButtons,
 		];
+	}
+
+	/** @noinspection PhpUnused */
+	function getMinimalSelfRegForm(): array {
+		global $library;
+		$result = [
+			'success' => false,
+			'title' => translate([
+				'text' => 'Register for a Library Card',
+				'isPublicFacing' => true,
+			]),
+			'message' => translate([
+				'text' => 'Self registration is not available.',
+				'isPublicFacing' => true,
+			]),
+		];
+
+		if ($library->enableSelfRegistration != 1 || empty($library->useMinimalSelfRegistrationModal)) {
+			return $result;
+		}
+
+		$catalog = CatalogFactory::getCatalogConnectionInstance();
+		if ($catalog == null || !$catalog->hasIlsRegistrationModeSupport(AbstractIlsDriver::ILS_REG_MODE_MINIMAL_SELF)) {
+			return $result;
+		}
+
+		require_once ROOT_DIR . '/services/MyAccount/SelfReg.php';
+		$formHtml = SelfReg::buildMinimalSelfRegForm($catalog, null, null, 'AspenDiscovery.Account.processMinimalSelfReg(objectEditorObject)');
+		if (empty($formHtml)) {
+			return $result;
+		}
+
+		return [
+			'success' => true,
+			'title' => translate([
+				'text' => 'Register for a Library Card',
+				'isPublicFacing' => true,
+			]),
+			'body' => $formHtml,
+			'buttons' => '',
+		];
+	}
+
+	/** @noinspection PhpUnused */
+	function processMinimalSelfReg(): array {
+		global $library;
+		$result = [
+			'success' => false,
+			'message' => translate([
+				'text' => 'Self registration is not available.',
+				'isPublicFacing' => true,
+			]),
+		];
+
+		if ($library->enableSelfRegistration != 1 || empty($library->useMinimalSelfRegistrationModal)) {
+			return $result;
+		}
+
+		$catalog = CatalogFactory::getCatalogConnectionInstance();
+		if ($catalog == null || !$catalog->hasIlsRegistrationModeSupport(AbstractIlsDriver::ILS_REG_MODE_MINIMAL_SELF)) {
+			return $result;
+		}
+
+		$selfRegFields = $catalog->getILSRegistrationFormStructure(AbstractIlsDriver::ILS_REG_MODE_MINIMAL_SELF);
+		require_once ROOT_DIR . '/services/MyAccount/SelfReg.php';
+		$outcome = SelfReg::validateAndRegister($catalog, $selfRegFields);
+
+		if (!empty($outcome['success'])) {
+			$registerResult = $outcome['result'] ?? [];
+			if (empty($registerResult['success'])) {
+				$result['message'] = $registerResult['message'] ?? translate([
+					'text' => 'Registration could not be completed.',
+					'isPublicFacing' => true,
+				]);
+				return $result;
+			}
+
+			global $interface;
+			$interface->assign('selfRegistrationSuccessMessage', SelfReg::getSelfRegistrationSuccessMessage($library));
+			$interface->assign('selfRegResult', $registerResult);
+
+			return [
+				'success' => true,
+				'title' => translate([
+					'text' => 'Register for a Library Card',
+					'isPublicFacing' => true,
+				]),
+				'message' => translate([
+					'text' => 'Your registration was successful.',
+					'isPublicFacing' => true,
+				]),
+				'body' => $interface->fetch('MyAccount/selfRegResult.tpl'),
+				'buttons' => '',
+			];
+		}
+
+		switch ($outcome['errorType'] ?? '') {
+			case 'email':
+				$result['message'] = translate([
+					'text' => 'Please enter a valid email address.',
+					'isPublicFacing' => true,
+				]);
+				break;
+			case 'phone':
+				$result['message'] = translate([
+					'text' => 'Please enter a valid phone number.',
+					'isPublicFacing' => true,
+				]);
+				break;
+			case 'address':
+				$result['message'] = translate([
+					'text' => 'The address you entered does not appear to be valid. Please check your address and try again.',
+					'isPublicFacing' => true,
+				]);
+				break;
+			case 'age':
+				$result['message'] = translate([
+					'text' => $outcome['ageText'] ?? 'Age not valid.',
+					'isPublicFacing' => true,
+				]);
+				break;
+			default:
+				$result['message'] = translate([
+					'text' => 'Registration could not be completed.',
+					'isPublicFacing' => true,
+				]);
+		}
+		return $result;
 	}
 
 	/** @noinspection PhpUnused */
@@ -8168,6 +8297,38 @@ class MyAccount_AJAX extends JSON_Action {
 					'text' => 'You must log in to register to events.',
 					'isPublicFacing' => true,
 				]);
+				$catalog = CatalogFactory::getCatalogConnectionInstance();
+
+				if ($library->enableSelfRegistration == 2 && !empty($library->selfRegistrationUrl)) {
+					$result['title'] = translate([
+						'text' => 'Join our library to register for events',
+						'isPublicFacing' => true,
+					]);
+					$result['body'] = translate([
+						'text' => 'You will be redirected to complete registration.',
+						'isPublicFacing' => true,
+					]);
+					$result['redirectUrl'] = $library->selfRegistrationUrl;
+					return $result;
+				}
+
+				if ($library->enableSelfRegistration == 1 && $library->useMinimalSelfRegistrationModal && $catalog->hasIlsRegistrationModeSupport(AbstractIlsDriver::ILS_REG_MODE_MINIMAL_SELF)) {
+					require_once ROOT_DIR . '/services/MyAccount/SelfReg.php';
+					$formHtml = SelfReg::buildMinimalSelfRegForm(
+						$catalog,
+						'Interested in joining our library Events? Use the quick registration form below to sign up and become a library member.',
+						'Already a member? Log in below to register to this event.',
+						'AspenDiscovery.Account.processMinimalSelfReg(objectEditorObject)'
+					);
+					if (!empty($formHtml)) {
+						$result['title'] = translate([
+							'text' => 'Join our library to register for events',
+							'isPublicFacing' => true,
+						]);
+						$result['body'] = $body . $formHtml;
+					}
+				}
+
 				return $result;
 			}
 

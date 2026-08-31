@@ -278,15 +278,15 @@
 						<div id="editionSelectionOptions" class="form-group">
 							<label class="control-label">{translate text="Do you want to place a hold on the suggested edition or a specific edition?" isPublicFacing=true}</label>
 							<div class="btn-group btn-group-toggle edition-option-toggle" role="group" aria-label="{translate text="Edition hold option" isPublicFacing=true}">
+								<button type="button" class="btn btn-primary edition-option-btn{if $holdPromptForEditions == 1} active{/if}"
+								        aria-pressed="{if $holdPromptForEditions == 1}true{else}false{/if}"
+								        onclick="AspenDiscovery.GroupedWork.selectEditionOption(this, 1)">
+									{translate text="Place hold on suggested edition" isPublicFacing=true}
+								</button>
 								<button type="button" class="btn btn-primary edition-option-btn{if $holdPromptForEditions == 2} active{/if}"
 										aria-pressed="{if $holdPromptForEditions == 2}true{else}false{/if}"
 										onclick="AspenDiscovery.GroupedWork.selectEditionOption(this, 2)">
 									{translate text="Place hold on specific edition" isPublicFacing=true}
-								</button>
-								<button type="button" class="btn btn-primary edition-option-btn{if $holdPromptForEditions == 1} active{/if}"
-										aria-pressed="{if $holdPromptForEditions == 1}true{else}false{/if}"
-										onclick="AspenDiscovery.GroupedWork.selectEditionOption(this, 1)">
-									{translate text="Place hold on suggested edition" isPublicFacing=true}
 								</button>
 							</div>
 							<input type="hidden" name="selectedEditionOption" id="selectedEditionOption" value="{$holdPromptForEditions|default:1}">
