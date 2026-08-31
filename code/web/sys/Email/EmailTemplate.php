@@ -137,6 +137,8 @@ class EmailTemplate extends DataObject {
 				'label' => 'Number of Sample Titles',
 				'description' => 'For Saved Search Alert emails, the number of sample titles to include per search.',
 				'default' => 3,
+				'min' => 1,
+				'max' => 20
 			],
 			'libraries' => [
 				'property' => 'libraries',
