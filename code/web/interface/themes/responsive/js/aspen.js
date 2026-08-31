@@ -926,6 +926,7 @@ var Globals = (function () {
 		loadingBody: 'Loading, please wait',
 		requestFailedTitle: 'Request Failed',
 		requestFailedBody: 'There was an error with this AJAX Request.',
+		validationInvalidValue: 'Invalid value entered.',
 		rtl:false,
 		bypassAspenLoginForSSO:false,
 		ssoLoginUrl: '',
@@ -1858,6 +1859,29 @@ var AspenDiscovery = (function(){
 			var slides = wrapper.querySelectorAll('.slider-slide');
 			let currentIndex = 0;
 
+			var scrollEdgeThreshold = 2; // px slack for subpixel/rounding differences for scroll boundary
+
+			function updateNavButtons() {
+				var maxScrollLeft = wrapper.scrollWidth - wrapper.clientWidth;
+				var atStart = wrapper.scrollLeft <= scrollEdgeThreshold;
+				var atEnd = wrapper.scrollLeft >= maxScrollLeft - scrollEdgeThreshold;
+				var noOverflow = maxScrollLeft <= scrollEdgeThreshold;
+
+				var hidePrev = atStart || noOverflow;
+				var hideNext = atEnd || noOverflow;
+
+				prevBtn.style.visibility = hidePrev ? 'hidden' : '';
+				nextBtn.style.visibility = hideNext ? 'hidden' : '';
+
+				// Prevent keyboard users from tabbing into an invisible button
+				prevBtn.tabIndex = hidePrev ? -1 : 0;
+				nextBtn.tabIndex = hideNext ? -1 : 0;
+
+				// Let screen readers know the control isn't currently actionable
+				prevBtn.setAttribute('aria-disabled', hidePrev ? 'true' : 'false');
+				nextBtn.setAttribute('aria-disabled', hideNext ? 'true' : 'false');
+			}
+
 			// Compute slide width fresh each time instead of caching it once at init,
 			// since offsetWidth is 0 while this is inside a display:none modal.
 			function getSlideWidth() {
@@ -1878,7 +1902,7 @@ var AspenDiscovery = (function(){
 			// --- Accessibility ARIA setup ---
 			if (hasInnerControls) {
 				// Native controls (e.g. a radio group) provide semantics and keyboard behavior.
-				//  Don't add a redundant listbox pattern on top of them.
+				// Don't add a redundant listbox pattern on top of them.
 				wrapper.removeAttribute('role');
 				wrapper.removeAttribute('aria-activedescendant');
 				slides.forEach(function (slide) {
@@ -1961,6 +1985,7 @@ var AspenDiscovery = (function(){
 						onSlideClick(slide);
 					});
 
+					// Keyboard navigation for slides
 					slide.addEventListener('keydown', function (e) {
 						if (e.key === 'ArrowRight') {
 							if (i < slides.length - 1) {
@@ -1985,13 +2010,34 @@ var AspenDiscovery = (function(){
 				e.preventDefault();
 			});
 
+			// Keep buttons in sync with actual scroll position
+			wrapper.addEventListener('scroll', function () {
+				if (!wrapper._navRAF) {
+					wrapper._navRAF = requestAnimationFrame(function () {
+						wrapper._navRAF = null;
+						updateNavButtons();
+					});
+				}
+			});
+
+			// Also recheck on resize, since clientWidth/scrollWidth can change
+			if (window.ResizeObserver) {
+				new ResizeObserver(function () { updateNavButtons(); }).observe(wrapper);
+			} else {
+				window.addEventListener('resize', updateNavButtons);
+			}
+
+			// Initial check. Deferred to a rAF (same reasoning as getSlideWidth's comment above:
+			// scrollWidth/clientWidth are unreliable while inside a display:none modal).
+			requestAnimationFrame(updateNavButtons);
+
 			// --- Pointer-based drag-to-scroll with momentum (mouse, touch, and pen) ---
 			(function enableDragScroll() {
 				var isDown = false;
 				var pointerId = null;
 				var startX = 0;
 				var startScrollLeft = 0;
-				var DRAG_THRESHOLD = 10; // px before a press counts as a drag, not a click
+				var dragThreshold = 10; // px before a press counts as a drag, not a click
 
 				// Velocity tracking
 				var lastX = 0;
@@ -1999,30 +2045,30 @@ var AspenDiscovery = (function(){
 				var velocity = 0; // px per ms
 
 				// Momentum animation
-				var momentumRAF = null;
-				var FRICTION = 0.95;      // lower = stops sooner, higher = coasts longer
-				var MIN_VELOCITY = 0.02;  // px/ms threshold to stop the animation
+				var momentum = null;
+				var friction = 0.95;      // lower = stops sooner, higher = coasts longer
+				var minVelocity = 0.02;  // px/ms threshold to stop the animation
 
 				function stopMomentum() {
-					if (momentumRAF) {
-						cancelAnimationFrame(momentumRAF);
-						momentumRAF = null;
+					if (momentum) {
+						cancelAnimationFrame(momentum);
+						momentum = null;
 					}
 				}
 
 				function runMomentum() {
 					wrapper.scrollLeft -= velocity * 16; // approximate px for a ~16ms frame
-					velocity *= FRICTION;
+					velocity *= friction;
 
 					// Stop at the natural scroll boundaries too, rather than fighting them
 					if (wrapper.scrollLeft <= 0 || wrapper.scrollLeft >= wrapper.scrollWidth - wrapper.clientWidth) {
 						velocity = 0;
 					}
 
-					if (Math.abs(velocity) > MIN_VELOCITY) {
-						momentumRAF = requestAnimationFrame(runMomentum);
+					if (Math.abs(velocity) > minVelocity) {
+						momentum = requestAnimationFrame(runMomentum);
 					} else {
-						momentumRAF = null;
+						momentum = null;
 					}
 				}
 
@@ -2049,7 +2095,7 @@ var AspenDiscovery = (function(){
 
 					var dx = e.clientX - startX;
 
-					if (Math.abs(dx) > DRAG_THRESHOLD && wrapper.dataset.dragMoved !== 'true') {
+					if (Math.abs(dx) > dragThreshold && wrapper.dataset.dragMoved !== 'true') {
 						wrapper.dataset.dragMoved = 'true';
 						wrapper.classList.add('dragging');
 						wrapper.setPointerCapture(pointerId); // capture only now that it's a real drag
@@ -2079,8 +2125,8 @@ var AspenDiscovery = (function(){
 					}
 					pointerId = null;
 
-					if (Math.abs(velocity) > MIN_VELOCITY) {
-						momentumRAF = requestAnimationFrame(runMomentum);
+					if (Math.abs(velocity) > minVelocity) {
+						momentum = requestAnimationFrame(runMomentum);
 					}
 
 					setTimeout(function () { wrapper.dataset.dragMoved = 'false'; }, 0);
@@ -2180,6 +2226,71 @@ jQuery.validator.addMethod("pinConfirmation", function (value, element) {
 	var pinToMatch = aspenJQ("#pin").val();
 	return value === pinToMatch;
 }, "PINs must match.");
+
+/**
+ * serverValidate is an alternative to jQuery validate's remote(). It owns 
+ * the fetch so it can handle AJAX request failures (remote() silently blocks
+ * form submission on failure);
+ * 
+ * Handles re-fires on each keystroke by aborting the previous request to prevent
+ * a slow earlier response from settling the field against a value the user has
+ * already replaced.
+*/
+const serverValidateCache = new WeakMap();
+
+$.validator.addMethod("serverValidate", function (value, element, param) {
+	if (this.optional(element)) {
+		return "dependency-mismatch";
+	}
+
+	const cached = serverValidateCache.get(element);
+	if (cached?.value === value) {
+		return cached.pending ? "pending" : cached.valid;
+	}
+	cached?.controller?.abort();
+
+	const controller = new AbortController();
+	const entry = {value: value, valid: false, pending: true, message: null, controller: controller};
+	serverValidateCache.set(element, entry);
+	this.startRequest(element);
+
+	const settle = (data) => {
+		entry.pending = false;
+		entry.valid = data.valid === true;
+		entry.message = data.message;
+		// guard the pending counter: stopRequest before element() so any redraw re-fire gets a clean startRequest
+		this.stopRequest(element, entry.valid);
+		this.element(element);
+	};
+
+	fetch(param.url, {
+		method: "post",
+		credentials: "same-origin",
+		body: new URLSearchParams({value: value}),
+		signal: controller.signal
+	})
+		.then((response) => {
+			if (!response.ok) {
+				throw new Error("Validation request failed with status " + response.status);
+			}
+			return response.json();
+		})
+		.then(settle)
+		.catch((error) => {
+			if (error.name === "AbortError") {
+				return;
+			}
+			settle({valid: false, message: param.errorMessage || Globals.requestFailedBody});
+		});
+
+	return "pending";
+}, function (params, element) {
+	const cached = serverValidateCache.get(element);
+	// jQuery Validate ($.validator) renders messages with .html(); -> escape.
+	const div = document.createElement("div");
+	div.textContent = cached?.message || Globals.validationInvalidValue;
+	return div.innerHTML;
+});
 
 if (!String.prototype.startsWith) {
 	Object.defineProperty(String.prototype, 'startsWith', {
@@ -3081,6 +3192,44 @@ AspenDiscovery.Account = (function () {
 					loginErrorElem.text("There was an error processing your login, please try again.").show();
 				})
 			}
+			return false;
+		},
+
+		showMinimalSelfRegForm: function (trigger, ajaxCallback) {
+			AspenDiscovery.Account.ajaxCallback = ajaxCallback;
+			const url = Globals.path + '/MyAccount/AJAX?method=getMinimalSelfRegForm';
+			$.getJSON(url, function (data) {
+				if (data.success === true) {
+					AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons);
+				} else {
+					AspenDiscovery.showMessage(data.title, data.message);
+				}
+			});
+			return false;
+		},
+
+		processMinimalSelfReg: function (form) {
+			const errorElem = $('#minimalSelfRegError');
+			errorElem.hide();
+			const url = Globals.path + "/MyAccount/AJAX?method=processMinimalSelfReg";
+			$.post(url, $(form).serialize(), function (response) {
+				if (response.success !== true) {
+					errorElem.html(response.message).show();
+					return;
+				}
+
+				const ajaxCallback = AspenDiscovery.Account.ajaxCallback;
+				if (typeof ajaxCallback === "function") {
+					AspenDiscovery.Account.ajaxCallback = null;
+					AspenDiscovery.showMessage(response.title, response.message, false);
+					ajaxCallback();
+					return;
+				}
+
+				AspenDiscovery.showMessageWithButtons(response.title, response.body, response.buttons, true);
+			}, 'json').fail(function () {
+				errorElem.text(__("There was an error processing your registration, please try again.")).show();
+			});
 			return false;
 		},
 
@@ -9135,7 +9284,11 @@ AspenDiscovery.Admin = (function () {
 			$('#propertyRowroles').hide();
 
 			var assignBy = $("#assignToUsersBySelect").val();
-			if (assignBy === "role") {
+			if (assignBy === "accountProfile") {
+				$('#propertyRowlibraries').hide();
+				$('#propertyRowptypes').hide();
+				$('#propertyRowroles').hide();
+			} else if (assignBy === "role") {
 				$('#propertyRowlibraries').hide();
 				$('#propertyRowptypes').hide();
 				$('#propertyRowroles').show();
@@ -9385,6 +9538,36 @@ AspenDiscovery.Admin = (function () {
 				guarantorInput.classList.toggle('required', guarantorRequired);
 			}
 		},
+		updateAvailable2FAAssignToUserByOptions: function () {
+			const accountSelect = document.getElementById('accountProfileIdSelect');
+			const assignSelect = document.getElementById('assignToUsersBySelect');
+			if (!accountSelect || !assignSelect) return;
+
+			const selectedOption = accountSelect.options[accountSelect.selectedIndex];
+			const selectedLabel = selectedOption ? selectedOption.text.trim() : '';
+
+			const patronTypeOption = assignSelect.querySelector('option[value="patronType"]');
+			const accountProfileOption = assignSelect.querySelector('option[value="accountProfile"]');
+
+			if (!patronTypeOption || !accountProfileOption) return;
+
+			if (selectedLabel.toLowerCase() === 'admin') {
+				// Disable patronType and force role when account profile label is "admin"
+				patronTypeOption.disabled = true;
+
+				// If value assignment fails for any reason, force via selected flag
+				if (assignSelect.value !== 'role' && assignSelect.value !== 'accountProfile') {
+					assignSelect.value = 'accountProfile';
+					accountProfileOption.selected = true;
+				}
+
+				// Trigger change in case other UI logic depends on this select
+				assignSelect.dispatchEvent(new Event('change', {bubbles: true}));
+			} else {
+				// Re-enable patronType for non-admin labels
+				patronTypeOption.disabled = false;
+			}
+		}
 	};
 }(AspenDiscovery.Admin || {}));
 AspenDiscovery.Authors = (function () {
@@ -18627,12 +18810,7 @@ AspenDiscovery.WebBuilder = function () {
 
 				const openResource = () => {
 					if (openInNewTab) {
-						const newTab = window.open("", '_blank');
-						if (newTab == null) {
-							location.assign(resourceUrl);
-						} else {
-							newTab.location.href = resourceUrl;
-						}
+						window.open(resourceUrl, '_blank');
 					} else {
 						location.assign(resourceUrl);
 					}
@@ -18656,7 +18834,11 @@ AspenDiscovery.WebBuilder = function () {
 					} else if (Globals.loggedIn && !canView) {
 						AspenDiscovery.showMessage(userNoAccessTitle, userNoAccessMessage);
 					} else {
-						AspenDiscovery.Account.ajaxLogin(null, () => AspenDiscovery.WebBuilder.getWebResource(id, fromPlacard), true);
+						if (openInNewTab) {
+							AspenDiscovery.Account.ajaxLogin(null, () => AspenDiscovery.WebBuilder.promptContinueToResource(id, fromPlacard), false);
+						} else {
+							AspenDiscovery.Account.ajaxLogin(null, () => AspenDiscovery.WebBuilder.getWebResourceAfterLogin(id, fromPlacard), true);
+						}
 					}
 				} else {
 					trackUsage("none");
@@ -18664,6 +18846,42 @@ AspenDiscovery.WebBuilder = function () {
 			}).fail(AspenDiscovery.ajaxFail);
 
 			return false;
+		},
+
+		promptContinueToResource(id, fromPlacard = false) {
+			const message = `<p>You're logged in. Click below to continue to your resource.</p><button type="button" class="btn btn-primary" id="continueToResourceBtn">Continue</button>`;
+
+			AspenDiscovery.showMessage("Continue", message);
+
+			$('#continueToResourceBtn').off('click').on('click', () => {
+				setTimeout("AspenDiscovery.closeLightbox();", 3000);
+				AspenDiscovery.WebBuilder.getWebResourceAfterLogin(id, fromPlacard);
+			});
+		},
+
+		getWebResourceAfterLogin(id, fromPlacard = false) {
+			const url = `${Globals.path}/WebBuilder/AJAX`;
+			const params = { method: "getWebResource", resourceId: id };
+
+			$.getJSON(url, params, (data) => {
+				const { canView, openInNewTab, url: resourceUrl, userNoAccessTitle, userNoAccessMessage } = data;
+
+				if (!canView) {
+					AspenDiscovery.showMessage(userNoAccessTitle, userNoAccessMessage);
+					return;
+				}
+
+				const trackParams = { method: "trackWebResourceUsage", id, authType: "user" };
+				if (fromPlacard) trackParams.fromPlacard = 1;
+
+				$.getJSON(url, trackParams, () => {
+					if (openInNewTab) {
+						window.open(resourceUrl, '_blank');
+					} else {
+						location.assign(resourceUrl);
+					}
+				});
+			}).fail(AspenDiscovery.ajaxFail);
 		},
 
 		placardClickHandler: function(placardId) {

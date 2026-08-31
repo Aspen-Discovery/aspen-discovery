@@ -12,7 +12,7 @@ class StringUtils {
 				$string .= '...';
 			}
 		}
-		return $string;
+		return $string ?? '';
 	}
 
 	static function getCurrencyFormatter() : NumberFormatter {

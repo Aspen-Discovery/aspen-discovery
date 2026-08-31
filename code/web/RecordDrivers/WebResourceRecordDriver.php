@@ -41,10 +41,17 @@ class WebResourceRecordDriver extends IndexRecordDriver {
 		global $interface;
 
 		$interface->assign('id', $this->getId());
+		$interface->assign('idNumber', $this->getNumericId());
 		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
 		$interface->assign('pageUrl', $this->getLinkUrl());
 		$interface->assign('website_name', $this->fields['website_name']);
 		$interface->assign('title', $this->getTitle());
+		$webResource = $this->getWebResource();
+		$openInNewTab = false;
+		if ($webResource && $webResource->openInNewTab) {
+			$openInNewTab = true;
+		}
+		$interface->assign('openInNewTab', $openInNewTab);
 		if (isset($this->fields['description'])) {
 			$interface->assign('description', strip_tags($this->getDescription()));
 		} else {
@@ -53,6 +60,19 @@ class WebResourceRecordDriver extends IndexRecordDriver {
 		$interface->assign('source', isset($this->fields['source']) ? $this->fields['source'] : '');
 
 		return 'RecordDrivers/WebPage/result.tpl';
+	}
+
+	private null|WebResource|false $webResource = null;
+	private function getWebResource() : WebResource|false {
+		if ($this->webResource === null) {
+			require_once ROOT_DIR . '/sys/WebBuilder/WebResource.php';
+			$this->webResource = new WebResource();
+			$this->webResource->id = $this->getNumericId();
+			if (!$this->webResource->find(true)) {
+				$this->webResource = false;
+			}
+		}
+		return $this->webResource;
 	}
 
 	public function getBookcoverUrl($size = 'small', $absolutePath = false) {
@@ -64,12 +84,9 @@ class WebResourceRecordDriver extends IndexRecordDriver {
 			$bookCoverUrl = '';
 		}
 		require_once ROOT_DIR . '/sys/WebBuilder/WebResource.php';
-		$webResource = new WebResource();
-		$webResource->id = str_replace('WebResource:', '', $this->getUniqueID());
-		if ($webResource->find(true)) {
-			if (!empty($webResource->logo)) {
-				return '/files/thumbnail/' . $webResource->logo;
-			}
+		$webResource = $this->getWebResource();
+		if ($webResource && !empty($webResource->logo)) {
+			return '/files/thumbnail/' . $webResource->logo;
 		}
 		$bookCoverUrl .= "/bookcover.php?id={$this->getUniqueID()}&size={$size}&type=WebResource";
 		return $bookCoverUrl;
@@ -118,7 +135,7 @@ class WebResourceRecordDriver extends IndexRecordDriver {
 				$libraryId = $activeLibrary->libraryId;
 			}
 
-			return $webResource->getUrlForLibrary($libraryId);
+			return $webResource->getUrlForLibrary($libraryId, $this->fields['source_url']);
 		}
 
 		return $this->fields['source_url'];

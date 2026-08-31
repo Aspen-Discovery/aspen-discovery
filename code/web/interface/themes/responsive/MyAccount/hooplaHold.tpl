@@ -1,5 +1,5 @@
 {strip}
-    <div class="result row hooplaHold_{$record->recordId}_{$record->userId}">
+    <div class="result row hooplaHold_{$record->recordId}_{$record->userId}" data-record-type="hoopla" data-record-id="{$record->recordId}">
         <div class="selectTitle col-xs-12 col-sm-1">
             <input type="checkbox" name="selected[{$record->userId}|{$record->sourceId}|{$record->cancelId}]" class="titleSelect" id="selected{$record->cancelId}">
         </div>
