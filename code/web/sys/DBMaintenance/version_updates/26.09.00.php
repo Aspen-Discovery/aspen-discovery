@@ -20,6 +20,13 @@ function getUpdates26_09_00(): array {
 		//kirstien
 
 		//kodi
+		'self_check_location_overrides' => [
+			'title' => 'Self-Check Location Overrides',
+			'description' => 'Adds a setting in self-check settings to allow checkouts at certain locations if the item is checked out already. Symphony only.',
+			'sql' => [
+				'ALTER TABLE `aspen_lida_self_check_settings` ADD COLUMN `checkedoutOverrideLocations` VARCHAR(255)',
+			]
+		]
 
 		//yanjun
 
