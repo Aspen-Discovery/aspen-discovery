@@ -163,7 +163,7 @@ public class MarcRecordFormatClassifier {
 				getFormatFromFallbackField(groupedWork, record, printFormats, settings);
 			}
 		}
-		if (printFormats.isEmpty() || printFormats.contains("MusicRecording") || (printFormats.size() == 1 && printFormats.contains("Book"))) {
+		if (printFormats.isEmpty() || printFormats.contains("MusicRecording") || printFormats.contains("Blu-ray") || (printFormats.size() == 1 && printFormats.contains("Book"))) {
 			if (printFormats.size() == 1 && printFormats.contains("Book")){
 				printFormats.clear();
 			}
