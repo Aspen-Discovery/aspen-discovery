@@ -21,7 +21,8 @@ class WebBuilder_StaffMembers extends ObjectEditor {
 
 	function getAllObjects(int $page, int $recordsPerPage): array {
 		$object = new StaffMember();
-		$object->orderBy($this->getSort());
+		$sort = parent::getSort();
+		$object->orderBy($this->getStaffMemberOrderBy($sort));
 		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		if (!UserAccount::userHasPermission('Administer All Staff Members')) {
@@ -40,9 +41,8 @@ class WebBuilder_StaffMembers extends ObjectEditor {
 		return 'name asc';
 	}
 
-	function getSort(): string {
-		$sort = parent::getSort();
-		$normalizedSort = strtolower($sort);
+	private function getStaffMemberOrderBy(string $sort): string {
+		$normalizedSort = strtolower(trim($sort));
 
 		if ($normalizedSort === 'displayorder asc') {
 			return 'libraryId asc,
