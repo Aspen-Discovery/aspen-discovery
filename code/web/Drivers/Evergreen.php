@@ -1752,6 +1752,7 @@ class Evergreen extends AbstractIlsDriver {
 					'type' => 'persist',
 					'org' => null,
 					'identifier' => (string)$this->accountProfile->staffUsername,
+					'agent' => 'AspenDiscovery',
 				]),
 			];
 
@@ -2164,6 +2165,7 @@ class Evergreen extends AbstractIlsDriver {
 					'type' => 'persist',
 					'org' => null,
 					'identifier' => trim($username),
+					'agent' => 'AspenDiscovery',
 				]),
 			];
 			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $params);
