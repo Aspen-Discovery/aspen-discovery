@@ -29,9 +29,9 @@
 					{if empty($item.isEContent)}
 						<div class="col-tn-4" data-shelfLocation="{$item.shelfLocation|escape:"javascript"}" data-subLocation="{$item.subLocation|escape:"javascript"}" data-callNumber="{$item.callNumber|escape:"javascript"}">
 							<span class="notranslate">
-								<div><strong>{$item.shelfLocation}</strong></div>
-								<div>{$item.callNumber}</div>
-								<div>
+								<div class="shelf-location-value"><strong>{$item.shelfLocation}</strong></div>
+								<div class="call-number-value">{$item.callNumber}</div>
+								<div class="available-copies-value">
 									{if $item.availableCopies < 999}
 										{translate text="%1% available" 1=$item.availableCopies isPublicFacing=true}
 									{/if}

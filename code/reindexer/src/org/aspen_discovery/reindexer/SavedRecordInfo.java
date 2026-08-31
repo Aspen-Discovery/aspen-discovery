@@ -32,6 +32,7 @@ public class SavedRecordInfo {
 		placeOfPublicationId = getExistingRecordsForWorkRS.getLong("placeOfPublicationId");
 		publicationDateId = getExistingRecordsForWorkRS.getLong("publicationDateId");
 		physicalDescriptionId = getExistingRecordsForWorkRS.getLong("physicalDescriptionId");
+		durationId = getExistingRecordsForWorkRS.getLong("durationId");
 		formatId = getExistingRecordsForWorkRS.getLong("formatId");
 		formatCategoryId = getExistingRecordsForWorkRS.getLong("formatCategoryId");
 		languageId = getExistingRecordsForWorkRS.getLong("languageId");

@@ -238,6 +238,8 @@
 	var searchFields = {ldelim}
 	{foreach from=$advSearchTypes item=searchDesc key=searchVal}
 	"{$searchVal}" : "{translate text=$searchDesc inAttribute=true isPublicFacing=true}",
+	{foreachelse}
+	"Keyword" : "{translate text="Keyword" inAttribute=true isPublicFacing=true}",
 	{/foreach}
 	{rdelim};
 	var searchJoins = {ldelim}
