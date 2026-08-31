@@ -35,8 +35,16 @@ function getUpdates26_09_00(): array {
 				'ALTER TABLE `aspen_lida_self_check_settings` ADD COLUMN `checkedoutOverrideLocations` VARCHAR(255)',
 			]
 		], //self_check_location_overrides
-
 		//yanjun
+		'add_staff_members_display_order' => [
+			'title' => 'Add staff members display order column',
+			'description' => 'Add staff members display order',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE staff_members ADD COLUMN displayOrder INT UNSIGNED NOT NULL DEFAULT 0',
+				'UPDATE staff_members sm JOIN (SELECT id, ROW_NUMBER() OVER (PARTITION BY libraryId ORDER BY name ASC, id ASC) AS newDisplayOrder FROM staff_members) orderedStaff ON orderedStaff.id = sm.id SET sm.displayOrder = orderedStaff.newDisplayOrder'
+			]
+		],
 
 		//imani
 

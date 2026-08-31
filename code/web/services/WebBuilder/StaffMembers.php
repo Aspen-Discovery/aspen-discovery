@@ -40,6 +40,29 @@ class WebBuilder_StaffMembers extends ObjectEditor {
 		return 'name asc';
 	}
 
+	function getSort(): string {
+		$sort = parent::getSort();
+		$normalizedSort = strtolower($sort);
+
+		if ($normalizedSort === 'displayorder asc') {
+			return 'libraryId asc,
+					CASE WHEN displayOrder = 0 THEN 1 ELSE 0 END,
+					displayOrder asc,
+					name asc,
+					id asc';
+		}
+
+		if ($normalizedSort === 'displayorder desc') {
+			return 'libraryId asc,
+					CASE WHEN displayOrder = 0 THEN 1 ELSE 0 END,
+					displayOrder desc,
+					name asc,
+					id asc';
+		}
+
+		return $sort;
+	}
+
 	function getObjectStructure($context = ''): array {
 		return StaffMember::getObjectStructure($context);
 	}
