@@ -2,6 +2,8 @@ package com.turning_leaf_technologies.hoopla;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashSet;
+import java.util.Set;
 
 class HooplaSettings2 {
 	private final long settingsId;
@@ -18,6 +20,7 @@ class HooplaSettings2 {
 	private final long lastUpdateOfAllRecords;
 	private final String lastRecordProcessed;
 	private final int hooplaFlexBatchSize;
+	private final Set<String> productsToUpdate = new HashSet<>();
 
 	// Token settings
 	private final String accessToken;
@@ -44,6 +47,15 @@ class HooplaSettings2 {
 		tokenExpirationTime = settingsRS.getLong("tokenExpirationTime");
 
 		regroupAllRecords = settingsRS.getBoolean("regroupAllRecords");
+		String productsToUpdateStr = settingsRS.getString("productsToUpdate");
+		if (productsToUpdateStr != null) {
+			for (String productId : productsToUpdateStr.split("\\R")) {
+				productId = productId.trim();
+				if (!productId.isEmpty()) {
+					productsToUpdate.add(productId);
+				}
+			}
+		}
 	}
 
 	public long getSettingsId() {
@@ -104,6 +116,10 @@ class HooplaSettings2 {
 
 	public int getHooplaFlexBatchSize() {
 		return hooplaFlexBatchSize;
+	}
+
+	public Set<String> getProductsToUpdate() {
+		return productsToUpdate;
 	}
 
 }
