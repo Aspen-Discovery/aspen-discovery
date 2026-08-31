@@ -1505,6 +1505,10 @@ class Evergreen extends AbstractIlsDriver {
 						'text' => 'Your hold was placed successfully.',
 						'isPublicFacing' => true,
 					]);
+					$hold_result['api']['action'] = translate([
+						'text' => 'Go to Holds',
+						'isPublicFacing' => true,
+					]);
 				}
 			}
 		}
