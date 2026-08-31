@@ -6,7 +6,7 @@
 				{assign var=hasHiddenFormats value=true}
 			{/if}
 			{* Display the manifestation (the format being displayed) *}
-			<div class="row related-manifestation grouped {if $relatedManifestation->isHideByDefault() || (isset($activeFormat) && $relatedManifestation->format != $activeFormat)}hiddenManifestation_{$workId}{/if}" {if $relatedManifestation->isHideByDefault() || (isset($activeFormat) && $relatedManifestation->format != $activeFormat)}style="display: none"{/if}>
+			<div class="row related-manifestation grouped {if $relatedManifestation->isHideByDefault() || (isset($activeFormat) && $relatedManifestation->format != $activeFormat)}hiddenManifestation_{$workId}{/if}" {if $relatedManifestation->isHideByDefault() || (isset($activeFormat) && $relatedManifestation->format != $activeFormat)}style="display: none"{/if} data-format="{$relatedManifestation->format}">
 				{* Display information about the format *}
 				{if $relatedManifestation->getNumVariations() == 1}
 					{include file="GroupedWork/singleVariationManifestion.tpl" workId=$workId}
