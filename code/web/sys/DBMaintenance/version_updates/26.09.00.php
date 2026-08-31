@@ -20,13 +20,21 @@ function getUpdates26_09_00(): array {
 		//kirstien
 
 		//kodi
+		'publisher_keyword_exclusion' => [
+			'title' => 'Publisher Keyword Exclusion',
+			'description' => 'Add a variable in indexing profiles to determine if publisher info is excluded from the keyword index or not.',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE `indexing_profiles` ADD COLUMN `excludePublisherFromKeywordIndex` TINYINT(1) NOT NULL DEFAULT 0;'
+			]
+		], //publisher_keyword_exclusion
 		'self_check_location_overrides' => [
 			'title' => 'Self-Check Location Overrides',
 			'description' => 'Adds a setting in self-check settings to allow checkouts at certain locations if the item is checked out already. Symphony only.',
 			'sql' => [
 				'ALTER TABLE `aspen_lida_self_check_settings` ADD COLUMN `checkedoutOverrideLocations` VARCHAR(255)',
 			]
-		]
+		], //self_check_location_overrides
 
 		//yanjun
 

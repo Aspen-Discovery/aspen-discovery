@@ -34,6 +34,7 @@ public class BaseIndexingSettings {
 	String treatUndeterminedLanguageAs;
 	String customMarcFieldsToIndexAsKeyword;
 	boolean includePersonalAndCorporateNamesInTopics;
+	boolean excludePublisherFromKeywordIndex;
 
 	HashMap<String, HashMap<String, String>> translationMaps = new HashMap<>();
 	HashMap<String, FormatMapValue> formatMapping = new HashMap<>();
@@ -106,6 +107,8 @@ public class BaseIndexingSettings {
 	}
 
 	public String getCustomMarcFieldsToIndexAsKeyword() { return customMarcFieldsToIndexAsKeyword; }
+
+	public boolean excludePublisherFromKeywordIndex() { return excludePublisherFromKeywordIndex; }
 
 	public String getSpecifiedFormat() {
 		return specifiedFormat;
