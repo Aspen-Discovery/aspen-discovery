@@ -1196,6 +1196,11 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 		}
 	}
 
+	/**
+	 * Returns search indexes for basic searching
+	 *
+	 * @return array
+	 */
 	public function getSearchIndexes() : array {
 		global $library;
 		global $location;
@@ -1240,151 +1245,10 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 						'inAttribute' => true,
 					]);
 				}
+				return $searchIndexes;
 			}
-			return $searchIndexes;
-		} else {
-			return [
-				'Keyword' => translate([
-					'text' => 'Keyword',
-					'isPublicFacing' => true,
-					'inAttribute' => true,
-				]),
-				$titleSearch => translate([
-					'text' => 'Title',
-					'isPublicFacing' => true,
-					'inAttribute' => true,
-				]),
-				'StartOfTitle' => translate([
-					'text' => 'Start of Title',
-					'isPublicFacing' => true,
-					'inAttribute' => true,
-				]),
-				'Series' => translate([
-					'text' => 'Series',
-					'isPublicFacing' => true,
-					'inAttribute' => true,
-				]),
-				'PrimaryAuthor' => translate([
-					'text' => 'Author',
-					'isPublicFacing' => true,
-					'inAttribute' => true,
-				]),
-				'Author' => translate([
-					'text' => 'Authors and Contributors',
-					'isPublicFacing' => true,
-					'inAttribute' => true,
-				]),
-				'Subject' => translate([
-					'text' => 'Subject',
-					'isPublicFacing' => true,
-					'inAttribute' => true,
-				]),
-				'LocalCallNumber' => translate([
-					'text' => 'Call Number',
-					'isPublicFacing' => true,
-					'inAttribute' => true,
-				]),
-			];
 		}
-	}
 
-	public function getAdvancedSearchIndexes() : array {
-		global $library;
-		global $locationSingleton;
-		$location = $locationSingleton->getActiveLocation();
-
-		$searchIndexes = [];
-
-
-		if ($location && $location->searchSettingId != -1 || $library->searchSettingId != -1) {
-			require_once ROOT_DIR . '/sys/SearchObject/SearchSetting.php';
-			$searchSetting = new SearchSetting();
-			if ($location && $location->searchSettingId != -1) {
-				$searchSetting->id = $location->searchSettingId;
-			} else {
-				$searchSetting->id = $library->searchSettingId;
-			}
-			if ($searchSetting->find(true)) {
-				require_once ROOT_DIR . '/sys/SearchObject/SearchTypes.php';
-				$searchTypes = new SearchTypes();
-				$searchTypes->searchSettingId = $searchSetting->id;
-				$searchTypes->find();
-				while ($searchTypes->fetch()) {
-					if ($searchTypes->enabled != 0) {
-						$searchType = $searchTypes->type;
-						$searchIndexes[$searchType] = translate([
-							'text' => $searchTypes->label,
-							'isPublicFacing' => true,
-							'inAttribute' => true,
-						]);
-					}
-				}
-			}
-			return $searchIndexes;
-		} else {
-			return [
-				'Keyword' => translate([
-					'text' => 'Keyword',
-					'isPublicFacing' => true,
-					'inAttribute' => true,
-				]),
-				'Title' => translate([
-					'text' => 'Title',
-					'isPublicFacing' => true,
-					'inAttribute' => true,
-				]),
-				'StartOfTitle' => translate([
-					'text' => 'Start of Title',
-					'isPublicFacing' => true,
-					'inAttribute' => true,
-				]),
-				'Author' => translate([
-					'text' => 'Author',
-					'isPublicFacing' => true,
-					'inAttribute' => true,
-				]),
-				'Subject' => translate([
-					'text' => 'Subject',
-					'isPublicFacing' => true,
-					'inAttribute' => true,
-				]),
-				'ISN' => translate([
-					'text' => 'ISBN/ISSN/UPC',
-					'isPublicFacing' => true,
-					'inAttribute' => true,
-				]),
-				'publisher' => translate([
-					'text' => 'Publisher',
-					'isPublicFacing' => true,
-					'inAttribute' => true,
-				]),
-				'year' => translate([
-					'text' => 'Year of Publication',
-					'isPublicFacing' => true,
-					'inAttribute' => true,
-				]),
-				'Series' => translate([
-					'text' => 'Series',
-					'isPublicFacing' => true,
-					'inAttribute' => true,
-				]),
-				'toc' => translate([
-					'text' => 'Table of Contents',
-					'isPublicFacing' => true,
-					'inAttribute' => true,
-				]),
-				'id' => translate([
-					'text' => 'Record Number',
-					'isPublicFacing' => true,
-					'inAttribute' => true,
-				]),
-				'LocalCallNumber' => translate([
-					'text' => 'Call Number',
-					'isPublicFacing' => true,
-					'inAttribute' => true,
-				]),
-			];
-		}
 		return [
 			'Keyword' => translate([
 				'text' => 'Keyword',
@@ -1427,6 +1291,140 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 				'inAttribute' => true,
 			]),
 		];
+	}
+
+	/**
+	 * Get search indexes for advanced searching
+	 *
+	 * @return array
+	 */
+	public function getAdvancedSearchIndexes() : array {
+		global $library;
+		global $locationSingleton;
+		$location = $locationSingleton->getActiveLocation();
+
+		$searchIndexes = [];
+
+		if ($location && $location->searchSettingId != -1 || $library->searchSettingId != -1) {
+			require_once ROOT_DIR . '/sys/SearchObject/SearchSetting.php';
+			$searchSetting = new SearchSetting();
+			if ($location && $location->searchSettingId != -1) {
+				$searchSetting->id = $location->searchSettingId;
+			} else {
+				$searchSetting->id = $library->searchSettingId;
+			}
+			if ($searchSetting->find(true)) {
+				require_once ROOT_DIR . '/sys/SearchObject/SearchTypes.php';
+				$searchTypes = new SearchTypes();
+				$searchTypes->searchSettingId = $searchSetting->id;
+				$searchTypes->find();
+				while ($searchTypes->fetch()) {
+					if ($searchTypes->enabled != 0) {
+						$searchType = $searchTypes->type;
+						$searchIndexes[$searchType] = translate([
+							'text' => $searchTypes->label,
+							'isPublicFacing' => true,
+							'inAttribute' => true,
+						]);
+					}
+				}
+				return $searchIndexes;
+			}
+		}
+		return [
+			'Keyword' => translate([
+				'text' => 'Keyword',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'Title' => translate([
+				'text' => 'Title',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'StartOfTitle' => translate([
+				'text' => 'Start of Title',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'Author' => translate([
+				'text' => 'Author',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'Subject' => translate([
+				'text' => 'Subject',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'ISN' => translate([
+				'text' => 'ISBN/ISSN/UPC',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'publisher' => translate([
+				'text' => 'Publisher',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'year' => translate([
+				'text' => 'Year of Publication',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'Series' => translate([
+				'text' => 'Series',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'toc' => translate([
+				'text' => 'Table of Contents',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'id' => translate([
+				'text' => 'Record Number',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'LocalCallNumber' => translate([
+				'text' => 'Call Number',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+		];
+	}
+
+	/**
+	 * Get all valid search indexes for this searcher (for validation of input variables)
+	 *
+	 * @return array
+	 */
+	public function getAllValidSearchIndexes() : array {
+		require_once ROOT_DIR . '/sys/SearchObject/SearchTypes.php';
+		$searchTypes = new SearchTypes();
+		$searchTypes->selectAdd();
+		$searchTypes->selectAdd('DISTINCT type');
+		$searchTypes->find();
+		$searchIndexes = $searchTypes->fetchAll('type', 'type');
+		if (empty($searchIndexes)) {
+			$searchIndexes = [
+				'Keyword' => 'Keyword',
+				'Title'   => 'Title',
+				'StartOfTitle'  => 'Start of Title',
+				'Series' => 'Series',
+				'PrimaryAuthor' => 'Author',
+				'Author' => 'Authors and Contributors',
+				'Subject' => 'Subject',
+				'LocalCallNumber' => 'Call Number',
+				'ISN' => 'ISN',
+				'publisher' => 'publisher',
+				'year' => 'Year of Publication',
+				'toc' => 'Table of Contents',
+				'id' => 'Record Number',
+			];
+		}
+		return $searchIndexes;
 	}
 
 	public function getRecordDriverForResult($record) : GroupedWorkDriver {

@@ -5894,7 +5894,7 @@ class User extends DataObject {
 				$permissionRoles = $this->getRoles();
 				if (!empty($permissionRoles)) {
 					foreach ($permissionRoles as $role) {
-						if (empty($role->twoFactorAuthSettingId)) {
+						if (empty($role->twoFactorAuthSettingId) || $role->twoFactorAuthSettingId == -1) {
 							continue;
 						}
 						$roleSetting = new TwoFactorAuthSetting();
@@ -5909,7 +5909,7 @@ class User extends DataObject {
 				// As a backup, we will check if the user is required to use 2FA based on their patron type or account profile.
 				$patronType = $this->getPTypeObj();
 				$fallbackSetting = new TwoFactorAuthSetting();
-				if (!empty($patronType) && !empty($patronType->twoFactorAuthSettingId)) {
+				if (!empty($patronType) && !empty($patronType->twoFactorAuthSettingId) && $patronType->twoFactorAuthSettingId != -1) {
 					$fallbackSetting->id = $patronType->twoFactorAuthSettingId;
 				} else {
 					$accountProfile = $this->getAccountProfile();

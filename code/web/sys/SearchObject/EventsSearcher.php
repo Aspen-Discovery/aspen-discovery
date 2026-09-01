@@ -54,27 +54,28 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher {
 		$now = new DateTime();
 		$this->addHiddenFilter('end_date', "[{$now->format("Y-m-d\TH:i:s\Z")} TO *]");
 
-		// Check permissions before showing private events
-		if (!UserAccount::userHasPermission('View Private Events for All Locations')) {
-			if (!UserAccount::userHasPermission([
-					'View Private Events for Home Library Locations',
-					'View Private Events for Home Location'
-				])) {
-				$this->addHiddenFilter('-private', "private");
-			} else {
-				if (!UserAccount::userHasPermission('View Private Events for Home Library Locations')) {
-					$user = UserAccount::getLoggedInUser();
-					$locations = array_values($user->getAdditionalAdministrationLocations());
-					$locations[] = $user->getHomeLocationName();
-					$this->addHiddenFilter('private', '("' . implode('" OR "private_', $locations) . '" OR "public")');
-				} else {
-					$locations = array_values(Location::getLocationList(true));
-					$this->addHiddenFilter('private', '("private_' . implode('" OR "private_', $locations) . '" OR "public")');
-				}
-			}
-		}
+		$this->addPrivateEventFilters();
 
 		$timer->logTime('Setup Events Search Object');
+	}
+
+	public function addPrivateEventFilters() : void {
+		if (UserAccount::userHasPermission('View Private Events for All Locations')) {
+			return;
+		}
+		if (UserAccount::userHasPermission('View Private Events for Home Library Locations')) {
+			$locations = array_values(Location::getLocationList(true));
+			$this->addHiddenFilter('private', '("private_' . implode('" OR "private_', $locations) . '" OR "public")');
+			return;
+		}
+		if (UserAccount::userHasPermission('View Private Events for Home Location')) {
+			$user = UserAccount::getLoggedInUser();
+			$locations = array_values($user->getAdditionalAdministrationLocations());
+			$locations[] = $user->getHomeLocationName();
+			$this->addHiddenFilter('private', '("' . implode('" OR "private_', $locations) . '" OR "public")');
+			return;
+		}
+		$this->addHiddenFilter('-private', "private");
 	}
 
 	/**

@@ -1,0 +1,26 @@
+{
+    "require": {
+        "league/oauth2-server": "^9.3",
+        "laminas/laminas-diactoros": "^3.8",
+        "lcobucci/clock": "^3.3"
+    },
+    "config": {
+        "platform": {
+            "php": "8.3.30"
+        }
+    },
+    "require-dev": {
+        "phpstan/phpstan": "^2.2",
+        "phpunit/phpunit": "^12.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "AspenDiscovery\\": "code/web/",
+            "Tests\\": "tests/phpunit"
+        },
+        "classmap": [
+            "code/web/",
+            "tests/"
+        ]
+    }
+}
