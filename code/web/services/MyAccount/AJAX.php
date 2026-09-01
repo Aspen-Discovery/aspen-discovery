@@ -3933,8 +3933,7 @@ class MyAccount_AJAX extends JSON_Action {
 		$absentFromArray = !in_array($hold->$field, $filterInformation['selected']);
 		$isSourceField = $field === "source";
 
-		return ($absentFromArray && !$isSourceField)
-			|| ($absentFromArray && !in_array("all", $filterInformation['selected']) && $isSourceField)
+		return $absentFromArray && (!$isSourceField || !in_array("all", $filterInformation['selected']))
 			|| $filterValue === null
 			|| !in_array($filterValue['value'], $selectedValues, true);
 	}
