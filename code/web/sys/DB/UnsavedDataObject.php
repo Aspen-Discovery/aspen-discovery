@@ -19,6 +19,9 @@ class UnsavedDataObject extends DataObject {
 	function getPrintableHtmlData($structure) : string {
 		$printableData = '';
 		foreach ($this->_data as $fieldId => $value) {
+			if (is_array($value)) {
+				$value = implode(', ', $value);
+			}
 			$fieldLabel = $structure[$fieldId]['label'];
 			$printableData .= "<div><b>$fieldLabel</b></div><div>$value</div><br/>";
 		}

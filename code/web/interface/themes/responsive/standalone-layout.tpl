@@ -30,6 +30,7 @@
 		<link rel="search" type="application/opensearchdescription+xml" title="{$site.title|escape} Catalog Search" href="/Search/OpenSearch?method=describe">
 		{include file="cssAndJsIncludes.tpl"}
 		{$themeCss}
+		{if !empty($userFontSizeOverride)}<style>:root{ldelim}--aspen-base-font-size: {$userFontSizeOverride};{rdelim}</style>{/if}
 	{/strip}
 </head>
 <body class="module_{$module} action_{$action}{if !empty($masqueradeMode)} masqueradeMode{/if}{if !empty($loggedIn)} loggedIn{else} loggedOut{/if}" id="{$module}-{$action}">

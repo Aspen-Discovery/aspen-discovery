@@ -1138,7 +1138,7 @@ class Library extends DataObject {
 		];
 
 		if ($catalog == null || !$catalog->hasCardRenewalSupport()) {
-			unset($validCardRenewalOptions[2]);
+			unset($validCardRenewalOptions[1]);
 		}
 
 		require_once ROOT_DIR . '/sys/Enrichment/QuipuECardSetting.php';
@@ -3859,7 +3859,7 @@ class Library extends DataObject {
 					'aspenEventsToInclude' => [
 						'property' => 'aspenEventsToInclude',
 						'type' => 'enum',
-						'label' => 'Aspen Events to Include',
+						'label' => 'Events to Include',
 						'description' => 'Which events to include when searching this library',
 						'values' => [
 							'0' => 'Do not show the option to search Events',

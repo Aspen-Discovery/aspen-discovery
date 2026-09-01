@@ -20,6 +20,28 @@ function getUpdates26_09_00(): array {
 		//kirstien
 
 		//kodi
+		'theme_font_size' => [
+			'title' => 'Theme Font Size',
+			'description' => 'Add setting to control the base font size for a theme',
+			'sql' => [
+				"ALTER TABLE themes ADD COLUMN fontSize VARCHAR(10) NOT NULL DEFAULT 'small'",
+			]
+		], // theme_font_size
+		'regenerate_themes' => [
+			'title' => 'Regenerate Themes',
+			'description' => 'Regenerate themes to accommodate new font size settings.',
+			'sql' => [
+				'regenerateThemeCssForFontSize',
+			]
+		], // theme_font_size
+		'user_preferred_text_size' => [
+			'title' => 'User Preferred Text Size',
+			'description' => 'Allow a user to override the text size of the applied theme',
+			'sql' => [
+				"ALTER TABLE user ADD COLUMN preferredTextSize VARCHAR(10) NOT NULL DEFAULT ''",
+			]
+		], // user_preferred_text_size
+
 		'publisher_keyword_exclusion' => [
 			'title' => 'Publisher Keyword Exclusion',
 			'description' => 'Add a variable in indexing profiles to determine if publisher info is excluded from the keyword index or not.',
@@ -35,8 +57,24 @@ function getUpdates26_09_00(): array {
 				'ALTER TABLE `aspen_lida_self_check_settings` ADD COLUMN `checkedoutOverrideLocations` VARCHAR(255)',
 			]
 		], //self_check_location_overrides
-
 		//yanjun
+		'hoopla_store_raw_response_length' => [
+			'title' => 'Store Raw Response Length for Hoopla',
+			'description' => 'Store Raw Response Length for Hoopla and index for performance',
+			'sql' => [
+				'ALTER TABLE hoopla_export ADD COLUMN rawResponseLength INT AS (UNCOMPRESSED_LENGTH(rawResponse)) STORED',
+				'ALTER TABLE hoopla_export ADD INDEX responseIndex(hooplaId, rawChecksum, rawResponseLength)',
+			],
+		], //hoopla_store_raw_response_length
+		'add_staff_members_display_order' => [
+			'title' => 'Add staff members display order column',
+			'description' => 'Add staff members display order',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE staff_members ADD COLUMN displayOrder INT UNSIGNED NOT NULL DEFAULT 0',
+				'UPDATE staff_members sm JOIN (SELECT id, ROW_NUMBER() OVER (PARTITION BY libraryId ORDER BY name ASC, id ASC) AS newDisplayOrder FROM staff_members) orderedStaff ON orderedStaff.id = sm.id SET sm.displayOrder = orderedStaff.newDisplayOrder'
+			]
+		],
 
 		//imani
 
@@ -66,4 +104,26 @@ function getUpdates26_09_00(): array {
 
 
 	];
+}
+
+/**
+ * The generated CSS for each theme is cached in themes.generatedCss, so adding the font size rules to
+ * theme.css.tpl has no effect until every theme is regenerated.
+ */
+function regenerateThemeCssForFontSize(&$update): void {
+	require_once ROOT_DIR . '/sys/Theming/Theme.php';
+	$theme = new Theme();
+	$theme->find();
+	$numUpdated = 0;
+	while ($theme->fetch()) {
+		$themeToUpdate = clone $theme;
+		$themeToUpdate->generateCss(true);
+		$numUpdated++;
+	}
+	$update['success'] = true;
+	$update['status'] = translate([
+		'text' => 'Regenerated CSS for %1% themes',
+		1 => $numUpdated,
+		'isAdminFacing' => true,
+	]);
 }
