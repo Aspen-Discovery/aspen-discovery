@@ -3905,17 +3905,15 @@ class MyAccount_AJAX extends JSON_Action {
 
 		$filteredHolds = [];
 
-		// Check if we're filtering by a specific user
+		// A filter option's value may be derived from more than the matching Hold
+		// property (for example, Available and Unavailable status values). Always
+		// use getHoldFilterValue() so building options and applying filters agree.
 		foreach ($allHolds as $group => $holdGroup) {
 			$filteredHolds[$group] = [];
 			foreach ($holdGroup as $hold) {
 				$holdIsValid = true;
 				foreach ($filters as $field => $filterInformation) {
-					if (!in_array($hold->$field, $filterInformation['selected']) && $field != "source") {
-						$holdIsValid = false;
-						break;
-					}
-					if ((!in_array($hold->$field, $filterInformation['selected']) && !in_array("all", $filterInformation['selected'])) && $field == "source") {
+					if ($this->isInvalidHold($hold, $field, $filterInformation)) {
 						$holdIsValid = false;
 						break;
 					}
@@ -3927,6 +3925,17 @@ class MyAccount_AJAX extends JSON_Action {
 		}
 
 		return $filteredHolds;
+	}
+
+	private function isInvalidHold(Hold|array $hold, string $field, array $filterInformation) : bool {
+		$filterValue = $this->getHoldFilterValue($hold, $field);
+		$selectedValues = array_map('strval', $filterInformation['selected']);
+		$absentFromArray = !in_array($hold->$field, $filterInformation['selected']);
+		$isSourceField = $field === "source";
+
+		return $absentFromArray && (!$isSourceField || !in_array("all", $filterInformation['selected']))
+			|| $filterValue === null
+			|| !in_array($filterValue['value'], $selectedValues, true);
 	}
 
 	private function filterCheckoutsByUser(array $allCheckedOut, string $selectedUser): array {
@@ -4284,59 +4293,48 @@ class MyAccount_AJAX extends JSON_Action {
 	}
 
 	/** Hold Filtering Functions */
-	private function getHoldFilterValue(Hold|array $hold, string $field): ?array {
-		if (is_array($hold)) {
-			$fieldValue = isset($hold[$field]) ? (string)$hold[$field] : null;
-		}else{
-			$fieldValue = $hold->$field;
+	private function getHoldPropertyValue(Hold|array $hold, string $field): mixed {
+		return is_array($hold) ? ($hold[$field] ?? null) : $hold->$field;
+	}
+
+	private function getHoldFilterFieldValue(Hold|array $hold, string $field): ?string {
+		$fieldValue = $this->getHoldPropertyValue($hold, $field);
+
+		if ($field === 'status') {
+			if ($this->getHoldPropertyValue($hold, 'available')) {
+				return 'available';
+			}
+			return empty($fieldValue) ? 'unavailable' : (string)$fieldValue;
 		}
 
-		$label = $fieldValue;
-		//Do special processing of some fields
-		switch ($field) {
-			case "userId":
-				$label = $hold->getUserName();
-				break;
-			case "status":
-				if ($hold->available) {
-					$label = translate(['text' => 'Available', 'isPublicFacing' => true]);
-				}else{
-					if (empty($hold->status)) {
-						$label = translate(['text' => 'Unavailable', 'isPublicFacing' => true]);
-					}else{
-						$label = translate(['text' => (string)$hold->$field, 'isPublicFacing' => true]);
-					}
-				}
-				break;
-			case "format":
-				$label = translate(['text' => (string)$hold->$field, 'isPublicFacing' => true]);
-				break;
-			case "source":
-				switch ($hold->source) {
-					case 'ils':
-						$sourceUntranslated = 'Physical Materials';
-						break;
-					case 'overdrive':
-						$readerName = new OverDriveDriver();
-						$sourceUntranslated = $readerName->getReaderName();
-						break;
-					case 'cloud_library':
-						$sourceUntranslated = 'Cloud Library';
-						break;
-					case 'hoopla':
-						$sourceUntranslated = 'Hoopla';
-						break;
-					case 'axis360':
-						$sourceUntranslated = 'Boundless';
-						break;
-					default:
-						$sourceUntranslated = 'Unknown';
-				}
-				$label = translate(['text' => $sourceUntranslated, 'isPublicFacing' => true]);
-				break;
-			default:
-				$label = (string)$hold->$field;
-		}
+		return $fieldValue === null ? null : (string)$fieldValue;
+	}
+
+	private function getHoldFilterValue(Hold|array $hold, string $field): ?array {
+		$fieldValue = $this->getHoldFilterFieldValue($hold, $field);
+
+		$getStatus = fn($fv) => match($fv) {
+			'available' => 'Available',
+			'unavailable' => 'Unavailable',
+			default => (string) $fv
+		};
+		$getSourceUT = fn($fv) => match($fv) {
+			'ils' => 'Physical Materials',
+			'overdrive' => (new OverDriveDriver())->getReaderName(),
+			'cloud_library' => 'Cloud Library',
+			'hoopla' => 'Hoopla',
+			'axis360' => 'Boundless',
+			default => 'Unknown'
+		};
+
+		$label = match($field) {
+			'userId' => is_array($hold) ? $fieldValue : $hold->getUserName(),
+			'status' => translate(['text' => $getStatus($fieldValue), 'isPublicFacing' => true]),
+			'format' => translate(['text' => (string)$fieldValue, 'isPublicFacing' => true]),
+			'source' => translate(['text' => $getSourceUT($fieldValue), 'isPublicFacing' => true]),
+			default => (string)$fieldValue
+		};
+
 		return [
 			'value' => $fieldValue,
 			'label' => $label
