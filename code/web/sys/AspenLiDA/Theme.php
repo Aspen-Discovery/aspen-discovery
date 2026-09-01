@@ -33,10 +33,8 @@ class AspenLiDATheme extends DataObject {
 	public $tertiaryTextColorDefault;
 
 	const LIGHT_BG = '#F5F5F5';
-	const LIGHT_CARD_BG = '#ffffff';
 	const LIGHT_TEXT = '#57534e';
 	const DARK_BG = '#111827';
-	const DARK_CARD_BG = '#1f2937';
 	const DARK_TEXT = '#e5e7eb';
 
 	const BASE_COLOR_PROPERTIES = [
@@ -349,32 +347,26 @@ class AspenLiDATheme extends DataObject {
 	}
 
 	/**
-	 * Validates WCAG contrast ratios for all six stored color values.
-	 *
-	 * Checks performed (minimum ratio: 3.0):
-	 *   1–2. primaryColor   vs. page bg + card bg
-	 *   3.   primaryTextColor  vs. primaryColor
-	 *   4–5. secondaryColor vs. page bg + card bg
-	 *   6.   secondaryTextColor vs. secondaryColor
-	 *   7–8. tertiaryColor  vs. page bg + card bg
-	 *   9.   tertiaryTextColor  vs. tertiaryColor
-	 *
+	 * Validates WCAG contrast ratios for all color values.
 	 * @return array{validatedOk: bool, errors: string[]}
 	 */
 	public function validateColorContrast(): array {
+		global $library;
 		$validationResults = [
 			'validatedOk' => true,
 			'errors' => [],
 		];
 
-		$minRatio = 3.0;
+		if ($library->getLayoutSettings()->contrastRatio == 7.0) {
+			$minRatio = 4.5;
+		} else {
+			$minRatio = 3.5;
+		}
 
 		if ($this->baseMode === 'dark') {
 			$pageBg = self::DARK_BG;
-			$cardBg = self::DARK_CARD_BG;
 		} else {
 			$pageBg = self::LIGHT_BG;
-			$cardBg = self::LIGHT_CARD_BG;
 		}
 
 		$colorPairs = [
@@ -401,12 +393,6 @@ class AspenLiDATheme extends DataObject {
 			$pageContrast = ColorUtils::calculateColorContrast($brandColor, $pageBg);
 			if ($pageContrast < $minRatio) {
 				$validationResults['errors'][] = "$label color does not have sufficient contrast against the page background (ratio: $pageContrast, minimum: $minRatio).";
-			}
-
-			// Brand color vs. card background
-			$cardContrast = ColorUtils::calculateColorContrast($brandColor, $cardBg);
-			if ($cardContrast < $minRatio) {
-				$validationResults['errors'][] = "$label color does not have sufficient contrast against the card background (ratio: $cardContrast, minimum: $minRatio).";
 			}
 
 			// Text color vs. brand color
