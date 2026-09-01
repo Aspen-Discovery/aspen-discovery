@@ -303,7 +303,8 @@ class AspenLiDATheme extends DataObject {
 
 		if (!SystemVariables::getSystemVariables()->enableBrandedApp) {
 			unset($structure['baseMode']);
-			unset($structure['baseColorSection']);
+			unset($structure['backgroundColor']);
+			unset($structure['textColor']);
 			unset($structure['primaryColor']);
 			unset($structure['secondaryColor']);
 			unset($structure['tertiaryColor']);
