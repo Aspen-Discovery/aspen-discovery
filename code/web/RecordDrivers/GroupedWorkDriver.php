@@ -3996,8 +3996,8 @@ class GroupedWorkDriver extends IndexRecordDriver {
 
 	private function getCallNumber() {
 		foreach (array_keys(($this->fields)) as $key) {
-			if (str_contains($key, 'callnumber')) {
-				return $this->fields[$key][0] ?? null;
+			if (str_contains($key, 'callnumber_sort')) {
+				return $this->fields[$key] ?? null;
 			}
 		}
 		return null;
