@@ -1088,9 +1088,9 @@ public class SymphonyExportMain {
 									} else {
 										logEntry.incSkipped();
 									}
-									if (totalChanges > 0 && totalChanges % 5000 == 0) {
+									/*if (totalChanges > 0 && totalChanges % 5000 == 0) {
 										getGroupedWorkIndexer(dbConn).commitChanges();
-									}
+									}*/
 									//Mark that the record was processed
 									recordGroupingProcessor.removeExistingRecord(recordIdentifier.getIdentifier());
 								}

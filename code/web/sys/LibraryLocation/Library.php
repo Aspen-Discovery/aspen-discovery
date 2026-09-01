@@ -218,6 +218,7 @@ class Library extends DataObject {
 	public $allowRenewingOutOfHoldGroupCheckouts;
 	public $enableSelfRegistration;
 	public $enablePatronIlsRegistrationByStaff;
+	public $useMinimalSelfRegistrationModal;
 	public $selfRegistrationPasswordNotes;
 	public $selfRegistrationUrl;
 	public $selfRegistrationLocationRestrictions;
@@ -1137,7 +1138,7 @@ class Library extends DataObject {
 		];
 
 		if ($catalog == null || !$catalog->hasCardRenewalSupport()) {
-			unset($validCardRenewalOptions[2]);
+			unset($validCardRenewalOptions[1]);
 		}
 
 		require_once ROOT_DIR . '/sys/Enrichment/QuipuECardSetting.php';
@@ -2802,6 +2803,13 @@ class Library extends DataObject {
 								'label' => 'Enable Patron ILS Registration By Staff',
 								'description' => 'If enabled, staff with the Register Patrons permission can create ILS patron accounts from within Aspen.',
 								'note' => 'Applies to Koha only. Enabling this allows staff members to access the \'Register Patron\' feature on this library site, makes this library\'s branches selectable as a new patron\'s home library from any library\'s staff registration form, and allows registrations of new patrons by staff to this library.', // true at the point of submission of DIS-2287
+								'hideInLists' => true,
+							],
+							'useMinimalSelfRegistrationModal' => [
+								'property' => 'useMinimalSelfRegistrationModal',
+								'type' => 'checkbox',
+								'label' => 'Use Minimal Self Registration Modal',
+								'description' => 'When ILS Based Self Registration is enabled, present a minimal registration form (mandatory ILS fields only) in a modal rather than redirecting to the full self registration page',
 								'hideInLists' => true,
 							],
 							'messageBeeSettingId' => [
