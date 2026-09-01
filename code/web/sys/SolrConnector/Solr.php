@@ -679,7 +679,8 @@ abstract class Solr {
 				$cleanedQuery = preg_replace("/([0-9])(st|nd|rd|th)/", "$1 $2", $cleanedQuery);
 				$cleanedQuery = preg_replace('%([-+!(){}\][^~:?/\\\\])%', '\\\\$1', $cleanedQuery);
 			} else {
-				$cleanedQuery = $lookfor;
+				// Still escape Solr-reserved characters even though this matched a known grouped-ID pattern
+				$cleanedQuery = preg_replace('%([-+!(){}\][^~:?/\\\\])%', '\\\\$1', $lookfor);
 			}
 			require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 			$noTrailingPunctuation = StringUtils::removeTrailingPunctuation($cleanedQuery);
