@@ -926,6 +926,7 @@ var Globals = (function () {
 		loadingBody: 'Loading, please wait',
 		requestFailedTitle: 'Request Failed',
 		requestFailedBody: 'There was an error with this AJAX Request.',
+		validationInvalidValue: 'Invalid value entered.',
 		rtl:false,
 		bypassAspenLoginForSSO:false,
 		ssoLoginUrl: '',
@@ -2225,6 +2226,71 @@ jQuery.validator.addMethod("pinConfirmation", function (value, element) {
 	var pinToMatch = aspenJQ("#pin").val();
 	return value === pinToMatch;
 }, "PINs must match.");
+
+/**
+ * serverValidate is an alternative to jQuery validate's remote(). It owns 
+ * the fetch so it can handle AJAX request failures (remote() silently blocks
+ * form submission on failure);
+ * 
+ * Handles re-fires on each keystroke by aborting the previous request to prevent
+ * a slow earlier response from settling the field against a value the user has
+ * already replaced.
+*/
+const serverValidateCache = new WeakMap();
+
+$.validator.addMethod("serverValidate", function (value, element, param) {
+	if (this.optional(element)) {
+		return "dependency-mismatch";
+	}
+
+	const cached = serverValidateCache.get(element);
+	if (cached?.value === value) {
+		return cached.pending ? "pending" : cached.valid;
+	}
+	cached?.controller?.abort();
+
+	const controller = new AbortController();
+	const entry = {value: value, valid: false, pending: true, message: null, controller: controller};
+	serverValidateCache.set(element, entry);
+	this.startRequest(element);
+
+	const settle = (data) => {
+		entry.pending = false;
+		entry.valid = data.valid === true;
+		entry.message = data.message;
+		// guard the pending counter: stopRequest before element() so any redraw re-fire gets a clean startRequest
+		this.stopRequest(element, entry.valid);
+		this.element(element);
+	};
+
+	fetch(param.url, {
+		method: "post",
+		credentials: "same-origin",
+		body: new URLSearchParams({value: value}),
+		signal: controller.signal
+	})
+		.then((response) => {
+			if (!response.ok) {
+				throw new Error("Validation request failed with status " + response.status);
+			}
+			return response.json();
+		})
+		.then(settle)
+		.catch((error) => {
+			if (error.name === "AbortError") {
+				return;
+			}
+			settle({valid: false, message: param.errorMessage || Globals.requestFailedBody});
+		});
+
+	return "pending";
+}, function (params, element) {
+	const cached = serverValidateCache.get(element);
+	// jQuery Validate ($.validator) renders messages with .html(); -> escape.
+	const div = document.createElement("div");
+	div.textContent = cached?.message || Globals.validationInvalidValue;
+	return div.innerHTML;
+});
 
 if (!String.prototype.startsWith) {
 	Object.defineProperty(String.prototype, 'startsWith', {
@@ -15815,13 +15881,15 @@ AspenDiscovery.Account.ReadingHistory = (function(){
 		},
 
 		deleteGroupedEntry(patronId, groupedWorkPermanentId, title, author, displayId) {
+                        const titleHtmlSafe = title.replace(/'/g, "&#39;");
+                        const authorHtmlSafe = author.replace(/'/g, "&#39;");
 			AspenDiscovery.confirm(
 				__('Delete Reading History Entry'),
 				__('All checkout records for this title will be irreversibly deleted from your reading history. Proceed?'),
 				__('Delete'),
 				__('Cancel'),
 				false,
-				`AspenDiscovery.Account.ReadingHistory.doDeleteGroupedEntry(&quot;${patronId}&quot;, &quot;${groupedWorkPermanentId}&quot;, &quot;${title}&quot;, &quot;${author}&quot;, &quot;${displayId}&quot;)`,
+				`AspenDiscovery.Account.ReadingHistory.doDeleteGroupedEntry(&quot;${patronId}&quot;, &quot;${groupedWorkPermanentId}&quot;, &quot;${titleHtmlSafe}&quot;, &quot;${authorHtmlSafe}&quot;, &quot;${displayId}&quot;)`,
 				'btn-danger'
 			);
 

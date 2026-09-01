@@ -65,7 +65,7 @@ class Donations_NewDonation extends Action {
 				$sdkClientSecret = $donationPaymentProcessor['sdkClientSecret'];
 				$billerId = $donationPaymentProcessor['billerId'];
 				$billerAccountId = $donationPaymentProcessor['billerAccountId'];
-				$baseUrl = $donationPaymentProcessor['baseUrl'];
+				$baseUrl = $donationPaymentProcessor['aciHost'];
 				$sdkUrl = $donationPaymentProcessor['sdkUrl'];
 
 				$interface->assign('billerId', $billerId);
@@ -93,7 +93,7 @@ class Donations_NewDonation extends Action {
 					'account_number' => $billerAccountId,
 				];
 
-				$url = $baseUrl . "/auth/v1/auth/token";
+				$url = $baseUrl . "/oauth/token";
 				$accessTokenResults = $serviceAccountAuthorization->curlPostPage($url, $postParams);
 				$accessTokenResults = json_decode($accessTokenResults, true);
 				$accessToken = "";

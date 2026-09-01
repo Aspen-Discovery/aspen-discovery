@@ -1,5 +1,5 @@
 {strip}
-	<div id="listEntry{$listEntryId}" class="resultsList listEntry" data-order="{$resultIndex}" data-list_entry_id="{$listEntryId}">
+	<div id="listEntry{$listEntryId}" class="resultsList-cloud-source resultsList listEntry" data-order="{$resultIndex}" data-list_entry_id="{$listEntryId}">
 		<div class="row">
 			{if !empty($listEditAllowed) && $printInterface === false}
 				<div class="selectTitle col-xs-12 col-sm-1">
@@ -17,7 +17,7 @@
 			{/if}
 
 			<div class="{if empty($showCovers) && $printInterface === false}col-xs-9 col-sm-9 col-md-9 col-lg-10{elseif $listEditAllowed && $printInterface === false}col-xs-6 col-sm-6 col-md-6 col-lg-7{elseif $printInterface === true && $printEntryCovers === false}col-xs-12{elseif $printInterface === true && $printEntryCovers === true}col-xs-9 col-sm-9 col-md-9 col-lg-10{else}col-xs-6 col-sm-6 col-md-6 col-lg-8{/if}">
-				<div class="row">
+				<div class="result-title-row row">
 					<div class="col-xs-12">
 						<span class="result-index">{$resultIndex})</span>&nbsp;
 						<a href="{$summUrl}" class="result-title notranslate" target="_blank" aria-label="{if !$summTitle|removeTrailingPunctuation} {translate text='Title not available' isPublicFacing=true}{else}{$summTitle|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if} ({translate text='opens in new window' isPublicFacing=true})">
@@ -29,15 +29,14 @@
 				<div class="row">
 					<div class="col-xs-8">
 						{if !empty($summAuthor)}
-							<div class="row">
+							<div class="result-author row">
 								<div class="result-label col-sm-3"> {translate text='Author' isPublicFacing=true}</div>
 								<div class="col-sm-9 result-value">{$summAuthor|escape}</div>
 							</div>
 						{/if}
 
 						{if !empty($summPublicationDates) || !empty($summPublishers) || !empty($summPublicationPlaces)}
-							<div class="row">
-
+							<div class="result-publication row">
 								<div class="result-label col-sm-3">{translate text='Published' isPublicFacing=true}</div>
 								<div class="col-sm-9 result-value">
 									{if !empty($summPublicationPlaces)}{$summPublicationPlaces.0|escape}{/if} {if !empty($summPublishers)}{$summPublishers.0|escape}{/if} {if !empty($summPublicationDates)}{$summPublicationDates.0|escape}{/if}
@@ -46,7 +45,7 @@
 						{/if}
 
 						{if strlen($summFormats)}
-							<div class="row">
+							<div class="result-format row">
 								<div class="result-label col-sm-3">{translate text='Format' isPublicFacing=true}</div>
 								<div class="col-sm-9 result-value">
 									<span>{translate text=$summFormats isPublicFacing=true}</span>
@@ -55,14 +54,14 @@
 						{/if}
 
 						{if !empty($summPhysical)}
-							<div class="row hidden-phone">
+							<div class="result-physical-description row hidden-phone">
 								<div class="result-label col-sm-3">{translate text='Physical Desc' isPublicFacing=true}</div>
 								<div class="col-sm-9 result-value">{$summPhysical|escape}</div>
 							</div>
 						{/if}
 
 						{if (!empty($listEntryNotes) && $printInterface === false) || (!empty($listEntryNotes) && $printInterface === true && $printEntryNotes === true)}
-							<div class="row">
+							<div class="result-notes row">
 								<div class="result-label col-sm-3">{translate text="Notes" isPublicFacing=true} </div>
 								<div class="user-list-entry-note result-value col-sm-9">
 									{$listEntryNotes}
@@ -70,8 +69,8 @@
 							</div>
 						{/if}
 					</div>
-					{if (!empty($externalUrl))}
-						<div class="col-sm-4" style="display:flex; justify-content:center;">
+					{if !empty($externalUrl)}
+						<div class="result-external-link col-sm-4" style="display:flex; justify-content:center;">
 							<div class="btn-toolbar">
 								<div class="btn-group btn-group-vertical btn-block">
 									<a href="{$externalUrl}" class="btn btn-sm btn-action btn-wrap" target="_blank" aria-label="{translate text="Access Online" isPublicFacing=true inAttribute=true} ({translate text="opens in a new window" isPublicFacing=true inAttribute=true})"><i class="fas fa-external-link-alt" role="presentation"></i> {translate text="Access Online" isPublicFacing=true}</a>
@@ -83,7 +82,7 @@
 
 				{if !empty($summDescription) && $printInterface === false}
 					{* Standard Description *}
-					<div class="row visible-xs">
+					<div class="result-description-label row visible-xs">
 						<div class="result-label col-tn-3">{translate text='Description' isPublicFacing=true}</div>
 						<div class="result-value col-tn-8"><a id="descriptionLink{$summId|escape}" href="#" onclick="$('#descriptionValue{$summId|escape},#descriptionLink{$summId|escape}').toggleClass('hidden-xs');return false;">Click to view</a></div>
 					</div>
@@ -91,7 +90,7 @@
 
 				{* Mobile Description *}
 				{if (!empty($summDescription) && $printInterface === false) || ($printInterface === true && $printEntryDescription === true)}
-					<div class="row">
+					<div class="result-description-text row">
 						{* Hide in mobile view *}
 						<div class="hidden-xs result-value col-sm-12" id="descriptionValue{$summId|escape}">
 							{$summDescription|highlight|truncate_html:450:"..."}

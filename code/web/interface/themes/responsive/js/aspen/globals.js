@@ -24,6 +24,7 @@ var Globals = (function () {
 		loadingBody: 'Loading, please wait',
 		requestFailedTitle: 'Request Failed',
 		requestFailedBody: 'There was an error with this AJAX Request.',
+		validationInvalidValue: 'Invalid value entered.',
 		rtl:false,
 		bypassAspenLoginForSSO:false,
 		ssoLoginUrl: '',

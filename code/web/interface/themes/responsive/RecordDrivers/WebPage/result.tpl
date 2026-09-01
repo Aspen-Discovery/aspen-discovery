@@ -1,5 +1,5 @@
 {strip}
-<div id="webPageResult{$resultIndex|escape}" class="resultsList row">
+<div id="webPageResult{$resultIndex|escape}" class="resultsList-web-page resultsList row">
 	{if !empty($showCovers)}
 		<div class="coversColumn col-xs-3 col-sm-3 col-md-3 col-lg-2 text-center" aria-hidden="true" role="presentation">
 			{if $disableCoverArt != 1}
@@ -13,7 +13,7 @@
 
 	<div class="{if empty($showCovers)}col-xs-12{else}col-xs-9 col-sm-9 col-md-9 col-lg-10{/if}">{* May turn out to be more than one situation to consider here *}
 		{* Title Row *}
-		<div class="row">
+		<div class="result-title-row row">
 			<div class="col-xs-12">
 				<span class="result-index">{$resultIndex})</span>&nbsp;
 				{if preg_match('/webresource/i', $id)}
@@ -32,7 +32,7 @@
 		</div>
 
 		{if !empty($website_name)}
-			<div class="row">
+			<div class="result-site-name row">
 				<div class="result-label col-tn-3">{translate text="Site name" isPublicFacing=true} </div>
 				<div class="result-value col-tn-8 notranslate">
 					{implode subject=$website_name glue="<br/>"}
@@ -41,7 +41,7 @@
 		{/if}
 
 		{if !empty($date)}
-			<div class="row">
+			<div class="result-date row">
 				<div class="result-label col-tn-3">{translate text="Date" isPublicFacing=true} </div>
 				<div class="result-value col-tn-8 notranslate">
 					{implode subject=$date}
@@ -51,12 +51,12 @@
 
 		{* Description Section *}
 		{if !empty($description)}
-			<div class="row visible-xs">
+			<div class="result-description-label row visible-xs">
 				<div class="result-label col-tn-3 col-xs-3">{translate text="Description" isPublicFacing=true}</div>
 				<div class="result-value col-tn-9 col-xs-9"><a id="descriptionLink{$resultIndex|escape}" href="#" onclick="$('#descriptionValue{$resultIndex|escape},#descriptionLink{$resultIndex|escape}').toggleClass('hidden-xs');return false;">{translate text="Click to view" isPublicFacing=true}</a></div>
 			</div>
 
-			<div class="row">
+			<div class="result-description-text row">
 				{* Hide in mobile view *}
 				<div class="result-value hidden-xs col-sm-12" id="descriptionValue{$resultIndex|escape}">
 					{$description|highlight|truncate_html:450:"..."}

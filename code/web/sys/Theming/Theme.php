@@ -559,6 +559,13 @@ class Theme extends DataObject {
 	public $bodyFont;
 	public $bodyFontDefault;
 	public $customBodyFont;
+	public $fontSize;
+
+	public static $fontSizes = [
+		'small' => '14px',
+		'medium' => '16px',
+		'large' => '18px',
+	];
 
 	public $coverStyle;
 
@@ -1175,6 +1182,20 @@ class Theme extends DataObject {
 				'label' => 'Custom Body Font',
 				'description' => 'Upload a custom font to use for the body',
 				'required' => false,
+				'hideInLists' => true,
+			],
+			'fontSize' => [
+				'property' => 'fontSize',
+				'type' => 'enum',
+				'values' => [
+					'small' => 'Small',
+					'medium' => 'Medium',
+					'large' => 'Large'
+				],
+				'label' => 'Font Size',
+				'description' => 'Determines the size of all text displayed (headers, body, footers, etc.). Default inherits the size from the theme being extended.',
+				'required' => false,
+				'default' => 'small',
 				'hideInLists' => true,
 			],
 
@@ -3280,6 +3301,7 @@ class Theme extends DataObject {
 		$interface->assign('bodyFont', '');
 		$interface->assign('placardImageMaxHeight', $this->placardImageMaxHeight);
 		$interface->assign('showButtonShimmer', $this->showButtonShimmer);
+		$interface->assign('fontSize', '');
 		if ($this->customHeadingFont != null) {
 			$customHeadingFontName = substr($this->customHeadingFont, 0, strrpos($this->customHeadingFont, '.'));
 			$interface->assign('customHeadingFontName', $customHeadingFontName);
@@ -3357,6 +3379,9 @@ class Theme extends DataObject {
 				}
 				$interface->assign('smallButtonRadius', $buttonRadius);
 			}
+			if ($interface->getVariable('fontSize') == null && !empty(Theme::$fontSizes[$theme->fontSize ?? ''])) {
+				$interface->assign('fontSize', Theme::$fontSizes[$theme->fontSize]);
+			}
 			if ($interface->getVariable('badgeBorderRadius') == null && !empty($theme->badgeBorderRadius)) {
 				$badgeBorderRadius = $theme->badgeBorderRadius;
 				if (is_numeric($badgeBorderRadius)) {
@@ -3378,6 +3403,10 @@ class Theme extends DataObject {
 					}
 				}
 			}
+		}
+
+		if ($interface->getVariable('fontSize') == null || $interface->getVariable('fontSize') == '') {
+			$interface->assign('fontSize', Theme::$fontSizes['small']);
 		}
 
 		$interface->assign('additionalCSS', $additionalCSS);

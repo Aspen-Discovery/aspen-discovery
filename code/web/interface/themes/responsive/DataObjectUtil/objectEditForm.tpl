@@ -161,6 +161,12 @@
 			},
 			"{/literal}{translate text="Please check your input." isAdminFacing=true inAttribute=true}{literal}"
 		);
+		$.validator.addClassRules("regex-field", {
+			serverValidate: {
+				url: "/InputValidation/AJAX?method=validateRegularExpression",
+				errorMessage: "{/literal}{translate text="Could not check the regular expression, please try again." isAdminFacing=true inAttribute=true}{literal}"
+			}
+		});
 		$(() => {
 			let objectEditorObject = $('#objectEditor-{/literal}{if !empty($id)}{$id}{else}-1{/if}{literal}');
 
