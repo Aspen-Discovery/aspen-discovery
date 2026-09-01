@@ -1,7 +1,5 @@
 <?php
 
-use JetBrains\PhpStorm\NoReturn;
-
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/AspenLiDA/Theme.php';
 
@@ -166,7 +164,6 @@ class AspenLiDA_Themes extends ObjectEditor {
 	 * admin JS can pre-populate the LiDA theme form fields.
 	 */
 	/** @noinspection PhpUnused */
-	#[NoReturn]
 	function getWebThemeData(): void {
 		$result = [
 			'success' => false,
