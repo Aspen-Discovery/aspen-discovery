@@ -3859,7 +3859,7 @@ class Library extends DataObject {
 					'aspenEventsToInclude' => [
 						'property' => 'aspenEventsToInclude',
 						'type' => 'enum',
-						'label' => 'Aspen Events to Include',
+						'label' => 'Events to Include',
 						'description' => 'Which events to include when searching this library',
 						'values' => [
 							'0' => 'Do not show the option to search Events',
