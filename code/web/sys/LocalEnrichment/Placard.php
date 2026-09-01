@@ -340,19 +340,7 @@ class Placard extends DB_LibraryLocationLinkedObject {
 
 	public function saveTriggers() : void {
 		if (isset ($this->_triggers) && is_array($this->_triggers)) {
-			/** @var PlacardTrigger $trigger */
-			foreach ($this->_triggers as $trigger) {
-				if ($trigger->_deleteOnSave) {
-					$trigger->delete();
-				} else {
-					if (isset($trigger->id) && is_numeric($trigger->id)) {
-						$trigger->update();
-					} else {
-						$trigger->placardId = $this->id;
-						$trigger->insert();
-					}
-				}
-			}
+			$this->saveOneToManyOptions($this->_triggers, 'placardId');
 			unset($this->_triggers);
 		}
 	}

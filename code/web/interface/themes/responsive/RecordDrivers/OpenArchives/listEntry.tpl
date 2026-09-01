@@ -16,11 +16,9 @@
 			</div>
 		{/if}
 
-
 		<div class="{if empty($showCovers) && $printInterface === false}col-xs-9 col-sm-9 col-md-9 col-lg-10{elseif $listEditAllowed && $printInterface === false}col-xs-6 col-sm-6 col-md-6 col-lg-7{elseif $printInterface === true && $printEntryCovers === false}col-xs-12{elseif $printInterface === true && $printEntryCovers === true}col-xs-9 col-sm-9 col-md-9 col-lg-10{else}col-xs-6 col-sm-6 col-md-6 col-lg-8{/if}">
 			{* Title Row *}
-
-			<div class="row">
+			<div class="result-title-row row">
 				<div class="col-xs-12">
 					<span class="result-index">{$resultIndex})</span>&nbsp;
 					<a href="{$openArchiveUrl}" class="result-title notranslate" onclick="AspenDiscovery.OpenArchives.trackUsage('{$id}')" target="_blank">
@@ -33,7 +31,7 @@
 			</div>
 
 			{if !empty($type)}
-				<div class="row">
+				<div class="result-type row">
 					<div class="result-label col-tn-3">{translate text="Type" isPublicFacing=true} </div>
 					<div class="result-value col-tn-8 notranslate">
 						{implode subject=$type}
@@ -42,7 +40,7 @@
 			{/if}
 
 			{if !empty($source)}
-				<div class="row">
+				<div class="result-source row">
 					<div class="result-label col-tn-3">{translate text="Source" isPublicFacing=true} </div>
 					<div class="result-value col-tn-8 notranslate">
 						{implode subject=$source glue="<br/>"}
@@ -51,7 +49,7 @@
 			{/if}
 
 			{if !empty($publisher)}
-				<div class="row">
+				<div class="result-publisher row">
 					<div class="result-label col-tn-3">{translate text="Publisher" isPublicFacing=true} </div>
 					<div class="result-value col-tn-8 notranslate">
 						{implode subject=$publisher}
@@ -60,7 +58,7 @@
 			{/if}
 
 			{if !empty($date)}
-				<div class="row">
+				<div class="result-date row">
 					<div class="result-label col-tn-3">{translate text="Date" isPublicFacing=true} </div>
 					<div class="result-value col-tn-8 notranslate">
 						{implode subject=$date}
@@ -69,7 +67,7 @@
 			{/if}
 
             {if (!empty($listEntryNotes) && $printInterface === false) || (!empty($listEntryNotes) && $printInterface === true && $printEntryNotes === true)}
-				<div class="row">
+				<div class="result-notes row">
 					<div class="result-label col-md-3">{translate text="Notes" isPublicFacing=true} </div>
 					<div class="user-list-entry-note result-value col-md-9">
 						{$listEntryNotes}
@@ -79,14 +77,14 @@
 
 			{* Description Section *}
             {if !empty($description) && $printInterface === false}
-				<div class="row visible-xs">
+				<div class="result-description-label row visible-xs">
 					<div class="result-label col-tn-3 col-xs-3">{translate text="Description" isPublicFacing=true}</div>
 					<div class="result-value col-tn-9 col-xs-9"><a id="descriptionLink{$resultIndex|escape}" href="#" onclick="$('#descriptionValue{$resultIndex|escape},#descriptionLink{$resultIndex|escape}').toggleClass('hidden-xs');return false;">Click to view</a></div>
 				</div>
             {/if}
 
             {if (!empty($description) && $printInterface === false) || ($printInterface === true && $printEntryDescription === true)}
-				<div class="row">
+				<div class="result-description-text row">
 					{* Hide in mobile view *}
 					<div class="result-value hidden-xs col-sm-12" id="descriptionValue{$resultIndex|escape}">
 						{$description|highlight|truncate_html:450:"..."}
@@ -115,7 +113,6 @@
 						{if !empty($userSort) && ($resultIndex != $listEntryCount)}<span class="btn btn-xs btn-default" onclick="return AspenDiscovery.Lists.changeWeight('{$listEntryId}', 'down');" title="{translate text="Move Down" isPublicFacing=true}">&#x25BC;</span>{/if}
 					{/if}
 				</div>
-
 			{/if}
 		</div>
 	</div>
