@@ -205,7 +205,7 @@
 // the nav the full height of the horizontal nav (above 768px).
 
 .navbar-nav {
-  margin: (@navbar-padding-vertical / 2) -@navbar-padding-horizontal;
+  margin: ~"calc(@{navbar-padding-vertical} / 2)" ~"calc(@{navbar-padding-horizontal} * -1)";
 
   > li > a {
     padding-top:    10px;
@@ -273,10 +273,10 @@
 //
 // Extension of the `.form-inline` with some extra flavor for optimum display in
 // our navbars.
-
 .navbar-form {
-  margin-left: -@navbar-padding-horizontal;
-  margin-right: -@navbar-padding-horizontal;
+  // Safe runtime negative margins using modern browser math
+  margin-left: ~"calc(@{navbar-padding-horizontal} * -1)";
+  margin-right: ~"calc(@{navbar-padding-horizontal} * -1)";
   padding: 10px @navbar-padding-horizontal;
   border-top: 1px solid transparent;
   border-bottom: 1px solid transparent;
@@ -292,8 +292,38 @@
     }
   }
 
-  // Vertically center in expanded, horizontal navbar
-  .navbar-vertical-align(@input-height-base);
+  // Flattened vertical alignment math to prevent compile-time type checking crashes
+  margin-top: ~"calc((@{navbar-height} - @{input-height-base}) / 2)";
+  margin-bottom: ~"calc((@{navbar-height} - @{input-height-base}) / 2)";
+}
+
+// Navbar Buttons
+.navbar-btn {
+  margin-top: ~"calc((@{navbar-height} - @{input-height-base}) / 2)";
+  margin-bottom: ~"calc((@{navbar-height} - @{input-height-base}) / 2)";
+
+  &.btn-sm {
+    margin-top: ~"calc((@{navbar-height} - @{input-height-small}) / 2)";
+    margin-bottom: ~"calc((@{navbar-height} - @{input-height-small}) / 2)";
+  }
+  &.btn-xs {
+    margin-top: ~"calc((@{navbar-height} - 22px) / 2)";
+    margin-bottom: ~"calc((@{navbar-height} - 22px) / 2)";
+  }
+}
+
+// Navbar Text Alignment
+.navbar-text {
+  margin-top: ~"calc((@{navbar-height} - @{line-height-computed}) / 2)";
+  margin-bottom: ~"calc((@{navbar-height} - @{line-height-computed}) / 2)";
+
+  @media (min-width: @grid-float-breakpoint) {
+    float: left;
+    margin-left: @navbar-padding-horizontal;
+    margin-right: @navbar-padding-horizontal;
+    &.navbar-right:last-child { margin-right: 0; }
+  }
+}
 
   // Undo 100% width for pull classes
   @media (min-width: @grid-float-breakpoint) {
@@ -310,7 +340,6 @@
       margin-right: -@navbar-padding-horizontal;
     }
   }
-}
 
 
 // Dropdown menus
@@ -330,42 +359,6 @@
 .navbar-nav > li > .dropdown-menu.pull-right {
   left: auto;
   right: 0;
-}
-
-
-// Buttons in navbars
-//
-// Vertically center a button within a navbar (when *not* in a form).
-
-.navbar-btn {
-  .navbar-vertical-align(@input-height-base);
-
-  &.btn-sm {
-    .navbar-vertical-align(@input-height-small);
-  }
-  &.btn-xs {
-    .navbar-vertical-align(22);
-  }
-}
-
-
-// Text in navbars
-//
-// Add a class to make any element properly align itself vertically within the navbars.
-
-.navbar-text {
-  .navbar-vertical-align(@line-height-computed);
-
-  @media (min-width: @grid-float-breakpoint) {
-    float: left;
-    margin-left: @navbar-padding-horizontal;
-    margin-right: @navbar-padding-horizontal;
-
-    // Outdent the form if last child to line up with content down the page
-    &.navbar-right:last-child {
-      margin-right: 0;
-    }
-  }
 }
 
 // Alternate navbars

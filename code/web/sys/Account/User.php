@@ -41,6 +41,7 @@ class User extends DataObject {
 	public $axis360Email;
 	public $preferredLibraryInterface;
 	public $preferredTheme;
+	public $preferredTextSize;
 	public $noPromptForUserReviews; //tinyint(1)
 	public $lockedFacets;
 	public $alternateLibraryCard;
@@ -1663,6 +1664,11 @@ class User extends DataObject {
 		}
 		if (isset($_REQUEST['preferredTheme'])) {
 			$this->__set('preferredTheme', $_REQUEST['preferredTheme']);
+		}
+		if (isset($_REQUEST['preferredTextSize'])) {
+			if ($_REQUEST['preferredTextSize'] === '' || array_key_exists($_REQUEST['preferredTextSize'], Theme::$fontSizes)) {
+				$this->__set('preferredTextSize', $_REQUEST['preferredTextSize']);
+			}
 		}
 
 		//Make sure the selected location codes are in the database.
