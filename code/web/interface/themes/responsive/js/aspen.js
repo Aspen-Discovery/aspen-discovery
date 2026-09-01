@@ -15810,13 +15810,15 @@ AspenDiscovery.Account.ReadingHistory = (function(){
 		},
 
 		deleteGroupedEntry(patronId, groupedWorkPermanentId, title, author, displayId) {
+                        const titleHtmlSafe = title.replace(/'/g, "&#39;");
+                        const authorHtmlSafe = author.replace(/'/g, "&#39;");
 			AspenDiscovery.confirm(
 				__('Delete Reading History Entry'),
 				__('All checkout records for this title will be irreversibly deleted from your reading history. Proceed?'),
 				__('Delete'),
 				__('Cancel'),
 				false,
-				`AspenDiscovery.Account.ReadingHistory.doDeleteGroupedEntry(&quot;${patronId}&quot;, &quot;${groupedWorkPermanentId}&quot;, &quot;${title}&quot;, &quot;${author}&quot;, &quot;${displayId}&quot;)`,
+				`AspenDiscovery.Account.ReadingHistory.doDeleteGroupedEntry(&quot;${patronId}&quot;, &quot;${groupedWorkPermanentId}&quot;, &quot;${titleHtmlSafe}&quot;, &quot;${authorHtmlSafe}&quot;, &quot;${displayId}&quot;)`,
 				'btn-danger'
 			);
 
