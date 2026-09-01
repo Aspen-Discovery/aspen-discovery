@@ -202,9 +202,6 @@ class Admin_Locations extends ObjectEditor {
 			if ($activeObject->useLibraryThemes || empty($activeObject->getThemes())) {
 				unset($settings['themes']);
 			}
-			if ($activeObject->useLibraryThemesForAspenLiDA || empty($activeObject->getAspenLiDAThemes())) {
-				unset($settings['aspenLiDAThemes']);
-			}
 		}
 		return $settings;
 	}
