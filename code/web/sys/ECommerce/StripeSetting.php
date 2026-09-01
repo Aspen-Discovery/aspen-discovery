@@ -230,9 +230,7 @@ class StripeSetting extends DataObject {
 	public function submitTransaction($payment, $paymentMethodId, $transactionType): array {
 		$result = ['success' => false];
 
-		$paymentAmount = $payment->totalPaid;
-		$paymentAmount = $paymentAmount * 100;
-		$paymentAmount = (int)$paymentAmount;
+		$paymentAmount = (int)round($payment->totalPaid * 100);
 
 		$paymentIntent = $this->createPaymentIntent($paymentAmount, $paymentMethodId, $payment, $transactionType);
 		if (!empty($paymentIntent['error'])) {
