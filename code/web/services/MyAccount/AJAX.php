@@ -3911,7 +3911,11 @@ class MyAccount_AJAX extends JSON_Action {
 			foreach ($holdGroup as $hold) {
 				$holdIsValid = true;
 				foreach ($filters as $field => $filterInformation) {
-					if (!in_array($hold->$field, $filterInformation['selected'])) {
+					if (!in_array($hold->$field, $filterInformation['selected']) && $field != "source") {
+						$holdIsValid = false;
+						break;
+					}
+					if ((!in_array($hold->$field, $filterInformation['selected']) && !in_array("all", $filterInformation['selected'])) && $field == "source") {
 						$holdIsValid = false;
 						break;
 					}
