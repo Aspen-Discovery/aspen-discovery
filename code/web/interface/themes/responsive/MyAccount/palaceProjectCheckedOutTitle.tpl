@@ -1,5 +1,5 @@
 {strip}
-	<div class="result row palace_project_checkout_{$record->recordId|escapeCSS}_{$record->userId}">
+	<div class="result row palace_project_checkout_{$record->recordId|escapeCSS}_{$record->userId}" data-record-type="palace" data-record-id="{$record->recordId}">
 		{* Cover Column *}
 		{if !empty($showCovers)}
 			<div class="col-xs-3 col-sm-4 col-md-3 checkedOut-covers-column">
