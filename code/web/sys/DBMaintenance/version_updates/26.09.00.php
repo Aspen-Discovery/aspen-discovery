@@ -58,6 +58,14 @@ function getUpdates26_09_00(): array {
 			]
 		], //self_check_location_overrides
 		//yanjun
+		'hoopla_store_raw_response_length' => [
+			'title' => 'Store Raw Response Length for Hoopla',
+			'description' => 'Store Raw Response Length for Hoopla and index for performance',
+			'sql' => [
+				'ALTER TABLE hoopla_export ADD COLUMN rawResponseLength INT AS (UNCOMPRESSED_LENGTH(rawResponse)) STORED',
+				'ALTER TABLE hoopla_export ADD INDEX responseIndex(hooplaId, rawChecksum, rawResponseLength)',
+			],
+		], //hoopla_store_raw_response_length
 		'add_staff_members_display_order' => [
 			'title' => 'Add staff members display order column',
 			'description' => 'Add staff members display order',

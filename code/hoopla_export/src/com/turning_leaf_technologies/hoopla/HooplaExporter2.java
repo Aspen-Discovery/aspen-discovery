@@ -78,7 +78,7 @@ public class HooplaExporter2 {
 		startTimeForLogging = startTime.getTime() / 1000;
 
 		try {
-			getAllExistingHooplaItemsStmt = aspenConn.prepareStatement("SELECT id, hooplaId, rawChecksum, UNCOMPRESSED_LENGTH(rawResponse) as rawResponseLength from hoopla_export");
+			getAllExistingHooplaItemsStmt = aspenConn.prepareStatement("SELECT id, hooplaId, rawChecksum, rawResponseLength from hoopla_export");
 			addHooplaTitleToDB = aspenConn.prepareStatement("INSERT INTO hoopla_export (hooplaId, title, format, pa, demo, profanity, rating, abridged, children, ppuPrice, rawChecksum, rawResponse, dateFirstDetected) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,COMPRESS(?),?) ");
 			updateHooplaTitleInDB = aspenConn.prepareStatement("UPDATE hoopla_export set title = ?, format = ?, pa = ?, demo = ?, profanity = ?, rating = ?, abridged = ?, children = ?, ppuPrice = ?, rawChecksum = ?, rawResponse = COMPRESS(?) where id = ?");
 			deleteHooplaItemStmt = aspenConn.prepareStatement("DELETE FROM hoopla_export where id = ?");
@@ -100,8 +100,6 @@ public class HooplaExporter2 {
 			logEntry.incErrors("Error preparing Hoopla exporter2 statements", e);
 			logger.error("Error preparing Hoopla exporter2 statements", e);
 		}
-		//Get a list of all existing records in the database
-		loadExistingTitles();
 
 		processRecordsToReload(logEntry);
 	}
@@ -1330,7 +1328,18 @@ public class HooplaExporter2 {
 		return updatesRun;
 	}
 
+	private boolean existingTitlesLoaded = false;
+
+	private void ensureExistingTitlesLoaded() {
+		if (!existingTitlesLoaded) {
+			loadExistingTitles();
+			existingTitlesLoaded = true;
+		}
+	}
+
 	private void updateTitlesInDB(JSONArray responseTitles, boolean forceRegrouping, boolean doFullReload) {
+		// Load existing records only when title metadata is being processed.
+		ensureExistingTitlesLoaded();
 		for (int i = 0; i < responseTitles.length(); i++){
 			try {
 				JSONObject curTitle = responseTitles.getJSONObject(i);
@@ -1497,6 +1506,10 @@ public class HooplaExporter2 {
 
 	public void exporter2CleanUp() {
 		try{
+			if (getAllExistingHooplaItemsStmt != null) {
+				getAllExistingHooplaItemsStmt.close();
+				getAllExistingHooplaItemsStmt = null;
+			}
 			addHooplaTitleToDB.close();
 			addHooplaTitleToDB = null;
 			updateHooplaTitleInDB.close();
