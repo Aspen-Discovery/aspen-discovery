@@ -14,6 +14,7 @@ class Events_Calendar extends Action {
 		// Include Search Engine Class
 		require_once ROOT_DIR . '/sys/SolrConnector/Solr.php';
 		require_once ROOT_DIR . '/sys/Utils/DateUtils.php';
+		require_once ROOT_DIR . '/sys/Events/EventsFacet.php';
 
 		$today = new DateTime();
 		$useWeek = 0;
@@ -218,25 +219,7 @@ class Events_Calendar extends Action {
 		} else {
 			$searchObject->addHiddenFilter("event_month", '"' . $monthFilter . '"');
 		}
-		// Check permissions before showing private events
-		if (!UserAccount::userHasPermission('View Private Events for All Locations')) {
-			if (!UserAccount::userHasPermission([
-				'View Private Events for Home Library Locations',
-				'View Private Events for Home Location'
-			])) {
-				$searchObject->addHiddenFilter('-private', "private");
-			} else {
-				if (!UserAccount::userHasPermission('View Private Events for Home Library Locations')) {
-					$user = UserAccount::getLoggedInUser();
-					$locations = array_values($user->getAdditionalAdministrationLocations());
-					$locations[] = $user->getHomeLocationName();
-					$searchObject->addHiddenFilter('private', '("' . implode('" OR "private_', $locations) . '" OR "public")');
-				} else {
-					$locations = array_values(Location::getLocationList(true));
-					$searchObject->addHiddenFilter('private', '("private_' . implode('" OR "private_', $locations) . '" OR "public")');
-				}
-			}
-		}
+		$searchObject->addPrivateEventFilters();
 		$searchObject->setSort('start_date_sort asc, title_sort asc');
 
 		$timer->logTime('Setup Search');
@@ -265,7 +248,7 @@ class Events_Calendar extends Action {
 		$dropdownSearchObject = SearchObjectFactory::initSearchObject('Events');
 		$dropdownSearchObject->init();
 		$dropdownSearchObject->setPrimarySearch(false);
-		$dropdownSearchObject->setLimit(1000);
+		$dropdownSearchObject->setLimit(0);
 		$dropdownSearchObject->clearHiddenFilters();
 
 		if ($useWeek) {
@@ -283,21 +266,19 @@ class Events_Calendar extends Action {
 			}
 		}
 
-		$dropdownSearchObject->processSearch(true, true);
-		$allEvents = $dropdownSearchObject->getResultRecordSet();
+		$dropdownSearchObject->addPrivateEventFilters();
+
+		EventsFacet::addToSearchObject($dropdownSearchObject, ['branch']);
+
+		$dropdownResult = $dropdownSearchObject->processSearch(true, false);
+		if ($dropdownResult instanceof AspenError) {
+			AspenError::raiseError($dropdownResult->getMessage());
+		}
+
+		$locationFacets = $dropdownSearchObject->getFacetList(['branch' => 'Branch']);
 		$dropdownSearchObject->close();
 
-		$locationsWithEvents = [];
-		foreach ($allEvents as $result) {
-			if (!empty($result['branch'])) {
-				foreach ($result['branch'] as $branchName) {
-					$locationCode = array_search($branchName, $allLocations);
-					if ($locationCode !== false && !isset($locationsWithEvents[$locationCode])) {
-						$locationsWithEvents[$locationCode] = $branchName;
-					}
-				}
-			}
-		}
+		$locationsWithEvents = array_intersect($allLocations, array_column($locationFacets['branch']['list'] ?? [], 'value'));
 
 		if (!empty($locationsWithEvents)) {
 			if (isset($allLocations['all'])) {

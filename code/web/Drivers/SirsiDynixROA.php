@@ -3943,6 +3943,7 @@ class SirsiDynixROA extends AbstractIlsDriver {
 			require_once ROOT_DIR . '/sys/AspenLiDA/SelfCheckSetting.php';
 			$scoSettings = new AspenLiDASelfCheckSetting();
 			$checkoutLocationSetting = $scoSettings->getCheckoutLocationSetting($currentLocation->code);
+			$coOverrideLocations = $scoSettings->getCheckedOutOverrideLocations($currentLocation->code);
 			$itemKey = $lookupItemResponse->key;
 			$bibKey = $lookupItemResponse->fields->bib->key;
 			$currentItemLocation = $lookupItemResponse->fields->currentLocation->key;
@@ -3989,16 +3990,26 @@ class SirsiDynixROA extends AbstractIlsDriver {
 				$doCheckout = true;
 				$checkoutLocationCode = $owningLocationCode;
 
+				$checkInResult['success'] = false;
+
+				//allow the checkout if checked out to an overridden location
+				//will require us to check the item in first using the patron's location
+				if (preg_match('/^(?:' . $coOverrideLocations . ')$/i', $currentItemLocation)) {
+					$checkInResult = $this->checkInByAPI($patron, $barcode, $currentLocation, $coOverrideLocations);
+				}
+
 				if ($currentItemLocation == 'CHECKEDOUT') {
-					$result['message'] = translate([
-						'text' => 'This title is already checked out, cannot check it out again.',
-						'isPublicFacing' => true,
-					]);
-					$result['api']['message'] = translate([
-						'text' => 'This title is already checked out, cannot check it out again.',
-						'isPublicFacing' => true,
-					]);
-					$doCheckout = false;
+					if (!$checkInResult['success']) {
+						$result['message'] = translate([
+							'text' => 'This title is already checked out, cannot check it out again.',
+							'isPublicFacing' => true,
+						]);
+						$result['api']['message'] = translate([
+							'text' => 'This title is already checked out, cannot check it out again.',
+							'isPublicFacing' => true,
+						]);
+						$doCheckout = false;
+					}
 				}elseif ($currentItemLocation == 'HOLDS') {
 					//The title is on the hold shelf, make sure it is on the hold shelf for the current patron
 					$doCheckout = false;
@@ -4237,7 +4248,7 @@ class SirsiDynixROA extends AbstractIlsDriver {
 		return true;
 	}
 
-	public function checkInByAPI(User $patron, $barcode, Location $currentLocation): array {
+	public function checkInByAPI(User $patron, $barcode, Location $currentLocation, string $checkedOutOverrideLocations = null): array {
 		$result = [
 			'success' => false,
 			'message' => translate([
@@ -4261,15 +4272,17 @@ class SirsiDynixROA extends AbstractIlsDriver {
 			'itemData' => []
 		];
 
-		//Find the item in the list of checkouts
-		$checkouts = $this->getCheckouts($patron);
-		foreach ($checkouts as $checkout) {
-			if ($checkout->barcode == $barcode) {
-				$result['itemData'] = [
-					'title' => $checkout->getTitle(),
-					'barcode' => $barcode,
-				];
-				break;
+		if (empty($checkedOutOverrideLocations)) {
+			//Find the item in the list of checkouts
+			$checkouts = $this->getCheckouts($patron);
+			foreach ($checkouts as $checkout) {
+				if ($checkout->barcode == $barcode) {
+					$result['itemData'] = [
+						'title' => $checkout->getTitle(),
+						'barcode' => $barcode,
+					];
+					break;
+				}
 			}
 		}
 
@@ -4301,7 +4314,7 @@ class SirsiDynixROA extends AbstractIlsDriver {
 			$lookupItemResponse = $this->getWebServiceResponse('lookupItem', $webServiceURL . '/catalog/item/barcode/' . $barcode, null, $sessionToken);
 			if (!empty($lookupItemResponse)) {
 				$currentLocation = $lookupItemResponse->fields->currentLocation->key;
-				if ($currentLocation !== 'CHECKEDOUT') {
+				if ($currentLocation !== 'CHECKEDOUT' && !preg_match('/^(?:' . $checkedOutOverrideLocations . ')$/i', $currentLocation)) {
 					$result['message'] = translate([
 						'text' => 'This title is not currently checked out. Cannot check it in.',
 						'isPublicFacing' => true,
