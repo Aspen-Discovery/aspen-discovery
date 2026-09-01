@@ -52,7 +52,6 @@ class Location extends DataObject {
 	public $theme;
 	public $useLibraryThemes;
 	public $_themes;
-	public $aspenLiDATheme;
 	public $useLibraryThemesForAspenLiDA;
 	public $_aspenLiDAThemes;
 	public $showDisplayNameInHeader;
