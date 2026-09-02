@@ -662,12 +662,13 @@ class AspenLiDATheme extends DataObject {
 	}
 
 	public function getApiInfo(): array {
+		global $configArray;
 		$theme = [];
 		$theme['id'] = $this->id;
 		$theme['name'] = $this->name;
 		$theme['baseMode'] = $this->baseMode;
-		$theme['logo'] = $this->logo;
-		$theme['header']['logo'] = $this->headerLogo;
+		$theme['logo'] = $configArray['Site']['url'] . '/files/original/' . $this->logo;
+		$theme['header']['logo'] = $configArray['Site']['url'] . '/files/original/' . $this->headerLogo;
 		$theme['header']['alignment'] = $this->headerLogoAlignment;
 		$theme['header']['backgroundColor'] = $this->headerLogoBackgroundColor;
 		$theme['primary'] = ColorUtils::generatePalette($this->primaryColor, $this->primaryTextColor);
