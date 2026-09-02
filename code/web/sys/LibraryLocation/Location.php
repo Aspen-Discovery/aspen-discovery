@@ -52,6 +52,8 @@ class Location extends DataObject {
 	public $theme;
 	public $useLibraryThemes;
 	public $_themes;
+	public $useLibraryThemesForAspenLiDA;
+	public $_aspenLiDAThemes;
 	public $showDisplayNameInHeader;
 	public $languageAndDisplayInHeader;
 	public $displayExploreMoreBarInSummon;
@@ -1471,6 +1473,11 @@ class Location extends DataObject {
 				$homeScreenLinkGroups[$homeScreenLinkGroup->id] = $homeScreenLinkGroup->name;
 			}
 
+			require_once ROOT_DIR . '/sys/AspenLiDA/ThemeLocation.php';
+			$locationAspenLiDAThemeStructure = AspenLiDAThemeLocation::getObjectStructure($context);
+			unset($locationAspenLiDAThemeStructure['locationId']);
+			unset($locationAspenLiDAThemeStructure['weight']);
+
 			$structure['aspenLiDASection'] = [
 				'property' => 'aspenLiDASection',
 				'type' => 'section',
@@ -1479,6 +1486,33 @@ class Location extends DataObject {
 				'renderAsHeading' => true,
 				'permissions' => ['Administer Aspen LiDA Settings'],
 				'properties' => [
+					'useLibraryAspenLiDAThemes' => [
+						'property' => 'useLibraryAspenLiDAThemes',
+						'type' => 'checkbox',
+						'label' => 'Use Library Themes for Aspen LiDA',
+						'description' => "Whether or not this location will use it's own Aspen LiDA themes or use Aspen LiDA themes from the parent library.",
+						'forcesReindex' => false,
+						'permissions' => ['Location Theme Configuration'],
+						'default' => true,
+						'onchange' => 'return AspenDiscovery.Admin.updateLocationFields()'
+					],
+					'aspenLiDAThemes' => [
+						'property' => 'aspenLiDAThemes',
+						'type' => 'oneToMany',
+						'label' => 'Aspen LiDA Themes',
+						'description' => 'The Aspen LiDA themes which can be used for the location',
+						'keyThis' => 'locationId',
+						'keyOther' => 'locationId',
+						'subObjectType' => 'AspenLiDAThemeLocation',
+						'structure' => $locationAspenLiDAThemeStructure,
+						'sortable' => true,
+						'storeDb' => true,
+						'allowEdit' => true,
+						'canEdit' => true,
+						'canAddNew' => true,
+						'canDelete' => true,
+						'permissions' => ['Location Theme Configuration'],
+					],
 					'lidaLocationSettingId' => [
 						'property' => 'lidaLocationSettingId',
 						'type' => 'enum',
@@ -2085,6 +2119,8 @@ class Location extends DataObject {
 			return $this->getThemes();
 		} elseif ($name == 'sublocations') {
 			return $this->getSublocations();
+		} elseif ($name == 'aspenLiDAThemes') {
+			return $this->getAspenLiDAThemes();
 		} else {
 			return parent::__get($name);
 		}
@@ -2109,6 +2145,8 @@ class Location extends DataObject {
 			$this->_themes = $value;
 		} elseif ($name == 'sublocations') {
 			$this->_sublocations = $value;
+		} elseif ($name == 'aspenLiDAThemes') {
+			$this->_aspenLiDAThemes = $value;
 		} else {
 			parent::__set($name, $value);
 		}
@@ -2136,6 +2174,7 @@ class Location extends DataObject {
 			if (empty($this->showInHolidayHoursTable)) {
 				$this->clearLocationHolidays();
 			}
+			$this->saveAspenLiDAThemes();
 		}
 		return $ret;
 	}
@@ -2162,6 +2201,7 @@ class Location extends DataObject {
 			if (empty($this->showInHolidayHoursTable)) {
 				$this->clearLocationHolidays();
 			}
+			$this->saveAspenLiDAThemes();
 		}
 		return $ret;
 	}
@@ -3042,6 +3082,25 @@ class Location extends DataObject {
 		return $this->_themes;
 	}
 
+	/**
+	 * @return AspenLiDATheme[]|null
+	 */
+	public function getAspenLiDAThemes(): ?array {
+		if (!isset($this->_aspenLiDAThemes) && $this->locationId) {
+			$this->_aspenLiDAThemes = [];
+			require_once ROOT_DIR . '/sys/AspenLiDA/ThemeLocation.php';
+			$locationTheme = new AspenLiDAThemeLocation();
+			$locationTheme->locationId = $this->locationId;
+			$locationTheme->orderBy('weight');
+			if ($locationTheme->find()) {
+				while ($locationTheme->fetch()) {
+					$this->_aspenLiDAThemes[$locationTheme->id] = clone $locationTheme;
+				}
+			}
+		}
+		return $this->_aspenLiDAThemes;
+	}
+
 	public function saveThemes() : void {
 		if (isset ($this->_themes) && is_array($this->_themes)) {
 			foreach ($this->_themes as $obj) {
@@ -3076,6 +3135,43 @@ class Location extends DataObject {
 				}
 			}
 			unset($this->_themes);
+		}
+	}
+
+	public function saveAspenLiDAThemes(): void {
+		if (isset ($this->_aspenLiDAThemes) && is_array($this->_aspenLiDAThemes)) {
+			foreach ($this->_aspenLiDAThemes as $obj) {
+				/** @var AspenLiDAThemeLocation $obj */
+				if ($obj->_deleteOnSave) {
+					$obj->delete();
+				} else {
+					if (isset($obj->{$obj->__primaryKey}) && is_numeric($obj->{$obj->__primaryKey})) {
+						if ($obj->{$obj->__primaryKey} <= 0) {
+							$obj->locationId = $this->{$this->__primaryKey};
+							$obj->insert();
+						} else {
+							if ($obj->hasChanges()) {
+								$obj->update();
+							}
+						}
+					} else {
+						// set appropriate weight for new theme
+						$weight = 0;
+						$existingThemesForLocation = new AspenLiDAThemeLocation();
+						$existingThemesForLocation->locationId = $this->locationId;
+						if ($existingThemesForLocation->find()) {
+							while ($existingThemesForLocation->fetch()) {
+								$weight = $weight + 1;
+							}
+						}
+
+						$obj->locationId = $this->{$this->__primaryKey};
+						$obj->weight = $weight;
+						$obj->insert();
+					}
+				}
+			}
+			unset($this->_aspenLiDAThemes);
 		}
 	}
 
@@ -3125,6 +3221,23 @@ class Location extends DataObject {
 		} else {
 			$apiInfo['theme'] = $this->getPrimaryTheme();
 		}
+		
+		$apiInfo['aspenLiDAThemes'] = [];
+		$themes = $this->getAspenLiDAThemes();
+		if (!$this->useLibraryThemesForAspenLiDA || !empty($themes)) {
+			$aspenLiDAThemes = $themes;
+		} else {
+			$aspenLiDAThemes = $this->getParentLibrary()->getAspenLiDAThemes();
+		}
+		require_once ROOT_DIR . '/sys/AspenLiDA/Theme.php';
+		foreach ($aspenLiDAThemes as $aspenLiDATheme) {
+			$theme = new AspenLiDATheme();
+			$theme->id = $aspenLiDATheme->themeId;
+			if ($theme->find(true)) {
+				$apiInfo['aspenLiDAThemes'][] = $theme->getApiInfo();
+			}
+		}
+
 		if ((empty($this->homeLink) || $this->homeLink == "default" || $this->homeLink == "/")) {
 			if ($parentLibrary == null) {
 				$apiInfo['homeLink'] = '';

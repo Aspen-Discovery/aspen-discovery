@@ -113,7 +113,7 @@
   margin-bottom:5px;
 }
 #home-page-search-label{
-  font-size:35px;
+  font-size:calc(var(--aspen-base-font-size) * 2.5000);
   color: @home-search-label-color;
   //text-shadow: 1px 1px @gray-light;
 }
@@ -182,7 +182,6 @@
 
   #horizontal-search-label {
     color: @horizontal-search-label-color;
-    font-size: 14px;
     @media (max-width: @screen-md-max) {
       margin-top: 4px;
     }
@@ -199,7 +198,7 @@
     text-align: center;
   }
   #lookfor {
-    height: 34px;
+    height: calc((var(--aspen-base-font-size) * 1.428571429) + (6px * 2) + 2px);
     /*width: calc(100% - 35px);
     display: inline-block;*/
     .form-control-focus();
@@ -274,7 +273,7 @@
     }
   }
   .panel-body {
-    font-size: 13px;
+    font-size: calc(var(--aspen-base-font-size) * 0.9286);
     color: @gray-dark;
     background-color: #fcfcfc;
     border-color: #c5c5c5;

@@ -1,5 +1,6 @@
 package org.aspen_discovery.reindexer;
 
+import org.apache.commons.lang3.StringUtils;
 import org.aspen_discovery.format_classification.MarcRecordFormatClassifier;
 import com.turning_leaf_technologies.indexing.BaseIndexingSettings;
 import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
@@ -16,6 +17,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import java.util.stream.Collectors;
 
 abstract class MarcRecordProcessor {
 	protected Logger logger;
@@ -370,7 +372,7 @@ abstract class MarcRecordProcessor {
 
 	}
 
-	void updateGroupedWorkSolrDataBasedOnStandardMarcData(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record, ArrayList<ItemInfo> printItems, String identifier, String format, String formatCategory, boolean hasParentRecord) {
+	void updateGroupedWorkSolrDataBasedOnStandardMarcData(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record, RecordInfo recordInfo, ArrayList<ItemInfo> printItems, String identifier, String format, String formatCategory, boolean hasParentRecord) {
 		loadTitles(groupedWork, record, formatCategory, hasParentRecord, identifier);
 		loadAuthors(groupedWork, record, identifier, formatCategory);
 		loadSubjects(groupedWork, record);
@@ -486,12 +488,14 @@ abstract class MarcRecordProcessor {
 		loadAwards(groupedWork, record);
 		loadBibCallNumbers(groupedWork, record, identifier);
 		loadLiteraryForms(groupedWork, record, printItems, identifier);
-		loadTargetAudiences(groupedWork, record, printItems, identifier);
+		loadTargetAudiences(groupedWork, record, recordInfo, printItems, identifier);
 		loadAcceleratedReader(groupedWork, record);
 		loadFountasPinnell(groupedWork, record);
 		loadLexileScore(groupedWork, record);
 		groupedWork.addContentRating(getContentRating(record));
-		groupedWork.addKeywords(MarcUtil.getAllSearchableFields(record, 100, 900));
+		// set.of() creates an immutable set. If keywordExclusions needs to be modified by using .add() in the future, this will need to be changed
+		Set<String> keywordExclusions = (settings != null && settings.excludePublisherFromKeywordIndex()) ? Set.of("260b", "264b") : Set.of();
+		groupedWork.addKeywords(MarcUtil.getAllSearchableFields(record, 100, 900, keywordExclusions));
 		groupedWork.addKeywords(MarcUtil.getAllSubfields(record, "010:028", ""));
 		//Settings are nullable for eContent that is in MARC format (i.e. cloudLibrary)
 		if (settings != null && settings.getCustomMarcFieldsToIndexAsKeyword() != null && !settings.getCustomMarcFieldsToIndexAsKeyword().isEmpty()) {
@@ -708,12 +712,12 @@ abstract class MarcRecordProcessor {
 		}
 	}
 
-	protected void loadTargetAudiences(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record, ArrayList<ItemInfo> printItems, String identifier) {
-		loadTargetAudiences(groupedWork, record, printItems, identifier, "Unknown");
+	protected void loadTargetAudiences(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record, RecordInfo recordInfo, ArrayList<ItemInfo> printItems, String identifier) {
+		loadTargetAudiences(groupedWork, record, recordInfo, printItems, identifier, "Unknown");
 	}
 
 	@SuppressWarnings("unused")
-	protected void loadTargetAudiences(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record, ArrayList<ItemInfo> printItems, String identifier, String unknownAudienceLabel) {
+	protected void loadTargetAudiences(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record, RecordInfo recordInfo, ArrayList<ItemInfo> printItems, String identifier, String unknownAudienceLabel) {
 		Set<String> targetAudiences = new LinkedHashSet<>();
 		try {
 			String leader = record.getLeader().toString();
@@ -780,7 +784,7 @@ abstract class MarcRecordProcessor {
 			translatedAudiences.add(unknownAudienceLabel);
 			if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Updating unknown target audience to " + unknownAudienceLabel, 2);}
 		}
-		groupedWork.addTargetAudiences(translatedAudiences);
+		groupedWork.addTargetAudiences(translatedAudiences, recordInfo);
 		LinkedHashSet<String> translatedAudiencesFull;
 		if (settings == null) {
 			translatedAudiencesFull = indexer.translateSystemCollection("target_audience_full", targetAudiences, identifier);
@@ -794,7 +798,7 @@ abstract class MarcRecordProcessor {
 			translatedAudiencesFull.add(unknownAudienceLabel);
 			if (groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Updating unknown full target audience to " + unknownAudienceLabel, 2);}
 		}
-		groupedWork.addTargetAudiencesFull(translatedAudiencesFull);
+		groupedWork.addTargetAudiencesFull(translatedAudiencesFull, recordInfo);
 	}
 
 	protected void loadLiteraryForms(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record, ArrayList<ItemInfo> printItems, String identifier) {
@@ -1634,14 +1638,25 @@ abstract class MarcRecordProcessor {
 				continue;
 			}
 			if (contributor.substring(contributor.length() - 1, contributor.length()).equals(",")){
-				contributor = new StringBuilder(contributor.substring(0, contributor.length() - 1));
+				contributor = new StringBuilder(contributor.substring(0, contributor.length() - 1).replaceAll("\\s+$", ""));
 			}
 			StringBuilder roles = MarcUtil.getSpecifiedSubfieldsAsString(contributorField, "e4", ",");
-			if (roles.length() > 0){
-				if (roles.toString().contains("nrt")) {
+			if (roles.length() > 0) {
+				List<String> roleList = Arrays.stream(roles.toString().split(","))
+					.map(role -> AspenStringUtils.trimTrailingPunctuation(role.trim()))
+					.collect(Collectors.toList());
+
+				boolean isNarrator = roleList.stream().anyMatch(role -> role.equalsIgnoreCase("nrt") || role.equalsIgnoreCase("reader"));
+
+				if (isNarrator) {
 					contributor.append("|Narrator");
 				} else {
-					contributor.append("|").append(roles.toString().replaceAll(",,", ","));
+					String normalizedRoles = roleList.stream()
+						.filter(role -> !role.isEmpty())
+						.map(role -> StringUtils.capitalize(role.toLowerCase()))
+						.collect(Collectors.joining(","));
+
+					contributor.append("|").append(normalizedRoles);
 				}
 			}
 			contributors.add(contributor.toString());

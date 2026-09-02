@@ -133,7 +133,7 @@ class CloudLibraryProcessor extends MarcRecordProcessor {
 				cloudLibraryRecord.addFormat(primaryFormat);
 				cloudLibraryRecord.addFormatCategory(formatCategory);
 
-				updateGroupedWorkSolrDataBasedOnStandardMarcData(groupedWork, marcRecord, new ArrayList<>(), identifier, primaryFormat, formatCategory, false);
+				updateGroupedWorkSolrDataBasedOnStandardMarcData(groupedWork, marcRecord, cloudLibraryRecord, new ArrayList<>(), identifier, primaryFormat, formatCategory, false);
 
 				//Special processing for ILS Records
 				String fullDescription = Util.getCRSeparatedString(MarcUtil.getFieldList(marcRecord, "520a"));
@@ -152,7 +152,7 @@ class CloudLibraryProcessor extends MarcRecordProcessor {
 					targetAudience = "Adult";
 				}
 				if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Target audience is " + targetAudience + " based on cloudLibrary record", 2);}
-				groupedWork.addTargetAudience(targetAudience);
+				groupedWork.addTargetAudience(targetAudience, cloudLibraryRecord);
 
 				boolean isAdult = targetAudience.equalsIgnoreCase("Adult");
 				boolean isTeen = targetAudience.equalsIgnoreCase("Young Adult");
