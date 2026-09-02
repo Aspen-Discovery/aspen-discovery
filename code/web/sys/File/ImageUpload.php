@@ -405,7 +405,7 @@ class ImageUpload extends DataObject {
 				$destTmp = tempnam(sys_get_temp_dir(), 'aspen_dst_');
 				if (resizeImage($srcTmp, $destTmp, $cfg['size'], $cfg['size'])) {
 					$destKey = 'uploads/web_builder_image/' . $variant . '/' . $this->fullSizePath;
-					$wrote = $storage->write($destKey, $destTmp);
+					$wrote = $storage->write($destKey, $destTmp, mime_content_type($destTmp));
 					if ($wrote) {
 						$this->{$cfg['prop']} = $this->fullSizePath;
 						$logger->log("generateDerivatives: wrote $variant derivative for image id=$this->id", Logger::LOG_DEBUG);
