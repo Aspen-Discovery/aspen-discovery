@@ -181,8 +181,8 @@ class OverDriveSetting extends DataObject {
 			'productsToUpdate' => [
 				'property' => 'productsToUpdate',
 				'type' => 'textarea',
-				'label' => 'Products To Reindex',
-				'description' => 'A list of products to update on the next index',
+				'label' => 'Records To Reindex',
+				'description' => 'A list of records to update on the next index. Enter one record ID per line.',
 				'canBatchUpdate' => false,
 				'hideInLists' => true,
 			],
