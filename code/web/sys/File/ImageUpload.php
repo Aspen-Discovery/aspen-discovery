@@ -287,32 +287,40 @@ class ImageUpload extends DataObject {
 		return self::$_objectStructure[$context];
 	}
 
-	function getDisplayUrl($property) : string {
+	// Accepts either a short size name ('full', 'large', ...) or the
+	// underlying property name ('fullSizePath', ...); each size stores its
+	// own filename since a manual derivative upload can differ in extension.
+	private const SIZE_TO_PROPERTY = [
+		'full'    => 'fullSizePath',
+		'x-large' => 'xLargeSizePath',
+		'large'   => 'largeSizePath',
+		'medium'  => 'mediumSizePath',
+		'small'   => 'smallSizePath',
+	];
+
+	function getDisplayUrl($sizeOrProperty) : string {
 		if (empty($this->id)) {
 			return '';
 		}
-		if ($property == 'xLargeSizePath') {
-			$size = 'x-large';
-		} elseif ($property == 'largeSizePath') {
-			$size = 'large';
-		} elseif ($property == 'mediumSizePath') {
-			$size = 'medium';
-		} elseif ($property == 'smallSizePath') {
-			$size = 'small';
+		if (isset(self::SIZE_TO_PROPERTY[$sizeOrProperty])) {
+			$size = $sizeOrProperty;
+			$property = self::SIZE_TO_PROPERTY[$sizeOrProperty];
+		} elseif (in_array($sizeOrProperty, self::SIZE_TO_PROPERTY, true)) {
+			$property = $sizeOrProperty;
+			$size = array_search($sizeOrProperty, self::SIZE_TO_PROPERTY, true);
 		} else {
 			$size = 'full';
+			$property = 'fullSizePath';
 		}
 		$proxyUrl = '/WebBuilder/ViewImage?size=' . $size . '&id=' . $this->id;
-		if (empty($this->fullSizePath)) {
+		$filename = $this->$property;
+		if (empty($filename)) {
 			return $proxyUrl;
 		}
-		// Mirrors ViewImage.php's redirect-vs-proxy decision, but made at
-		// render time so a configured CDN is embedded directly in the <img>
-		// tag instead of paying a redirect round-trip on every view. Falls
-		// back to the proxy URL only when no public base URL is configured
-		// at all (e.g. Local Storage) -- see StorageDriver::url()'s docblock.
+		// Mirrors ViewImage.php's redirect-vs-proxy decision, but resolved at
+		// render time so a configured CDN goes straight into the <img> tag.
 		$storage = StorageDriverFactory::getById($this->storageSettingId);
-		$storageKey = 'uploads/web_builder_image/' . $size . '/' . $this->fullSizePath;
+		$storageKey = 'uploads/web_builder_image/' . $size . '/' . $filename;
 		$directUrl = $storage->url($storageKey);
 		return $directUrl !== '' ? $directUrl : $proxyUrl;
 	}
