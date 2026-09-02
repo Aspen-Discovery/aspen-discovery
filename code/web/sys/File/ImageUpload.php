@@ -335,9 +335,46 @@ class ImageUpload extends DataObject {
 	}
 
 	public function update(string $context = '') : int|bool {
+		$this->cleanUpReplacedFiles();
 		$this->calculateAspectRatio();
 		$this->generateDerivatives();
 		return parent::update();
+	}
+
+	// Filename is recomputed from the upload's extension; a same-extension
+	// replacement overwrites in place, but a different-extension one orphans
+	// the old key unless deleted here. Verified live on S3 (.png -> .jpg).
+	private function cleanUpReplacedFiles() : void {
+		global $logger;
+		if (empty($this->id)) {
+			return;
+		}
+		$old = new ImageUpload();
+		$old->id = $this->id;
+		if (!$old->find(true)) {
+			return;
+		}
+		if (empty($old->fullSizePath) || $old->fullSizePath === $this->fullSizePath) {
+			// Nothing uploaded before, or the file wasn't replaced this save.
+			return;
+		}
+
+		$oldStorage = StorageDriverFactory::getById($old->storageSettingId);
+		foreach ([
+			'full'    => $old->fullSizePath,
+			'x-large' => $old->xLargeSizePath,
+			'large'   => $old->largeSizePath,
+			'medium'  => $old->mediumSizePath,
+			'small'   => $old->smallSizePath,
+		] as $size => $filename) {
+			if (empty($filename)) {
+				continue;
+			}
+			$key = 'uploads/web_builder_image/' . $size . '/' . $filename;
+			if ($oldStorage->delete($key)) {
+				$logger->log("cleanUpReplacedFiles: deleted stale $key for image id=$this->id after file replacement", Logger::LOG_DEBUG);
+			}
+		}
 	}
 
 	private function calculateAspectRatio() : void {
