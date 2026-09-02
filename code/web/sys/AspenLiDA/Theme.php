@@ -32,10 +32,10 @@ class AspenLiDATheme extends DataObject {
 	public $tertiaryTextColor;
 	public $tertiaryTextColorDefault;
 
-	const LIGHT_BG = '#F5F5F5';
-	const LIGHT_TEXT = '#57534e';
+	const LIGHT_BG = '#f3f4f6';
+	const LIGHT_TEXT = '#1c1917';
 	const DARK_BG = '#111827';
-	const DARK_TEXT = '#e5e7eb';
+	const DARK_TEXT = '#f3f4f6';
 
 	const BASE_COLOR_PROPERTIES = [
 		'backgroundColor',
@@ -128,7 +128,7 @@ class AspenLiDATheme extends DataObject {
 				'description' => 'The background color to show behind the header logo in Aspen LiDA.',
 				'required' => false,
 				'hideInLists' => true,
-				'default' => '#ffffff',
+				'default' => '#f9fafb',
 			],
 			'baseMode' => [
 				'property' => 'baseMode',
@@ -667,8 +667,8 @@ class AspenLiDATheme extends DataObject {
 		$theme['id'] = $this->id;
 		$theme['name'] = $this->name;
 		$theme['baseMode'] = $this->baseMode;
-		$theme['logo'] = $configArray['Site']['url'] . '/files/original/' . $this->logo;
-		$theme['header']['logo'] = $configArray['Site']['url'] . '/files/original/' . $this->headerLogo;
+		$theme['logo'] = $this->logo ? $configArray['Site']['url'] . '/files/original/' . $this->logo : null;
+		$theme['header']['logo'] = $this->headerLogo ? $configArray['Site']['url'] . '/files/original/' . $this->headerLogo : null;
 		$theme['header']['alignment'] = $this->headerLogoAlignment;
 		$theme['header']['backgroundColor'] = $this->headerLogoBackgroundColor;
 		$theme['primary'] = ColorUtils::generatePalette($this->primaryColor, $this->primaryTextColor);
