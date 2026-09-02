@@ -335,9 +335,53 @@ class ImageUpload extends DataObject {
 	}
 
 	public function update(string $context = '') : int|bool {
+		$this->cleanUpReplacedFiles();
 		$this->calculateAspectRatio();
 		$this->generateDerivatives();
 		return parent::update();
+	}
+
+	// A replacement with the same name on the same backend overwrites in place.
+	// A new extension, or a write to another backend after the active one was
+	// switched, would orphan the old keys, so delete them.
+	private function cleanUpReplacedFiles() : void {
+		global $logger;
+		if (empty($this->id)) {
+			return;
+		}
+		$old = new ImageUpload();
+		$old->id = $this->id;
+		if (!$old->find(true) || empty($old->fullSizePath)) {
+			return;
+		}
+
+		$oldStorage = StorageDriverFactory::getById($old->storageSettingId);
+		$newStorage = StorageDriverFactory::getById($this->storageSettingId);
+		// Different settings can point at the same storage (legacy null and the Local
+		// Storage row, or two settings serving one bucket); deleting there would remove
+		// the new file. Two settings on one bucket with different Public Base URLs are
+		// not detected.
+		$fullKey = 'uploads/web_builder_image/full/' . $old->fullSizePath;
+		$backendChanged = $oldStorage !== $newStorage && $oldStorage->url($fullKey) !== $newStorage->url($fullKey);
+		if ($old->fullSizePath === $this->fullSizePath && !$backendChanged) {
+			return;
+		}
+
+		foreach ([
+			'full'    => $old->fullSizePath,
+			'x-large' => $old->xLargeSizePath,
+			'large'   => $old->largeSizePath,
+			'medium'  => $old->mediumSizePath,
+			'small'   => $old->smallSizePath,
+		] as $size => $filename) {
+			if (empty($filename)) {
+				continue;
+			}
+			$key = 'uploads/web_builder_image/' . $size . '/' . $filename;
+			if ($oldStorage->delete($key)) {
+				$logger->log("cleanUpReplacedFiles: deleted stale $key for image id=$this->id after file replacement", Logger::LOG_DEBUG);
+			}
+		}
 	}
 
 	private function calculateAspectRatio() : void {
