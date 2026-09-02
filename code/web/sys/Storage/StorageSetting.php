@@ -48,7 +48,7 @@ class StorageSetting extends DataObject {
 				'type' => 'enum',
 				'values' => [
 					'local' => 'Local Storage',
-					's3'    => 'S3-Compatible Storage',
+					's3'    => 'S3-Compatible Storage (CDN Mode)',
 				],
 				'label' => 'Storage Driver',
 				'description' => 'The storage backend to use for uploaded files.',
@@ -121,7 +121,7 @@ class StorageSetting extends DataObject {
 				'property'        => 'endpoint',
 				'type'            => 'text',
 				'label'           => 'Endpoint URL',
-				'description'     => 'Custom endpoint URL for S3-compatible providers (e.g. Cloudflare R2, MinIO). Leave empty for AWS S3.',
+				'description'     => 'Custom endpoint URL for S3-compatible providers. Leave empty for AWS S3.',
 				'default'         => '',
 				'required'        => false,
 				'hiddenByDefault' => true,
@@ -130,9 +130,9 @@ class StorageSetting extends DataObject {
 				'property'        => 'baseUrl',
 				'type'            => 'text',
 				'label'           => 'Public Base URL',
-				'description'     => 'Optional. The public URL that serves the bucket directly (a CDN domain in front of it, or the bucket\'s own public endpoint). When set, the browser is redirected straight there instead of the app proxying every file through itself. Leave empty to have the app proxy file bytes, the same way it does for local storage.',
+				'description'     => 'The public URL that serves the bucket directly (a CDN domain in front of it, or the bucket\'s own public endpoint).',
 				'default'         => '',
-				'required'        => false,
+				'required'        => true,
 				'hiddenByDefault' => true,
 			],
 			'publicUrlStatus' => [
@@ -201,8 +201,8 @@ class StorageSetting extends DataObject {
 		if ($this->driver !== 's3') {
 			return true;
 		}
-		if (empty($this->bucket) || empty($this->accessKeyId) || empty($this->accessKeySecret)) {
-			$this->setLastError('Bucket, Access Key ID, and Access Key Secret are required for S3 storage.');
+		if (empty($this->bucket) || empty($this->accessKeyId) || empty($this->accessKeySecret) || empty($this->baseUrl)) {
+			$this->setLastError('Bucket, Access Key ID, Access Key Secret, and Public Base URL (CDN) are all required for S3 storage.');
 			return false;
 		}
 		try {
@@ -308,7 +308,7 @@ class StorageSetting extends DataObject {
 	// Maps AsyncAws exceptions to a human-readable reason using the standard
 	// S3 API error-code contract (AWS error codes like AccessDenied,
 	// NoSuchBucket, InvalidAccessKeyId), which any S3-compatible provider
-	// implements the same way -- not specific to AWS or MinIO.
+	// implements the same way, not specific to AWS or MinIO.
 	private function describeS3Exception(\Exception $e): string {
 		if ($e instanceof HttpException) {
 			$awsCode = $e->getAwsCode();
