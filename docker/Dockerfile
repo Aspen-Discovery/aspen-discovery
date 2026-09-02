@@ -85,7 +85,7 @@ COPY . /usr/local/aspen-discovery
 
 # Install Composer dependencies
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
-	&& cd /usr/local/aspen-discovery/code/web \
+	&& cd /usr/local/aspen-discovery \
 	&& composer install --no-interaction --prefer-dist --no-dev \
 	&& rm /usr/local/bin/composer
 
