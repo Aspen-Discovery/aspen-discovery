@@ -8677,12 +8677,6 @@ parameters:
 			path: code/web/sys/Account/AccountProfile.php
 
 		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Account/AccountProfile.php
-
-		-
 			message: '#^Call to an undefined method CatalogConnection\:\:canPatronSelfRenew\(\)\.$#'
 			identifier: method.notFound
 			count: 1
@@ -8710,12 +8704,6 @@ parameters:
 			message: '#^Class PType referenced with incorrect case\: pType\.$#'
 			identifier: class.nameCase
 			count: 3
-			path: code/web/sys/Account/PType.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
 			path: code/web/sys/Account/PType.php
 
 		-
@@ -8885,12 +8873,6 @@ parameters:
 			path: code/web/sys/Account/User.php
 
 		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Account/User.php
-
-		-
 			message: '#^Strict comparison using \=\=\= between null and null will always evaluate to true\.$#'
 			identifier: identical.alwaysTrue
 			count: 4
@@ -8909,118 +8891,16 @@ parameters:
 			path: code/web/sys/Account/User.php
 
 		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Account/UserNotification.php
-
-		-
 			message: '#^Parameter \#5 \$body of static method ExternalRequestLogEntry\:\:logRequest\(\) expects string, false given\.$#'
 			identifier: argument.type
 			count: 1
 			path: code/web/sys/Account/UserPayment.php
 
 		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Account/UserPayment.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Account/UserPaymentLine.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Administration/AdministrationLocation.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Administration/BackgroundProcess.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Administration/BlockPatronAccountLink.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Administration/FieldLock.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Administration/Permission.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Administration/PermissionGroup.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Administration/PermissionGroupPermission.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Administration/RecordLock.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Administration/Role.php
-
-		-
 			message: '#^Static property USPS\:\:\$_USPS \(USPS\|null\) does not accept false\.$#'
 			identifier: assign.propertyType
 			count: 1
 			path: code/web/sys/Administration/USPS.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Administration/USPS.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/AspenError.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/AspenLiDA/BrandedAppSetting.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/AspenLiDA/GeneralSetting.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/AspenLiDA/HomeScreenLink.php
 
 		-
 			message: '#^Access to an undefined property HomeScreenLink\:\:\$homeScreenLinkId\.$#'
@@ -9047,12 +8927,6 @@ parameters:
 			path: code/web/sys/AspenLiDA/HomeScreenLinkGroup.php
 
 		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/AspenLiDA/HomeScreenLinkGroup.php
-
-		-
 			message: '#^Variable \$location in PHPDoc tag @var does not match any variable in the foreach loop\: \$locationList, \$locationId, \$displayName$#'
 			identifier: varTag.differentVariable
 			count: 1
@@ -9063,66 +8937,6 @@ parameters:
 			identifier: staticMethod.resultUnused
 			count: 1
 			path: code/web/sys/AspenLiDA/HomeScreenLinkGroupEntry.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/AspenLiDA/HomeScreenLinkGroupEntry.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/AspenLiDA/HomeScreenLinkGroupUser.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/AspenLiDA/ILSMessageType.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/AspenLiDA/ILSNotificationSetting.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/AspenLiDA/LiDALoadingMessage.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/AspenLiDA/LocationSetting.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/AspenLiDA/NotificationSetting.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/AspenLiDA/SelfCheckBarcode.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/AspenLiDA/SelfCheckCompletionMessage.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/AspenLiDA/SelfCheckSetting.php
 
 		-
 			message: '#^Method CASAuthentication\:\:validateAccount\(\) should return AspenError\|bool\|string but return statement is missing\.$#'
@@ -9245,40 +9059,16 @@ parameters:
 			path: code/web/sys/Authentication/SSOAuthentication.php
 
 		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Authentication/SSOMapping.php
-
-		-
 			message: '#^Call to an undefined method SSOMapping\:\:clearExistingDataMapping\(\)\.$#'
 			identifier: method.notFound
 			count: 1
 			path: code/web/sys/Authentication/SSOSetting.php
 
 		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Authentication/SSOSetting.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Axis360/Axis360Scope.php
-
-		-
 			message: '#^Variable \$location in PHPDoc tag @var does not match any variable in the foreach loop\: \$locationList, \$locationId, \$displayName$#'
 			identifier: varTag.differentVariable
 			count: 1
 			path: code/web/sys/Axis360/Axis360Scope.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Axis360/Axis360Setting.php
 
 		-
 			message: '#^Right side of \|\| is always false\.$#'
@@ -9307,12 +9097,6 @@ parameters:
 		-
 			message: '#^Access to an undefined property UserList\:\:\$label\.$#'
 			identifier: property.notFound
-			count: 1
-			path: code/web/sys/Browse/BrowseCategory.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
 			count: 1
 			path: code/web/sys/Browse/BrowseCategory.php
 
@@ -9347,12 +9131,6 @@ parameters:
 			path: code/web/sys/Browse/BrowseCategoryGroup.php
 
 		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Browse/BrowseCategoryGroup.php
-
-		-
 			message: '#^Variable \$location in PHPDoc tag @var does not match any variable in the foreach loop\: \$locationList, \$locationId, \$displayName$#'
 			identifier: varTag.differentVariable
 			count: 1
@@ -9363,24 +9141,6 @@ parameters:
 			identifier: staticMethod.resultUnused
 			count: 1
 			path: code/web/sys/Browse/BrowseCategoryGroupEntry.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Browse/BrowseCategoryGroupEntry.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Browse/BrowseCategoryGroupUser.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Browse/SubBrowseCategories.php
 
 		-
 			message: '#^Comparison operation "\>" between int\<1, max\> and 0 is always true\.$#'
@@ -9425,46 +9185,10 @@ parameters:
 			path: code/web/sys/CitationBuilder.php
 
 		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/CloudLibrary/CloudLibraryScope.php
-
-		-
 			message: '#^Variable \$location in PHPDoc tag @var does not match any variable in the foreach loop\: \$locationList, \$locationId, \$displayName$#'
 			identifier: varTag.differentVariable
 			count: 1
 			path: code/web/sys/CloudLibrary/CloudLibraryScope.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/CloudLibrary/CloudLibrarySetting.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/CloudLibrary/LibraryCloudLibraryScope.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/CloudLibrary/LocationCloudLibraryScope.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/CloudSource/CloudSourceSetting.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Community/SharedContent.php
 
 		-
 			message: '#^Access to an undefined property Campaign\:\:\$_users\.$#'
@@ -9635,12 +9359,6 @@ parameters:
 			path: code/web/sys/CommunityEngagement/Campaign.php
 
 		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/CommunityEngagement/Campaign.php
-
-		-
 			message: '#^Access to an undefined property ExtraCredit\:\:\$awardAutomatically\.$#'
 			identifier: property.notFound
 			count: 1
@@ -9697,12 +9415,6 @@ parameters:
 		-
 			message: '#^Access to an undefined property ExtraCredit\:\:\$totalGoals\.$#'
 			identifier: property.notFound
-			count: 1
-			path: code/web/sys/CommunityEngagement/CampaignExtraCredit.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
 			count: 1
 			path: code/web/sys/CommunityEngagement/CampaignExtraCredit.php
 
@@ -9785,30 +9497,6 @@ parameters:
 			path: code/web/sys/CommunityEngagement/CampaignMilestone.php
 
 		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/CommunityEngagement/CampaignMilestone.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/CommunityEngagement/ExtraCredit.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/CommunityEngagement/Milestone.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/CommunityEngagement/Reward.php
-
-		-
 			message: '#^Access to an undefined property CampaignMilestone\:\:\$name\.$#'
 			identifier: property.notFound
 			count: 2
@@ -9827,34 +9515,10 @@ parameters:
 			path: code/web/sys/CommunityEngagement/UserCampaign.php
 
 		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/CommunityEngagement/UserCampaign.php
-
-		-
 			message: '#^Variable \$user might not be defined\.$#'
 			identifier: variable.undefined
 			count: 1
 			path: code/web/sys/CommunityEngagement/UserCampaign.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/CommunityEngagement/UserCampaignData.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/CommunityEngagement/UserCompletedMilestone.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/CommunityEngagement/UserRemovedCampaign.php
 
 		-
 			message: '#^Function mapValue\(\) never returns null so it can be removed from the return type\.$#'
@@ -9935,21 +9599,9 @@ parameters:
 			path: code/web/sys/CourseReserves/CourseReserve.php
 
 		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/CourseReserves/CourseReserveLibraryMapValue.php
-
-		-
 			message: '#^Property CourseReservesIndexingSettings\:\:\$_libraryMappings \(array\<CourseReserveLibraryMapValue\>\) in isset\(\) is not nullable\.$#'
 			identifier: isset.property
 			count: 2
-			path: code/web/sys/CourseReserves/CourseReservesIndexingSettings.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
 			path: code/web/sys/CourseReserves/CourseReservesIndexingSettings.php
 
 		-
@@ -10187,12 +9839,6 @@ parameters:
 			path: code/web/sys/Covers/WebPageCoverBuilder.php
 
 		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/CurbsidePickups/CurbsidePickupSetting.php
-
-		-
 			message: '#^Access to an undefined property DataObject\:\:\$dateDeleted\.$#'
 			identifier: property.notFound
 			count: 2
@@ -10253,12 +9899,6 @@ parameters:
 			path: code/web/sys/DB/DataObject.php
 
 		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/DB/DataObjectHistory.php
-
-		-
 			message: '#^Access to an undefined property DB_LibraryLinkedObject\:\:\$_libraries\.$#'
 			identifier: property.notFound
 			count: 1
@@ -10281,12 +9921,6 @@ parameters:
 			identifier: property.notFound
 			count: 1
 			path: code/web/sys/DB/LibraryLocationLinkedObject.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/DBMaintenance/OptionalUpdate.php
 
 		-
 			message: '#^Array has 2 duplicate keys with value ''drop_date_of_birth_from_user_table'' \(''drop_date_of_birth_from_user_table'', ''drop_date_of_birth_from_user_table''\)\.$#'
@@ -10325,12 +9959,6 @@ parameters:
 			path: code/web/sys/Development/AspenRelease.php
 
 		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Development/AspenRelease.php
-
-		-
 			message: '#^Argument of an invalid type DonationValue supplied for foreach, only iterables are supported\.$#'
 			identifier: foreach.nonIterable
 			count: 1
@@ -10349,64 +9977,10 @@ parameters:
 			path: code/web/sys/Donations/Donation.php
 
 		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Donations/Donation.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Donations/DonationDedicationType.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Donations/DonationEarmark.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Donations/DonationFormFields.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Donations/DonationReceipt.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Donations/DonationValue.php
-
-		-
 			message: '#^Parameter \#2 \$postParams of method CurlWrapper\:\:curlPostBodyData\(\) expects array\<string\>\|stdClass\|string, array\<string, mixed\> given\.$#'
 			identifier: argument.type
 			count: 2
 			path: code/web/sys/ECommerce/ACISpeedpaySetting.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/ECommerce/ACISpeedpaySetting.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/ECommerce/CertifiedPaymentsByDeluxeSetting.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/ECommerce/CompriseSetting.php
 
 		-
 			message: '#^Access to an undefined property DonationsSetting\:\:\$libraryId\.$#'
@@ -10415,20 +9989,8 @@ parameters:
 			path: code/web/sys/ECommerce/DonationsSetting.php
 
 		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/ECommerce/DonationsSetting.php
-
-		-
 			message: '#^Access to an undefined property Location\:\:\$finePaymentType\.$#'
 			identifier: property.notFound
-			count: 1
-			path: code/web/sys/ECommerce/HeyCentricSetting.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
 			count: 1
 			path: code/web/sys/ECommerce/HeyCentricSetting.php
 
@@ -10445,52 +10007,10 @@ parameters:
 			path: code/web/sys/ECommerce/HeyCentricUrlParameterSetting.php
 
 		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/ECommerce/HeyCentricUrlParameterSetting.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/ECommerce/InvoiceCloudSetting.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/ECommerce/NCRPaymentsSetting.php
-
-		-
 			message: '#^Access to an undefined property Library\:\:\$paypalPropaySettingId\.$#'
 			identifier: property.notFound
 			count: 1
 			path: code/web/sys/ECommerce/PayPalPayflowSetting.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/ECommerce/PayPalPayflowSetting.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/ECommerce/PayPalSetting.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/ECommerce/ProPaySetting.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/ECommerce/SnapPaySetting.php
 
 		-
 			message: '#^Parameter \#2 \$postParams of method CurlWrapper\:\:curlPostBodyData\(\) expects array\<string\>\|stdClass\|string, array\<string, array\<string, list\<array\<string, mixed\>\>\|string\>\|string\> given\.$#'
@@ -10501,12 +10021,6 @@ parameters:
 		-
 			message: '#^Parameter \#2 \$postParams of method CurlWrapper\:\:curlPostBodyData\(\) expects array\<string\>\|stdClass\|string, array\<string, array\|string\> given\.$#'
 			identifier: argument.type
-			count: 1
-			path: code/web/sys/ECommerce/SquareSetting.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
 			count: 1
 			path: code/web/sys/ECommerce/SquareSetting.php
 
@@ -10523,52 +10037,10 @@ parameters:
 			path: code/web/sys/ECommerce/StripeSetting.php
 
 		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/ECommerce/StripeSetting.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/ECommerce/WorldPaySetting.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/ECommerce/XpressPaySetting.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Ebsco/EBSCOhostDatabase.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Ebsco/EBSCOhostSearchSetting.php
-
-		-
 			message: '#^Variable \$location in PHPDoc tag @var does not match any variable in the foreach loop\: \$locationList, \$locationId, \$displayName$#'
 			identifier: varTag.differentVariable
 			count: 1
 			path: code/web/sys/Ebsco/EBSCOhostSearchSetting.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Ebsco/EBSCOhostSetting.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Ebsco/EDSSettings.php
 
 		-
 			message: '#^Loose comparison using \=\= between int\<1, max\> and 0 will always evaluate to false\.$#'
@@ -10641,18 +10113,6 @@ parameters:
 			identifier: phpDoc.parseError
 			count: 1
 			path: code/web/sys/Email/AmazonSesSetting.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Email/AmazonSesSetting.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Email/EmailTemplate.php
 
 		-
 			message: '#^Variable \$emailTemplate might not be defined\.$#'
@@ -10967,84 +10427,6 @@ parameters:
 			path: code/web/sys/Email/PHPMailer-6.9.1/src/SMTP.php
 
 		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Email/SMTPSetting.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Email/SendGridSetting.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Enrichment/BDSSetting.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Enrichment/ChiliFreshSetting.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Enrichment/CoceServerSetting.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Enrichment/ContentCafeSetting.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Enrichment/DPLAExclusion.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Enrichment/DPLASetting.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Enrichment/GoogleApiSetting.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Enrichment/LibraryGoogleAnalytics.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Enrichment/LoralSetting.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Enrichment/MessageBeeSetting.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Enrichment/NewYorkTimesSetting.php
-
-		-
 			message: '#^Loose comparison using \=\= between non\-empty\-string and '''' will always evaluate to false\.$#'
 			identifier: equal.alwaysFalse
 			count: 1
@@ -11061,48 +10443,6 @@ parameters:
 			identifier: isset.variable
 			count: 1
 			path: code/web/sys/Enrichment/Novelist3.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Enrichment/NovelistSetting.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Enrichment/OMDBSetting.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Enrichment/QuipuECardSetting.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Enrichment/RecaptchaSetting.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Enrichment/SyndeticsSetting.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Events/AspenEventSetting.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Events/AssabetSetting.php
 
 		-
 			message: '#^Access to an undefined property CalendarDisplaySetting\:\:\$eventFields\.$#'
@@ -11129,112 +10469,16 @@ parameters:
 			path: code/web/sys/Events/CalendarDisplaySetting.php
 
 		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Events/CalendarDisplaySetting.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Events/CommunicoSetting.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Events/Event.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Events/EventField.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Events/EventFieldCalendarOptions.php
-
-		-
 			message: '#^Access to an undefined property EventType\:\:\$eventFieldSetId\.$#'
 			identifier: property.notFound
 			count: 1
 			path: code/web/sys/Events/EventFieldSet.php
 
 		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Events/EventFieldSet.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Events/EventInstance.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Events/EventInstanceGroup.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Events/EventType.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Events/EventsBranchMapping.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Events/EventsFacet.php
-
-		-
 			message: '#^Access to an undefined property EventsFacetGroup\:\:\$facets\.$#'
 			identifier: property.notFound
 			count: 1
 			path: code/web/sys/Events/EventsFacetGroup.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Events/EventsFacetGroup.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Events/EventsIndexingSetting.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Events/LMLibraryCalendarSetting.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Events/LocalHopSetting.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Events/SpringshareLibCalSetting.php
 
 		-
 			message: '#^Strict comparison using \=\=\= between 0\|0\.0\|''''\|''0''\|array\{\}\|false\|null and ''registered'' will always evaluate to false\.$#'
@@ -11259,30 +10503,6 @@ parameters:
 			identifier: booleanAnd.alwaysFalse
 			count: 1
 			path: code/web/sys/ExploreMoreSource.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/ExploreMoreSource.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/ExploreMoreSourceEntry.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/ExploreMoreSourceGroup.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/File/ImageUpload.php
 
 		-
 			message: '#^Unsafe usage of new static\(\)\.$#'
@@ -11411,42 +10631,6 @@ parameters:
 			path: code/web/sys/File/MARCXML.php
 
 		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Gale/GaleProductCode.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Gale/GaleSetting.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Genealogy/Marriage.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Genealogy/Obituary.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Genealogy/Person.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Greenhouse/AspenLiDABuild.php
-
-		-
 			message: '#^Access to protected property AspenSiteStat\:\:\$aspenSiteId\.$#'
 			identifier: property.protected
 			count: 1
@@ -11513,124 +10697,16 @@ parameters:
 			path: code/web/sys/Greenhouse/AspenSite.php
 
 		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Greenhouse/AspenSite.php
-
-		-
 			message: '#^Access to protected property AspenSite\:\:\$baseUrl\.$#'
 			identifier: property.protected
 			count: 18
 			path: code/web/sys/Greenhouse/AspenSiteCheck.php
 
 		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Greenhouse/CompanionSystem.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Greenhouse/ExternalRequestSettings.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Greenhouse/GreenhouseSettings.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Grouping/AuthorAuthority.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Grouping/AuthorAuthorityAlternative.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Grouping/GroupedWorkAlternateTitle.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Grouping/GroupedWorkDisplaySetting.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Grouping/GroupedWorkEContentSort.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Grouping/GroupedWorkEContentSortingGroup.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Grouping/GroupedWorkFacet.php
-
-		-
 			message: '#^Access to an undefined property GroupedWorkFacetGroup\:\:\$facets\.$#'
 			identifier: property.notFound
 			count: 1
 			path: code/web/sys/Grouping/GroupedWorkFacetGroup.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Grouping/GroupedWorkFacetGroup.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Grouping/GroupedWorkFormatSort.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Grouping/GroupedWorkFormatSortingGroup.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Grouping/GroupedWorkMoreDetails.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Grouping/GroupedWorkTestSearch.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Grouping/HideSeries.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Grouping/HideSubjectFacet.php
 
 		-
 			message: '#^Property Grouping_Item\:\:\$_record \(Grouping_Record\|null\) is never assigned null so it can be removed from the property type\.$#'
@@ -11675,30 +10751,6 @@ parameters:
 			path: code/web/sys/Grouping/Manifestation.php
 
 		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Grouping/ManualGroupedWork.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Grouping/ManuallyGroupedWorkRecord.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Grouping/NonGroupedRecord.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Grouping/PrioritizedShelfLocation.php
-
-		-
 			message: '#^Property Grouping_Record\:\:\$_isOverDrive is never read, only written\.$#'
 			identifier: property.onlyWritten
 			count: 1
@@ -11709,30 +10761,6 @@ parameters:
 			identifier: nullCoalesce.initializedProperty
 			count: 1
 			path: code/web/sys/Grouping/Record.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Grouping/RecordGroupingOverride.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/HeroSlider/HeroSliderLocation.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/HeroSlider/HeroSliderPlaylist.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/HeroSlider/HeroSliderPlaylistImage.php
 
 		-
 			message: '#^PHPDoc tag @param references unknown parameter\: \$action$#'
@@ -11747,28 +10775,10 @@ parameters:
 			path: code/web/sys/Hooks/registry.php
 
 		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Hoopla/HooplaScope.php
-
-		-
 			message: '#^Variable \$location in PHPDoc tag @var does not match any variable in the foreach loop\: \$locationList, \$locationId, \$displayName$#'
 			identifier: varTag.differentVariable
 			count: 1
 			path: code/web/sys/Hoopla/HooplaScope.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Hoopla/HooplaSetting.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Hoopla/LibraryHooplaSetting.php
 
 		-
 			message: '#^Binary operation "\-" between 32 and string results in an error\.$#'
@@ -11795,22 +10805,10 @@ parameters:
 			path: code/web/sys/IP/IPAddress.php
 
 		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/IP/IPAddress.php
-
-		-
 			message: '#^Method ISBN\:\:getISBN13CheckDigit\(\) should return string but returns int\<0, 9\>\|int\<11, 19\>\.$#'
 			identifier: return.type
 			count: 1
 			path: code/web/sys/ISBN.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Indexing/FormatMapValue.php
 
 		-
 			message: '#^Access to an undefined property TranslationMap\:\:\$translationMapValues\.$#'
@@ -11819,106 +10817,16 @@ parameters:
 			path: code/web/sys/Indexing/IndexingProfile.php
 
 		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Indexing/IndexingProfile.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Indexing/LibraryRecordToInclude.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Indexing/LibrarySideLoadScope.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Indexing/LocationRecordToInclude.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Indexing/LocationSideLoadScope.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Indexing/RecordOwned.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Indexing/RecordToInclude.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Indexing/SideLoad.php
-
-		-
 			message: '#^Negated boolean expression is always true\.$#'
 			identifier: booleanNot.alwaysTrue
 			count: 1
 			path: code/web/sys/Indexing/SideLoadScope.php
 
 		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Indexing/SideLoadScope.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Indexing/SierraExportFieldMapping.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Indexing/StatusMapValue.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Indexing/TimeToReshelve.php
-
-		-
 			message: '#^Property TranslationMap\:\:\$_translationMapValues \(array\<TranslationMapValue\>\) in isset\(\) is not nullable\.$#'
 			identifier: isset.property
 			count: 2
 			path: code/web/sys/Indexing/TranslationMap.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Indexing/TranslationMap.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Indexing/TranslationMapValue.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/InterLibraryLoan/HoldGroup.php
 
 		-
 			message: '#^Instanceof between Location and Location will always evaluate to true\.$#'
@@ -11929,12 +10837,6 @@ parameters:
 		-
 			message: '#^Right side of && is always false\.$#'
 			identifier: booleanAnd.rightAlwaysFalse
-			count: 1
-			path: code/web/sys/InterLibraryLoan/LocalIllForm.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
 			count: 1
 			path: code/web/sys/InterLibraryLoan/LocalIllForm.php
 
@@ -12027,30 +10929,6 @@ parameters:
 			identifier: isset.variable
 			count: 4
 			path: code/web/sys/Interface.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/LibKey/LibKeySetting.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/LibraryLocation/Holiday.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/LibraryLocation/HostInformation.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/LibraryLocation/ILLItemType.php
 
 		-
 			message: '#^Access to an undefined property Library\:\:\$materialsRequestFormFields\.$#'
@@ -12173,46 +11051,10 @@ parameters:
 			path: code/web/sys/LibraryLocation/Library.php
 
 		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/LibraryLocation/Library.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/LibraryLocation/LibraryCombinedResultSection.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/LibraryLocation/LibraryFacetSetting.php
-
-		-
 			message: '#^Class PType referenced with incorrect case\: pType\.$#'
 			identifier: class.nameCase
 			count: 2
 			path: code/web/sys/LibraryLocation/LibraryLink.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/LibraryLocation/LibraryLink.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/LibraryLocation/LibraryTheme.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/LibraryLocation/LibraryYearInReview.php
 
 		-
 			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
@@ -12281,54 +11123,6 @@ parameters:
 			path: code/web/sys/LibraryLocation/Location.php
 
 		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/LibraryLocation/Location.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/LibraryLocation/LocationCombinedResultSection.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/LibraryLocation/LocationHours.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/LibraryLocation/LocationTheme.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/LibraryLocation/Sublocation.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/LocalEnrichment/AuthorEnrichment.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/LocalEnrichment/BadWord.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/LocalEnrichment/CollectionSpotlight.php
-
-		-
 			message: '#^Call to an undefined method SearchObject_BaseSearcher\:\:disableSpelling\(\)\.$#'
 			identifier: method.notFound
 			count: 1
@@ -12339,24 +11133,6 @@ parameters:
 			identifier: if.alwaysTrue
 			count: 1
 			path: code/web/sys/LocalEnrichment/CollectionSpotlightList.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/LocalEnrichment/CollectionSpotlightList.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/LocalEnrichment/JavaScriptSnippet.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/LocalEnrichment/LiDANotification.php
 
 		-
 			message: '#^Access to an undefined property Placard\:\:\$debugCandidates\.$#'
@@ -12387,30 +11163,6 @@ parameters:
 			identifier: booleanAnd.rightAlwaysTrue
 			count: 2
 			path: code/web/sys/LocalEnrichment/Placard.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/LocalEnrichment/Placard.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/LocalEnrichment/PlacardTrigger.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/LocalEnrichment/SystemMessage.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/LocationMoreDetails.php
 
 		-
 			message: '#^Property Logger\:\:\$logDebugs is never read, only written\.$#'
@@ -12497,42 +11249,6 @@ parameters:
 			path: code/web/sys/MaterialsRequests/MaterialsRequest.php
 
 		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/MaterialsRequests/MaterialsRequest.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/MaterialsRequests/MaterialsRequestFieldsToDisplay.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/MaterialsRequests/MaterialsRequestFormFields.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/MaterialsRequests/MaterialsRequestFormat.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/MaterialsRequests/MaterialsRequestFormatMapping.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/MaterialsRequests/MaterialsRequestHoldCandidateGenerationLogEntry.php
-
-		-
 			message: '#^Access to an undefined property MaterialsRequest\:\:\$displayFormat\.$#'
 			identifier: property.notFound
 			count: 1
@@ -12557,12 +11273,6 @@ parameters:
 			path: code/web/sys/MaterialsRequests/MaterialsRequestHoldCandidateGenerator.php
 
 		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/MaterialsRequests/MaterialsRequestStatus.php
-
-		-
 			message: '#^Access to an undefined property MaterialsRequestTitle\:\:\$libraryId\.$#'
 			identifier: property.notFound
 			count: 1
@@ -12573,18 +11283,6 @@ parameters:
 			identifier: return.type
 			count: 1
 			path: code/web/sys/MaterialsRequests/MaterialsRequestTitle.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/MaterialsRequests/MaterialsRequestTitle.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Module.php
 
 		-
 			message: '#^Parameter \#2 \$options of function curl_setopt_array expects array\{10002\: non\-empty\-string, 19913\: bool, 42\: bool, 10018\: non\-empty\-string\}, array\{10002\: non\-falsy\-string, 19913\: 1, 42\: 0, 10018\: ''Aspen Discovery''\} given\.$#'
@@ -12617,32 +11315,8 @@ parameters:
 			path: code/web/sys/Notifications/FirebaseNotification.php
 
 		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/ObjectRestoration.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/OpenArchives/OpenArchivesCollection.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/OpenArchives/OpenArchivesFacet.php
-
-		-
 			message: '#^Access to an undefined property OpenArchivesFacetGroup\:\:\$facets\.$#'
 			identifier: property.notFound
-			count: 1
-			path: code/web/sys/OpenArchives/OpenArchivesFacetGroup.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
 			count: 1
 			path: code/web/sys/OpenArchives/OpenArchivesFacetGroup.php
 
@@ -12651,36 +11325,6 @@ parameters:
 			identifier: varTag.differentVariable
 			count: 1
 			path: code/web/sys/OpenArchives/OpenArchivesFacetGroup.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/OverDrive/LibraryOverDriveScope.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/OverDrive/LibraryOverDriveSettings.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/OverDrive/LocationOverDriveScope.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/OverDrive/OverDriveScope.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/OverDrive/OverDriveSetting.php
 
 		-
 			message: '#^Variable \$urlVar might not be defined\.$#'
@@ -12689,28 +11333,10 @@ parameters:
 			path: code/web/sys/Pager.php
 
 		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/PalaceProject/PalaceProjectCollection.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/PalaceProject/PalaceProjectScope.php
-
-		-
 			message: '#^Variable \$location in PHPDoc tag @var does not match any variable in the foreach loop\: \$locationList, \$locationId, \$displayName$#'
 			identifier: varTag.differentVariable
 			count: 1
 			path: code/web/sys/PalaceProject/PalaceProjectScope.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/PalaceProject/PalaceProjectSetting.php
 
 		-
 			message: '#^Unsafe usage of new static\(\)\.$#'
@@ -12729,12 +11355,6 @@ parameters:
 			identifier: smaller.alwaysFalse
 			count: 1
 			path: code/web/sys/Parsedown/ParsedownExtra.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Plugins/Plugin.php
 
 		-
 			message: '#^Default value of the parameter \#1 \$context \(false\) of method ReadingHistoryEntry\:\:insert\(\) is incompatible with type string\.$#'
@@ -12785,28 +11405,10 @@ parameters:
 			path: code/web/sys/Recommend/TopFacets.php
 
 		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/RenaissanceLearning/ARSetting.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/ReplacementCost.php
-
-		-
 			message: '#^Property ExternalReviews\:\:\$results \(array\|null\) is never assigned null so it can be removed from the property type\.$#'
 			identifier: property.unusedType
 			count: 1
 			path: code/web/sys/Reviews.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Rosen/RosenLevelUPSetting.php
 
 		-
 			message: '#^Parameter \#1 \$error_code of function socket_strerror expects int, false given\.$#'
@@ -12825,12 +11427,6 @@ parameters:
 			identifier: notIdentical.alwaysTrue
 			count: 1
 			path: code/web/sys/SIP2.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/SMS/TwilioSetting.php
 
 		-
 			message: '#^Method SearchEntry\:\:getSavedSearchByUrl\(\) should return SearchEntry but returns null\.$#'
@@ -13331,40 +11927,10 @@ parameters:
 			path: code/web/sys/SearchObject/GroupedWorkSearcher3.php
 
 		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/SearchObject/SearchInterpreterSetting.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/SearchObject/SearchInterpreterSpecialTerms.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/SearchObject/SearchInterpreterTermsToSkip.php
-
-		-
 			message: '#^Variable \$engine might not be defined\.$#'
 			identifier: variable.undefined
 			count: 2
 			path: code/web/sys/SearchObject/SearchObjectFactory.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/SearchObject/SearchSetting.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/SearchObject/SearchTypes.php
 
 		-
 			message: '#^Call to an undefined method RecordInterface\:\:getListEntry\(\)\.$#'
@@ -13413,12 +11979,6 @@ parameters:
 			identifier: empty.variable
 			count: 1
 			path: code/web/sys/SearchObject/SolrSearcher.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/SearchObject/SortOptions.php
 
 		-
 			message: '#^Binary operation "\+" between string and string results in an error\.$#'
@@ -13679,60 +12239,6 @@ parameters:
 			path: code/web/sys/SearchObject/minSO.php
 
 		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/SelfRegistrationForms/CarlXSelfRegistrationForm.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/SelfRegistrationForms/SelfRegistrationForm.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/SelfRegistrationForms/SelfRegistrationFormValues.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/SelfRegistrationForms/SelfRegistrationTerms.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/SelfRegistrationForms/SierraRegistration.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/SelfRegistrationForms/SierraSelfRegistrationForm.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/SelfRegistrationForms/SierraSelfRegistrationMunicipalityValues.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/SelfRegistrationForms/SymphonySelfRegistrationCountyCodeValues.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/SelfRegistrationForms/SymphonySelfRegistrationMunicipalityValues.php
-
-		-
 			message: '#^Call to an undefined method RecordInterface\:\:getId\(\)\.$#'
 			identifier: method.notFound
 			count: 1
@@ -13755,24 +12261,6 @@ parameters:
 			identifier: equal.alwaysTrue
 			count: 1
 			path: code/web/sys/Series/Series.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Series/Series.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Series/SeriesIndexingSettings.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Series/SeriesMember.php
 
 		-
 			message: '#^Offset ''spl_autoload'' on list\<callable\(string\)\: void\> in isset\(\) does not exist\.$#'
@@ -16624,12 +15112,6 @@ parameters:
 			path: code/web/sys/SolrConnector/Solr.php
 
 		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Storage/StorageSetting.php
-
-		-
 			message: '#^Parameter \#4 \$titlesToBaseRecommendationsOn of static method Suggestions\:\:getMoreLikeTheseSuggestions\(\) expects array\<string\>, array\<int, array\<string, mixed\>\> given\.$#'
 			identifier: argument.type
 			count: 1
@@ -16642,58 +15124,10 @@ parameters:
 			path: code/web/sys/Suggestions.php
 
 		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Summon/SummonSettings.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Support/TicketComponentFeed.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Support/TicketQueueFeed.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Support/TicketSeverityFeed.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Support/TicketStatusFeed.php
-
-		-
 			message: '#^Left side of && is always true\.$#'
 			identifier: booleanAnd.leftAlwaysTrue
 			count: 2
 			path: code/web/sys/SystemLogging/ExternalRequestLogEntry.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/SystemLogging/ExternalRequestLogEntry.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/SystemLogging/UserAgent.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/SystemLogging/UserAppRequestLogEntry.php
 
 		-
 			message: '#^Static property SystemVariables\:\:\$_systemVariables \(SystemVariables\|null\) does not accept false\.$#'
@@ -16702,32 +15136,8 @@ parameters:
 			path: code/web/sys/SystemVariables.php
 
 		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/SystemVariables.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Talpa/TalpaSettings.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Theming/LayoutSetting.php
-
-		-
 			message: '#^Argument of an invalid type \$this\(Theme\) supplied for foreach, only iterables are supported\.$#'
 			identifier: foreach.nonIterable
-			count: 1
-			path: code/web/sys/Theming/Theme.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
 			count: 1
 			path: code/web/sys/Theming/Theme.php
 
@@ -16742,12 +15152,6 @@ parameters:
 			identifier: variable.undefined
 			count: 1
 			path: code/web/sys/Theming/Theme.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Translation/Language.php
 
 		-
 			message: '#^Parameter \#2 \$postParams of method CurlWrapper\:\:curlPostPage\(\) expects array\<string\>\|string, array\<string, bool\|string\> given\.$#'
@@ -16768,18 +15172,6 @@ parameters:
 			path: code/web/sys/Translation/extract_js_translations.php
 
 		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/TwoFactorAuthCode.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/TwoFactorAuthSetting.php
-
-		-
 			message: '#^Parameter \#1 \$string of function str_pad expects string, int\<\-999999, 999999\> given\.$#'
 			identifier: argument.type
 			count: 1
@@ -16795,12 +15187,6 @@ parameters:
 			message: '#^Parameter \#2 \$timeCounter of static method TwoFactorAuthTOTPSecret\:\:generateCodeForTime\(\) expects int, float given\.$#'
 			identifier: argument.type
 			count: 2
-			path: code/web/sys/TwoFactorAuthTOTPSecret.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
 			path: code/web/sys/TwoFactorAuthTOTPSecret.php
 
 		-
@@ -16824,12 +15210,6 @@ parameters:
 		-
 			message: '#^Access to protected property AspenSite\:\:\$name\.$#'
 			identifier: property.protected
-			count: 1
-			path: code/web/sys/Updates/ScheduledUpdate.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
 			count: 1
 			path: code/web/sys/Updates/ScheduledUpdate.php
 
@@ -16916,12 +15296,6 @@ parameters:
 			identifier: notIdentical.alwaysTrue
 			count: 1
 			path: code/web/sys/UserAccount.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/UserLists/ListIndexingSettings.php
 
 		-
 			message: '#^Access to an undefined property User\:\:\$libraryId\.$#'
@@ -17080,12 +15454,6 @@ parameters:
 			path: code/web/sys/UserLists/UserList.php
 
 		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/UserLists/UserList.php
-
-		-
 			message: '#^Variable \$docIndex in PHPDoc tag @var does not match any variable in the foreach loop\: \$records, \$recordDriver$#'
 			identifier: varTag.differentVariable
 			count: 2
@@ -17104,20 +15472,8 @@ parameters:
 			path: code/web/sys/UserLists/UserList.php
 
 		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/UserLists/UserListFacet.php
-
-		-
 			message: '#^Access to an undefined property UserListFacetGroup\:\:\$facets\.$#'
 			identifier: property.notFound
-			count: 1
-			path: code/web/sys/UserLists/UserListFacetGroup.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
 			count: 1
 			path: code/web/sys/UserLists/UserListFacetGroup.php
 
@@ -17125,12 +15481,6 @@ parameters:
 			message: '#^Class User referenced with incorrect case\: user\.$#'
 			identifier: class.nameCase
 			count: 3
-			path: code/web/sys/UserLists/UserListGroup.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
 			path: code/web/sys/UserLists/UserListGroup.php
 
 		-
@@ -17188,21 +15538,9 @@ parameters:
 			path: code/web/sys/Utils/SystemUtils.php
 
 		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/Variable.php
-
-		-
 			message: '#^Class PType referenced with incorrect case\: pType\.$#'
 			identifier: class.nameCase
 			count: 2
-			path: code/web/sys/WebBuilder/BasicPage.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
 			path: code/web/sys/WebBuilder/BasicPage.php
 
 		-
@@ -17224,39 +15562,9 @@ parameters:
 			path: code/web/sys/WebBuilder/CustomForm.php
 
 		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/WebBuilder/CustomForm.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/WebBuilder/CustomFormField.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/WebBuilder/CustomFormSubmission.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/WebBuilder/CustomFormSubmissionSelection.php
-
-		-
 			message: '#^Class PType referenced with incorrect case\: pType\.$#'
 			identifier: class.nameCase
 			count: 2
-			path: code/web/sys/WebBuilder/CustomWebResourcePage.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
 			path: code/web/sys/WebBuilder/CustomWebResourcePage.php
 
 		-
@@ -17272,24 +15580,6 @@ parameters:
 			path: code/web/sys/WebBuilder/GrapesPage.php
 
 		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/WebBuilder/GrapesPage.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/WebBuilder/GrapesTemplate.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/WebBuilder/LibraryCustomForm.php
-
-		-
 			message: '#^Binary operation "\+\=" between string and 12 results in an error\.$#'
 			identifier: assignOp.invalid
 			count: 2
@@ -17299,12 +15589,6 @@ parameters:
 			message: '#^Binary operation "\-\=" between string and 12 results in an error\.$#'
 			identifier: assignOp.invalid
 			count: 2
-			path: code/web/sys/WebBuilder/PortalCell.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
 			path: code/web/sys/WebBuilder/PortalCell.php
 
 		-
@@ -17338,18 +15622,6 @@ parameters:
 			path: code/web/sys/WebBuilder/PortalPage.php
 
 		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/WebBuilder/PortalPage.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/WebBuilder/PortalRow.php
-
-		-
 			message: '#^Property QuickPoll\:\:\$_libraries \(array\) in isset\(\) is not nullable\.$#'
 			identifier: isset.property
 			count: 2
@@ -17380,48 +15652,6 @@ parameters:
 			path: code/web/sys/WebBuilder/QuickPoll.php
 
 		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/WebBuilder/QuickPoll.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/WebBuilder/QuickPollOption.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/WebBuilder/QuickPollSubmission.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/WebBuilder/QuickPollSubmissionSelection.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/WebBuilder/StaffMember.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/WebBuilder/WebBuilderAudience.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/WebBuilder/WebBuilderCategory.php
-
-		-
 			message: '#^Call to an undefined method WebResource\:\:clearLibraries\(\)\.$#'
 			identifier: method.notFound
 			count: 1
@@ -17434,28 +15664,10 @@ parameters:
 			path: code/web/sys/WebBuilder/WebResource.php
 
 		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/WebBuilder/WebResource.php
-
-		-
 			message: '#^PHPDoc tag @return with type bool\|WebBuilderCategory is not subtype of native type WebBuilderCategory\|false\.$#'
 			identifier: return.phpDocType
 			count: 1
 			path: code/web/sys/WebBuilder/WebResourceCategory.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/WebBuilder/WebResourcesSetting.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/WebsiteIndexing/WebsiteFacet.php
 
 		-
 			message: '#^Access to an undefined property WebsiteFacetGroup\:\:\$facets\.$#'
@@ -17464,28 +15676,10 @@ parameters:
 			path: code/web/sys/WebsiteIndexing/WebsiteFacetGroup.php
 
 		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/WebsiteIndexing/WebsiteFacetGroup.php
-
-		-
 			message: '#^Variable \$location in PHPDoc tag @var does not match any variable in the foreach loop\: \$locationList, \$locationId, \$displayName$#'
 			identifier: varTag.differentVariable
 			count: 1
 			path: code/web/sys/WebsiteIndexing/WebsiteFacetGroup.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/WebsiteIndexing/WebsiteIndexSetting.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: code/web/sys/WebsiteIndexing/WebsitePage.php
 
 		-
 			message: '#^Call to an undefined method DOMNameSpaceNode\|DOMNode\:\:getAttribute\(\)\.$#'
@@ -17586,12 +15780,6 @@ parameters:
 		-
 			message: '#^Method YearInReviewSetting\:\:createSlideImage\(\) should return string\|null but returns bool\.$#'
 			identifier: return.type
-			count: 1
-			path: code/web/sys/YearInReview/YearInReviewSetting.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
 			count: 1
 			path: code/web/sys/YearInReview/YearInReviewSetting.php
 
