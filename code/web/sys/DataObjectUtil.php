@@ -482,7 +482,7 @@ class DataObjectUtil {
 							$storeSource = $uploadTmp;
 						}
 
-						$copyResult = $storage->write($storageKey . '/' . $destFileName, $storeSource);
+						$copyResult = $storage->write($storageKey . '/' . $destFileName, $storeSource, mime_content_type($storeSource));
 
 						if (isset($resizedTmp)) {
 							unlink($resizedTmp);
@@ -500,7 +500,7 @@ class DataObjectUtil {
 							$user = UserAccount::getActiveUserObj();
 							if ($user) {
 								$warning = translate([
-									'text' => "Could not upload %1% -- the storage backend did not accept the file.",
+									'text' => "Could not upload %1%, the storage backend did not accept the file.",
 									1 => $propertyName,
 									'isAdminFacing' => true,
 								]);
@@ -518,13 +518,13 @@ class DataObjectUtil {
 							if (isset($property['thumbWidth'])) {
 								$thumbTmp = tempnam(sys_get_temp_dir(), 'aspen_img_');
 								resizeImage($uploadTmp, $thumbTmp, $property['thumbWidth'], $property['thumbWidth']);
-								$storage->write($derivativeBase . '/thumbnail/' . $destFileName, $thumbTmp);
+								$storage->write($derivativeBase . '/thumbnail/' . $destFileName, $thumbTmp, mime_content_type($thumbTmp));
 								unlink($thumbTmp);
 							}
 							if (isset($property['mediumWidth'])) {
 								$medTmp = tempnam(sys_get_temp_dir(), 'aspen_img_');
 								resizeImage($uploadTmp, $medTmp, $property['mediumWidth'], $property['mediumWidth']);
-								$storage->write($derivativeBase . '/medium/' . $destFileName, $medTmp);
+								$storage->write($derivativeBase . '/medium/' . $destFileName, $medTmp, mime_content_type($medTmp));
 								unlink($medTmp);
 							}
 						}
@@ -652,8 +652,8 @@ class DataObjectUtil {
 					//return an error to the browser
 					$logger->log("Error uploading file " . $fileForProperty["error"], Logger::LOG_ERROR);
 				} elseif (true) { //TODO: validate the file type
-					$destFileName = $fileForProperty["name"];
-					$copyResult = StorageDriverFactory::get()->write('fonts/' . $destFileName, $fileForProperty["tmp_name"]);
+					$destFileName = $_FILES[$propertyName]["name"];
+					$copyResult = StorageDriverFactory::get()->write('fonts/' . $destFileName, $_FILES[$propertyName]["tmp_name"], mime_content_type($_FILES[$propertyName]["tmp_name"]));
 					if ($copyResult) {
 						$logger->log("Stored font file: fonts/{$destFileName}", Logger::LOG_NOTICE);
 					} else {
