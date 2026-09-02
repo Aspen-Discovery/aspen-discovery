@@ -876,7 +876,7 @@ class ExploreMore {
 			$libraryCloudSourceSetting->libraryId = $library->libraryId;
 			if ($libraryCloudSourceSetting->find(true)) {
 				$settingId = $libraryCloudSourceSetting->cloudsourceSettingId;
-			} else {
+			} else if (!empty($activeLocation)){
 				require_once ROOT_DIR . '/sys/CloudSource/LocationCloudSourceSetting.php';
 				$locationCloudSourceSetting = new LocationCloudSourceSetting();
 				$locationCloudSourceSetting->locationId = $activeLocation->locationId;
@@ -1091,7 +1091,10 @@ class ExploreMore {
 
 		$currentLibraryId = isset($library->libraryId) ? (string)$library->libraryId : null;
 		$activeLocation = $locationSingleton->getActiveLocation();
-		$currentLocationId = !empty($activeLocation->locationId) ? (string)$activeLocation->locationId : null;
+		$currentLocationId = null;
+		if ($activeLocation !== null) {
+			$currentLocationId = !empty($activeLocation->locationId) ? (string)$activeLocation->locationId : null;
+		}
 
 		$sourceSettings = [];
 		$order = 0;
