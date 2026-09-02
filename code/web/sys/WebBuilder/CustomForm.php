@@ -130,6 +130,7 @@ class CustomForm extends DB_LibraryLinkedObject {
 				'structure' => $emailStructure,
 				'canAddNew' => true,
 				'canDelete' => true,
+				'hideInLists' => false
 			],
 		];
 
