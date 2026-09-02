@@ -236,9 +236,9 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 
 		if (strpos($searchTerm, ':') > 0) {
 			$tempSearchInfo = explode(':', $searchTerm);
-			if (count($tempSearchInfo) == 2) {
+			if (count($tempSearchInfo) == 2 && preg_match('/^[A-Za-z][\w-]*$/', $tempSearchInfo[0])) {
 				//Check for leading and trailing parentheses
-				if (strlen($tempSearchInfo[0]) > 0 && $tempSearchInfo[0][0] == '(') {
+				if ($tempSearchInfo[0][0] == '(') {
 					$tempSearchInfo[0] = substr($tempSearchInfo[0], 1);
 				}
 				if (strlen($tempSearchInfo[1]) > 0 && $tempSearchInfo[1][-1] == ')') {
@@ -264,7 +264,7 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 						return false;
 					}
 				}
-			} else {
+			} elseif (count($tempSearchInfo) != 2) {
 				//This is an advanced search
 				return false;
 			}
