@@ -578,24 +578,13 @@ class WebBuilder_AJAX extends JSON_Action {
 				$image->generateLargeSize = true;
 				$image->generateMediumSize = true;
 				$image->generateSmallSize = true;
-				$destFileName = $file['name'];
-				$destFolder = $structure['fullSizePath']['path'];
-				if (!is_dir($destFolder)) {
-					if (!mkdir($destFolder, 0755, true)) {
-						$result['message'] = 'Could not create directory to upload files';
-						if (IPAddress::showDebuggingInformation()) {
-							$result['message'] .= " " . $destFolder;
-						}
-					}
-				}
-				$destFullPath = $destFolder . '/' . $destFileName;
-				if (file_exists($destFullPath)) {
-					$image->find(true);
-				}
-
 				$image->title = $file['name'];
-				$copyResult = copy($file["tmp_name"], $destFullPath);
-				if ($copyResult) {
+				//Insert the image so we can name images based on the id of the image
+				$image->insert();
+				//Upload the image
+				$imageUploaded = DataObjectUtil::processUploadedImageProperty($image, 'fullSizePath', $structure['fullSizePath'], $file);
+				if ($imageUploaded) {
+					//resize to save the image and generate derivatives
 					$image->update();
 					$result = [
 						'success' => true,
