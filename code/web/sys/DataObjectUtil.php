@@ -289,13 +289,15 @@ class DataObjectUtil {
 				$object->setProperty($propertyName, 0, $property);
 			}
 		} elseif ($property['type'] == 'color' || $property['type'] == 'font') {
-			$defaultProperty = $propertyName . 'Default';
-			if (isset($_REQUEST[$propertyName . '-default']) && ($_REQUEST[$propertyName . '-default'] == 'on')) {
-				$object->setProperty($defaultProperty, 1, null);
-			} else {
-				$object->setProperty($defaultProperty, 0, null);
+			if (empty($property['readOnly'])) {
+				$defaultProperty = $propertyName . 'Default';
+				if (isset($_REQUEST[$propertyName . '-default']) && ($_REQUEST[$propertyName . '-default'] == 'on')) {
+					$object->setProperty($defaultProperty, 1, null);
+				} else {
+					$object->setProperty($defaultProperty, 0, null);
+				}
+				$object->setProperty($propertyName, $_REQUEST[$propertyName] ?? '', $property);
 			}
-			$object->setProperty($propertyName, $_REQUEST[$propertyName], $property);
 		} elseif ($property['type'] == 'currency') {
 			if (preg_match('/\\$?\\d*\\.?\\d*/', $_REQUEST[$propertyName])) {
 				if (str_starts_with($_REQUEST[$propertyName], '$')) {

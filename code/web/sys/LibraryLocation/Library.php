@@ -82,6 +82,7 @@ class Library extends DataObject {
 	//More general display configurations
 	public $theme;
 	public $_themes;
+	public $_aspenLiDAThemes;
 	public $layoutSettingId;  //Link to LayoutSetting
 	public $groupedWorkDisplaySettingId; //Link to GroupedWorkDisplaySettings
 	public $searchSettingId;
@@ -1030,6 +1031,12 @@ class Library extends DataObject {
 		unset($libraryOverDriveSettingsStructure['libraryId']);
 		unset($libraryOverDriveSettingsStructure['weight']);
 
+
+		require_once ROOT_DIR . '/sys/AspenLiDA/ThemeLibrary.php';
+		$aspenLiDALibraryThemeStructure = AspenLiDAThemeLibrary::getObjectStructure($context);
+		unset($aspenLiDALibraryThemeStructure['libraryId']);
+		unset($aspenLiDALibraryThemeStructure['weight']);
+
 		require_once ROOT_DIR . '/sys/AspenLiDA/NotificationSetting.php';
 		$notificationSetting = new NotificationSetting();
 		$notificationSetting->orderBy('name');
@@ -1138,7 +1145,7 @@ class Library extends DataObject {
 		];
 
 		if ($catalog == null || !$catalog->hasCardRenewalSupport()) {
-			unset($validCardRenewalOptions[2]);
+			unset($validCardRenewalOptions[1]);
 		}
 
 		require_once ROOT_DIR . '/sys/Enrichment/QuipuECardSetting.php';
@@ -3859,7 +3866,7 @@ class Library extends DataObject {
 					'aspenEventsToInclude' => [
 						'property' => 'aspenEventsToInclude',
 						'type' => 'enum',
-						'label' => 'Aspen Events to Include',
+						'label' => 'Events to Include',
 						'description' => 'Which events to include when searching this library',
 						'values' => [
 							'0' => 'Do not show the option to search Events',
@@ -5069,6 +5076,24 @@ class Library extends DataObject {
 				'renderAsHeading' => true,
 				'permissions' => ['Administer Aspen LiDA Settings'],
 				'properties' => [
+					'aspenLiDAThemes' => [
+						'property' => 'aspenLiDAThemes',
+						'type' => 'oneToMany',
+						'label' => 'Aspen LiDA Themes',
+						'description' => 'The Aspen LiDA themes which can be used for the library',
+						'note' => 'Tip: sort your primary theme to the top of this list. Other themes assigned to this library will be available as additional Display options.',
+						'keyThis' => 'libraryId',
+						'keyOther' => 'libraryId',
+						'subObjectType' => 'AspenLiDAThemeLibrary',
+						'structure' => $aspenLiDALibraryThemeStructure,
+						'sortable' => true,
+						'storeDb' => true,
+						'allowEdit' => true,
+						'canEdit' => true,
+						'canAddNew' => true,
+						'canDelete' => true,
+						'permissions' => ['Library Theme Configuration'],
+					],
 					'lidaGeneralSettingId' => [
 						'property' => 'lidaGeneralSettingId',
 						'type' => 'enum',
@@ -5474,6 +5499,8 @@ class Library extends DataObject {
 			return $this->getUserDefinedFields();
 		} elseif ($name == 'baseUrl') {
 			return $this->getBaseUrl();
+		} elseif ($name == 'aspenLiDAThemes') {
+			return $this->getAspenLiDAThemes();
 		} else {
 			return parent::__get($name);
 		}
@@ -5510,6 +5537,8 @@ class Library extends DataObject {
 			$this->_interLibraryLoanItemTypes = $value;
 		} elseif ($name == 'userDefinedFields') {
 			$this->_userDefinedFields = $value;
+		} elseif ($name == 'aspenLiDAThemes') {
+			$this->_aspenLiDAThemes = $value;
 		} else {
 			parent::__set($name, $value);
 		}
@@ -5584,6 +5613,7 @@ class Library extends DataObject {
 			if (!empty($this->_changedFields) && in_array('cookieStorageConsent', $this->_changedFields)) {
 				$this->updateLocalAnalyticsPreferences();
 			}
+			$this->saveAspenLiDAThemes();
 		}
 		if ($this->_patronNameDisplayStyleChanged) {
 			$libraryLocations = new Location();
@@ -5649,6 +5679,7 @@ class Library extends DataObject {
 			$this->saveTextBlockTranslations('selfRegistrationFormMessage');
 			$this->saveTextBlockTranslations('selfRegistrationSuccessMessage');
 			$this->saveTextBlockTranslations('localIllEmailSuccessMessage');
+			$this->saveAspenLiDAThemes();
 		}
 		return $ret;
 	}
@@ -5883,6 +5914,35 @@ class Library extends DataObject {
 		}
 		return $this->_themes;
 	}
+
+	public function getPrimaryAspenLiDATheme(): AspenLiDAThemeLibrary|LibraryTheme {
+		$allThemes = $this->getAspenLiDAThemes();
+		if (!empty($allThemes)) {
+			return reset($allThemes);
+		} else {
+			return $this->getPrimaryTheme(); // fallback to the primary LibraryTheme if no Aspen LiDA themes are assigned
+		}
+	}
+
+	/**
+	 * @return AspenLiDAThemeLibrary[]
+	 */
+	public function getAspenLiDAThemes(): array {
+		if (!isset($this->_themes)) {
+			$this->_themes = [];
+			if (!empty($this->libraryId)) {
+				$libraryTheme = new AspenLiDAThemeLibrary();
+				$libraryTheme->libraryId = $this->libraryId;
+				$libraryTheme->orderBy('weight');
+				if ($libraryTheme->find()) {
+					while ($libraryTheme->fetch()) {
+						$this->_themes[$libraryTheme->id] = clone $libraryTheme;
+					}
+				}
+			}
+		}
+		return $this->_themes;
+	}
 	
 	/**
 	 * Find or create a default theme for use in cases where a library or location has no LibraryTheme or LocationTheme
@@ -5980,6 +6040,45 @@ class Library extends DataObject {
 				}
 			}
 			unset($this->_themes);
+		}
+	}
+
+	public function saveAspenLiDAThemes(): void {
+		if (isset ($this->_aspenLiDAThemes) && is_array($this->_aspenLiDAThemes)) {
+			foreach ($this->_aspenLiDAThemes as $obj) {
+				/** @var AspenLiDAThemeLibrary $obj */
+				if ($obj->_deleteOnSave) {
+					if ($obj->getPrimaryKeyValue() > 0) {
+						$obj->delete();
+					}
+				} else {
+					if (isset($obj->{$obj->__primaryKey}) && is_numeric($obj->{$obj->__primaryKey})) {
+						if ($obj->{$obj->__primaryKey} <= 0) {
+							$obj->libraryId = $this->{$this->__primaryKey};
+							$obj->insert();
+						} else {
+							if ($obj->hasChanges()) {
+								$obj->update();
+							}
+						}
+					} else {
+						// Set the appropriate weight for the new theme.
+						$weight = 0;
+						$existingThemesForLibrary = new AspenLiDAThemeLibrary();
+						$existingThemesForLibrary->libraryId = $this->libraryId;
+						if ($existingThemesForLibrary->find()) {
+							while ($existingThemesForLibrary->fetch()) {
+								$weight = $weight + 1;
+							}
+						}
+
+						$obj->libraryId = $this->{$this->__primaryKey};
+						$obj->weight = $weight;
+						$obj->insert();
+					}
+				}
+			}
+			unset($this->_aspenLiDAThemes);
 		}
 	}
 
@@ -6854,6 +6953,17 @@ class Library extends DataObject {
 				$apiInfo['tertiaryForegroundColor'] = $theme->tertiaryForegroundColor;
 			}
 		}
+		$apiInfo['aspenLiDAThemes'] = [];
+		$aspenLiDAThemes = $this->getAspenLiDAThemes();
+		require_once ROOT_DIR . '/sys/AspenLiDA/Theme.php';
+		foreach ($aspenLiDAThemes as $aspenLiDATheme) {
+			$theme = new AspenLiDATheme();
+			$theme->id = $aspenLiDATheme->themeId;
+			if ($theme->find(true)) {
+				$apiInfo['aspenLiDAThemes'][] = $theme->getApiInfo();
+			}
+		}
+
 		$locations = $this->getLocations();
 		$apiInfo['locations'] = [];
 		foreach ($locations as $location) {

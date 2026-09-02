@@ -275,7 +275,7 @@ class ACISpeedpaySetting extends DataObject {
 		];
 
 		$params = $this->buildQueryString($postParams);
-		$url = $this->appendQuery($baseUrl . '/auth/v1/auth/authorize', $params);
+		$url = $this->appendQuery($baseUrl . '/oauth/authorize', $params);
 		$authorizationResults = $authCodeRequest->curlGetPage($url);
 		$authCodeResults = json_decode($authorizationResults, true);
 		if (empty($authCodeResults['code'])) {
@@ -319,7 +319,7 @@ class ACISpeedpaySetting extends DataObject {
 			'code' => $code,
 			'code_verifier' => $codeVerifier
 		];
-		$url = $baseUrl . '/auth/v1/auth/token';
+		$url = $baseUrl . '/oauth/token';
 		$authCodeResults = $authCodeRequest->curlPostPage($url, $postParams);
 		$authCodeResults = json_decode($authCodeResults, true);
 		if (empty($authCodeResults['access_token'])) {
@@ -332,8 +332,26 @@ class ACISpeedpaySetting extends DataObject {
 	/*
 	 * @return array|bool
 	 */
-	public function submitTransaction($patron, $payment, $fundingToken, $billerAccount): array {
+	public function submitTransaction($patron, $payment, $fundingToken, $billerAccount, $donation = null): array {
 		$result = ['success' => false];
+
+		if ($donation != null) {
+			$payerEmail = $donation->email;
+			$payerFirstName = $donation->firstName;
+			$payerLastName = $donation->lastName;
+		} elseif ($patron != null) {
+			$payerEmail = $patron->email;
+			$payerFirstName = $patron->firstname;
+			$payerLastName = $patron->lastname;
+		} else {
+			return [
+				'success' => false,
+				'message' => translate([
+					'text' => 'Unable to submit payment because payer information is missing.',
+					'isPublicFacing' => true,
+				]),
+			];
+		}
 
 		$authCode = $this->createAuthCode();
 		if(!$authCode['success']) {
@@ -373,9 +391,9 @@ class ACISpeedpaySetting extends DataObject {
 		);
 		$postData['payer'] = array(
 			'kind' => 'NonEnrolledIndividual',
-			'emailAddress' => $patron->email,
-			'firstName' => $patron->firstname,
-			'lastName' => $patron->lastname,
+			'emailAddress' => $payerEmail,
+			'firstName' => $payerFirstName,
+			'lastName' => $payerLastName,
 		);
 		$postData['fundingAccount'] = array(
 			'token' => $fundingToken,
@@ -415,6 +433,23 @@ class ACISpeedpaySetting extends DataObject {
 				$payment->transactionId = $paymentResponse['confirmationCode'];
 				$payment->orderId = $paymentResponse['id'];
 				$payment->totalPaid = number_format($totalPaid / 100, 2, '.', '');
+
+				if ($donation) {
+					$payment->completed = 1;
+					$payment->message .= "Payment completed, TransactionId = $payment->transactionId, Confirmation Code = $confirmationCode, CC Number = $ccNumber, Net Amount = $payment->totalPaid. ";
+					$payment->update();
+					$donation->sendReceiptEmail();
+					return [
+						'success' => true,
+						'message' => translate([
+							'text' => 'Your payment has been completed. ',
+							'isPublicFacing' => true,
+						]),
+						'paymentId' => $payment->id,
+						'donationId' => $donation->id,
+						'isDonation' => true,
+					];
+				}
 
 				$user = new User();
 				$user->id = $payment->userId;

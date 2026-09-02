@@ -252,9 +252,12 @@ class CustomForm extends DB_LibraryLinkedObject {
 				'required' => $field->required,
 				'default' => $field->defaultValue,
 			];
-			if ($fieldType == 'enum') {
-				$enumValues = explode(',', $field->enumValues);
+			if ($fieldType == 'enum' || $fieldType == 'multiSelect') {
+				$enumValues = array_map('trim', explode(',', $field->enumValues));
 				$fieldStructure['values'] = $enumValues;
+			}
+			if ($fieldType == 'multiSelect') {
+				$fieldStructure['listStyle'] = 'checkboxList';
 			}
 			$structure[$field->id] = $fieldStructure;
 		}

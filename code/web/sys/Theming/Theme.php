@@ -13,11 +13,27 @@ class Theme extends DataObject {
 	public $deleted;
 	public $dateDeleted;
 	public $deletedBy;
+
+	/**
+	 * @deprecated These Aspen LiDA-specific properties have been moved to AspenLiDATheme.
+	 * They are retained here for backward compatibility with existing data and API calls until a later release.
+	 * If Aspen LiDA Themes are configured, they will take precedence over these properties.
+	 */
 	public $logoApp;
+
+	/** @deprecated See note above */
 	public $headerLogoApp;
+
+	/** @deprecated See note above */
 	public $headerLogoAlignmentApp;
+
+	/** @deprecated See note above */
 	public $headerLogoBackgroundColorApp;
+
+	/** @deprecated See note above */
 	public static $defaultHeaderLogoBackgroundColorApp = '#FFFFFF';
+	/** @deprecated See note above */
+
 	public /** @noinspection PhpUnused */
 		$headerLogoBackgroundColorAppDefault;
 
@@ -543,6 +559,13 @@ class Theme extends DataObject {
 	public $bodyFont;
 	public $bodyFontDefault;
 	public $customBodyFont;
+	public $fontSize;
+
+	public static $fontSizes = [
+		'small' => '14px',
+		'medium' => '16px',
+		'large' => '18px',
+	];
 
 	public $coverStyle;
 
@@ -1161,6 +1184,20 @@ class Theme extends DataObject {
 				'required' => false,
 				'hideInLists' => true,
 			],
+			'fontSize' => [
+				'property' => 'fontSize',
+				'type' => 'enum',
+				'values' => [
+					'small' => 'Small',
+					'medium' => 'Medium',
+					'large' => 'Large'
+				],
+				'label' => 'Font Size',
+				'description' => 'Determines the size of all text displayed (headers, body, footers, etc.). Default inherits the size from the theme being extended.',
+				'required' => false,
+				'default' => 'small',
+				'hideInLists' => true,
+			],
 
 			//Additional CSS
 			'additionalCss' => [
@@ -1185,7 +1222,8 @@ class Theme extends DataObject {
 				'hideInLists' => true,
 			],
 
-			//Aspen LiDA
+
+			// DEFUNCT: these settings have been moved to Aspen LiDA Themes (AspenLiDA > Themes).
 			'lidaSection' => [
 				'property' => 'lidaSection',
 				'type' => 'section',
@@ -2644,6 +2682,12 @@ class Theme extends DataObject {
 			$objectStructure['locations']['additionalOneToManyActions'] = [];
 		}
 
+		// Only show the Aspen LiDA section if the module is enabled
+		global $enabledModules;
+		if (!array_key_exists('Aspen LiDA', $enabledModules)) {
+			unset($objectStructure['lidaSection']);
+		}
+
 		self::$_objectStructure[$context] = $objectStructure;
 		return self::$_objectStructure[$context];
 	}
@@ -3257,6 +3301,7 @@ class Theme extends DataObject {
 		$interface->assign('bodyFont', '');
 		$interface->assign('placardImageMaxHeight', $this->placardImageMaxHeight);
 		$interface->assign('showButtonShimmer', $this->showButtonShimmer);
+		$interface->assign('fontSize', '');
 		if ($this->customHeadingFont != null) {
 			$customHeadingFontName = substr($this->customHeadingFont, 0, strrpos($this->customHeadingFont, '.'));
 			$interface->assign('customHeadingFontName', $customHeadingFontName);
@@ -3334,6 +3379,9 @@ class Theme extends DataObject {
 				}
 				$interface->assign('smallButtonRadius', $buttonRadius);
 			}
+			if ($interface->getVariable('fontSize') == null && !empty(Theme::$fontSizes[$theme->fontSize ?? ''])) {
+				$interface->assign('fontSize', Theme::$fontSizes[$theme->fontSize]);
+			}
 			if ($interface->getVariable('badgeBorderRadius') == null && !empty($theme->badgeBorderRadius)) {
 				$badgeBorderRadius = $theme->badgeBorderRadius;
 				if (is_numeric($badgeBorderRadius)) {
@@ -3355,6 +3403,10 @@ class Theme extends DataObject {
 					}
 				}
 			}
+		}
+
+		if ($interface->getVariable('fontSize') == null || $interface->getVariable('fontSize') == '') {
+			$interface->assign('fontSize', Theme::$fontSizes['small']);
 		}
 
 		$interface->assign('additionalCSS', $additionalCSS);
