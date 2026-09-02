@@ -3062,7 +3062,7 @@ class UserAPI extends AbstractAPI {
 	}
 
 	function cancelPalaceProjectHold(): array {
-		$id = $_REQUEST['itemId'];
+		$id = $_REQUEST['itemId'] ?? $_REQUEST['recordId'];
 		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
 			require_once ROOT_DIR . '/Drivers/PalaceProjectDriver.php';

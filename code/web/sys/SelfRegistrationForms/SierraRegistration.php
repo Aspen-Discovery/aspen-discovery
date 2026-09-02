@@ -417,6 +417,9 @@ class SierraRegistration extends DataObject {
 	public static function getMetadataOptions($field) {
 		global $library;
 		$accountProfile = $library->getAccountProfile();
+		if ($accountProfile === false) {
+			return [];
+		}
 		$catalogDriverName = trim($accountProfile->driver);
 		$catalogDriver = null;
 		if (!empty($catalogDriverName)) {

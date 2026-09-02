@@ -255,7 +255,7 @@ public class KohaExportMain {
 			if (marcFormat == "marc"){
 				InputStream stream = resultSet.getBinaryStream(marcFormat);
 				reader = new MarcStreamReader(resultSet.getBinaryStream(marcFormat), "UTF8");
-				
+
 			} else {
 				String marcXML = resultSet.getString(marcFormat);
 				marcXML = AspenStringUtils.stripNonValidXMLCharacters(marcXML);
@@ -287,7 +287,7 @@ public class KohaExportMain {
 
 			if(kohaVersion < 24.1200011 ){
 				marcFormat = "marc";
-			} 
+			}
 
 			getAuthorAuthoritiesStmt = kohaConn.prepareStatement("SELECT authid, modification_time, authtypecode, " + marcFormat + " from auth_header where authtypecode IN('PERSO_NAME', 'CORPO_NAME') AND modification_time >= ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			getAuthorAuthoritiesStmt.setTimestamp(1, lastUpdateOfAuthorities);
@@ -295,7 +295,7 @@ public class KohaExportMain {
 			PreparedStatement addAuthorStmt = dbConn.prepareStatement("INSERT INTO author_authority (id, dateAdded, author) VALUES (NULL, ?, ?) ON DUPLICATE KEY UPDATE id=id", Statement.RETURN_GENERATED_KEYS);
 			PreparedStatement getAuthorIdStmt = dbConn.prepareStatement("SELECT id from author_authority where author = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			PreparedStatement addAlternativeNameStmt = dbConn.prepareStatement("INSERT INTO author_authority_alternative (id, authorId, alternativeAuthor) VALUES (NULL, ?, ?) ON DUPLICATE KEY UPDATE id=id", Statement.RETURN_GENERATED_KEYS);
-			
+
 			while (getAuthorAuthoritiesRS.next()){
 				String authId = getAuthorAuthoritiesRS.getString("authid");
 				String authTypeCode = getAuthorAuthoritiesRS.getString("authtypecode");
@@ -1139,7 +1139,7 @@ public class KohaExportMain {
 					// Update contact information for existing location if enabled.
 					existingLocationId = existingAspenLocationRS.getLong("locationId");
 					libraryId = existingAspenLocationRS.getLong("libraryId");
-					
+
 					if (locationsToUpdateContactInfo.contains(existingLocationId)) {
 						String[] contactInfo = extractBranchContactInfo(kohaBranches);
 						updateAspenLocationStmt.setString(1, contactInfo[0]);
@@ -1176,7 +1176,7 @@ public class KohaExportMain {
 
 						kohaLibraryHoursStmt.setString(1, ilsCode);
 						ResultSet kohaHoursRS = kohaLibraryHoursStmt.executeQuery();
-						
+
 						while (kohaHoursRS.next()) {
 							int day = kohaHoursRS.getInt("day");
 							String openTime = kohaHoursRS.getString("open_time");
@@ -1731,7 +1731,7 @@ public class KohaExportMain {
 				numRecordsToReloadProcessed++;
 
 				if (numRecordsToReloadProcessed > 0 && numRecordsToReloadProcessed % 250 == 0) {
-					getGroupedWorkIndexer().commitChanges();
+					//getGroupedWorkIndexer().commitChanges();
 					logEntry.saveResults();
 				}
 			}
@@ -1928,7 +1928,7 @@ public class KohaExportMain {
 			if (fullAddress.length() > 0) fullAddress.append(", ");
 			fullAddress.append(branchCountry.trim());
 		}
-		
+
 		return new String[]{fullAddress.toString(), branchPhone, branchEmail};
 	}
 }

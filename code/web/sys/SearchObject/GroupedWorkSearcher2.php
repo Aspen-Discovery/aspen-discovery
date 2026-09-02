@@ -13,7 +13,11 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 		'covers',
 	];
 
-	private ?string $fieldsToReturn = null;
+	protected ?string $fieldsToReturn = null;
+
+	public function getSolrConnector($indexUrl) : GroupedWorksSolrConnector2 {
+		return new GroupedWorksSolrConnector2($indexUrl);
+	}
 
 	/**
 	 * Constructor. Initialise some details about the server
@@ -29,7 +33,7 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 		global $configArray;
 		global $timer;
 		// Initialise the index
-		$this->indexEngine = new GroupedWorksSolrConnector2($configArray['Index']['url']);
+		$this->indexEngine = $this->getSolrConnector($configArray['Index']['url']);
 		$timer->logTime('Created Index Engine');
 
 		// Get default facet settings
@@ -334,12 +338,12 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 
 		// Build a list of facets we want from the index
 		$facetConfig = $this->getFacetConfig();
+		$jsonFacets = [];
 		if ($recommendations && !empty($facetConfig)) {
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWorkFacet.php';
 			$numLocations = GroupedWorkFacet::calculateDynamicFacetLimit('available_at');
 
 			$facetSet['limit'] = $this->facetLimit;
-			$jsonFacets = [];
 			foreach ($facetConfig as $facetField => $facetInfo) {
 				if ($facetInfo instanceof FacetSetting) {
 					$isScoped = false;
@@ -385,9 +389,13 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 						$limit = $facetInfo->numTotalEntriesToShowInMore;
 					}
 
+					$facetMethod = 'enum';
+					if (in_array($facetName, ['literary_form_full', 'target_audience', 'series_facet', 'subject_facet', 'language', 'awards_facet', 'content_rating', 'rating_facet', 'publishDate'])) {
+						$facetMethod = 'dv';
+					}
 					$jsonInfoForField = [
 						'type' => 'terms',
-						'method' => 'dv',
+						'method' => $facetMethod,
 						'field' => $facetName,
 						'limit' => (int)$limit,
 						'mincount' => $minCount
@@ -418,17 +426,10 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 				$facetSet['sort'] = $this->facetSort;
 			}
 
-			if (!empty($this->facetSearchTerm) && !empty($this->facetSearchField)) {
-				if (array_key_exists($this->facetSearchField, $jsonFacets)) {
-					$jsonFacets[$this->facetSearchField]['type'] = 'smart';
-					unset($jsonFacets[$this->facetSearchField]['method']);
-					$jsonFacets[$this->facetSearchField]['contains'] = "$this->facetSearchTerm";
-					$jsonFacets[$this->facetSearchField]['contains.ignoreCase'] = true;
-				}
-			}
-
 			$this->facetOptions["json.facet"] = json_encode($jsonFacets);
 		}
+		$this->applyFacetSearch($jsonFacets);
+
 		if (!empty($this->facetOptions)) {
 			$facetSet['additionalOptions'] = $this->facetOptions;
 		}
@@ -464,24 +465,7 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 		//Remove irrelevant fields based on scoping
 		$fieldsToReturn = $this->getFieldsToReturn();
 
-		$handler = $this->index;
-		if (preg_match('/^"[^\"]+?\"$/', $this->query)) {
-			if ($handler == 'Keyword') {
-				$handler = 'KeywordProper';
-			} elseif ($handler == 'Author') {
-				$handler = 'AuthorProper';
-			} elseif ($handler == 'PrimaryAuthor') {
-				$handler = 'PrimaryAuthorProper';
-			} elseif ($handler == 'Subject') {
-				$handler = 'SubjectProper';
-			} elseif ($handler == 'AllFields') {
-				$handler = 'KeywordProper';
-			} elseif ($handler == 'Title' || $handler == 'AllTitles') {
-				$handler = 'TitleProper';
-			} elseif ($handler == 'Series') {
-				$handler = 'SeriesProper';
-			}
-		}
+		$handler = $this->getSearchHandler();
 
 		//Check the filters to make sure they are for the correct scope
 		$validFields = $this->loadValidFields();
@@ -574,6 +558,58 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 		return $this->indexResult;
 	}
 
+	function applyFacetSearch(array $jsonFacets) : void {
+		if (!empty($this->facetSearchTerm) && !empty($this->facetSearchField)) {
+			if (array_key_exists($this->facetSearchField, $jsonFacets)) {
+//				$tmpFacet = $jsonFacets[$this->facetSearchField];
+//				$jsonFacets = [
+//					$this->facetSearchField => $tmpFacet
+//				];
+//				$jsonFacets[$this->facetSearchField]['matches'] = "(?i).*$this->facetSearchTerm.*";
+//				$jsonFacets[$this->facetSearchField]['ignoreCase'] = true;
+//				$this->facetOptions["json.facet"] = json_encode($jsonFacets);
+
+				//To search within a facet we need to use the traditional faceting syntax
+				unset($this->facetOptions["json.facet"]);
+				$this->facetOptions["facet"] = "true";
+				$this->facetOptions["facet.mincount"] = 1;
+				$this->facetOptions["facet.field"] = "$this->facetSearchField";
+				$this->facetOptions["facet.contains"] =$this->facetSearchTerm;
+				$this->facetOptions["facet.contains.ignoreCase"]="true";
+				$this->spellcheckEnabled = false;
+				$this->limit = 1;
+			}
+		}
+	}
+
+	/**
+	 * Returns the search handler to be used for searching with the ability to convert to proper searches.
+	 * Returns null for the default handler
+	 *
+	 * @return string|null
+	 */
+	function getSearchHandler() : ?string {
+		$handler = $this->index;
+		if (preg_match('/^"[^\"]+?\"$/', $this->query)) {
+			if ($handler == 'Keyword') {
+				$handler = 'KeywordProper';
+			} elseif ($handler == 'Author') {
+				$handler = 'AuthorProper';
+			} elseif ($handler == 'PrimaryAuthor') {
+				$handler = 'PrimaryAuthorProper';
+			} elseif ($handler == 'Subject') {
+				$handler = 'SubjectProper';
+			} elseif ($handler == 'AllFields') {
+				$handler = 'KeywordProper';
+			} elseif ($handler == 'Title' || $handler == 'AllTitles') {
+				$handler = 'TitleProper';
+			} elseif ($handler == 'Series') {
+				$handler = 'SeriesProper';
+			}
+		}
+		return $handler;
+	}
+
 	function setAppliedFilters($filterList): void {
 		$updatedFilterList = [];
 		$facetConfig = $this->getFacetConfig();
@@ -596,7 +632,7 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 			}
 		}
 
-		parent::setAppliedFilters($updatedFilterList); // TODO: Change the autogenerated stub
+		parent::setAppliedFilters($updatedFilterList);
 	}
 
 	/**
@@ -619,10 +655,12 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 				$fieldsToReturn .= ',local_days_since_added_' . $solrScope;
 				$fieldsToReturn .= ',local_time_since_added_' . $solrScope;
 				$fieldsToReturn .= ',local_callnumber_' . $solrScope;
+				$fieldsToReturn .= ',callnumber_sort_' . $solrScope;
 				$fieldsToReturn .= ',scoping_details_' . $solrScope;
 			} else {
 				$fieldsToReturn .= ',days_since_added';
 				$fieldsToReturn .= ',local_callnumber';
+				$fieldsToReturn .= ',callnumber_sort';
 			}
 			$fieldsToReturn .= ',collection';
 			$fieldsToReturn .= ',detailed_location';
@@ -707,9 +745,8 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 		$list = [];
 
 		// If we have no facets to process, give up now
-		if (!isset($this->indexResult['facets'])) {
-			return $list;
-		} elseif (!is_array($this->indexResult['facets'])) {
+		//Facets can either be in facets (when using json facets) or in facet_counts (when searching with a facet)
+		if (!isset($this->indexResult['facets']) && !isset($this->indexResult['facet_counts'])) {
 			return $list;
 		}
 
@@ -770,18 +807,17 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 			$relatedHomeLocationFacets = $locationSingleton->getLocationsFacetsForLibrary($homeLibrary->libraryId);
 		}
 
-		$allFacets = $this->indexResult['facets'];
+		$allFacets = $this->indexResult['facets'] ?? $this->indexResult['facet_counts']['facet_fields'];
 		/** @var FacetSetting $facetConfig */
 		$facetConfig = $this->getFacetConfig();
 		foreach ($allFacets as $field => $data) {
 			// Skip filtered fields and empty arrays:
-			if (!in_array($field, $validFields) || !array_key_exists('buckets', $data)) {
+			if (!in_array($field, $validFields) ) {
 				continue;
 			}
-			if (!array_key_exists('buckets', $data)) {
-				continue;
+			if (isset($data['buckets'])) {
+				$data = $data['buckets'];
 			}
-			$data = $data['buckets'];
 			if (count($data) == 0) {
 				continue;
 			}
@@ -821,13 +857,16 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 			foreach ($data as $facet) {
 				// Initialize the array of data about the current facet:
 				$currentSettings = [];
-				$facetValue = $facet['val'];
+				$facetValue = $facet['val'] ?? $facet[0];
+				$facetCount = $facet['parent_count'] ?? $facet['count'] ?? $facet[1];
 
 				if ($isScopedField && str_contains($facetValue, '#')) {
 					$facetValue = substr($facetValue, strpos($facetValue, '#') + 1);
 				}
 				if ($field == 'author2-role') {
-					$facetDisplay = preg_replace('/\s*\|\s*/', ' - ', $facetValue);
+					$facetDisplay = preg_replace('/\s*\|\s*/', ', ', $facetValue);
+				}else{
+					$facetDisplay = null;
 				}
 				$displayValue = $facetDisplay ?? $facetValue;
 
@@ -838,7 +877,7 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 					'isMetadata' => true,
 					'escape' => true,
 				]) : htmlentities($displayValue);
-				$currentSettings['count'] = $facet['count'];
+				$currentSettings['count'] = $facetCount;
 				$currentSettings['isApplied'] = false;
 				$currentSettings['url'] = $this->renderLinkWithFilter($field, $facetValue);
 
@@ -1064,7 +1103,7 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 	}
 
 	/**
-	 * Retrieves a document specified by the ID.
+	 * Retrieves record drivers for each of the specified IDs.
 	 *
 	 * @param string[] $ids An array of documents to retrieve from Solr
 	 * @param ?string $fieldsToReturn A comma-delimited list of fields to return

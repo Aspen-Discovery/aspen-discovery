@@ -999,7 +999,7 @@ public class SierraExportAPIMain {
 				}
 
 				JSONObject bibsData = bibsResults[0].getJSONArray("entries").getJSONObject(0);
-				
+
 				//Get Marc data from bibs response
 				if (!bibsData.has("marc")) {
 					String longId = ".b" + id + getCheckDigit(id);
@@ -1112,7 +1112,7 @@ public class SierraExportAPIMain {
 											location = locationsJSON.getJSONObject(k).getString("code");
 											fixedDataField.addSubfield(marcFactory.newSubfield(sierraExportFieldMapping.getBibLevelLocationsSubfield(), location));
 										}
-									}	
+									}
 								} else {
 									fixedDataField.addSubfield(marcFactory.newSubfield(sierraExportFieldMapping.getBibLevelLocationsSubfield(), location));
 								}
@@ -1256,6 +1256,10 @@ public class SierraExportAPIMain {
 						}
 					}else{
 						itemField.addSubfield(marcFactory.newSubfield(indexingProfile.getDueDateSubfield(), ""));
+					}
+					//price
+					if (fixedFields.has("62") && indexingProfile.getReplacementCostSubfield() != ' '){
+						itemField.addSubfield(marcFactory.newSubfield(indexingProfile.getReplacementCostSubfield(), fixedFields.getJSONObject("62").getString("value")));
 					}
 					//total checkouts
 					if (fixedFields.has("76") && indexingProfile.getTotalCheckoutsSubfield() != ' '){

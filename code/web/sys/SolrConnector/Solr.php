@@ -584,8 +584,7 @@ abstract class Solr {
 	 * @throws    AspenError
 	 * @static
 	 */
-	private function _applySearchSpecs($structure, $values, $joiner = "OR") {
-		global $solrScope;
+	protected function _applySearchSpecs($structure, $values, $joiner = "OR") : string {
 		$clauses = [];
 		foreach ($structure as $field => $clauseArray) {
 			if (is_numeric($field)) {
@@ -596,53 +595,15 @@ abstract class Solr {
 				$searchString = '(' . $this->_applySearchSpecs($clauseArray, $values, $internalJoin) . ')';
 				// ...and add a weight if we have one
 				$weight = $sw[1];
-				if (!is_null($weight) && $weight && $weight > 0) {
+				if ($weight && $weight > 0) {
 					$searchString .= '^' . $weight;
 				}
 				// push it onto the stack of clauses
 				$clauses[] = $searchString;
 			} else {
-				if ($solrScope && !($this instanceof GroupedWorksSolrConnector3)) {
-					if ($field == 'local_callnumber' || $field == 'local_callnumber_left' || $field == 'local_callnumber_exact') {
-						$field .= '_' . $solrScope;
-					}
-				}
-
 				// Otherwise, we've got a (list of) [munge, weight] pairs to deal with
 				foreach ($clauseArray as $spec) {
 					$fieldValue = $values[$spec[0]];
-
-					if ($field == 'isbn') {
-						if (!preg_match('/^((?:\sOR\s)?["(]?\d{9,13}X?[\s")]*)+$/', $fieldValue)) {
-							continue;
-						} else {
-							require_once(ROOT_DIR . '/sys/ISBN.php');
-							$isbn = new ISBN($fieldValue);
-							if ($isbn->isValid()) {
-								$isbn10 = $isbn->get10();
-								$isbn13 = $isbn->get13();
-								if ($isbn10 && $isbn13) {
-									$fieldValue = '(' . $isbn->get10() . ' OR ' . $isbn->get13() . ')';
-								}
-							}
-						}
-					} elseif ($field == 'id') {
-						if (!preg_match('/^"?(\d+|.[boi]\d+x?|[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12})(-\w{3})?"?$/i', $fieldValue)) {
-							continue;
-						}
-					} elseif ($field == 'alternate_ids') {
-						if (!preg_match('/^"?(\d+|.?[boi]\d+x?|[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}|MWT\d+|CARL\d+)"?$/i', $fieldValue)) {
-							continue;
-						}
-					} elseif ($field == 'issn') {
-						if (!preg_match('/^"?[\d\hXx-]+"?$/', $fieldValue)) {
-							continue;
-						}
-					} elseif ($field == 'upc') {
-						if (!preg_match('/^"?\d+"?$/', $fieldValue)) {
-							continue;
-						}
-					}
 
 					//Ignore empty searches
 					if (strlen($fieldValue) == 0) {
@@ -658,7 +619,7 @@ abstract class Solr {
 					//Check to make sure we don't already have this clause.  We will get the same clause if we have a single word and are doing different munges
 					$okToAdd = true;
 					foreach ($clauses as $clause) {
-						if (strpos($clause, $searchString) === 0) {
+						if (str_starts_with($clause, $searchString)) {
 							$okToAdd = false;
 							break;
 						}
@@ -669,7 +630,7 @@ abstract class Solr {
 
 					// Add the weight if we have one. Yes, I know, it's redundant code.
 					$weight = $spec[1];
-					if (!is_null($weight) && $weight && $weight > 0) {
+					if ($weight && $weight > 0) {
 						$searchString .= '^' . $weight;
 					}
 
@@ -709,17 +670,17 @@ abstract class Solr {
 		if ($basic) {
 			// Don't strip characters out/escape them if it's a grouped work ID
 			if (!preg_match($grouped_word_id_pattern_1, $lookfor) && !preg_match($grouped_word_id_pattern_2, $lookfor)) {
-				$cleanedQuery = str_replace(':', ' ', $lookfor);
-				$cleanedQuery = str_replace('“', '"', $cleanedQuery);
+				$cleanedQuery = str_replace('“', '"', $lookfor);
 				$cleanedQuery = str_replace('”', '"', $cleanedQuery);
 				// Fix for date ranges
 				//This is no longer needed because the - is escaped later
 				//$cleanedQuery = preg_replace("/([0-9a-zA-Z])([-])([0-9a-zA-Z])/", "$1 $3", $cleanedQuery);
 				// Fix for ordinal numbers
 				$cleanedQuery = preg_replace("/([0-9])(st|nd|rd|th)/", "$1 $2", $cleanedQuery);
-				$cleanedQuery = preg_replace('%([-+!(){}\][^~?/\\\\])%', '\\\\$1', $cleanedQuery);
+				$cleanedQuery = preg_replace('%([-+!(){}\][^~:?/\\\\])%', '\\\\$1', $cleanedQuery);
 			} else {
-				$cleanedQuery = $lookfor;
+				// Still escape Solr-reserved characters even though this matched a known grouped-ID pattern
+				$cleanedQuery = preg_replace('%([-+!(){}\][^~:?/\\\\])%', '\\\\$1', $lookfor);
 			}
 			require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 			$noTrailingPunctuation = StringUtils::removeTrailingPunctuation($cleanedQuery);
@@ -737,9 +698,11 @@ abstract class Solr {
 			$values['onephrase'] = '"' . str_replace('"', '', implode(' ', $tokenized)) . '"';
 			if (count($tokenized) > 1) {
 				$values['proximal'] = $values['onephrase'] . '~10';
+				$values['proximal2'] = $values['onephrase'] . '~2';
 				$values['single_word'] = null;
 			} else {
 				$values['proximal'] = null;
+				$values['proximal2'] = null;
 				if (!array_key_exists(0, $tokenized)) {
 					$values['single_word'] = '';
 				} else {
@@ -747,7 +710,7 @@ abstract class Solr {
 				}
 			}
 
-			$values['exact'] = str_replace(':', '\\:', $noTrailingPunctuation);
+			$values['exact'] = $noTrailingPunctuation;
 			$values['exact_quoted'] = '"' . $noTrailingPunctuation . '"';
 			$values['and'] = $andQuery;
 			$values['or'] = $orQuery;
@@ -804,6 +767,7 @@ abstract class Solr {
 				'and' => $cleanedQuery,
 				'or' => $cleanedQuery,
 				'proximal' => $cleanedQuery,
+				'proximal2' => $cleanedQuery,
 				'single_word' => $cleanedQuery,
 				'single_word_removal' => $onephrase,
 				'exact_quoted' => $onephrase,
@@ -970,7 +934,7 @@ abstract class Solr {
 				$modifiedQuery = false;
 				$that = $this;
 				if (isset($params['lookfor']) && !$forDisplay) {
-					$lookfor = preg_replace_callback('/([\\w-]+):([\\w\\d\\s"-]+?)\\s?(?<=\b)(AND|OR|AND NOT|OR NOT|\\)|$)(?=\b)/', function ($matches) use ($that) {
+					$lookfor = preg_replace_callback('/(?<![\w.])([A-Za-z][\w-]*):([\w\d\s"-]+?)\s?(?<=\b)(AND|OR|AND NOT|OR NOT|\)|$)(?=\b)/', function ($matches) use ($that) {
 						$field = $matches[1];
 						$lookfor = $matches[2];
 						$newQuery = $that->_buildQueryComponent($field, $lookfor);

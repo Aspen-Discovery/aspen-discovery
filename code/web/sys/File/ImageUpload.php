@@ -307,8 +307,11 @@ class ImageUpload extends DataObject {
 
 	public function insert(string $context = '') : int|bool {
 		$this->calculateAspectRatio();
+		$insertResult = parent::insert();
+		//generate derivatives after inserting so the ID is set
 		$this->generateDerivatives();
-		return parent::insert();
+		$this->update();
+		return $insertResult;
 	}
 
 	public function update(string $context = '') : int|bool {

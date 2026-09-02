@@ -35,7 +35,6 @@ class Axis360_UsageGraphs extends Admin_AbstractUsageGraphs {
 		global $interface;
 		$dataSeries = [];
 		$columnLabels = [];
-		$groupByTimeframe = implode(',', $timeframes);
 
 		// Get data from user_axis360_usage
 		if ($stat == 'activeUsers' || $stat == 'general') {
@@ -48,11 +47,7 @@ class Axis360_UsageGraphs extends Admin_AbstractUsageGraphs {
 			if (is_array($custom)) {
 				$userUsage->buildCustomPeriodQuery($custom);
 			} else {
-				$userUsage->groupBy($groupByTimeframe);
-				foreach ($timeframes as $timeframe) {
-					$userUsage->selectAdd($timeframe);
-				}
-				$userUsage->orderBy($groupByTimeframe);
+				$userUsage->buildTimeframeQuery($timeframes);
 			}
 
 			if ($stat == 'activeUsers' || $stat == 'general') {
@@ -89,11 +84,7 @@ class Axis360_UsageGraphs extends Admin_AbstractUsageGraphs {
 			if (is_array($custom)) {
 				$recordUsage->buildCustomPeriodQuery($custom);
 			} else {
-				$recordUsage->groupBy($groupByTimeframe);
-				foreach ($timeframes as $timeframe) {
-					$recordUsage->selectAdd($timeframe);
-				}
-				$recordUsage->orderBy($groupByTimeframe);
+				$recordUsage->buildTimeframeQuery($timeframes);
 			}
 
 			if ($stat == 'recordsWithUsage' || $stat == 'general') {
@@ -150,11 +141,7 @@ class Axis360_UsageGraphs extends Admin_AbstractUsageGraphs {
 			if (is_array($custom)) {
 				$stats->buildCustomPeriodQuery($custom);
 			} else {
-				$stats->groupBy($groupByTimeframe);
-				foreach ($timeframes as $timeframe) {
-					$stats->selectAdd($timeframe);
-				}
-				$stats->orderBy($groupByTimeframe);
+				$stats->buildTimeframeQuery($timeframes);
 			}
 
 			if ($stat == 'renewals' || $stat == 'general') {

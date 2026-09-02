@@ -74,6 +74,7 @@
 			Globals.loadingBody = '{translate text="Loading, please wait" inAttribute=true isPublicFacing=true}';
 			Globals.requestFailedTitle = '{translate text="Request Failed" inAttribute=true isPublicFacing=true}';
 			Globals.requestFailedBody = '{translate text="There was an error with this AJAX Request." inAttribute=true isPublicFacing=true}';
+			Globals.validationInvalidValue = '{translate text="Invalid value entered." inAttribute=true isAdminFacing=true}';
 			Globals.rtl = {if $userLang->isRTL()}true{else}false{/if};
 			Globals.bypassAspenLoginForSSO = {if $bypassAspenPatronLogin}true{else}false{/if};
 			Globals.ssoLoginUrl = '{$bypassLoginUrl}';
