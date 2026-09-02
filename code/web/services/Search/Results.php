@@ -863,9 +863,7 @@ class Search_Results extends ResultsAction {
 				require_once ROOT_DIR . '/sys/SearchObject/SearchObjectFactory.php';
 				$tmpSearchObj = SearchObjectFactory::initSearchObject();
 			}
-			if (!isset($validIndexes)) {
-				$validIndexes = $tmpSearchObj->getAllValidSearchIndexes();
-			}
+			$validIndexes = $tmpSearchObj->getAllValidSearchIndexes();
 			$searchIndex = $_REQUEST['searchIndex'];
 			if (empty($_REQUEST['searchIndex'])) {
 				$searchIndex = $tmpSearchObj->getDefaultIndex();

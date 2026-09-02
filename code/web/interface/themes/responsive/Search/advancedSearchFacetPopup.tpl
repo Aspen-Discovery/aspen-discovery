@@ -1,7 +1,7 @@
 <form role="form" id="advancedSearchFacetValuesForm">
 	<input type="hidden" name="facetName" id="advFacetName" value="{$facetName}">
 	<div class="form-group">
-		<label for="advFacetSearchTerm">{translate text="Search %1%" isPublicFacing=true 1=$facetTitlePlural}</label>
+		<label for="advFacetSearchTerm">{translate text="Search %1%" isPublicFacing=true 1=$facetTitlePlural translateParameters=true}</label>
 		<div class="input-group input-group-sm">
 			<input type="text" name="facetSearchTerm" id="advFacetSearchTerm" class="form-control" onkeydown="AspenDiscovery.Searches.searchAdvancedFacetValuesKeyDown(event)"/>
 			<span class="btn btn-sm btn-primary input-group-addon" onclick="return AspenDiscovery.Searches.searchAdvancedFacetValues();">{translate text="Search" isPublicFacing=true}</span>

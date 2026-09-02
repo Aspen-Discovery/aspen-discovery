@@ -7141,6 +7141,12 @@ AspenDiscovery.Admin = (function () {
 			} else {
 				$("#propertyRowthemes").show();
 			}
+			var useLibraryAspenLiDAThemes = $("#useLibraryAspenLiDAThemes").prop("checked");
+			if (useLibraryAspenLiDAThemes) {
+				$("#propertyRowaspenLiDAThemes").hide();
+			} else {
+				$("#propertyRowaspenLiDAThemes").show();
+			}
 		},
 		updateMaterialsRequestFields() {
 			const materialRequestType = $("#enableMaterialsRequestSelect option:selected").val();
@@ -9567,7 +9573,72 @@ AspenDiscovery.Admin = (function () {
 				// Re-enable patronType for non-admin labels
 				patronTypeOption.disabled = false;
 			}
-		}
+		},
+		updateLiDAThemeBaseColors: function () {
+			const mode = $('#baseModeSelect option:selected').val();
+			const isLight = (mode !== 'dark');
+
+			const bg = isLight ? '#F5F5F5' : '#111827';
+			const text = isLight ? '#57534e' : '#e5e7eb';
+			$('#backgroundColor, #backgroundColorHex').val(bg);
+			$('#textColor, #textColorHex').val(text);
+
+			['primaryColor', 'secondaryColor', 'tertiaryColor'].forEach(function (f) {
+				AspenDiscovery.Admin.checkContrast(f, 'backgroundColor', true, 3.0);
+			});
+		},
+		populateLiDAThemeFromWebTheme: function () {
+			const themeId = $('#extendsWebThemeIdSelect option:selected').val();
+			if (!themeId || themeId === '-1' || themeId === '') {
+				return;
+			}
+			$.getJSON('/AspenLiDA/Themes', {objectAction: 'getWebThemeData', themeId: themeId}, function (response) {
+				if (!response.success) {
+					return;
+				}
+				const d = response.data;
+
+				$('#baseModeSelect').val(d.isDarkColorScheme ? 'dark' : 'light');
+				AspenDiscovery.Admin.updateLiDAThemeBaseColors();
+
+				['primaryColor', 'primaryTextColor',
+					'secondaryColor', 'secondaryTextColor',
+					'tertiaryColor', 'tertiaryTextColor',
+					'headerLogoBackgroundColorApp'].forEach(function (field) {
+					if (d[field]) {
+						$('#' + field).val(d[field]);
+						$('#' + field + 'Hex').val(d[field]);
+						$('#' + field + '-default').prop('checked', false);
+					}
+				});
+
+				AspenDiscovery.Admin.updateLiDAThemeBaseColors();
+				AspenDiscovery.Admin.checkContrast('primaryTextColor', 'primaryColor', false, 3.0);
+				AspenDiscovery.Admin.checkContrast('secondaryTextColor', 'secondaryColor', false, 3.0);
+				AspenDiscovery.Admin.checkContrast('tertiaryTextColor', 'tertiaryColor', false, 3.0);
+
+				if (d.headerLogoAlignmentApp) {
+					$('#headerLogoAlignmentAppSelect').val(d.headerLogoAlignmentApp);
+				}
+
+				['logoApp', 'headerLogoApp'].forEach(function (field) {
+					if (d[field]) {
+						$('#' + field + '_existing').val(d[field]);
+						$('#importFile-label-' + field).val(d[field]);
+						const $row = $('#propertyRow' + field);
+						const $img = $row.find('img').first();
+						const src = '/files/thumbnail/' + d[field];
+						if ($img.length) {
+							$img.attr('src', src).show();
+						} else {
+							$row.find('.input-group').before(
+								$('<img>').attr({src: src, alt: 'Selected Image for ' + field, style: 'display:block'})
+							);
+						}
+					}
+				});
+			});
+		},
 	};
 }(AspenDiscovery.Admin || {}));
 AspenDiscovery.Authors = (function () {
@@ -15810,13 +15881,15 @@ AspenDiscovery.Account.ReadingHistory = (function(){
 		},
 
 		deleteGroupedEntry(patronId, groupedWorkPermanentId, title, author, displayId) {
+                        const titleHtmlSafe = title.replace(/'/g, "&#39;");
+                        const authorHtmlSafe = author.replace(/'/g, "&#39;");
 			AspenDiscovery.confirm(
 				__('Delete Reading History Entry'),
 				__('All checkout records for this title will be irreversibly deleted from your reading history. Proceed?'),
 				__('Delete'),
 				__('Cancel'),
 				false,
-				`AspenDiscovery.Account.ReadingHistory.doDeleteGroupedEntry(&quot;${patronId}&quot;, &quot;${groupedWorkPermanentId}&quot;, &quot;${title}&quot;, &quot;${author}&quot;, &quot;${displayId}&quot;)`,
+				`AspenDiscovery.Account.ReadingHistory.doDeleteGroupedEntry(&quot;${patronId}&quot;, &quot;${groupedWorkPermanentId}&quot;, &quot;${titleHtmlSafe}&quot;, &quot;${authorHtmlSafe}&quot;, &quot;${displayId}&quot;)`,
 				'btn-danger'
 			);
 

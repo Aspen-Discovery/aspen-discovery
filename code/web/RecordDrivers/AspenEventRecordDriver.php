@@ -773,4 +773,8 @@ class AspenEventRecordDriver extends IndexRecordDriver {
 		return false;
 	}
 
+	public function getCategories(): null {
+		return null;
+	}
+
 }

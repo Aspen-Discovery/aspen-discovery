@@ -670,17 +670,17 @@ abstract class Solr {
 		if ($basic) {
 			// Don't strip characters out/escape them if it's a grouped work ID
 			if (!preg_match($grouped_word_id_pattern_1, $lookfor) && !preg_match($grouped_word_id_pattern_2, $lookfor)) {
-				$cleanedQuery = str_replace(':', ' ', $lookfor);
-				$cleanedQuery = str_replace('“', '"', $cleanedQuery);
+				$cleanedQuery = str_replace('“', '"', $lookfor);
 				$cleanedQuery = str_replace('”', '"', $cleanedQuery);
 				// Fix for date ranges
 				//This is no longer needed because the - is escaped later
 				//$cleanedQuery = preg_replace("/([0-9a-zA-Z])([-])([0-9a-zA-Z])/", "$1 $3", $cleanedQuery);
 				// Fix for ordinal numbers
 				$cleanedQuery = preg_replace("/([0-9])(st|nd|rd|th)/", "$1 $2", $cleanedQuery);
-				$cleanedQuery = preg_replace('%([-+!(){}\][^~?/\\\\])%', '\\\\$1', $cleanedQuery);
+				$cleanedQuery = preg_replace('%([-+!(){}\][^~:?/\\\\])%', '\\\\$1', $cleanedQuery);
 			} else {
-				$cleanedQuery = $lookfor;
+				// Still escape Solr-reserved characters even though this matched a known grouped-ID pattern
+				$cleanedQuery = preg_replace('%([-+!(){}\][^~:?/\\\\])%', '\\\\$1', $lookfor);
 			}
 			require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 			$noTrailingPunctuation = StringUtils::removeTrailingPunctuation($cleanedQuery);
@@ -710,7 +710,7 @@ abstract class Solr {
 				}
 			}
 
-			$values['exact'] = str_replace(':', '\\:', $noTrailingPunctuation);
+			$values['exact'] = $noTrailingPunctuation;
 			$values['exact_quoted'] = '"' . $noTrailingPunctuation . '"';
 			$values['and'] = $andQuery;
 			$values['or'] = $orQuery;
@@ -934,7 +934,7 @@ abstract class Solr {
 				$modifiedQuery = false;
 				$that = $this;
 				if (isset($params['lookfor']) && !$forDisplay) {
-					$lookfor = preg_replace_callback('/([\\w-]+):([\\w\\d\\s"-]+?)\\s?(?<=\b)(AND|OR|AND NOT|OR NOT|\\)|$)(?=\b)/', function ($matches) use ($that) {
+					$lookfor = preg_replace_callback('/(?<![\w.])([A-Za-z][\w-]*):([\w\d\s"-]+?)\s?(?<=\b)(AND|OR|AND NOT|OR NOT|\)|$)(?=\b)/', function ($matches) use ($that) {
 						$field = $matches[1];
 						$lookfor = $matches[2];
 						$newQuery = $that->_buildQueryComponent($field, $lookfor);
