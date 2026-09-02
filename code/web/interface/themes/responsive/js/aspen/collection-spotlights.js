@@ -12,30 +12,20 @@ AspenDiscovery.CollectionSpotlights = (function(){
 			AspenDiscovery.Account.ajaxLightbox(Globals.path + '/Admin/AJAX?method=getAddToSpotlightForm&source=search&id=' + searchId, true);
 			return false;
 		},
-		loadCarousel: function (spotlightListId, titlesUrl){
-			$.getJSON(titlesUrl, function (data) {
-				if (data.success) {
-					//Create an unordered list for display
-					var html = '<ul>';
-					var i = 1;
+		loadCarouselFromData: function (spotlightListId, data){
+			if (data.success) {
+				var html = '<ul>';
+				$.each(data.titles, function() {
+					html += '<li class="carouselTitleWrapper">' + this.formattedTitle + '</li>';
+				});
+				html += '</ul>';
 
-					$.each(data.titles, function() {
-						html += '<li class="carouselTitleWrapper">' + this.formattedTitle + '</li>';
-						i++;
-					});
-
-					html += '</ul>';
-
-					var carouselElement = $('#collectionSpotlightCarousel' + spotlightListId);
-					carouselElement.html(html);
-					var jCarousel = carouselElement.jcarousel();
-
-					// Reload carousel
-					jCarousel.jcarousel('reload');
-				} else {
-					AspenDiscovery.showMessage("Error", data.message);
-				}
-			}).fail(AspenDiscovery.ajaxFail);
+				var carouselElement = $('#collectionSpotlightCarousel' + spotlightListId);
+				carouselElement.html(html);
+				carouselElement.jcarousel().jcarousel('reload');
+			} else {
+				AspenDiscovery.showMessage("Error", data.message);
+			}
 		},
 		updateSpotlightFields: function () {
 			var collectionSpotlightId = $('#collectionSpotlightId').val();
