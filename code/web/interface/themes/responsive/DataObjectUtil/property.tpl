@@ -172,7 +172,7 @@
 					<div id="panelStatus_{$property.label|escapeCSS}" class="panel panel-default {if !empty($property.expandByDefault)}active{/if}">
 						<div class="panel-heading row">
 							<div class="panel-title col-xs-11">
-								<a id="panelToggle_{$property.property}" data-toggle="collapse" data-parent="#accordion_{$property.label|escapeCSS}" href="#accordion_body_{$property.label|escapeCSS}" aria-expanded="{if !empty($property.expandByDefault)}true{else}false{/if}" class="{if !empty($property.expandByDefault)}expanded{else}collapsed{/if}">
+								<a id="panelToggle_{$property.property}" data-toggle="collapse" data-parent="#accordion_{$property.label|escapeCSS}" href="#accordion_body_{$property.label|escapeCSS}" aria-expanded="{if !empty($property.expandByDefault)}true{else}false{/if}" class="panel-toggle-full {if !empty($property.expandByDefault)}expanded{else}collapsed{/if}">
 									{translate text=$property.label isAdminFacing=true}
 								</a>
 							</div>
@@ -200,8 +200,16 @@
 				<script type="text/javascript">
 					{* Initiate any checkbox with a data attribute set to data-switch=""  as a bootstrap switch *}
 					{literal}
-					$("#panelToggle_{/literal}{$property.property}{literal}").on('click', function() {
+					$("#panelToggle_{/literal}{$property.property}{literal}").on('click keydown', function(event) {
 						var toggleButton = $(this);
+						var key = event.key || event.which;
+						if (event.type === 'keydown' && key !== 'Enter' && key !== ' ' && key !== 'Spacebar' && key !== 13 && key !== 32) {
+							return;
+						}
+						if (event.type === 'keydown') {
+							event.preventDefault();
+							event.stopPropagation();
+						}
 						$(this).toggleClass('expanded');
 						$(this).toggleClass('collapsed');
 						var panelStatus = $("#panelStatus_{/literal}{$property.label|escapeCSS}{literal}");
@@ -216,6 +224,15 @@
 						}
 						return false;
 					})
+					{/literal}
+				</script>
+				<script type="text/javascript">
+					{literal}
+					$("#panelStatus_{/literal}{$property.label|escapeCSS}{literal} .panel-heading").on('click', function(e) {
+						if ($(e.target).closest('.col-xs-1, a, button, img').length === 0) {
+							$("#panelToggle_{/literal}{$property.property}{literal}").trigger('click');
+						}
+					});
 					{/literal}
 				</script>
 			{/if}
