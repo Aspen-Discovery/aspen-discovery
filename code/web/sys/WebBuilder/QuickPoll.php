@@ -167,7 +167,7 @@ class QuickPoll extends DB_LibraryLinkedObject {
 				'label' => 'Libraries',
 				'description' => 'Define libraries that use these settings',
 				'values' => $libraryList,
-				'hideInLists' => true,
+				'hideInLists' => false,
 			],
 		];
 

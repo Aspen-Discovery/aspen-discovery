@@ -22,7 +22,7 @@
 }
 .browse-label-text{
   background-color: @browse-header-background-color;
-  font-size: 22px;
+  font-size: calc(var(--aspen-base-font-size) * 1.5714);
   color: @browse-label-text-color;
   line-height: 5px;
   vertical-align: top;
@@ -34,7 +34,7 @@
   .jcarousel-control-prev, .jcarousel-control-next {
     background-color: @browseCarouselControlBackgroundColor;
     color: @browseCarouselControlColor;
-    font-size: 50px;
+    font-size: calc(var(--aspen-base-font-size) * 3.5714);
     &:focus {
       text-decoration: none;
       outline: none;
@@ -47,13 +47,13 @@
     font-family: "Font Awesome 5 Free";
     content: "\f054";
     font-weight: bold;
-    font-size: 35px;
+    font-size: calc(var(--aspen-base-font-size) * 2.5);
   }
   a.jcarousel-control-prev:before {
     font-family: "Font Awesome 5 Free";
     content: "\f053";
     font-weight: bold;
-    font-size: 35px;
+    font-size: calc(var(--aspen-base-font-size) * 2.5);
   }
 
   .jcarousel-pagination a {
@@ -139,7 +139,7 @@
 }
 
 .selected-browse-label-search{
-  font-size: 20px;
+  font-size: calc(var(--aspen-base-font-size) * 1.4286);
   color: @selected-browse-label-search-color;
   vertical-align: top;
   .selected-browse-label-mixin(left);
@@ -368,7 +368,7 @@
   line-height: 0;
   span {
     font-weight: bold;
-    font-size: 33px;
+    font-size: calc(var(--aspen-base-font-size) * 2.35714);
   }
 }
 

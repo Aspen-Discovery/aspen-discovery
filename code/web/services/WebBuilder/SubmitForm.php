@@ -157,6 +157,9 @@ class WebBuilder_SubmitForm extends Action {
 			$submissionSelection = new CustomFormSubmissionSelection();
 			$submissionSelection->formSubmissionId = $formSubmissionId;
 			$submissionSelection->submissionFieldId = $fieldId;
+			if (is_array($formFieldContent)) {
+				$formFieldContent = implode(', ', $formFieldContent);
+			}
 			$submissionSelection->formFieldContent = $formFieldContent;
 			$submissionSelection->insert();
 		}

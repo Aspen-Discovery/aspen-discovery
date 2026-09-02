@@ -31,6 +31,9 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamReader;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
@@ -60,6 +63,21 @@ public class EvergreenExportMain {
 
 	private static Long startTimeForLogging;
 	private static IlsExtractLogEntry logEntry;
+
+	//Supplemental MFHD (holdings statement) data loaded from mfhds.xml, keyed by the bib record number (901$r).
+	//A single bib can have multiple mfhd records (one per holding library), so each bib id maps to a list.
+	private static HashMap<String, ArrayList<MfhdInfo>> mfhdHoldingsByBibId = null;
+
+	private static class MfhdInfo {
+		private char ind1_852;
+		private char ind2_852;
+		private char ind1_866;
+		private char ind2_866;
+		private int linkNumber;          	// incremental value used for subfield $6
+		private String recordId;			//From 901$r in mfhds.xml
+		private String libraryCode;        //From 852$b in mfhds.xml
+		private String holdingsStatement;  //From 866$a in mfhds.xml
+	}
 
 	public static void main(String[] args) {
 		boolean extractSingleWork = false;
@@ -185,12 +203,18 @@ public class EvergreenExportMain {
 
 							exportVolumes(dbConn);
 
+							//Load supplemental MFHD holdings statements so they are available for both the
+							//full-export path (updateRecordsUsingMarcExtract) and the incremental/single-record
+							//API path (processGetBibsRequest) that run later in this cycle.
+							loadMfhdHoldings();
+
 							exportHolds(dbConn, indexingProfile);
 
 							//Update works that have changed since the last index
 							numChanges = updateRecords();
 						}else{
 							MarcFactory marcFactory = MarcFactory.newInstance();
+							loadMfhdHoldings();
 							numChanges = updateBibFromEvergreen(singleWorkId, marcFactory, true);
 						}
 					}
@@ -297,6 +321,155 @@ public class EvergreenExportMain {
 		} //Infinite loop
 
 		System.exit(0);
+	}
+
+	private static void loadMfhdHoldings() {
+		mfhdHoldingsByBibId = new HashMap<>();
+
+		File mfhdFile = new File(indexingProfile.getMarcPath() + "/../supplemental/mfhds.xml");
+		if (!mfhdFile.exists()) {
+			logEntry.addNote("Supplemental mfhds.xml file did not exist, skipping supplemental holdings");
+			return;
+		}
+
+		// Make sure the file is not currently being written before we read it.
+		long fileTimeStamp = mfhdFile.lastModified();
+		boolean fileChanging = true;
+		while (fileChanging) {
+			fileChanging = false;
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				logger.debug("Thread interrupted while checking if mfhds.xml file is changing");
+			}
+			if (fileTimeStamp != mfhdFile.lastModified()) {
+				fileTimeStamp = mfhdFile.lastModified();
+				fileChanging = true;
+			}
+		}
+
+		// Parsed with a streaming (StAX) reader, so the full mfhds.xml file is never held in memory as a DOM tree - only the compact per-record data we actually need ends up in mfhdHoldingsByBibId
+		int numMfhdsLoaded = 0;
+
+		try (InputStream mfhdInputStream = new FileInputStream(mfhdFile)) {
+			XMLInputFactory xmlInputFactory = XMLInputFactory.newInstance();
+			// Guard against XXE - we don't expect or need DTDs/external entities in this file.
+			xmlInputFactory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
+			xmlInputFactory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+			XMLStreamReader xmlStreamReader = xmlInputFactory.createXMLStreamReader(mfhdInputStream);
+
+			String recordId = null;
+			String libraryCode = null;
+			String holdingsStatement = null;
+			String currentDataFieldTag = null;
+			String currentSubfieldCode = null;
+			StringBuilder currentSubfieldText = new StringBuilder();
+
+			char ind1_852 = ' ', ind2_852 = ' ';
+			char ind1_866 = ' ', ind2_866 = '0';
+
+			while (xmlStreamReader.hasNext()) {
+				int event = xmlStreamReader.next();
+				if (event == XMLStreamConstants.START_ELEMENT) {
+					String elementName = xmlStreamReader.getLocalName();
+					if (elementName.equals("record")) {
+						recordId = null;
+						libraryCode = null;
+						holdingsStatement = null;
+						ind1_852 = ' '; ind2_852 = ' ';
+						ind1_866 = ' '; ind2_866 = '0';
+					} else if (elementName.equals("datafield")) {
+						currentDataFieldTag = xmlStreamReader.getAttributeValue(null, "tag");
+
+						// Helper function to extract first char of indicator attribute
+						String attrInd1 = xmlStreamReader.getAttributeValue(null, "ind1");
+						String attrInd2 = xmlStreamReader.getAttributeValue(null, "ind2");
+						char i1 = (attrInd1 != null && !attrInd1.isEmpty()) ? attrInd1.charAt(0) : ' ';
+						char i2 = (attrInd2 != null && !attrInd2.isEmpty()) ? attrInd2.charAt(0) : ' ';
+
+						if ("852".equals(currentDataFieldTag)) {
+							ind1_852 = i1;
+							ind2_852 = i2;
+						} else if ("866".equals(currentDataFieldTag)) {
+							ind1_866 = i1;
+							ind2_866 = i2;
+						}
+					} else if (elementName.equals("subfield")) {
+						currentSubfieldCode = xmlStreamReader.getAttributeValue(null, "code");
+						currentSubfieldText.setLength(0);
+					}
+				} else if (event == XMLStreamConstants.CHARACTERS || event == XMLStreamConstants.CDATA) {
+					if (currentSubfieldCode != null) {
+						currentSubfieldText.append(xmlStreamReader.getText());
+					}
+				} else if (event == XMLStreamConstants.END_ELEMENT) {
+					String elementName = xmlStreamReader.getLocalName();
+					if (elementName.equals("subfield")) {
+						if ("901".equals(currentDataFieldTag) && "r".equals(currentSubfieldCode)) {
+							recordId = currentSubfieldText.toString();
+						} else if ("852".equals(currentDataFieldTag) && "b".equals(currentSubfieldCode)) {
+							libraryCode = currentSubfieldText.toString();
+						} else if ("866".equals(currentDataFieldTag) && "a".equals(currentSubfieldCode)) {
+							holdingsStatement = currentSubfieldText.toString();
+						}
+						currentSubfieldCode = null;
+					} else if (elementName.equals("record")) {
+						if (recordId != null && !recordId.isEmpty()) {
+							List<MfhdInfo> list = mfhdHoldingsByBibId.computeIfAbsent(recordId, k -> new ArrayList<>());
+
+							// Set linkNumber based on current list size + 1 (1-based index per bib)
+							MfhdInfo mfhdInfo = new MfhdInfo();
+							mfhdInfo.recordId = recordId;
+							mfhdInfo.linkNumber = list.size() + 1;
+							mfhdInfo.libraryCode = libraryCode;
+							mfhdInfo.holdingsStatement = holdingsStatement;
+
+							// Assign parsed indicators
+							mfhdInfo.ind1_852 = ind1_852;
+							mfhdInfo.ind2_852 = ind2_852;
+							mfhdInfo.ind1_866 = ind1_866;
+							mfhdInfo.ind2_866 = ind2_866;
+
+							list.add(mfhdInfo);
+							numMfhdsLoaded++;
+						}
+					}
+				}
+			}
+			xmlStreamReader.close();
+
+			logEntry.addNote("Loaded " + numMfhdsLoaded + " supplemental mfhd holdings records covering " + mfhdHoldingsByBibId.size() + " bibs");
+			logEntry.saveResults();
+		} catch (Exception e) {
+			logEntry.incErrors("Error reading supplemental mfhds.xml file", e);
+		}
+	}
+
+	private static void addSupplementalMfhdHoldings(org.marc4j.marc.Record marcRecord, String bibId, MarcFactory marcFactory) {
+		if (mfhdHoldingsByBibId == null || bibId == null) {
+			return;
+		}
+		ArrayList<MfhdInfo> mfhdList = mfhdHoldingsByBibId.get(bibId);
+		if (mfhdList == null || mfhdList.isEmpty()) {
+			return;
+		}
+
+		for (MfhdInfo mfhdInfo : mfhdList) {
+			String linkValue = String.valueOf(mfhdInfo.linkNumber);
+
+			if (mfhdInfo.libraryCode != null && !mfhdInfo.libraryCode.isEmpty()) {
+				DataField field852 = marcFactory.newDataField("852", mfhdInfo.ind1_852, mfhdInfo.ind2_852);
+				field852.addSubfield(marcFactory.newSubfield('6', linkValue));
+				field852.addSubfield(marcFactory.newSubfield('b', mfhdInfo.libraryCode));
+				marcRecord.addVariableField(field852);
+			}
+			if (mfhdInfo.holdingsStatement != null && !mfhdInfo.holdingsStatement.isEmpty()) {
+				DataField field866 = marcFactory.newDataField("866", mfhdInfo.ind1_866, mfhdInfo.ind2_866);
+				field866.addSubfield(marcFactory.newSubfield('6', linkValue));
+				field866.addSubfield(marcFactory.newSubfield('a', mfhdInfo.holdingsStatement));
+				marcRecord.addVariableField(field866);
+			}
+		}
 	}
 
 	private static void exportVolumes(Connection dbConn) {
@@ -736,7 +909,7 @@ public class EvergreenExportMain {
 				logEntry.incProducts();
 				logEntry.incUpdated();
 				if (numRecordsToReloadProcessed > 0 && numRecordsToReloadProcessed % 250 == 0) {
-					getGroupedWorkIndexer().commitChanges();
+					//getGroupedWorkIndexer().commitChanges();
 					logEntry.saveResults();
 				}
 			}
@@ -1011,7 +1184,7 @@ public class EvergreenExportMain {
 						logEntry.incAdded();
 						numRestored++;
 						if (numRestored > 0 && numRestored % 250 == 0) {
-							indexer.commitChanges();
+							//indexer.commitChanges();
 							logEntry.saveResults();
 						}
 					}
@@ -1066,6 +1239,7 @@ public class EvergreenExportMain {
 	 */
 	private static int updateRecordsUsingMarcExtract(File fullExportFile, File largeBibXmlFile, Connection dbConn) {
 		int totalChanges = 0;
+		MarcFactory marcFactory = MarcFactory.newInstance();
 		MarcRecordGrouper recordGroupingProcessor = getRecordGroupingProcessor();
 		if (!recordGroupingProcessor.isValid()) {
 			logEntry.incErrors("Record Grouping Processor was not valid");
@@ -1298,6 +1472,10 @@ public class EvergreenExportMain {
 								}
 							} else if (!recordIdentifier.isSuppressed()) {
 								String recordNumber = recordIdentifier.getIdentifier();
+
+								//Add any supplemental holdings statements loaded from mfhds.xml before saving the record.
+								addSupplementalMfhdHoldings(curBib, recordNumber, marcFactory);
+
 								GroupedWorkIndexer.MarcStatus marcStatus;
 								marcStatus = indexer.saveMarcRecordToDatabase(indexingProfile, recordNumber, curBib);
 
@@ -1319,9 +1497,9 @@ public class EvergreenExportMain {
 									logEntry.incSkipped();
 									lastRecordProcessed = recordIdentifier.getIdentifier();
 								}
-								if (totalChanges > 0 && totalChanges % 5000 == 0) {
+								/*if (totalChanges > 0 && totalChanges % 5000 == 0) {
 									indexer.commitChanges();
-								}
+								}*/
 								//Mark that the record was processed
 								recordGroupingProcessor.removeExistingRecord(recordIdentifier.getIdentifier());
 							} else {
@@ -1695,6 +1873,10 @@ public class EvergreenExportMain {
 							if (hasInvalidData){
 								logEntry.incRecordsWithInvalidMarc("Record " + bibliographicRecordId.getIdentifier() + " had an invalid data");
 							}
+
+							//Add any supplemental holdings statements loaded from mfhds.xml before saving the record.
+							addSupplementalMfhdHoldings(marcRecord, bibliographicRecordId.getIdentifier(), marcFactory);
+
 							GroupedWorkIndexer.MarcStatus saveMarcResult = getGroupedWorkIndexer().saveMarcRecordToDatabase(indexingProfile, bibliographicRecordId.getIdentifier(), marcRecord);
 							if (saveMarcResult == GroupedWorkIndexer.MarcStatus.NEW){
 								logEntry.incAdded();
@@ -1721,7 +1903,7 @@ public class EvergreenExportMain {
 							}
 						}
 						if (logEntry.getNumProducts() > 0 && logEntry.getNumProducts() % 250 == 0) {
-							getGroupedWorkIndexer().commitChanges();
+							//getGroupedWorkIndexer().commitChanges();
 							logEntry.saveResults();
 						}
 						response.numChanges++;

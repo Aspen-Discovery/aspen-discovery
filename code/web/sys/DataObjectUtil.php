@@ -289,13 +289,15 @@ class DataObjectUtil {
 				$object->setProperty($propertyName, 0, $property);
 			}
 		} elseif ($property['type'] == 'color' || $property['type'] == 'font') {
-			$defaultProperty = $propertyName . 'Default';
-			if (isset($_REQUEST[$propertyName . '-default']) && ($_REQUEST[$propertyName . '-default'] == 'on')) {
-				$object->setProperty($defaultProperty, 1, null);
-			} else {
-				$object->setProperty($defaultProperty, 0, null);
+			if (empty($property['readOnly'])) {
+				$defaultProperty = $propertyName . 'Default';
+				if (isset($_REQUEST[$propertyName . '-default']) && ($_REQUEST[$propertyName . '-default'] == 'on')) {
+					$object->setProperty($defaultProperty, 1, null);
+				} else {
+					$object->setProperty($defaultProperty, 0, null);
+				}
+				$object->setProperty($propertyName, $_REQUEST[$propertyName] ?? '', $property);
 			}
-			$object->setProperty($propertyName, $_REQUEST[$propertyName], $property);
 		} elseif ($property['type'] == 'currency') {
 			if (preg_match('/\\$?\\d*\\.?\\d*/', $_REQUEST[$propertyName])) {
 				if (str_starts_with($_REQUEST[$propertyName], '$')) {
@@ -379,173 +381,8 @@ class DataObjectUtil {
 				$object->setProperty($propertyName, '', $property);
 
 			} elseif (isset($_FILES[$propertyName])) {
-				if (isset($_FILES[$propertyName]["error"]) && $_FILES[$propertyName]["error"] == 4) {
-					$logger->log("No file was uploaded for $propertyName", Logger::LOG_DEBUG);
-					//No image supplied, use the existing value
-				} elseif (isset($_FILES[$propertyName]["error"]) && $_FILES[$propertyName]["error"] > 0) {
-					require_once ROOT_DIR . '/sys/Utils/SystemUtils.php';
-					$uploadError = $_FILES[$propertyName]["error"];
-					$logger->log("Error in file upload for $propertyName (code $uploadError)", Logger::LOG_ERROR);
-					AspenError::raiseError(SystemUtils::getUploadErrorMessage($uploadError));
-				} elseif ((!empty($property['validTypes']) && !in_array($_FILES[$propertyName]["type"], $property['validTypes'])) ||
-					(empty($property['validTypes']) && !in_array($_FILES[$propertyName]["type"], ['image/gif', 'image/jpeg', 'image/png', 'image/svg+xml']))) {
-					$allowedTypes = !empty($property['validTypes']) ? implode(', ', $property['validTypes']) : 'image/gif, image/jpeg, image/png, image/svg+xml';
-					AspenError::raiseError(translate([
-						'text' => 'Invalid file type: %1%. Allowed types: %2%.',
-						1 => $_FILES[$propertyName]["type"],
-						2 => $allowedTypes,
-						'isAdminFacing' => true
-					]));
-				} else {
-					$logger->log("Processing uploaded file for $propertyName", Logger::LOG_DEBUG);
-					//Copy the full image to the files directory
-					//Filename is the name of the object + the original filename
-					global $configArray;
-					$fileType = $_FILES[$propertyName]["type"];
-					$fileType = match ($fileType) {
-						'image/gif' => ".gif",
-						'image/png' => ".png",
-						'image/svg+xml' => ".svg",
-						default => ".jpg",
-					};
-					if (!empty($object->type)){
-						$objectType = $object->type;
-					} else {
-						$objectType = $property['property'];
-						$objectType = match ($objectType) {
-							'logoName' => 'discovery_logo',
-							'defaultCover' => 'default_cover',
-							'headerBackgroundImage' => 'header_background_image',
-							'footerLogo' => 'footer_logo',
-							'logoApp' => 'logo_app',
-							'headerLogoApp' => 'header_logo_app',
-							'booksImage' => 'books_image',
-							'booksImageSelected' => 'books_image_selected',
-							'eBooksImage' => 'eBooks_image',
-							'eBooksImageSelected' => 'eBooks_image_selected',
-							'audioBooksImage' => 'audioBooks_image',
-							'audioBooksImageSelected' => 'audioBooks_image_selected',
-							'musicImage' => 'music_image',
-							'musicImageSelected' => 'music_image_selected',
-							'moviesImage' => 'movies_image',
-							'moviesImageSelected' => 'movies_image_selected',
-							'catalogImage' => 'catalog_image',
-							'genealogyImage' => 'genealogy_image',
-							'articlesDBImage' => 'articles_db_image',
-							'eventsImage' => 'events_image',
-							'listsImage' => 'lists_image',
-							'seriesImage' => 'series_image',
-							'libraryWebsiteImage' => 'library_website_image',
-							'historyArchivesImage' => 'history_archives_image',
-							default => get_class($object) . '_' . $property['property'],
-						};
-						if (isset($_REQUEST['action']) && $_REQUEST['action'] == 'Placards') {
-							$objectType = 'placard_image';
-						}
-						if (isset($_REQUEST['action']) && $_REQUEST['action'] == 'WebResources') {
-							$objectType = 'web_resource_image';
-						}
-					}
-					global $serverName;
-					if (isset($property['storagePath']) || isset($property['path'])) {
-						$destFileName = ($object->getPrimaryKeyValue() != null) ? $objectType."_".$serverName."_".$object->getPrimaryKeyValue().$fileType : "Temp_".$_FILES[$propertyName]["name"];
-						$destFolder = $property['storagePath'] ?? $property['path'];
-						$destFullPath = $destFolder . '/' . $destFileName;
-						$copyResult = copy($_FILES[$propertyName]["tmp_name"], $destFullPath);
-						$logger->log("Copied file to $destFullPath result: $copyResult", Logger::LOG_DEBUG);
-					} elseif (isset($property['storageKey'])) {
-						$logger->log("Creating thumbnails for $propertyName", Logger::LOG_DEBUG);
-						$storageKey = $property['storageKey'];
-						$destFileName = ($object->getPrimaryKeyValue() != null) ? $objectType."_".$serverName."_".$object->getPrimaryKeyValue().$fileType : "Temp_".$_FILES[$propertyName]["name"];
-						$storage = StorageDriverFactory::get();
-
-						$uploadTmp = $_FILES[$propertyName]["tmp_name"];
-
-						//check for previous upload that needs to be overwritten to new naming convention
-						$prevKey = $storageKey . '/Temp_' . $_FILES[$propertyName]["name"];
-						if ($storage->exists($prevKey)) {
-							$storage->delete($prevKey);
-						}
-
-						require_once ROOT_DIR . '/sys/Covers/CoverImageUtils.php';
-
-						if (isset($property['maxWidth'])) {
-							$width = $property['maxWidth'];
-							$height = isset($property['maxHeight']) ? $property['maxHeight'] : $property['maxWidth'];
-							$resizedTmp = tempnam(sys_get_temp_dir(), 'aspen_img_');
-							resizeImage($uploadTmp, $resizedTmp, $width, $height);
-							$storeSource = $resizedTmp;
-						} else {
-							$storeSource = $uploadTmp;
-						}
-
-						$copyResult = $storage->write($storageKey . '/' . $destFileName, $storeSource);
-
-						if (isset($resizedTmp)) {
-							unlink($resizedTmp);
-							unset($resizedTmp);
-						}
-
-						if ($copyResult) {
-							$derivativeBase = dirname($storageKey);
-							if (isset($property['thumbWidth'])) {
-								$thumbTmp = tempnam(sys_get_temp_dir(), 'aspen_img_');
-								resizeImage($uploadTmp, $thumbTmp, $property['thumbWidth'], $property['thumbWidth']);
-								$storage->write($derivativeBase . '/thumbnail/' . $destFileName, $thumbTmp);
-								unlink($thumbTmp);
-							}
-							if (isset($property['mediumWidth'])) {
-								$medTmp = tempnam(sys_get_temp_dir(), 'aspen_img_');
-								resizeImage($uploadTmp, $medTmp, $property['mediumWidth'], $property['mediumWidth']);
-								$storage->write($derivativeBase . '/medium/' . $destFileName, $medTmp);
-								unlink($medTmp);
-							}
-						}
-					} else {
-						global $configArray;
-						$destFileName = ($object->getPrimaryKeyValue() != null) ? $serverName."_".$objectType."_".$object->getPrimaryKeyValue().$fileType : "Temp_".$_FILES[$propertyName]["name"];
-						$destFolder = $configArray['Site']['local'] . '/files/original';
-						$pathToThumbs = $configArray['Site']['local'] . '/files/thumbnail';
-						$pathToMedium = $configArray['Site']['local'] . '/files/medium';
-						$destFullPath = $destFolder . '/' . $destFileName;
-						$prevUpload = $destFolder . '/' . 'Temp_' . $_FILES[$propertyName]['name'];
-						if (file_exists($prevUpload)) {
-							rename($prevUpload, $destFullPath);
-						}
-						$copyResult = copy($_FILES[$propertyName]["tmp_name"], $destFullPath);
-						if ($copyResult) {
-							require_once ROOT_DIR . '/sys/Covers/CoverImageUtils.php';
-							if (isset($property['thumbWidth'])) {
-								if (!resizeImage($destFullPath, "$pathToThumbs/$destFileName", $property['thumbWidth'], $property['thumbWidth'])) {
-									$logger->log("Could not create thumbnail for $propertyName at $pathToThumbs/$destFileName", Logger::LOG_ERROR);
-								}
-							}
-							if (isset($property['mediumWidth'])) {
-								//Create a thumbnail if needed
-								if (!resizeImage($destFullPath, "$pathToMedium/$destFileName", $property['mediumWidth'], $property['mediumWidth'])) {
-									$logger->log("Could not create medium image for $propertyName at $pathToMedium/$destFileName", Logger::LOG_ERROR);
-								}
-							}
-							if (isset($property['maxWidth'])) {
-								$width = $property['maxWidth'];
-								$height = $property['maxWidth'];
-								if (isset($property['maxHeight'])) {
-									$height = $property['maxHeight'];
-								}
-								if (!resizeImage($destFullPath, "$destFolder/$destFileName", $width, $height)) {
-									$logger->log("Could not resize $propertyName to max dimensions at $destFolder/$destFileName", Logger::LOG_ERROR);
-								}
-							}
-						}
-					}
-					//store the actual filename, but only if the file was actually written
-					if ($copyResult) {
-						$object->setProperty($propertyName, $destFileName, $property);
-						$logger->log("Set $propertyName to $destFileName", Logger::LOG_DEBUG);
-					} else {
-						$logger->log("Not setting $propertyName because the file write failed", Logger::LOG_ERROR);
-					}
-				}
+				$fileForProperty = $_FILES[$propertyName];
+				self::processUploadedImageProperty($object, $propertyName, $property, $fileForProperty);
 			}
 
 		} elseif ($property['type'] == 'file') {
@@ -555,12 +392,13 @@ class DataObjectUtil {
 			} elseif (isset($_REQUEST["{$propertyName}_existing"]) && $_FILES[$propertyName]['error'] == 4) {
 				$object->setProperty($propertyName, $_REQUEST["{$propertyName}_existing"], $property);
 			} elseif (isset($_FILES[$propertyName])) {
-				if ($_FILES[$propertyName]["error"] > 0) {
+				$fileForProperty = $_FILES[$propertyName];
+				if ($fileForProperty["error"] > 0) {
 					//return an error to the browser
-					$logger->log("Error uploading file " . $_FILES[$propertyName]["error"], Logger::LOG_ERROR);
+					$logger->log("Error uploading file " . $fileForProperty["error"], Logger::LOG_ERROR);
 				} elseif (true) { //TODO: validate the file type
 					if (array_key_exists('validTypes', $property)) {
-						$fileType = $_FILES[$propertyName]["type"];
+						$fileType = $fileForProperty["type"];
 						if (!in_array($fileType, $property['validTypes'])) {
 							AspenError::raiseError('Incorrect file type uploaded ' . $fileType);
 						}
@@ -571,10 +409,10 @@ class DataObjectUtil {
 						$objectType = $property['type'];
 					}
 					$fileType = ".pdf";
-					//Copy the full image to the correct location
+					//Copy the full file to the correct location
 					global $serverName;
 					//Filename is the $serverName + name of the object + the original filename
-					$destFileName = ($object->getPrimaryKeyValue() != null) ? $objectType."_".$serverName."_".$object->getPrimaryKeyValue().$fileType : "Temp_".$_FILES[$propertyName]["name"];
+					$destFileName = ($object->getPrimaryKeyValue() != null) ? $objectType."_".$serverName."_".$object->getPrimaryKeyValue().$fileType : "Temp_". $fileForProperty["name"];
 					$destFolder = $property['path'];
 					if (!file_exists($destFolder)) {
 						mkdir($destFolder, 0775, true);
@@ -587,7 +425,7 @@ class DataObjectUtil {
 
 					$destFullPath = $destFolder . '/' . $destFileName;
 					//check for previous upload that needs to be overwritten to new naming convention
-					$prevUpload = $destFolder . '/' . "Temp_" . $_FILES[$propertyName]["name"];
+					$prevUpload = $destFolder . '/' . "Temp_" . $fileForProperty["name"];
 					if (file_exists($prevUpload)) {
 						rename($prevUpload, $destFullPath);
 						// Remove any old thumbnail for this PDF.
@@ -596,12 +434,12 @@ class DataObjectUtil {
 							@unlink($thumbPath);
 						}
 					}
-					$copyResult = copy($_FILES[$propertyName]["tmp_name"], $destFullPath);
+					$copyResult = copy($fileForProperty["tmp_name"], $destFullPath);
 					if ($copyResult) {
-						$logger->log("Copied file from {$_FILES[$propertyName]["tmp_name"]} to $destFullPath", Logger::LOG_NOTICE);
+						$logger->log("Copied file from {$fileForProperty["tmp_name"]} to $destFullPath", Logger::LOG_NOTICE);
 					} else {
-						$logger->log("Could not copy file from {$_FILES[$propertyName]["tmp_name"]} to $destFullPath", Logger::LOG_ERROR);
-						if (!file_exists($_FILES[$propertyName]["tmp_name"])) {
+						$logger->log("Could not copy file from {$fileForProperty["tmp_name"]} to $destFullPath", Logger::LOG_ERROR);
+						if (!file_exists($fileForProperty["tmp_name"])) {
 							$logger->log("  Uploaded file did not exist", Logger::LOG_ERROR);
 						}
 						if (!is_writable($destFullPath)) {
@@ -619,12 +457,13 @@ class DataObjectUtil {
 			} elseif (isset($_REQUEST["{$propertyName}_existing"]) && $_FILES[$propertyName]['error'] == 4) {
 				$object->setProperty($propertyName, $_REQUEST["{$propertyName}_existing"], $property);
 			} elseif (isset($_FILES[$propertyName])) {
-				if ($_FILES[$propertyName]["error"] > 0) {
+				$fileForProperty = $_FILES[$propertyName];
+				if ($fileForProperty["error"] > 0) {
 					//return an error to the browser
-					$logger->log("Error uploading file " . $_FILES[$propertyName]["error"], Logger::LOG_ERROR);
+					$logger->log("Error uploading file " . $fileForProperty["error"], Logger::LOG_ERROR);
 				} elseif (true) { //TODO: validate the file type
-					$destFileName = $_FILES[$propertyName]["name"];
-					$copyResult = StorageDriverFactory::get()->write('fonts/' . $destFileName, $_FILES[$propertyName]["tmp_name"]);
+					$destFileName = $fileForProperty["name"];
+					$copyResult = StorageDriverFactory::get()->write('fonts/' . $destFileName, $fileForProperty["tmp_name"]);
 					if ($copyResult) {
 						$logger->log("Stored font file: fonts/{$destFileName}", Logger::LOG_NOTICE);
 					} else {
@@ -1056,6 +895,203 @@ class DataObjectUtil {
 						}
 					}
 				}
+			}
+		}
+	}
+
+	/**
+	 * @param DataObject $object
+	 * @param string $propertyName
+	 * @param array $propertyDefinition
+	 * @param mixed $fileForProperty
+	 * @return bool
+	 */
+	public static function processUploadedImageProperty(DataObject $object, string $propertyName, array $propertyDefinition, mixed $fileForProperty): bool
+	{
+		global $logger;
+		if (isset($fileForProperty["error"]) && $fileForProperty["error"] == 4) {
+			$logger->log("No file was uploaded for $propertyName", Logger::LOG_DEBUG);
+			return false;
+			//No image supplied, use the existing value
+		} elseif (isset($fileForProperty["error"]) && $fileForProperty["error"] > 0) {
+			require_once ROOT_DIR . '/sys/Utils/SystemUtils.php';
+			$uploadError = $fileForProperty["error"];
+			$logger->log("Error in file upload for $propertyName (code $uploadError)", Logger::LOG_ERROR);
+			AspenError::raiseError(SystemUtils::getUploadErrorMessage($uploadError));
+			return false;
+		} elseif ((!empty($propertyDefinition['validTypes']) && !in_array($fileForProperty["type"], $propertyDefinition['validTypes'])) ||
+			(empty($propertyDefinition['validTypes']) && !in_array($fileForProperty["type"], ['image/gif', 'image/jpeg', 'image/png', 'image/svg+xml']))) {
+			$allowedTypes = !empty($propertyDefinition['validTypes']) ? implode(', ', $propertyDefinition['validTypes']) : 'image/gif, image/jpeg, image/png, image/svg+xml';
+			AspenError::raiseError(translate([
+				'text' => 'Invalid file type: %1%. Allowed types: %2%.',
+				1 => $fileForProperty["type"],
+				2 => $allowedTypes,
+				'isAdminFacing' => true
+			]));
+			return false;
+		} else {
+			$logger->log("Processing uploaded file for $propertyName", Logger::LOG_DEBUG);
+			//Copy the full image to the files directory
+			//Filename is the name of the object + the original filename
+			$fileType = $fileForProperty["type"];
+			$fileType = match ($fileType) {
+				'image/gif' => ".gif",
+				'image/png' => ".png",
+				'image/svg+xml' => ".svg",
+				default => ".jpg",
+			};
+			if (!empty($object->type)) {
+				$objectType = $object->type;
+			} else {
+				$objectType = $propertyDefinition['property'];
+				$objectType = match ($objectType) {
+					'logoName' => 'discovery_logo',
+					'defaultCover' => 'default_cover',
+					'headerBackgroundImage' => 'header_background_image',
+					'footerLogo' => 'footer_logo',
+					'logoApp' => 'logo_app',
+					'headerLogoApp' => 'header_logo_app',
+					'booksImage' => 'books_image',
+					'booksImageSelected' => 'books_image_selected',
+					'eBooksImage' => 'eBooks_image',
+					'eBooksImageSelected' => 'eBooks_image_selected',
+					'audioBooksImage' => 'audioBooks_image',
+					'audioBooksImageSelected' => 'audioBooks_image_selected',
+					'musicImage' => 'music_image',
+					'musicImageSelected' => 'music_image_selected',
+					'moviesImage' => 'movies_image',
+					'moviesImageSelected' => 'movies_image_selected',
+					'catalogImage' => 'catalog_image',
+					'genealogyImage' => 'genealogy_image',
+					'articlesDBImage' => 'articles_db_image',
+					'eventsImage' => 'events_image',
+					'listsImage' => 'lists_image',
+					'seriesImage' => 'series_image',
+					'libraryWebsiteImage' => 'library_website_image',
+					'historyArchivesImage' => 'history_archives_image',
+					default => get_class($object) . '_' . $propertyDefinition['property'],
+				};
+				if (isset($_REQUEST['action']) && $_REQUEST['action'] == 'Placards') {
+					$objectType = 'placard_image';
+				}
+				if (isset($_REQUEST['action']) && $_REQUEST['action'] == 'WebResources') {
+					$objectType = 'web_resource_image';
+				}
+			}
+			global $serverName;
+			if (isset($propertyDefinition['storagePath']) || isset($propertyDefinition['path'])) {
+				$destFileName = ($object->getPrimaryKeyValue() != null) ? $objectType . "_" . $serverName . "_" . $object->getPrimaryKeyValue() . $fileType : "Temp_" . $fileForProperty["name"];
+				$destFolder = $propertyDefinition['storagePath'] ?? $propertyDefinition['path'];
+				$destFullPath = $destFolder . '/' . $destFileName;
+				$copyResult = copy($fileForProperty["tmp_name"], $destFullPath);
+				$logger->log("Copied file to $destFullPath result: $copyResult", Logger::LOG_DEBUG);
+			} elseif (isset($propertyDefinition['storageKey'])) {
+				$logger->log("Creating thumbnails for $propertyName", Logger::LOG_DEBUG);
+				$storageKey = $propertyDefinition['storageKey'];
+				$destFileName = ($object->getPrimaryKeyValue() != null) ? $objectType . "_" . $serverName . "_" . $object->getPrimaryKeyValue() . $fileType : "Temp_" . $fileForProperty["name"];
+				$storage = StorageDriverFactory::get();
+
+				$uploadTmp = $fileForProperty["tmp_name"];
+
+				//check for previous upload that needs to be overwritten to new naming convention
+				$prevKey = $storageKey . '/Temp_' . $fileForProperty["name"];
+				if ($storage->exists($prevKey)) {
+					$storage->delete($prevKey);
+				}
+
+				require_once ROOT_DIR . '/sys/Covers/CoverImageUtils.php';
+
+				if (isset($propertyDefinition['maxWidth'])) {
+					$width = $propertyDefinition['maxWidth'];
+					$height = isset($propertyDefinition['maxHeight']) ? $propertyDefinition['maxHeight'] : $propertyDefinition['maxWidth'];
+					$resizedTmp = tempnam(sys_get_temp_dir(), 'aspen_img_');
+					resizeImage($uploadTmp, $resizedTmp, $width, $height);
+					$storeSource = $resizedTmp;
+				} else {
+					$storeSource = $uploadTmp;
+				}
+
+				$copyResult = $storage->write($storageKey . '/' . $destFileName, $storeSource);
+
+				if (isset($resizedTmp)) {
+					unlink($resizedTmp);
+					unset($resizedTmp);
+				}
+
+				if ($copyResult) {
+					$derivativeBase = dirname($storageKey);
+					if (isset($propertyDefinition['thumbWidth'])) {
+						$thumbTmp = tempnam(sys_get_temp_dir(), 'aspen_img_');
+						resizeImage($uploadTmp, $thumbTmp, $propertyDefinition['thumbWidth'], $propertyDefinition['thumbWidth']);
+						$storage->write($derivativeBase . '/thumbnail/' . $destFileName, $thumbTmp);
+						unlink($thumbTmp);
+					}
+					if (isset($propertyDefinition['mediumWidth'])) {
+						$medTmp = tempnam(sys_get_temp_dir(), 'aspen_img_');
+						resizeImage($uploadTmp, $medTmp, $propertyDefinition['mediumWidth'], $propertyDefinition['mediumWidth']);
+						$storage->write($derivativeBase . '/medium/' . $destFileName, $medTmp);
+						unlink($medTmp);
+					}
+				}
+			} else {
+				global $configArray;
+				$destFileName = ($object->getPrimaryKeyValue() != null) ? $serverName . "_" . $objectType . "_" . $object->getPrimaryKeyValue() . $fileType : "Temp_" . $fileForProperty["name"];
+				$destFolder = $configArray['Site']['local'] . '/files/original';
+				$pathToThumbs = $configArray['Site']['local'] . '/files/thumbnail';
+				$pathToMedium = $configArray['Site']['local'] . '/files/medium';
+				$destFullPath = $destFolder . '/' . $destFileName;
+				$prevUpload = $destFolder . '/' . 'Temp_' . $fileForProperty['name'];
+				if (file_exists($prevUpload)) {
+					rename($prevUpload, $destFullPath);
+				}
+				$copyResult = copy($fileForProperty["tmp_name"], $destFullPath);
+				if ($copyResult) {
+					require_once ROOT_DIR . '/sys/Covers/CoverImageUtils.php';
+					if (isset($propertyDefinition['thumbWidth'])) {
+						if (!resizeImage($destFullPath, "$pathToThumbs/$destFileName", $propertyDefinition['thumbWidth'], $propertyDefinition['thumbWidth'])) {
+							$logger->log("Could not create thumbnail for $propertyName at $pathToThumbs/$destFileName", Logger::LOG_ERROR);
+						}
+					}
+					if (isset($propertyDefinition['mediumWidth'])) {
+						//Create a thumbnail if needed
+						if (!resizeImage($destFullPath, "$pathToMedium/$destFileName", $propertyDefinition['mediumWidth'], $propertyDefinition['mediumWidth'])) {
+							$logger->log("Could not create medium image for $propertyName at $pathToMedium/$destFileName", Logger::LOG_ERROR);
+						}
+					}
+					if (isset($propertyDefinition['maxWidth'])) {
+						$width = $propertyDefinition['maxWidth'];
+						$height = $propertyDefinition['maxWidth'];
+						if (isset($propertyDefinition['maxHeight'])) {
+							$height = $propertyDefinition['maxHeight'];
+						}
+						if (!resizeImage($destFullPath, "$destFolder/$destFileName", $width, $height)) {
+							$logger->log("Could not resize $propertyName to max dimensions at $destFolder/$destFileName", Logger::LOG_ERROR);
+						}
+					}
+				}else{
+					$error = error_get_last();
+
+					$logger->log('File copy failed: ' . ($error['message'] ?? 'Unknown error'), Logger::LOG_ERROR);
+					$logger->log('Source exists: ' . (file_exists($fileForProperty["tmp_name"]) ? 'yes' : 'no'), Logger::LOG_ERROR);
+					$logger->log('Source readable: ' . (is_readable($fileForProperty["tmp_name"]) ? 'yes' : 'no'), Logger::LOG_ERROR);
+					$logger->log('Uploaded file: ' . (is_uploaded_file($fileForProperty["tmp_name"]) ? 'yes' : 'no'), Logger::LOG_ERROR);
+					$logger->log('Destination directory: ' . dirname($destFullPath), Logger::LOG_ERROR);
+					$logger->log('Destination directory writable: ' . (is_writable(dirname($destFullPath)) ? 'yes' : 'no'), Logger::LOG_ERROR);
+					$logger->log('Destination exists: ' . (file_exists($destFullPath) ? 'yes' : 'no'), Logger::LOG_ERROR);
+
+					if (file_exists($destFullPath)) {
+						$logger->log('Destination writable: ' . (is_writable($destFullPath) ? 'yes' : 'no'), Logger::LOG_ERROR);
+					}
+				}
+			}
+			//store the actual filename, but only if the file was actually written
+			if ($copyResult) {
+				$object->setProperty($propertyName, $destFileName, $propertyDefinition);
+				$logger->log("Set $propertyName to $destFileName", Logger::LOG_DEBUG);
+				return true;
+			} else {
+				$logger->log("Not setting $propertyName because the file write failed", Logger::LOG_ERROR);
+				return false;
 			}
 		}
 	}

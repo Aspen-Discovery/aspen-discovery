@@ -78,7 +78,7 @@ public class HooplaExporter2 {
 		startTimeForLogging = startTime.getTime() / 1000;
 
 		try {
-			getAllExistingHooplaItemsStmt = aspenConn.prepareStatement("SELECT id, hooplaId, rawChecksum, UNCOMPRESSED_LENGTH(rawResponse) as rawResponseLength from hoopla_export");
+			getAllExistingHooplaItemsStmt = aspenConn.prepareStatement("SELECT id, hooplaId, rawChecksum, rawResponseLength from hoopla_export");
 			addHooplaTitleToDB = aspenConn.prepareStatement("INSERT INTO hoopla_export (hooplaId, title, format, pa, demo, profanity, rating, abridged, children, ppuPrice, rawChecksum, rawResponse, dateFirstDetected) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,COMPRESS(?),?) ");
 			updateHooplaTitleInDB = aspenConn.prepareStatement("UPDATE hoopla_export set title = ?, format = ?, pa = ?, demo = ?, profanity = ?, rating = ?, abridged = ?, children = ?, ppuPrice = ?, rawChecksum = ?, rawResponse = COMPRESS(?) where id = ?");
 			deleteHooplaItemStmt = aspenConn.prepareStatement("DELETE FROM hoopla_export where id = ?");
@@ -100,8 +100,6 @@ public class HooplaExporter2 {
 			logEntry.incErrors("Error preparing Hoopla exporter2 statements", e);
 			logger.error("Error preparing Hoopla exporter2 statements", e);
 		}
-		//Get a list of all existing records in the database
-		loadExistingTitles();
 
 		processRecordsToReload(logEntry);
 	}
@@ -1237,7 +1235,7 @@ public class HooplaExporter2 {
 					}
 					// We don't know if this title is instant or flex for the current library, so we try instant first
 					if (librarySetting.isInstantEnabled()) {
-						String entitlementUrl = hooplaAPIBaseURL + "/api/v1/libraries/" + librarySetting.getHooplaLibraryId() + "/entitlements?purchaseModel=Instant&limit=1&status=active&startToken=" + (numericSingleWorkId - 1);
+						String entitlementUrl = hooplaAPIBaseURL + "/api/v1/libraries/" + librarySetting.getHooplaLibraryId() + "/entitlements?purchaseModel=Instant&limit=1&startToken=" + (numericSingleWorkId - 1);
 						WebServiceResponse entitlementResponse = NetworkUtils.getURL(entitlementUrl, logger, headers);
 						if (!entitlementResponse.isSuccess()) {
 							logEntry.incErrors("Could not get entitlements from " + entitlementUrl + " " + entitlementResponse.getMessage());
@@ -1250,14 +1248,14 @@ public class HooplaExporter2 {
 
 									// Verify contentId is the same as the given hoopla Id
 									if (entitlement.has("contentId") && entitlement.getLong("contentId") == numericSingleWorkId) {
-										if (entitlement.has("active") && entitlement.getBoolean("active")) {
+										if (entitlement.has("active")) {
 											// Only update the entitlement if it is active
 											updateEntitlementsInDB(responseEntitlements, null, false, HOOPLA_TYPE_INSTANT, librarySetting.getLibraryId());
-											logger.warn("Updated entitlement for Hoopla Library ID " + librarySetting.getHooplaLibraryId() + " for Instant.");
+											logger.warn("Updated entitlement for Hoopla Library ID " + librarySetting.getHooplaLibraryId() + " for Instant. Entitlement active = " + entitlement.getBoolean("active"));
 											updatesRun = true;
 											continue;
 										} else {
-											logger.warn("Entitlement is not active for Hoopla Library ID " + librarySetting.getHooplaLibraryId() + " for Instant.");
+											logger.warn("Error returning enttlement status for Hoopla Library ID " + librarySetting.getHooplaLibraryId() + " for Instant.");
 										}
 									} else {
 										logger.warn("Content ID for entitlement does not match the given hoopla ID, this record might not be active for Hoopla Library ID " + librarySetting.getHooplaLibraryId() + " for Instant.");
@@ -1268,7 +1266,7 @@ public class HooplaExporter2 {
 					}
 
 					if (librarySetting.isFlexEnabled()) {
-						String entitlementUrl = hooplaAPIBaseURL + "/api/v1/libraries/" + librarySetting.getHooplaLibraryId() + "/entitlements?purchaseModel=Flex&limit=1&status=active&startToken=" + (numericSingleWorkId - 1);
+						String entitlementUrl = hooplaAPIBaseURL + "/api/v1/libraries/" + librarySetting.getHooplaLibraryId() + "/entitlements?purchaseModel=Flex&limit=1&startToken=" + (numericSingleWorkId - 1);
 						WebServiceResponse entitlementResponse = NetworkUtils.getURL(entitlementUrl, logger, headers);
 						if (!entitlementResponse.isSuccess()) {
 							logEntry.incErrors("Could not get entitlements from " + entitlementUrl + " " + entitlementResponse.getMessage());
@@ -1281,25 +1279,27 @@ public class HooplaExporter2 {
 
 									// Verify contentId is the same as the given hoopla ID
 									if (entitlement.has("contentId") && entitlement.getLong("contentId") == numericSingleWorkId) {
-										if (entitlement.has("active") && entitlement.getBoolean("active")) {
-											// Only update the entitlement if it is active
+										if (entitlement.has("active")) {
+											boolean activeStatus = entitlement.getBoolean("active");
 											updateEntitlementsInDB(responseEntitlements, null, false, HOOPLA_TYPE_FLEX, librarySetting.getLibraryId());
-											logger.warn("Updated entitlement for Hoopla Library ID " + librarySetting.getHooplaLibraryId() + " for Flex.");
-
-											// This is an active fle entitlement, so we need to update the availability
-											String availabilityUrl = hooplaAPIBaseURL + "/api/v1/libraries/" + librarySetting.getHooplaLibraryId() + "/content/info?contentIds=" + numericSingleWorkId;
-											WebServiceResponse availabilityResponse = NetworkUtils.getURL(availabilityUrl, logger, headers);
-											if (!availabilityResponse.isSuccess()) {
-												logEntry.incErrors("Could not get availability from " + availabilityUrl + " " + availabilityResponse.getMessage());
-											} else {
-												JSONArray availabilityArray = new JSONArray(availabilityResponse.getMessage());
-												updateFlexAvailabilityInDB(availabilityArray, librarySetting.getLibraryId());
-												logger.warn("Updated availability for Hoopla Library ID " + librarySetting.getHooplaLibraryId() + " for Flex.");
-												updatesRun = true;
-												continue;
+											logger.warn("Updated entitlement for Hoopla Library ID " + librarySetting.getHooplaLibraryId() + " for Flex. Entitlement active = " + activeStatus);
+											if (activeStatus) {
+												// This is an active flex entitlement, so we need to update the availability
+												// If this is an inactive flex entitlement, updateEntitlementsInDB() will remove flex availability
+												String availabilityUrl = hooplaAPIBaseURL + "/api/v1/libraries/" + librarySetting.getHooplaLibraryId() + "/content/info?contentIds=" + numericSingleWorkId;
+												WebServiceResponse availabilityResponse = NetworkUtils.getURL(availabilityUrl, logger, headers);
+												if (!availabilityResponse.isSuccess()) {
+													logEntry.incErrors("Could not get availability from " + availabilityUrl + " " + availabilityResponse.getMessage());
+												} else {
+													JSONArray availabilityArray = new JSONArray(availabilityResponse.getMessage());
+													updateFlexAvailabilityInDB(availabilityArray, librarySetting.getLibraryId());
+													logger.warn("Updated availability for Hoopla Library ID " + librarySetting.getHooplaLibraryId() + " for Flex.");
+													continue;
+												}
+											updatesRun = true;
 											}
 										} else {
-											logger.warn("Entitlement is not active for Hoopla Library ID " + librarySetting.getHooplaLibraryId() + " for Flex.");
+											logger.warn("Error returning enttlement status for Hoopla Library ID " + librarySetting.getHooplaLibraryId() + " for Flex.");
 										}
 									} else {
 										logger.warn("Content ID for entitlement " + entitlement.getLong("contentId") + " does not match the given hoopla ID, this record might not be active for Hoopla Library ID " + librarySetting.getHooplaLibraryId() + " for Flex.");
@@ -1328,7 +1328,18 @@ public class HooplaExporter2 {
 		return updatesRun;
 	}
 
+	private boolean existingTitlesLoaded = false;
+
+	private void ensureExistingTitlesLoaded() {
+		if (!existingTitlesLoaded) {
+			loadExistingTitles();
+			existingTitlesLoaded = true;
+		}
+	}
+
 	private void updateTitlesInDB(JSONArray responseTitles, boolean forceRegrouping, boolean doFullReload) {
+		// Load existing records only when title metadata is being processed.
+		ensureExistingTitlesLoaded();
 		for (int i = 0; i < responseTitles.length(); i++){
 			try {
 				JSONObject curTitle = responseTitles.getJSONObject(i);
@@ -1495,6 +1506,10 @@ public class HooplaExporter2 {
 
 	public void exporter2CleanUp() {
 		try{
+			if (getAllExistingHooplaItemsStmt != null) {
+				getAllExistingHooplaItemsStmt.close();
+				getAllExistingHooplaItemsStmt = null;
+			}
 			addHooplaTitleToDB.close();
 			addHooplaTitleToDB = null;
 			updateHooplaTitleInDB.close();

@@ -7,7 +7,7 @@
 		{/if}
 
 		<div class="{if empty($showCovers)}col-xs-12{else}col-xs-9 col-sm-9{if !empty($viewingCombinedResults)} col-md-9 col-lg-10{/if}{/if}">{* May turn out to be more than one situation to consider here *}
-			<div class="row">
+			<div class="result-title-row row">
 				<div class="col-xs-12">
 					<span class="result-index">{$resultIndex})</span>&nbsp;
 					<span class="result-title notranslate">
@@ -20,7 +20,7 @@
 			</div>
 
 			{if !empty($record.author)}
-				<div class="row">
+				<div class="result-author row">
 					<div class="result-label col-md-3">{translate text="Author" isPublicFacing=true} </div>
 					<div class="col-md-9 result-value  notranslate">
 						{if is_array($record.author)}
@@ -35,18 +35,18 @@
 			{/if}
 
 			{if !empty($record.publicationDate)}
-				<div class="row">
+				<div class="result-publication row">
 					<div class="result-label col-md-3">Published: </div>
 					<div class="col-md-9 result-value">{$record.publicationDate|escape}</div>
 				</div>
 			{/if}
 
-			<div class="row related-manifestations-header">
+			<div class="related-manifestations-header row">
 				<div class="col-xs-12 result-label related-manifestations-label">
 					{translate text="Choose a Format" isPublicFacing=true}
 				</div>
 			</div>
-			<div class="row related-manifestation">
+			<div class="related-manifestation row">
 				<div class="col-sm-12">
 					{translate text="The library does not own any copies of this title." isPublicFacing=true}
 				</div>

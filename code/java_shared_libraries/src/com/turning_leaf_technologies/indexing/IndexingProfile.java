@@ -261,6 +261,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 		this.treatUnknownLanguageAs = indexingProfileRS.getString("treatUnknownLanguageAs");
 		treatUndeterminedLanguageAs = indexingProfileRS.getString("treatUndeterminedLanguageAs");
 		this.customMarcFieldsToIndexAsKeyword = indexingProfileRS.getString("customMarcFieldsToIndexAsKeyword");
+		this.excludePublisherFromKeywordIndex = indexingProfileRS.getBoolean("excludePublisherFromKeywordIndex");
 		this.processRecordLinking = indexingProfileRS.getBoolean("processRecordLinking");
 
 		this.evergreenOrgUnitSchema = indexingProfileRS.getInt("evergreenOrgUnitSchema");

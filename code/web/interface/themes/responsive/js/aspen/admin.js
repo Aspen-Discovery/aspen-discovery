@@ -1012,6 +1012,12 @@ AspenDiscovery.Admin = (function () {
 			} else {
 				$("#propertyRowthemes").show();
 			}
+			var useLibraryAspenLiDAThemes = $("#useLibraryAspenLiDAThemes").prop("checked");
+			if (useLibraryAspenLiDAThemes) {
+				$("#propertyRowaspenLiDAThemes").hide();
+			} else {
+				$("#propertyRowaspenLiDAThemes").show();
+			}
 		},
 		updateMaterialsRequestFields() {
 			const materialRequestType = $("#enableMaterialsRequestSelect option:selected").val();
@@ -3155,7 +3161,11 @@ AspenDiscovery.Admin = (function () {
 			$('#propertyRowroles').hide();
 
 			var assignBy = $("#assignToUsersBySelect").val();
-			if (assignBy === "role") {
+			if (assignBy === "accountProfile") {
+				$('#propertyRowlibraries').hide();
+				$('#propertyRowptypes').hide();
+				$('#propertyRowroles').hide();
+			} else if (assignBy === "role") {
 				$('#propertyRowlibraries').hide();
 				$('#propertyRowptypes').hide();
 				$('#propertyRowroles').show();
@@ -3404,6 +3414,101 @@ AspenDiscovery.Admin = (function () {
 				guarantorInput.required = guarantorRequired;
 				guarantorInput.classList.toggle('required', guarantorRequired);
 			}
+		},
+		updateAvailable2FAAssignToUserByOptions: function () {
+			const accountSelect = document.getElementById('accountProfileIdSelect');
+			const assignSelect = document.getElementById('assignToUsersBySelect');
+			if (!accountSelect || !assignSelect) return;
+
+			const selectedOption = accountSelect.options[accountSelect.selectedIndex];
+			const selectedLabel = selectedOption ? selectedOption.text.trim() : '';
+
+			const patronTypeOption = assignSelect.querySelector('option[value="patronType"]');
+			const accountProfileOption = assignSelect.querySelector('option[value="accountProfile"]');
+
+			if (!patronTypeOption || !accountProfileOption) return;
+
+			if (selectedLabel.toLowerCase() === 'admin') {
+				// Disable patronType and force role when account profile label is "admin"
+				patronTypeOption.disabled = true;
+
+				// If value assignment fails for any reason, force via selected flag
+				if (assignSelect.value !== 'role' && assignSelect.value !== 'accountProfile') {
+					assignSelect.value = 'accountProfile';
+					accountProfileOption.selected = true;
+				}
+
+				// Trigger change in case other UI logic depends on this select
+				assignSelect.dispatchEvent(new Event('change', {bubbles: true}));
+			} else {
+				// Re-enable patronType for non-admin labels
+				patronTypeOption.disabled = false;
+			}
+		},
+		updateLiDAThemeBaseColors: function () {
+			const mode = $('#baseModeSelect option:selected').val();
+			const isLight = (mode !== 'dark');
+
+			const bg = isLight ? '#f3f4f6' : '#111827';
+			const text = isLight ? '#1c1917' : '#f3f4f6';
+			$('#backgroundColor, #backgroundColorHex').val(bg);
+			$('#textColor, #textColorHex').val(text);
+
+			['primaryColor', 'secondaryColor', 'tertiaryColor'].forEach(function (f) {
+				AspenDiscovery.Admin.checkContrast(f, 'backgroundColor', true, 3.0);
+			});
+		},
+		populateLiDAThemeFromWebTheme: function () {
+			const themeId = $('#extendsWebThemeIdSelect option:selected').val();
+			if (!themeId || themeId === '-1' || themeId === '') {
+				return;
+			}
+			$.getJSON('/AspenLiDA/Themes', {objectAction: 'getWebThemeData', themeId: themeId}, function (response) {
+				if (!response.success) {
+					return;
+				}
+				const d = response.data;
+
+				$('#baseModeSelect').val(d.isDarkColorScheme ? 'dark' : 'light');
+				AspenDiscovery.Admin.updateLiDAThemeBaseColors();
+
+				['primaryColor', 'primaryTextColor',
+					'secondaryColor', 'secondaryTextColor',
+					'tertiaryColor', 'tertiaryTextColor',
+					'headerLogoBackgroundColorApp'].forEach(function (field) {
+					if (d[field]) {
+						$('#' + field).val(d[field]);
+						$('#' + field + 'Hex').val(d[field]);
+						$('#' + field + '-default').prop('checked', false);
+					}
+				});
+
+				AspenDiscovery.Admin.updateLiDAThemeBaseColors();
+				AspenDiscovery.Admin.checkContrast('primaryTextColor', 'primaryColor', false, 3.5);
+				AspenDiscovery.Admin.checkContrast('secondaryTextColor', 'secondaryColor', false, 3.5);
+				AspenDiscovery.Admin.checkContrast('tertiaryTextColor', 'tertiaryColor', false, 3.5);
+
+				if (d.headerLogoAlignmentApp) {
+					$('#headerLogoAlignmentAppSelect').val(d.headerLogoAlignmentApp);
+				}
+
+				['logoApp', 'headerLogoApp'].forEach(function (field) {
+					if (d[field]) {
+						$('#' + field + '_existing').val(d[field]);
+						$('#importFile-label-' + field).val(d[field]);
+						const $row = $('#propertyRow' + field);
+						const $img = $row.find('img').first();
+						const src = '/files/thumbnail/' + d[field];
+						if ($img.length) {
+							$img.attr('src', src).show();
+						} else {
+							$row.find('.input-group').before(
+								$('<img>').attr({src: src, alt: 'Selected Image for ' + field, style: 'display:block'})
+							);
+						}
+					}
+				});
+			});
 		},
 	};
 }(AspenDiscovery.Admin || {}));

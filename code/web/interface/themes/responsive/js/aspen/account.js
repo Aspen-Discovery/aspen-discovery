@@ -730,6 +730,44 @@ AspenDiscovery.Account = (function () {
 			return false;
 		},
 
+		showMinimalSelfRegForm: function (trigger, ajaxCallback) {
+			AspenDiscovery.Account.ajaxCallback = ajaxCallback;
+			const url = Globals.path + '/MyAccount/AJAX?method=getMinimalSelfRegForm';
+			$.getJSON(url, function (data) {
+				if (data.success === true) {
+					AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons);
+				} else {
+					AspenDiscovery.showMessage(data.title, data.message);
+				}
+			});
+			return false;
+		},
+
+		processMinimalSelfReg: function (form) {
+			const errorElem = $('#minimalSelfRegError');
+			errorElem.hide();
+			const url = Globals.path + "/MyAccount/AJAX?method=processMinimalSelfReg";
+			$.post(url, $(form).serialize(), function (response) {
+				if (response.success !== true) {
+					errorElem.html(response.message).show();
+					return;
+				}
+
+				const ajaxCallback = AspenDiscovery.Account.ajaxCallback;
+				if (typeof ajaxCallback === "function") {
+					AspenDiscovery.Account.ajaxCallback = null;
+					AspenDiscovery.showMessage(response.title, response.message, false);
+					ajaxCallback();
+					return;
+				}
+
+				AspenDiscovery.showMessageWithButtons(response.title, response.body, response.buttons, true);
+			}, 'json').fail(function () {
+				errorElem.text(__("There was an error processing your registration, please try again.")).show();
+			});
+			return false;
+		},
+
 		processAddLinkedUser: function () {
 			if (this.preProcessLogin()) {
 				var username = $("#username").val();
