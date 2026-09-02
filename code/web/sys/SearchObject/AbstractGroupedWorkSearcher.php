@@ -1417,7 +1417,6 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 			'toc' => 'Table of Contents',
 			'id' => 'Record Number',
 		];
-		return $searchIndexes;
 	}
 
 	public function getRecordDriverForResult($record) : GroupedWorkDriver {
