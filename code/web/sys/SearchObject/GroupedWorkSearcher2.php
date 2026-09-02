@@ -655,10 +655,12 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 				$fieldsToReturn .= ',local_days_since_added_' . $solrScope;
 				$fieldsToReturn .= ',local_time_since_added_' . $solrScope;
 				$fieldsToReturn .= ',local_callnumber_' . $solrScope;
+				$fieldsToReturn .= ',callnumber_sort_' . $solrScope;
 				$fieldsToReturn .= ',scoping_details_' . $solrScope;
 			} else {
 				$fieldsToReturn .= ',days_since_added';
 				$fieldsToReturn .= ',local_callnumber';
+				$fieldsToReturn .= ',callnumber_sort';
 			}
 			$fieldsToReturn .= ',collection';
 			$fieldsToReturn .= ',detailed_location';

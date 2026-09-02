@@ -435,6 +435,7 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 
 
 				String sortableCallNumberForScope = null;
+				boolean hasBookCallNumberForScope = false;
 				Long daysSinceAddedForScope = null;
 				long libBoost = 1;
 
@@ -595,8 +596,13 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 
 						if (locallyOwned || libraryOwned || !scopingInfo.getScope().isRestrictOwningLibraryAndLocationFacets()) {
 							localCallNumbersForScope.add(curItem.getCallNumber());
-							if (sortableCallNumberForScope == null) {
+							String format = curItem.getPrimaryFormat();
+							if (sortableCallNumberForScope == null && !isEContent
+								|| (!hasBookCallNumberForScope && format != null && (format.equalsIgnoreCase("book") || format.equalsIgnoreCase("large print")))) {
 								sortableCallNumberForScope = curItem.getSortableCallNumber();
+								if (format != null && format.equalsIgnoreCase("book")) {
+									hasBookCallNumberForScope = true;
+								}
 							}
 						}
 					}catch (Exception e){
