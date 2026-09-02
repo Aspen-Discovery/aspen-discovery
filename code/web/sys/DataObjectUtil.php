@@ -72,6 +72,15 @@ class DataObjectUtil {
 					$validationResults['errors'][] = $property['property'] . ' is required.';
 				}
 			}
+			if (in_array($property['type'], ['image', 'file']) && !empty($property['required']) && empty($object->getPrimaryKeyValue())) {
+				// Scoped to inserts only (no primary key yet): on an update,
+				// the object already has a valid stored file, so a failed
+				// re-upload should just  warn and leave the existing file in place,
+				// not block the rest of the save.
+				if (empty($object->{$property['property']})) {
+					$validationResults['errors'][] = ($property['label'] ?? $property['property']) . ' could not be saved, the storage backend rejected the file. Please try again.';
+				}
+			}
 			if ($property['type'] == 'password' || $property['type'] == 'storedPassword') {
 				$valueRepeat = $_REQUEST[$property['property'] . 'Repeat'] ?? null;
 				if ($value != $valueRepeat) {
