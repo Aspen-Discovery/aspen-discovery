@@ -2356,7 +2356,7 @@ class SirsiDynixROA extends AbstractIlsDriver {
 
 			$result = [
 				'success' => false,
-				'itemId' => $circRenewResponse->circRecord->key,
+				'itemId' => $itemId,
 				'message' => "The item failed to renew" . ($messages ? ': ' . implode(';', $messages) : ''),
 			];
 
