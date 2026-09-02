@@ -439,4 +439,16 @@ class LibraryCalendarEventRecordDriver extends IndexRecordDriver {
 			'titleURL' => null,
 		];
 	}
+
+	public function getRoom(): null {
+		return null;
+	}
+
+	public function getProgramTypes(): null {
+		return null;
+	}
+
+	public function getCategories(): null {
+		return null;
+	}
 }
