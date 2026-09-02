@@ -667,8 +667,8 @@ class AspenLiDATheme extends DataObject {
 		$theme['id'] = $this->id;
 		$theme['name'] = $this->name;
 		$theme['baseMode'] = $this->baseMode;
-		$theme['logo'] = $configArray['Site']['url'] . '/files/original/' . $this->logo;
-		$theme['header']['logo'] = $configArray['Site']['url'] . '/files/original/' . $this->headerLogo;
+		$theme['logo'] = $this->logo ? $configArray['Site']['url'] . '/files/original/' . $this->logo : null;
+		$theme['header']['logo'] = $this->headerLogo ? $configArray['Site']['url'] . '/files/original/' . $this->headerLogo : null;
 		$theme['header']['alignment'] = $this->headerLogoAlignment;
 		$theme['header']['backgroundColor'] = $this->headerLogoBackgroundColor;
 		$theme['primary'] = ColorUtils::generatePalette($this->primaryColor, $this->primaryTextColor);
