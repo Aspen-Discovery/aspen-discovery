@@ -563,6 +563,7 @@ public class ItemInfo{
 		locationOwnedNames = new HashSet<>();
 		libraryOwnedNames = new HashSet<>();
 		ArrayList<ScopingInfo> scopes = new ArrayList<>(scopingInfo.values());
+		scopes.sort(Comparator.comparingLong(scope -> scope.getScope().getId()));
 		for (ScopingInfo scope : scopes){
 			Scope curScope = scope.getScope();
 			if (scope.isLocallyOwned()){

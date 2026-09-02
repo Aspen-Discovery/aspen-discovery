@@ -6,6 +6,7 @@ import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.common.SolrInputDocument;
+import org.marc4j.marc.Record;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -88,7 +89,7 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 	protected HashMap<String, SeriesInfo> series = new HashMap<>();
 	protected String subTitle;
 	protected HashSet<String> targetAudienceFull = new HashSet<>();
-	protected TreeSet<String> targetAudience = new TreeSet<>();
+	protected HashSet<String> targetAudience = new HashSet<>();
 	protected String title;
 	protected HashSet<String> titleAlt = new HashSet<>();
 	protected HashSet<String> titleNew = new HashSet<>();
@@ -211,7 +212,7 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 		// noinspection unchecked
 		clonedWork.targetAudienceFull = (HashSet<String>) targetAudienceFull.clone();
 		// noinspection unchecked
-		clonedWork.targetAudience = (TreeSet<String>) targetAudience.clone();
+		clonedWork.targetAudience = (HashSet<String>) targetAudience.clone();
 		// noinspection unchecked
 		clonedWork.titleAlt = (HashSet<String>) titleAlt.clone();
 		// noinspection unchecked
@@ -1219,64 +1220,20 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 		this.addLiteraryFormFull(literaryForm, 1);
 	}
 
-	void addTargetAudiences(HashSet<String> target_audiences) {
-		for (String target_audience : target_audiences) {
-			this.addTargetAudience(target_audience);
-		}
+	void addTargetAudiences(HashSet<String> target_audiences, RecordInfo recordInfo) {
+		targetAudience.addAll(target_audiences);
 	}
 
-	void addTargetAudience(String target_audience) {
-		switch (target_audience){
-			case "Unknown":
-			case "Other":
-				if (targetAudience.isEmpty()){
-					targetAudience.add(target_audience);
-					targetAudiencesAsString = null;
-				}
-				break;
-			default:
-				if (!targetAudience.contains(target_audience)) {
-					if (targetAudience.contains("Unknown")) {
-						targetAudience.remove("Unknown");
-					} else {
-						targetAudience.remove("Other");
-					}
-					targetAudience.add(target_audience);
-					targetAudiencesAsString = null;
-				}
-				break;
-		}
+	void addTargetAudience(String target_audience, RecordInfo recordInfo) {
+		targetAudience.add(target_audience);
 	}
 
-	void addTargetAudiencesFull(HashSet<String> target_audiences_full) {
-		for (String target_audience : target_audiences_full) {
-			this.addTargetAudienceFull(target_audience);
-		}
+	void addTargetAudienceFull(String target_audience_full, RecordInfo recordInfo) {
+		targetAudienceFull.add(target_audience_full);
 	}
 
-	void addTargetAudienceFull(String target_audience) {
-		targetAudienceFull.add(target_audience);
-		switch (target_audience){
-			case "Unknown":
-			case "Other":
-			case "No Attempt To Code":
-				//noinspection ConstantConditions
-				if (targetAudienceFull.isEmpty()){
-					targetAudienceFull.add(target_audience);
-				}
-				break;
-			default:
-				if (targetAudienceFull.contains("Unknown")){
-					targetAudienceFull.remove("Unknown");
-				}else if (targetAudienceFull.contains("Other")){
-					targetAudienceFull.remove("Other");
-				}else //noinspection RedundantCollectionOperation
-					if (targetAudienceFull.contains("No Attempt To Code")){
-						targetAudienceFull.remove("No Attempt To Code");
-					}
-				targetAudienceFull.add(target_audience);
-				break;
-		}
+	void addTargetAudiencesFull(HashSet<String> target_audiences_full, RecordInfo recordInfo) {
+		targetAudienceFull.addAll(target_audiences_full);
 	}
 
 	protected Set<String> getRatingFacet(Float rating) {
@@ -1537,8 +1494,7 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 		return this.relatedRecords.size();
 	}
 
-	TreeSet<String> getTargetAudiences() {
-
+	HashSet<String> getTargetAudiences() {
 		return targetAudience;
 	}
 
@@ -1768,10 +1724,8 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 		if (targetAudiencesAsString == null) {
 			if (targetAudience.isEmpty()) {
 				targetAudiencesAsString = "";
-			} else if (targetAudience.size() == 1) {
-				targetAudiencesAsString = targetAudience.first();
 			} else {
-				targetAudiencesAsString = targetAudience.toString();
+				targetAudiencesAsString = String.join(", ", targetAudience);
 			}
 		}
 		return targetAudiencesAsString;

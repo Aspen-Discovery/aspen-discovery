@@ -372,7 +372,7 @@ abstract class MarcRecordProcessor {
 
 	}
 
-	void updateGroupedWorkSolrDataBasedOnStandardMarcData(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record, ArrayList<ItemInfo> printItems, String identifier, String format, String formatCategory, boolean hasParentRecord) {
+	void updateGroupedWorkSolrDataBasedOnStandardMarcData(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record, RecordInfo recordInfo, ArrayList<ItemInfo> printItems, String identifier, String format, String formatCategory, boolean hasParentRecord) {
 		loadTitles(groupedWork, record, formatCategory, hasParentRecord, identifier);
 		loadAuthors(groupedWork, record, identifier, formatCategory);
 		loadSubjects(groupedWork, record);
@@ -488,7 +488,7 @@ abstract class MarcRecordProcessor {
 		loadAwards(groupedWork, record);
 		loadBibCallNumbers(groupedWork, record, identifier);
 		loadLiteraryForms(groupedWork, record, printItems, identifier);
-		loadTargetAudiences(groupedWork, record, printItems, identifier);
+		loadTargetAudiences(groupedWork, record, recordInfo, printItems, identifier);
 		loadAcceleratedReader(groupedWork, record);
 		loadFountasPinnell(groupedWork, record);
 		loadLexileScore(groupedWork, record);
@@ -712,12 +712,12 @@ abstract class MarcRecordProcessor {
 		}
 	}
 
-	protected void loadTargetAudiences(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record, ArrayList<ItemInfo> printItems, String identifier) {
-		loadTargetAudiences(groupedWork, record, printItems, identifier, "Unknown");
+	protected void loadTargetAudiences(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record, RecordInfo recordInfo, ArrayList<ItemInfo> printItems, String identifier) {
+		loadTargetAudiences(groupedWork, record, recordInfo, printItems, identifier, "Unknown");
 	}
 
 	@SuppressWarnings("unused")
-	protected void loadTargetAudiences(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record, ArrayList<ItemInfo> printItems, String identifier, String unknownAudienceLabel) {
+	protected void loadTargetAudiences(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record, RecordInfo recordInfo, ArrayList<ItemInfo> printItems, String identifier, String unknownAudienceLabel) {
 		Set<String> targetAudiences = new LinkedHashSet<>();
 		try {
 			String leader = record.getLeader().toString();
@@ -784,7 +784,7 @@ abstract class MarcRecordProcessor {
 			translatedAudiences.add(unknownAudienceLabel);
 			if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Updating unknown target audience to " + unknownAudienceLabel, 2);}
 		}
-		groupedWork.addTargetAudiences(translatedAudiences);
+		groupedWork.addTargetAudiences(translatedAudiences, recordInfo);
 		LinkedHashSet<String> translatedAudiencesFull;
 		if (settings == null) {
 			translatedAudiencesFull = indexer.translateSystemCollection("target_audience_full", targetAudiences, identifier);
@@ -798,7 +798,7 @@ abstract class MarcRecordProcessor {
 			translatedAudiencesFull.add(unknownAudienceLabel);
 			if (groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Updating unknown full target audience to " + unknownAudienceLabel, 2);}
 		}
-		groupedWork.addTargetAudiencesFull(translatedAudiencesFull);
+		groupedWork.addTargetAudiencesFull(translatedAudiencesFull, recordInfo);
 	}
 
 	protected void loadLiteraryForms(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record, ArrayList<ItemInfo> printItems, String identifier) {
