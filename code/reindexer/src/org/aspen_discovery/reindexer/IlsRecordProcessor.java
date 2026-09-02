@@ -321,7 +321,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				primaryFormatCategory = "Unknown";
 				//logger.info("No primary format for " + recordInfo.getRecordIdentifier() + " found setting to unknown to load standard marc data");
 			}
-			updateGroupedWorkSolrDataBasedOnStandardMarcData(groupedWork, record, recordInfo.getRelatedItems(), identifier, primaryFormat, primaryFormatCategory, firstParentId != null);
+			updateGroupedWorkSolrDataBasedOnStandardMarcData(groupedWork, record, recordInfo, recordInfo.getRelatedItems(), identifier, primaryFormat, primaryFormatCategory, firstParentId != null);
 
 			//Special processing for ILS Records
 			String fullDescription = Util.getCRSeparatedString(MarcUtil.getFieldList(record, "520ac"));
@@ -671,7 +671,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		return true;
 	}
 
-	private void loadScopeInfoForOrderItem(AbstractGroupedWorkSolr groupedWork, String location, String format, TreeSet<String> audiences, String audiencesAsString, ItemInfo itemInfo, org.marc4j.marc.Record record) {
+	private void loadScopeInfoForOrderItem(AbstractGroupedWorkSolr groupedWork, String location, String format, HashSet<String> audiences, String audiencesAsString, ItemInfo itemInfo, org.marc4j.marc.Record record) {
 		//Shelf Location also include the name of the ordering branch if possible
 		boolean hasLocationBasedShelfLocation = false;
 		boolean hasSystemBasedShelfLocation = false;
@@ -1099,7 +1099,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 	}
 
-	private void loadScopeInfoForPrintIlsItem(AbstractGroupedWorkSolr groupedWork, RecordInfo recordInfo, TreeSet<String> audiences, String audiencesAsString, ItemInfo itemInfo, org.marc4j.marc.Record record) {
+	private void loadScopeInfoForPrintIlsItem(AbstractGroupedWorkSolr groupedWork, RecordInfo recordInfo, HashSet<String> audiences, String audiencesAsString, ItemInfo itemInfo, org.marc4j.marc.Record record) {
 		//Determine status, need to do this before determining if it is available since that is part of the check.
 		String recordIdentifier = recordInfo.getRecordIdentifier();
 		String displayStatus = getDisplayStatus(itemInfo, recordIdentifier);
@@ -1893,10 +1893,10 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		return translatedValues;
 	}
 
-	protected void loadTargetAudiences(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record, ArrayList<ItemInfo> printItems, String identifier) {
+	protected void loadTargetAudiences(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record, RecordInfo recordInfo, ArrayList<ItemInfo> printItems, String identifier) {
 		if (settings.getDetermineAudienceBy() == 0) {
 			if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Determining target audience by bib record data", 1);}
-			super.loadTargetAudiences(groupedWork, record, printItems, identifier, settings.getTreatUnknownAudienceAs());
+			super.loadTargetAudiences(groupedWork, record, recordInfo, printItems, identifier, settings.getTreatUnknownAudienceAs());
 		}else{
 			HashSet<String> targetAudiences = new HashSet<>();
 			if (settings.getDetermineAudienceBy() == 1) {
@@ -1944,11 +1944,11 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			if (translatedAudiences.isEmpty()){
 				//We didn't get anything from the items (including Unknown), check the bib record
 				if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Could not find target audience based on item - checking the bib record", 1);}
-				super.loadTargetAudiences(groupedWork, record, printItems, identifier,  settings.getTreatUnknownAudienceAs());
+				super.loadTargetAudiences(groupedWork, record, recordInfo, printItems, identifier,  settings.getTreatUnknownAudienceAs());
 			}else {
 				if (groupedWork != null) {
-					groupedWork.addTargetAudiences(translatedAudiences);
-					groupedWork.addTargetAudiencesFull(translatedAudiences);
+					groupedWork.addTargetAudiences(translatedAudiences, recordInfo);
+					groupedWork.addTargetAudiencesFull(translatedAudiences, recordInfo);
 				}
 			}
 		}

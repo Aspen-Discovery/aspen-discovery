@@ -113,7 +113,9 @@ class SearchObject_GroupedWorkSearcher3 extends SearchObject_GroupedWorkSearcher
 			'lib_boost',
 			'owning_library',
 			'owning_location',
-			'shelf_location'
+			'shelf_location',
+			'target_audience',
+			'target_audience_full'
 		];
 		foreach ($this->filterList as $field => $filter) {
 			$multiSelect = false;
@@ -455,7 +457,7 @@ class SearchObject_GroupedWorkSearcher3 extends SearchObject_GroupedWorkSearcher
 			$fieldsToReturn .= ',itype';
 			$fieldsToReturn .= ',score';
 			if ($solrScope !== false) {
-				$fieldsToReturn .= ' [child childFilter="scope:' . $solrScope . '"]';
+				$fieldsToReturn .= ',[child childFilter="scope:' . $solrScope . '"]';
 			}
 		}
 		return $fieldsToReturn;
