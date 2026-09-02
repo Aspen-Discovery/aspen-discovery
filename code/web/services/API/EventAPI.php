@@ -82,9 +82,9 @@ class EventAPI extends AbstractAPI {
 			$itemData['cover'] = $libraryCalendarDriver->getEventCoverUrl();
 			$itemData['url'] = $libraryCalendarDriver->getExternalUrl();
 			$itemData['audiences'] = $libraryCalendarDriver->getAudiences();
-			$itemData['categories'] = null;
-			$itemData['programTypes'] = null;
-			$itemData['room'] = null;
+			$itemData['categories'] = $libraryCalendarDriver->getCategories();
+			$itemData['programTypes'] = $libraryCalendarDriver->getProgramTypes();
+			$itemData['room'] = $libraryCalendarDriver->getRoom();
 			$itemData['image'] = $configArray['Site']['url'] . $libraryCalendarDriver->getBookcoverUrl('medium');
 
 			// check if event has passed
@@ -138,7 +138,7 @@ class EventAPI extends AbstractAPI {
 			$itemData['cover'] = $communicoDriver->getEventCoverUrl();
 			$itemData['url'] = $communicoDriver->getExternalUrl();
 			$itemData['audiences'] = $communicoDriver->getAudiences();
-			$itemData['categories'] = null;
+			$itemData['categories'] = $communicoDriver->getCategories();
 			$itemData['programTypes'] = $communicoDriver->getProgramTypes();
 			$itemData['room'] = $communicoDriver->getRoom();
 			$itemData['location'] = $this->getDiscoveryBranchDetails($communicoDriver->getBranch());
@@ -192,7 +192,7 @@ class EventAPI extends AbstractAPI {
 			$itemData['url'] = $springshareDriver->getExternalUrl();
 			$itemData['audiences'] = $springshareDriver->getAudiences();
 			$itemData['categories'] = $springshareDriver->getCategories();
-			$itemData['programTypes'] = null;
+			$itemData['programTypes'] = $springshareDriver->getProgramTypes();
 			$itemData['room'] = $springshareDriver->getRoom();
 			$itemData['location'] = $this->getDiscoveryBranchDetails($springshareDriver->getBranch());
 			$itemData['canAddToList'] = false;
@@ -245,9 +245,9 @@ class EventAPI extends AbstractAPI {
 			$itemData['cover'] = $assabetDriver->getEventCoverUrl();
 			$itemData['url'] = $assabetDriver->getExternalUrl();
 			$itemData['audiences'] = $assabetDriver->getAudiences();
-			$itemData['categories'] = null;
-			$itemData['programTypes'] = null;
-			$itemData['room'] = null;
+			$itemData['categories'] = $assabetDriver->getCategories();
+			$itemData['programTypes'] = $assabetDriver->getProgramTypes();
+			$itemData['room'] = $assabetDriver->getRoom();
 			$itemData['image'] = $configArray['Site']['url'] . $assabetDriver->getBookcoverUrl('medium');
 
 			// check if event has passed
@@ -301,9 +301,9 @@ class EventAPI extends AbstractAPI {
 			$itemData['cover'] = $localHopDriver->getEventCoverUrl();
 			$itemData['url'] = $localHopDriver->getExternalUrl();
 			$itemData['audiences'] = $localHopDriver->getAudiences();
-			$itemData['categories'] = null;
-			$itemData['programTypes'] = null;
-			$itemData['room'] = null;
+			$itemData['categories'] = $localHopDriver->getCategories();
+			$itemData['programTypes'] = $localHopDriver->getProgramTypes();
+			$itemData['room'] = $localHopDriver->getRoom();
 			$itemData['image'] = $configArray['Site']['url'] . $localHopDriver->getBookcoverUrl('medium');
 
 			// check if event has passed
@@ -352,7 +352,7 @@ class EventAPI extends AbstractAPI {
 			$itemData['cover'] = $configArray['Site']['url'] . $aspenEventDriver->getEventCoverUrl();
 			$itemData['url'] = $aspenEventDriver->getExternalUrl();
 			$itemData['audiences'] = $aspenEventDriver->getAudiences();
-			$itemData['categories'] = null;
+			$itemData['categories'] = $aspenEventDriver->getCategories();
 			$itemData['programTypes'] = $aspenEventDriver->getProgramTypes();
 			$itemData['room'] = $aspenEventDriver->getRoom();
 			$itemData['image'] = $configArray['Site']['url'] . $aspenEventDriver->getBookcoverUrl('medium');
