@@ -6,7 +6,6 @@ import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.common.SolrInputDocument;
-import org.marc4j.marc.Record;
 
 import java.util.*;
 import java.util.regex.Matcher;
