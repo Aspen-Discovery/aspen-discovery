@@ -3449,8 +3449,8 @@ AspenDiscovery.Admin = (function () {
 			const mode = $('#baseModeSelect option:selected').val();
 			const isLight = (mode !== 'dark');
 
-			const bg = isLight ? '#F5F5F5' : '#111827';
-			const text = isLight ? '#57534e' : '#e5e7eb';
+			const bg = isLight ? '#f3f4f6' : '#111827';
+			const text = isLight ? '#1c1917' : '#f3f4f6';
 			$('#backgroundColor, #backgroundColorHex').val(bg);
 			$('#textColor, #textColorHex').val(text);
 
@@ -3484,9 +3484,9 @@ AspenDiscovery.Admin = (function () {
 				});
 
 				AspenDiscovery.Admin.updateLiDAThemeBaseColors();
-				AspenDiscovery.Admin.checkContrast('primaryTextColor', 'primaryColor', false, 3.0);
-				AspenDiscovery.Admin.checkContrast('secondaryTextColor', 'secondaryColor', false, 3.0);
-				AspenDiscovery.Admin.checkContrast('tertiaryTextColor', 'tertiaryColor', false, 3.0);
+				AspenDiscovery.Admin.checkContrast('primaryTextColor', 'primaryColor', false, 3.5);
+				AspenDiscovery.Admin.checkContrast('secondaryTextColor', 'secondaryColor', false, 3.5);
+				AspenDiscovery.Admin.checkContrast('tertiaryTextColor', 'tertiaryColor', false, 3.5);
 
 				if (d.headerLogoAlignmentApp) {
 					$('#headerLogoAlignmentAppSelect').val(d.headerLogoAlignmentApp);

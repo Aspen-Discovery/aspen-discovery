@@ -262,6 +262,12 @@ div.striped > div:nth-child(odd), div.striped > div:nth-child(odd){ldelim}
 	border-color: {$closedPanelForegroundColor}70;
 {rdelim}
 
+/* Make panel title links fill the available heading area for easier clicking */
+.panel-title > a.panel-toggle-full, .panel-toggle-full{ldelim}
+    display: block;
+    width: 100%;
+{rdelim}
+
 .facetTitle, .exploreMoreTitle,.panel-title,.panel-default > .panel-heading, .sidebar-links .panel-heading, #account-link-accordion .panel .panel-title, #account-settings-accordion .panel .panel-title, .panel-title > a,.panel-default > .panel-heading{ldelim}
     color: {$closedPanelForegroundColor};
 {rdelim}

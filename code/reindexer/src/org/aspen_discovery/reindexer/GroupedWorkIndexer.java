@@ -1,6 +1,8 @@
 package org.aspen_discovery.reindexer;
 
-import org.apache.solr.client.solrj.impl.BinaryResponseParser;
+import org.apache.solr.client.solrj.request.CoreAdminRequest;
+import org.apache.solr.client.solrj.request.CoreStatus;
+import org.apache.solr.client.solrj.response.CoreAdminResponse;
 import org.aspen_discovery.grouping.*;
 import com.turning_leaf_technologies.indexing.*;
 import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
@@ -9,7 +11,6 @@ import com.turning_leaf_technologies.strings.AspenStringUtils;
 import com.turning_leaf_technologies.util.MaxSizeHashMap;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.ConcurrentUpdateHttp2SolrClient;
-import org.apache.solr.client.solrj.impl.BaseHttpSolrClient;
 import org.apache.solr.client.solrj.impl.Http2SolrClient;
 import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrInputDocument;
@@ -207,6 +208,8 @@ public class GroupedWorkIndexer implements AutoCloseable {
 	private int hooplaVersion;
 	private int solrThreadCount;
 	private int solrQueueSize;
+	private String solrPort;
+	private String solrHost;
 
 	public GroupedWorkIndexer(String serverName, Connection dbConn, Ini configIni, boolean fullReindex, boolean clearIndex, BaseIndexingLogEntry logEntry, Logger logger) {
 		this(serverName, dbConn, configIni, fullReindex, clearIndex, false, logEntry, logger);
@@ -223,14 +226,14 @@ public class GroupedWorkIndexer implements AutoCloseable {
 		this.clearIndex = clearIndex;
 		this.regroupAllRecords = regroupAllRecords;
 
-		String solrPort = configIni.get("Index", "solrPort");
+		solrPort = configIni.get("Index", "solrPort");
 		if (solrPort == null || solrPort.isEmpty()) {
 			solrPort = configIni.get("Reindex", "solrPort");
 			if (solrPort == null || solrPort.isEmpty()) {
 				solrPort = "8080";
 			}
 		}
-		String solrHost = configIni.get("Index", "solrHost");
+		solrHost = configIni.get("Index", "solrHost");
 		if (solrHost == null || solrHost.isEmpty()) {
 			solrHost = configIni.get("Reindex", "solrHost");
 			if (solrHost == null || solrHost.isEmpty()) {
@@ -432,9 +435,7 @@ public class GroupedWorkIndexer implements AutoCloseable {
 			.connectionTimeout(15000)
 			.build();
 		try {
-
-
-		updateServer = new ConcurrentUpdateHttp2SolrClient.Builder(solrUrl, http2Client)
+			updateServer = new ConcurrentUpdateHttp2SolrClient.Builder(solrUrl, http2Client)
 				.withThreadCount(solrThreadCount)
 				.withQueueSize(solrQueueSize)
 				.build();
@@ -736,20 +737,54 @@ public class GroupedWorkIndexer implements AutoCloseable {
 	}
 
 	private void clearIndex() {
-		//Check to see if we should clear the existing index
-		logger.info("Clearing existing MARC records from index");
-		try {
-			updateServer.deleteByQuery("recordtype:grouped_work");
-			if (indexVersion == 3) {
-				updateServer.deleteByQuery("recordtype:record_scoping");
-			}
-			//Make sure the delete gets processed.
-			updateServer.blockUntilFinished();
-		} catch (BaseHttpSolrClient.RemoteSolrException rse) {
-			logEntry.incErrors("Solr is not running properly, try restarting", rse);
-			System.exit(-1);
+		//Do a full clear of the index by stopping the core and deleting all records. This is needed when changing
+		//field definitions. The clear index is generally only called during development and is never called automatically
+		//by cron or other mechanism.
+		String solrAdminUrl = "http://" + solrHost + ":" + solrPort + "/solr";
+		try (Http2SolrClient adminClient =
+			 new Http2SolrClient.Builder(solrAdminUrl)
+				 .idleTimeout(60000)
+				 .connectionTimeout(15000)
+				 .build()) {
+
+				String coreName = "grouped_works_v2";
+				if (indexVersion != 2) {
+					coreName ="grouped_works_v3";
+				}
+
+				CoreStatus status = CoreAdminRequest.getCoreStatus(coreName, adminClient);
+
+				String instanceDir = status.getInstanceDirectory();
+
+				CoreAdminRequest.Unload unload = new CoreAdminRequest.Unload(true);
+				unload.setCoreName(coreName);
+
+				unload.setDeleteIndex(true);
+				unload.setDeleteDataDir(true);
+				unload.setDeleteInstanceDir(false);
+
+				CoreAdminResponse unloadResponse = unload.process(adminClient);
+
+				if (unloadResponse.getStatus() != 0) {
+					throw new IllegalStateException(
+						"Unable to unload core: " + unloadResponse
+					);
+				}
+
+				CoreAdminRequest.Create create = new CoreAdminRequest.Create();
+				create.setCoreName(coreName);
+				create.setInstanceDir(instanceDir);
+
+				CoreAdminResponse createResponse = create.process(adminClient);
+
+				if (createResponse.getStatus() != 0) {
+					throw new IllegalStateException(
+						"Unable to recreate core: " + createResponse
+					);
+				}
+
 		} catch (Exception e) {
-			logEntry.incErrors("Error deleting from index", e);
+			logEntry.incErrors("Could not clear core", e);
 		}
 	}
 
@@ -3648,7 +3683,7 @@ public class GroupedWorkIndexer implements AutoCloseable {
 	 */
 	public synchronized MarcStatus saveMarcRecordToDatabase(BaseIndexingSettings indexingProfile, String ilsId, Record marcRecord) {
 		// Filter out any private fields from the record
-		marcRecord = filterPrivateFields(marcRecord);
+		filterPrivateFields(marcRecord);
 
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		MarcWriter writer = new MarcJsonWriter(outputStream);
@@ -3701,7 +3736,7 @@ public class GroupedWorkIndexer implements AutoCloseable {
 		return returnValue;
 	}
 
-	private Record filterPrivateFields(Record marcRecord){
+	private void filterPrivateFields(Record marcRecord){
 		String[] privateFields = {"541", "542", "561", "583"};
 		for (String tag : privateFields) {
 			List<VariableField> fields = new ArrayList<>(marcRecord.getVariableFields(tag));
@@ -3712,8 +3747,6 @@ public class GroupedWorkIndexer implements AutoCloseable {
 				}
 			}
 		}
-
-		return marcRecord;
 	}
 
 	//Create a small cache to hold recently used marc records to avoid time reloading them.
@@ -3767,5 +3800,25 @@ public class GroupedWorkIndexer implements AutoCloseable {
 
 	public int getSeriesVersion() {
 		return seriesVersion;
+	}
+
+	/**
+	 * Remove unneeded/undesired target audiences based on other values that are available.
+	 *
+	 * @param targetAudiences - The raw audiences that are supplied
+	 * @return The cleaned set
+	 */
+	public HashSet<String> cleanTargetAudiences(HashSet<String> targetAudiences) {
+		if (targetAudiences.size() > 1 || !this.isTreatUnknownAudienceAsUnknown()) {
+			targetAudiences.remove("Unknown");
+		}
+		if (targetAudiences.size() > 1) {
+			targetAudiences.remove("No Attempt To Code");
+			targetAudiences.remove("Other");
+		}
+		if (targetAudiences.isEmpty()) {
+			targetAudiences.add(this.getTreatUnknownAudienceAs());
+		}
+		return targetAudiences;
 	}
 }

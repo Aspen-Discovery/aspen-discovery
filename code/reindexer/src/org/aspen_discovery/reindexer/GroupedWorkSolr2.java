@@ -184,26 +184,9 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 			if (this.debugEnabled) {this.addDebugMessage("Full literary form is " + literaryFormFull.keySet(), 2);}
 			doc.addField("literary_form_full", literaryFormFull.keySet());
 			doc.addField("literary_form", literaryForm.keySet());
-			if (targetAudienceFull.size() > 1 || !groupedWorkIndexer.isTreatUnknownAudienceAsUnknown()) {
-				targetAudienceFull.remove("Unknown");
-			}
-			if (targetAudienceFull.size() > 1) {
-				targetAudienceFull.remove("No Attempt To Code");
-				targetAudienceFull.remove("Other");
-			}
-			if (targetAudienceFull.isEmpty()) {
-				targetAudienceFull.add(groupedWorkIndexer.getTreatUnknownAudienceAs());
-			}
+			targetAudienceFull = groupedWorkIndexer.cleanTargetAudiences(targetAudienceFull);
 			doc.addField("target_audience_full", targetAudienceFull);
-			if (targetAudience.size() > 1 || !groupedWorkIndexer.isTreatUnknownAudienceAsUnknown()) {
-				targetAudience.remove("Unknown");
-			}
-			if (targetAudience.size() > 1) {
-				targetAudience.remove("Other");
-			}
-			if (targetAudience.isEmpty()) {
-				targetAudience.add(groupedWorkIndexer.getTreatUnknownAudienceAs());
-			}
+			targetAudience = groupedWorkIndexer.cleanTargetAudiences(targetAudience);
 			if (this.isDebugEnabled()) {this.addDebugMessage("Final target audience is " + targetAudience, 1);}
 			if (this.isDebugEnabled()) {this.addDebugMessage("Final full target audience is " + targetAudienceFull, 1);}
 			doc.addField("target_audience", targetAudience);

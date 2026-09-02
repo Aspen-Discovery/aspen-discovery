@@ -181,7 +181,7 @@ class Placard extends DB_LibraryLocationLinkedObject {
 				'label' => 'Libraries',
 				'description' => 'Define libraries that see this placard',
 				'values' => $libraryList,
-				'hideInLists' => true,
+				'hideInLists' => false,
 			],
 			'locations' => [
 				'property' => 'locations',
@@ -190,7 +190,7 @@ class Placard extends DB_LibraryLocationLinkedObject {
 				'label' => 'Locations',
 				'description' => 'Define locations that use this placard',
 				'values' => $locationList,
-				'hideInLists' => true,
+				'hideInLists' => false,
 			],
 		];
 

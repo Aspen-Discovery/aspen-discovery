@@ -210,7 +210,7 @@ class WebResource extends DB_LibraryLinkedObject {
 						'maxLength' => 500,
 					],
 				],
-				'hideInLists' => true,
+				'hideInLists' => false,
 			]
 		];
 
