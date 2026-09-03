@@ -389,9 +389,13 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 						$limit = $facetInfo->numTotalEntriesToShowInMore;
 					}
 
+					$facetMethod = 'enum';
+					if (in_array($facetName, ['literary_form_full', 'target_audience', 'series_facet', 'subject_facet', 'language', 'awards_facet', 'content_rating', 'rating_facet', 'publishDate'])) {
+						$facetMethod = 'dv';
+					}
 					$jsonInfoForField = [
 						'type' => 'terms',
-						'method' => 'dv',
+						'method' => $facetMethod,
 						'field' => $facetName,
 						'limit' => (int)$limit,
 						'mincount' => $minCount
@@ -651,10 +655,12 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 				$fieldsToReturn .= ',local_days_since_added_' . $solrScope;
 				$fieldsToReturn .= ',local_time_since_added_' . $solrScope;
 				$fieldsToReturn .= ',local_callnumber_' . $solrScope;
+				$fieldsToReturn .= ',callnumber_sort_' . $solrScope;
 				$fieldsToReturn .= ',scoping_details_' . $solrScope;
 			} else {
 				$fieldsToReturn .= ',days_since_added';
 				$fieldsToReturn .= ',local_callnumber';
+				$fieldsToReturn .= ',callnumber_sort';
 			}
 			$fieldsToReturn .= ',collection';
 			$fieldsToReturn .= ',detailed_location';

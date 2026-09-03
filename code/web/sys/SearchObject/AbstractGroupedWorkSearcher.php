@@ -236,9 +236,9 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 
 		if (strpos($searchTerm, ':') > 0) {
 			$tempSearchInfo = explode(':', $searchTerm);
-			if (count($tempSearchInfo) == 2) {
+			if (count($tempSearchInfo) == 2 && preg_match('/^[A-Za-z][\w-]*$/', $tempSearchInfo[0])) {
 				//Check for leading and trailing parentheses
-				if (strlen($tempSearchInfo[0]) > 0 && $tempSearchInfo[0][0] == '(') {
+				if ($tempSearchInfo[0][0] == '(') {
 					$tempSearchInfo[0] = substr($tempSearchInfo[0], 1);
 				}
 				if (strlen($tempSearchInfo[1]) > 0 && $tempSearchInfo[1][-1] == ')') {
@@ -264,7 +264,7 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 						return false;
 					}
 				}
-			} else {
+			} elseif (count($tempSearchInfo) != 2) {
 				//This is an advanced search
 				return false;
 			}
@@ -1401,29 +1401,22 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 	 * @return array
 	 */
 	public function getAllValidSearchIndexes() : array {
-		require_once ROOT_DIR . '/sys/SearchObject/SearchTypes.php';
-		$searchTypes = new SearchTypes();
-		$searchTypes->selectAdd();
-		$searchTypes->selectAdd('DISTINCT type');
-		$searchTypes->find();
-		$searchIndexes = $searchTypes->fetchAll('type', 'type');
-		if (empty($searchIndexes)) {
-			$searchIndexes = [
-				'Keyword' => 'Keyword',
-				'Title'   => 'Title',
-				'StartOfTitle'  => 'Start of Title',
-				'Series' => 'Series',
-				'PrimaryAuthor' => 'Author',
-				'Author' => 'Authors and Contributors',
-				'Subject' => 'Subject',
-				'LocalCallNumber' => 'Call Number',
-				'ISN' => 'ISN',
-				'publisher' => 'publisher',
-				'year' => 'Year of Publication',
-				'toc' => 'Table of Contents',
-				'id' => 'Record Number',
-			];
-		}
+		return [
+			'Keyword' => 'Keyword',
+			'Title'   => 'Title',
+			'AllTitles'   => 'Title',
+			'StartOfTitle'  => 'Start of Title',
+			'Series' => 'Series',
+			'PrimaryAuthor' => 'Author',
+			'Author' => 'Authors and Contributors',
+			'Subject' => 'Subject',
+			'LocalCallNumber' => 'Call Number',
+			'ISN' => 'ISN',
+			'publisher' => 'publisher',
+			'year' => 'Year of Publication',
+			'toc' => 'Table of Contents',
+			'id' => 'Record Number',
+		];
 		return $searchIndexes;
 	}
 

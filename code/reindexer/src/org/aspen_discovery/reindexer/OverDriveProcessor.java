@@ -249,7 +249,7 @@ class OverDriveProcessor implements AutoCloseable {
 								String targetAudience = "Adult";
 								if (rawMetadataDecoded != null) {
 									primaryLanguage = loadOverDriveLanguages(groupedWork, rawMetadataDecoded, identifier, overDriveRecord);
-									targetAudience = loadOverDriveSubjects(groupedWork, rawMetadataDecoded);
+									targetAudience = loadOverDriveSubjects(groupedWork, rawMetadataDecoded, overDriveRecord);
 								}
 
 								//Load the formats for the record.  For Libby, we will create a separate item for each format.
@@ -644,7 +644,7 @@ class OverDriveProcessor implements AutoCloseable {
 	 * @return The target audience for use later in scoping
 	 * @throws JSONException Exception if something goes horribly wrong
 	 */
-	private String loadOverDriveSubjects(AbstractGroupedWorkSolr groupedWork, JSONObject productMetadata) throws JSONException {
+	private String loadOverDriveSubjects(AbstractGroupedWorkSolr groupedWork, JSONObject productMetadata, RecordInfo recordInfo) throws JSONException {
 		//Load subject data
 		assert groupedWork != null;
 
@@ -720,8 +720,8 @@ class OverDriveProcessor implements AutoCloseable {
 			}
 		}
 
-		groupedWork.addTargetAudience(targetAudience);
-		groupedWork.addTargetAudienceFull(targetAudienceFull);
+		groupedWork.addTargetAudience(targetAudience, recordInfo);
+		groupedWork.addTargetAudienceFull(targetAudienceFull, recordInfo);
 
 		return targetAudience;
 	}

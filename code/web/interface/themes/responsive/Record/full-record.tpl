@@ -1,19 +1,19 @@
 {include file="GroupedWork/load-full-record-view-enrichment.tpl" recordType="marcRecord" recordId=$recordDriver->getIdWithSource()}
 
 {strip}
-	<div class="col-xs-12">
+	<div class="full-record full-record-marc-record col-xs-12">
 		{* Search Navigation *}
 		{include file="GroupedWork/search-results-navigation.tpl"}
 
 		{if !empty($error) && !$recordDriver}
-			<div class="row">
+			<div class="full-record-error row">
 				<div class="alert alert-danger">
 					{$error}
 				</div>
 			</div>
 		{else}
 			{* Display Title *}
-			<h1>
+			<h1 class="full-record-title">
 				{*{$recordDriver->getTitle()|escape}*}{* // ever a case when the trailing punction is needed? *}
 				{* Title includes the title section *}
 				{if empty($recordDriver->getTitle()) && !empty($recordDriver->get880Title())}
@@ -39,7 +39,7 @@
 				{/if}
 			</h1>
 
-			<div class="row">
+			<div class="full-record-main row">
 				<div class="col-xs-4 col-sm-5 col-md-4 col-lg-3 text-center">
 					{if $disableCoverArt != 1}
 						<a href="#" id="recordCover" class="text-center row" style="display: inline-block;" onclick="return AspenDiscovery.Record.getLargeCover('{$recordDriver->getModule()}', '{$recordDriver->getUniqueID()}')">
@@ -51,37 +51,37 @@
 					{/if}
 				</div>
 
-				<div id="main-content" class="col-xs-8 col-sm-7 col-md-8 col-lg-9">
+				<div id="main-content" class="full-record-main-content col-xs-8 col-sm-7 col-md-8 col-lg-9">
 					{if !empty($error)}
-						<div class="row">
+						<div class="full-record-error row">
 							<div class="alert alert-danger">
 								{$error}
 							</div>
 						</div>
 					{/if}
 
-					<div class="row">
+					<div class="full-record-details row">
                         {if $formatDisplayStyle == 1}
 							<div id="record-details-column" class="col-xs-12 col-sm-12 col-md-9">
 								{include file="Record/view-title-details.tpl"}
 							</div>
 
 							{if !($recordDriver->hasMultipleVariations())}
-								<div id="recordTools" class="col-xs-12 col-sm-6 col-md-3">
+								<div id="recordTools" class="full-record-tools col-xs-12 col-sm-6 col-md-3">
 									{include file="Record/result-tools.tpl" showMoreInfo=false summShortId=$shortId module=$activeRecordProfileModule summId=$id summTitle=$recordDriver->getTitle()}
 								</div>
 							{else}
-								<div id="multiple-variations-column" class="col-xs-12 col-sm-12 col-md-9">
+								<div id="multiple-variations-column" class="full-record-multiple-variations col-xs-12 col-sm-12 col-md-9">
 									{include file="Record/multipleVariationDisplay.tpl" workId=$recordDriver->getPermanentId() summTitle=$recordDriver->getTitle()}
 								</div>
 							{/if}
                         {else}
                             {* Show alterative layout to match the horizontal design in search results *}
-	                            <div id="record-details-column" class="row">
+	                            <div id="record-details-column" class="full-record-details-horizontal row">
                                     {include file="Record/view-title-details-horiz.tpl" hasMultipleVariations=$recordDriver->hasMultipleVariations()}
                                     {if !($recordDriver->hasMultipleVariations())}
                                         {* Detailed status information *}
-			                            <div class="row variationInfo">
+			                            <div class="full-record-property full-record-variation-info row variationInfo">
 				                            <div class="col-xs-12">
 					                            <div class="row">
 		                                            {if !empty($statusSummary)}
@@ -94,7 +94,7 @@
 				                                            </div>
 							                            {if ($statusSummary->showCopySummary())}</div>{/if}
 			                                                <div class="col-tn-4">
-				                                                <div id="recordTools">
+				                                                <div id="recordTools" class="full-record-tools">
                                                                     {include file="Record/result-tools.tpl" showMoreInfo=false summShortId=$shortId module=$activeRecordProfileModule summId=$id summTitle=$recordDriver->getTitle()}
 				                                                </div>
 			                                                </div>
@@ -110,14 +110,14 @@
                                     {/if}
 	                            </div>
 	                        {if $recordDriver->hasMultipleVariations()}
-		                        <div class="col-xs-12 formatDisplayHorizontal" id="multiple-variations-column">
+		                        <div class="full-record-multiple-variations formatDisplayHorizontal col-xs-12" id="multiple-variations-column">
                                     {include file="Record/multipleVariationDisplayHoriz.tpl" workId=$recordDriver->getPermanentId() summTitle=$recordDriver->getTitle()}
 		                        </div>
 	                        {/if}
                         {/if}
 					</div>
 
-					<div class="row">
+					<div class="full-record-result-tools row">
 						<div class="col-xs-12">
 							{include file='GroupedWork/result-tools-horizontal.tpl' ratingData=$recordDriver->getRatingData() recordUrl=$recordDriver->getLinkUrl() showMoreInfo=false showNotInterested=false}
 						</div>
@@ -125,7 +125,7 @@
 				</div>
 			</div>
 
-			<div class="row">
+			<div class="full-record-more-details row">
 				{include file=$moreDetailsTemplate}
 			</div>
 		{/if}

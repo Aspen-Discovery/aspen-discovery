@@ -1187,12 +1187,9 @@ class Record_AJAX extends JSON_Action {
 						'title' => $return['title'] ?? '',
 						'confirmationNeeded' => $confirmationNeeded,
 					];
-					if (isset($return['viewHoldsAction'])) {
-						$results['viewHoldsAction'] = $return['viewHoldsAction'];
-						$results['modalButtons'] = $return['modalButtons'];
-					}else{
-						$results['viewHoldsAction'] = '';
-					}
+					$results['viewHoldsAction'] = $return['viewHoldsAction'] ?? '';
+					// Sierra place hold does not set a Go to Holds action, so modalButtons may be null
+					$results['modalButtons'] = $return['modalButtons'] ?? null;
 					if ($confirmationNeeded) {
 						$results['modalButtons'] = '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.confirmHold(\'Record\', \'' . $shortId . '\', ' . $return['confirmationId'] . ')">' . translate([
 								'text' => 'Yes, Place Hold',

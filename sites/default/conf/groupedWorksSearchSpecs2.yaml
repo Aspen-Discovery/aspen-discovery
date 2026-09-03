@@ -119,10 +119,10 @@ Author:
       - [proximal, 200]
     - author2:
       - [onephrase, 25]
-      - [proximal, 1]
+      - [proximal2, 1]
     - author_additional:
       - [onephrase, 25]
-      - [proximal, 1]
+      - [proximal2, 1]
 
 AuthorProper:
   QueryFields:

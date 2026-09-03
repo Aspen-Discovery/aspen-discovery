@@ -9,11 +9,11 @@
 				{foreach from=$filterList item=filters key=field }
 					{foreach from=$filters item=filter}
 					{if !empty($filter.isLocked)}
-						<a class="btn btn-default btn-sm facetValueBadge" href="{$filter.removalUrl|escape}" onclick="return AspenDiscovery.Searches.unlockFacetAndRemove('{$filter.field}', '{$filter.removalUrl|escape}', '{$filter.value|escape:'javascript'}');" aria-label="{translate text="Unlock and remove Filter" inAttribute=true isPublicFacing=true}" data-filter-field="{$filter.field|escape}" data-filter-unscoped="{$filter.unscopedField|escape}" data-filter-value="{$filter.value|escape}" data-filter-display="{$filter.display|escape}" data-removal-url="{$filter.removalUrl|escape}">
+						<a class="btn btn-default btn-sm facetValueBadge" href="{$filter.removalUrl|escape}" onclick="return AspenDiscovery.Searches.unlockFacetAndRemove('{$filter.field}', '{$filter.removalUrl|escape}', '{$filter.value|escape:'javascript'}');" aria-label="{translate text="Unlock and remove Filter" inAttribute=true isPublicFacing=true}" data-filter-field="{$filter.field|escape}" {if !empty($filter.unscopedField)}data-filter-unscoped="{$filter.unscopedField|escape}"{/if} data-filter-value="{$filter.value|escape}" data-filter-display="{$filter.display|escape}" data-removal-url="{$filter.removalUrl|escape}">
 							<i class="fas fa-lock fa-lg fa-fw" style="display:inline; vertical-align: middle"></i> {$filter.display}
 						</a>
 					{else}
-						<a class="btn btn-default btn-sm facetValueBadge" href="{$filter.removalUrl|escape}" aria-label="{translate text="Remove Filter" inAttribute=true isPublicFacing=true}" data-filter-field="{$filter.field|escape}" data-filter-unscoped="{$filter.unscopedField|escape}" data-filter-value="{$filter.value|escape}" data-filter-display="{$filter.display|escape}" data-removal-url="{$filter.removalUrl|escape}">
+						<a class="btn btn-default btn-sm facetValueBadge" href="{$filter.removalUrl|escape}" aria-label="{translate text="Remove Filter" inAttribute=true isPublicFacing=true}" data-filter-field="{$filter.field|escape}" {if !empty($filter.unscopedField)}data-filter-unscoped="{$filter.unscopedField|escape}"{/if} data-filter-value="{$filter.value|escape}" data-filter-display="{$filter.display|escape}" data-removal-url="{$filter.removalUrl|escape}">
 							<i class="fas fa-xmark text-danger remove-filter-icon" style="display:inline; vertical-align: middle"></i> {$filter.display}
 						</a>
 					{/if}

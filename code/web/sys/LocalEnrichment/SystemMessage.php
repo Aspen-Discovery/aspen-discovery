@@ -133,7 +133,7 @@ class SystemMessage extends DB_LibraryLocationLinkedObject {
 				'label' => 'Libraries',
 				'description' => 'Define libraries that see this system message',
 				'values' => $libraryList,
-				'hideInLists' => true,
+				'hideInLists' => false,
 			],
 			'locations' => [
 				'property' => 'locations',
@@ -142,7 +142,7 @@ class SystemMessage extends DB_LibraryLocationLinkedObject {
 				'label' => 'Locations',
 				'description' => 'Define locations that use this system message',
 				'values' => $locationList,
-				'hideInLists' => true,
+				'hideInLists' => false,
 			],
 		];
 

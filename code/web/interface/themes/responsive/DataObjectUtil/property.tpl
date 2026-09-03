@@ -172,7 +172,7 @@
 					<div id="panelStatus_{$property.label|escapeCSS}" class="panel panel-default {if !empty($property.expandByDefault)}active{/if}">
 						<div class="panel-heading row">
 							<div class="panel-title col-xs-11">
-								<a id="panelToggle_{$property.property}" data-toggle="collapse" data-parent="#accordion_{$property.label|escapeCSS}" href="#accordion_body_{$property.label|escapeCSS}" aria-expanded="{if !empty($property.expandByDefault)}true{else}false{/if}" class="{if !empty($property.expandByDefault)}expanded{else}collapsed{/if}">
+								<a id="panelToggle_{$property.property}" data-toggle="collapse" data-parent="#accordion_{$property.label|escapeCSS}" href="#accordion_body_{$property.label|escapeCSS}" aria-expanded="{if !empty($property.expandByDefault)}true{else}false{/if}" class="panel-toggle-full {if !empty($property.expandByDefault)}expanded{else}collapsed{/if}">
 									{translate text=$property.label isAdminFacing=true}
 								</a>
 							</div>
@@ -200,8 +200,16 @@
 				<script type="text/javascript">
 					{* Initiate any checkbox with a data attribute set to data-switch=""  as a bootstrap switch *}
 					{literal}
-					$("#panelToggle_{/literal}{$property.property}{literal}").on('click', function() {
+					$("#panelToggle_{/literal}{$property.property}{literal}").on('click keydown', function(event) {
 						var toggleButton = $(this);
+						var key = event.key || event.which;
+						if (event.type === 'keydown' && key !== 'Enter' && key !== ' ' && key !== 'Spacebar' && key !== 13 && key !== 32) {
+							return;
+						}
+						if (event.type === 'keydown') {
+							event.preventDefault();
+							event.stopPropagation();
+						}
 						$(this).toggleClass('expanded');
 						$(this).toggleClass('collapsed');
 						var panelStatus = $("#panelStatus_{/literal}{$property.label|escapeCSS}{literal}");
@@ -218,6 +226,15 @@
 					})
 					{/literal}
 				</script>
+				<script type="text/javascript">
+					{literal}
+					$("#panelStatus_{/literal}{$property.label|escapeCSS}{literal} .panel-heading").on('click', function(e) {
+						if ($(e.target).closest('.col-xs-1, a, button, img').length === 0) {
+							$("#panelToggle_{/literal}{$property.property}{literal}").trigger('click');
+						}
+					});
+					{/literal}
+				</script>
 			{/if}
 		{elseif $property.type == 'foreignKey' && !empty($property.editLink)}
 			<div class="row">
@@ -227,7 +244,7 @@
 			</div>
 		{elseif $property.type == 'text' || $property.type == 'textFromNestedSection' || $property.type == 'regularExpression' || $property.type == 'folder'}
 			{assign var=textValue value=($property.type == 'textFromNestedSection') ? $propValue.$propName : $propValue}
-			<input type='text' name='{$propName}' id='{$propName}' value='{$textValue|escape}' {if !empty($property.accessibleLabel)}aria-label="{$property.accessibleLabel}"{/if} {if !empty($property.maxLength)}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control {if !empty($property.required)}required{/if}{if !empty($property.validationGroupName)} {$property.validationGroupName}-validation-group{/if}' {if !empty($property.autocomplete)}autocomplete="{$property.autocomplete}"{/if} {if !empty($property.readOnly)}readonly{/if}  {if !empty($property.forcesReindex)}aria-describedby="{$propName}HelpBlock"{/if} {if !empty($property.suggestions)}list="{$propName}DataList"{/if} >
+			<input type='text' name='{$propName}' id='{$propName}' value='{$textValue|escape}' {if !empty($property.accessibleLabel)}aria-label="{$property.accessibleLabel}"{/if} {if !empty($property.maxLength)}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control {if !empty($property.required)}required{/if}{if !empty($property.validationGroupName)} {$property.validationGroupName}-validation-group{/if}{if $property.type == 'regularExpression'} regex-field{/if}' {if !empty($property.autocomplete)}autocomplete="{$property.autocomplete}"{/if} {if !empty($property.readOnly)}readonly{/if}  {if !empty($property.forcesReindex)}aria-describedby="{$propName}HelpBlock"{/if} {if !empty($property.suggestions)}list="{$propName}DataList"{/if} >
 			{if !empty($property.forcesReindex)}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-warning"><i class="fas fa-exclamation-triangle"></i> {translate text="Updating this setting causes a nightly reindex" isAdminFacing=true}</small></span>{/if}
 			{if !empty($property.affectsLiDA)}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-info"><i class="fas fa-info-circle"></i> {translate text="Aspen LiDA also uses this setting" isAdminFacing=true}</small></span>{/if}
 			{if !empty($property.warning)}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-warning"><i class="fas fa-exclamation-triangle"></i> {$property.warning}</small></span>{/if}
@@ -338,12 +355,14 @@
 			{/if}
 			<div class="row">
 				<div class="col-tn-3">
-					<input type='color' name='{$propName}' id='{$propName}' value='{if $useDefault == '1'}{$property.default|escape}{else}{$propValue|escape}{/if}'  aria-label='{$property.label} color picker' class='form-control{if !empty($property.required)}required{/if}' size="7" maxlength="7" onchange="$('#{$propName}Hex').val(this.value);$('#{$propName}-default').prop('checked',false);{if !empty($property.checkContrastWith)}AspenDiscovery.Admin.checkContrast('{$propName}', '{$property.checkContrastWith}', false, '{$contrastRatio}');{/if}" {if !empty($property.readOnly)}disabled{/if}>
+					<input type='color' {if !empty($property.readOnly)}readonly{/if} name='{$propName}' id='{$propName}' value='{if $useDefault == '1'}{$property.default|escape}{else}{$propValue|escape}{/if}'  aria-label='{$property.label} color picker' class='form-control{if !empty($property.required)}required{/if}' size="7" maxlength="7" onchange="$('#{$propName}Hex').val(this.value);$('#{$propName}-default').prop('checked',false);{if !empty($property.checkContrastWith)}AspenDiscovery.Admin.checkContrast('{$propName}', '{$property.checkContrastWith}', false, '{$contrastRatio}');{/if}{if !empty($property.onchange)}{$property.onchange};{/if}" {if !empty($property.readOnly)}disabled{/if}>
 				</div>
 				<div class="col-tn-3">
-					<input type='text' id='{$propName}Hex' value='{if $useDefault == '1'}{$property.default|escape}{else}{$propValue|escape}{/if}' aria-label='{$property.label} hex code' class='form-control' size="7" maxlength="7" onchange="$('#{$propName}').val(this.value);$('#{$propName}-default').prop('checked',false);{if !empty($property.checkContrastWith)}AspenDiscovery.Admin.checkContrast('{$propName}', '{$property.checkContrastWith}', false, '{$contrastRatio}');{/if}" pattern="^#([a-fA-F0-9]{ldelim}6{rdelim})$" {if !empty($property.readOnly)}readonly{/if}>
+					<input type='text' {if !empty($property.readOnly)}readonly{/if} id='{$propName}Hex' value='{if $useDefault == '1'}{$property.default|escape}{else}{$propValue|escape}{/if}' aria-label='{$property.label} hex code' class='form-control' size="7" maxlength="7" onchange="$('#{$propName}').val(this.value);$('#{$propName}-default').prop('checked',false);{if !empty($property.checkContrastWith)}AspenDiscovery.Admin.checkContrast('{$propName}', '{$property.checkContrastWith}', false, '{$contrastRatio}');{/if}{if !empty($property.onchange)}{$property.onchange};{/if}" pattern="^#([a-fA-F0-9]{ldelim}6{rdelim})$" {if !empty($property.readOnly)}readonly{/if}>
 				</div>
+
 				<div class="col-tn-3">
+                {if empty($property.readOnly)}
 					<div class="checkbox" style="margin: 0">
 						<label for='{$propName}-default'>{translate text="Use Default" isAdminFacing=true}
 							<input type="checkbox" name='{$propName}-default' id='{$propName}-default' {if $useDefault == '1'}checked="checked"{/if} {if !empty($property.readOnly)}readonly disabled{/if}/>
@@ -363,7 +382,9 @@
 								{rdelim})
 							{rdelim});
 					</script>
+                {/if}
 				</div>
+
 				<div class="col-tn-3">
 					{if !empty($property.checkContrastWith)}
 						&nbsp;{translate text='Contrast Ratio' isAdminFacing=true}&nbsp;<span id="contrast_{$propName}" class="contrast_warning"></span>
