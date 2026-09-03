@@ -203,6 +203,16 @@ function getUpdates26_09_00(): array {
 
 		//jacob - OpenFifth
 
+		// nick
+		'exact_location_matching_sierra' => [
+			'title' => 'Exact location matching (Sierra only)',
+			'description' => 'When using the ILS to determine valid pickup locations use exact matching against locations defined in Aspen.',
+			'sql' => [
+				'ALTER TABLE system_variables ADD COLUMN exactLocationMatching TINYINT(1) NOT NULL DEFAULT 0',
+			]
+		], //exact_location_matching_sierra
+
+
 
 	];
 }

@@ -68,6 +68,7 @@ class SystemVariables extends DataObject {
 	public $logFrequentCrons;
 	public $hooplaVersion;
 	public $readingHistoryBaseUrl;
+	public $exactLocationMatching
 
 	static $_objectStructure = [];
 	static function getObjectStructure(string $context = ''): array {
@@ -548,6 +549,13 @@ class SystemVariables extends DataObject {
 				'label' => 'Reading History Base URL',
 				'description' => 'Determines how reading history URLs are constructed in cron. Most systems should be fine using localhost, but more complex systems may need the base url.',
 				'default' => 0,
+			],
+			'exactLocationMatching' => [
+				'property' => 'exactLocationMatching',
+				'type' => 'checkbox',
+				'label' => 'Use Exact Holds Pickup Location Matching (Sierra only)',
+				'description' => 'Determine whether the hold pickup locations from Sierra should use "starts with" or "exact" matchign, the default of "starts with" is used when unchecked',
+				'default' => false,
 			]
 		];
 
