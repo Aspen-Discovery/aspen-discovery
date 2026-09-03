@@ -28,6 +28,7 @@ class DefaultDatabaseExporterTests extends TestCase {
 			unlink($this->exportFile);
 		}
 		$aspen_db->exec("DELETE FROM languages WHERE code LIKE 'zt%'");
+		$aspen_db->exec("DELETE FROM web_builder_audience WHERE name LIKE 'zt_%'");
 
 		parent::tearDown();
 	}
@@ -128,14 +129,35 @@ class DefaultDatabaseExporterTests extends TestCase {
 			$this->assertStringContainsString("CREATE TABLE `$table`", $output, "Missing CREATE for $table");
 		}
 
-		$tablesWithData = array_merge($this->exporter->getDataTables(), array_keys($this->exporter->getSeedTables()));
-		foreach ($tablesWithData as $table) {
-			$rowCount = (int)$aspen_db->query("SELECT COUNT(*) FROM $table")->fetchColumn();
-			$tableHasRows = $rowCount > 0;
+		$tableFilters = array_merge(array_fill_keys($this->exporter->getDataTables(), ''), $this->exporter->getSeedTables());
+		foreach ($tableFilters as $table => $filter) {
+			$tableHasRows = $this->countRows($table, $filter) > 0;
 			if ($tableHasRows) {
 				$this->assertStringContainsString("INSERT INTO `$table`", $output, "Missing data for $table");
 			}
 		}
+	}
+
+	private function countRows(string $table, string $filter): int {
+		global $aspen_db;
+		$countQuery = "SELECT COUNT(*) FROM $table";
+		$hasFilter = !empty($filter);
+		if ($hasFilter) {
+			$countQuery .= " WHERE $filter";
+		}
+		return (int)$aspen_db->query($countQuery)->fetchColumn();
+	}
+
+	public function testSeedFiltersOnlyExportDefaultRows(): void {
+		global $aspen_db;
+		$aspen_db->exec("INSERT INTO web_builder_audience (name) VALUES ('zt_test_audience')");
+
+		$fhnd = $this->openMemoryHandle();
+		$filter = $this->exporter->getSeedTables()['web_builder_audience'];
+		$this->exporter->writeTableData($fhnd, 'web_builder_audience', $filter);
+		$output = $this->readHandle($fhnd);
+
+		$this->assertStringNotContainsString('zt_test_audience', $output);
 	}
 
 	public function testExportInsertColumnListsAlwaysMatchSchema(): void {
