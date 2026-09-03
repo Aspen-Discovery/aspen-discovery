@@ -16,6 +16,49 @@ if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN'){
 $linuxOS = null;
 $linuxArray = ['centos', 'debian'];
 
+function detectLinuxOS(array $linuxArray): string {
+	$osRelease = @parse_ini_file('/etc/os-release');
+	if ($osRelease === false) {
+		return 'debian';
+	}
+	$osIds = array_merge([$osRelease['ID'] ?? ''], explode(' ', $osRelease['ID_LIKE'] ?? ''));
+	$knownIds = array_values(array_intersect($osIds, $linuxArray));
+	if ($knownIds !== []) {
+		return $knownIds[0];
+	}
+	$isRhelFamily = count(array_intersect(['rhel', 'fedora'], $osIds)) > 0;
+	if ($isRhelFamily) {
+		return 'centos';
+	}
+	return 'debian';
+}
+
+function resolveConfiguredSiteOS(array $siteConfig, string $operatingSystemSetting, string $siteOnWindowsSetting): array {
+	$siteOnWindows = $siteOnWindowsSetting == 'Y' || $siteOnWindowsSetting == 'y';
+	$siteOnMacSetting = $siteConfig['siteOnMac'] ?? '';
+	$siteOnMac = $siteOnMacSetting == 'Y' || $siteOnMacSetting == 'y';
+	$siteOnLinux = !$siteOnWindows && !$siteOnMac;
+	$linuxOS = $siteOnLinux ? $operatingSystemSetting : null;
+	return [$siteOnWindows, $siteOnMac, $linuxOS, $operatingSystemSetting];
+}
+
+function resolveSiteOS(array $siteConfig, bool $runningOnWindows, array $linuxArray, string $detectedOS): array {
+	$operatingSystemSetting = $siteConfig['operatingSystem'] ?? '';
+	$siteOnWindowsSetting = $siteConfig['siteOnWindows'] ?? '';
+	$autoDetectOS = $operatingSystemSetting === '' && $siteOnWindowsSetting === '';
+	if (!$autoDetectOS) {
+		return resolveConfiguredSiteOS($siteConfig, $operatingSystemSetting, $siteOnWindowsSetting);
+	}
+	if ($runningOnWindows) {
+		return [true, false, null, 'windows'];
+	}
+	if (PHP_OS === 'Darwin') {
+		return [false, true, null, $detectedOS];
+	}
+	$linuxOS = detectLinuxOS($linuxArray);
+	return [false, false, $linuxOS, $linuxOS];
+}
+
 $foundConfig = false;
 $variables = [];
 $siteOnWindows = false;
@@ -106,13 +149,7 @@ if (count($_SERVER['argv']) > 1){
 		}else{
 			$variables['ilsDriver'] = $configArray['ILS']['ilsDriver'];
 		}
-		$siteOnWindows = $configArray['Site']['siteOnWindows'] == 'Y' || $configArray['Site']['siteOnWindows'] == 'y';
-		$siteOnMac = !empty($configArray['Site']['siteOnMac']) && ($configArray['Site']['siteOnMac'] == 'Y' || $configArray['Site']['siteOnMac'] == 'y');
-
-		if (!$siteOnWindows && !$siteOnMac){
-			$linuxOS = $configArray['Site']['operatingSystem'];
-		}
-		$operatingSystem = $configArray['Site']['operatingSystem'];
+		[$siteOnWindows, $siteOnMac, $linuxOS, $operatingSystem] = resolveSiteOS($configArray['Site'], $runningOnWindows, $linuxArray, $operatingSystem);
 	} else {
 		echo "Invalid configuration file ($siteConfigFile) specified";
 		exit();
