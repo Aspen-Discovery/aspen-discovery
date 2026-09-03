@@ -1,7 +1,7 @@
 <?php
 $_SERVER['aspen_server'] = 'unit_tests.localhost';
 
-require_once '../../code/web/bootstrap.php';
+require_once __DIR__ . '/../../code/web/bootstrap.php';
 //Load a clean database at the start of unit testing?
 global $configArray;
 global $aspen_db;
@@ -49,7 +49,7 @@ exec($importCommand, $results);
 //Make sure solr is running?
 
 
-require_once '../../code/web/bootstrap_aspen.php';
+require_once __DIR__ . '/../../code/web/bootstrap_aspen.php';
 
 //Setup interface
 global $interface;
