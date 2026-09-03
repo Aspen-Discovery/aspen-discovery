@@ -160,6 +160,25 @@ class DefaultDatabaseExporterTests extends TestCase {
 		$this->assertStringNotContainsString('zt_test_audience', $output);
 	}
 
+	public function testExportUsesSeedDataFileInPlaceOfSeedTables(): void {
+		$seedDataFile = tempnam(sys_get_temp_dir(), 'aspen_seed_');
+		file_put_contents($seedDataFile, "INSERT INTO `languages` (`id`, `code`) VALUES (999, 'zt9');\n");
+
+		$this->exporter->exportToFile($this->exportFile, $seedDataFile);
+		$output = file_get_contents($this->exportFile);
+		unlink($seedDataFile);
+
+		$this->assertStringContainsString("VALUES (999, 'zt9');", $output);
+		$this->assertStringNotContainsString('INSERT INTO `library`', $output);
+		$this->assertStringContainsString('INSERT INTO `modules`', $output);
+		$this->assertStringContainsString('CREATE TABLE `library`', $output);
+	}
+
+	public function testExportRejectsUnreadableSeedDataFile(): void {
+		$this->expectException(RuntimeException::class);
+		$this->exporter->exportToFile($this->exportFile, '/no/such/seed_data.sql');
+	}
+
 	public function testExportInsertColumnListsAlwaysMatchSchema(): void {
 		global $aspen_db;
 		$this->exporter->exportToFile($this->exportFile);

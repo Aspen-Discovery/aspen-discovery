@@ -69,7 +69,11 @@ class DefaultDatabaseExporter {
 		];
 	}
 
-	public function exportToFile(string $exportFile): void {
+	/**
+	 * When $seedDataFile is provided its statements replace the seed table data
+	 * that would otherwise be exported from the connected database.
+	 */
+	public function exportToFile(string $exportFile, string $seedDataFile = ''): void {
 		$fhnd = fopen($exportFile, 'w');
 		$fileOpened = $fhnd !== false;
 		if (!$fileOpened) {
@@ -87,12 +91,36 @@ class DefaultDatabaseExporter {
 		foreach ($this->getDataTables() as $table) {
 			$this->writeTableData($fhnd, $table);
 		}
-		foreach ($this->getSeedTables() as $table => $filter) {
-			$this->writeTableData($fhnd, $table, $filter);
+
+		$useSeedDataFile = !empty($seedDataFile);
+		if ($useSeedDataFile) {
+			$this->copySeedDataFromFile($fhnd, $seedDataFile);
+		} else {
+			$this->writeSeedDataFromDatabase($fhnd);
 		}
 
 		fwrite($fhnd, "SET FOREIGN_KEY_CHECKS=1;\n");
 		fclose($fhnd);
+	}
+
+	/**
+	 * @param resource $fhnd Open file handle to write to
+	 */
+	private function writeSeedDataFromDatabase($fhnd): void {
+		foreach ($this->getSeedTables() as $table => $filter) {
+			$this->writeTableData($fhnd, $table, $filter);
+		}
+	}
+
+	/**
+	 * @param resource $fhnd Open file handle to write to
+	 */
+	private function copySeedDataFromFile($fhnd, string $seedDataFile): void {
+		$seedDataFileIsReadable = is_readable($seedDataFile);
+		if (!$seedDataFileIsReadable) {
+			throw new RuntimeException("Could not read seed data from $seedDataFile");
+		}
+		fwrite($fhnd, file_get_contents($seedDataFile));
 	}
 
 	/**
