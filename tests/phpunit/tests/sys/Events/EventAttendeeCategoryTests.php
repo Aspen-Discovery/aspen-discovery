@@ -435,7 +435,7 @@ class EventAttendeeCategoryTests extends TestCase {
 		$instance->id = $this->eventInstance->id;
 		$instance->find(true);
 
-		$breakdown = EventRegistrationService::getAttendeeCategoryBreakdown((int)$instance->id);
+		$breakdown = EventRegistrationService::getAttendeeCategoryBreakdownForInstance((int)$instance->id);
 
 		$this->assertCount(2, $breakdown);
 
@@ -455,7 +455,7 @@ class EventAttendeeCategoryTests extends TestCase {
 		$instance->id = $this->eventInstance->id;
 		$instance->find(true);
 
-		$breakdown = EventRegistrationService::getAttendeeCategoryBreakdown((int)$instance->id);
+		$breakdown = EventRegistrationService::getAttendeeCategoryBreakdownForInstance((int)$instance->id);
 		$this->assertCount(2, $breakdown);
 
 		foreach ($breakdown as $entry) {

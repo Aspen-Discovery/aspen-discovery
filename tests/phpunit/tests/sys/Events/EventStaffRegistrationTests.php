@@ -175,9 +175,11 @@ class EventStaffRegistrationTests extends TestCase {
 
 	public function testRegisterUserAllowsInvitedUserWhenFull(): void {
 		// Fill all seats
+		$firstUser = null;
 		for ($i = 0; $i < 3; $i++) {
 			$u = $this->insertUser(40060 + $i);
 			$this->insertRegistration((int)$u->id);
+			$firstUser ??= $u;
 		}
 
 		// Put user on waitlist as invited
@@ -192,7 +194,7 @@ class EventStaffRegistrationTests extends TestCase {
 
 		// Unregister one to make room — invited user should be allowed through
 		$firstReg = new UserAspenEventInstanceRegistration();
-		$firstReg->userId = 40060;
+		$firstReg->userId = $firstUser->id;
 		$firstReg->eventInstanceId = $this->eventInstance->id;
 		$firstReg->find(true);
 		$firstReg->delete();

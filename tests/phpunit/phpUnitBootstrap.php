@@ -1,7 +1,7 @@
 <?php
-$_SERVER['aspen_server'] = 'unit_tests.localhost';
+$_SERVER['aspen_server'] = getenv('SITE_NAME') ?: 'unit_tests.localhost';
 
-require_once '../../code/web/bootstrap.php';
+require_once __DIR__ . '/../../code/web/bootstrap.php';
 //Load a clean database at the start of unit testing?
 global $configArray;
 global $aspen_db;
@@ -36,23 +36,39 @@ foreach ($allTables as $table) {
 	$aspen_db->exec("DROP TABLE {$table['TABLE_NAME']}");
 }
 
+function importSqlFile(string $sqlFile, string $dbUser, string $dbHost, string $dbPort, string $dbName): void {
+	$importOutput = [];
+	exec("mysql -u$dbUser -h$dbHost -P$dbPort $dbName < $sqlFile 2>&1", $importOutput, $exitCode);
+	if ($exitCode !== 0) {
+		die("Failed to import $sqlFile (exit code $exitCode):\n" . implode("\n", $importOutput) . "\n");
+	}
+}
+
+putenv("MYSQL_PWD=$dbPassword");
+
 //Import blank database
-$importCommand = "mysql -u$dbUser -p$dbPassword -h$dbHost -P$dbPort $dbName < $baseAspenSQL";
-exec($importCommand);
+importSqlFile($baseAspenSQL, $dbUser, $dbHost, $dbPort, $dbName);
 
 ////Import unit test specific data
 $unitTestsSQL = "$curDir/../../tests/unit_tests.sql";
-$importCommand = "mysql -u$dbUser -p$dbPassword -h$dbHost -P$dbPort $dbName < $unitTestsSQL";
-$results = [];
-exec($importCommand, $results);
+importSqlFile($unitTestsSQL, $dbUser, $dbHost, $dbPort, $dbName);
 
 //Make sure solr is running?
 
 
-require_once '../../code/web/bootstrap_aspen.php';
+require_once __DIR__ . '/../../code/web/bootstrap_aspen.php';
 
 //Setup interface
 global $interface;
 $interface = new UInterface();
+
+//Setup translation like index.php does for web requests
+global $activeLanguage;
+global $translator;
+$validLanguages = Language::getValidLanguages();
+$defaultLanguageCode = Language::getDefaultLanguageCode();
+$activeLanguage = $validLanguages[$defaultLanguageCode];
+$translator = new Translator(ROOT_DIR . '/lang', $defaultLanguageCode);
+$interface->setLanguage($activeLanguage);
 
 echo "Aspen Discovery PHPUnit tests starting\n";
