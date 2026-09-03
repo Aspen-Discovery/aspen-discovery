@@ -36,15 +36,22 @@ foreach ($allTables as $table) {
 	$aspen_db->exec("DROP TABLE {$table['TABLE_NAME']}");
 }
 
+function importSqlFile(string $sqlFile, string $dbUser, string $dbHost, string $dbPort, string $dbName): void {
+	$importOutput = [];
+	exec("mysql -u$dbUser -h$dbHost -P$dbPort $dbName < $sqlFile 2>&1", $importOutput, $exitCode);
+	if ($exitCode !== 0) {
+		die("Failed to import $sqlFile (exit code $exitCode):\n" . implode("\n", $importOutput) . "\n");
+	}
+}
+
+putenv("MYSQL_PWD=$dbPassword");
+
 //Import blank database
-$importCommand = "mysql -u$dbUser -p$dbPassword -h$dbHost -P$dbPort $dbName < $baseAspenSQL";
-exec($importCommand);
+importSqlFile($baseAspenSQL, $dbUser, $dbHost, $dbPort, $dbName);
 
 ////Import unit test specific data
 $unitTestsSQL = "$curDir/../../tests/unit_tests.sql";
-$importCommand = "mysql -u$dbUser -p$dbPassword -h$dbHost -P$dbPort $dbName < $unitTestsSQL";
-$results = [];
-exec($importCommand, $results);
+importSqlFile($unitTestsSQL, $dbUser, $dbHost, $dbPort, $dbName);
 
 //Make sure solr is running?
 
