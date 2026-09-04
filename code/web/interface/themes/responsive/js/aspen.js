@@ -13666,7 +13666,7 @@ AspenDiscovery.GroupedWork = (function(){
 				$.each(activeManifestationInfo.variations, function () {
 					var activeClass = (i === 0) ? ' active' : '';
 					var variationButton = '<div role="option" tabindex="0" class="slider-slide horizontal-format-button slider-sm' + activeClass + '" data-workId="' + workId + '" data-variationid="' + this.databaseId + '" data-format="' + format + '" data-cleanedWorkId="' + cleanedWorkId + '">\n' +
-						'<div>' +
+						'<div class="' + this.cssClass + '">' +
 						this.label + '<br/>' + this.groupedStatus +
 						'</div>' +
 						'</div>';
@@ -13806,6 +13806,7 @@ AspenDiscovery.GroupedWork = (function(){
 		}
 	};
 }(AspenDiscovery.GroupedWork || {}));
+
 /**
  * Lazy Circulation Loading Module
  * - Handles lazy loading of checkout and holds data.
