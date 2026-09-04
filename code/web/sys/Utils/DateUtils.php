@@ -59,6 +59,23 @@ class DateUtils {
 		return str_replace('-', '_', $locale);
 	}
 
+	static function formatTimeLocale(int|DateTimeInterface $timestamp, bool $includeDayPeriod = true):string {
+		global $activeLanguage;
+
+		$locale 	= $activeLanguage->locale ?? 'en_US';
+		$timezone 	= date_default_timezone_get();
+		$formatter 	= new IntlDateFormatter($locale, IntlDateFormatter::NONE, IntlDateFormatter::SHORT, $timezone);
+
+		if (!$includeDayPeriod) {
+			$localePattern 			= preg_replace(self::DAY_PERIOD_REGEX, '', $formatter->getPattern());
+			// Remove leftover separators if any (en uses U+202F before AM/PM in current CLDR, so trim() is not an option)
+			$trimmedLocalePattern 	= preg_replace('/^\p{Z}+|\p{Z}+$/u', '', $localePattern);
+			$formatter->setPattern($trimmedLocalePattern);
+		}
+
+		return $formatter->format($timestamp);
+	}
+
 	static function formatDateLocale($string, $dateStyle = 'medium', $timeStyle = 'none', $pattern = null, $skeleton = null): string|false {
 		global $activeLanguage;
 
