@@ -700,6 +700,22 @@ class SearchAPI extends AbstractAPI {
 			}
 		}
 
+		require_once ROOT_DIR . '/sys/Storage/StorageDriverFactory.php';
+		$activeStorageSetting = StorageDriverFactory::getActiveSetting();
+		if ($activeStorageSetting !== null && $activeStorageSetting->driver === 's3' && !empty($activeStorageSetting->baseUrl)) {
+			// Live check, not a cached read of the last saved verifiedStatus --
+			// this is what actually keeps the status current, since nothing else
+			// re-checks the public URL between admin form saves. Only relevant
+			// when a CDN/public URL is actually configured; S3 without one is a
+			// valid setup (proxy-only reads) and isn't a failure to report.
+			$activeStorageSetting->checkAndPersistPublicUrlStatus();
+			if ($activeStorageSetting->verifiedStatus === 'verified') {
+				$this->addCheck($checks, 'CDN Storage');
+			} else {
+				$this->addCheck($checks, 'CDN Storage', self::STATUS_CRITICAL, $activeStorageSetting->verifiedMessage);
+			}
+		}
+
 		$hasCriticalErrors = false;
 		$hasWarnings = false;
 		foreach ($checks as $check) {

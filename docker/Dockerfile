@@ -83,6 +83,12 @@ COPY docker/files/scripts/apache.sh      /apache.sh
 # Add aspen-discovery
 COPY . /usr/local/aspen-discovery
 
+# Install Composer dependencies
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
+	&& cd /usr/local/aspen-discovery \
+	&& composer install --no-interaction --prefer-dist --no-dev \
+	&& rm /usr/local/bin/composer
+
 # Delete sites
 RUN cd /usr/local/aspen-discovery/sites \
 	&& rm -rf *local* \
