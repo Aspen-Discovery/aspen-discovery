@@ -597,8 +597,7 @@ class EventRegistrationService {
 
 		require_once ROOT_DIR . '/CatalogFactory.php';
 		$catalog = CatalogFactory::getCatalogConnectionInstance(null, null);
-		$catalogSupportsNewUsers = $catalog != null && method_exists($catalog, 'findNewUser');
-		if ($catalogSupportsNewUsers) {
+		if ($catalog != null) {
 			$newUser = $catalog->findNewUser($barcode, '');
 			if ($newUser && !($newUser instanceof AspenError)) {
 				$newUser->getDisplayName();
