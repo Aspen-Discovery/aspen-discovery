@@ -48,6 +48,7 @@ Access Aspen at http://localhost:85 (default credentials: `aspen_admin` / `secre
 | `DATABASE_USER` | `aspenusr` | Database user |
 | `DATABASE_PASSWORD` | `aspenpasswd` | Database password |
 | `DATABASE_ROOT_PASSWORD` | `password` | MariaDB root password |
+| `DATABASE_SSL_MODE` | `DISABLED` | When `DISABLED`, the mariadb CLI client connects with `--skip-ssl` (needed since mariadb-client 11.x defaults to requiring TLS). Set to `REQUIRED` only when the db service has TLS configured, e.g. via a compose overlay adding certs. |
 
 ### Services
 
