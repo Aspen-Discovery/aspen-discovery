@@ -378,6 +378,7 @@ class Grouping_Variation {
 			'databaseId' => $this->databaseId,
 			'label' => $this->label,
 			'groupedStatus' => translate(['text' => $this->getStatusInformation()->getGroupedStatus(), 'isPublicFacing' => true]),
+			'cssClass' => $this->getStatusInformation()->getCssClass(),
 			'numEditions' => $this->getNumRelatedRecords()
 		];
 	}
