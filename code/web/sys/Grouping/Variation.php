@@ -383,3 +383,4 @@ class Grouping_Variation {
 		];
 	}
 }
+

@@ -1014,3 +1014,4 @@ AspenDiscovery.GroupedWork = (function(){
 		}
 	};
 }(AspenDiscovery.GroupedWork || {}));
+
