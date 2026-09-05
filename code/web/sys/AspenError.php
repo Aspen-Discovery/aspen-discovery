@@ -184,12 +184,7 @@ class AspenError extends DataObject {
 
 		global $aspenUsage;
 		if (!empty($aspenUsage)) {
-			$aspenUsage->pagesWithErrors++;
-			try {
-				$aspenUsage->update();
-			} catch (Exception $e) {
-				//Table does not exist yet
-			}
+			$aspenUsage->incPagesWithErrors();
 		}
 
 		//Do not need to save UsageByIP since it is done in bootstrap and in realtime as counters update

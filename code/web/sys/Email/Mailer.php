@@ -47,7 +47,6 @@ class Mailer {
 		}else{
 			$aspenUsage->incEmailsFailed();
 		}
-		$aspenUsage->update();
 
 		return $result;
 	}
