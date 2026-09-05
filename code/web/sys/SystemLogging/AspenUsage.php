@@ -243,14 +243,12 @@ class AspenUsage extends AbstractUsage {
 				$today->year = $this->year;
 				$today->month = $this->month;
 				$today->day = $this->day;
-				if ($today->find(true)) {
-					$this->id = $today->id;
-					return $this->query("UPDATE aspen_usage SET $fieldName = $fieldName + 1 WHERE id = $this->id");
+				if (!$today->find(true)) {
+					return false;
 				}
-				return false;
-			}else{
-				return $this->query("UPDATE aspen_usage SET $fieldName = $fieldName + 1 WHERE id = $this->id");
+				$this->id = $today->id;
 			}
+			return $this->query("UPDATE aspen_usage SET $fieldName = $fieldName + 1 WHERE id = $this->id");
 		} catch (Exception) {
 			//Ignore this, the table has not been created yet
 			return true;
