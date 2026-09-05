@@ -41,6 +41,7 @@ class User extends DataObject {
 	public $axis360Email;
 	public $preferredLibraryInterface;
 	public $preferredTheme;
+	public $preferredTextSize;
 	public $noPromptForUserReviews; //tinyint(1)
 	public $lockedFacets;
 	public $alternateLibraryCard;
@@ -1663,6 +1664,11 @@ class User extends DataObject {
 		}
 		if (isset($_REQUEST['preferredTheme'])) {
 			$this->__set('preferredTheme', $_REQUEST['preferredTheme']);
+		}
+		if (isset($_REQUEST['preferredTextSize'])) {
+			if ($_REQUEST['preferredTextSize'] === '' || array_key_exists($_REQUEST['preferredTextSize'], Theme::$fontSizes)) {
+				$this->__set('preferredTextSize', $_REQUEST['preferredTextSize']);
+			}
 		}
 
 		//Make sure the selected location codes are in the database.
@@ -5103,6 +5109,10 @@ class User extends DataObject {
 				'Administer Library Aspen LiDA Home Screen Links',
 				'Administer Selected Aspen LiDA Home Screen Link Groups'
 			]);
+			$sections['aspen_lida']->addAction(new AdminAction('Themes', 'Define themes for Aspen LiDA.', '/AspenLiDA/Themes'), [
+				'Administer All Aspen LiDA Themes',
+				'Administer Library Aspen LiDA Themes',
+			]);
 		}
 		if (array_key_exists('Series', $enabledModules)) {
 			$sections['series'] = new AdminSection("Series Search");
@@ -5894,7 +5904,7 @@ class User extends DataObject {
 				$permissionRoles = $this->getRoles();
 				if (!empty($permissionRoles)) {
 					foreach ($permissionRoles as $role) {
-						if (empty($role->twoFactorAuthSettingId)) {
+						if (empty($role->twoFactorAuthSettingId) || $role->twoFactorAuthSettingId == -1) {
 							continue;
 						}
 						$roleSetting = new TwoFactorAuthSetting();
@@ -5909,7 +5919,7 @@ class User extends DataObject {
 				// As a backup, we will check if the user is required to use 2FA based on their patron type or account profile.
 				$patronType = $this->getPTypeObj();
 				$fallbackSetting = new TwoFactorAuthSetting();
-				if (!empty($patronType) && !empty($patronType->twoFactorAuthSettingId)) {
+				if (!empty($patronType) && !empty($patronType->twoFactorAuthSettingId) && $patronType->twoFactorAuthSettingId != -1) {
 					$fallbackSetting->id = $patronType->twoFactorAuthSettingId;
 				} else {
 					$accountProfile = $this->getAccountProfile();

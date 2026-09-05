@@ -218,53 +218,61 @@
 							</div>
 						{/if}
 
-						{if count($allActiveThemes) > 1 || count($validLanguages) > 1}
-							<div class="panel" id="displayPreferencesPanel">
-								<a data-toggle="collapse" href="#displayPreferencesPanelBody" class="active">
-									<div class="panel-heading">
-										<div class="panel-title">
-											<h2>
-												{if count($validLanguages) > 1 && count($allActiveThemes) > 1}
-													{translate text="Languages & Display" isPublicFacing=true}
-												{elseif count($validLanguages) > 1}
-													{translate text="Languages" isPublicFacing=true}
-												{else}
-													{translate text="Display" isPublicFacing=true}
-												{/if}
-											</h2>
-										</div>
+						<div class="panel" id="displayPreferencesPanel">
+							<a data-toggle="collapse" href="#displayPreferencesPanelBody" class="active">
+								<div class="panel-heading">
+									<div class="panel-title">
+										<h2>
+											{if count($validLanguages) > 1 && count($allActiveThemes) > 1}
+												{translate text="Languages & Display" isPublicFacing=true}
+											{elseif count($validLanguages) > 1}
+												{translate text="Languages" isPublicFacing=true}
+											{else}
+												{translate text="Display" isPublicFacing=true}
+											{/if}
+										</h2>
 									</div>
-								</a>
-								<div id="displayPreferencesPanelBody" class="panel-collapse collapse in">
-									<div class="panel-body">
-										{if count($allActiveThemes) > 1}
-											<div class="form-group propertyRow">
-												<label for="preferredTheme" class="control-label">{translate text='Display Mode' isPublicFacing=true}</label>
-												<select id="preferredTheme" name="preferredTheme" class="form-control">
-													{foreach from=$allActiveThemes key=themeId item=themeName}
-														<option value="{$themeId}"{if $profile->preferredTheme==$themeId} selected="selected"{/if}>
-															{$themeName}
-														</option>
-													{/foreach}
-												</select>
-											</div>
-										{/if}
-										{if count($validLanguages) > 1}
-											<div class="form-group propertyRow">
-												<label for="profileLanguage" class="control-label">{translate text='Language to display catalog in' isPublicFacing=true}</label>
-												<select id="profileLanguage" name="profileLanguage" class="form-control">
-													{foreach from=$validLanguages key=languageCode item=language}
-														<option value="{$languageCode}"{if $profile->interfaceLanguage==$languageCode} selected="selected"{/if}>
-															{$language->displayName|escape}
-														</option>
-													{/foreach}
-												</select>
-											</div>
-										{/if}
+								</div>
+							</a>
+							<div id="displayPreferencesPanelBody" class="panel-collapse collapse in">
+								<div class="panel-body">
+									{if count($allActiveThemes) > 1}
+										<div class="form-group propertyRow">
+											<label for="preferredTheme" class="control-label">{translate text='Display Mode' isPublicFacing=true}</label>
+											<select id="preferredTheme" name="preferredTheme" class="form-control">
+												{foreach from=$allActiveThemes key=themeId item=themeName}
+													<option value="{$themeId}"{if $profile->preferredTheme==$themeId} selected="selected"{/if}>
+														{$themeName}
+													</option>
+												{/foreach}
+											</select>
+										</div>
+									{/if}
+									{if count($validLanguages) > 1}
+										<div class="form-group propertyRow">
+											<label for="profileLanguage" class="control-label">{translate text='Language to display catalog in' isPublicFacing=true}</label>
+											<select id="profileLanguage" name="profileLanguage" class="form-control">
+												{foreach from=$validLanguages key=languageCode item=language}
+													<option value="{$languageCode}"{if $profile->interfaceLanguage==$languageCode} selected="selected"{/if}>
+														{$language->displayName|escape}
+													</option>
+												{/foreach}
+											</select>
+										</div>
+									{/if}
+									<div class="form-group propertyRow">
+										<label for="preferredTextSize" class="control-label">{translate text='Preferred Text Size' isPublicFacing=true}</label>
+										<select id="preferredTextSize" name="preferredTextSize" class="form-control">
+											{foreach from=$fontSizeOptions key=fontSize item=fontSizeDisplay}
+												<option value="{$fontSize}"{if $profile->preferredTextSize==$fontSize} selected="selected"{/if}>
+													{$fontSizeDisplay|escape}
+												</option>
+											{/foreach}
+										</select>
 									</div>
 								</div>
 							</div>
-						{/if}
+						</div>
 
 						{if !empty($isAssociatedWithILS)}
 							<div class="panel" id="holdPreferencesPanel">

@@ -278,7 +278,7 @@ public class SideLoadingMain {
 							logEntry.addNote("Processing sideload file " + curFile.getFilename());
 							processSideLoadFile(curFile.getExistingFile(), existingRecords, settings);
 							curFile.updateDatabase(insertSideloadFileStmt, updateSideloadFileStmt);
-							getGroupedWorkIndexer().commitChanges();
+							//getGroupedWorkIndexer().commitChanges();
 						} else {
 							if (curFile.getDeletedTime() > curFile.getLastIndexed()) {
 								logEntry.addNote("Marking " + curFile.getFilename() + " as deleted");
@@ -314,9 +314,9 @@ public class SideLoadingMain {
 							}
 
 							logEntry.incDeleted();
-							if (logEntry.getNumDeleted() % 500 == 0) {
+							/*if (logEntry.getNumDeleted() % 500 == 0) {
 								getGroupedWorkIndexer().commitChanges();
-							}
+							}*/
 						}
 					}
 					deleteFromIlsMarcChecksums.close();
@@ -326,7 +326,7 @@ public class SideLoadingMain {
 			}
 
 			processRecordsToReload(settings, logEntry);
-			getGroupedWorkIndexer().commitChanges();
+			//getGroupedWorkIndexer().commitChanges();
 
 			try {
 				PreparedStatement updateSideloadStmt;

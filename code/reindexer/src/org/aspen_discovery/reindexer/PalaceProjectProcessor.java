@@ -243,21 +243,21 @@ public class PalaceProjectProcessor {
 				}
 				if (audience == null) {
 					audience = "Unknown";
-					groupedWork.addTargetAudience("Unknown");
-					groupedWork.addTargetAudienceFull("Unknown");
+					groupedWork.addTargetAudience("Unknown", palaceProjectRecord);
+					groupedWork.addTargetAudienceFull("Unknown", palaceProjectRecord);
 					if (groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Target/full target audience is unknown based on Palace Project record", 2);}
 				}else {
-					groupedWork.addTargetAudience(audience);
-					groupedWork.addTargetAudienceFull(audience);
+					groupedWork.addTargetAudience(audience, palaceProjectRecord);
+					groupedWork.addTargetAudienceFull(audience, palaceProjectRecord);
 					if (groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Target/full target audience is " + audience + " based on Palace Project record", 2);}
 				}
 
 				if (metadata.has("narrator")) {
 					String narrator;
 					if (metadata.get("narrator") instanceof String) {
-						narrator = metadata.getString("narrator");
+						narrator = metadata.getString("narrator").replaceAll("\\s+$", "");
 					}else{
-						narrator = metadata.getJSONObject("narrator").getString("name");
+						narrator = metadata.getJSONObject("narrator").getString("name").replaceAll("\\s+$", "");
 					}
 					HashSet<String> artistsToAdd = new HashSet<>();
 					HashSet<String> artistsWithRoleToAdd = new HashSet<>();

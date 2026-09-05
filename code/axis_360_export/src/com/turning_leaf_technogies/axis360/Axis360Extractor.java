@@ -271,9 +271,9 @@ public class Axis360Extractor {
 			}
 		}
 
-		if (groupedWorkIndexer != null) {
+		/*if (groupedWorkIndexer != null) {
 			groupedWorkIndexer.commitChanges();
-		}
+		}*/
 		return numChanges;
 	}
 
@@ -456,9 +456,9 @@ public class Axis360Extractor {
 						indexAxis360Record(groupedWorkId);
 						numChanges++;
 
-						if (numChanges % 500 == 0) {
+						/*if (numChanges % 500 == 0) {
 							getGroupedWorkIndexer().commitChanges();
-						}
+						}*/
 					}
 				}
 			} catch (Exception e) {

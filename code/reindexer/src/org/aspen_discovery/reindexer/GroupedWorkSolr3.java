@@ -28,13 +28,29 @@ public class GroupedWorkSolr3 extends AbstractGroupedWorkSolr implements Cloneab
 		return clonedWork;
 	}
 
+	void addTargetAudiences(HashSet<String> target_audiences, RecordInfo recordInfo) {
+		recordInfo.addTargetAudiences(target_audiences);
+	}
+
+	void addTargetAudience(String target_audience, RecordInfo recordInfo) {
+		recordInfo.addTargetAudience(target_audience);
+	}
+
+	void addTargetAudienceFull(String target_audience_full, RecordInfo recordInfo) {
+		recordInfo.addTargetAudienceFull(target_audience_full);
+	}
+
+	void addTargetAudiencesFull(HashSet<String> target_audiences_full, RecordInfo recordInfo) {
+		recordInfo.addTargetAudiencesFull(target_audiences_full);
+	}
+
 	/**
 	 * Create a solr document to store the majority of the grouped work data.
 	 * There is also a child document that contains information about the scoped records which allows filtering by
 	 *
 	 *
-	 * @param logEntry
-	 * @return
+	 * @param logEntry The log entry used for logging
+	 * @return The fully built out document
 	 */
 	@SuppressWarnings("DuplicatedCode")
 	SolrInputDocument getSolrDocument(BaseIndexingLogEntry logEntry) {
@@ -187,30 +203,7 @@ public class GroupedWorkSolr3 extends AbstractGroupedWorkSolr implements Cloneab
 			groupedWorkDoc.addField("literary_form_full", literaryFormFull.keySet());
 			groupedWorkDoc.addField("literary_form", literaryForm.keySet());
 
-			//Target Audiences
-			if (targetAudienceFull.size() > 1 || !groupedWorkIndexer.isTreatUnknownAudienceAsUnknown()) {
-				targetAudienceFull.remove("Unknown");
-			}
-			if (targetAudienceFull.size() > 1) {
-				targetAudienceFull.remove("No Attempt To Code");
-				targetAudienceFull.remove("Other");
-			}
-			if (targetAudienceFull.isEmpty()) {
-				targetAudienceFull.add(groupedWorkIndexer.getTreatUnknownAudienceAs());
-			}
-			groupedWorkDoc.addField("target_audience_full", targetAudienceFull);
-			if (targetAudience.size() > 1 || !groupedWorkIndexer.isTreatUnknownAudienceAsUnknown()) {
-				targetAudience.remove("Unknown");
-			}
-			if (targetAudience.size() > 1) {
-				targetAudience.remove("Other");
-			}
-			if (targetAudience.isEmpty()) {
-				targetAudience.add(groupedWorkIndexer.getTreatUnknownAudienceAs());
-			}
-			if (this.isDebugEnabled()) {this.addDebugMessage("Final target audience is " + targetAudience, 1);}
-			if (this.isDebugEnabled()) {this.addDebugMessage("Final full target audience is " + targetAudienceFull, 1);}
-			groupedWorkDoc.addField("target_audience", targetAudience);
+			//Target Audiences - In V3 these are stored at the record level
 
 			//Date added to catalog
 			Date dateAdded = getDateAdded();
@@ -404,7 +397,7 @@ public class GroupedWorkSolr3 extends AbstractGroupedWorkSolr implements Cloneab
 		}
 
 		for (RecordInfo recordInfo : relatedRecords.values()) {
-			ArrayList<SolrInputDocument> recordDocuments = recordInfo.getRecordScopeSolrDocuments(groupedWorkIndexer, daysAddedSincePubDate);
+			ArrayList<SolrInputDocument> recordDocuments = recordInfo.getRecordScopeSolrDocuments(groupedWorkIndexer, this, daysAddedSincePubDate);
 			if (recordDocuments != null) {
 				groupedWorkDoc.addChildDocuments(recordDocuments);
 			}

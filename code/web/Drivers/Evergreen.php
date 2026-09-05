@@ -1505,6 +1505,10 @@ class Evergreen extends AbstractIlsDriver {
 						'text' => 'Your hold was placed successfully.',
 						'isPublicFacing' => true,
 					]);
+					$hold_result['api']['action'] = translate([
+						'text' => 'Go to Holds',
+						'isPublicFacing' => true,
+					]);
 				}
 			}
 		}
@@ -1597,7 +1601,7 @@ class Evergreen extends AbstractIlsDriver {
 							'date' => date('M j, Y', strtotime($transactionObj['xact_start'])),
 							'type' => $transactionObj['xact_type'],
 							'reason' => $transactionObj['last_billing_type'],
-							'message' => $reason,
+							'message' => $reason ?? '',
 							'amountVal' => $transactionObj['total_owed'],
 							'amountOutstandingVal' => $transactionObj['balance_owed'],
 							'amount' => $currencyFormatter->formatCurrency($transactionObj['total_owed'], $currencyCode),
@@ -1752,10 +1756,11 @@ class Evergreen extends AbstractIlsDriver {
 					'type' => 'persist',
 					'org' => null,
 					'identifier' => (string)$this->accountProfile->staffUsername,
+					'agent' => 'AspenDiscovery',
 				]),
 			];
 
-			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $params);
+			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, http_build_query($params, '', '&', PHP_QUERY_RFC3986));
 			ExternalRequestLogEntry::logRequest('evergreen.getStaffUserInfo', 'POST', $evergreenUrl, $this->apiCurlWrapper->getHeaders(), http_build_query($params), $this->apiCurlWrapper->getResponseCode(), $apiResponse, ['password' => $this->accountProfile->staffPassword]);
 			if ($this->apiCurlWrapper->getResponseCode() == 200) {
 				$apiResponse = json_decode($apiResponse);
@@ -2164,9 +2169,10 @@ class Evergreen extends AbstractIlsDriver {
 					'type' => 'persist',
 					'org' => null,
 					'identifier' => trim($username),
+					'agent' => 'AspenDiscovery',
 				]),
 			];
-			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $params);
+			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, http_build_query($params, '', '&', PHP_QUERY_RFC3986));
 			ExternalRequestLogEntry::logRequest('evergreen.validatePatronAndGetAuthToken', 'POST', $evergreenUrl, $this->apiCurlWrapper->getHeaders(), http_build_query($params), $this->apiCurlWrapper->getResponseCode(), $apiResponse, ['password' => $password]);
 			if ($this->apiCurlWrapper->getResponseCode() == 200) {
 				$apiResponse = json_decode($apiResponse);

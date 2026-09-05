@@ -68,121 +68,27 @@ class SelfReg extends Action {
 		} else {
 			if (isset($_REQUEST['submit'])) {
 				require_once ROOT_DIR . '/sys/Enrichment/RecaptchaSetting.php';
-				$recaptchaValid = RecaptchaSetting::validateRecaptcha();
-
-				if (!$recaptchaValid) {
+				if (!RecaptchaSetting::validateRecaptcha()) {
 					$_SESSION['selfRegError'] = 'captcha';
 					$_SESSION['selfRegFormData'] = $_REQUEST;
 					header("Location: /MyAccount/SelfReg");
 					exit;
-				} else {
-					require_once ROOT_DIR . '/sys/Administration/USPS.php';
-					require_once ROOT_DIR . '/sys/Utils/SystemUtils.php';
-					$uspsInfo = USPS::getUSPSInfo();
-					$streetAddress = '';
-					$city = '';
-					$state = '';
-					$zip = '';
-					$dob = '';
-
-					//validate phone and email
-					$invalidContactInfo = false;
-					if (!empty($_REQUEST['email']) && !filter_var($_REQUEST['email'], FILTER_VALIDATE_EMAIL)) {
-						$_SESSION['selfRegError'] = 'email';
-						$invalidContactInfo = true;
-					}
-					if (!empty($_REQUEST['phone'])) {
-						if (!SystemUtils::validatePhoneNumber($_REQUEST['phone'])) {
-							$_SESSION['selfRegError'] = 'phone';
-							$invalidContactInfo = true;
-						}
-					}
-
-					//get the correct _REQUEST names as they differ across ILSes
-					foreach ($_REQUEST as $selfRegValue => $val){
-						if (!(preg_match('/(.*?)address2(.*)|(.*?)borrower_B(.*)|(.*?)borrower_alt(.*)/', $selfRegValue))){
-							if (preg_match('/(.*?)address|street(.*)/', $selfRegValue)){
-								$streetAddress = $val;
-							}
-							elseif (preg_match('/(.*?)city(.*)/', $selfRegValue)){
-								$city = $val;
-							}
-							elseif (preg_match('/(.*?)state(.*)/', $selfRegValue)){
-								//USPS does not accept anything other than 2 character state codes but will use the ZIP to fill in the blank
-								if (strlen($val) == 2){
-									$state = $val;
-								}
-							}
-							elseif (preg_match('/(.*?)zip(.*)/', $selfRegValue)){
-								$zip = $val;
-							}
-							elseif (preg_match('/(.*?)dob|dateofbirth|birth[dD]ate(.*)/', $selfRegValue)){
-								$dob = $val;
-							}
-						}
-					}
-					//if there's no USPS info or email or phone are invalid, don't bother trying to validate
-					if ($uspsInfo && !$invalidContactInfo){
-						//Submit form to ILS if address is validated
-						if (SystemUtils::validateAddress($streetAddress, $city, $state, $zip)){
-							//Submit form to ILS if age is validated
-							if (!empty($dob)) {
-								if (SystemUtils::validateAge($library->minSelfRegAge, $dob)) {
-									$result = $catalog->selfRegister();
-									$_SESSION['selfRegResult'] = $result;
-									header("Location: /MyAccount/SelfReg");
-									exit;
-								}else {
-									$_SESSION['selfRegError'] = 'age';
-								}
-							} else {
-								$result = $catalog->selfRegister();
-								$_SESSION['selfRegResult'] = $result;
-								header("Location: /MyAccount/SelfReg");
-								exit;
-							}
-						} else {
-							$_SESSION['selfRegError'] = 'address';
-						}
-					} else {
-						//Submit form to ILS if age is validated and contact info is not invalid
-						if (!empty($dob)) {
-							$maxSelfRegAge = $selfRegFields['identitySection']['properties']['borrower_dateofbirth']['maxAgeForSelfReg'] ?? null;
-							if (SystemUtils::validateAge($library->minSelfRegAge, $dob, $maxSelfRegAge)){
-								if (!$invalidContactInfo) {
-									$result = $catalog->selfRegister();
-									$_SESSION['selfRegResult'] = $result;
-									header("Location: /MyAccount/SelfReg");
-									exit;
-								}
-							} else {
-								$_SESSION['selfRegError'] = 'age';
-								if((int) $library->minSelfRegAge > 0 && !empty($maxSelfRegAge) && (int)$maxSelfRegAge > 0){
-									$_SESSION['selfRegAgeText'] = "You must be at least $library->minSelfRegAge and no older than $maxSelfRegAge years old. Please enter a valid date of birth.";
-								} elseif($library->minSelfRegAge > 0){
-									$_SESSION['selfRegAgeText'] = "You must be at least $library->minSelfRegAge years old. Please enter a valid date of birth.";
-								} elseif(!empty($maxSelfRegAge) && (int)$maxSelfRegAge > 0) {
-									$_SESSION['selfRegAgeText'] = "You must be no older than $maxSelfRegAge years old. Please enter a valid date of birth.";
-								} else {
-									$_SESSION['selfRegAgeText'] = "Please enter a valid date of birth";
-								}
-							}
-						} else {
-							if (!$invalidContactInfo) {
-								$result = $catalog->selfRegister();
-								$_SESSION['selfRegResult'] = $result;
-								header("Location: /MyAccount/SelfReg");
-								exit;
-							}
-						}
-					}
-
-					if ($invalidContactInfo || isset($_SESSION['selfRegError'])) {
-						$_SESSION['selfRegFormData'] = $_REQUEST;
-						header("Location: /MyAccount/SelfReg");
-						exit;
-					}
 				}
+
+				$outcome = self::validateAndRegister($catalog, $selfRegFields);
+				if ($outcome['success']) {
+					$_SESSION['selfRegResult'] = $outcome['result'];
+					header("Location: /MyAccount/SelfReg");
+					exit;
+				}
+
+				$_SESSION['selfRegError'] = $outcome['errorType'];
+				if (!empty($outcome['ageText'])) {
+					$_SESSION['selfRegAgeText'] = $outcome['ageText'];
+				}
+				$_SESSION['selfRegFormData'] = $_REQUEST;
+				header("Location: /MyAccount/SelfReg");
+				exit;
 			}
 
 			// Pre-fill form with user supplied data from session (after POST/Redirect/GET).
@@ -247,15 +153,122 @@ class SelfReg extends Action {
 				$selfRegistrationFormMessage = $library->selfRegistrationFormMessage;
 			}
 			$interface->assign('selfRegistrationFormMessage', $selfRegistrationFormMessage);
-			$selfRegistrationSuccessMessage = $library->getTextBlockTranslation('selfRegistrationSuccessMessage', $languageCode);
-			if (empty($selfRegistrationSuccessMessage)) {
-				$selfRegistrationSuccessMessage = $library->selfRegistrationSuccessMessage;
-			}
-			$interface->assign('selfRegistrationSuccessMessage', $selfRegistrationSuccessMessage);
+			$interface->assign('selfRegistrationSuccessMessage', self::getSelfRegistrationSuccessMessage($library));
 			$interface->assign('promptForBirthDateInSelfReg', $library->promptForBirthDateInSelfReg);
 
 			$this->display('selfReg.tpl', 'Register for a Library Card', '');
 		}
+	}
+
+	public static function buildMinimalSelfRegForm(CatalogConnection $catalog, ?string $introText = null, ?string $footerText = null, ?string $onSubmissionJS = null): string {
+		global $interface;
+		$selfRegFields = $catalog->getILSRegistrationFormStructure(AbstractIlsDriver::ILS_REG_MODE_MINIMAL_SELF);
+		if (empty($selfRegFields)) {
+			return '';
+		}
+
+		$interface->assign('submitUrl', '/MyAccount/SelfReg');
+		$interface->assign('saveButtonText', 'Register');
+		$interface->assign('isSelfRegistration', true);
+		$interface->assign('formLabel', 'Self Registration');
+		$interface->assign('structure', $selfRegFields);
+		$interface->assign('onSubmissionJS', $onSubmissionJS);
+		$interface->assign('minimalSelfRegForm', $interface->fetch('DataObjectUtil/objectEditForm.tpl'));
+		$interface->assign('introText', $introText);
+		$interface->assign('footerText', $footerText);
+		return $interface->fetch('MyAccount/minimalSelfRegForm.tpl');
+	}
+
+	public static function getSelfRegistrationSuccessMessage(Library $library): string {
+		global $activeLanguage;
+		$languageCode = 'en';
+		if (isset($activeLanguage) && !empty($activeLanguage->code)) {
+			$languageCode = $activeLanguage->code;
+		}
+		$message = $library->getTextBlockTranslation('selfRegistrationSuccessMessage', $languageCode);
+		if (empty($message)) {
+			$message = $library->selfRegistrationSuccessMessage;
+		}
+		return $message;
+	}
+
+	public static function validateAndRegister(CatalogConnection $catalog, array $selfRegFields): array {
+		global $library;
+		require_once ROOT_DIR . '/sys/Administration/USPS.php';
+		require_once ROOT_DIR . '/sys/Utils/SystemUtils.php';
+		$uspsInfo = USPS::getUSPSInfo();
+		$streetAddress = '';
+		$city = '';
+		$state = '';
+		$zip = '';
+		$dob = '';
+
+		$invalidContactInfo = false;
+		$errorType = null;
+		if (!empty($_REQUEST['email']) && !filter_var($_REQUEST['email'], FILTER_VALIDATE_EMAIL)) {
+			$errorType = 'email';
+			$invalidContactInfo = true;
+		}
+		if (!empty($_REQUEST['phone']) && !SystemUtils::validatePhoneNumber($_REQUEST['phone'])) {
+			$errorType = 'phone';
+			$invalidContactInfo = true;
+		}
+
+		//get the correct _REQUEST names as they differ across ILSes
+		foreach ($_REQUEST as $selfRegValue => $val) {
+			if (!(preg_match('/(.*?)address2(.*)|(.*?)borrower_B(.*)|(.*?)borrower_alt(.*)/', $selfRegValue))) {
+				if (preg_match('/(.*?)address|street(.*)/', $selfRegValue)) {
+					$streetAddress = $val;
+				} elseif (preg_match('/(.*?)city(.*)/', $selfRegValue)) {
+					$city = $val;
+				} elseif (preg_match('/(.*?)state(.*)/', $selfRegValue)) {
+					//USPS does not accept anything other than 2 character state codes but will use the ZIP to fill in the blank
+					if (strlen($val) == 2) {
+						$state = $val;
+					}
+				} elseif (preg_match('/(.*?)zip(.*)/', $selfRegValue)) {
+					$zip = $val;
+				} elseif (preg_match('/(.*?)dob|dateofbirth|birth[dD]ate(.*)/', $selfRegValue)) {
+					$dob = $val;
+				}
+			}
+		}
+
+		//if there's no USPS info or email or phone are invalid, don't bother trying to validate
+		if ($uspsInfo && !$invalidContactInfo) {
+			if (!SystemUtils::validateAddress($streetAddress, $city, $state, $zip)) {
+				return ['success' => false, 'errorType' => 'address'];
+			}
+			if (!empty($dob) && !SystemUtils::validateAge($library->minSelfRegAge, $dob)) {
+				return ['success' => false, 'errorType' => 'age'];
+			}
+			return ['success' => true, 'result' => $catalog->selfRegister()];
+		}
+
+		if (!empty($dob)) {
+			$maxSelfRegAge = $selfRegFields['identitySection']['properties']['borrower_dateofbirth']['maxAgeForSelfReg'] ?? null;
+			if (!SystemUtils::validateAge($library->minSelfRegAge, $dob, $maxSelfRegAge)) {
+				if ((int)$library->minSelfRegAge > 0 && !empty($maxSelfRegAge) && (int)$maxSelfRegAge > 0) {
+					$ageText = "You must be at least $library->minSelfRegAge and no older than $maxSelfRegAge years old. Please enter a valid date of birth.";
+				} elseif ($library->minSelfRegAge > 0) {
+					$ageText = "You must be at least $library->minSelfRegAge years old. Please enter a valid date of birth.";
+				} elseif (!empty($maxSelfRegAge) && (int)$maxSelfRegAge > 0) {
+					$ageText = "You must be no older than $maxSelfRegAge years old. Please enter a valid date of birth.";
+				} else {
+					$ageText = "Please enter a valid date of birth";
+				}
+				return ['success' => false, 'errorType' => 'age', 'ageText' => $ageText];
+			}
+			if ($invalidContactInfo) {
+				return ['success' => false, 'errorType' => $errorType];
+			}
+			return ['success' => true, 'result' => $catalog->selfRegister()];
+		}
+
+		if ($invalidContactInfo) {
+			return ['success' => false, 'errorType' => $errorType];
+		}
+		return ['success' => true, 'result' => $catalog->selfRegister()];
 	}
 
 	function getBreadcrumbs(): array {

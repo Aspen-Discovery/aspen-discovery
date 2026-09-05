@@ -240,7 +240,7 @@
 			 have some sort of hard autoCommit to limit the log size.
 		  -->
 		<autoCommit>
-			<maxTime>${solr.autoCommit.maxTime:15000}</maxTime>
+			<maxTime>${solr.autoCommit.maxTime:120000}</maxTime>
 			<openSearcher>false</openSearcher>
 		</autoCommit>
 
@@ -350,7 +350,7 @@
 		  -->
 		<filterCache size="2048"
 		             initialSize="512"
-		             autowarmCount="128"/>
+		             autowarmCount="4"/>
 
 		<!-- Query Result Cache
 
@@ -362,7 +362,7 @@
 		  -->
 		<queryResultCache size="4096"
 		                  initialSize="512"
-		                  autowarmCount="128"/>
+		                  autowarmCount="0"/>
 
 		<!-- Document Cache
 
@@ -478,19 +478,326 @@
 		  -->
 		<listener event="newSearcher" class="solr.QuerySenderListener">
 			<arr name="queries">
-				<!--
-				   <lst><str name="q">solr</str><str name="sort">price asc</str></lst>
-				   <lst><str name="q">rocks</str><str name="sort">weight asc</str></lst>
-				  -->
+				<!-- Warm enum based facets -->
+				<lst>
+					<str name="qt">/select</str>
+					<str name="q">*:*</str>
+					<str name="rows">0</str>
+					<str name="spellcheck">false</str>
+
+					<str name="json.facet"><![CDATA[
+						{
+						  "availability_toggle": {
+							"type": "terms",
+							"method": "enum",
+							"field": "availability_toggle",
+							"limit": 30,
+							"mincount": 1
+						  },
+						  "format_category": {
+							"type": "terms",
+							"method": "enum",
+							"field": "format_category",
+							"limit": 30,
+							"mincount": 1
+						  },
+						  "available_at": {
+							"type": "terms",
+							"method": "enum",
+							"field": "available_at",
+							"limit": 177,
+							"mincount": 1
+						  },
+						  "format": {
+							"type": "terms",
+							"method": "enum",
+							"field": "format",
+							"limit": 94,
+							"mincount": 1
+						  },
+						  "econtent_source": {
+							"type": "terms",
+							"method": "enum",
+							"field": "econtent_source",
+							"limit": 50,
+							"mincount": 1
+						  },
+						  "shelf_location": {
+							"type": "terms",
+							"method": "enum",
+							"field": "shelf_location",
+							"limit": 100,
+							"mincount": 1
+						  },
+						  "duration": {
+							"type": "terms",
+							"method": "enum",
+							"field": "duration",
+							"limit": 30,
+							"mincount": 1
+						  },
+						  "translation": {
+							"type": "terms",
+							"method": "enum",
+							"field": "translation",
+							"limit": 30,
+							"mincount": 1
+						  }
+						}
+					  ]]></str>
+				</lst>
+				<!-- Warm doc values facets -->
+				<lst>
+					<str name="qt">/select</str>
+					<str name="q">*:*</str>
+					<str name="rows">0</str>
+					<str name="spellcheck">false</str>
+					<str name="timeAllowed">300000</str>
+
+					<str name="json.facet"><![CDATA[
+						{
+						  "literary_form_full": {
+							"type": "terms",
+							"method": "dv",
+							"field": "literary_form_full",
+							"limit": 50,
+							"mincount": 1
+						  },
+						  "target_audience": {
+							"type": "terms",
+							"method": "dv",
+							"field": "target_audience",
+							"limit": 50,
+							"mincount": 1
+						  },
+						  "authorStr": {
+							"type": "terms",
+							"method": "enum",
+							"field": "authorStr",
+							"limit": 50,
+							"mincount": 1
+						  },
+						  "series_facet": {
+							"type": "terms",
+							"method": "dv",
+							"field": "series_facet",
+							"limit": 50,
+							"mincount": 1
+						  },
+						  "subject_facet": {
+							"type": "terms",
+							"method": "dv",
+							"field": "subject_facet",
+							"limit": 50,
+							"mincount": 1
+						  },
+						  "language": {
+							"type": "terms",
+							"method": "dv",
+							"field": "language",
+							"limit": 100,
+							"mincount": 1
+						  },
+						  "awards_facet": {
+							"type": "terms",
+							"method": "dv",
+							"field": "awards_facet",
+							"limit": 50,
+							"mincount": 1
+						  },
+						  "content_rating": {
+							"type": "terms",
+							"method": "dv",
+							"field": "content_rating",
+							"limit": 50,
+							"mincount": 1
+						  },
+						  "rating_facet": {
+							"type": "terms",
+							"method": "dv",
+							"field": "rating_facet",
+							"limit": 50,
+							"mincount": 1
+						  },
+						  "local_time_since_added_SCD": {
+							"type": "terms",
+							"method": "enum",
+							"field": "local_time_since_added_SCD",
+							"limit": 50,
+							"mincount": 1
+						  },
+						  "publishDate": {
+							"type": "terms",
+							"method": "dv",
+							"field": "publishDate",
+							"limit": 50,
+							"mincount": 1
+						  }
+						}
+					  ]]></str>
+				</lst>
 			</arr>
 		</listener>
 		<listener event="firstSearcher" class="solr.QuerySenderListener">
 			<arr name="queries">
-				<!--
+				<!-- Warm enum based facets -->
 				<lst>
-				  <str name="q">static firstSearcher warming in solrconfig.xml</str>
+					<str name="qt">/select</str>
+					<str name="q">*:*</str>
+					<str name="rows">0</str>
+					<str name="spellcheck">false</str>
+
+					<str name="json.facet"><![CDATA[
+						{
+						  "availability_toggle": {
+							"type": "terms",
+							"method": "enum",
+							"field": "availability_toggle",
+							"limit": 30,
+							"mincount": 1
+						  },
+						  "format_category": {
+							"type": "terms",
+							"method": "enum",
+							"field": "format_category",
+							"limit": 30,
+							"mincount": 1
+						  },
+						  "available_at": {
+							"type": "terms",
+							"method": "enum",
+							"field": "available_at",
+							"limit": 177,
+							"mincount": 1
+						  },
+						  "format": {
+							"type": "terms",
+							"method": "enum",
+							"field": "format",
+							"limit": 94,
+							"mincount": 1
+						  },
+						  "econtent_source": {
+							"type": "terms",
+							"method": "enum",
+							"field": "econtent_source",
+							"limit": 50,
+							"mincount": 1
+						  },
+						  "shelf_location": {
+							"type": "terms",
+							"method": "enum",
+							"field": "shelf_location",
+							"limit": 100,
+							"mincount": 1
+						  },
+						  "duration": {
+							"type": "terms",
+							"method": "enum",
+							"field": "duration",
+							"limit": 30,
+							"mincount": 1
+						  },
+						  "translation": {
+							"type": "terms",
+							"method": "enum",
+							"field": "translation",
+							"limit": 30,
+							"mincount": 1
+						  }
+						}
+					  ]]></str>
 				</lst>
-				-->
+				<!-- Warm doc values facets -->
+				<lst>
+					<str name="qt">/select</str>
+					<str name="q">*:*</str>
+					<str name="rows">0</str>
+					<str name="spellcheck">false</str>
+					<str name="timeAllowed">300000</str>
+
+					<str name="json.facet"><![CDATA[
+						{
+						  "literary_form_full": {
+							"type": "terms",
+							"method": "dv",
+							"field": "literary_form_full",
+							"limit": 50,
+							"mincount": 1
+						  },
+						  "target_audience": {
+							"type": "terms",
+							"method": "dv",
+							"field": "target_audience",
+							"limit": 50,
+							"mincount": 1
+						  },
+						  "authorStr": {
+							"type": "terms",
+							"method": "enum",
+							"field": "authorStr",
+							"limit": 50,
+							"mincount": 1
+						  },
+						  "series_facet": {
+							"type": "terms",
+							"method": "dv",
+							"field": "series_facet",
+							"limit": 50,
+							"mincount": 1
+						  },
+						  "subject_facet": {
+							"type": "terms",
+							"method": "dv",
+							"field": "subject_facet",
+							"limit": 50,
+							"mincount": 1
+						  },
+						  "language": {
+							"type": "terms",
+							"method": "dv",
+							"field": "language",
+							"limit": 100,
+							"mincount": 1
+						  },
+						  "awards_facet": {
+							"type": "terms",
+							"method": "dv",
+							"field": "awards_facet",
+							"limit": 50,
+							"mincount": 1
+						  },
+						  "content_rating": {
+							"type": "terms",
+							"method": "dv",
+							"field": "content_rating",
+							"limit": 50,
+							"mincount": 1
+						  },
+						  "rating_facet": {
+							"type": "terms",
+							"method": "dv",
+							"field": "rating_facet",
+							"limit": 50,
+							"mincount": 1
+						  },
+						  "local_time_since_added_SCD": {
+							"type": "terms",
+							"method": "enum",
+							"field": "local_time_since_added_SCD",
+							"limit": 50,
+							"mincount": 1
+						  },
+						  "publishDate": {
+							"type": "terms",
+							"method": "dv",
+							"field": "publishDate",
+							"limit": 50,
+							"mincount": 1
+						  }
+						}
+					  ]]></str>
+				</lst>
 			</arr>
 		</listener>
 

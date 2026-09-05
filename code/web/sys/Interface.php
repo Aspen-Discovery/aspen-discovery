@@ -425,12 +425,20 @@ class UInterface extends Smarty {
 				if ($userObject->preferredTheme != -1 && array_key_exists($userObject->preferredTheme, $allActiveThemes)) {
 					$theme->id = $userObject->preferredTheme;
 				}
+				$this->assign('userFontSizeOverride', Theme::$fontSizes[$userObject->preferredTextSize] ?? '');
 			}else{
 				if (isset($_SESSION['preferredTheme']) && array_key_exists($_SESSION['preferredTheme'], $allActiveThemes)) {
 					$theme->id = $_SESSION['preferredTheme'];
 				}
 			}
 			$this->assign('allActiveThemes', $allActiveThemes);
+			$fontSizeOptions = [
+				'' => 'Default',
+				'small' => 'Small',
+				'medium' => 'Medium',
+				'large' => 'Large',
+			];
+			$this->assign('fontSizeOptions', $fontSizeOptions);
 			if ($theme->find(true)) {
 				$allAppliedThemes = $theme->getAllAppliedThemes();
 				$primaryTheme = $theme;
@@ -539,6 +547,8 @@ class UInterface extends Smarty {
 				$this->assign('tertiaryForegroundColor', $primaryTheme->tertiaryForegroundColor);
 				$this->assign('linkColor', $primaryTheme->linkColor);
 				$this->assign('bodyFont', $primaryTheme->bodyFont);
+				//Expose the resolved size (in px) rather than the raw enum value so templates can use it directly
+				$this->assign('fontSize', Theme::$fontSizes[$primaryTheme->fontSize ?? ''] ?? Theme::$fontSizes['small']);
 				$this->assign('isDarkColorScheme', $primaryTheme->isDarkColorScheme);
 			}
 		} catch (PDOException $e) {
@@ -666,6 +676,7 @@ class UInterface extends Smarty {
 		$this->assign('threadsLink', $library->threadsLink);
 		$this->assign('generalContactLink', $library->generalContactLink);
 		$this->assign('showLoginButton', $library->showLoginButton && ($offlineMode == false || $this->getVariable('enableEContentWhileOffline')));
+		$this->assign('showMinimalSelfRegButton', $library->enableSelfRegistration == 1 && $library->useMinimalSelfRegistrationModal);
 		$this->assign('showAdvancedSearchbox', $library->showAdvancedSearchbox);
 		$this->assign('enableInnReachIntegration', $library->enableInnReachIntegration);
 		$this->assign('enableShareItIntegration', $library->ILLSystem == 3);

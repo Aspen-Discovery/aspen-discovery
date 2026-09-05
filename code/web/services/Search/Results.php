@@ -840,6 +840,7 @@ class Search_Results extends ResultsAction {
 				$restTerm = trim($matches[2]);
 
 				require_once ROOT_DIR . '/sys/SearchObject/SearchObjectFactory.php';
+				/** @var SearchObject_AbstractGroupedWorkSearcher $tmpSearchObj */
 				$tmpSearchObj = SearchObjectFactory::initSearchObject();
 				$validIndexes = $tmpSearchObj->getSearchIndexes();
 
@@ -862,11 +863,13 @@ class Search_Results extends ResultsAction {
 				require_once ROOT_DIR . '/sys/SearchObject/SearchObjectFactory.php';
 				$tmpSearchObj = SearchObjectFactory::initSearchObject();
 			}
-			if (!isset($validIndexes)) {
-				$validIndexes = $tmpSearchObj->getSearchIndexes();
+			$validIndexes = $tmpSearchObj->getAllValidSearchIndexes();
+			$searchIndex = $_REQUEST['searchIndex'];
+			if (empty($_REQUEST['searchIndex'])) {
+				$searchIndex = $tmpSearchObj->getDefaultIndex();
 			}
 
-			if (!array_key_exists($_REQUEST['searchIndex'], $validIndexes)) {
+			if (!array_key_exists($searchIndex, $validIndexes)) {
 				header("Location: /Error/Handle404");
 				exit();
 			}
