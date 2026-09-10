@@ -1752,6 +1752,13 @@ class BookCoverProcessor {
 		$openArchivesRecord = new OpenArchivesRecord();
 		$openArchivesRecord->id = $id;
 		if ($openArchivesRecord->find(true)) {
+			//coverUrl may already be known (see DSpaceCoverBuilder) and is shared across all sizes.
+			if (!empty($openArchivesRecord->coverUrl)) {
+				if ($this->processImageURL('open_archives', $openArchivesRecord->coverUrl)) {
+					return true;
+				}
+			}
+
 			$url = $openArchivesRecord->permanentUrl;
 			//Need the full curl wrapper to handle redirects
 			require_once ROOT_DIR . '/sys/CurlWrapper.php';

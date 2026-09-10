@@ -17,6 +17,8 @@ class OpenArchivesCollection extends DataObject {
 		$subjectFilters;
 	public $imageRegex;
 	/** @noinspection PhpUnused */
+	public $coverSourceType;
+	/** @noinspection PhpUnused */
 	public $metadataFormat;
 	/** @noinspection PhpUnused */
 	public $dateFormatting;
@@ -125,6 +127,19 @@ class OpenArchivesCollection extends DataObject {
 				'label' => 'Image Regular Expression',
 				'description' => 'A regular expression to extract the thumbnail.',
 				'note' => 'Used to extract thumbnails, can be blank, the first capturing group is used for the value, can put multiple expressions on their own line',
+			],
+			'coverSourceType' => [
+				'property' => 'coverSourceType',
+				'type' => 'enum',
+				'values' => [
+					'default' => 'Default (scrape the record page)',
+					'dspace' => 'DSpace 7+',
+					'ojs' => 'OJS',
+				],
+				'label' => 'Cover Source',
+				'description' => 'How covers are found for records in this collection.',
+				'note' => 'Default scrapes each record\'s page for a thumbnail on demand. Platform-specific options run a background bulk lookup against that platform\'s API instead, which is more reliable and puts far less load on the source server.',
+				'default' => 'default',
 			],
 			'fetchFrequency' => [
 				'property' => 'fetchFrequency',
