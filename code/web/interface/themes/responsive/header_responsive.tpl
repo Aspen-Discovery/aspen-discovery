@@ -25,8 +25,16 @@
 			{/if}
 		</div>
 	{else}
-		{* Show the logo full width *}
-		<div class="col-tn-12 col-xs-8 col-sm-8 col-md-8 col-lg-8" id="header-logo-container">
+		{* Show the logo full width. The language/theme selector below only renders (and only
+		   then claims its own 4 columns) when there's more than one language or theme, so match
+		   this column's width to whether that sibling will actually take up space; otherwise a
+		   single-language, single-theme site is left with a permanent blank 4-column gap next to
+		   the logo, which also silently caps how far "Center"/"Right" logo alignment can reach. *}
+		{if !$minimalInterface && (count($validLanguages) > 1 || count($allActiveThemes) > 1)}
+			<div class="col-tn-12 col-xs-8 col-sm-8 col-md-8 col-lg-8" id="header-logo-container">
+		{else}
+			<div class="col-tn-12 col-xs-12 col-sm-12 col-md-12 col-lg-12" id="header-logo-container">
+		{/if}
 			<a href="{$logoLink}/">
 				<img src="{if !empty($responsiveLogo)}{$responsiveLogo}{else}{img filename="logo_responsive.png"}{/if}" alt="{$librarySystemName|escape}" title="{translate text=$logoAlt inAttribute=true isPublicFacing=true}" id="header-logo" {if !empty($showDisplayNameInHeader) && $librarySystemName}class="pull-left"{/if}>
 			</a>
