@@ -89,6 +89,7 @@ class Theme extends DataObject {
 	public $headerBackgroundImageRepeat;
 	public $headerBackgroundImageHeight;
 	public $headerBackgroundImageAdaptHeight;
+	public $headerLogoAlignment;
 
 	public static $defaultPageBackgroundColor = '#ffffff';
 	public $pageBackgroundColor;
@@ -711,6 +712,12 @@ class Theme extends DataObject {
 			"repeat-y" => 'Repeat Y',
 		];
 
+		$headerLogoAlignments = [
+			"left" => 'Left',
+			"center" => 'Center',
+			"right" => 'Right',
+		];
+
 		$themesToExtend = [];
 		$themesToExtend[''] = 'None';
 		$theme = new Theme();
@@ -796,6 +803,16 @@ class Theme extends DataObject {
 				'maxWidth' => 1170,
 				'maxHeight' => 250,
 				'hideInLists' => true,
+			],
+			'headerLogoAlignment' => [
+				'property' => 'headerLogoAlignment',
+				'type' => 'enum',
+				'values' => $headerLogoAlignments,
+				'label' => 'Logo Alignment',
+				'description' => 'Where the logo sits within its space in the header.',
+				'required' => false,
+				'hideInLists' => true,
+				'default' => 'left',
 			],
 			'favicon' => [
 				'property' => 'favicon',
@@ -3193,6 +3210,7 @@ class Theme extends DataObject {
 		$interface->assign('headerBackgroundImage', $this->headerBackgroundImage);
 		$interface->assign('headerBackgroundImageSize', $this->headerBackgroundImageSize);
 		$interface->assign('headerBackgroundImageRepeat', $this->headerBackgroundImageRepeat);
+		$interface->assign('headerLogoAlignment', !empty($this->headerLogoAlignment) ? $this->headerLogoAlignment : 'left');
 		if ($this->headerBackgroundImageHeight != null) {
 			$headerBackgroundImageHeight = $this->headerBackgroundImageHeight;
 			if (is_numeric($headerBackgroundImageHeight)) {

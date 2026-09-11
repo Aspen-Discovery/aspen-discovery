@@ -114,6 +114,21 @@ h1 small, h2 small, h3 small, h4 small, h5 small{ldelim}
     color: {$headerForegroundColor};
 {rdelim}
 
+#header-logo-container{ldelim}
+    text-align: {$headerLogoAlignment};
+{rdelim}
+{* Logo and language/theme selector float from opposite sides of this row by default; when the
+   logo is right-aligned, swap both so the logo reaches the row's true right edge. *}
+{if $headerLogoAlignment == 'right'}
+    #header-logo-container{ldelim}
+        float: right !important;
+    {rdelim}
+    #language-selection-header{ldelim}
+        float: left !important;
+        text-align: left;
+    {rdelim}
+{/if}
+
 #library-name-header{ldelim}
     color: {$headerForegroundColor};
 {rdelim}

@@ -50,6 +50,14 @@ function getUpdates26_10_00(): array {
 				'ALTER TABLE themes ADD COLUMN headerBackgroundImageAdaptHeight TINYINT(1) DEFAULT 0'
 			]
 		], //header_background_image_adapt_height
+		'header_logo_alignment' => [
+			'title' => 'Header Logo Alignment',
+			'description' => 'Add headerLogoAlignment to themes so the Logo can be aligned left, center, or right within the header.',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE themes ADD COLUMN headerLogoAlignment VARCHAR(10) DEFAULT 'left'"
+			]
+		], //header_logo_alignment
 
 		//tomas
 
