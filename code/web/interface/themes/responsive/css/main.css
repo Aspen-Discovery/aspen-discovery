@@ -8077,12 +8077,8 @@ hr.menu {
 }
 #header-logo {
   padding: 10px 10px 0 0;
-}
-@media (max-width: 767px) {
-  #header-logo {
-    max-width: 100%;
-    height: auto;
-  }
+  max-width: 100%;
+  height: auto;
 }
 #horizontal-menu-bar-container {
   background-color: #f2f2f2;
