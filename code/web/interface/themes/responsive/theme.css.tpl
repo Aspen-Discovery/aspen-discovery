@@ -99,6 +99,7 @@ h1 small, h2 small, h3 small, h4 small, h5 small{ldelim}
         background-image: url('/files/original/{$headerBackgroundImage}');
         background-size: {$headerBackgroundImageSize};
         background-repeat: {$headerBackgroundImageRepeat};
+        background-position: center;
     {else}
         background-image: none;
     {/if}
