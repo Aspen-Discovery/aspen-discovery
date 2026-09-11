@@ -100,6 +100,17 @@ h1 small, h2 small, h3 small, h4 small, h5 small{ldelim}
         background-size: {$headerBackgroundImageSize};
         background-repeat: {$headerBackgroundImageRepeat};
         background-position: center;
+        {if !empty($headerBackgroundImageAdaptHeight) && !empty($headerBackgroundImageAspectRatio)}
+            aspect-ratio: {$headerBackgroundImageAspectRatio};
+            {* Without an explicit width, the min-height below is transferred through aspect-ratio
+               into a min-width, pushing the header wider than narrow viewports. *}
+            width: 100%;
+            {if !empty($headerBackgroundImageMinHeight)}
+                min-height: {$headerBackgroundImageMinHeight}px;
+            {/if}
+        {elseif !empty($headerBackgroundImageHeight)}
+            min-height: {$headerBackgroundImageHeight};
+        {/if}
     {else}
         background-image: none;
     {/if}
