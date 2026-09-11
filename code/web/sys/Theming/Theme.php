@@ -3210,7 +3210,29 @@ class Theme extends DataObject {
 		$interface->assign('headerBackgroundImage', $this->headerBackgroundImage);
 		$interface->assign('headerBackgroundImageSize', $this->headerBackgroundImageSize);
 		$interface->assign('headerBackgroundImageRepeat', $this->headerBackgroundImageRepeat);
-		$interface->assign('headerLogoAlignment', !empty($this->headerLogoAlignment) ? $this->headerLogoAlignment : 'left');
+		$headerLogoAlignment = !empty($this->headerLogoAlignment) ? $this->headerLogoAlignment : 'left';
+		$interface->assign('headerLogoAlignment', $headerLogoAlignment);
+		$headerLogoNaturalHeight = null;
+		if ($headerLogoAlignment == 'center') {
+			// Centering pulls the logo out of normal flow (see theme.css.tpl), so #header-wrapper
+			// needs a fallback min-height to avoid collapsing, but only if nothing else already
+			// gives it one. The background-image height options below only take effect at all
+			// when headerBackgroundImage is set, so check that too, not just the flags themselves.
+			$hasOtherHeightSource = !empty($this->headerBackgroundImage)
+				&& (!empty($this->headerBackgroundImageAdaptHeight) || !empty($this->headerBackgroundImageHeight));
+			if (!$hasOtherHeightSource) {
+				global $configArray;
+				$headerLogoNaturalHeight = 60;
+				if (!empty($this->logoName)) {
+					$logoPath = $configArray['Site']['local'] . '/files/original/' . $this->logoName;
+					$logoDimensions = @getimagesize($logoPath);
+					if ($logoDimensions !== false && $logoDimensions[1] > 0) {
+						$headerLogoNaturalHeight = $logoDimensions[1] + 10; // + #header-logo's own top padding
+					}
+				}
+			}
+		}
+		$interface->assign('headerLogoNaturalHeight', $headerLogoNaturalHeight);
 		if ($this->headerBackgroundImageHeight != null) {
 			$headerBackgroundImageHeight = $this->headerBackgroundImageHeight;
 			if (is_numeric($headerBackgroundImageHeight)) {

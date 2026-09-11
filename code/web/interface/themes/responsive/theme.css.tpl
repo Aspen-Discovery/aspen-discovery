@@ -128,6 +128,32 @@ h1 small, h2 small, h3 small, h4 small, h5 small{ldelim}
         text-align: left;
     {rdelim}
 {/if}
+{* #header-logo-container only spans the full row when no language/theme selector is present
+   (see header_responsive.tpl); when the selector IS present, the container is just the left
+   8/12 of the row, so plain text-align:center only centers within that 8/12, roughly a third
+   of the way across the real page, not true center. Pull the logo out of flow and center it
+   against #header-wrapper (which always spans the full row) instead, regardless of whether the
+   selector is present, so "Center" always means the true center of the page. *}
+{if $headerLogoAlignment == 'center'}
+    #header-wrapper{ldelim}
+        position: relative;
+        {if !empty($headerLogoNaturalHeight)}
+            min-height: {$headerLogoNaturalHeight}px;
+        {/if}
+    {rdelim}
+    {* Bootstrap's .col-* classes set position:relative by default, which would otherwise make
+       #header-logo-container itself the positioning context for the absolute logo below instead
+       of #header-wrapper. Force it back to static so the logo centers on the full row. *}
+    #header-logo-container{ldelim}
+        position: static !important;
+    {rdelim}
+    #header-logo{ldelim}
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+    {rdelim}
+{/if}
 
 #library-name-header{ldelim}
     color: {$headerForegroundColor};
