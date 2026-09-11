@@ -87,6 +87,8 @@ class Theme extends DataObject {
 	public $headerBackgroundImage;
 	public $headerBackgroundImageSize;
 	public $headerBackgroundImageRepeat;
+	public $headerBackgroundImageHeight;
+	public $headerBackgroundImageAdaptHeight;
 
 	public static $defaultPageBackgroundColor = '#ffffff';
 	public $pageBackgroundColor;
@@ -978,6 +980,22 @@ class Theme extends DataObject {
 				'required' => false,
 				'hideInLists' => true,
 				'default' => 'no-repeat',
+			],
+			'headerBackgroundImageHeight' => [
+				'property' => 'headerBackgroundImageHeight',
+				'type' => 'text',
+				'label' => 'Header Background Image Height (px)',
+				'description' => 'Fixed header height when a Header Background Image is set. Ignored if Adapt Header Height to Image is on.',
+				'required' => false,
+				'hideInLists' => true,
+			],
+			'headerBackgroundImageAdaptHeight' => [
+				'property' => 'headerBackgroundImageAdaptHeight',
+				'type' => 'checkbox',
+				'label' => 'Adapt Header Height to Image',
+				'description' => 'Size the header to the image\'s own shape so it never crops, instead of a fixed height. A tall/square image will make the header very tall on wide screens.',
+				'required' => false,
+				'hideInLists' => true,
 			],
 
 			//Breadcrumbs
@@ -3175,6 +3193,40 @@ class Theme extends DataObject {
 		$interface->assign('headerBackgroundImage', $this->headerBackgroundImage);
 		$interface->assign('headerBackgroundImageSize', $this->headerBackgroundImageSize);
 		$interface->assign('headerBackgroundImageRepeat', $this->headerBackgroundImageRepeat);
+		if ($this->headerBackgroundImageHeight != null) {
+			$headerBackgroundImageHeight = $this->headerBackgroundImageHeight;
+			if (is_numeric($headerBackgroundImageHeight)) {
+				$headerBackgroundImageHeight = $headerBackgroundImageHeight . 'px';
+			}
+			$interface->assign('headerBackgroundImageHeight', $headerBackgroundImageHeight);
+		} else {
+			$interface->assign('headerBackgroundImageHeight', null);
+		}
+		$interface->assign('headerBackgroundImageAdaptHeight', $this->headerBackgroundImageAdaptHeight);
+		$headerBackgroundImageAspectRatio = null;
+		$headerBackgroundImageMinHeight = null;
+		if ($this->headerBackgroundImageAdaptHeight) {
+			global $configArray;
+			if (!empty($this->headerBackgroundImage)) {
+				$headerBackgroundImagePath = $configArray['Site']['local'] . '/files/original/' . $this->headerBackgroundImage;
+				$imageDimensions = @getimagesize($headerBackgroundImagePath);
+				if ($imageDimensions !== false && $imageDimensions[0] > 0 && $imageDimensions[1] > 0) {
+					$headerBackgroundImageAspectRatio = $imageDimensions[0] . ' / ' . $imageDimensions[1];
+				}
+			}
+			// A wide/short background image can compute a header shorter than the Logo itself on
+			// narrow screens, so floor the height at the Logo's own height (or a sane default with no Logo).
+			$headerBackgroundImageMinHeight = 60;
+			if (!empty($this->logoName)) {
+				$logoPath = $configArray['Site']['local'] . '/files/original/' . $this->logoName;
+				$logoDimensions = @getimagesize($logoPath);
+				if ($logoDimensions !== false && $logoDimensions[1] > 0) {
+					$headerBackgroundImageMinHeight = $logoDimensions[1] + 10; // + #header-logo's own top padding
+				}
+			}
+		}
+		$interface->assign('headerBackgroundImageAspectRatio', $headerBackgroundImageAspectRatio);
+		$interface->assign('headerBackgroundImageMinHeight', $headerBackgroundImageMinHeight);
 		$interface->assign('pageBackgroundColor', $this->pageBackgroundColor);
 		$interface->assign('breadcrumbsBackgroundColor', $this->breadcrumbsBackgroundColor);
 		$interface->assign('breadcrumbsForegroundColor', $this->breadcrumbsForegroundColor);
