@@ -59,6 +59,24 @@ class DateUtils {
 		return str_replace('-', '_', $locale);
 	}
 
+	static function toTimestamp(mixed $value): ?int {
+		if (empty($value) || $value === '0000-00-00' || $value === '0000-00-00 00:00:00') {
+			return null;
+		}
+		if ($value instanceof DateTimeInterface) {
+			return $value->getTimestamp();
+		}
+		if (is_numeric($value)) {
+			return (int)$value;
+		}
+		$timestamp = strtotime($value);
+		if ($timestamp === false || $timestamp === -1) {
+			return null;
+		}
+		return $timestamp;
+	}
+	
+
 	static function formatTimeLocale(int|DateTimeInterface $timestamp, bool $includeDayPeriod = true):string {
 		global $activeLanguage;
 
@@ -105,19 +123,8 @@ class DateUtils {
 	static function formatDateLocale($string, $dateStyle = 'medium', $timeStyle = 'none', $pattern = null, $skeleton = null): string|false {
 		global $activeLanguage;
 
-		if (empty($string) || $string === '0000-00-00' || $string === '0000-00-00 00:00:00') {
-			return '';
-		}
-
-		if ($string instanceof DateTime) {
-			$timestamp = $string->getTimestamp();
-		} elseif (is_numeric($string)) {
-			$timestamp = (int)$string;
-		} else {
-			$timestamp = strtotime($string);
-		}
-
-		if ($timestamp === false || $timestamp === -1) {
+		$timestamp = self::toTimestamp($string);
+		if ($timestamp === null) {
 			return '';
 		}
 
@@ -193,30 +200,11 @@ class DateUtils {
 	}
 
 	static function formatTimeRangeParts(mixed $startTime, mixed $endTime): array {
-		$empty = ['start' => '', 'startMeridiem' => '', 'end' => ''];
+		$startTimestamp = self::toTimestamp($startTime);
+		$endTimestamp = self::toTimestamp($endTime);
 
-		if (empty($startTime) || empty($endTime)) {
-			return $empty;
-		}
-
-		if ($startTime instanceof DateTimeInterface) {
-			$startTimestamp = $startTime->getTimestamp();
-		} elseif (is_numeric($startTime)) {
-			$startTimestamp = (int)$startTime;
-		} else {
-			$startTimestamp = strtotime($startTime);
-		}
-
-		if ($endTime instanceof DateTimeInterface) {
-			$endTimestamp = $endTime->getTimestamp();
-		} elseif (is_numeric($endTime)) {
-			$endTimestamp = (int)$endTime;
-		} else {
-			$endTimestamp = strtotime($endTime);
-		}
-
-		if ($startTimestamp === false || $endTimestamp === false) {
-			return $empty;
+		if ($startTimestamp === null || $endTimestamp === null) {
+			return ['start' => '', 'startMeridiem' => '', 'end' => ''];
 		}
 
 		// A day period shared by both endpoints is redundant on the start, so compare the rendered values rather than assuming a noon split
@@ -226,7 +214,7 @@ class DateUtils {
 		return [
 			'start'         => self::formatTimeLocale($startTimestamp, !$collapseDayPeriod),
 			'startMeridiem' => $collapseDayPeriod ? $startDayPeriod : '',
-			'end'           => self::formatTimeLocale($endTimestamp),
+			'end'           => self::formatTimeLocale($endTimestamp, true),
 		];
 	}
 
