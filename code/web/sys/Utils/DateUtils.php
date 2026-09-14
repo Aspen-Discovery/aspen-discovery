@@ -76,6 +76,17 @@ class DateUtils {
 		return $formatter->format($timestamp);
 	}
 
+	static function hasTrailingDayPeriod(): bool {
+		global $activeLanguage;
+
+		$locale 	= $activeLanguage->locale ?? 'en_US';
+		$timezone 	= date_default_timezone_get();
+		$formatter 	= new IntlDateFormatter($locale, IntlDateFormatter::NONE, IntlDateFormatter::SHORT, $timezone);
+
+		// Locales like ko ("a h:mm") and zh ("ah:mm") lead with the day period, where lifting it onto the start of a range would read as nonsense
+		return preg_match(self::TRAILING_DAY_PERIOD_REGEX, $formatter->getPattern()) === 1;
+	}
+
 	static function formatDateLocale($string, $dateStyle = 'medium', $timeStyle = 'none', $pattern = null, $skeleton = null): string|false {
 		global $activeLanguage;
 
