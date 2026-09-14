@@ -184,23 +184,22 @@ class DateUtils {
 		return date('g:i A', strtotime($time));
 	}
 
-	static function formatTimeRange($startTime, $endTime, $format = null): string {
-		$parts = self::formatTimeRangeParts($startTime, $endTime, $format);
+	static function formatTimeRange(mixed $startTime, mixed $endTime): string {
+		$parts = self::formatTimeRangeParts($startTime, $endTime);
 		if ($parts['start'] === '' && $parts['end'] === '') {
 			return '';
 		}
 		return $parts['start'] . ' - ' . $parts['end'];
 	}
 
-	static function formatTimeRangeParts($startTime, $endTime, $format = null): array {
-		global $activeLanguage;
+	static function formatTimeRangeParts(mixed $startTime, mixed $endTime): array {
 		$empty = ['start' => '', 'startMeridiem' => '', 'end' => ''];
 
 		if (empty($startTime) || empty($endTime)) {
 			return $empty;
 		}
 
-		if ($startTime instanceof DateTime) {
+		if ($startTime instanceof DateTimeInterface) {
 			$startTimestamp = $startTime->getTimestamp();
 		} elseif (is_numeric($startTime)) {
 			$startTimestamp = (int)$startTime;
@@ -208,7 +207,7 @@ class DateUtils {
 			$startTimestamp = strtotime($startTime);
 		}
 
-		if ($endTime instanceof DateTime) {
+		if ($endTime instanceof DateTimeInterface) {
 			$endTimestamp = $endTime->getTimestamp();
 		} elseif (is_numeric($endTime)) {
 			$endTimestamp = (int)$endTime;
@@ -216,47 +215,18 @@ class DateUtils {
 			$endTimestamp = strtotime($endTime);
 		}
 
-		if ($startTimestamp === false || $startTimestamp === -1 ||
-			$endTimestamp === false || $endTimestamp === -1) {
+		if ($startTimestamp === false || $endTimestamp === false) {
 			return $empty;
 		}
 
-		$locale = $activeLanguage->locale ?? 'en_US';
-		$timezone = date_default_timezone_get();
-
-		$use12Hour = $format !== '24';
-
-		if (!$use12Hour) {
-			$formatter = new IntlDateFormatter($locale, IntlDateFormatter::NONE, IntlDateFormatter::NONE, $timezone);
-			$formatter->setPattern('HH:mm');
-			return [
-				'start'         => $formatter->format($startTimestamp),
-				'startMeridiem' => '',
-				'end'           => $formatter->format($endTimestamp),
-			];
-		}
-
-		$withMeridiem = new IntlDateFormatter($locale, IntlDateFormatter::NONE, IntlDateFormatter::NONE, $timezone);
-		$withMeridiem->setPattern('h:mm a');
-		$noMeridiem = new IntlDateFormatter($locale, IntlDateFormatter::NONE, IntlDateFormatter::NONE, $timezone);
-		$noMeridiem->setPattern('h:mm');
-
-		$sameHalf = ((int)date('G', $startTimestamp) < 12) === ((int)date('G', $endTimestamp) < 12);
-
-		if ($sameHalf) {
-			$meridiemOnly = new IntlDateFormatter($locale, IntlDateFormatter::NONE, IntlDateFormatter::NONE, $timezone);
-			$meridiemOnly->setPattern('a');
-			return [
-				'start'         => $noMeridiem->format($startTimestamp),
-				'startMeridiem' => $meridiemOnly->format($startTimestamp),
-				'end'           => $withMeridiem->format($endTimestamp),
-			];
-		}
+		// A day period shared by both endpoints is redundant on the start, so compare the rendered values rather than assuming a noon split
+		$startDayPeriod = self::hasTrailingDayPeriod() ? self::formatDayPeriodLocale($startTimestamp) : '';
+		$collapseDayPeriod = $startDayPeriod !== '' && $startDayPeriod === self::formatDayPeriodLocale($endTimestamp);
 
 		return [
-			'start'         => $withMeridiem->format($startTimestamp),
-			'startMeridiem' => '',
-			'end'           => $withMeridiem->format($endTimestamp),
+			'start'         => self::formatTimeLocale($startTimestamp, !$collapseDayPeriod),
+			'startMeridiem' => $collapseDayPeriod ? $startDayPeriod : '',
+			'end'           => self::formatTimeLocale($endTimestamp),
 		];
 	}
 
