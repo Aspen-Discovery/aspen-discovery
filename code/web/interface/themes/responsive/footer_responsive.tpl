@@ -54,7 +54,7 @@
 				{/if}
 			</div>
 			<div class="col-tn-12 col-sm-4 col-md-4 text-right" id="connect-with-us-info">
-				{if $twitterLink || $facebookLink || !empty($generalContactLink) || $youtubeLink || $instagramLink || $pinterestLink || $goodreadsLink || $tiktokLink}
+				{if $twitterLink || $facebookLink || !empty($generalContactLink) || $youtubeLink || $instagramLink || $pinterestLink || $goodreadsLink || $tiktokLink || !empty($blueskyLink) || !empty($threadsLink)}
 					<span id="connect-with-us-label" class="large">{translate text='CONNECT WITH US' isPublicFacing=true}</span>
 					{if !empty($twitterLink)}
 						<a href="{$twitterLink}" class="connect-icon" target="_blank" title="{translate text="Follow us on X" inAttribute=true isPublicFacing=true}" aria-label="{translate text="Follow us on X" inAttribute=true isPublicFacing=true}  ({translate text="opens in a new window" isPublicFacing=true inAttribute=true})"><i class='fa-brands fa-x-twitter fa-lg' role="presentation"></i></a>
