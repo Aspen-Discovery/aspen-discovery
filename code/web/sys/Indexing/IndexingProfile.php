@@ -2250,5 +2250,15 @@ class IndexingProfile extends DataObject {
 		}
 		return self::$_indexingProfilesById;
 	}
+
+	public function getTranslationMap($mapName) : ?TranslationMap {
+		$translationMaps = $this->__get("translationMaps");
+		foreach ($translationMaps as $translationMap) {
+			if ($translationMap->name == $mapName) {
+				return $translationMap;
+			}
+		}
+		return null;
+	}
 }
 
