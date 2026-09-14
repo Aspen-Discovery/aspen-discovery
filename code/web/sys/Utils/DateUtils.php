@@ -219,11 +219,11 @@ class DateUtils {
 	}
 
 	static function formatDateTimeLocale($value, $dateStyle = 'long'): string {
-		$date = self::formatDateLocale($value, $dateStyle);
-		if ($date === '') {
+		$timestamp = self::toTimestamp($value);
+		if ($timestamp === null) {
 			return '';
 		}
-		$time = self::formatDateLocale($value, 'medium', 'none', 'h:mm a');
-		return $date . ' ' . $time;
+
+		return self::formatDateLocale($timestamp, $dateStyle) . ' ' . self::formatTimeLocale($timestamp, true);
 	}
 }
