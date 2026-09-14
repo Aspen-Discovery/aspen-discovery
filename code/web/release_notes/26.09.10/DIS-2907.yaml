@@ -1,0 +1,12 @@
+Jira: "DIS-2907"
+Type: "Bug"
+Developer: "Mark Noble (*MDN*)"
+Contributing Org: "Grove For Libraries"
+Sponsor": "Cumberland County Library System"
+GroveRelease: "26.09.10"
+CommunityRelease: "26.10.00"
+Component: "Sierra"
+Description:
+  - "Add check digit to all items when loading items related to a volume record."
+New Settings:
+New Permissions:
