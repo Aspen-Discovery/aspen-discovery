@@ -153,6 +153,9 @@ class Theme extends DataObject {
 	public $footerForegroundColor;
 	public /** @noinspection PhpUnused */
 		$footerForegroundColorDefault;
+	public $footerBackgroundImage;
+	public $footerBackgroundImageSize;
+	public $footerBackgroundImageRepeat;
 
 	//Primary color is used for the search bar
 	public static $defaultPrimaryBackgroundColor = '#0a7589';
@@ -718,6 +721,18 @@ class Theme extends DataObject {
 			"right" => 'Right',
 		];
 
+		$footerBackgroundImageSizes = [
+			"cover" => 'Cover',
+			"contain" => 'Contain',
+		];
+
+		$footerBackgroundImageRepeat = [
+			"no-repeat" => 'No Repeat',
+			"repeat" => 'Repeat',
+			"repeat-x" => 'Repeat X',
+			"repeat-y" => 'Repeat Y',
+		];
+
 		$themesToExtend = [];
 		$themesToExtend[''] = 'None';
 		$theme = new Theme();
@@ -1114,6 +1129,37 @@ class Theme extends DataObject {
 				'description' => 'The text to be used for screen readers',
 				'required' => false,
 				'hideInLists' => true,
+			],
+			'footerBackgroundImage' => [
+				'property' => 'footerBackgroundImage',
+				'type' => 'image',
+				'label' => 'Footer Background Image',
+				'description' => 'An image to use as a background for the footer.',
+				'required' => false,
+				'hideInLists' => true,
+				'thumbWidth' => 750,
+				'maxWidth' => 2560,
+				'maxHeight' => 800,
+			],
+			'footerBackgroundImageSize' => [
+				'property' => 'footerBackgroundImageSize',
+				'type' => 'enum',
+				'values' => $footerBackgroundImageSizes,
+				'label' => 'Footer Background Image Fit',
+				'description' => 'Choose how the footer background image displays. Cover = image will stretch to fit the entire footer space. Contain = image size will not be adjusted. ',
+				'required' => false,
+				'hideInLists' => true,
+				'default' => 'cover',
+			],
+			'footerBackgroundImageRepeat' => [
+				'property' => 'footerBackgroundImageRepeat',
+				'type' => 'enum',
+				'values' => $footerBackgroundImageRepeat,
+				'label' => 'Footer Background Image Repeat',
+				'description' => 'These options will allow the footer background image to repeat horizontally or vertically.',
+				'required' => false,
+				'hideInLists' => true,
+				'default' => 'no-repeat',
 			],
 
 			//Primary Color
@@ -3275,6 +3321,9 @@ class Theme extends DataObject {
 		$interface->assign('searchToolsForegroundColor', $this->searchToolsForegroundColor);
 		$interface->assign('footerBackgroundColor', $this->footerBackgroundColor);
 		$interface->assign('footerForegroundColor', $this->footerForegroundColor);
+		$interface->assign('footerBackgroundImage', $this->footerBackgroundImage);
+		$interface->assign('footerBackgroundImageSize', $this->footerBackgroundImageSize);
+		$interface->assign('footerBackgroundImageRepeat', $this->footerBackgroundImageRepeat);
 		$interface->assign('primaryBackgroundColor', $this->primaryBackgroundColor);
 		$interface->assign('primaryForegroundColor', $this->primaryForegroundColor);
 		$interface->assign('secondaryBackgroundColor', $this->secondaryBackgroundColor);
@@ -3909,6 +3958,7 @@ class Theme extends DataObject {
 		unset($this->logoApp);
 		unset($this->headerLogoApp);
 		unset($this->headerBackgroundImage);
+		unset($this->footerBackgroundImage);
 		unset($this->customBodyFont);
 		unset($this->customHeadingFont);
 		unset($this->generatedCss);
