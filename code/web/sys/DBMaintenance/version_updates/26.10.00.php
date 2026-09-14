@@ -58,6 +58,16 @@ function getUpdates26_10_00(): array {
 				"ALTER TABLE themes ADD COLUMN headerLogoAlignment VARCHAR(10) DEFAULT 'left'"
 			]
 		], //header_logo_alignment
+		'footer_background_image' => [
+			'title' => 'Footer Background Image',
+			'description' => 'Add footerBackgroundImage, footerBackgroundImageSize, and footerBackgroundImageRepeat to themes so the footer can have a background image, matching the Header Background Image options.',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE themes ADD COLUMN footerBackgroundImage VARCHAR(100) DEFAULT NULL',
+				"ALTER TABLE themes ADD COLUMN footerBackgroundImageSize VARCHAR(10) DEFAULT 'cover'",
+				"ALTER TABLE themes ADD COLUMN footerBackgroundImageRepeat VARCHAR(10) DEFAULT 'no-repeat'"
+			]
+		], //footer_background_image
 
 		//tomas
 

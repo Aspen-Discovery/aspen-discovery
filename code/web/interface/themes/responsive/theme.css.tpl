@@ -161,6 +161,14 @@ h1 small, h2 small, h3 small, h4 small, h5 small{ldelim}
 
 #footer-container{ldelim}
     background-color: {$footerBackgroundColor};
+    {if !empty($footerBackgroundImage)}
+        background-image: url('/files/original/{$footerBackgroundImage}');
+        background-size: {$footerBackgroundImageSize};
+        background-repeat: {$footerBackgroundImageRepeat};
+        background-position: center;
+    {else}
+        background-image: none;
+    {/if}
     color: {$footerForegroundColor};
 {rdelim}
 
