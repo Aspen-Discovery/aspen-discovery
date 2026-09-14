@@ -76,6 +76,21 @@ class DateUtils {
 		return $formatter->format($timestamp);
 	}
 
+	static function formatDayPeriodLocale(int|DateTimeInterface $timestamp): string {
+		global $activeLanguage;
+
+		$locale 	= $activeLanguage->locale ?? 'en_US';
+		$timezone 	= date_default_timezone_get();
+		$formatter 	= new IntlDateFormatter($locale, IntlDateFormatter::NONE, IntlDateFormatter::SHORT, $timezone);
+
+		if (!preg_match(self::DAY_PERIOD_REGEX, $formatter->getPattern(), $dayPeriodSymbol)) {
+			return '';
+		}
+
+		$formatter->setPattern($dayPeriodSymbol[0]);
+		return $formatter->format($timestamp);
+	}
+
 	static function hasTrailingDayPeriod(): bool {
 		global $activeLanguage;
 
