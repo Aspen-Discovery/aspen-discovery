@@ -68,6 +68,14 @@ function getUpdates26_10_00(): array {
 				"ALTER TABLE themes ADD COLUMN footerBackgroundImageRepeat VARCHAR(10) DEFAULT 'no-repeat'"
 			]
 		], //footer_background_image
+		'hide_aspen_version' => [
+			'title' => 'Hide Aspen Version',
+			'description' => 'Add hideAspenVersion to themes so libraries can hide the Aspen Discovery version number normally shown in the footer.',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE themes ADD COLUMN hideAspenVersion TINYINT(1) DEFAULT 0'
+			]
+		], //hide_aspen_version
 
 		//tomas
 
