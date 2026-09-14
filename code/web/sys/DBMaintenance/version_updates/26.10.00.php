@@ -28,7 +28,15 @@ function getUpdates26_10_00(): array {
 		//galen
 
 		//chloe
-	
+		'add_time_format_to_system_variables' => [
+			'title' => 'Add Time Format To System Variables',
+			'description' => 'Add timeFormat column to system_variables',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE system_variables ADD COLUMN timeFormat TINYINT NOT NULL DEFAULT 1'
+			]
+		], //add_time_format_to_system_variables
+
 		//pedro
 
 		//mark j
