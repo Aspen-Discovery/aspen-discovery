@@ -2,6 +2,12 @@
 
 
 class DateUtils {
+	// CLDR pattern field symbols: day period is a (AM/PM), b (noon/midnight) or B (flexible, e.g. "in the morning"); hour is h (1-12), H (0-23), k (1-24) or K (0-11)
+	const CLDR_DAY_PERIOD_SYMBOLS 	= 'abB';
+	const CLDR_HOUR_SYMBOLS 		= 'hHkK';
+	const DAY_PERIOD_REGEX 			= '/[' . self::CLDR_DAY_PERIOD_SYMBOLS . ']/u';
+	const TRAILING_DAY_PERIOD_REGEX = '/[' . self::CLDR_HOUR_SYMBOLS . '].*[' . self::CLDR_DAY_PERIOD_SYMBOLS . ']/u';
+
 	static function addDays($givendate, $day, $newDateFormat = 'Y-m-d H:i:s') {
 		$cd = strtotime($givendate);
 		$newdate = date($newDateFormat, mktime(date('H', $cd), date('i', $cd), date('s', $cd), date('m', $cd), date('d', $cd) + $day, date('Y', $cd)));
