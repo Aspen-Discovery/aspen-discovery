@@ -34,14 +34,14 @@
 					<div class="result-value col-tn-6 notranslate">
 						{if !$hiddenTimestamps}
 							{if $allDayEvent}
-								{$start_date|date_format:"%a %b %e, %Y"}{translate text=" - All Day Event" isPublicFacing=true}
+								{$start_date|format_date_locale:'full'}{translate text=" - All Day Event" isPublicFacing=true}
 							{elseif $multiDayEvent}
-								{$start_date|date_format:"%a %b %e, %Y %l:%M%p"} to {$end_date|date_format:"%a %b %e, %Y %l:%M%p"}
+								{$start_date|format_datetime_locale:'long'} - {$end_date|format_datetime_locale:'long'}
 							{else}
-								{$start_date|date_format:"%a %b %e, %Y from %l:%M%p"} to {$end_date|date_format:"%l:%M%p"}
+								{$start_date|format_date_locale:'full'}, {$start_date|format_time_range_locale:$end_date}
 							{/if}
 						{else}
-							{$start_date|date_format:"%a %b %e, %Y"}
+							{$start_date|format_date_locale:'full'}
 						{/if}
 						{if !empty($isCancelled)}
 							&nbsp;<span class="label label-danger">{translate text="Cancelled" isPublicFacing=true}</span>
