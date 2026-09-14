@@ -8,6 +8,13 @@ class DateUtils {
 	const DAY_PERIOD_REGEX 			= '/[' . self::CLDR_DAY_PERIOD_SYMBOLS . ']/u';
 	const TRAILING_DAY_PERIOD_REGEX = '/[' . self::CLDR_HOUR_SYMBOLS . '].*[' . self::CLDR_DAY_PERIOD_SYMBOLS . ']/u';
 
+	// CLDR skeletons for the timeFormat system variable; h is 1-12 and H is 0-23 and the pattern generator places the day period where the locale expects it
+	// Any other value (1, the locale-based default) leaves the locale's own time format untouched
+	const TIME_FORMAT_SKELETONS = [
+		2 => 'hm',
+		3 => 'Hm',
+	];
+
 	static function addDays($givendate, $day, $newDateFormat = 'Y-m-d H:i:s') {
 		$cd = strtotime($givendate);
 		$newdate = date($newDateFormat, mktime(date('H', $cd), date('i', $cd), date('s', $cd), date('m', $cd), date('d', $cd) + $day, date('Y', $cd)));
@@ -76,13 +83,35 @@ class DateUtils {
 		return $timestamp;
 	}
 	
+	private static function getTimeFormat(?int $formatOverride = null): int {
+		if ($formatOverride !== null) {
+			return $formatOverride;
+		}
 
-	static function formatTimeLocale(int|DateTimeInterface $timestamp, bool $includeDayPeriod = true):string {
+		require_once ROOT_DIR . '/sys/SystemVariables.php';
+		$systemVariables = SystemVariables::getSystemVariables();
+
+		return (int)($systemVariables->timeFormat ?? 0);
+	}
+
+	static function getTimeFormatter(?int $formatOverride = null): IntlDateFormatter {
 		global $activeLanguage;
 
 		$locale 	= $activeLanguage->locale ?? 'en_US';
 		$timezone 	= date_default_timezone_get();
 		$formatter 	= new IntlDateFormatter($locale, IntlDateFormatter::NONE, IntlDateFormatter::SHORT, $timezone);
+
+		$skeleton = self::TIME_FORMAT_SKELETONS[self::getTimeFormat($formatOverride)] ?? null;
+		if ($skeleton === null) {
+			return $formatter;
+		}
+
+		$formatter->setPattern((new IntlDatePatternGenerator($locale))->getBestPattern($skeleton));
+		return $formatter;
+	}
+
+	static function formatTimeLocale(int|DateTimeInterface $timestamp, bool $includeDayPeriod = true, ?int $formatOverride = null):string {
+		$formatter = self::getTimeFormatter($formatOverride);
 
 		if (!$includeDayPeriod) {
 			$localePattern 			= preg_replace(self::DAY_PERIOD_REGEX, '', $formatter->getPattern());
@@ -94,12 +123,8 @@ class DateUtils {
 		return $formatter->format($timestamp);
 	}
 
-	static function formatDayPeriodLocale(int|DateTimeInterface $timestamp): string {
-		global $activeLanguage;
-
-		$locale 	= $activeLanguage->locale ?? 'en_US';
-		$timezone 	= date_default_timezone_get();
-		$formatter 	= new IntlDateFormatter($locale, IntlDateFormatter::NONE, IntlDateFormatter::SHORT, $timezone);
+	static function formatDayPeriodLocale(int|DateTimeInterface $timestamp, ?int $formatOverride = null): string {
+		$formatter = self::getTimeFormatter($formatOverride);
 
 		if (!preg_match(self::DAY_PERIOD_REGEX, $formatter->getPattern(), $dayPeriodSymbol)) {
 			return '';
@@ -109,12 +134,8 @@ class DateUtils {
 		return $formatter->format($timestamp);
 	}
 
-	static function hasTrailingDayPeriod(): bool {
-		global $activeLanguage;
-
-		$locale 	= $activeLanguage->locale ?? 'en_US';
-		$timezone 	= date_default_timezone_get();
-		$formatter 	= new IntlDateFormatter($locale, IntlDateFormatter::NONE, IntlDateFormatter::SHORT, $timezone);
+	static function hasTrailingDayPeriod(?int $formatOverride = null): bool {
+		$formatter = self::getTimeFormatter($formatOverride);
 
 		// Locales like ko ("a h:mm") and zh ("ah:mm") lead with the day period, where lifting it onto the start of a range would read as nonsense
 		return preg_match(self::TRAILING_DAY_PERIOD_REGEX, $formatter->getPattern()) === 1;
@@ -191,15 +212,15 @@ class DateUtils {
 		return date('g:i A', strtotime($time));
 	}
 
-	static function formatTimeRange(mixed $startTime, mixed $endTime): string {
-		$parts = self::formatTimeRangeParts($startTime, $endTime);
+	static function formatTimeRange(mixed $startTime, mixed $endTime, ?int $formatOverride = null): string {
+		$parts = self::formatTimeRangeParts($startTime, $endTime, $formatOverride);
 		if ($parts['start'] === '' && $parts['end'] === '') {
 			return '';
 		}
 		return $parts['start'] . ' - ' . $parts['end'];
 	}
 
-	static function formatTimeRangeParts(mixed $startTime, mixed $endTime): array {
+	static function formatTimeRangeParts(mixed $startTime, mixed $endTime, ?int $formatOverride = null): array {
 		$startTimestamp = self::toTimestamp($startTime);
 		$endTimestamp = self::toTimestamp($endTime);
 
@@ -208,22 +229,22 @@ class DateUtils {
 		}
 
 		// A day period shared by both endpoints is redundant on the start, so compare the rendered values rather than assuming a noon split
-		$startDayPeriod = self::hasTrailingDayPeriod() ? self::formatDayPeriodLocale($startTimestamp) : '';
-		$collapseDayPeriod = $startDayPeriod !== '' && $startDayPeriod === self::formatDayPeriodLocale($endTimestamp);
+		$startDayPeriod = self::hasTrailingDayPeriod($formatOverride) ? self::formatDayPeriodLocale($startTimestamp, $formatOverride) : '';
+		$collapseDayPeriod = $startDayPeriod !== '' && $startDayPeriod === self::formatDayPeriodLocale($endTimestamp, $formatOverride);
 
 		return [
-			'start'         => self::formatTimeLocale($startTimestamp, !$collapseDayPeriod),
+			'start'         => self::formatTimeLocale($startTimestamp, !$collapseDayPeriod, $formatOverride),
 			'startMeridiem' => $collapseDayPeriod ? $startDayPeriod : '',
-			'end'           => self::formatTimeLocale($endTimestamp, true),
+			'end'           => self::formatTimeLocale($endTimestamp, true, $formatOverride),
 		];
 	}
 
-	static function formatDateTimeLocale($value, $dateStyle = 'long'): string {
+	static function formatDateTimeLocale($value, $dateStyle = 'long', ?int $formatOverride = null): string {
 		$timestamp = self::toTimestamp($value);
 		if ($timestamp === null) {
 			return '';
 		}
 
-		return self::formatDateLocale($timestamp, $dateStyle) . ' ' . self::formatTimeLocale($timestamp, true);
+		return self::formatDateLocale($timestamp, $dateStyle) . ' ' . self::formatTimeLocale($timestamp, true, $formatOverride);
 	}
 }
