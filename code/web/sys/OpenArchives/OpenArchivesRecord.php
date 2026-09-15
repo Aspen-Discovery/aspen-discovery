@@ -8,6 +8,6 @@ class OpenArchivesRecord extends DataObject {
 	public $permanentUrl;
 	/** @noinspection PhpUnused */
 	public $lastSeen;
-	/** Cover image URL, if resolved (see DSpaceCoverBuilder). Shared across all cover sizes. */
+	/** Cover image URL, if resolved on demand via the platform's REST API. Shared across all cover sizes. */
 	public $coverUrl;
 }

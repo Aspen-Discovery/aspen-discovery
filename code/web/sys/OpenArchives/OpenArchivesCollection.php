@@ -134,12 +134,12 @@ class OpenArchivesCollection extends DataObject {
 				'values' => [
 					'default' => 'Default (scrape the record page)',
 					'dspace' => 'DSpace 7+',
-					'ojs' => 'OJS',
 				],
 				'label' => 'Cover Source',
 				'description' => 'How covers are found for records in this collection.',
-				'note' => 'Default scrapes each record\'s page for a thumbnail on demand. Platform-specific options run a background bulk lookup against that platform\'s API instead, which is more reliable and puts far less load on the source server.',
+				'note' => 'Default scrapes each record\'s page for a thumbnail on demand. DSpace 7+ resolves the cover on demand via that platform\'s REST API instead, and doesn\'t use the Image Regular Expression. Records DSpace reports as having no cover aren\'t checked again until the collection is saved, so save it again after adding or publishing thumbnails in DSpace.',
 				'default' => 'default',
+				'serverValidation' => 'validateCoverSourceType',
 			],
 			'fetchFrequency' => [
 				'property' => 'fetchFrequency',
@@ -210,6 +210,47 @@ class OpenArchivesCollection extends DataObject {
 		}
 	}
 
+	/**
+	 * DSpace 7+ serves OAI-PMH under ${dspace.server.url}/oai and its REST API under
+	 * ${dspace.server.url}/api, so the REST API base is derived from the OAI base URL.
+	 */
+	public function getDSpaceRestApiUrl(): ?string {
+		if (preg_match('~^(https?://.+?)/oai(?:/|$)~i', (string)$this->baseUrl, $matches)) {
+			return $matches[1] . '/api';
+		}
+		return null;
+	}
+
+	/** @noinspection PhpUnused */
+	function validateCoverSourceType(): array {
+		$validationResults = [
+			'validatedOk' => true,
+			'errors' => [],
+		];
+
+		if ($this->coverSourceType == 'dspace') {
+			$restApiUrl = $this->getDSpaceRestApiUrl();
+			if ($restApiUrl == null) {
+				$validationResults['errors'][] = 'The Base URL is not a DSpace 7+ OAI-PMH URL, it should end in /oai/request.';
+			} else {
+				require_once ROOT_DIR . '/sys/CurlWrapper.php';
+				$curlWrapper = new CurlWrapper();
+				$rootJson = $curlWrapper->curlGetPage($restApiUrl);
+				$responseCode = $curlWrapper->getResponseCode();
+				$curlWrapper->close_curl();
+				$root = $responseCode == 200 ? json_decode($rootJson, true) : null;
+				if (!is_array($root) || ($root['type'] ?? '') != 'root') {
+					$validationResults['errors'][] = "No DSpace 7+ REST API was found at $restApiUrl.";
+				}
+			}
+		}
+
+		if (count($validationResults['errors']) > 0) {
+			$validationResults['validatedOk'] = false;
+		}
+		return $validationResults;
+	}
+
 	public function update(string $context = '') : int|bool {
 		//Allow last fetched to be overridden
 		if (!empty($this->_changedFields) && !in_array('lastFetched', $this->_changedFields)) {
@@ -220,6 +261,7 @@ class OpenArchivesCollection extends DataObject {
 		if ($ret !== FALSE) {
 			$this->saveLibraries();
 			$this->saveLocations();
+			$this->clearDSpaceMissingCovers();
 		}
 
 		return $ret;
@@ -317,5 +359,17 @@ class OpenArchivesCollection extends DataObject {
 		require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
 		$covers = new BookCoverInfo();
 		$covers->reloadAllDefaultCovers();
+	}
+
+	/**
+	 * Forget stored "no cover" answers so they are resolved again through the REST API on their next request.
+	 */
+	private function clearDSpaceMissingCovers() : void {
+		if ($this->coverSourceType != 'dspace' || empty($this->id)) {
+			return;
+		}
+		require_once ROOT_DIR . '/sys/OpenArchives/OpenArchivesRecord.php';
+		$record = new OpenArchivesRecord();
+		$record->query("UPDATE " . $record->__table . " SET coverUrl = NULL WHERE sourceCollection = " . (int)$this->id . " AND coverUrl = ''");
 	}
 }
