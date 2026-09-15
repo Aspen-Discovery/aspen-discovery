@@ -134,11 +134,10 @@ class OpenArchivesCollection extends DataObject {
 				'values' => [
 					'default' => 'Default (scrape the record page)',
 					'dspace' => 'DSpace 7+',
-					'ojs' => 'OJS',
 				],
 				'label' => 'Cover Source',
 				'description' => 'How covers are found for records in this collection.',
-				'note' => 'Default scrapes each record\'s page for a thumbnail on demand. Platform-specific options run a background bulk lookup against that platform\'s API instead, which is more reliable and puts far less load on the source server.',
+				'note' => 'Default scrapes each record\'s page for a thumbnail on demand. DSpace 7+ resolves the cover on demand via that platform\'s REST API instead, which is more reliable than scraping.',
 				'default' => 'default',
 			],
 			'fetchFrequency' => [
