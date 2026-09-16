@@ -145,6 +145,14 @@ function getUpdates26_10_00(): array {
 				) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4',
 			]
 		], //omeka_export_log
+		'omeka_module' => [
+			'title' => 'Omeka Module',
+			'description' => 'Register the Omeka module',
+			'continueOnError' => false,
+			'sql' => [
+				"INSERT IGNORE INTO modules (name, indexName, backgroundProcess, logClassPath, logClassName, settingsClassPath, settingsClassName) VALUES ('Omeka', 'grouped_works', 'omeka_export', '/sys/Omeka/OmekaExportLogEntry.php', 'OmekaExportLogEntry', '/sys/Omeka/OmekaSetting.php', 'OmekaSetting')",
+			]
+		], //omeka_module
 
 	];
 }
