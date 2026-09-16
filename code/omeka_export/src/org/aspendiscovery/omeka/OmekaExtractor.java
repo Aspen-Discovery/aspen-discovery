@@ -21,6 +21,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.TimeZone;
+import java.util.function.Consumer;
 import java.util.zip.CRC32;
 
 public class OmekaExtractor {
@@ -191,7 +192,6 @@ public class OmekaExtractor {
 	}
 
 	private boolean extractItemsForSet(String setId, HashMap<Long, OmekaTitle> existingTitles) {
-		boolean hadErrors = false;
 		String baseQueryString = "per_page=" + ITEMS_PER_PAGE + "&" + getSortQueryString();
 		if (setId != null) {
 			String setFilterName = setting.isClassic() ? "collection" : "item_set_id";
@@ -201,36 +201,47 @@ public class OmekaExtractor {
 			String modifiedParameterName = setting.isClassic() ? "modified_since" : "modified_after";
 			baseQueryString += "&" + modifiedParameterName + "=" + URLEncoder.encode(getModifiedAfterQueryValue(), StandardCharsets.UTF_8);
 		}
+		return readAllPages("/api/items", baseQueryString, items -> processItems(items, existingTitles));
+	}
+
+	private boolean readAllPages(String path, String baseQueryString, Consumer<JSONArray> pageHandler) {
 		int page = 1;
 		while (true) {
-			String url = buildApiUrl("/api/items", "page=" + page + "&" + baseQueryString);
+			String url = buildApiUrl(path, "page=" + page + "&" + baseQueryString);
 			WebServiceResponse response = callOmekaWithRetries(url);
 			if (response == null) {
 				logEntry.incErrors("Did not get a successful API response from " + getRedactedUrl(url));
-				hadErrors = true;
-				break;
+				return true;
 			}
+			JSONArray results;
 			try {
-				JSONArray items = new JSONArray(response.getMessage());
-				if (items.isEmpty()) {
-					break;
-				}
-				for (int i = 0; i < items.length(); i++) {
-					processItem(items.getJSONObject(i), existingTitles);
-				}
-				logEntry.saveResults();
-				boolean serverMayCapPageSize = setting.isClassic();
-				if (!serverMayCapPageSize && items.length() < ITEMS_PER_PAGE) {
-					break;
-				}
+				results = new JSONArray(response.getMessage());
 			} catch (JSONException e) {
 				logEntry.incErrors("Could not parse response from " + getRedactedUrl(url) + " as JSON", e);
-				hadErrors = true;
-				break;
+				return true;
+			}
+			if (results.isEmpty()) {
+				return false;
+			}
+			pageHandler.accept(results);
+			logEntry.saveResults();
+			boolean serverMayCapPageSize = setting.isClassic();
+			boolean lastPageReached = !serverMayCapPageSize && results.length() < ITEMS_PER_PAGE;
+			if (lastPageReached) {
+				return false;
 			}
 			page++;
 		}
-		return hadErrors;
+	}
+
+	private void processItems(JSONArray items, HashMap<Long, OmekaTitle> existingTitles) {
+		for (int i = 0; i < items.length(); i++) {
+			JSONObject item = items.optJSONObject(i);
+			if (item == null) {
+				continue;
+			}
+			processItem(item, existingTitles);
+		}
 	}
 
 	private void processItem(JSONObject item, HashMap<Long, OmekaTitle> existingTitles) {
