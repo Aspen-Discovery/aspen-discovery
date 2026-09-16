@@ -19,6 +19,7 @@ import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.TimeZone;
 import java.util.zip.CRC32;
 
@@ -37,6 +38,7 @@ public class OmekaExtractor {
 
 	private final Long startTimeForLogging;
 	private final CRC32 checksumCalculator = new CRC32();
+	private final HashSet<Long> processedOmekaIds = new HashSet<>();
 
 	private PreparedStatement addTitleStmt;
 	private PreparedStatement updateTitleStmt;
@@ -142,9 +144,59 @@ public class OmekaExtractor {
 		return modifiedAfterFormatter.format(new Date(extractChangesSince * 1000));
 	}
 
-	private boolean extractItems(HashMap<Long, OmekaTitle> existingTitles) {
+	private boolean extractItems(HashMap<Long, OmekaTitle> existingTitles) throws SQLException {
+		HashSet<String> scopedSetIds = getScopedSetIds();
+		if (scopedSetIds == null) {
+			return extractItemsForSet(null, existingTitles);
+		}
+		if (scopedSetIds.isEmpty()) {
+			logEntry.addNote("No item sets or collections are scoped, skipping extraction for setting " + setting.getName());
+			return false;
+		}
+		boolean hadErrors = false;
+		for (String setId : scopedSetIds) {
+			hadErrors |= extractItemsForSet(setId, existingTitles);
+		}
+		return hadErrors;
+	}
+
+	private HashSet<String> getScopedSetIds() throws SQLException {
+		HashSet<String> scopedSetIds = new HashSet<>();
+		PreparedStatement getScopesStmt = aspenConn.prepareStatement("SELECT includeAllItemSets, itemSetIds FROM omeka_scopes WHERE settingId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+		getScopesStmt.setLong(1, setting.getId());
+		ResultSet scopesRS = getScopesStmt.executeQuery();
+		boolean anyScopeIncludesAllItems = false;
+		while (scopesRS.next()) {
+			if (scopesRS.getBoolean("includeAllItemSets")) {
+				anyScopeIncludesAllItems = true;
+				break;
+			}
+			String itemSetIds = scopesRS.getString("itemSetIds");
+			if (itemSetIds == null || itemSetIds.isBlank()) {
+				continue;
+			}
+			for (String itemSetId : itemSetIds.split(",")) {
+				String trimmedId = itemSetId.trim();
+				if (!trimmedId.isEmpty()) {
+					scopedSetIds.add(trimmedId);
+				}
+			}
+		}
+		scopesRS.close();
+		getScopesStmt.close();
+		if (anyScopeIncludesAllItems) {
+			return null;
+		}
+		return scopedSetIds;
+	}
+
+	private boolean extractItemsForSet(String setId, HashMap<Long, OmekaTitle> existingTitles) {
 		boolean hadErrors = false;
 		String baseQueryString = "per_page=" + ITEMS_PER_PAGE + "&" + getSortQueryString();
+		if (setId != null) {
+			String setFilterName = setting.isClassic() ? "collection" : "item_set_id";
+			baseQueryString += "&" + setFilterName + "=" + URLEncoder.encode(setId, StandardCharsets.UTF_8);
+		}
 		if (!doFullReload) {
 			String modifiedParameterName = setting.isClassic() ? "modified_since" : "modified_after";
 			baseQueryString += "&" + modifiedParameterName + "=" + URLEncoder.encode(getModifiedAfterQueryValue(), StandardCharsets.UTF_8);
@@ -163,7 +215,6 @@ public class OmekaExtractor {
 				if (items.isEmpty()) {
 					break;
 				}
-				logEntry.incNumProducts(items.length());
 				for (int i = 0; i < items.length(); i++) {
 					processItem(items.getJSONObject(i), existingTitles);
 				}
@@ -185,6 +236,11 @@ public class OmekaExtractor {
 	private void processItem(JSONObject item, HashMap<Long, OmekaTitle> existingTitles) {
 		try {
 			long omekaId = getItemId(item);
+			boolean alreadyProcessedThisRun = !processedOmekaIds.add(omekaId);
+			if (alreadyProcessedThisRun) {
+				return;
+			}
+			logEntry.incNumProducts(1);
 			OmekaTitle existingTitle = existingTitles.get(omekaId);
 
 			String publicFlagKey = OmekaProcessor.isClassicItem(item) ? "public" : "o:is_public";
