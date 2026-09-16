@@ -58,6 +58,10 @@ class Omeka_Scopes extends ObjectEditor {
 		return '';
 	}
 
+	function getInitializationJs(): string {
+		return 'return AspenDiscovery.Admin.updateOmekaScopeFields($("#includeAllItemSets"));';
+	}
+
 	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');

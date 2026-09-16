@@ -62,6 +62,7 @@ class OmekaScope extends DataObject {
 				'description' => 'Include every item from the server. This should be checked or a list of item sets to include should be provided.',
 				'default' => 0,
 				'forcesReindex' => true,
+				'onchange' => 'return AspenDiscovery.Admin.updateOmekaScopeFields(this);',
 			],
 			'itemSetIds' => [
 				'property' => 'itemSetIds',
@@ -186,6 +187,7 @@ class OmekaScope extends DataObject {
 	}
 
 	public function update(string $context = '') : int|bool {
+		$this->clearItemSetIdsWhenIncludingAll();
 		$itemSetsChanged = $this->haveItemSetsChanged();
 		$ret = parent::update();
 		if ($ret !== FALSE) {
@@ -199,6 +201,7 @@ class OmekaScope extends DataObject {
 	}
 
 	public function insert(string $context = '') : int|bool {
+		$this->clearItemSetIdsWhenIncludingAll();
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();
@@ -206,6 +209,12 @@ class OmekaScope extends DataObject {
 			$this->markSettingForFullUpdate();
 		}
 		return $ret;
+	}
+
+	private function clearItemSetIdsWhenIncludingAll(): void {
+		if ($this->includeAllItemSets) {
+			$this->itemSetIds = '';
+		}
 	}
 
 	private function haveItemSetsChanged(): bool {

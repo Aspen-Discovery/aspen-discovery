@@ -1698,6 +1698,21 @@ AspenDiscovery.Admin = (function () {
 				omekaSOnlyRows.show();
 			}
 		},
+		updateOmekaScopeFields: function (includeAllCheckbox) {
+			var checkbox = $(includeAllCheckbox);
+			var itemSetIds = $('#itemSetIds');
+			var gridRow = checkbox.closest('tr');
+			if (gridRow.length) {
+				itemSetIds = gridRow.find('input[name*="_itemSetIds["]');
+			}
+			var includeAllItemSets = checkbox.prop('checked');
+			if (includeAllItemSets) {
+				itemSetIds.val('');
+				itemSetIds.prop('readonly', true);
+			} else {
+				itemSetIds.prop('readonly', false);
+			}
+		},
 		showCreateRoleForm: function () {
 			AspenDiscovery.Account.ajaxLightbox(Globals.path + '/Admin/AJAX?method=getCreateRoleForm', true);
 			return false;
