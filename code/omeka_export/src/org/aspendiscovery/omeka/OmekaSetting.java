@@ -10,6 +10,8 @@ public class OmekaSetting {
 	private final String apiKeyIdentity;
 	private final String apiKeyCredential;
 	private final boolean doFullReload;
+	private final long lastUpdateOfChangedRecords;
+	private final long lastUpdateOfAllRecords;
 
 	OmekaSetting(ResultSet settingsRS) throws SQLException {
 		id = settingsRS.getLong("id");
@@ -18,6 +20,8 @@ public class OmekaSetting {
 		apiKeyIdentity = settingsRS.getString("apiKeyIdentity");
 		apiKeyCredential = settingsRS.getString("apiKeyCredential");
 		doFullReload = settingsRS.getBoolean("runFullUpdate");
+		lastUpdateOfChangedRecords = settingsRS.getLong("lastUpdateOfChangedRecords");
+		lastUpdateOfAllRecords = settingsRS.getLong("lastUpdateOfAllRecords");
 	}
 
 	private static String trimTrailingSlash(String url) {
@@ -44,6 +48,14 @@ public class OmekaSetting {
 
 	boolean doFullReload() {
 		return doFullReload;
+	}
+
+	long getLastUpdateOfChangedRecords() {
+		return Math.max(lastUpdateOfChangedRecords, lastUpdateOfAllRecords);
+	}
+
+	long getLastUpdateOfAllRecords() {
+		return lastUpdateOfAllRecords;
 	}
 
 	boolean hasApiKey() {

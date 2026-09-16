@@ -15,13 +15,17 @@ import org.json.JSONObject;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.sql.*;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.TimeZone;
 import java.util.zip.CRC32;
 
 public class OmekaExtractor {
 	private static final int ITEMS_PER_PAGE = 100;
 	private static final String PRIMARY_MEDIA_KEY = "aspen:primaryMedia";
+	private static final long FULL_UPDATE_INTERVAL_SECONDS = 24 * 60 * 60;
+	private static final long MODIFIED_AFTER_BUFFER_SECONDS = 10 * 60;
 
 	private final String serverName;
 	private final OmekaSetting setting;
@@ -37,9 +41,12 @@ public class OmekaExtractor {
 	private PreparedStatement updateTitleStmt;
 	private PreparedStatement updateLastSeenStmt;
 	private PreparedStatement markTitleDeletedStmt;
+	private PreparedStatement getStoredResponseStmt;
 
 	private GroupedWorkIndexer groupedWorkIndexer;
 	private RecordGroupingProcessor recordGroupingProcessorSingleton = null;
+
+	private boolean doFullReload;
 
 	public OmekaExtractor(String serverName, Connection aspenConn, OmekaSetting setting, Ini configIni, OmekaExportLogEntry logEntry, Logger logger) {
 		this.serverName = serverName;
@@ -59,15 +66,23 @@ public class OmekaExtractor {
 			updateTitleStmt = aspenConn.prepareStatement("UPDATE omeka_title SET title = ?, mediaType = ?, thumbnailUrl = ?, itemSetIds = ?, rawChecksum = ?, rawResponseLength = ?, rawResponse = COMPRESS(?), lastSeen = ?, deleted = 0 WHERE id = ?");
 			updateLastSeenStmt = aspenConn.prepareStatement("UPDATE omeka_title SET lastSeen = ? WHERE id = ?");
 			markTitleDeletedStmt = aspenConn.prepareStatement("UPDATE omeka_title SET deleted = 1 WHERE id = ?");
+			getStoredResponseStmt = aspenConn.prepareStatement("SELECT UNCOMPRESS(rawResponse) as rawResponse from omeka_title where id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 
-			logEntry.addNote("Starting update from Omeka for setting " + setting.getName());
+			boolean fullUpdateIsDue = setting.getLastUpdateOfAllRecords() < (startTimeForLogging - FULL_UPDATE_INTERVAL_SECONDS);
+			doFullReload = setting.doFullReload() || fullUpdateIsDue;
+
+			if (doFullReload) {
+				logEntry.addNote("Starting full update from Omeka for setting " + setting.getName());
+			} else {
+				logEntry.addNote("Starting update of changed records from Omeka for setting " + setting.getName());
+			}
 			logEntry.saveResults();
 
 			HashMap<Long, OmekaTitle> existingTitles = loadExistingTitles();
 
 			boolean hadErrorsExtracting = extractItems(existingTitles);
 
-			if (!hadErrorsExtracting) {
+			if (!hadErrorsExtracting && doFullReload) {
 				removeTitlesNotSeenInExport(existingTitles);
 			}
 
@@ -92,6 +107,7 @@ public class OmekaExtractor {
 			updateTitleStmt.close();
 			updateLastSeenStmt.close();
 			markTitleDeletedStmt.close();
+			getStoredResponseStmt.close();
 		} catch (Exception e) {
 			logEntry.incErrors("Error exporting Omeka data", e);
 		}
@@ -118,11 +134,22 @@ public class OmekaExtractor {
 		return existingTitles;
 	}
 
+	private String getModifiedAfterQueryValue() {
+		long extractChangesSince = setting.getLastUpdateOfChangedRecords() - MODIFIED_AFTER_BUFFER_SECONDS;
+		SimpleDateFormat modifiedAfterFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+		modifiedAfterFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+		return modifiedAfterFormatter.format(new Date(extractChangesSince * 1000));
+	}
+
 	private boolean extractItems(HashMap<Long, OmekaTitle> existingTitles) {
 		boolean hadErrors = false;
+		String baseQueryString = "per_page=" + ITEMS_PER_PAGE + "&sort_by=id&sort_order=asc";
+		if (!doFullReload) {
+			baseQueryString += "&modified_after=" + URLEncoder.encode(getModifiedAfterQueryValue(), StandardCharsets.UTF_8);
+		}
 		int page = 1;
 		while (true) {
-			String url = buildApiUrl("/api/items", "page=" + page + "&per_page=" + ITEMS_PER_PAGE + "&sort_by=id&sort_order=asc");
+			String url = buildApiUrl("/api/items", "page=" + page + "&" + baseQueryString);
 			WebServiceResponse response = callOmekaWithRetries(url);
 			if (response == null) {
 				logEntry.incErrors("Did not get a successful API response from " + url);
@@ -170,6 +197,18 @@ public class OmekaExtractor {
 				return;
 			}
 
+			JSONObject primaryMedia = fetchPrimaryMedia(item);
+			String mediaType = null;
+			String thumbnailUrl = null;
+			if (primaryMedia != null) {
+				item.put(PRIMARY_MEDIA_KEY, primaryMedia);
+				mediaType = primaryMedia.optString("o:media_type", null);
+				JSONObject thumbnailUrls = primaryMedia.optJSONObject("o:thumbnail_urls");
+				if (thumbnailUrls != null) {
+					thumbnailUrl = thumbnailUrls.optString("large", null);
+				}
+			}
+
 			String rawResponse = item.toString();
 			checksumCalculator.reset();
 			checksumCalculator.update(rawResponse.getBytes(StandardCharsets.UTF_8));
@@ -188,7 +227,7 @@ public class OmekaExtractor {
 				updateLastSeenStmt.setLong(1, startTimeForLogging);
 				updateLastSeenStmt.setLong(2, existingTitle.getId());
 				updateLastSeenStmt.executeUpdate();
-				if (setting.doFullReload()) {
+				if (doFullReload) {
 					regroupAndIndexTitle(loadStoredResponse(existingTitle.getId()), existingTitle.getId());
 				} else {
 					logEntry.incSkipped();
@@ -198,18 +237,6 @@ public class OmekaExtractor {
 
 			String title = getTitleForItem(item);
 			String itemSetIds = getItemSetIdsForItem(item);
-			JSONObject primaryMedia = fetchPrimaryMedia(item);
-			String mediaType = null;
-			String thumbnailUrl = null;
-			if (primaryMedia != null) {
-				item.put(PRIMARY_MEDIA_KEY, primaryMedia);
-				mediaType = primaryMedia.optString("o:media_type", null);
-				JSONObject thumbnailUrls = primaryMedia.optJSONObject("o:thumbnail_urls");
-				if (thumbnailUrls != null) {
-					thumbnailUrl = thumbnailUrls.optString("large", null);
-				}
-			}
-			String storedResponse = item.toString();
 
 			long titleId;
 			if (isNewTitle) {
@@ -221,7 +248,7 @@ public class OmekaExtractor {
 				addTitleStmt.setString(6, itemSetIds);
 				addTitleStmt.setLong(7, rawChecksum);
 				addTitleStmt.setLong(8, rawResponseLength);
-				addTitleStmt.setString(9, storedResponse);
+				addTitleStmt.setString(9, rawResponse);
 				addTitleStmt.setLong(10, startTimeForLogging);
 				addTitleStmt.setLong(11, startTimeForLogging);
 				addTitleStmt.executeUpdate();
@@ -240,7 +267,7 @@ public class OmekaExtractor {
 				updateTitleStmt.setString(4, itemSetIds);
 				updateTitleStmt.setLong(5, rawChecksum);
 				updateTitleStmt.setLong(6, rawResponseLength);
-				updateTitleStmt.setString(7, storedResponse);
+				updateTitleStmt.setString(7, rawResponse);
 				updateTitleStmt.setLong(8, startTimeForLogging);
 				updateTitleStmt.setLong(9, titleId);
 				updateTitleStmt.executeUpdate();
@@ -393,7 +420,6 @@ public class OmekaExtractor {
 
 	private JSONObject loadStoredResponse(long titleId) {
 		try {
-			PreparedStatement getStoredResponseStmt = aspenConn.prepareStatement("SELECT UNCOMPRESS(rawResponse) as rawResponse from omeka_title where id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			getStoredResponseStmt.setLong(1, titleId);
 			ResultSet storedResponseRS = getStoredResponseStmt.executeQuery();
 			JSONObject storedResponse = null;
@@ -404,7 +430,6 @@ public class OmekaExtractor {
 				}
 			}
 			storedResponseRS.close();
-			getStoredResponseStmt.close();
 			return storedResponse;
 		} catch (Exception e) {
 			logEntry.incErrors("Error loading stored response for Omeka title " + titleId, e);
@@ -461,14 +486,19 @@ public class OmekaExtractor {
 	}
 
 	private void setLastUpdateTimeForSetting() throws SQLException {
+		boolean fullReloadFailed = doFullReload && logEntry.hasErrors();
+		if (fullReloadFailed) {
+			PreparedStatement reactivateFullUpdateStmt = aspenConn.prepareStatement("UPDATE omeka_settings set runFullUpdate = 1 where id = ?");
+			reactivateFullUpdateStmt.setLong(1, setting.getId());
+			reactivateFullUpdateStmt.executeUpdate();
+			return;
+		}
+		if (logEntry.hasErrors()) {
+			logEntry.addNote("Keeping the last update time because the extract had errors.");
+			return;
+		}
 		PreparedStatement updateSettingsStmt;
-		if (setting.doFullReload()) {
-			if (logEntry.hasErrors()) {
-				PreparedStatement reactivateFullUpdateStmt = aspenConn.prepareStatement("UPDATE omeka_settings set runFullUpdate = 1 where id = ?");
-				reactivateFullUpdateStmt.setLong(1, setting.getId());
-				reactivateFullUpdateStmt.executeUpdate();
-				return;
-			}
+		if (doFullReload) {
 			updateSettingsStmt = aspenConn.prepareStatement("UPDATE omeka_settings SET lastUpdateOfAllRecords = ?, runFullUpdate = 0 WHERE id = ?");
 			logEntry.addNote("Disabling Run Full Update option after a successful full update.");
 		} else {
