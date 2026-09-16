@@ -1063,15 +1063,7 @@ class WebBuilder_AJAX extends JSON_Action {
 			$mapsKey = null;
 		}
 		foreach ($locationsToProcess as $locationToProcess) {
-			$hours = $locationToProcess->getHours();
-			foreach ($hours as $key => $hourObj) {
-				if (!$hourObj->closed) {
-					$hourObj->open = DateUtils::formatHour($hourObj->open);
-					$hourObj->close = DateUtils::formatHour($hourObj->close);
-				}
-				$hours[$key] = $hourObj;
-			}
-			$libraryLocations[$locationToProcess->locationId] = $locationToProcess->getPublicLocationInfo($hours, $mapsKey);
+			$libraryLocations[$locationToProcess->locationId] = $locationToProcess->getPublicLocationInfo($locationToProcess->getFormattedHours(), $mapsKey);
 		}
 
 		global $interface;

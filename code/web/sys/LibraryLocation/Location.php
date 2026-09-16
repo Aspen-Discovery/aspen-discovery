@@ -2791,6 +2791,18 @@ class Location extends DataObject {
 		return $this->_hours;
 	}
 
+	public function getFormattedHours(): array {
+		require_once ROOT_DIR . '/sys/Utils/DateUtils.php';
+		$formattedHours = [];
+		foreach ($this->getHours() as $key => $hourObj) {
+			$formattedHourObj = clone $hourObj;
+			$formattedHourObj->openFormatted = DateUtils::formatHour($hourObj->open);
+			$formattedHourObj->closeFormatted = DateUtils::formatHour($hourObj->close);
+			$formattedHours[$key] = $formattedHourObj;
+		}
+		return $formattedHours;
+	}
+
 	public function hasValidHours(): bool {
 		$hours = new LocationHours();
 		$hours->locationId = $this->locationId;
