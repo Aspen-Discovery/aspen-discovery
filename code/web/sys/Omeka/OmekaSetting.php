@@ -18,6 +18,10 @@ class OmekaSetting extends DataObject {
 
 	private $_scopes;
 
+	public function getEncryptedFieldNames(): array {
+		return ['apiKeyCredential'];
+	}
+
 	static $_objectStructure = [];
 	static function getObjectStructure(string $context = ''): array {
 		if (isset(self::$_objectStructure[$context]) && self::$_objectStructure[$context] !== null) {

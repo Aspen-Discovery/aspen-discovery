@@ -159,7 +159,7 @@ public class OmekaExportMain {
 			PreparedStatement getSettingsStmt = aspenConn.prepareStatement("SELECT * from omeka_settings");
 			ResultSet getSettingsRS = getSettingsStmt.executeQuery();
 			while (getSettingsRS.next()) {
-				OmekaSetting setting = new OmekaSetting(getSettingsRS);
+				OmekaSetting setting = new OmekaSetting(getSettingsRS, serverName, logger);
 				settings.add(setting);
 			}
 		} catch (SQLException e) {
