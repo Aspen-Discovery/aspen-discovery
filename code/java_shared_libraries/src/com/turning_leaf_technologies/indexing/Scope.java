@@ -50,6 +50,7 @@ public class Scope implements Comparable<Scope>{
 	private final HashMap<Long, CloudLibraryScope> cloudLibraryScopes = new HashMap<>();
 	private Axis360Scope axis360Scope;
 	private PalaceProjectScope palaceProjectScope;
+	private final HashMap<Long, ArrayList<OmekaScope>> omekaScopes = new HashMap<>();
 
 	private final HashMap<Long, SideLoadScope> sideLoadScopes = new HashMap<>();
 
@@ -314,6 +315,29 @@ public class Scope implements Comparable<Scope>{
 
 	public void setPalaceProjectScope(PalaceProjectScope palaceProjectScope) {
 		this.palaceProjectScope = palaceProjectScope;
+	}
+
+	public boolean includesOmekaItem(long settingId, HashSet<String> itemSetIds) {
+		ArrayList<OmekaScope> scopesForSetting = omekaScopes.get(settingId);
+		if (scopesForSetting == null) {
+			return false;
+		}
+		for (OmekaScope omekaScope : scopesForSetting) {
+			if (omekaScope.includesItemWithItemSets(itemSetIds)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public void addOmekaScope(OmekaScope omekaScope) {
+		if (omekaScope == null) {
+			return;
+		}
+		ArrayList<OmekaScope> scopesForSetting = omekaScopes.computeIfAbsent(omekaScope.getSettingId(), settingId -> new ArrayList<>());
+		if (!scopesForSetting.contains(omekaScope)) {
+			scopesForSetting.add(omekaScope);
+		}
 	}
 
 	public boolean isConsortialCatalog() {
