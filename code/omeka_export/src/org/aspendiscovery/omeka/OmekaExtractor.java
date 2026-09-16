@@ -206,7 +206,7 @@ public class OmekaExtractor {
 			String url = buildApiUrl("/api/items", "page=" + page + "&" + baseQueryString);
 			WebServiceResponse response = callOmekaWithRetries(url);
 			if (response == null) {
-				logEntry.incErrors("Did not get a successful API response from " + url);
+				logEntry.incErrors("Did not get a successful API response from " + getRedactedUrl(url));
 				hadErrors = true;
 				break;
 			}
@@ -224,7 +224,7 @@ public class OmekaExtractor {
 					break;
 				}
 			} catch (JSONException e) {
-				logEntry.incErrors("Could not parse response from " + url + " as JSON", e);
+				logEntry.incErrors("Could not parse response from " + getRedactedUrl(url) + " as JSON", e);
 				hadErrors = true;
 				break;
 			}
@@ -417,13 +417,13 @@ public class OmekaExtractor {
 		String url = buildApiUrl("/api/media/" + mediaId, null);
 		WebServiceResponse response = callOmekaWithRetries(url);
 		if (response == null) {
-			logEntry.incErrors("Could not load media " + mediaId + " from " + url);
+			logEntry.incErrors("Could not load media " + mediaId + " from " + getRedactedUrl(url));
 			return null;
 		}
 		try {
 			return new JSONObject(response.getMessage());
 		} catch (JSONException e) {
-			logEntry.incErrors("Could not parse media response from " + url + " as JSON", e);
+			logEntry.incErrors("Could not parse media response from " + getRedactedUrl(url) + " as JSON", e);
 			return null;
 		}
 	}
@@ -437,7 +437,7 @@ public class OmekaExtractor {
 		String url = buildApiUrl("/api/files", "item=" + itemId + "&per_page=1");
 		WebServiceResponse response = callOmekaWithRetries(url);
 		if (response == null) {
-			logEntry.incErrors("Could not load files for item " + itemId + " from " + url);
+			logEntry.incErrors("Could not load files for item " + itemId + " from " + getRedactedUrl(url));
 			return null;
 		}
 		try {
@@ -447,7 +447,7 @@ public class OmekaExtractor {
 			}
 			return files.getJSONObject(0);
 		} catch (JSONException e) {
-			logEntry.incErrors("Could not parse files response from " + url + " as JSON", e);
+			logEntry.incErrors("Could not parse files response from " + getRedactedUrl(url) + " as JSON", e);
 			return null;
 		}
 	}
@@ -489,6 +489,10 @@ public class OmekaExtractor {
 		return "key_identity=" + URLEncoder.encode(setting.getApiKeyIdentity(), StandardCharsets.UTF_8) + "&key_credential=" + encodedCredential;
 	}
 
+	private String getRedactedUrl(String url) {
+		return url.replaceAll("(key|key_identity|key_credential)=[^&]*", "$1=REDACTED");
+	}
+
 	private WebServiceResponse callOmekaWithRetries(String url) {
 		HashMap<String, String> headers = new HashMap<>();
 		headers.put("Accept", "application/json");
@@ -501,7 +505,7 @@ public class OmekaExtractor {
 				} catch (InterruptedException ignored) {
 				}
 			}
-			WebServiceResponse response = NetworkUtils.getURL(url, logger, headers);
+			WebServiceResponse response = NetworkUtils.getURL(url, logger, headers, 300000, false);
 			if (response.isSuccess()) {
 				return response;
 			}
