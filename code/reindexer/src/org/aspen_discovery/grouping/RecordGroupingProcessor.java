@@ -67,6 +67,7 @@ public class RecordGroupingProcessor implements AutoCloseable {
 	private PreparedStatement getPalaceProjectRecordStmt;
 	private PreparedStatement getProductIdForPalaceProjectIdStmt;
 	private PreparedStatement getOmekaRecordStmt;
+	private final HashSet<Long> omekaSettingsGroupingByTitle = new HashSet<>();
 	private PreparedStatement getManualGroupForRecordStmt;
 	private PreparedStatement getRecordGroupingOverrideStmt;
 	private PreparedStatement setPermIdForManuallyGroupedRecordsStmt;
@@ -271,7 +272,8 @@ public class RecordGroupingProcessor implements AutoCloseable {
 			getHooplaRecordStmt = dbConnection.prepareStatement("SELECT UNCOMPRESS(rawResponse) as rawResponse from hoopla_export where hooplaId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			getPalaceProjectRecordStmt = dbConnection.prepareStatement("SELECT UNCOMPRESS(rawResponse) as rawResponse from palace_project_title where id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			getProductIdForPalaceProjectIdStmt = dbConnection.prepareStatement("SELECT id from palace_project_title where palaceProjectId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-			getOmekaRecordStmt = dbConnection.prepareStatement("SELECT UNCOMPRESS(rawResponse) as rawResponse from omeka_title where id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getOmekaRecordStmt = dbConnection.prepareStatement("SELECT settingId, UNCOMPRESS(rawResponse) as rawResponse from omeka_title where id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			loadOmekaSettingsGroupingByTitle(dbConnection);
 
 			PreparedStatement recordsToNotGroupStmt = dbConnection.prepareStatement("SELECT * from nongrouped_records");
 			ResultSet nonGroupedRecordsRS = recordsToNotGroupStmt.executeQuery();
@@ -641,6 +643,19 @@ public class RecordGroupingProcessor implements AutoCloseable {
 	 * @return The permanent id of the grouped work
 	 */
 	public String processRecord(RecordIdentifier primaryIdentifier, String title, String subtitle, String author, String format, String language, boolean primaryDataChanged) {
+		GroupedWork groupedWork = buildGroupedWork(title, subtitle, author, format, language);
+		addGroupedWorkToDatabase(primaryIdentifier, groupedWork, primaryDataChanged, null);
+		return groupedWork.getPermanentId();
+	}
+
+	public String processUngroupedRecord(RecordIdentifier primaryIdentifier, String title, String author, String format, String language, boolean primaryDataChanged) {
+		GroupedWork groupedWork = buildGroupedWork(title, "", author, format, language);
+		groupedWork.makeUnique(primaryIdentifier.toString());
+		addGroupedWorkToDatabase(primaryIdentifier, groupedWork, primaryDataChanged, null);
+		return groupedWork.getPermanentId();
+	}
+
+	private GroupedWork buildGroupedWork(String title, String subtitle, String author, String format, String language) {
 		GroupedWork groupedWork = new GroupedWork(this);
 
 		//Replace & with and for better matching
@@ -667,9 +682,7 @@ public class RecordGroupingProcessor implements AutoCloseable {
 		}
 
 		groupedWork.setLanguage(language);
-
-		addGroupedWorkToDatabase(primaryIdentifier, groupedWork, primaryDataChanged, null);
-		return groupedWork.getPermanentId();
+		return groupedWork;
 	}
 
 
@@ -1275,6 +1288,7 @@ public class RecordGroupingProcessor implements AutoCloseable {
 				getOmekaRecordRS.close();
 				return null;
 			}
+			long settingId = getOmekaRecordRS.getLong("settingId");
 			byte[] rawResponseBytes = getOmekaRecordRS.getBytes("rawResponse");
 			getOmekaRecordRS.close();
 			if (rawResponseBytes == null) {
@@ -1282,14 +1296,25 @@ public class RecordGroupingProcessor implements AutoCloseable {
 				return null;
 			}
 			JSONObject rawResponse = new JSONObject(new String(rawResponseBytes, StandardCharsets.UTF_8));
-			return groupOmekaRecord(rawResponse, omekaAspenId);
+			boolean groupByTitleAndAuthor = omekaSettingsGroupingByTitle.contains(settingId);
+			return groupOmekaRecord(rawResponse, omekaAspenId, groupByTitleAndAuthor);
 		} catch (Exception e) {
 			logEntry.incErrors("Error grouping Omeka record " + identifier, e);
 		}
 		return null;
 	}
 
-	public String groupOmekaRecord(JSONObject itemDetails, long omekaAspenId) {
+	private void loadOmekaSettingsGroupingByTitle(Connection dbConnection) throws SQLException {
+		PreparedStatement getOmekaSettingsStmt = dbConnection.prepareStatement("SELECT id FROM omeka_settings WHERE groupItemsByTitle = 1", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+		ResultSet omekaSettingsRS = getOmekaSettingsStmt.executeQuery();
+		while (omekaSettingsRS.next()) {
+			omekaSettingsGroupingByTitle.add(omekaSettingsRS.getLong("id"));
+		}
+		omekaSettingsRS.close();
+		getOmekaSettingsStmt.close();
+	}
+
+	public String groupOmekaRecord(JSONObject itemDetails, long omekaAspenId, boolean groupByTitleAndAuthor) {
 		String title = OmekaProcessor.getFirstLiteralValue(itemDetails, "dcterms:title");
 		if (title == null) {
 			title = itemDetails.optString("o:title", "Untitled");
@@ -1309,7 +1334,10 @@ public class RecordGroupingProcessor implements AutoCloseable {
 
 		RecordIdentifier primaryIdentifier = new RecordIdentifier("omeka", Long.toString(omekaAspenId));
 
-		return processRecord(primaryIdentifier, title, "", author, primaryFormat, languageCode, true);
+		if (groupByTitleAndAuthor) {
+			return processRecord(primaryIdentifier, title, "", author, primaryFormat, languageCode, true);
+		}
+		return processUngroupedRecord(primaryIdentifier, title, author, primaryFormat, languageCode, true);
 	}
 
 	private String getOmekaGroupingLanguageCode(JSONObject itemDetails) {

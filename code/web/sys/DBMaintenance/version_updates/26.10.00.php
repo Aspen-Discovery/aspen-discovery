@@ -53,6 +53,7 @@ function getUpdates26_10_00(): array {
 					siteSlug VARCHAR(100) DEFAULT NULL,
 					apiKeyIdentity VARCHAR(255) DEFAULT \'\',
 					apiKeyCredential VARCHAR(255) DEFAULT \'\',
+					groupItemsByTitle TINYINT(1) DEFAULT 0,
 					runFullUpdate TINYINT(1) DEFAULT 0,
 					lastUpdateOfChangedRecords INT(11) DEFAULT 0,
 					lastUpdateOfAllRecords INT(11) DEFAULT 0
