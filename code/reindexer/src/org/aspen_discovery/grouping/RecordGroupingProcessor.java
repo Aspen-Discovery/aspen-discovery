@@ -8,6 +8,7 @@ import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.logging.log4j.Logger;
 import org.aspen_discovery.format_classification.FormatInfo;
+import org.aspen_discovery.reindexer.OmekaProcessor;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -65,6 +66,7 @@ public class RecordGroupingProcessor implements AutoCloseable {
 	private PreparedStatement getHooplaRecordStmt;
 	private PreparedStatement getPalaceProjectRecordStmt;
 	private PreparedStatement getProductIdForPalaceProjectIdStmt;
+	private PreparedStatement getOmekaRecordStmt;
 	private PreparedStatement getManualGroupForRecordStmt;
 	private PreparedStatement getRecordGroupingOverrideStmt;
 	private PreparedStatement setPermIdForManuallyGroupedRecordsStmt;
@@ -138,6 +140,7 @@ public class RecordGroupingProcessor implements AutoCloseable {
 			getHooplaRecordStmt.close();
 			getPalaceProjectRecordStmt.close();
 			getProductIdForPalaceProjectIdStmt.close();
+			getOmekaRecordStmt.close();
 			getRecordGroupingOverrideStmt.close();
 			getManualGroupForRecordStmt.close();
 			setPermIdForManuallyGroupedRecordsStmt.close();
@@ -268,6 +271,7 @@ public class RecordGroupingProcessor implements AutoCloseable {
 			getHooplaRecordStmt = dbConnection.prepareStatement("SELECT UNCOMPRESS(rawResponse) as rawResponse from hoopla_export where hooplaId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			getPalaceProjectRecordStmt = dbConnection.prepareStatement("SELECT UNCOMPRESS(rawResponse) as rawResponse from palace_project_title where id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			getProductIdForPalaceProjectIdStmt = dbConnection.prepareStatement("SELECT id from palace_project_title where palaceProjectId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			getOmekaRecordStmt = dbConnection.prepareStatement("SELECT UNCOMPRESS(rawResponse) as rawResponse from omeka_title where id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 
 			PreparedStatement recordsToNotGroupStmt = dbConnection.prepareStatement("SELECT * from nongrouped_records");
 			ResultSet nonGroupedRecordsRS = recordsToNotGroupStmt.executeQuery();
@@ -1255,6 +1259,74 @@ public class RecordGroupingProcessor implements AutoCloseable {
 		String languageCode = translateValue("two_to_three_character_language_codes", language.toLowerCase(Locale.ROOT));
 
 		return processRecord(primaryIdentifier, title, subTitle, author, primaryFormat, languageCode, true);
+	}
+
+	public String groupOmekaRecord(String identifier) throws JSONException {
+		try {
+			if (!AspenStringUtils.isNumeric(identifier)) {
+				logEntry.incErrors("Invalid Omeka identifier to group " + identifier);
+				return null;
+			}
+			long omekaAspenId = Long.parseLong(identifier);
+			getOmekaRecordStmt.setLong(1, omekaAspenId);
+			ResultSet getOmekaRecordRS = getOmekaRecordStmt.executeQuery();
+			boolean recordExists = getOmekaRecordRS.next();
+			if (!recordExists) {
+				getOmekaRecordRS.close();
+				return null;
+			}
+			byte[] rawResponseBytes = getOmekaRecordRS.getBytes("rawResponse");
+			getOmekaRecordRS.close();
+			if (rawResponseBytes == null) {
+				logEntry.incErrors("Omeka record " + identifier + " had no raw response");
+				return null;
+			}
+			JSONObject rawResponse = new JSONObject(new String(rawResponseBytes, StandardCharsets.UTF_8));
+			return groupOmekaRecord(rawResponse, omekaAspenId);
+		} catch (Exception e) {
+			logEntry.incErrors("Error grouping Omeka record " + identifier, e);
+		}
+		return null;
+	}
+
+	public String groupOmekaRecord(JSONObject itemDetails, long omekaAspenId) {
+		String title = OmekaProcessor.getFirstLiteralValue(itemDetails, "dcterms:title");
+		if (title == null) {
+			title = itemDetails.optString("o:title", "Untitled");
+		}
+		title = GroupedWork.removeComplexSubtitlesFromTitle(title);
+
+		String author = "";
+		String firstCreator = OmekaProcessor.getFirstLiteralValue(itemDetails, "dcterms:creator");
+		if (firstCreator != null) {
+			author = OmekaProcessor.formatAuthorName(firstCreator);
+		}
+
+		String mediaType = null;
+		JSONObject primaryMedia = itemDetails.optJSONObject("aspen:primaryMedia");
+		if (primaryMedia != null) {
+			mediaType = primaryMedia.optString("o:media_type", null);
+		}
+		String primaryFormat = OmekaProcessor.getFormatForMediaType(mediaType);
+
+		String languageCode = getOmekaGroupingLanguageCode(itemDetails);
+
+		RecordIdentifier primaryIdentifier = new RecordIdentifier("omeka", Long.toString(omekaAspenId));
+
+		return processRecord(primaryIdentifier, title, "", author, primaryFormat, languageCode, true);
+	}
+
+	private String getOmekaGroupingLanguageCode(JSONObject itemDetails) {
+		String languageValue = OmekaProcessor.getFirstLiteralValue(itemDetails, "dcterms:language");
+		if (languageValue == null) {
+			return "eng";
+		}
+		String languageCode = OmekaProcessor.getThreeLetterLanguageCode(languageValue, this::translateValue);
+		boolean isThreeLetterCode = languageCode != null && languageCode.length() == 3;
+		if (isThreeLetterCode) {
+			return languageCode;
+		}
+		return "unk";
 	}
 
 	public long getNumAuthoritiesUsed() {
