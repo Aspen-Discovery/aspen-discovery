@@ -3038,6 +3038,38 @@ class Location extends DataObject {
 		return $locations;
 	}
 
+	public function getPublicLocationInfo(array $hours, ?string $mapsKey): array {
+		global $configArray;
+		require_once ROOT_DIR . '/sys/Parsedown/AspenParsedown.php';
+		$parsedown = AspenParsedown::instance();
+		$parsedown->setBreaksEnabled(true);
+
+		$mapAddress = urlencode(preg_replace('/\r\n|\r|\n/', '+', $this->address));
+		$parentLibrary = $this->getParentLibrary();
+		$locationInfo = [
+			'id' => $this->locationId,
+			'name' => $this->displayName,
+			'address' => preg_replace('/\r\n|\r|\n/', '<br>', $this->address),
+			'phone' => $this->phone,
+			'tty' => $this->tty,
+			'email' => $this->contactEmail,
+			'hours' => $hours,
+			'hasValidHours' => $this->hasValidHours(),
+			'description' => $parsedown->parse($this->description),
+			'image' => $this->locationImage ? $configArray['Site']['url'] . '/files/original/' . $this->locationImage : null,
+			'longitude' => floatval($this->longitude),
+			'latitude' => floatval($this->latitude),
+			'homeLink' => (!empty($this->homeLink) && $this->homeLink !== 'default') ? $this->homeLink : ((!empty($parentLibrary->homeLink) && $parentLibrary->homeLink !== 'default') ? $parentLibrary->homeLink : null),
+			'hoursMessage' => Location::getLibraryHoursMessage($this->locationId, true),
+			'useLocationNameForMaps' => $this->useLocationNameForMaps,
+		];
+
+		if (!empty($mapsKey)) {
+			$locationInfo['map_link'] = "https://maps.google.com/maps?f=q&hl=en&geocode=&q=$mapAddress&ie=UTF8&z=15&iwloc=addr&om=1&t=m&key=$mapsKey";
+		}
+		return $locationInfo;
+	}
+
 	/**
 	 * Get location list with Web Builder indexing status indicators from parent library.
 	 * @param boolean $restrictByHomeLibrary Whether locations for the patron's home library should be returned.

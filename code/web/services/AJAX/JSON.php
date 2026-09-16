@@ -417,7 +417,6 @@ class AJAX_JSON extends Action {
 	/** @noinspection PhpUnused */
 	function getHoursAndLocations() : string {
 		require_once ROOT_DIR . '/sys/Utils/DateUtils.php';
-		global $configArray;
 		$libraryLocations = [];
 		$locationsToProcess = Location::getPubliclyListedLocations();
 
@@ -428,11 +427,7 @@ class AJAX_JSON extends Action {
 		} else {
 			$mapsKey = null;
 		}
-		require_once ROOT_DIR . '/sys/Parsedown/AspenParsedown.php';
-		$parsedown = AspenParsedown::instance();
-		$parsedown->setBreaksEnabled(true);
 		foreach ($locationsToProcess as $locationToProcess) {
-			$mapAddress = urlencode(preg_replace('/\r\n|\r|\n/', '+', $locationToProcess->address));
 			$hours = $locationToProcess->getHours();
 			foreach ($hours as $key => $hourObj) {
 				if (!$hourObj->closed) {
@@ -441,30 +436,7 @@ class AJAX_JSON extends Action {
 				}
 				$hours[$key] = $hourObj;
 			}
-			$parentLibrary = $locationToProcess->parentLibrary;
-			$libraryLocation = [
-				'id' => $locationToProcess->locationId,
-				'name' => $locationToProcess->displayName,
-				'address' => preg_replace('/\r\n|\r|\n/', '<br>', $locationToProcess->address),
-				'phone' => $locationToProcess->phone,
-				'tty' => $locationToProcess->tty,
-				'email' => $locationToProcess->contactEmail,
-				//'map_image' => "http://maps.googleapis.com/maps/api/staticmap?center=$mapAddress&zoom=15&size=200x200&sensor=false&markers=color:red%7C$mapAddress",
-				'hours' => $hours,
-				'hasValidHours' => $locationToProcess->hasValidHours(),
-				'description' => $parsedown->parse($locationToProcess->description),
-				'image' => $locationToProcess->locationImage ? $configArray['Site']['url'] . '/files/original/' . $locationToProcess->locationImage : null,
-				'longitude' => floatval($locationToProcess->longitude),
-				'latitude' => floatval($locationToProcess->latitude),
-				'homeLink' => (!empty($locationToProcess->homeLink) && $locationToProcess->homeLink !== 'default') ? $locationToProcess->homeLink : ((!empty($parentLibrary->homeLink) && $parentLibrary->homeLink !== 'default') ? $parentLibrary->homeLink : null),
-				'hoursMessage' => Location::getLibraryHoursMessage($locationToProcess->locationId, true),
-				'useLocationNameForMaps' => $locationToProcess->useLocationNameForMaps,
-			];
-
-			if (!empty($mapsKey)) {
-				$libraryLocation['map_link'] = "http://maps.google.com/maps?f=q&hl=en&geocode=&q=$mapAddress&ie=UTF8&z=15&iwloc=addr&om=1&t=m&key=$mapsKey";
-			}
-			$libraryLocations[$locationToProcess->locationId] = $libraryLocation;
+			$libraryLocations[$locationToProcess->locationId] = $locationToProcess->getPublicLocationInfo($hours, $mapsKey);
 		}
 
 		global $interface;
