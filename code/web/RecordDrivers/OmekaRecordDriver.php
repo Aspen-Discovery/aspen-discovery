@@ -65,23 +65,29 @@ class OmekaRecordDriver extends GroupedWorkSubDriver {
 		if ($setting == null) {
 			return null;
 		}
-		return rtrim($setting->baseUrl, '/') . '/s/' . $setting->siteSlug . '/item/' . $this->omekaTitle->omekaId;
+		$baseUrl = rtrim($setting->baseUrl, '/');
+		if ($setting->apiVersion == 'classic') {
+			return $baseUrl . '/items/show/' . $this->omekaTitle->omekaId;
+		}
+		return $baseUrl . '/s/' . $setting->siteSlug . '/item/' . $this->omekaTitle->omekaId;
+	}
+
+	private function isClassicMetadata(): bool {
+		return !isset($this->omekaRawMetadata->{'o:id'});
 	}
 
 	private function getFirstLiteralValue(string $property): ?string {
-		$values = $this->omekaRawMetadata->{$property} ?? null;
-		if (empty($values) || !is_array($values)) {
-			return null;
-		}
-		foreach ($values as $value) {
-			if (!empty($value->{'@value'})) {
-				return $value->{'@value'};
-			}
-		}
-		return null;
+		$values = $this->getAllLiteralValues($property);
+		return $values[0] ?? null;
 	}
 
 	private function getAllLiteralValues(string $property): array {
+		if ($this->omekaRawMetadata == null) {
+			return [];
+		}
+		if ($this->isClassicMetadata()) {
+			return $this->getClassicElementTexts($property);
+		}
 		$literalValues = [];
 		$values = $this->omekaRawMetadata->{$property} ?? null;
 		if (empty($values) || !is_array($values)) {
@@ -93,6 +99,24 @@ class OmekaRecordDriver extends GroupedWorkSubDriver {
 			}
 		}
 		return $literalValues;
+	}
+
+	private function getClassicElementTexts(string $property): array {
+		$elementName = ucfirst(substr($property, strpos($property, ':') + 1));
+		$elementTexts = $this->omekaRawMetadata->element_texts ?? null;
+		if (empty($elementTexts) || !is_array($elementTexts)) {
+			return [];
+		}
+		$texts = [];
+		foreach ($elementTexts as $elementText) {
+			$isDublinCore = ($elementText->element_set->name ?? '') == 'Dublin Core';
+			$matchesElement = strcasecmp($elementText->element->name ?? '', $elementName) == 0;
+			if (!$isDublinCore || !$matchesElement || empty($elementText->text)) {
+				continue;
+			}
+			$texts[] = $elementText->text;
+		}
+		return $texts;
 	}
 
 	public function getStaffView(): string {
