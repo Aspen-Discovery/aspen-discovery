@@ -27,6 +27,7 @@ class NonGroupedRecord extends DataObject {
 		$availableSources['hoopla'] = 'Hoopla';
 		$availableSources['overdrive'] = 'Overdrive';
 		$availableSources['palace_project'] = 'Palace Project';
+		$availableSources['omeka'] = 'Omeka';
 
 		$structure =  [
 			[
