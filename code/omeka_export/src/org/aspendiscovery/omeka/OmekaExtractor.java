@@ -242,25 +242,31 @@ public class OmekaExtractor {
 			}
 			logEntry.incNumProducts(1);
 			OmekaTitle existingTitle = existingTitles.get(omekaId);
+			boolean isNewTitle = existingTitle == null;
+			if (!isNewTitle) {
+				existingTitle.setFoundInExport(true);
+			}
 
 			String publicFlagKey = OmekaProcessor.isClassicItem(item) ? "public" : "o:is_public";
 			boolean isPublic = item.optBoolean(publicFlagKey, true);
 			if (!isPublic) {
-				if (existingTitle != null && !existingTitle.isDeleted()) {
+				boolean activeTitleBecamePrivate = !isNewTitle && !existingTitle.isDeleted();
+				if (activeTitleBecamePrivate) {
 					removeTitle(existingTitle.getId());
 					logEntry.incDeleted();
-				}
-				if (existingTitle != null) {
-					existingTitle.setFoundInExport(true);
 				}
 				logEntry.incSkipped();
 				return;
 			}
 
-			JSONObject primaryMedia = fetchPrimaryMedia(item);
 			String mediaType = null;
 			String thumbnailUrl = null;
-			if (primaryMedia != null) {
+			if (hasPrimaryMedia(item)) {
+				JSONObject primaryMedia = fetchPrimaryMedia(item);
+				boolean mediaFetchFailed = primaryMedia == null;
+				if (mediaFetchFailed) {
+					return;
+				}
 				item.put(PRIMARY_MEDIA_KEY, primaryMedia);
 				mediaType = OmekaProcessor.getPrimaryMediaType(primaryMedia);
 				thumbnailUrl = getThumbnailUrl(primaryMedia);
@@ -272,12 +278,8 @@ public class OmekaExtractor {
 			long rawChecksum = checksumCalculator.getValue();
 			long rawResponseLength = rawResponse.length();
 
-			boolean isNewTitle = existingTitle == null;
 			boolean titleWasDeleted = !isNewTitle && existingTitle.isDeleted();
 			boolean titleChanged = !isNewTitle && (existingTitle.getChecksum() != rawChecksum || existingTitle.getRawResponseLength() != rawResponseLength);
-			if (!isNewTitle) {
-				existingTitle.setFoundInExport(true);
-			}
 
 			boolean saveNeeded = isNewTitle || titleChanged || titleWasDeleted;
 			if (!saveNeeded) {
@@ -412,14 +414,19 @@ public class OmekaExtractor {
 		return itemSetIds.toString();
 	}
 
+	private boolean hasPrimaryMedia(JSONObject item) {
+		if (OmekaProcessor.isClassicItem(item)) {
+			JSONObject filesInfo = item.optJSONObject("files");
+			return filesInfo != null && filesInfo.optInt("count", 0) > 0;
+		}
+		return getPrimaryMediaId(item) != -1;
+	}
+
 	private JSONObject fetchPrimaryMedia(JSONObject item) {
 		if (OmekaProcessor.isClassicItem(item)) {
 			return fetchPrimaryFile(item);
 		}
 		long mediaId = getPrimaryMediaId(item);
-		if (mediaId == -1) {
-			return null;
-		}
 		String url = buildApiUrl("/api/media/" + mediaId, null);
 		WebServiceResponse response = callOmekaWithRetries(url);
 		if (response == null) {
@@ -435,10 +442,6 @@ public class OmekaExtractor {
 	}
 
 	private JSONObject fetchPrimaryFile(JSONObject item) {
-		JSONObject filesInfo = item.optJSONObject("files");
-		if (filesInfo == null || filesInfo.optInt("count", 0) == 0) {
-			return null;
-		}
 		long itemId = getItemId(item);
 		String url = buildApiUrl("/api/files", "item=" + itemId + "&per_page=1");
 		WebServiceResponse response = callOmekaWithRetries(url);
@@ -449,7 +452,7 @@ public class OmekaExtractor {
 		try {
 			JSONArray files = new JSONArray(response.getMessage());
 			if (files.isEmpty()) {
-				return null;
+				return new JSONObject();
 			}
 			return files.getJSONObject(0);
 		} catch (JSONException e) {
