@@ -186,10 +186,14 @@ class OmekaScope extends DataObject {
 	}
 
 	public function update(string $context = '') : int|bool {
+		$itemSetsChanged = $this->haveItemSetsChanged();
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();
 			$this->saveLocations();
+			if ($itemSetsChanged) {
+				$this->markSettingForFullUpdate();
+			}
 		}
 		return $ret;
 	}
@@ -199,8 +203,27 @@ class OmekaScope extends DataObject {
 		if ($ret !== FALSE) {
 			$this->saveLibraries();
 			$this->saveLocations();
+			$this->markSettingForFullUpdate();
 		}
 		return $ret;
+	}
+
+	private function haveItemSetsChanged(): bool {
+		if (empty($this->_changedFields)) {
+			return false;
+		}
+		$itemSetListChanged = in_array('itemSetIds', $this->_changedFields);
+		$includeAllChanged = in_array('includeAllItemSets', $this->_changedFields);
+		return $itemSetListChanged || $includeAllChanged;
+	}
+
+	private function markSettingForFullUpdate(): void {
+		$setting = $this->getSettings();
+		if ($setting == null) {
+			return;
+		}
+		$setting->runFullUpdate = 1;
+		$setting->update();
 	}
 
 	public function delete(bool $useWhere = false, bool $hardDelete = false) : bool|int {
@@ -214,6 +237,7 @@ class OmekaScope extends DataObject {
 			$locationScope = new LocationOmekaScope();
 			$locationScope->omekaScopeId = $this->id;
 			$locationScope->delete(true);
+			$this->markSettingForFullUpdate();
 		}
 		return $ret;
 	}
