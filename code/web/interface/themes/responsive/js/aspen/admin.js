@@ -1689,6 +1689,15 @@ AspenDiscovery.Admin = (function () {
 				$("#propertyRowlibraryId").hide();
 			}
 		},
+		updateOmekaFields: function () {
+			var omekaSOnlyRows = $('#propertyRowsiteSlug, #propertyRowapiKeyIdentity');
+			var isClassic = $('#apiVersionSelect').val() === 'classic';
+			if (isClassic) {
+				omekaSOnlyRows.hide();
+			} else {
+				omekaSOnlyRows.show();
+			}
+		},
 		showCreateRoleForm: function () {
 			AspenDiscovery.Account.ajaxLightbox(Globals.path + '/Admin/AJAX?method=getCreateRoleForm', true);
 			return false;
