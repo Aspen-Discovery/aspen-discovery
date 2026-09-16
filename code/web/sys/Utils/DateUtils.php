@@ -189,7 +189,7 @@ class DateUtils {
 		return $formatter->format($timestamp);
 	}
 
-	static function formatHour(?string $time): string {
+	static function formatHour(?string $time, ?int $formatOverride = null): string {
 		if (empty($time)) {
 			return '';
 		}
@@ -209,7 +209,7 @@ class DateUtils {
 			]);
 		}
 
-		return date('g:i A', strtotime($time));
+		return self::formatTimeLocale(strtotime($time), true, $formatOverride);
 	}
 
 	static function formatTimeRange(mixed $startTime, mixed $endTime, ?int $formatOverride = null): string {
