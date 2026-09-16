@@ -428,7 +428,7 @@ class AJAX_JSON extends Action {
 			$mapsKey = null;
 		}
 		foreach ($locationsToProcess as $locationToProcess) {
-			$libraryLocations[$locationToProcess->locationId] = $locationToProcess->getPublicLocationInfo($locationToProcess->getFormattedHours(), $mapsKey);
+			$libraryLocations[$locationToProcess->locationId] = $locationToProcess->getPublicLocationInfo($locationToProcess->getFormattedHours(true), $mapsKey);
 		}
 
 		global $interface;

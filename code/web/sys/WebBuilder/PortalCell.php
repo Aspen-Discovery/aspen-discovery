@@ -552,7 +552,7 @@ class PortalCell extends DataObject {
 				$mapsKey = null;
 			}
 			foreach ($locationsToProcess as $locationToProcess) {
-				$libraryLocations[$locationToProcess->locationId] = $locationToProcess->getPublicLocationInfo($locationToProcess->getFormattedHours(), $mapsKey);
+				$libraryLocations[$locationToProcess->locationId] = $locationToProcess->getPublicLocationInfo($locationToProcess->getFormattedHours(true), $mapsKey);
 			}
 
 			global $interface;

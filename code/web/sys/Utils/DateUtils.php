@@ -189,24 +189,26 @@ class DateUtils {
 		return $formatter->format($timestamp);
 	}
 
-	static function formatHour(?string $time, ?int $formatOverride = null): string {
+	static function formatHour(?string $time, bool $useNoonAndMidnight = false, ?int $formatOverride = null): string {
 		if (empty($time)) {
 			return '';
 		}
 
-		$parsedTime = date_parse($time);
-		$isOnTheHour = $parsedTime['minute'] === 0 && $parsedTime['second'] === 0;
-		if ($isOnTheHour && $parsedTime['hour'] === 12) {
-			return translate([
-				'text' => 'Noon',
-				'isPublicFacing' => true,
-			]);
-		}
-		if ($isOnTheHour && $parsedTime['hour'] % 24 === 0) {
-			return translate([
-				'text' => 'Midnight',
-				'isPublicFacing' => true,
-			]);
+		if ($useNoonAndMidnight) {	
+			$parsedTime = date_parse($time);
+			$isOnTheHour = $parsedTime['minute'] === 0 && $parsedTime['second'] === 0;
+			if ($isOnTheHour && $parsedTime['hour'] === 12) {
+				return translate([
+					'text' => 'Noon',
+					'isPublicFacing' => true,
+				]);
+			}
+			if ($isOnTheHour && $parsedTime['hour'] % 24 === 0) {
+				return translate([
+					'text' => 'Midnight',
+					'isPublicFacing' => true,
+				]);
+			}
 		}
 
 		return self::formatTimeLocale(strtotime($time), true, $formatOverride);

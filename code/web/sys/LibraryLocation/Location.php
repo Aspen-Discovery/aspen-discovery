@@ -2374,8 +2374,8 @@ class Location extends DataObject {
 							'open' => $specialOpen,
 							'close' => $specialClose,
 							'closed' => false,
-							'openFormatted' => DateUtils::formatHour($holiday->open),
-							'closeFormatted' => DateUtils::formatHour($holiday->close),
+							'openFormatted' => DateUtils::formatHour($holiday->open, true),
+							'closeFormatted' => DateUtils::formatHour($holiday->close, true),
 						]];
 					}
 				}
@@ -2398,8 +2398,8 @@ class Location extends DataObject {
 						'open' => ltrim($hours->open, '0'),
 						'close' => ltrim($hours->close, '0'),
 						'closed' => (bool)$hours->closed,
-						'openFormatted' => DateUtils::formatHour($hours->open),
-						'closeFormatted' => DateUtils::formatHour($hours->close),
+						'openFormatted' => DateUtils::formatHour($hours->open, true),
+						'closeFormatted' => DateUtils::formatHour($hours->close, true),
 					];
 					if (($openHours[$ctr]['open'] == $openHours[$ctr]['close'])) {
 						$openHours[$ctr]['closed'] = true;
@@ -2791,13 +2791,13 @@ class Location extends DataObject {
 		return $this->_hours;
 	}
 
-	public function getFormattedHours(): array {
+	public function getFormattedHours(bool $useNoonAndMidnight = false): array {
 		require_once ROOT_DIR . '/sys/Utils/DateUtils.php';
 		$formattedHours = [];
 		foreach ($this->getHours() as $key => $hourObj) {
 			$formattedHourObj = clone $hourObj;
-			$formattedHourObj->openFormatted = DateUtils::formatHour($hourObj->open);
-			$formattedHourObj->closeFormatted = DateUtils::formatHour($hourObj->close);
+			$formattedHourObj->openFormatted = DateUtils::formatHour($hourObj->open, $useNoonAndMidnight);
+			$formattedHourObj->closeFormatted = DateUtils::formatHour($hourObj->close, $useNoonAndMidnight);
 			$formattedHours[$key] = $formattedHourObj;
 		}
 		return $formattedHours;
