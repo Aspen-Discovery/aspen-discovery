@@ -417,27 +417,9 @@ class AJAX_JSON extends Action {
 	/** @noinspection PhpUnused */
 	function getHoursAndLocations() : string {
 		require_once ROOT_DIR . '/sys/Utils/DateUtils.php';
-		//Get a list of locations for the current library
-		global $library;
 		global $configArray;
-		$tmpLocation = new Location();
-		$tmpLocation->libraryId = $library->libraryId;
-		$tmpLocation->showInLocationsAndHoursList = 1;
-		$tmpLocation->orderBy('isMainBranch DESC, displayName'); // List Main Branches first, then sort by name
 		$libraryLocations = [];
-		$tmpLocation->find();
-		if ($tmpLocation->getNumResults() == 0) {
-			//Get all locations
-			$tmpLocation = new Location();
-			$tmpLocation->showInLocationsAndHoursList = 1;
-			$tmpLocation->orderBy('displayName');
-			$tmpLocation->find();
-		}
-
-		$locationsToProcess = [];
-		while ($tmpLocation->fetch()) {
-			$locationsToProcess[] = clone $tmpLocation;
-		}
+		$locationsToProcess = Location::getPubliclyListedLocations();
 
 		require_once ROOT_DIR . '/sys/Enrichment/GoogleApiSetting.php';
 		$googleSettings = new GoogleApiSetting();

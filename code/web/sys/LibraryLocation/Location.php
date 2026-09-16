@@ -3017,6 +3017,27 @@ class Location extends DataObject {
 		return Location::$locationListAsObjects;
 	}
 
+	static function getPubliclyListedLocations(): array {
+		global $library;
+		$location = new Location();
+		$location->libraryId = $library->libraryId;
+		$location->showInLocationsAndHoursList = 1;
+		$location->orderBy('isMainBranch DESC, displayName');
+		$location->find();
+		if ($location->getNumResults() == 0) {
+			$location = new Location();
+			$location->showInLocationsAndHoursList = 1;
+			$location->orderBy('displayName');
+			$location->find();
+		}
+
+		$locations = [];
+		while ($location->fetch()) {
+			$locations[] = clone $location;
+		}
+		return $locations;
+	}
+
 	/**
 	 * Get location list with Web Builder indexing status indicators from parent library.
 	 * @param boolean $restrictByHomeLibrary Whether locations for the patron's home library should be returned.

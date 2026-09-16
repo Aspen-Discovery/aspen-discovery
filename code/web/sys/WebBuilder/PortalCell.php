@@ -532,34 +532,16 @@ class PortalCell extends DataObject {
 			}
 		} elseif ($this->sourceType == 'hours_locations') {
 			require_once ROOT_DIR . '/sys/Utils/DateUtils.php';
-			global $library;
 			$libraryLocations = [];
-
-			// Check if using static location or dynamic selection.
 			$locationsToProcess = [];
-			$tmpLocation = new Location();
 			if (!empty($this->staticLocationId) && $this->staticLocationId != -1) {
-				// Get a single specific location.
-				$tmpLocation->locationId = $this->staticLocationId;
-				if ($tmpLocation->find(true)) {
-					$locationsToProcess[] = clone $tmpLocation;
+				$staticLocation = new Location();
+				$staticLocation->locationId = $this->staticLocationId;
+				if ($staticLocation->find(true)) {
+					$locationsToProcess[] = clone $staticLocation;
 				}
 			} else {
-				// Get all locations as before (dynamic selection).
-				$tmpLocation->libraryId = $library->libraryId;
-				$tmpLocation->showInLocationsAndHoursList = 1;
-				$tmpLocation->orderBy('isMainBranch DESC, displayName');
-				$tmpLocation->find();
-				if ($tmpLocation->getNumResults() == 0) {
-					$tmpLocation = new Location();
-					$tmpLocation->showInLocationsAndHoursList = 1;
-					$tmpLocation->orderBy('displayName');
-					$tmpLocation->find();
-				}
-
-				while ($tmpLocation->fetch()) {
-					$locationsToProcess[] = clone $tmpLocation;
-				}
+				$locationsToProcess = Location::getPubliclyListedLocations();
 			}
 
 			require_once ROOT_DIR . '/sys/Enrichment/GoogleApiSetting.php';
