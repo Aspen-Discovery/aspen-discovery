@@ -829,13 +829,25 @@ class BookCoverProcessor {
 			}
 		}
 
+		$titleResolved = strlen($title) > 0;
+
 		require_once ROOT_DIR . '/sys/Covers/DefaultCoverImageBuilder.php';
 		$coverBuilder = new DefaultCoverImageBuilder();
-		if (strlen($title) === 0) {
+		if (!$titleResolved) {
 			$title = 'Unknown Title';
 		}
 		$coverBuilder->getCover($title, $author, $this->defaultCoverCacheFile);
-		return $this->processImageURL('default', $this->defaultCoverCacheFile, false);
+		$result = $this->processImageURL('default', $this->defaultCoverCacheFile, false);
+
+		if (!$titleResolved && $result) {
+			match($this->size) {
+				'small'  => $this->bookCoverInfo->setThumbnailLoaded(0),
+				'medium' => $this->bookCoverInfo->setMediumLoaded(0),
+				default  => $this->bookCoverInfo->setLargeLoaded(0),
+			};
+			$this->bookCoverInfo->update();
+		}
+		return $result;
 	}
 
 	function processImageURL($source, $url, $attemptRefetch = true, $authentication = null) : bool {
