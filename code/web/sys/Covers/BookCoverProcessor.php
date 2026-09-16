@@ -831,8 +831,7 @@ class BookCoverProcessor {
 
 		$titleResolved = strlen($title) > 0;
 
-		require_once ROOT_DIR . '/sys/Covers/DefaultCoverImageBuilder.php';
-		$coverBuilder = new DefaultCoverImageBuilder();
+		$coverBuilder = $this->getSizedDefaultCoverBuilder();
 		if (!$titleResolved) {
 			$title = 'Unknown Title';
 		}
@@ -848,6 +847,21 @@ class BookCoverProcessor {
 			$this->bookCoverInfo->update();
 		}
 		return $result;
+	}
+
+	/**
+	 * Generated covers are rendered directly at the requested size instead of one universal
+	 * canvas that then gets resized -- a placeholder has no source resolution to preserve, so
+	 * there's no reason to introduce a lossy resize step it doesn't need.
+	 */
+	private function getSizedDefaultCoverBuilder(bool $invertColors = false) : DefaultCoverImageBuilder {
+		require_once ROOT_DIR . '/sys/Covers/DefaultCoverImageBuilder.php';
+		[$width, $height] = match ($this->size) {
+			'small' => [75, 100],
+			'medium' => [150, 200],
+			default => [280, 400],
+		};
+		return new DefaultCoverImageBuilder($invertColors, $width, $height);
 	}
 
 	function processImageURL($source, $url, $attemptRefetch = true, $authentication = null) : bool {
@@ -1845,8 +1859,7 @@ class BookCoverProcessor {
 				}
 				if (!empty($sourceCollection->defaultCover)) {
 					//Build a cover based on the title of the page
-					require_once ROOT_DIR . '/sys/Covers/DefaultCoverImageBuilder.php';
-					$coverBuilder = new DefaultCoverImageBuilder();
+					$coverBuilder = $this->getSizedDefaultCoverBuilder();
 					require_once ROOT_DIR . '/RecordDrivers/OpenArchivesRecordDriver.php';
 
 					$OAIRecordDriver = new OpenArchivesRecordDriver($id);
@@ -1916,8 +1929,7 @@ class BookCoverProcessor {
 
 	private function getSeriesMemberCover($id) : bool {
 		//Build a cover based on the titles within list
-		require_once ROOT_DIR . '/sys/Covers/DefaultCoverImageBuilder.php';
-		$coverBuilder = new DefaultCoverImageBuilder();
+		$coverBuilder = $this->getSizedDefaultCoverBuilder();
 		require_once ROOT_DIR . '/sys/Series/SeriesMember.php';
 		$seriesMember = new SeriesMember();
 		$seriesMember->id = $id;
@@ -2505,8 +2517,7 @@ class BookCoverProcessor {
 
 	private function getCloudSourceCover($id) : bool {
 		//Build a cover based on the title of the page
-		require_once ROOT_DIR . '/sys/Covers/DefaultCoverImageBuilder.php';
-		$coverBuilder = new DefaultCoverImageBuilder();
+		$coverBuilder = $this->getSizedDefaultCoverBuilder();
 		require_once ROOT_DIR . '/RecordDrivers/CloudSourceRecordDriver.php';
 
 		$cloudSourceRecordDriver = new CloudSourceRecordDriver($id);
@@ -2529,8 +2540,7 @@ class BookCoverProcessor {
 
 	private function getEbscohostCover($id) : bool {
 		//Build a cover based on the title of the page
-		require_once ROOT_DIR . '/sys/Covers/DefaultCoverImageBuilder.php';
-		$coverBuilder = new DefaultCoverImageBuilder();
+		$coverBuilder = $this->getSizedDefaultCoverBuilder();
 		require_once ROOT_DIR . '/RecordDrivers/EbscohostRecordDriver.php';
 
 		$ebscohostRecordDriver = new EbscohostRecordDriver($id);
