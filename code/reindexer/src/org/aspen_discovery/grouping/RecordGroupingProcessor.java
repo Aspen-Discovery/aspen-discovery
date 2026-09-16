@@ -1302,11 +1302,7 @@ public class RecordGroupingProcessor implements AutoCloseable {
 			author = OmekaProcessor.formatAuthorName(firstCreator);
 		}
 
-		String mediaType = null;
-		JSONObject primaryMedia = itemDetails.optJSONObject("aspen:primaryMedia");
-		if (primaryMedia != null) {
-			mediaType = primaryMedia.optString("o:media_type", null);
-		}
+		String mediaType = OmekaProcessor.getPrimaryMediaType(itemDetails.optJSONObject("aspen:primaryMedia"));
 		String primaryFormat = OmekaProcessor.getFormatForMediaType(mediaType);
 
 		String languageCode = getOmekaGroupingLanguageCode(itemDetails);
