@@ -153,6 +153,15 @@ function getUpdates26_10_00(): array {
 				"INSERT IGNORE INTO modules (name, indexName, backgroundProcess, logClassPath, logClassName, settingsClassPath, settingsClassName) VALUES ('Omeka', 'grouped_works', 'omeka_export', '/sys/Omeka/OmekaExportLogEntry.php', 'OmekaExportLogEntry', '/sys/Omeka/OmekaSetting.php', 'OmekaSetting')",
 			]
 		], //omeka_module
+		'omeka_permission' => [
+			'title' => 'Omeka Permission',
+			'description' => 'Add the Administer Omeka permission and grant it to the opacAdmin role',
+			'continueOnError' => false,
+			'sql' => [
+				"INSERT IGNORE INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Cataloging & eContent', 'Administer Omeka', 'Omeka', 160, 'Allows the user to configure Omeka integration for all libraries.')",
+				"INSERT IGNORE INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer Omeka'))",
+			]
+		], //omeka_permission
 
 	];
 }
