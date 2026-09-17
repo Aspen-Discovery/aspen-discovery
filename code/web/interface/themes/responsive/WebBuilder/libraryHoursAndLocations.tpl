@@ -96,7 +96,7 @@
 									{if $curHours->closed}
 										<p class="text-right" style="margin: 0">{translate text="Closed" isPublicFacing=true}</p>
 									{else}
-										<p class="text-right" style="margin: 0">{$curHours->openFormatted} - {$curHours->closeFormatted}</p>
+										<p class="text-right" style="margin: 0">{$curHours->_openFormatted} - {$curHours->_closeFormatted}</p>
 									{/if}
 								</div>
 								<div class="col-tn-12">

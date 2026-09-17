@@ -2796,8 +2796,8 @@ class Location extends DataObject {
 		$formattedHours = [];
 		foreach ($this->getHours() as $key => $hourObj) {
 			$formattedHourObj = clone $hourObj;
-			$formattedHourObj->openFormatted = DateUtils::formatHour($hourObj->open, $useNoonAndMidnight);
-			$formattedHourObj->closeFormatted = DateUtils::formatHour($hourObj->close, $useNoonAndMidnight);
+			$formattedHourObj->_openFormatted = DateUtils::formatHour($hourObj->open, $useNoonAndMidnight);
+			$formattedHourObj->_closeFormatted = DateUtils::formatHour($hourObj->close, $useNoonAndMidnight);
 			$formattedHours[$key] = $formattedHourObj;
 		}
 		return $formattedHours;
