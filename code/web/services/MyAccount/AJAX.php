@@ -12369,7 +12369,7 @@ class MyAccount_AJAX extends JSON_Action {
 		$registration->eventInstanceId = $eventInstanceId;
 		$registration->userId = $userId;
 
-		if (!$registration->addUserToWaitingList()) {
+		if ($registration->find(true)) {
 			$result['success'] = true;
 			$result['title'] = translate([
 				'text' => 'Already on Waiting List',
@@ -12379,8 +12379,27 @@ class MyAccount_AJAX extends JSON_Action {
 				'text' => 'You are already on the waiting list for this event.',
 				'isPublicFacing' => true,
 			]);
-			$registration->find(true);
 			$result['position'] = UserAspenEventInstanceRegistration::getWaitingListPosition($registration->eventInstanceId, $registration->createdAt);
+			return $result;
+		}
+
+		require_once ROOT_DIR . '/sys/DB/DatabaseTransaction.php';
+		try {
+			DatabaseTransaction::runInTransaction(function() use ($registration, $eventInstance, $userId, $activeUserId): bool {
+				if (!$registration->addUserToWaitingList()) {
+					global $logger;
+					$logger->log("Failed to add user to waiting list (userId=$userId, eventInstanceId=$registration->eventInstanceId): " . $registration->getLastError(), Logger::LOG_ERROR);
+					return false;
+				}
+				return EventRegistrationService::saveRegistrationToUserEvents($eventInstance, $userId, null, $activeUserId);
+			});
+		} catch (\Throwable $e) {
+			global $logger;
+			$logger->log("joinEventWaitingList rolled back (userId=$userId, eventInstanceId=$eventInstanceId): " . $e->getMessage(), Logger::LOG_ERROR);
+			$result['message'] = translate([
+				'text' => 'Failed to join the waiting list.',
+				'isPublicFacing' => true,
+			]);
 			return $result;
 		}
 
@@ -12429,8 +12448,6 @@ class MyAccount_AJAX extends JSON_Action {
 			$result['message'] .= ' ' . str_replace('%1%', $subject, $fallbackNote);
 		}
 		$result['position'] = $position;
-
-		EventRegistrationService::saveRegistrationToUserEvents($eventInstance, $userId, null, $activeUserId);
 
 		return $result;
 	}
