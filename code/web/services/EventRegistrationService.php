@@ -422,12 +422,14 @@ class EventRegistrationService {
 		return true;
 	}
 
-	public static function saveRegistrationToUserEvents(EventInstance $instance, int $userId, int|null $savedByStaffId = null, int|null $actingUserId = null): void {
-		self::saveToUserEvents($instance, $userId, $savedByStaffId);
+	public static function saveRegistrationToUserEvents(EventInstance $instance, int $userId, int|null $savedByStaffId = null, int|null $actingUserId = null): bool {
+		if (!self::saveToUserEvents($instance, $userId, $savedByStaffId)) {
+			return false;
+		}
 
 		// so the registered may manage their registration, also save the event for the acting user when registering on behalf of a linked user
-		if ($actingUserId !== null && $actingUserId !== $userId) {
-			self::saveToUserEvents($instance, $actingUserId);
+		if ($actingUserId !== null && $actingUserId !== $userId && !self::saveToUserEvents($instance, $actingUserId)) {
+			return false;
 		}
 
 		// so linked accounts display all events their linked user is registered to, save the event for everyone who can view the registered user
@@ -435,12 +437,15 @@ class EventRegistrationService {
 		$user = new User();
 		$user->id = $userId;
 		if (!$user->find(true)) {
-			return;
+			return false;
 		}
 
 		foreach ($user->getViewerIds() as $viewerId) {
-			self::saveToUserEvents($instance, (int)$viewerId);
+			if (!self::saveToUserEvents($instance, (int)$viewerId)) {
+				return false;
+			}
 		}
+		return true;
 	}
 
 	public static function sendCancellationNotificationEmails(array $upcomingInstances, array $affectedUsersByStatus): void {
@@ -555,12 +560,14 @@ class EventRegistrationService {
 		];
 	}
 
-	private static function writeRegistration(UserAspenEventInstanceRegistration $registration, array $validatedCounts, EventInstance $eventInstance, int $userId, ?int $staffUserId): void {
+	private static function writeRegistration(UserAspenEventInstanceRegistration $registration, array $validatedCounts, EventInstance $eventInstance, int $userId, ?int $staffUserId): bool {
 		if (!$registration->registerUser()) {
-			throw new RuntimeException('Failed to create registration row.');
+			return false;
 		}
-		UserAspenEventInstanceRegistrationAttendee::saveForRegistration((int)$registration->id, $validatedCounts);
-		self::saveRegistrationToUserEvents($eventInstance, $userId, $staffUserId);
+		if (!UserAspenEventInstanceRegistrationAttendee::saveForRegistration((int)$registration->id, $validatedCounts)) {
+			return false;
+		}
+		return self::saveRegistrationToUserEvents($eventInstance, $userId, $staffUserId);
 	}
 
 	private static function getRegistrationFor(int $userId, int $eventInstanceId): UserAspenEventInstanceRegistration|false {
