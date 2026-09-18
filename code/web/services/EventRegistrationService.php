@@ -3,6 +3,7 @@
 require_once ROOT_DIR . '/sys/Utils/DateUtils.php';
 require_once ROOT_DIR . '/sys/Events/EventInstance.php';
 require_once ROOT_DIR . '/sys/Events/UserAspenEventInstanceRegistration.php';
+require_once ROOT_DIR . '/sys/DB/DatabaseTransaction.php';
 
 /**
  * Service class for handling event registration logic
@@ -51,7 +52,7 @@ class EventRegistrationService {
 		$registration->registeredByStaffId = $staffUserId;
 
 		try {
-			DataObject::runInTransaction(fn() => self::writeRegistration($registration, $validatedCounts, $eventInstance, $userId, $staffUserId));
+			DatabaseTransaction::runInTransaction(fn() => self::writeRegistration($registration, $validatedCounts, $eventInstance, $userId, $staffUserId));
 		} catch (\Throwable $e) {
 			global $logger;
 			$logger->log("registerUserForEvent rolled back (userId=$userId, eventInstanceId=$eventInstanceId): " . $e->getMessage(), Logger::LOG_ERROR);
