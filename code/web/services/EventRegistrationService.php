@@ -384,11 +384,11 @@ class EventRegistrationService {
 		return true;
 	}
 
-	public static function saveToUserEvents(EventInstance $instance, int $userId, int|null $savedByStaffId = null): void {
+	public static function saveToUserEvents(EventInstance $instance, int $userId, int|null $savedByStaffId = null): bool {
 		require_once ROOT_DIR . '/sys/Events/EventsIndexingSetting.php';
 		$indexingSetting = new EventsIndexingSetting();
 		if (!$indexingSetting->find(true)) {
-			return;
+			return true;
 		}
 
 		$sourceId = 'aspenEvent_' . $indexingSetting->id . '_' . $instance->id;
@@ -398,7 +398,7 @@ class EventRegistrationService {
 		$entry->sourceId = $sourceId;
 		$entry->userId = $userId;
 		if ($entry->find(true)) {
-			return;
+			return true;
 		}
 
 		$event = $instance->getParentEvent();
@@ -415,8 +415,11 @@ class EventRegistrationService {
 
 		$entry->dateAdded = time();
 		if ($entry->insert() === false) {
-			throw new RuntimeException("Failed to mirror registration to user_events_entry (sourceId=$sourceId, userId=$userId).");
+			global $logger;
+			$logger->log("Failed to mirror registration to user_events_entry (sourceId=$sourceId, userId=$userId): " . $entry->getLastError(), Logger::LOG_ERROR);
+			return false;
 		}
+		return true;
 	}
 
 	public static function saveRegistrationToUserEvents(EventInstance $instance, int $userId, int|null $savedByStaffId = null, int|null $actingUserId = null): void {
