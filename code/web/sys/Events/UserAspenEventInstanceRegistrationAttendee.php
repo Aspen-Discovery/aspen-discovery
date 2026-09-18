@@ -40,29 +40,31 @@ class UserAspenEventInstanceRegistrationAttendee extends DataObject {
 	 * Save attendee category counts for a registration.
 	 * $attendeeCounts: [attendeeCategoryId => count, ...]
 	 */
-	public static function saveForRegistration(int $registrationId, array $attendeeCounts): void {
-		DataObject::runInTransaction(function() use ($registrationId, $attendeeCounts): void {
-			foreach ($attendeeCounts as $categoryId => $count) {
-				$count = (int)$count;
-				if ($count <= 0) {
-					continue;
-				}
-				$attendee = new UserAspenEventInstanceRegistrationAttendee();
-				$attendee->registrationId = $registrationId;
-				$attendee->attendeeCategoryId = (int)$categoryId;
-				if ($attendee->find(true)) {
-					$attendee->count = $count;
-					if ($attendee->update() === false) {
-						throw new RuntimeException("Failed to update attendee row (registrationId=$registrationId, categoryId=$categoryId).");
-					}
-					continue;
-				}
-				$attendee->count = $count;
-				if ($attendee->insert() === false) {
-					throw new RuntimeException("Failed to insert attendee row (registrationId=$registrationId, categoryId=$categoryId).");
-				}
+	public static function saveForRegistration(int $registrationId, array $attendeeCounts): bool {
+		global $logger;
+		foreach ($attendeeCounts as $categoryId => $count) {
+			$count = (int)$count;
+			if ($count <= 0) {
+				continue;
 			}
-		});
+			$attendee = new UserAspenEventInstanceRegistrationAttendee();
+			$attendee->registrationId = $registrationId;
+			$attendee->attendeeCategoryId = (int)$categoryId;
+			if ($attendee->find(true)) {
+				$attendee->count = $count;
+				if ($attendee->update() === false) {
+					$logger->log("Failed to update attendee row (registrationId=$registrationId, categoryId=$categoryId): " . $attendee->getLastError(), Logger::LOG_ERROR);
+					return false;
+				}
+				continue;
+			}
+			$attendee->count = $count;
+			if ($attendee->insert() === false) {
+				$logger->log("Failed to insert attendee row (registrationId=$registrationId, categoryId=$categoryId): " . $attendee->getLastError(), Logger::LOG_ERROR);
+				return false;
+			}
+		}
+		return true;
 	}
 
 	public static function getCountsForRegistration(int $registrationId): array {
