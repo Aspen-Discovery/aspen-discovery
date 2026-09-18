@@ -562,6 +562,8 @@ class EventRegistrationService {
 
 	private static function writeRegistration(UserAspenEventInstanceRegistration $registration, array $validatedCounts, EventInstance $eventInstance, int $userId, ?int $staffUserId): bool {
 		if (!$registration->registerUser()) {
+			global $logger;
+			$logger->log("Failed to create registration row (userId=$userId, eventInstanceId=$registration->eventInstanceId): " . $registration->getLastError(), Logger::LOG_ERROR);
 			return false;
 		}
 		if (!UserAspenEventInstanceRegistrationAttendee::saveForRegistration((int)$registration->id, $validatedCounts)) {
