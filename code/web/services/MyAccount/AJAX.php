@@ -8676,9 +8676,21 @@ class MyAccount_AJAX extends JSON_Action {
 		$registration->eventInstanceId = $eventInstanceId;
 
 		if ($registration->isUserRegisteredForEvent()) {
-			$registration->delete();
+			require_once ROOT_DIR . '/sys/DB/DatabaseTransaction.php';
+			try {
+				DatabaseTransaction::runInTransaction(fn(): bool => $registration->delete() !== false);
+			} catch (\Throwable $e) {
+				global $logger;
+				$logger->log("toggleUserRegistrationToEvent cancellation rolled back (userId=$userId, eventInstanceId=$eventInstanceId): " . $e->getMessage(), Logger::LOG_ERROR);
+				$result['message'] = translate([
+					'text' => 'Failed to cancel registration.',
+					'isPublicFacing' => true
+				]);
+				return $result;
+			}
+
 			EventRegistrationService::inviteNextOnWaitingList($eventInstance);
-			
+
 			$result['success'] = true;
 			$result['title'] = translate([
 				'text' => 'Registration Information',
