@@ -78,15 +78,23 @@ class EventRegistrationService {
 			return self::publicErrorResult(translate(['text' => 'Registration not found.', 'isPublicFacing' => true]));
 		}
 
-		if ($registration->delete()) {
-			return [
-				'success' => true,
-				'title' => translate(['text' => 'Registration Cancelled', 'isPublicFacing' => true]),
-				'message' => translate(['text' => 'Registration has been cancelled successfully.', 'isPublicFacing' => true]),
-			];
+		try {
+			$deleted = DatabaseTransaction::runInTransaction(fn() => $registration->delete());
+		} catch (\Throwable $e) {
+			global $logger;
+			$logger->log("unregisterUserFromEvent rolled back (userId=$userId, eventInstanceId=$eventInstanceId): " . $e->getMessage(), Logger::LOG_ERROR);
+			return self::publicErrorResult(translate(['text' => 'Failed to cancel registration.', 'isPublicFacing' => true]));
 		}
 
-		return self::publicErrorResult(translate(['text' => 'Failed to cancel registration.', 'isPublicFacing' => true]));
+		if (!$deleted) {
+			return self::publicErrorResult(translate(['text' => 'Failed to cancel registration.', 'isPublicFacing' => true]));
+		}
+
+		return [
+			'success' => true,
+			'title' => translate(['text' => 'Registration Cancelled', 'isPublicFacing' => true]),
+			'message' => translate(['text' => 'Registration has been cancelled successfully.', 'isPublicFacing' => true]),
+		];
 	}
 
 	public static function getAttendeeCategoryBreakdownForRegistration(int $eventInstanceId, int $eventRegistrationId): array {
