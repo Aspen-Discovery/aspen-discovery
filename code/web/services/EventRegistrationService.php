@@ -579,7 +579,9 @@ class EventRegistrationService {
 		}
 
 		foreach ($eventFieldValues as $eventFieldId => $value) {
-			$registration->saveEventFieldValue((int)$eventFieldId, $value);
+			if (!$registration->saveEventFieldValue((int)$eventFieldId, $value)) {
+				return false;
+			}
 		}
 		return self::saveRegistrationToUserEvents($eventInstance, $userId, $staffUserId);
 	}
