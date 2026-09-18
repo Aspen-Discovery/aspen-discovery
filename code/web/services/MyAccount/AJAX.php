@@ -8722,17 +8722,19 @@ class MyAccount_AJAX extends JSON_Action {
 		$registration = new UserAspenEventInstanceRegistration();
 		$registration->userId = $userId;
 		$registration->eventInstanceId = $eventInstanceId;
-		$registration->registerUser();
 
-		if (!empty($validatedCounts)) {
-			UserAspenEventInstanceRegistrationAttendee::saveForRegistration((int)$registration->id, $validatedCounts);
-		}
-
-		// save the user inputed registration information
-		foreach ($_REQUEST as $key => $value) {
-		    if (is_numeric($key)) {
-				$registration->saveEventFieldValue($key, $value); 
-		    }
+		require_once ROOT_DIR . '/sys/DB/DatabaseTransaction.php';
+		try {
+			$eventFieldValues = array_filter($_REQUEST, 'is_numeric', ARRAY_FILTER_USE_KEY);
+			DatabaseTransaction::runInTransaction(fn() => EventRegistrationService::writeRegistration($registration, $validatedCounts, $eventInstance, $userId, null, $eventFieldValues));
+		} catch (\Throwable $e) {
+			global $logger;
+			$logger->log("toggleUserRegistrationToEvent rolled back (userId=$userId, eventInstanceId=$eventInstanceId): " . $e->getMessage(), Logger::LOG_ERROR);
+			$result['message'] = translate([
+				'text' => 'Failed to create registration.',
+				'isPublicFacing' => true
+			]);
+			return $result;
 		}
 
 
