@@ -560,7 +560,7 @@ class EventRegistrationService {
 		];
 	}
 
-	private static function writeRegistration(UserAspenEventInstanceRegistration $registration, array $validatedCounts, EventInstance $eventInstance, int $userId, ?int $staffUserId): bool {
+	public static function writeRegistration(UserAspenEventInstanceRegistration $registration, array $validatedCounts, EventInstance $eventInstance, int $userId, ?int $staffUserId, array $eventFieldValues = []): bool {
 		if (!$registration->registerUser()) {
 			global $logger;
 			$logger->log("Failed to create registration row (userId=$userId, eventInstanceId=$registration->eventInstanceId): " . $registration->getLastError(), Logger::LOG_ERROR);
@@ -568,6 +568,10 @@ class EventRegistrationService {
 		}
 		if (!UserAspenEventInstanceRegistrationAttendee::saveForRegistration((int)$registration->id, $validatedCounts)) {
 			return false;
+		}
+
+		foreach ($eventFieldValues as $eventFieldId => $value) {
+			$registration->saveEventFieldValue((int)$eventFieldId, $value);
 		}
 		return self::saveRegistrationToUserEvents($eventInstance, $userId, $staffUserId);
 	}
