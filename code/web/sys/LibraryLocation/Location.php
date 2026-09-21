@@ -2792,7 +2792,6 @@ class Location extends DataObject {
 	}
 
 	public function getFormattedHours(bool $useNoonAndMidnight = false): array {
-		require_once ROOT_DIR . '/sys/Utils/DateUtils.php';
 		$formattedHours = [];
 		foreach ($this->getHours() as $key => $hourObj) {
 			$formattedHourObj = clone $hourObj;
@@ -3052,7 +3051,6 @@ class Location extends DataObject {
 
 	public function getPublicLocationInfo(array $hours, ?string $mapsKey): array {
 		global $configArray;
-		require_once ROOT_DIR . '/sys/Parsedown/AspenParsedown.php';
 		$parsedown = AspenParsedown::instance();
 		$parsedown->setBreaksEnabled(true);
 

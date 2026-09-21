@@ -139,7 +139,6 @@ class DateUtilsTests extends TestCase {
 	}
 
 	public function testFormatTimeRangeFallsBackToTheSystemVariableWhenNoOverrideIsGiven(): void {
-		require_once ROOT_DIR . '/sys/SystemVariables.php';
 		$systemVariables = \SystemVariables::getSystemVariables();
 		$expected = \DateUtils::formatTimeRange('2025-01-01 09:00:00', '2025-01-01 10:30:00', (int)($systemVariables->timeFormat ?? 0));
 		$this->assertSame($expected, \DateUtils::formatTimeRange('2025-01-01 09:00:00', '2025-01-01 10:30:00'));

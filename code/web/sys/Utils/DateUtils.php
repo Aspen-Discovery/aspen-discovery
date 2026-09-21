@@ -88,7 +88,6 @@ class DateUtils {
 			return $formatOverride;
 		}
 
-		require_once ROOT_DIR . '/sys/SystemVariables.php';
 		$systemVariables = SystemVariables::getSystemVariables();
 
 		return (int)($systemVariables->timeFormat ?? 0);
