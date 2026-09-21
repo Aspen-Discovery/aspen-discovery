@@ -23,6 +23,7 @@ class EventStaffRegistrationTests extends TestCase {
 		require_once STAFF_REG_PATH_TO_ROOT . 'code/web/sys/Events/UserEventsEntry.php';
 		require_once STAFF_REG_PATH_TO_ROOT . 'code/web/sys/Account/User.php';
 		require_once STAFF_REG_PATH_TO_ROOT . 'code/web/sys/LibraryLocation/Location.php';
+		require_once STAFF_REG_PATH_TO_ROOT . 'code/web/sys/Account/UserLink.php';
 	}
 
 	protected function setUp(): void {
@@ -62,6 +63,7 @@ class EventStaffRegistrationTests extends TestCase {
 		global $aspen_db;
 
 		$aspen_db->exec("DELETE FROM user_events_entry WHERE sourceId LIKE 'aspenEvent_%'");
+		$aspen_db->exec("DELETE FROM user_link");
 		$aspen_db->exec("DELETE FROM user_aspen_event_instance_registrations");
 		$aspen_db->exec("DELETE FROM event_instance");
 		$aspen_db->exec("DELETE FROM event");
@@ -437,6 +439,45 @@ class EventStaffRegistrationTests extends TestCase {
 		$entry = new UserEventsEntry();
 		$entry->userId = $user->id;
 		$this->assertEquals(1, $entry->count(), 'Registration should create a user events entry');
+	}
+
+	private function setUpStaffRegistrationOfLinkedUserTest(): array {
+		global $library;
+		$library->allowLinkedAccounts = 1;
+
+		$setting = $this->ensureEventsIndexingSetting();
+		$viewer = $this->insertUser(40900);
+		$linkedUser = $this->insertUser(40901);
+		$staff = $this->insertUser(40902);
+
+		$userLink = new UserLink();
+		$userLink->primaryAccountId = $viewer->id;
+		$userLink->linkedAccountId = $linkedUser->id;
+		$userLink->insert();
+
+		return [
+			'sourceId' => 'aspenEvent_' . $setting->id . '_' . $this->eventInstance->id,
+			'viewer' => $viewer,
+			'linkedUser' => $linkedUser,
+			'staff' => $staff,
+		];
+	}
+
+	public function testStaffRegistrationOfLinkedUserCreatesEventEntryForViewer(): void {
+		['sourceId' => $sourceId, 'viewer' => $viewer, 'linkedUser' => $linkedUser, 'staff' => $staff] = $this->setUpStaffRegistrationOfLinkedUserTest();
+
+		$result = EventRegistrationService::registerUserForEvent((int)$linkedUser->id, (int)$this->eventInstance->id, (int)$staff->id);
+		$this->assertTrue($result['success']);
+
+		$viewerEntry = new UserEventsEntry();
+		$viewerEntry->sourceId = $sourceId;
+		$viewerEntry->userId = $viewer->id;
+		$this->assertTrue($viewerEntry->find(true), 'Viewer should get a user events entry for their linked user staff registration');
+
+		$staffEntry = new UserEventsEntry();
+		$staffEntry->sourceId = $sourceId;
+		$staffEntry->userId = $staff->id;
+		$this->assertFalse($staffEntry->find(true), 'Registering staff should not get a user events entry');
 	}
 
 	public function testRegisterUserForEventDoesNotSaveOnFailure(): void {
