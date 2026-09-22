@@ -1759,7 +1759,12 @@ class Record_AJAX extends JSON_Action {
 			$interface->assign('id', $id);
 
 			$validUrls = $recordDriver->getViewable856Links();
-			header('Location: ' . $validUrls[$linkId]['url']);
+			//Do not redirect to a URL that is hidden because the patron is not logged in
+			if (!empty($validUrls[$linkId]) && empty($validUrls[$linkId]['requiresLogin']) && !empty($validUrls[$linkId]['url'])) {
+				header('Location: ' . $validUrls[$linkId]['url']);
+			} else {
+				header('Location: ' . "/Record/$id");
+			}
 		} else {
 			header('Location: ' . "/Record/$id");
 		}
