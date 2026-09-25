@@ -45,9 +45,9 @@ AspenDiscovery.CourseReserves = (function(){
 				},
 				function(data) {
 					if (data.result) {
-						AspenDiscovery.showMessage("Success", data.message);
+						AspenDiscovery.showMessage(__('Success'), data.message);
 					} else {
-						AspenDiscovery.showMessage("Error", data.message);
+						AspenDiscovery.showMessage(__('Error'), data.message);
 					}
 				}
 			);

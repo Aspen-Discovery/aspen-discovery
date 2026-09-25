@@ -76,7 +76,7 @@ AspenDiscovery.CurbsidePickup = {
 		$.getJSON(Globals.path + "/CurbsidePickups/AJAX?method=getCurbsidePickupUnavailableDays&locationCode=" + locationCode)
 			.done(function (unavailableDaysData) {
 				if (!unavailableDaysData.success) {
-					AspenDiscovery.showMessage("Error", "Failed to load calendar. Please try again later.", false);
+					AspenDiscovery.showMessage(__('Error'), __('Failed to load calendar. Please try again later.'), false);
 					return;
 				}
 
@@ -119,12 +119,12 @@ AspenDiscovery.CurbsidePickup = {
 								$.getJSON(Globals.path + "/CurbsidePickups/AJAX?method=getCurbsidePickupAvailableTimes&date=" + dateStr + "&locationCode=" + locationCode)
 									.done(function (data) {
 										if (!data.success) {
-											AspenDiscovery.showMessage("Error", "Could not load time slots. Please try again.", false);
+											AspenDiscovery.showMessage(__('Error'), __('Could not load time slots. Please try again.'), false);
 											return;
 										}
 
 										if (!data.times || data.times.length === 0) {
-											AspenDiscovery.showMessage("No Times Available", "Sorry, there are no available pickup times for the selected date. Please select a different date.", false);
+											AspenDiscovery.showMessage(__('No Times Available'), __('Sorry, there are no available pickup times for the selected date. Please select a different date.'), false);
 											return;
 										}
 
@@ -165,7 +165,7 @@ AspenDiscovery.CurbsidePickup = {
 									})
 									.fail(function(jqXHR, textStatus, errorThrown) {
 										AspenDiscovery.closeLightbox();
-										AspenDiscovery.showMessage("Error", "Failed to load available times. Please try again later.", false);
+										AspenDiscovery.showMessage(__('Error'), __('Failed to load available times. Please try again later.'), false);
 										console.error("Error loading time slots:", textStatus, errorThrown);
 									});
 							}
@@ -177,12 +177,12 @@ AspenDiscovery.CurbsidePickup = {
 						$("#createCurbsidePickupSubmit").show();
 					})
 					.fail(function(jqXHR, textStatus, errorThrown) {
-						AspenDiscovery.showMessage("Error", "Failed to load available times. Please try again later.", false);
+						AspenDiscovery.showMessage(__('Error'), __('Failed to load available times. Please try again later.'), false);
 						console.error("Error loading available times:", textStatus, errorThrown);
 					});
 			})
 			.fail(function(jqXHR, textStatus, errorThrown) {
-				AspenDiscovery.showMessage("Error", "Failed to load calendar. Please try again later.", false);
+				AspenDiscovery.showMessage(__('Error'), __('Failed to load calendar. Please try again later.'), false);
 				console.error("Error loading calendar:", textStatus, errorThrown);
 			});
 		return false;
