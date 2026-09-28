@@ -759,7 +759,7 @@ class EventAPI extends AbstractAPI {
 						$events[$event->sourceId]['endDate'] = $details['endDate'];
 						$events[$event->sourceId]['url'] = $details['url'];
 						$events[$event->sourceId]['bypass'] = $details['bypass'];
-						$events[$event->sourceId]['cover'] = $details['image'] . '&isPast=' . $hasPassed;
+						$events[$event->sourceId]['cover'] = $details['image'];
 						$events[$event->sourceId]['registrationRequired'] = $details['registrationRequired'];
 						$events[$event->sourceId]['userIsRegistered'] = $details['userIsRegistered'];
 						$events[$event->sourceId]['location'] = $details['location'];
@@ -774,7 +774,7 @@ class EventAPI extends AbstractAPI {
 					$events[$event->sourceId]['endDate'] = null;
 					$events[$event->sourceId]['bypass'] = 0;
 					$events[$event->sourceId]['url'] = null;
-					$events[$event->sourceId]['cover'] = $configArray['Site']['url'] . '/bookcover.php?id=' . $event->sourceId . '&size=medium&type=' . $sourceFull . '_event' . '&isPast=' . $hasPassed;
+					$events[$event->sourceId]['cover'] = $configArray['Site']['url'] . '/bookcover.php?id=' . $event->sourceId . '&size=medium&type=' . $sourceFull . '_event';
 					$events[$event->sourceId]['registrationRequired'] = null;
 					$events[$event->sourceId]['userIsRegistered'] = $registration;
 					$events[$event->sourceId]['pastEvent'] = $hasPassed;

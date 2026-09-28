@@ -1952,16 +1952,14 @@ class BookCoverProcessor {
 	}
 
 	private function getEventDateCoverProps($driver, string $id) : array {
+		require_once ROOT_DIR . '/sys/Utils/DateUtils.php';
 		$isAspenEvent = $driver instanceof AspenEventRecordDriver;
 
 		if ($driver->isValid()) {
-			$isPast = false;
-			if (array_key_exists('isPast', $_REQUEST)){
-				$isPast = $_REQUEST['isPast'];
-			}
+			$startDate = $driver->getStartDate();
 			$props = [
-				'eventDate' => $driver->getStartDate(),
-				'isPastEvent' => $isPast,
+				'eventDate' => $startDate,
+				'isPastEvent' => DateUtils::isPastDate($startDate),
 				'branch' => $isAspenEvent ? $driver->getBranch() : '',
 				'displayBranchOnThumbnail' => $isAspenEvent ? $driver->getDisplayBranchOnThumbnail() : false,
 			];
@@ -1981,7 +1979,7 @@ class BookCoverProcessor {
 			$startDate->setTimezone(new DateTimeZone(date_default_timezone_get()));
 			$props = [
 				'eventDate' => $startDate,
-				'isPastEvent' => true,
+				'isPastEvent' => DateUtils::isPastDate($startDate),
 				'branch' => $isAspenEvent ? $userEntry->location : '',
 				'displayBranchOnThumbnail' => $isAspenEvent ? $userEntry->displayEventBranchOnThumbnail : false,
 			];
@@ -1991,9 +1989,10 @@ class BookCoverProcessor {
 			];
 		}
 
+		$startDate = $driver->getStartDateFromDB($id);
 		$props = [
-			'eventDate' => $driver->getStartDateFromDB($id),
-			'isPastEvent' => true,
+			'eventDate' => $startDate,
+			'isPastEvent' => DateUtils::isPastDate($startDate),
 			'branch' => $isAspenEvent ? $driver->getBranchFromDB($id) : '',
 			'displayBranchOnThumbnail' => $isAspenEvent ? $driver->getDisplayBranchOnThumbnailFromDB($id) : false,
 		];
