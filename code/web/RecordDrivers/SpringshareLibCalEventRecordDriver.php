@@ -1,9 +1,9 @@
 <?php
 
-require_once 'IndexRecordDriver.php';
+require_once 'EventRecordDriver.php';
 require_once ROOT_DIR . '/sys/Events/SpringshareLibCalEvent.php';
 
-class SpringshareLibCalEventRecordDriver extends IndexRecordDriver {
+class SpringshareLibCalEventRecordDriver extends EventRecordDriver {
 	private $valid;
 	/** @var SpringshareLibCalEvent */
 	private $eventObject;

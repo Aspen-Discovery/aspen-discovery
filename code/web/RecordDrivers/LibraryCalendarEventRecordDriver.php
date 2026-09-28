@@ -1,9 +1,9 @@
 <?php
 
-require_once 'IndexRecordDriver.php';
+require_once 'EventRecordDriver.php';
 require_once ROOT_DIR . '/sys/Events/LMLibraryCalendarEvent.php';
 
-class LibraryCalendarEventRecordDriver extends IndexRecordDriver {
+class LibraryCalendarEventRecordDriver extends EventRecordDriver {
 	private $valid;
 	/** @var LMLibraryCalendarEvent */
 	private $eventObject;

@@ -1,9 +1,9 @@
 <?php
 
-require_once 'IndexRecordDriver.php';
+require_once 'EventRecordDriver.php';
 require_once ROOT_DIR . '/sys/Events/CommunicoEvent.php';
 
-class CommunicoEventRecordDriver extends IndexRecordDriver {
+class CommunicoEventRecordDriver extends EventRecordDriver {
 	private $valid;
 	/** @var CommunicoEventRecordDriver */
 	private $eventObject;

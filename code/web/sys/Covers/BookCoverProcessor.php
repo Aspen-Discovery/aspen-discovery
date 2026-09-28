@@ -1951,55 +1951,32 @@ class BookCoverProcessor {
 		return $this->processImageURL('default_event', $this->cacheFile, false);
 	}
 
-	private function getEventDateCoverProps($driver, string $id) : array {
-		require_once ROOT_DIR . '/sys/Utils/DateUtils.php';
-		$isAspenEvent = $driver instanceof AspenEventRecordDriver;
-
+	private function getEventDateCoverProps(EventRecordDriver $driver, string $id) : array {
 		if ($driver->isValid()) {
-			$startDate = $driver->getStartDate();
-			$props = [
-				'eventDate' => $startDate,
-				'isPastEvent' => DateUtils::isPastDate($startDate),
-				'branch' => $isAspenEvent ? $driver->getBranch() : '',
-				'displayBranchOnThumbnail' => $isAspenEvent ? $driver->getDisplayBranchOnThumbnail() : false,
-			];
-			return [
-				'title' => $driver->getTitle(),
-				'props' => $props,
-			];
+			return $driver->getEventDateCoverData();
 		}
 
 		//driver isn't valid, likely a past event on a list
 		require_once ROOT_DIR . '/sys/Events/UserEventsEntry.php';
+		require_once ROOT_DIR . '/sys/Utils/DateUtils.php';
 		$userEntry = new UserEventsEntry();
 		$userEntry->sourceId = $id;
 		if ($userEntry->find(true)) {
 			$startDate = new DateTime("@$userEntry->eventDate");
 			/** @noinspection PhpUnhandledExceptionInspection */
 			$startDate->setTimezone(new DateTimeZone(date_default_timezone_get()));
-			$props = [
-				'eventDate' => $startDate,
-				'isPastEvent' => DateUtils::isPastDate($startDate),
-				'branch' => $isAspenEvent ? $userEntry->location : '',
-				'displayBranchOnThumbnail' => $isAspenEvent ? $userEntry->displayEventBranchOnThumbnail : false,
-			];
 			return [
 				'title' => $userEntry->title,
-				'props' => $props,
+				'props' => [
+					'eventDate' => $startDate,
+					'isPastEvent' => DateUtils::isPastDate($startDate),
+					'branch' => $userEntry->location,
+					'displayBranchOnThumbnail' => $userEntry->displayEventBranchOnThumbnail,
+				],
 			];
 		}
 
-		$startDate = $driver->getStartDateFromDB($id);
-		$props = [
-			'eventDate' => $startDate,
-			'isPastEvent' => DateUtils::isPastDate($startDate),
-			'branch' => $isAspenEvent ? $driver->getBranchFromDB($id) : '',
-			'displayBranchOnThumbnail' => $isAspenEvent ? $driver->getDisplayBranchOnThumbnailFromDB($id) : false,
-		];
-		return [
-			'title' => $driver->getTitleFromDB($id),
-			'props' => $props,
-		];
+		return $driver->getEventDateCoverDataFromDB($id);
 	}
 
 	private function getAspenEventsImageCover($id) : bool {

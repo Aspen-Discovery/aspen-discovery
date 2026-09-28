@@ -1,11 +1,11 @@
 <?php
 
-require_once 'IndexRecordDriver.php';
+require_once 'EventRecordDriver.php';
 require_once ROOT_DIR . '/sys/Events/EventInstance.php';
 require_once ROOT_DIR . '/sys/Events/Event.php';
 require_once ROOT_DIR . '/services/EventRegistrationService.php';
 
-class AspenEventRecordDriver extends IndexRecordDriver {
+class AspenEventRecordDriver extends EventRecordDriver {
 	private $valid;
 	/** @var EventInstance */
 	private $eventObject;
@@ -688,6 +688,19 @@ class AspenEventRecordDriver extends IndexRecordDriver {
 			'length' => '',
 			'titleURL' => null,
 		];
+	}
+
+	public function getEventDateCoverData() : array {
+		$coverData = parent::getEventDateCoverData();
+		$coverData['props']['displayBranchOnThumbnail'] = $this->getDisplayBranchOnThumbnail();
+		return $coverData;
+	}
+
+	public function getEventDateCoverDataFromDB(string $id) : array {
+		$coverData = parent::getEventDateCoverDataFromDB($id);
+		$coverData['props']['branch'] = $this->getBranchFromDB($id);
+		$coverData['props']['displayBranchOnThumbnail'] = $this->getDisplayBranchOnThumbnailFromDB($id);
+		return $coverData;
 	}
 
 	public function getDisplayBranchOnThumbnail() {

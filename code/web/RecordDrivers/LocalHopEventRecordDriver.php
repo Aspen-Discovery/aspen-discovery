@@ -1,9 +1,9 @@
 <?php
 
-require_once 'IndexRecordDriver.php';
+require_once 'EventRecordDriver.php';
 require_once ROOT_DIR . '/sys/Events/LocalHopEvent.php';
 
-class LocalHopEventRecordDriver extends IndexRecordDriver
+class LocalHopEventRecordDriver extends EventRecordDriver
 {
 	private $valid;
 	/** @var LocalHopEventRecordDriver */
