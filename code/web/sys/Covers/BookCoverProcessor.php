@@ -528,6 +528,9 @@ class BookCoverProcessor {
 			return false;
 		}
 		$this->cacheName = preg_replace('/[^a-zA-Z0-9_.-]/', '', $this->cacheName);
+		if (array_key_exists($this->type, self::EVENT_DATE_COVER_DRIVERS)) {
+			$this->cacheName .= '~' . $this->getEventDateCoverFingerprint();
+		}
 		$this->cacheFile = $this->bookCoverPath . '/' . $this->size . '/' . $this->cacheName . '.png';
 		global $library;
 		$this->defaultCoverCacheFile = $this->bookCoverPath . '/' . $this->size . '/' . $library->subdomain . '_' . $this->cacheName . '.png';
@@ -1960,6 +1963,20 @@ class BookCoverProcessor {
 
 		$this->eventDateCoverProps = $this->getEventDateCoverProps($driver, $id);
 		return $this->eventDateCoverProps;
+	}
+
+	private function getEventDateCoverFingerprint() : string {
+		$eventDateCoverProps = $this->resolveEventDateCoverProps();
+		$props = $eventDateCoverProps['props'];
+		$eventDate = $props['eventDate'] instanceof DateTime ? $props['eventDate']->getTimestamp() : '';
+
+		return substr(md5(implode('|', [
+			$eventDateCoverProps['title'],
+			$eventDate,
+			$props['branch'],
+			$props['displayBranchOnThumbnail'],
+			$props['isPastEvent'],
+		])), 0, 8);
 	}
 
 	private function getEventDateCoverProps(EventRecordDriver $driver, string $id) : array {
