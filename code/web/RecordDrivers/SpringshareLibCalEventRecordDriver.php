@@ -260,7 +260,7 @@ class SpringshareLibCalEventRecordDriver extends EventRecordDriver {
 		return $this->eventObject;
 	}
 
-	function getStartDateFromDB($id) : ?object {
+	function getStartDateFromDB(string $id) : ?object {
 		if ($this->eventObject == null) {
 			$this->eventObject = new SpringshareLibCalEvent();
 			$this->eventObject->externalId = preg_replace('/^libcal_\d+_/', '', $id);
@@ -281,7 +281,7 @@ class SpringshareLibCalEventRecordDriver extends EventRecordDriver {
 
 	}
 
-	function getTitleFromDB($id) {
+	function getTitleFromDB(string $id) {
 		if ($this->eventObject == null) {
 			$this->eventObject = new SpringshareLibCalEvent();
 			$this->eventObject->externalId = preg_replace('/^libcal_\d+_/', '', $id);

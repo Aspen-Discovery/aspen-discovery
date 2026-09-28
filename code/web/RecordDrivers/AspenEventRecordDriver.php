@@ -355,7 +355,7 @@ class AspenEventRecordDriver extends EventRecordDriver {
 		return $this->eventObject;
 	}
 
-	function getStartDateFromDB($id) : ?object {
+	function getStartDateFromDB(string $id) : ?object {
 		if ($this->eventObject == null) {
 			$this->eventObject = new EventInstance();
 			$this->eventObject->$id;
@@ -376,7 +376,7 @@ class AspenEventRecordDriver extends EventRecordDriver {
 
 	}
 
-	function getTitleFromDB($id) {
+	function getTitleFromDB(string $id) {
 		if ($this->eventObject == null) {
 			$this->eventObject = new Event();
 			$this->eventObject->externalId;

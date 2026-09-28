@@ -5,12 +5,9 @@ require_once ROOT_DIR . '/sys/Utils/DateUtils.php';
 
 abstract class EventRecordDriver extends IndexRecordDriver {
 	public abstract function getBranch();
-
 	public abstract function getStartDate();
-
-	public abstract function getStartDateFromDB($id);
-
-	public abstract function getTitleFromDB($id);
+	public abstract function getStartDateFromDB(string $id);
+	public abstract function getTitleFromDB(string $id);
 
 	public function getEventDateCoverData() : array {
 		$startDate = $this->getStartDate();

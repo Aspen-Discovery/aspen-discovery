@@ -278,7 +278,7 @@ class CommunicoEventRecordDriver extends EventRecordDriver {
 		return $this->eventObject;
 	}
 
-	function getStartDateFromDB($id) : ?object {
+	function getStartDateFromDB(string $id) : ?object {
 		if ($this->eventObject == null) {
 			$this->eventObject = new CommunicoEvent();
 			$this->eventObject->externalId = preg_replace('/^communico_\d+_/', '', $id);
@@ -299,7 +299,7 @@ class CommunicoEventRecordDriver extends EventRecordDriver {
 
 	}
 
-	function getTitleFromDB($id) {
+	function getTitleFromDB(string $id) {
 		if ($this->eventObject == null) {
 			$this->eventObject = new CommunicoEvent();
 			$this->eventObject->externalId = preg_replace('/^communico_\d+_/', '', $id);

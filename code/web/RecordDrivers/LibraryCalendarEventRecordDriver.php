@@ -264,7 +264,7 @@ class LibraryCalendarEventRecordDriver extends EventRecordDriver {
 		return $this->eventObject;
 	}
 
-	function getStartDateFromDB($id) : ?object {
+	function getStartDateFromDB(string $id) : ?object {
 		if ($this->eventObject == null) {
 			$this->eventObject = new LMLibraryCalendarEvent();
 			$this->eventObject->externalId = preg_replace('/^lc_\d+_/', '', $id);
@@ -285,7 +285,7 @@ class LibraryCalendarEventRecordDriver extends EventRecordDriver {
 
 	}
 
-	function getTitleFromDB($id) {
+	function getTitleFromDB(string $id) {
 		if ($this->eventObject == null) {
 			$this->eventObject = new LMLibraryCalendarEvent();
 			$this->eventObject->externalId = preg_replace('/^lc_\d+_/', '', $id);
