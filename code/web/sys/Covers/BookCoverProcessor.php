@@ -1942,36 +1942,19 @@ class BookCoverProcessor {
 		$driverClass = self::EVENT_DATE_COVER_DRIVERS[$this->type];
 		require_once ROOT_DIR . '/RecordDrivers/' . $driverClass . '.php';
 		$driver = new $driverClass($id);
-		$isAspenEvent = $driver instanceof AspenEventRecordDriver;
+
+		$eventDateCoverProps = $this->getEventDateCoverProps($driver, $id);
+
 		require_once ROOT_DIR . '/sys/Covers/EventCoverBuilder.php';
-		if (!($driver->isValid())){ //if driver isn't valid, likely a past event on a list
-			require_once ROOT_DIR . '/sys/Events/UserEventsEntry.php';
-			$coverBuilder = new EventCoverBuilder();
-			$userEntry = new UserEventsEntry();
-			$userEntry->sourceId = $id;
-			if ($userEntry->find(true)){
-				$startDate = new DateTime("@$userEntry->eventDate");
-				/** @noinspection PhpUnhandledExceptionInspection */
-				$startDate->setTimezone(new DateTimeZone(date_default_timezone_get()));
-				$props = [
-					'eventDate' => $startDate,
-					'isPastEvent' => true,
-					'branch' => $isAspenEvent ? $userEntry->location : '',
-					'displayBranchOnThumbnail' => $isAspenEvent ? $userEntry->displayEventBranchOnThumbnail : false,
-				];
-				$title = $userEntry->title;
-			} else{
-				$props = [
-					'eventDate' => $driver->getStartDateFromDB($id),
-					'isPastEvent' => true,
-					'branch' => $isAspenEvent ? $driver->getBranchFromDB($id) : '',
-					'displayBranchOnThumbnail' => $isAspenEvent ? $driver->getDisplayBranchOnThumbnailFromDB($id) : false,
-				];
-				$title = $driver->getTitleFromDB($id);
-			}
-			$coverBuilder->getCover($title, $this->cacheFile, $props);
-		} else {
-			$coverBuilder = new EventCoverBuilder();
+		$coverBuilder = new EventCoverBuilder();
+		$coverBuilder->getCover($eventDateCoverProps['title'], $this->cacheFile, $eventDateCoverProps['props']);
+		return $this->processImageURL('default_event', $this->cacheFile, false);
+	}
+
+	private function getEventDateCoverProps($driver, string $id) : array {
+		$isAspenEvent = $driver instanceof AspenEventRecordDriver;
+
+		if ($driver->isValid()) {
 			$isPast = false;
 			if (array_key_exists('isPast', $_REQUEST)){
 				$isPast = $_REQUEST['isPast'];
@@ -1982,9 +1965,42 @@ class BookCoverProcessor {
 				'branch' => $isAspenEvent ? $driver->getBranch() : '',
 				'displayBranchOnThumbnail' => $isAspenEvent ? $driver->getDisplayBranchOnThumbnail() : false,
 			];
-			$coverBuilder->getCover($driver->getTitle(), $this->cacheFile, $props);
+			return [
+				'title' => $driver->getTitle(),
+				'props' => $props,
+			];
 		}
-		return $this->processImageURL('default_event', $this->cacheFile, false);
+
+		//driver isn't valid, likely a past event on a list
+		require_once ROOT_DIR . '/sys/Events/UserEventsEntry.php';
+		$userEntry = new UserEventsEntry();
+		$userEntry->sourceId = $id;
+		if ($userEntry->find(true)) {
+			$startDate = new DateTime("@$userEntry->eventDate");
+			/** @noinspection PhpUnhandledExceptionInspection */
+			$startDate->setTimezone(new DateTimeZone(date_default_timezone_get()));
+			$props = [
+				'eventDate' => $startDate,
+				'isPastEvent' => true,
+				'branch' => $isAspenEvent ? $userEntry->location : '',
+				'displayBranchOnThumbnail' => $isAspenEvent ? $userEntry->displayEventBranchOnThumbnail : false,
+			];
+			return [
+				'title' => $userEntry->title,
+				'props' => $props,
+			];
+		}
+
+		$props = [
+			'eventDate' => $driver->getStartDateFromDB($id),
+			'isPastEvent' => true,
+			'branch' => $isAspenEvent ? $driver->getBranchFromDB($id) : '',
+			'displayBranchOnThumbnail' => $isAspenEvent ? $driver->getDisplayBranchOnThumbnailFromDB($id) : false,
+		];
+		return [
+			'title' => $driver->getTitleFromDB($id),
+			'props' => $props,
+		];
 	}
 
 	private function getAspenEventsImageCover($id) : bool {
