@@ -355,39 +355,63 @@ class AspenEventRecordDriver extends EventRecordDriver {
 		return $this->eventObject;
 	}
 
-	function getStartDateFromDB(string $id) : ?object {
-		if ($this->eventObject == null) {
+	private function getEventInstanceFromDB(string $id) {
+		if (strpos($id, '_') !== false) {
+			$parts = explode('_', $id);
+			$numericId = end($parts);
+		} else {
+			$numericId = $id;
+		}
+
+		if ($this->eventObject == null || $this->eventObject->id != $numericId) {
 			$this->eventObject = new EventInstance();
-			$this->eventObject->$id;
+			$this->eventObject->id = $numericId;
 
 			if (!$this->eventObject->find(true)) {
 				$this->eventObject = false;
 			}
 		}
-		$data = $this->eventObject;
+
+		return $this->eventObject;
+	}
+
+	private function getEventFromDB(string $id) {
+		$eventInstance = $this->getEventInstanceFromDB($id);
+		if (!$eventInstance) {
+			return false;
+		}
+
+		$event = new Event();
+		$event->id = $eventInstance->eventId;
+		if (!$event->find(true)) {
+			return false;
+		}
+
+		return $event;
+	}
+
+	function getStartDateFromDB(string $id) : ?object {
+		$eventInstance = $this->getEventInstanceFromDB($id);
+		if (!$eventInstance) {
+			return null;
+		}
 
 		try {
-			$startDate = new DateTime($data->date . " " . $data->time);
+			$startDate = new DateTime($eventInstance->date . " " . $eventInstance->time);
 			$startDate->setTimezone(new DateTimeZone(date_default_timezone_get()));
 			return $startDate;
 		} catch (Exception $e) {
 			return null;
 		}
-
 	}
 
 	function getTitleFromDB(string $id) {
-		if ($this->eventObject == null) {
-			$this->eventObject = new Event();
-			$this->eventObject->externalId;
-
-			if (!$this->eventObject->find(true)) {
-				$this->eventObject = false;
-			}
+		$event = $this->getEventFromDB($id);
+		if (!$event) {
+			return '';
 		}
-		$data = $this->eventObject;
 
-		return $data->title;
+		return $event->title;
 	}
 
 	public function getIdentifier() {
@@ -716,74 +740,29 @@ class AspenEventRecordDriver extends EventRecordDriver {
 		return false;
 	}
 
-	function getBranchFromDB($id) {
-	
-		if (strpos($id, '_') !== false) {
-			$parts = explode('_', $id);
-			$numericId = end($parts);
-		} else {
-			$numericId = $id;
-		}
-	
-		if ($this->eventObject == null || $this->eventObject->id != $numericId) {
-			$this->eventObject = new EventInstance();
-			$this->eventObject->id = $numericId;
-
-			if (!$this->eventObject->find(true)) {
-				$this->eventObject = false;
-				return '';
-			}
-		}
-	
-		if ($this->eventObject === false) {
+	function getBranchFromDB(string $id) {
+		$event = $this->getEventFromDB($id);
+		if (!$event) {
 			return '';
 		}
 
-		require_once ROOT_DIR . '/sys/Events/Event.php';
-		$event = new Event();
-		$event->id = $this->eventObject->eventId;
-		if ($event->find(true)) {
-			require_once ROOT_DIR . '/sys/LibraryLocation/Location.php';
-			$location = new Location();
-			$location->locationId = $event->locationId;
-			if ($location->find(true)) {
-				return $location->displayName;
-			}
+		require_once ROOT_DIR . '/sys/LibraryLocation/Location.php';
+		$location = new Location();
+		$location->locationId = $event->locationId;
+		if (!$location->find(true)) {
+			return '';
 		}
-		return false;
+
+		return $location->displayName;
 	}
 
-	function getDisplayBranchOnThumbnailFromDB($id) {
-		
-		if (strpos($id, '_') !== false) {
-			$parts = explode('_', $id);
-			$numericId = end($parts);
-		} else {
-			$numericId = $id;
-		}
-		
-		if ($this->eventObject == null || $this->eventObject->id != $numericId) {
-			$this->eventObject = new EventInstance();
-			$this->eventObject->id = $numericId;
-
-			if (!$this->eventObject->find(true)) {
-				$this->eventObject = false;
-				return false;
-			}
-		}
-		
-		if ($this->eventObject === false) {
+	function getDisplayBranchOnThumbnailFromDB(string $id) {
+		$event = $this->getEventFromDB($id);
+		if (!$event) {
 			return false;
 		}
-		
-		require_once ROOT_DIR . '/sys/Events/Event.php';
-		$event = new Event();
-		$event->id = $this->eventObject->eventId;
-		if ($event->find(true)) {
-			return $event->displayEventBranchOnThumbnail;
-		}
-		
-		return false;
+
+		return $event->displayEventBranchOnThumbnail;
 	}
 
 	public function getCategories(): null {
