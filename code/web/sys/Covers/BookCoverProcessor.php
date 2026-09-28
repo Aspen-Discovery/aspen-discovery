@@ -24,6 +24,7 @@ class BookCoverProcessor {
 	private ?string $cloudSourceIndex;
 	private string $type;
 	private string $cacheName;
+	private ?array $eventDateCoverProps = null;
 	private string $cacheFile;
 	private string $defaultCoverCacheFile; //Includes servername so each member of a consortium can have different covers
 	public ?string $error = null;
@@ -83,7 +84,7 @@ class BookCoverProcessor {
 				return true;
 			}
 		} elseif (array_key_exists($this->type, self::EVENT_DATE_COVER_DRIVERS)) {
-			if ($this->getEventDateCover($this->id)) {
+			if ($this->getEventDateCover()) {
 				return true;
 			}
 		} elseif ($this->type == 'aspenEvent_eventRecord') {
@@ -1932,7 +1933,21 @@ class BookCoverProcessor {
 	}
 
 
-	private function getEventDateCover(string $id) : bool {
+	private function getEventDateCover() : bool {
+		$eventDateCoverProps = $this->resolveEventDateCoverProps();
+
+		require_once ROOT_DIR . '/sys/Covers/EventCoverBuilder.php';
+		$coverBuilder = new EventCoverBuilder();
+		$coverBuilder->getCover($eventDateCoverProps['title'], $this->cacheFile, $eventDateCoverProps['props']);
+		return $this->processImageURL('default_event', $this->cacheFile, false);
+	}
+
+	private function resolveEventDateCoverProps() : array {
+		if ($this->eventDateCoverProps !== null) {
+			return $this->eventDateCoverProps;
+		}
+
+		$id = $this->id;
 		if (str_contains($id, ':')) {
 			[
 				,
@@ -1943,12 +1958,8 @@ class BookCoverProcessor {
 		require_once ROOT_DIR . '/RecordDrivers/' . $driverClass . '.php';
 		$driver = new $driverClass($id);
 
-		$eventDateCoverProps = $this->getEventDateCoverProps($driver, $id);
-
-		require_once ROOT_DIR . '/sys/Covers/EventCoverBuilder.php';
-		$coverBuilder = new EventCoverBuilder();
-		$coverBuilder->getCover($eventDateCoverProps['title'], $this->cacheFile, $eventDateCoverProps['props']);
-		return $this->processImageURL('default_event', $this->cacheFile, false);
+		$this->eventDateCoverProps = $this->getEventDateCoverProps($driver, $id);
+		return $this->eventDateCoverProps;
 	}
 
 	private function getEventDateCoverProps(EventRecordDriver $driver, string $id) : array {
