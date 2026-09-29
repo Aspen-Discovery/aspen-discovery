@@ -2,10 +2,7 @@ package com.turning_leaf_technologies.indexing;
 
 import com.turning_leaf_technologies.marc.MarcUtil;
 
-import java.util.HashMap;
-import java.util.Objects;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.regex.Pattern;
 
 class InclusionRule {
@@ -115,7 +112,7 @@ class InclusionRule {
 
 	//TODO: We can potentially just pass in the ItemInfo object instead of all or most of these parameters
 	//		This would likely require creating an interface for ItemInfo under java_shared_libraries.
-	boolean isItemIncluded(String itemIdentifier, String recordType, String locationCode, String subLocationCode, String iType, TreeSet<String> audiences, String audiencesAsString, String format, String shelfLocation, String collectionCode, boolean isHoldable, boolean isOnOrder, boolean isEContent, org.marc4j.marc.Record marcRecord, DebugLogger debugLogger){
+	boolean isItemIncluded(String itemIdentifier, String recordType, String locationCode, String subLocationCode, String iType, HashSet<String> audiences, String audiencesAsString, String format, String shelfLocation, String collectionCode, boolean isHoldable, boolean isOnOrder, boolean isEContent, org.marc4j.marc.Record marcRecord, DebugLogger debugLogger){
 		if (lastIdentifier != null && lastIdentifier.equals(itemIdentifier)){
 			return lastIdentifierResult;
 		}

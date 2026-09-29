@@ -114,7 +114,5 @@ done
 log_info "Running pending database updates..."
 php updateDatabase.php "$SITE_NAME"
 
-sudo -u www-data php /usr/local/aspen-discovery/docker/files/cron/checkBackgroundProcessesDocker.php $SITE_NAME >/proc/1/fd/1 2>/proc/1/fd/2
-
 log_info "Starting PHP-FPM in foreground mode..."
 php-fpm8.4 --test && exec php-fpm8.4 -F

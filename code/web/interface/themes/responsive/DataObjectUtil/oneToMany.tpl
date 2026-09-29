@@ -43,7 +43,7 @@
 									{/if}
 								{/if}
 								{if $subProperty.type=='text' || $subProperty.type=='regularExpression' || $subProperty.type=='integer' || $subProperty.type=='html'}
-									<input type="text" name="{$propName}_{$subPropName}[{$subObject->id}]" value="{$subPropValue|escape}" class="form-control{if $subProperty.type=="integer"} integer{/if}{if !empty($subProperty.required)} required{/if}" {if !empty($subProperty.onchange)}onchange="{$subProperty.onchange}"{/if} {if !empty($subProperty.readOnly) || !empty($property.readOnly) || $instanceReadOnly} readonly{if $instanceReadOnly && !empty($instanceReadOnlyReason)} title="{$instanceReadOnlyReason|escape}"{/if}{/if}{if !empty($subProperty.maxLength)} maxlength="{$subProperty.maxLength}"{/if}{if $subProperty.type=="integer" && empty($subProperty.readOnly) && empty($property.readOnly) && !$instanceReadOnly && !empty($subProperty.max)} max="{$subProperty.max}"{/if}{if $subProperty.type=="integer" && empty($subProperty.readOnly) && empty($property.readOnly) && !$instanceReadOnly && !empty($subProperty.min)} min="{$subProperty.min}"{/if} data-id="{$subObject->id}">
+									<input type="text" name="{$propName}_{$subPropName}[{$subObject->id}]" value="{$subPropValue|escape}" class="form-control{if $subProperty.type=="integer"} integer{/if}{if !empty($subProperty.required)} required{/if}{if $subProperty.type=='regularExpression'} regex-field{/if}" {if !empty($subProperty.onchange)}onchange="{$subProperty.onchange}"{/if} {if !empty($subProperty.readOnly) || !empty($property.readOnly) || $instanceReadOnly} readonly{if $instanceReadOnly && !empty($instanceReadOnlyReason)} title="{$instanceReadOnlyReason|escape}"{/if}{/if}{if !empty($subProperty.maxLength)} maxlength="{$subProperty.maxLength}"{/if}{if $subProperty.type=="integer" && empty($subProperty.readOnly) && empty($property.readOnly) && !$instanceReadOnly && !empty($subProperty.max)} max="{$subProperty.max}"{/if}{if $subProperty.type=="integer" && empty($subProperty.readOnly) && empty($property.readOnly) && !$instanceReadOnly && !empty($subProperty.min)} min="{$subProperty.min}"{/if} data-id="{$subObject->id}">
 								{elseif $subProperty.type=='storedPassword'}
 									<input type="password" id="{$propName}_{$subPropName}_{$subObject->id}" name="{$propName}_{$subPropName}[{$subObject->id}]" value="{$subPropValue|escape}" class="form-control{if !empty($subProperty.required)} required{/if}" {if !empty($subProperty.onchange)}onchange="{$subProperty.onchange}"{/if} {if !empty($subProperty.readOnly) || !empty($property.readOnly) || $instanceReadOnly} readonly{if $instanceReadOnly && !empty($instanceReadOnlyReason)} title="{$instanceReadOnlyReason|escape}"{/if}{/if}{if !empty($subProperty.maxLength)} maxlength="{$subProperty.maxLength}"{/if} data-id="{$subObject->id}">
 									{if !isset($subProperty.showConfirm) || $subProperty.showConfirm == true}
@@ -74,7 +74,7 @@
 								{elseif $subProperty.type=='dynamic_label'}
 									<span id="{$propName}_{$subPropName}_{$subObject->id}" data-id="{$subObject->id}">{$subPropValue|escape}<span>
 								{elseif $subProperty.type=='textarea' || $subProperty.type=='multilineRegularExpression'}
-									<textarea name="{$propName}_{$subPropName}[{$subObject->id}]" class="form-control{if !empty($subProperty.autoResizeTextArea)} auto-grow-textarea{/if}"{if !empty($subProperty.readOnly) || !empty($property.readOnly) || $instanceReadOnly} readonly{/if}{if !empty($subProperty.maxLength)} maxlength="{$subProperty.maxLength}"{/if} data-id="{$subObject->id}">{$subPropValue|escape}</textarea>
+									<textarea name="{$propName}_{$subPropName}[{$subObject->id}]" class="form-control{if !empty($subProperty.autoResizeTextArea)} auto-grow-textarea{/if}{if $subProperty.type=='multilineRegularExpression'} regex-field{/if}"{if !empty($subProperty.readOnly) || !empty($property.readOnly) || $instanceReadOnly} readonly{/if}{if !empty($subProperty.maxLength)} maxlength="{$subProperty.maxLength}"{/if} data-id="{$subObject->id}">{$subPropValue|escape}</textarea>
 								{elseif $subProperty.type=='checkbox'}
 									{if !empty($subProperty.readOnly) || !empty($property.readOnly) || $instanceReadOnly}
 										{if $subPropValue == 1}{translate text='Yes' isAdminFacing=true}{else}{translate text='No' isAdminFacing=true}{/if}
@@ -261,6 +261,7 @@
 									"name='{$propName}_{$subPropName}[" + numAdditional{$propName} + "]' " +
 									"class='form-control" +
 									'{if !empty($subProperty.autoResizeTextArea)} auto-grow-textarea{/if}' +
+									'{if $subProperty.type=='multilineRegularExpression'} regex-field{/if}' +
 									'{if !empty($subProperty.maxLength)} maxlength="{$subProperty.maxLength}"{/if}' +
 									" data-id='" + numAdditional{$propName} + "'>" +
 									'{if !empty($subProperty.default)}{$subProperty.default}{/if}' +
@@ -270,7 +271,7 @@
 								"<input type='text' " +
 									"name='{$propName}_{$subPropName}[" + numAdditional{$propName} + "]' " +
 									"value='{if !empty($subProperty.default)}{$subProperty.default}{/if}' " +
-									"class='form-control{if $subProperty.type=="integer"} integer{/if}{if !empty($subProperty.required)} required{/if}'" +
+									"class='form-control{if $subProperty.type=="integer"} integer{/if}{if !empty($subProperty.required)} required{/if}{if $subProperty.type=='regularExpression'} regex-field{/if}'" +
 									'{if !empty($subProperty.maxLength)} maxlength="{$subProperty.maxLength}"{/if}' +
 									'{if $subProperty.type=="integer" && !empty($subProperty.max)} max="{$subProperty.max}"{/if}' +
 									'{if $subProperty.type=="integer" && !empty($subProperty.min)} min="{$subProperty.min}"{/if}' +

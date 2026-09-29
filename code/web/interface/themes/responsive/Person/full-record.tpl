@@ -4,14 +4,14 @@
 	{include file="GroupedWork/search-results-navigation.tpl"}
 
 	{if !empty($error)}
-		<div class="row">
+		<div class="full-record-error row">
 			<div class="alert alert-danger">
 				{$error}
 			</div>
 		</div>
 	{/if}
 
-	<h1>
+	<h1 class="full-record-title">
 		{$person->firstName|escape} {$person->middleName|escape}{if $person->nickName} "{$person->nickName|escape}"{/if}{if $person->maidenName} ({$person->maidenName}){/if} {$person->lastName|escape}
 	</h1>
 	{if !empty($userIsAdmin)}
@@ -33,7 +33,7 @@
 		</div>
 	{/if}
 	{* Display Book Cover *}
-	<div class="row">
+	<div class="full-record-main row">
 		<div class="col-xs-4 col-sm-5 col-md-4 col-lg-3 text-center">
 			{if $disableCoverArt != 1}
 				<div id="recordCover" class="text-center">
@@ -45,38 +45,38 @@
 				</div>
 			{/if}
 		</div>
-		<div {*id="main-content"*} class="col-xs-8 col-sm-7 col-md-8 col-lg-9">
+		<div {*id="main-content"*} class="full-record-main-content col-xs-8 col-sm-7 col-md-8 col-lg-9">
 			{if $person->otherName}
-				<div class='personDetail'><span class='result-label'>{translate text="Other Names" isPublicFacing=true} </span><span class='personDetailValue'>{$person->otherName|escape}</span></div>
+				<div class='record-other-name personDetail'><span class='result-label'>{translate text="Other Names" isPublicFacing=true} </span><span class='personDetailValue'>{$person->otherName|escape}</span></div>
 			{/if}
 			{if !empty($birthDate)}
-				<div class='personDetail'><span class='result-label'>{translate text="Birth Date" isPublicFacing=true} </span><span class='personDetailValue'>{$birthDate}</span></div>
+				<div class='full-record-birth-date personDetail'><span class='result-label'>{translate text="Birth Date" isPublicFacing=true} </span><span class='personDetailValue'>{$birthDate}</span></div>
 			{/if}
 			{if !empty($deathDate)}
-				<div class='personDetail'><span class='result-label'>{translate text="Death Date" isPublicFacing=true} </span><span class='personDetailValue'>{$deathDate}</span></div>
+				<div class='full-record-death-date personDetail'><span class='result-label'>{translate text="Death Date" isPublicFacing=true} </span><span class='personDetailValue'>{$deathDate}</span></div>
 			{/if}
 			{if $person->ageAtDeath}
-				<div class='personDetail'><span class='result-label'>{translate text="Age at Death" isPublicFacing=true} </span><span class='personDetailValue'>{$person->ageAtDeath|escape}</span></div>
+				<div class='full-record-age-at-death personDetail'><span class='result-label'>{translate text="Age at Death" isPublicFacing=true} </span><span class='personDetailValue'>{$person->ageAtDeath|escape}</span></div>
 			{/if}
 			{if $person->sex}
-				<div class='personDetail'><span class='result-label'>{translate text="Gender" isPublicFacing=true} </span><span class='personDetailValue'>{$person->sex|escape}</span></div>
+				<div class='full-record-sex personDetail'><span class='result-label'>{translate text="Gender" isPublicFacing=true} </span><span class='personDetailValue'>{$person->sex|escape}</span></div>
 			{/if}
 			{if $person->race}
-				<div class='personDetail'><span class='result-label'>{translate text="Race" isPublicFacing=true} </span><span class='personDetailValue'>{$person->race|escape}</span></div>
+				<div class='full-record-race personDetail'><span class='result-label'>{translate text="Race" isPublicFacing=true} </span><span class='personDetailValue'>{$person->race|escape}</span></div>
 			{/if}
 			{if $person->veteranOf}
 				{implode subject=$person->veteranOf glue=", " assign='veteranOf'}
-				<div class='personDetail'><span class='result-label'>{translate text="Veteran Of" isPublicFacing=true} </span><span class='personDetailValue'>{$veteranOf}</span></div>
+				<div class='full-record-veteran-of personDetail'><span class='result-label'>{translate text="Veteran Of" isPublicFacing=true} </span><span class='personDetailValue'>{$veteranOf}</span></div>
 			{/if}
 			{if $person->causeOfDeath}
-				<div class='personDetail'><span class='result-label'>{translate text="Cause of Death" isPublicFacing=true} </span><span class='personDetailValue'>{$person->causeOfDeath|escape}</span></div>
+				<div class='full-record-cause-of-death personDetail'><span class='result-label'>{translate text="Cause of Death" isPublicFacing=true} </span><span class='personDetailValue'>{$person->causeOfDeath|escape}</span></div>
 			{/if}
 		</div>
 	</div>
 	{if count($marriages) > 0 || $userIsAdmin}
-		<h2 class="blockhead">{translate text="Marriages" isPublicFacing=true}</h2>
+		<h2 class="full-record-marriages blockhead">{translate text="Marriages" isPublicFacing=true}</h2>
 		{foreach from=$marriages item=marriage}
-			<div class="marriageTitle">
+			<div class="full-record-marriage-title marriageTitle">
 				{$marriage.spouseName}{if !empty($marriage.formattedMarriageDate)} - {$marriage.formattedMarriageDate}{/if}
 				{if !empty($userIsAdmin)}
 					<div class="btn-toolbar">
@@ -90,24 +90,24 @@
 				{/if}
 			</div>
 			{if !empty($marriage.comments)}
-				<div class="marriageComments">{$marriage.comments|escape}</div>
+				<div class="full-record-marriage-comments marriageComments">{$marriage.comments|escape}</div>
 			{/if}
 		{/foreach}
 
 	{/if}
 	{if $person->cemeteryName || $person->cemeteryLocation || $person->mortuaryName || $person->cemeteryAvenue || $person->lot || $person->block || $person->grave || $person->addition}
-		<h2 class="blockhead">{translate text="Burial Details" isPublicFacing=true}</h2>
+		<h2 class="full-record-burial-details blockhead">{translate text="Burial Details" isPublicFacing=true}</h2>
 		{if $person->cemeteryName}
-		<div class='personDetail'><span class='result-label'>{translate text="Cemetery Name" isPublicFacing=true} </span><span class='personDetailValue'>{$person->cemeteryName}</span></div>
+		<div class='full-record-cemetery-name personDetail'><span class='result-label'>{translate text="Cemetery Name" isPublicFacing=true} </span><span class='personDetailValue'>{$person->cemeteryName}</span></div>
 		{/if}
 		{if $person->cemeteryLocation}
-		<div class='personDetail'><span class='result-label'>{translate text="Cemetery Location" isPublicFacing=true} </span><span class='personDetailValue'>{$person->cemeteryLocation}</span></div>
+		<div class='full-record-cemetery-location personDetail'><span class='result-label'>{translate text="Cemetery Location" isPublicFacing=true} </span><span class='personDetailValue'>{$person->cemeteryLocation}</span></div>
 		{/if}
 		{if $person->cemeteryAvenue}
-			<div class='personDetail'><span class='result-label'>{translate text="Cemetery Avenue" isPublicFacing=true} </span><span class='personDetailValue'>{$person->cemeteryAvenue}</span></div>
+			<div class='full-record-cemetery-avenue personDetail'><span class='result-label'>{translate text="Cemetery Avenue" isPublicFacing=true} </span><span class='personDetailValue'>{$person->cemeteryAvenue}</span></div>
 		{/if}
 		{if $person->addition || $person->lot || $person->block || $person->grave}
-		<div class='personDetail'><span class='result-label'>{translate text="Burial Location" isPublicFacing=true}</span>
+		<div class='full-record-burial-location personDetail'><span class='result-label'>{translate text="Burial Location" isPublicFacing=true}</span>
 		<span class='personDetailValue'>
 			{if $person->addition}{translate text="Addition" isPublicFacing=true} {$person->addition}{if $person->block || $person->lot || $person->grave}, {/if}{/if}
 			{if $person->block}{translate text="Block" isPublicFacing=true} {$person->block}{if $person->lot || $person->grave}, {/if}{/if}
@@ -115,17 +115,17 @@
 			{if $person->grave}{translate text="Grave" isPublicFacing=true} {$person->grave}{/if}
 		</span></div>
 		{if $person->tombstoneInscription}
-		<div class='personDetail'><span class='result-label'>{translate text="Tombstone Inscription" isPublicFacing=true} </span><div class='personDetailValue'>{$person->tombstoneInscription}</div></div>
+		<div class="full-record-tombstone-inscription personDetail"><span class='result-label'>{translate text="Tombstone Inscription" isPublicFacing=true} </span><div class='personDetailValue'>{$person->tombstoneInscription}</div></div>
 		{/if}
 		{/if}
 		{if $person->mortuaryName}
-		<div class='personDetail'><span class='result-label'>{translate text="Mortuary Name" isPublicFacing=true} </span><span class='personDetailValue'>{$person->mortuaryName}</span></div>
+		<div class='full-record-mortuary-name personDetail'><span class='result-label'>{translate text="Mortuary Name" isPublicFacing=true} </span><span class='personDetailValue'>{$person->mortuaryName}</span></div>
 		{/if}
 	{/if}
 	{if count($obituaries) > 0 || $userIsAdmin}
-		<h2 class="blockhead">{translate text="Obituaries" isPublicFacing=true}</h2>
+		<h2 class="full-record-obituaries blockhead">{translate text="Obituaries" isPublicFacing=true}</h2>
 		{foreach from=$obituaries item=obituary}
-			<div class="obituaryTitle">
+			<div class="full-record-obituary-title obituaryTitle">
 			{$obituary.source}{if !empty($obituary.sourcePage)} page {$obituary.sourcePage}{/if}{if !empty($obituary.formattedObitDate)} - {$obituary.formattedObitDate}{/if}
 			{if !empty($userIsAdmin)}
 				<div class="btn-toolbar">
@@ -139,13 +139,13 @@
 			{/if}
 			</div>
 			{if !empty($obituary.contents) && $obituary.picture}
-				<div class="obituaryText">{if $obituary.picture|escape}<a href='/files/original/{$obituary.picture|escape}'><img class='obitPicture' src='/files/medium/{$obituary.picture|escape}'></a>{/if}{$obituary.contents|escape}</div>
+				<div class="full-record-obituary-text obituaryText">{if $obituary.picture|escape}<a href='/files/original/{$obituary.picture|escape}'><img class='obitPicture' src='/files/medium/{$obituary.picture|escape}'></a>{/if}{$obituary.contents|escape}</div>
 				<div class="clearer"></div>
 			{elseif $obituary.contents}
-				<div class="obituaryText">{$obituary.contents|escape|replace:"\r":"<br>"}</div>
+				<div class="full-record-obituary-text obituaryText">{$obituary.contents|escape|replace:"\r":"<br>"}</div>
 				<div class="clearer"></div>
 			{elseif $obituary.picture}
-				<div class="obituaryPicture">{if $obituary.picture|escape}<a href='/files/original/{$obituary.picture|escape}'><img class='obitPicture' src='/files/medium/{$obituary.picture|escape}'></a>{/if}</div>
+				<div class="full-record-obituary-picture obituaryPicture">{if $obituary.picture|escape}<a href='/files/original/{$obituary.picture|escape}'><img class='obitPicture' src='/files/medium/{$obituary.picture|escape}'></a>{/if}</div>
 				<div class="clearer"></div>
 			{/if}
 
@@ -153,21 +153,21 @@
 
 	{/if}
 	{if $person->ledgerVolume || $person->ledgerYear || $person->ledgerEntry}
-		<h2 class="blockhead">{translate text="Ledger Information" isPublicFacing=true}</h2>
+		<h2 class="full-record-ledger-information blockhead">{translate text="Ledger Information" isPublicFacing=true}</h2>
 		{if $person->ledgerVolume}
-			<div class='personDetail'><span class='result-label'>{translate text="Volume" isPublicFacing=true}</span><span class='result-value-bold'>{$person->ledgerVolume}</span></div>
+			<div class='full-record-ledger-volume personDetail'><span class='result-label'>{translate text="Volume" isPublicFacing=true}</span><span class='result-value-bold'>{$person->ledgerVolume}</span></div>
 		{/if}
 		{if $person->ledgerYear}
-			<div class='personDetail'><span class='result-label'>{translate text="Year" isPublicFacing=true}</span><span class='personDetailValue'>{$person->ledgerYear}</span></div>
+			<div class='full-record-ledger-year personDetail'><span class='result-label'>{translate text="Year" isPublicFacing=true}</span><span class='personDetailValue'>{$person->ledgerYear}</span></div>
 		{/if}
 		{if $person->ledgerYear}
-			<div class='personDetail'><span class='result-label'>{translate text="Entry" isPublicFacing=true}</span><span class='personDetailValue'>{$person->ledgerEntry}</span></div>
+			<div class='full-record-ledger-entry personDetail'><span class='result-label'>{translate text="Entry" isPublicFacing=true}</span><span class='personDetailValue'>{$person->ledgerEntry}</span></div>
 		{/if}
 	{/if}
-	<h2 class="blockhead">{translate text="Comments" isPublicFacing=true}</h2>
+	<h2 class="full-record-comments blockhead">{translate text="Comments" isPublicFacing=true}</h2>
 	{if $person->comments}
-	<div class='personComments'>{$person->comments|escape}</div>
+	<div class='full-record-comments-content personComments'>{$person->comments|escape}</div>
 	{else}
-	<div class='personComments'>{translate text="No comments found." isPublicFacing=true}</div>
+	<div class='full-record-comments-content personComments'>{translate text="No comments found." isPublicFacing=true}</div>
 	{/if}
 {/strip}

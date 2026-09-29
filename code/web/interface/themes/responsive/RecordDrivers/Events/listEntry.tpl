@@ -1,5 +1,5 @@
 {strip}
-<div id="listEntry{$listEntryId}" class="resultsList listEntry" data-order="{$resultIndex}" data-list_entry_id="{$listEntryId}">
+<div id="listEntry{$listEntryId}" class="resultsList resultsList-events listEntry" data-order="{$resultIndex}" data-list_entry_id="{$listEntryId}">
 	<div class="row">
         {if !empty($listEditAllowed) && $printInterface === false}
 			<div class="selectTitle col-xs-12 col-sm-1">
@@ -19,7 +19,7 @@
 		<div class="{if empty($showCovers) && $printInterface === false}col-xs-9 col-sm-9 col-md-9 col-lg-10{elseif $listEditAllowed && $printInterface === false}col-xs-6 col-sm-6 col-md-6 col-lg-7{elseif $printInterface === true && $printEntryCovers === false}col-xs-12{elseif $printInterface === true && $printEntryCovers === true}col-xs-9 col-sm-9 col-md-9 col-lg-10{else}col-xs-6 col-sm-6 col-md-6 col-lg-8{/if}">
 			{* Title Row *}
 
-			<div class="row">
+			<div class="result-title-row row">
 				<div class="col-xs-12">
 					<span class="result-index">{$resultIndex})</span>&nbsp;
 					<a href="{$eventUrl}" class="result-title notranslate">
@@ -30,14 +30,14 @@
 
 			{* Description Section *}
             {if !empty($description) && $printInterface === false}
-				<div class="row visible-xs">
+				<div class="result-description-label row visible-xs">
 					<div class="result-label col-tn-3 col-xs-3">{translate text="Description" isPublicFacing=true}</div>
 					<div class="result-value col-tn-9 col-xs-9"><a id="descriptionLink{$id|escape}" href="#" onclick="$('#descriptionValue{$id|escape},#descriptionLink{$id|escape}').toggleClass('hidden-xs');return false;">{translate text="Click to view" isPublicFacing=true}</a></div>
 				</div>
             {/if}
 
             {if (!empty($description) && $printInterface === false) || ($printInterface === true && $printEntryDescription === true)}
-				<div class="row">
+				<div class="result-description-text row">
 					{* Hide in mobile view *}
 					<div class="result-value hidden-xs col-sm-8" id="descriptionValue{$id|escape}">
 						{$description|highlight|truncate_html:450:"..."}

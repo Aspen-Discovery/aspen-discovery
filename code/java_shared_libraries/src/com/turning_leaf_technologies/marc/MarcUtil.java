@@ -405,17 +405,21 @@ public class MarcUtil {
 	 * @return a string containing ALL subfields of ALL marc fields within the
 	 *         range indicated by the bound string arguments.
 	 */
-	public static String getAllSearchableFields(Record record, int lowerBound, int upperBound) {
+	public static String getAllSearchableFields(Record record, int lowerBound, int upperBound, Set<String> exclusions) {
 		StringBuilder buffer = new StringBuilder();
 		List<DataField> fields = record.getDataFields();
 		for (DataField field : fields) {
 			// Get all fields starting with the 100 and ending with the 839
 			// This will ignore any "code" fields and only use textual fields
-			int tag = localParseInt(field.getTag());
-			if ((tag >= lowerBound) && (tag < upperBound)) {
+			String tagStr = field.getTag();
+			int tag = localParseInt(tagStr);
+			if ((tag >= lowerBound) && (tag < upperBound) && !exclusions.contains(tagStr)) {
 				// Loop through subfields
 				List<Subfield> subfields = field.getSubfields();
 				for (Subfield subfield : subfields) {
+					String tagSubfieldKey = tagStr + subfield.getCode();
+					if (exclusions.contains(tagSubfieldKey))
+						continue;
 					if (buffer.length() > 0)
 						buffer.append(" ");
 					buffer.append(subfield.getData());

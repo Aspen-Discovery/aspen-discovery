@@ -15,7 +15,7 @@
 	<input type="hidden" name="searchId" id="searchId" value="{$searchId}">
 	<input type="hidden" name="facetName" id="facetName" value="{$facetName}">
 	<div class="form-group">
-		<label for="facetSearchTerm">{translate text="Search %1%" isPublicFacing=true 1=$facetTitlePlural}</label>
+		<label for="facetSearchTerm">{translate text="Search %1%" isPublicFacing=true 1=$facetTitlePlural translateParameters=true}</label>
 		<div class="input-group input-group-sm">
 			<input  type="text" name="facetSearchTerm" id="facetSearchTerm" class="form-control" onkeydown="AspenDiscovery.Searches.searchFacetValuesKeyDown(event)"/>
 			<span class="btn btn-sm btn-primary input-group-addon" onclick="return AspenDiscovery.Searches.searchFacetValues();">{translate text="Search" isPublicFacing=true}</span>

@@ -18,7 +18,7 @@ legend {
   width: 100%;
   padding: 0;
   margin-bottom: @line-height-computed;
-  font-size: (@font-size-base * 1.5);
+  font-size: calc(var(--aspen-base-font-size) * 1.5);
   line-height: inherit;
   color: @legend-color;
   border: 0;
@@ -354,7 +354,7 @@ input[type="checkbox"],
   // and other content below items
   .radio,
   .checkbox {
-    min-height: @line-height-computed + (@padding-base-vertical + 1);
+    min-height: ~"calc(@{line-height-computed} + @{padding-base-vertical} + 1px)";
   }
 
   // Make form groups behave like rows

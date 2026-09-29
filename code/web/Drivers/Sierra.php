@@ -436,7 +436,7 @@ class Sierra extends AbstractIlsDriver {
 				if ($titleAuthor !== false) {
 					$curHold->title = $titleAuthor['title'];
 					$curHold->author = $titleAuthor['author'];
-					$curHold->format = [];
+					$curHold->format = 'Unknown';
 				} else {
 					$curHold->title = 'Unknown';
 					$curHold->author = 'Unknown';

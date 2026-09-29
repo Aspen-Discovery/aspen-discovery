@@ -24,11 +24,11 @@
 					color: {$oAuthButtonTextColor};
 					border-color: {$oAuthButtonBackgroundColor}
 					">
-					{translate text="Sign in With %1%" 1=$oAuthCustomGatewayLabel isPublicFacing=true}
+					{translate text="Sign in With %1%" 1=$oAuthCustomGatewayLabel translateParameters=true isPublicFacing=true}
 				</a>
 			{else}
 				<a href="/init_oauth.php" class="btn btn-default btn-lg" style="background-color: {$oAuthButtonBackgroundColor}; color: {$oAuthButtonTextColor}">
-					{translate text="Sign in with %1%" 1=$oAuthCustomGatewayLabel isPublicFacing=true}
+					{translate text="Sign in with %1%" 1=$oAuthCustomGatewayLabel translateParameters=true isPublicFacing=true}
 				</a>
 			{/if}
 		{/if}
@@ -46,11 +46,11 @@
 				color: {$samlBtnTextColor};
 				border-color: {$samlBtnBgColor}
 				">
-				{translate text="Sign in With %1%" 1=$samlBtnLabel isPublicFacing=true}
+				{translate text="Sign in With %1%" 1=$samlBtnLabel translateParameters=true isPublicFacing=true}
 			</a>
 		{else}
 			<a href="/Authentication/SAML2?init" class="btn btn-default btn-lg" style="background-color: {$samlBtnBgColor}; color: {$samlBtnTextColor}">
-				{translate text="Sign in with %1%" 1=$samlBtnLabel isPublicFacing=true}
+				{translate text="Sign in with %1%" 1=$samlBtnLabel translateParameters=true isPublicFacing=true}
 			</a>
 		{/if}
 	{/if}

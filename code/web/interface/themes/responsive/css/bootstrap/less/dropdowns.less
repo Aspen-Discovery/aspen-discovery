@@ -61,6 +61,14 @@
     left: auto;
   }
 
+  // Crash-proof override for the divider utility math
+  .nav-divider(@color: #e5e5e5) {
+    height: 1px;
+    margin: ~"calc((@{line-height-computed} / 2) - 1px) 0";
+    overflow: hidden;
+    background-color: @color;
+  }
+
   // Dividers (basically an hr) within the dropdown
   .divider {
     .nav-divider(@dropdown-divider-bg);

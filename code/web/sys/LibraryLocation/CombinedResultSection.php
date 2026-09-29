@@ -115,15 +115,22 @@ abstract class CombinedResultSection extends DataObject {
 			require_once ROOT_DIR . '/sys/Ebsco/EBSCOhostSearchSetting.php';
 			$searchSettings = new EBSCOhostSearchSetting();
 			$filters = '';
+			$allFiltersSelected = true;
 			if ($library->ebscohostSearchSettingId > 0) {
 				$searchSettings->id = $library->ebscohostSearchSettingId;
 				if ($searchSettings->find(true)) {
 					foreach ($searchSettings->getDatabases() as $database) {
 						if ($database->allowSearching && $database->showInCombinedResults) {
 							$filters .= ('&filter[]=db:"' . $database->shortName . '"');
+						} else if ($database->searchByDefault) {
+							$allFiltersSelected = false;
 						}
 					}
 				}
+			}
+			//If everything is selected, we don't need to show the filters.
+			if ($allFiltersSelected) {
+				$filters = '';
 			}
 			return "/EBSCOhost/Results?lookfor=$searchTerm&searchSource=ebscohost$filters";
 		} elseif ($this->source == 'events') {

@@ -11,7 +11,9 @@ class CurlWrapper {
 	public $responseHeaders = [];
 	public $cookies = [];
 
-	public function __construct($userAgent = "") {
+	private $throttler = null;
+
+	public function __construct($userAgent = "", $requestInterval = -1) {
 		global $interface;
 		if ($interface != null) {
 			$aspenVersion = $interface->getVariable('aspenVersion');
@@ -47,6 +49,8 @@ class CurlWrapper {
 			CURLOPT_ENCODING => '',
 		];
 		$this->options = $default_options;
+		require_once ROOT_DIR . '/sys/Throttler.php';
+		$this->throttler = new Throttler($requestInterval);
 	}
 
 	public function __destruct() {
@@ -131,6 +135,7 @@ class CurlWrapper {
 	 * @return bool|string   The response from the web page if any
 	 */
 	public function curlGetPage(string $url) : bool|string {
+		$this->throttler->throttle($url);
 		$this->curl_connect($url);
 		curl_setopt($this->curl_connection, CURLOPT_CUSTOMREQUEST, null);
 		curl_setopt($this->curl_connection, CURLOPT_HTTPGET, true);
@@ -160,6 +165,7 @@ class CurlWrapper {
 	 * @return string|bool   The response from the web page if any
 	 */
 	public function curlPostPage(string $url, string|array $postParams, $curlOptions = null) : string|bool {
+		$this->throttler->throttle($url);
 		if (is_string($postParams)) {
 			$post_string = $postParams;
 		} else {
@@ -196,6 +202,7 @@ class CurlWrapper {
 	 * @return string   The response from the web page if any
 	 */
 	public function curlPostBodyData($url, $postParams, $jsonEncode = true) {
+		$this->throttler->throttle($url);
 		if ($jsonEncode) {
 			$post_string = json_encode($postParams);
 		} else {
@@ -217,6 +224,7 @@ class CurlWrapper {
 	}
 
 	public function curlSendPage(string $url, string $httpMethod, $body = null) {
+		$this->throttler->throttle($url);
 		$this->curl_connect($url);
 		curl_setopt($this->curl_connection, CURLOPT_CUSTOMREQUEST, null);
 		if ($httpMethod == 'GET') {

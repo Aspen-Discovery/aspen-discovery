@@ -1,12 +1,20 @@
 package org.aspen_discovery.reindexer;
 
 import com.turning_leaf_technologies.marc.MarcUtil;
+import org.marc4j.MarcException;
+import org.marc4j.MarcPermissiveStreamReader;
+import org.marc4j.MarcReader;
 import org.apache.logging.log4j.Logger;
 import org.marc4j.marc.*;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 class SymphonyRecordProcessor extends IlsRecordProcessor {
@@ -162,7 +170,85 @@ class SymphonyRecordProcessor extends IlsRecordProcessor {
 		itemInfo.setShelfLocationCode(subfieldData);
 	}
 
+	private Set<String> onOrderIds = null;
+
+	private void loadOnOrderIds() {
+		if (onOrderIds != null) return;
+		onOrderIds = new HashSet<>();
+		File ordersFileMarc = new File(settings.getMarcPath() + "/orders.mrc");
+		if (ordersFileMarc.exists()) {
+			try {
+				MarcReader reader = new MarcPermissiveStreamReader(new FileInputStream(ordersFileMarc), true, true);
+				while (reader.hasNext()) {
+					try {
+						org.marc4j.marc.Record marcRecord = reader.next();
+						String id = getPrimaryIdentifierFromOrderRecord(marcRecord);
+						if (id != null) {
+							onOrderIds.add(id);
+						}
+					} catch (MarcException me) {
+						logger.warn("Error processing on order record while loading on order ids", me);
+					}
+				}
+			} catch (Exception e) {
+				logger.error("Error loading on order ids", e);
+			}
+		}
+	}
+
+	private String getPrimaryIdentifierFromOrderRecord(org.marc4j.marc.Record marcRecord) {
+		List<VariableField> recordNumberFields = marcRecord.getVariableFields(settings.getRecordNumberTagInt());
+		String recordNumber = null;
+		for (VariableField curVariableField : recordNumberFields) {
+			if (curVariableField instanceof DataField) {
+				DataField curRecordNumberField = (DataField) curVariableField;
+				Subfield subfieldA = curRecordNumberField.getSubfield('a');
+				if (subfieldA != null && (settings.getRecordNumberPrefix().isEmpty() || subfieldA.getData().length() > settings.getRecordNumberPrefix().length())) {
+					if (subfieldA.getData().startsWith(settings.getRecordNumberPrefix())) {
+						recordNumber = subfieldA.getData().trim();
+						break;
+					}
+				}
+			} else {
+				ControlField curRecordNumberField = (ControlField) curVariableField;
+				recordNumber = curRecordNumberField.getData().trim();
+				break;
+			}
+		}
+		return recordNumber;
+	}
+
+
 	protected void loadOnOrderItems(AbstractGroupedWorkSolr groupedWork, RecordInfo recordInfo, org.marc4j.marc.Record record, boolean hasTangibleItems){
-		//On Order items for Symphony are currently handled with item records with On Order status
+		loadOnOrderIds();
+
+		String recordIdentifier = recordInfo.getRecordIdentifier();
+		if (onOrderIds.contains(recordIdentifier)) {
+			ItemInfo itemInfo = new ItemInfo();
+			itemInfo.setLocationCode("multi");
+			itemInfo.setItemIdentifier(recordIdentifier);
+			itemInfo.setNumCopies(1);
+			itemInfo.setIsEContent(false);
+			itemInfo.setIsOrderItem();
+			itemInfo.setCallNumber("ON ORDER");
+			itemInfo.setSortableCallNumber("ON ORDER");
+			itemInfo.setDetailedStatus("On Order");
+			Date tomorrow = new Date();
+			tomorrow.setTime(tomorrow.getTime() + 1000 * 60 * 60 * 24);
+			itemInfo.setDateAdded(tomorrow);
+			itemInfo.setShelfLocation("On Order");
+			itemInfo.setDetailedLocation("On Order");
+
+			recordInfo.addItem(itemInfo);
+			groupedWork.addPopularity(1);
+
+			if (recordInfo.getNumCopiesOnOrder() > 0 && !hasTangibleItems){
+				groupedWork.addKeywords("On Order");
+				groupedWork.addKeywords("Coming Soon");
+				if (groupedWork.isDebugEnabled()) {
+					groupedWork.addDebugMessage("Record " + recordIdentifier + " has " + recordInfo.getNumCopiesOnOrder() + " On Order items with no tangible items - this is an On Order only record (Symphony)", 2);
+				}
+			}
+		}
 	}
 }

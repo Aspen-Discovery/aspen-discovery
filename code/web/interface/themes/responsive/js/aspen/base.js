@@ -859,11 +859,13 @@ var AspenDiscovery = (function(){
 		updateDisplaySettings: function () {
 			var preferredLanguage = aspenJQ("#preferredLanguage option:selected").val();
 			var preferredTheme = aspenJQ("#preferredTheme option:selected").val();
+			var preferredTextSize = aspenJQ("#preferredTextSize option:selected").val();
 			var url = Globals.path + "/AJAX/JSON";
 			var params =  {
 				method : 'updateDisplaySettings',
 				preferredLanguage : preferredLanguage,
-				preferredTheme: preferredTheme
+				preferredTheme: preferredTheme,
+				preferredTextSize: preferredTextSize
 			};
 			$.getJSON(url, params,
 				function(data) {
@@ -1266,6 +1268,71 @@ jQuery.validator.addMethod("pinConfirmation", function (value, element) {
 	var pinToMatch = aspenJQ("#pin").val();
 	return value === pinToMatch;
 }, "PINs must match.");
+
+/**
+ * serverValidate is an alternative to jQuery validate's remote(). It owns 
+ * the fetch so it can handle AJAX request failures (remote() silently blocks
+ * form submission on failure);
+ * 
+ * Handles re-fires on each keystroke by aborting the previous request to prevent
+ * a slow earlier response from settling the field against a value the user has
+ * already replaced.
+*/
+const serverValidateCache = new WeakMap();
+
+$.validator.addMethod("serverValidate", function (value, element, param) {
+	if (this.optional(element)) {
+		return "dependency-mismatch";
+	}
+
+	const cached = serverValidateCache.get(element);
+	if (cached?.value === value) {
+		return cached.pending ? "pending" : cached.valid;
+	}
+	cached?.controller?.abort();
+
+	const controller = new AbortController();
+	const entry = {value: value, valid: false, pending: true, message: null, controller: controller};
+	serverValidateCache.set(element, entry);
+	this.startRequest(element);
+
+	const settle = (data) => {
+		entry.pending = false;
+		entry.valid = data.valid === true;
+		entry.message = data.message;
+		// guard the pending counter: stopRequest before element() so any redraw re-fire gets a clean startRequest
+		this.stopRequest(element, entry.valid);
+		this.element(element);
+	};
+
+	fetch(param.url, {
+		method: "post",
+		credentials: "same-origin",
+		body: new URLSearchParams({value: value}),
+		signal: controller.signal
+	})
+		.then((response) => {
+			if (!response.ok) {
+				throw new Error("Validation request failed with status " + response.status);
+			}
+			return response.json();
+		})
+		.then(settle)
+		.catch((error) => {
+			if (error.name === "AbortError") {
+				return;
+			}
+			settle({valid: false, message: param.errorMessage || Globals.requestFailedBody});
+		});
+
+	return "pending";
+}, function (params, element) {
+	const cached = serverValidateCache.get(element);
+	// jQuery Validate ($.validator) renders messages with .html(); -> escape.
+	const div = document.createElement("div");
+	div.textContent = cached?.message || Globals.validationInvalidValue;
+	return div.innerHTML;
+});
 
 if (!String.prototype.startsWith) {
 	Object.defineProperty(String.prototype, 'startsWith', {

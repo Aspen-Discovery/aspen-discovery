@@ -1,6 +1,6 @@
 {strip}
 {if count($appearsOnLists) > 0}
-	{if empty($isSearchResults)}<div class="row">{/if}
+	{if empty($isSearchResults)}<div class="full-record-related-lists row">{/if}
 		<div class="result-label col-sm-4 col-xs-12">
 			{if count($appearsOnLists) > 1}
 				{translate text="Appears on these lists" isPublicFacing=true}

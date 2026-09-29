@@ -179,8 +179,10 @@ class PalaceProjectDriver extends AbstractEContentDriver {
 								}
 
 								if ($holdAvailable) {
+									$hold->status = 'Ready For Pickup';
 									$holds['available'][$key] = $hold;
 								} else {
+									$hold->status = 'Pending';
 									$holds['unavailable'][$key] = $hold;
 								}
 							}

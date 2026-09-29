@@ -1,0 +1,12 @@
+Jira: DIS-2886
+Type: Bug
+Developer: Mark Noble (MDN)
+Contributing Org: Grove For Libraries
+Sponsor: Nashville Public Library
+GroveRelease: 26.09.00
+CommunityRelease: 26.10.00
+Component: Searching
+Description:
+  - Allow maxBooleanClauses to be overridden by solr.in.sh within solr.xml and update solr.xml for Solr 9. This prevents errors searching that appear as max boolean clauses being exceeded.
+New Settings:
+New Permissions:

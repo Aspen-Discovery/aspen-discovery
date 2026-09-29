@@ -8,6 +8,7 @@ class AspenLiDASelfCheckSetting extends DataObject {
 	public $isEnabled;
 	public $checkoutLocation;
 	public $barcodeEntryKeyboardType;
+	public $checkedoutOverrideLocations;
 
 	private $_locations;
 	private $_barcodeStyles;
@@ -84,6 +85,13 @@ class AspenLiDASelfCheckSetting extends DataObject {
 				'label' => 'Type of keyboard to use for barcode entry',
 				'description' => 'Choose numeric if barcodes only include numbers; alphanumeric if they may include letters',
 				'required' => false,
+			],
+			'checkedoutOverrideLocations' => [
+				'property' => 'checkedoutOverrideLocations',
+				'type' => 'text',
+				'label' => 'Checked-Out Override Locations',
+				'description' => 'List of locations to override and allow checkout if the item is already checked out. Can use regex, separated by pipes |',
+				'note' => 'Symphony only.',
 			],
 			'barcodeStyles' => [
 				'property' => 'barcodeStyles',
@@ -244,6 +252,20 @@ class AspenLiDASelfCheckSetting extends DataObject {
 		}
 
 		return false;
+	}
+
+	public function getCheckedOutOverrideLocations(string $locationId) : null|string {
+		$location = new Location();
+		$location->code = $locationId;
+		if ($location->find(true)) {
+			$scoSettings = new AspenLiDASelfCheckSetting();
+			$scoSettings->id = $location->lidaSelfCheckSettingId;
+			if ($scoSettings->find(true)) {
+				return $scoSettings->checkedoutOverrideLocations;
+			}
+		}
+
+		return null;
 	}
 
 	/** @noinspection PhpUnusedParameterInspection */

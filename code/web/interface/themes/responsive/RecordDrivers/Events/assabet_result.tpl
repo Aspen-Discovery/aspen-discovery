@@ -1,5 +1,5 @@
 {strip}
-<div id="assabetEventResult{$resultIndex|escape}" class="resultsList">
+<div id="assabetEventResult{$resultIndex|escape}" class="resultsList-events resultsList">
 	<div class="row">
 		{if !empty($showCovers)}
 			<div class="coversColumn col-xs-3 col-sm-3 col-md-3 col-lg-2 text-center" aria-hidden="true" role="presentation">

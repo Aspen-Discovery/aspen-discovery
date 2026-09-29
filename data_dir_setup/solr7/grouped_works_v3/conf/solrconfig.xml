@@ -350,7 +350,9 @@
 		  -->
 		<filterCache size="2048"
 		             initialSize="512"
-		             autowarmCount="4"/>
+		             autowarmCount="32"
+					 async="true"
+					/>
 
 		<!-- Query Result Cache
 
@@ -476,283 +478,399 @@
 		<!-- QuerySenderListener takes an array of NamedList and executes a
 			 local query request for each NamedList in sequence.
 		  -->
-		<listener event="newSearcher" class="solr.QuerySenderListener">
+		<listener name="new-searcher-warming"
+				  event="newSearcher"
+				  class="solr.QuerySenderListener">
 			<arr name="queries">
+				<!-- Warm facets on the parent document -->
 				<lst>
-					<!-- Use the normal search handler. -->
-					<str name="qt">/select</str>
-
-					<!-- Match all documents, then restrict the domain to valid parents. -->
-					<str name="q">title:dog</str>
-
-					<arr name="fq">
-						<str>recordtype:grouped_work</str>
-						<str><![CDATA[
-          {!parent which="recordtype:grouped_work" tag=child_filter}
-        ]]></str>
-					</arr>
-
-					<!-- Do not retrieve documents or run unrelated components. -->
+					<str name="q">*:*</str>
+					<str name="fq">recordtype:grouped_work</str>
+					<str name="fq">{!parent which="recordtype:grouped_work" tag=child_filter}(availability_toggle:global AND scope:${aspen.warming.scope:main})</str>
 					<str name="rows">0</str>
-					<str name="start">0</str>
-					<str name="fl">id</str>
 					<str name="spellcheck">false</str>
-					<str name="debugQuery">false</str>
-					<str name="hl">false</str>
-					<str name="stats">false</str>
-					<str name="terms">false</str>
-					<str name="mlt">false</str>
-					<str name="indent">false</str>
-
-					<!-- Warm every child-domain facet using the optimized block-count path. -->
+					<str name="timeAllowed">300000</str>
+					<str name="json.facet"><![CDATA[
+            {
+  "authorStr": {
+    "type": "terms",
+    "field": "authorStr",
+    "limit": 30,
+    "mincount": 1
+  },
+  "topic_facet": {
+    "type": "terms",
+    "field": "topic_facet",
+    "limit": 30,
+    "mincount": 1
+  },
+  "publishDate": {
+    "type": "terms",
+    "field": "publishDate",
+    "limit": 30,
+    "mincount": 1
+  },
+  "publishDateSort": {
+    "type": "terms",
+    "field": "publishDateSort",
+    "limit": 30,
+    "mincount": 1
+  },
+  "language": {
+    "type": "terms",
+    "field": "language",
+    "limit": 30,
+    "mincount": 1
+  },
+  "translation": {
+    "type": "terms",
+    "field": "translation",
+    "limit": 30,
+    "mincount": 1
+  },
+  "genre_facet": {
+    "type": "terms",
+    "field": "genre_facet",
+    "limit": 30,
+    "mincount": 1
+  },
+  "accelerated_reader_reading_level": {
+    "type": "terms",
+    "field": "accelerated_reader_reading_level",
+    "limit": 30,
+    "mincount": 1
+  },
+  "lexile_score": {
+    "type": "terms",
+    "field": "lexile_score",
+    "limit": 30,
+    "mincount": 1
+  },
+  "awards_facet": {
+    "type": "terms",
+    "field": "awards_facet",
+    "limit": 30,
+    "mincount": 1
+  }
+}
+					]]></str>
+				</lst>
+				<!-- Warm facets on the child document -->
+				<lst>
+					<str name="qt">/select</str>
+					<str name="q">*:*</str>
+					<str name="fq">recordtype:grouped_work</str>
+					<str name="fq"><![CDATA[
+						{!parent which="recordtype:grouped_work" tag=child_filter}
+						(+recordtype:record_scoping
+						+availability_toggle:global
+						+scope:${aspen.warming.scope:main})
+						]]></str>
+					<str name="rows">0</str>
+					<str name="spellcheck">false</str>
+					<str name="timeAllowed">300000</str>
 					<str name="json.facet"><![CDATA[
 {
-  "format_category": {
-    "type": "terms",
-    "field": "format_category",
-    "limit": -1,
-    "mincount": 1,
+  "child_facets": {
+    "type": "query",
+    "q": "scope:${aspen.warming.scope:main}",
     "domain": {
+      "excludeTags": "child_filter",
       "blockChildren": "recordtype:grouped_work",
-      "excludeTags": "child_filter"
+      "filter": [
+        "recordtype:record_scoping"
+      ]
     },
     "facet": {
-      "parent_count": "uniqueBlock(_root_)"
-    }
-  },
-  "availability_toggle": {
-    "type": "terms",
-    "field": "availability_toggle",
-    "limit": -1,
-    "mincount": 1,
-    "domain": {
-      "blockChildren": "recordtype:grouped_work",
-      "excludeTags": "child_filter"
-    },
-    "facet": {
-      "parent_count": "uniqueBlock(_root_)"
-    }
-  },
-  "format": {
-    "type": "terms",
-    "field": "format",
-    "limit": -1,
-    "mincount": 1,
-    "domain": {
-      "blockChildren": "recordtype:grouped_work",
-      "excludeTags": "child_filter"
-    },
-    "facet": {
-      "parent_count": "uniqueBlock(_root_)"
-    }
-  },
-  "available_at": {
-    "type": "terms",
-    "field": "available_at",
-    "limit": -1,
-    "mincount": 1,
-    "domain": {
-      "blockChildren": "recordtype:grouped_work",
-      "excludeTags": "child_filter"
-    },
-    "facet": {
-      "parent_count": "uniqueBlock(_root_)"
-    }
-  },
-  "local_time_since_added": {
-    "type": "terms",
-    "field": "local_time_since_added",
-    "limit": -1,
-    "mincount": 1,
-    "domain": {
-      "blockChildren": "recordtype:grouped_work",
-      "excludeTags": "child_filter"
-    },
-    "facet": {
-      "parent_count": "uniqueBlock(_root_)"
-    }
-  },
-  "collection": {
-    "type": "terms",
-    "field": "collection",
-    "limit": -1,
-    "mincount": 1,
-    "domain": {
-      "blockChildren": "recordtype:grouped_work",
-      "excludeTags": "child_filter"
-    },
-    "facet": {
-      "parent_count": "uniqueBlock(_root_)"
-    }
-  },
-  "econtent_source": {
-    "type": "terms",
-    "field": "econtent_source",
-    "limit": -1,
-    "mincount": 1,
-    "domain": {
-      "blockChildren": "recordtype:grouped_work",
-      "excludeTags": "child_filter"
-    },
-    "facet": {
-      "parent_count": "uniqueBlock(_root_)"
-    }
-  },
-  "owning_location": {
-    "type": "terms",
-    "field": "owning_location",
-    "limit": -1,
-    "mincount": 1,
-    "domain": {
-      "blockChildren": "recordtype:grouped_work",
-      "excludeTags": "child_filter"
-    },
-    "facet": {
-      "parent_count": "uniqueBlock(_root_)"
+      "child_filter_group_1": {
+        "type": "query",
+        "q": "availability_toggle:global",
+        "facet": {
+          "format_category": {
+            "type": "terms",
+            "field": "format_category",
+            "limit": -1,
+            "mincount": 1,
+            "facet": {
+              "parent_count": "uniqueBlock(_root_)"
+            }
+          },
+          "target_audience": {
+            "type": "terms",
+            "field": "target_audience",
+            "limit": -1,
+            "mincount": 1,
+            "facet": {
+              "parent_count": "uniqueBlock(_root_)"
+            }
+          },
+          "available_at": {
+            "type": "terms",
+            "field": "available_at",
+            "limit": -1,
+            "mincount": 1,
+            "facet": {
+              "parent_count": "uniqueBlock(_root_)"
+            }
+          },
+          "collection": {
+            "type": "terms",
+            "field": "collection",
+            "limit": -1,
+            "mincount": 1,
+            "facet": {
+              "parent_count": "uniqueBlock(_root_)"
+            }
+          },
+          "econtent_source": {
+            "type": "terms",
+            "field": "econtent_source",
+            "limit": -1,
+            "mincount": 1,
+            "facet": {
+              "parent_count": "uniqueBlock(_root_)"
+            }
+          },
+          "format": {
+            "type": "terms",
+            "field": "format",
+            "limit": -1,
+            "mincount": 1,
+            "facet": {
+              "parent_count": "uniqueBlock(_root_)"
+            }
+          },
+          "local_time_since_added": {
+            "type": "terms",
+            "field": "local_time_since_added",
+            "limit": -1,
+            "mincount": 1,
+            "facet": {
+              "parent_count": "uniqueBlock(_root_)"
+            }
+          },
+          "target_audience_full": {
+            "type": "terms",
+            "field": "target_audience_full",
+            "limit": -1,
+            "mincount": 1,
+            "facet": {
+              "parent_count": "uniqueBlock(_root_)"
+            }
+          }
+        }
+      },
+      "availability_toggle": {
+        "type": "terms",
+        "field": "availability_toggle",
+        "limit": -1,
+        "mincount": 1,
+        "method": "enum",
+        "facet": {
+          "parent_count": "uniqueBlock(_root_)"
+        }
+      }
     }
   }
 }
-      ]]></str>
+            ]]></str>
 				</lst>
 			</arr>
 		</listener>
 		<listener event="firstSearcher" class="solr.QuerySenderListener">
 			<arr name="queries">
+				<!-- Warm facets on the parent document -->
 				<lst>
-					<!-- Use the normal search handler. -->
-					<str name="qt">/select</str>
-
-					<!-- Match all documents, then restrict the domain to valid parents. -->
-					<str name="q">title:dog</str>
-
-					<arr name="fq">
-						<str>recordtype:grouped_work</str>
-						<str><![CDATA[
-          {!parent which="recordtype:grouped_work" tag=child_filter}
-        ]]></str>
-					</arr>
-
-					<!-- Do not retrieve documents or run unrelated components. -->
+					<str name="q">*:*</str>
+					<str name="fq">recordtype:grouped_work</str>
+					<str name="fq">{!parent which="recordtype:grouped_work" tag=child_filter}(availability_toggle:global AND scope:${aspen.warming.scope:main})</str>
 					<str name="rows">0</str>
-					<str name="start">0</str>
-					<str name="fl">id</str>
 					<str name="spellcheck">false</str>
-					<str name="debugQuery">false</str>
-					<str name="hl">false</str>
-					<str name="stats">false</str>
-					<str name="terms">false</str>
-					<str name="mlt">false</str>
-					<str name="indent">false</str>
-
-					<!-- Warm every child-domain facet using the optimized block-count path. -->
+					<str name="timeAllowed">300000</str>
+					<str name="json.facet"><![CDATA[
+            {
+  "authorStr": {
+    "type": "terms",
+    "field": "authorStr",
+    "limit": 30,
+    "mincount": 1
+  },
+  "topic_facet": {
+    "type": "terms",
+    "field": "topic_facet",
+    "limit": 30,
+    "mincount": 1
+  },
+  "publishDate": {
+    "type": "terms",
+    "field": "publishDate",
+    "limit": 30,
+    "mincount": 1
+  },
+  "publishDateSort": {
+    "type": "terms",
+    "field": "publishDateSort",
+    "limit": 30,
+    "mincount": 1
+  },
+  "language": {
+    "type": "terms",
+    "field": "language",
+    "limit": 30,
+    "mincount": 1
+  },
+  "translation": {
+    "type": "terms",
+    "field": "translation",
+    "limit": 30,
+    "mincount": 1
+  },
+  "genre_facet": {
+    "type": "terms",
+    "field": "genre_facet",
+    "limit": 30,
+    "mincount": 1
+  },
+  "accelerated_reader_reading_level": {
+    "type": "terms",
+    "field": "accelerated_reader_reading_level",
+    "limit": 30,
+    "mincount": 1
+  },
+  "lexile_score": {
+    "type": "terms",
+    "field": "lexile_score",
+    "limit": 30,
+    "mincount": 1
+  },
+  "awards_facet": {
+    "type": "terms",
+    "field": "awards_facet",
+    "limit": 30,
+    "mincount": 1
+  }
+}
+					]]></str>
+				</lst>
+				<!-- Warm facets on the child document -->
+				<lst>
+					<str name="qt">/select</str>
+					<str name="q">*:*</str>
+					<str name="fq">recordtype:grouped_work</str>
+					<str name="fq"><![CDATA[
+						{!parent which="recordtype:grouped_work" tag=child_filter}
+						(+recordtype:record_scoping
+						+availability_toggle:global
+						+scope:${aspen.warming.scope:main})
+						]]></str>
+					<str name="rows">0</str>
+					<str name="spellcheck">false</str>
+					<str name="timeAllowed">300000</str>
 					<str name="json.facet"><![CDATA[
 {
-  "format_category": {
-    "type": "terms",
-    "field": "format_category",
-    "limit": -1,
-    "mincount": 1,
+  "child_facets": {
+    "type": "query",
+    "q": "scope:${aspen.warming.scope:main}",
     "domain": {
+      "excludeTags": "child_filter",
       "blockChildren": "recordtype:grouped_work",
-      "excludeTags": "child_filter"
+      "filter": [
+        "recordtype:record_scoping"
+      ]
     },
     "facet": {
-      "parent_count": "uniqueBlock(_root_)"
-    }
-  },
-  "availability_toggle": {
-    "type": "terms",
-    "field": "availability_toggle",
-    "limit": -1,
-    "mincount": 1,
-    "domain": {
-      "blockChildren": "recordtype:grouped_work",
-      "excludeTags": "child_filter"
-    },
-    "facet": {
-      "parent_count": "uniqueBlock(_root_)"
-    }
-  },
-  "format": {
-    "type": "terms",
-    "field": "format",
-    "limit": -1,
-    "mincount": 1,
-    "domain": {
-      "blockChildren": "recordtype:grouped_work",
-      "excludeTags": "child_filter"
-    },
-    "facet": {
-      "parent_count": "uniqueBlock(_root_)"
-    }
-  },
-  "available_at": {
-    "type": "terms",
-    "field": "available_at",
-    "limit": -1,
-    "mincount": 1,
-    "domain": {
-      "blockChildren": "recordtype:grouped_work",
-      "excludeTags": "child_filter"
-    },
-    "facet": {
-      "parent_count": "uniqueBlock(_root_)"
-    }
-  },
-  "local_time_since_added": {
-    "type": "terms",
-    "field": "local_time_since_added",
-    "limit": -1,
-    "mincount": 1,
-    "domain": {
-      "blockChildren": "recordtype:grouped_work",
-      "excludeTags": "child_filter"
-    },
-    "facet": {
-      "parent_count": "uniqueBlock(_root_)"
-    }
-  },
-  "collection": {
-    "type": "terms",
-    "field": "collection",
-    "limit": -1,
-    "mincount": 1,
-    "domain": {
-      "blockChildren": "recordtype:grouped_work",
-      "excludeTags": "child_filter"
-    },
-    "facet": {
-      "parent_count": "uniqueBlock(_root_)"
-    }
-  },
-  "econtent_source": {
-    "type": "terms",
-    "field": "econtent_source",
-    "limit": -1,
-    "mincount": 1,
-    "domain": {
-      "blockChildren": "recordtype:grouped_work",
-      "excludeTags": "child_filter"
-    },
-    "facet": {
-      "parent_count": "uniqueBlock(_root_)"
-    }
-  },
-  "owning_location": {
-    "type": "terms",
-    "field": "owning_location",
-    "limit": -1,
-    "mincount": 1,
-    "domain": {
-      "blockChildren": "recordtype:grouped_work",
-      "excludeTags": "child_filter"
-    },
-    "facet": {
-      "parent_count": "uniqueBlock(_root_)"
+      "child_filter_group_1": {
+        "type": "query",
+        "q": "availability_toggle:global",
+        "facet": {
+          "format_category": {
+            "type": "terms",
+            "field": "format_category",
+            "limit": -1,
+            "mincount": 1,
+            "facet": {
+              "parent_count": "uniqueBlock(_root_)"
+            }
+          },
+          "target_audience": {
+            "type": "terms",
+            "field": "target_audience",
+            "limit": -1,
+            "mincount": 1,
+            "facet": {
+              "parent_count": "uniqueBlock(_root_)"
+            }
+          },
+          "available_at": {
+            "type": "terms",
+            "field": "available_at",
+            "limit": -1,
+            "mincount": 1,
+            "facet": {
+              "parent_count": "uniqueBlock(_root_)"
+            }
+          },
+          "collection": {
+            "type": "terms",
+            "field": "collection",
+            "limit": -1,
+            "mincount": 1,
+            "facet": {
+              "parent_count": "uniqueBlock(_root_)"
+            }
+          },
+          "econtent_source": {
+            "type": "terms",
+            "field": "econtent_source",
+            "limit": -1,
+            "mincount": 1,
+            "facet": {
+              "parent_count": "uniqueBlock(_root_)"
+            }
+          },
+          "format": {
+            "type": "terms",
+            "field": "format",
+            "limit": -1,
+            "mincount": 1,
+            "facet": {
+              "parent_count": "uniqueBlock(_root_)"
+            }
+          },
+          "local_time_since_added": {
+            "type": "terms",
+            "field": "local_time_since_added",
+            "limit": -1,
+            "mincount": 1,
+            "facet": {
+              "parent_count": "uniqueBlock(_root_)"
+            }
+          },
+          "target_audience_full": {
+            "type": "terms",
+            "field": "target_audience_full",
+            "limit": -1,
+            "mincount": 1,
+            "facet": {
+              "parent_count": "uniqueBlock(_root_)"
+            }
+          }
+        }
+      },
+      "availability_toggle": {
+        "type": "terms",
+        "field": "availability_toggle",
+        "limit": -1,
+        "mincount": 1,
+        "method": "enum",
+        "facet": {
+          "parent_count": "uniqueBlock(_root_)"
+        }
+      }
     }
   }
 }
-      ]]></str>
+            ]]></str>
 				</lst>
 			</arr>
 		</listener>

@@ -39,7 +39,7 @@
 			</div>
 		</div>
 	{else}
-		<div class="col-xs-12 formatDisplayHorizontal" id="relatedManfiestations{$summId|escape}" style="margin-top: 3px;margin-bottom: 5px;">
+		<div class="full-record-related-manifestations col-xs-12 formatDisplayHorizontal" id="relatedManfiestations{$summId|escape}" style="margin-top: 3px;margin-bottom: 5px;">
 			<div class="horizontalSliders"><div class="row horizontalFormatSelector">
 				<div class="col-xs-12">
 					<div class="slider-container" role="region" id="slider-{$summId|escape}">

@@ -58,6 +58,7 @@ public class ItemInfo{
 	private DataField marcField;
 	private String barcode;
 	private String note;
+	private String targetAudience;
 
 	public void setRecordInfo(RecordInfo recordInfo) {
 		this.recordInfo = recordInfo;
@@ -196,6 +197,14 @@ public class ItemInfo{
 
 	void setSubFormats(String subFormats){
 		this.subFormat = subFormats;
+	}
+
+	public void setTargetAudience(String targetAudience) {
+		this.targetAudience = targetAudience;
+	}
+
+	public String getTargetAudience() {
+		return targetAudience;
 	}
 
 	int getNumCopies() {
@@ -563,6 +572,7 @@ public class ItemInfo{
 		locationOwnedNames = new HashSet<>();
 		libraryOwnedNames = new HashSet<>();
 		ArrayList<ScopingInfo> scopes = new ArrayList<>(scopingInfo.values());
+		scopes.sort(Comparator.comparingLong(scope -> scope.getScope().getId()));
 		for (ScopingInfo scope : scopes){
 			Scope curScope = scope.getScope();
 			if (scope.isLocallyOwned()){

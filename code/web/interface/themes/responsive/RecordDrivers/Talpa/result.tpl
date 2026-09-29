@@ -1,5 +1,5 @@
 {strip}
-	<div id="groupedRecord{$summId|escape}" class="resultsList">
+	<div id="groupedRecord{$summId|escape}" class="resultsList-talpa resultsList">
 		{if isset($summId)}
 			<a id="record{$summId|escape}"></a>
 		{/if}
@@ -29,7 +29,7 @@
 				<div class="row">
 {*					 Title Row*}
 
-					<div class="col-xs-12">
+					<div class="result-title-row col-xs-12">
 						<h2 style="margin:0;font-size:inherit;"><span class="result-index">{$resultIndex})</span>&nbsp;
 							{if !$talpaResult}
 								<a href="{$summUrl}" class="result-title notranslate" aria-label="{$summTitle|removeTrailingPunctuation|escapeCSS} {if !empty($summSubTitle)}{if $summSubTitle|removeTrailingPunctuation} {$summSubTitle|removeTrailingPunctuation|highlight|escapeCSS|truncate:180:'...'}{/if}{/if}">
@@ -56,8 +56,8 @@
 {*                  Grouped Work Implementation *}
 					{if !empty($summAuthor) }
 
-							<div class="result-label col-sm-4 col-xs-12">{translate text="Author" isPublicFacing=true} </div>
-							<div class="result-value col-sm-8 col-xs-12 notranslate">
+							<div class="result-author result-label col-sm-4 col-xs-12">{translate text="Author" isPublicFacing=true} </div>
+							<div class="result-author result-value col-sm-8 col-xs-12 notranslate">
 								{if is_array($summAuthor)}
 									{foreach from=$summAuthor item=author}
 										{if !$talpaResult}
@@ -82,7 +82,7 @@
 {*                  Series Grouped Work Implementation *}
 						{if !empty($showSeries) && !$talpaResult}
 							{if $summSeries}
-								<div class="series{$summISBN}">
+								<div class="result-series series{$summISBN}">
 									<div class="result-label col-sm-4 col-xs-12">{translate text="Series" isPublicFacing=true} </div>
 									<div class="result-value col-sm-8 col-xs-12">
 										{assign var=seriesLimit value=$numSeriesToShowBeforeMore+1}
@@ -118,10 +118,10 @@
 						{if !empty($showPublisher) && $showPublisher && !$talpaResult}
 							{if $alwaysShowSearchResultsMainDetails || $summPublisher}
 
-								<div class="result-label col-sm-4 col-xs-12">{translate text="Publisher" isPublicFacing=true} </div>
-								<div class="result-value col-sm-8 col-xs-12">
+								<div class="result-publisher result-label col-sm-4 col-xs-12">{translate text="Publisher" isPublicFacing=true} </div>
+								<div class="result-publisher result-value col-sm-8 col-xs-12">
 									{if !empty($summPublisher)}
-										{$summPublisher}
+										<a href='/Search/Results?filter[]=publisherStr:"{$summPublisher|escape:"url"}"'>{$summPublisher|highlight}</a>
 									{elseif $alwaysShowSearchResultsMainDetails}
 										{translate text="Not Supplied" isPublicFacing=true}
 									{/if}
@@ -133,8 +133,8 @@
 						{if !empty($showPublicationDate) && $showPublicationDate}
 							{if $summPubDate}
 
-								<div class="result-label col-sm-4 col-xs-12">{translate text="Publication Date" isPublicFacing=true} </div>
-								<div class="result-value col-sm-8 col-xs-12">
+								<div class="result-publication-date result-label col-sm-4 col-xs-12">{translate text="Publication Date" isPublicFacing=true} </div>
+								<div class="result-publication-date result-value col-sm-8 col-xs-12">
 									{if !empty($summPubDate)}
 										{$summPubDate|escape}
 									{/if}
@@ -146,8 +146,8 @@
 
 						{if !empty($showPlaceOfPublication) && $showPlaceOfPublication && !$talpaResult}
 							{if $alwaysShowSearchResultsMainDetails || $summPlaceOfPublication}
-								<div class="result-label col-sm-4 col-xs-12">{translate text="Publication Places" isPublicFacing=true} </div>
-								<div class="result-value col-sm-8 col-xs-12">
+								<div class="result-place-of-publication result-label col-sm-4 col-xs-12">{translate text="Publication Places" isPublicFacing=true} </div>
+								<div class="result-place-of-publication result-value col-sm-8 col-xs-12">
 									{if !empty($summPlaceOfPublication)}
 										{$summPlaceOfPublication|escape}
 									{elseif $alwaysShowSearchResultsMainDetails}
@@ -161,8 +161,8 @@
 						{if !empty($showEditions)}
 							{if $alwaysShowSearchResultsMainDetails || $summEdition && !$talpaResult}
 
-								<div class="result-label col-sm-4 col-xs-12">{translate text="Edition" isPublicFacing=true} </div>
-								<div class="result-value col-sm-8 col-xs-12">
+								<div class="result-edition result-label col-sm-4 col-xs-12">{translate text="Edition" isPublicFacing=true} </div>
+								<div class="result-edition result-value col-sm-8 col-xs-12">
 									{if !empty($summEdition)}
 										{$summEdition}
 									{elseif $alwaysShowSearchResultsMainDetails}
@@ -176,8 +176,8 @@
 
 						{if !empty($showArInfo) && !empty($summArInfo) && !$talpaResult}
 
-							<div class="result-label col-sm-4 col-xs-12">{translate text='Accelerated Reader' isPublicFacing=true} </div>
-							<div class="result-value col-sm-8 col-xs-12">
+							<div class="result-accelerated-reader result-label col-sm-4 col-xs-12">{translate text='Accelerated Reader' isPublicFacing=true} </div>
+							<div class="result-accelerated-reader result-value col-sm-8 col-xs-12">
 								{$summArInfo}
 							</div>
 
@@ -185,8 +185,8 @@
 
 						{if !empty($showLexileInfo) && !empty($summLexileInfo) && !$talpaResult}
 
-							<div class="result-label col-sm-4 col-xs-12">{translate text='Lexile measure' isPublicFacing=true} </div>
-							<div class="result-value col-sm-8 col-xs-12">
+							<div class="result-lexile result-label col-sm-4 col-xs-12">{translate text='Lexile measure' isPublicFacing=true} </div>
+							<div class="result-lexile result-value col-sm-8 col-xs-12">
 								{$summLexileInfo}
 							</div>
 
@@ -194,8 +194,8 @@
 
 						{if !empty($showFountasPinnell) && !empty($summFountasPinnell) && !$talpaResult}
 
-							<div class="result-label col-sm-4 col-xs-12">{translate text='Fountas &amp; Pinnell' isPublicFacing=true} </div>
-							<div class="result-value col-sm-8 col-xs-12">
+							<div class="result-fountas-pinnell result-label col-sm-4 col-xs-12">{translate text='Fountas &amp; Pinnell' isPublicFacing=true} </div>
+							<div class="result-fountas-pinnell result-value col-sm-8 col-xs-12">
 								{$summFountasPinnell}
 							</div>
 
@@ -204,8 +204,8 @@
 						{if !empty($showPhysicalDescriptions)}
 							{if ($alwaysShowSearchResultsMainDetails || $summPhysicalDesc) && !$talpaResult}
 
-								<div class="result-label col-sm-4 col-xs-12">{translate text='Physical Desc' isPublicFacing=true} </div>
-								<div class="result-value col-sm-8 col-xs-12">
+								<div class="result-physical-description result-label col-sm-4 col-xs-12">{translate text='Physical Desc' isPublicFacing=true} </div>
+								<div class="result-physical-description result-value col-sm-8 col-xs-12">
 									{if !empty($summPhysicalDesc)}
 										{$summPhysicalDesc}
 									{elseif $alwaysShowSearchResultsMainDetails}
@@ -219,8 +219,8 @@
 
 						{if !empty($showLanguages) && !empty($summLanguage) && !$talpaResult}
 
-							<div class="result-label col-sm-4 col-xs-12">{translate text="Language" isPublicFacing=true} </div>
-							<div class="result-value col-sm-8 col-xs-12">
+							<div class="result-language result-label col-sm-4 col-xs-12">{translate text="Language" isPublicFacing=true} </div>
+							<div class="result-language result-value col-sm-8 col-xs-12">
 								{if is_array($summLanguage)}
 									{implode subject=$summLanguage glue=', ' translate=true isPublicFacing=true isMetadata=true}
 								{else}
@@ -235,14 +235,14 @@
 							{if empty($viewingCombinedResults)}
 								{* Description Section *}
 								{if !empty($summDescription)}
-									<div class="visible-xs">
+									<div class="result-description-label visible-xs">
 										<div class="result-label col-sm-4 col-xs-12">{translate text="Description" isPublicFacing=true}</div>
 										<div class="result-value col-sm-8 col-xs-12"><a id="descriptionLink{$summId|escape}" href="#" onclick="$('#descriptionValue{$summId|escape},#descriptionLink{$summId|escape}').toggleClass('hidden-xs');return false;">{translate text="Read Description" isPublicFacing=true}</a></div>
 									</div>
 
 									{* Mobile Description *}
 									{* Hide in mobile view *}
-									<div class="hidden-xs result-value col-sm-12" id="descriptionValue{$summId|escape}">
+									<div class="result-description-text hidden-xs result-value col-sm-12" id="descriptionValue{$summId|escape}">
 										{$summDescription|highlight|truncate_html:450:"..."}
 									</div>
 								{/if}
@@ -259,26 +259,26 @@
 				{if $talpaResult}
 
 					{* Format *}
-					<div class="result-label col-sm-4 col-xs-12">{translate text="Format" isPublicFacing=true} </div>
-					<div class="result-value col-sm-8 col-xs-12"> {$summFormats}</div>
+					<div class="result-format result-label col-sm-4 col-xs-12">{translate text="Format" isPublicFacing=true} </div>
+					<div class="result-format result-value col-sm-8 col-xs-12"> {$summFormats}</div>
 
 
 					{* Summary *}
-					<div class="result-label col-sm-4 col-xs-12">{translate text="Summary" isPublicFacing=true} </div>
-					<div class="result-value col-sm-8 col-xs-12 talpa_list_summary talpa_summary" data-isbn="{$talpaIsbn}"></div>
+					<div class="result-summary result-label col-sm-4 col-xs-12">{translate text="Summary" isPublicFacing=true} </div>
+					<div class="result-summary result-value col-sm-8 col-xs-12 talpa_list_summary talpa_summary" data-isbn="{$talpaIsbn}"></div>
 
 
 					{if $displayMaterialsRequest && empty($offline)}
 						{if $materialRequestType == 1}
-							<div class="materialsRequestLink result-value col-sm-8 col-xs-12" style="margin-top: 10px;">
+							<div class="result-materials-request materialsRequestLink result-value col-sm-8 col-xs-12" style="margin-top: 10px;">
 								<p><a href="/MaterialsRequest/NewRequest?talpaOther=1&lookfor={$summTitle}&searchIndex={$searchIndex}&author={$summAuthor}&publicationYear={$summPubDate}" onclick="return AspenDiscovery.Account.followLinkIfLoggedIn(this);" class="btn btn-sm btn-default">{translate text='Suggest for purchase' isPublicFacing=true}</a></p>
 							</div>
 						{elseif $materialRequestType == 2}
-							<div class="materialsRequestLink result-value col-sm-8 col-xs-12" style="margin-top: 10px;">
+							<div class="result-materials-request materialsRequestLink result-value col-sm-8 col-xs-12" style="margin-top: 10px;">
 								<p> <a href="/MaterialsRequest/NewRequestIls?lookfor={$summTitle}&author={$summAuthor}&isbn={$talpaIsbn}&talpaResult=1" onclick="return AspenDiscovery.Account.followLinkIfLoggedIn(this);" class="btn btn-sm btn-default">{translate text='Suggest for purchase' isPublicFacing=true}</a></p>
 							</div>
 						{elseif $materialRequestType == 3}
-							<div class="materialsRequestLink result-value col-sm-8 col-xs-12" style="margin-top: 10px;">
+							<div class="result-materials-request materialsRequestLink result-value col-sm-8 col-xs-12" style="margin-top: 10px;">
 								<p><a href="{$externalMaterialsRequestUrl}" class="btn btn-sm btn-default">{translate text='Suggest for purchase' isPublicFacing=true}</a></p>
 							</div>
 						{/if}

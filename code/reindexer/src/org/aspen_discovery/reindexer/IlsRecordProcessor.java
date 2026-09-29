@@ -321,7 +321,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				primaryFormatCategory = "Unknown";
 				//logger.info("No primary format for " + recordInfo.getRecordIdentifier() + " found setting to unknown to load standard marc data");
 			}
-			updateGroupedWorkSolrDataBasedOnStandardMarcData(groupedWork, record, recordInfo.getRelatedItems(), identifier, primaryFormat, primaryFormatCategory, firstParentId != null);
+			updateGroupedWorkSolrDataBasedOnStandardMarcData(groupedWork, record, recordInfo, recordInfo.getRelatedItems(), identifier, primaryFormat, primaryFormatCategory, firstParentId != null);
 
 			//Special processing for ILS Records
 			String fullDescription = Util.getCRSeparatedString(MarcUtil.getFieldList(record, "520ac"));
@@ -671,7 +671,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		return true;
 	}
 
-	private void loadScopeInfoForOrderItem(AbstractGroupedWorkSolr groupedWork, String location, String format, TreeSet<String> audiences, String audiencesAsString, ItemInfo itemInfo, org.marc4j.marc.Record record) {
+	private void loadScopeInfoForOrderItem(AbstractGroupedWorkSolr groupedWork, String location, String format, HashSet<String> audiences, String audiencesAsString, ItemInfo itemInfo, org.marc4j.marc.Record record) {
 		//Shelf Location also include the name of the ordering branch if possible
 		boolean hasLocationBasedShelfLocation = false;
 		boolean hasSystemBasedShelfLocation = false;
@@ -1099,7 +1099,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 	}
 
-	private void loadScopeInfoForPrintIlsItem(AbstractGroupedWorkSolr groupedWork, RecordInfo recordInfo, TreeSet<String> audiences, String audiencesAsString, ItemInfo itemInfo, org.marc4j.marc.Record record) {
+	private void loadScopeInfoForPrintIlsItem(AbstractGroupedWorkSolr groupedWork, RecordInfo recordInfo, HashSet<String> audiences, String audiencesAsString, ItemInfo itemInfo, org.marc4j.marc.Record record) {
 		//Determine status, need to do this before determining if it is available since that is part of the check.
 		String recordIdentifier = recordInfo.getRecordIdentifier();
 		String displayStatus = getDisplayStatus(itemInfo, recordIdentifier);
@@ -1893,20 +1893,26 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		return translatedValues;
 	}
 
-	protected void loadTargetAudiences(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record, ArrayList<ItemInfo> printItems, String identifier) {
+	protected void loadTargetAudiences(AbstractGroupedWorkSolr groupedWork, org.marc4j.marc.Record record, RecordInfo recordInfo, ArrayList<ItemInfo> printItems, String identifier) {
 		if (settings.getDetermineAudienceBy() == 0) {
 			if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Determining target audience by bib record data", 1);}
-			super.loadTargetAudiences(groupedWork, record, printItems, identifier, settings.getTreatUnknownAudienceAs());
+			super.loadTargetAudiences(groupedWork, record, recordInfo, printItems, identifier, settings.getTreatUnknownAudienceAs());
 		}else{
-			HashSet<String> targetAudiences = new HashSet<>();
+			HashSet<String> translatedAudiences = new HashSet<>();
 			if (settings.getDetermineAudienceBy() == 1) {
 				//Load based on collection
 				if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Determining audience by collection", 1);}
 				for (ItemInfo printItem : printItems){
 					String collection = printItem.getCollection();
 					if (collection != null) {
-						if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Target audience code includes " + collection.toLowerCase() + " based on collection for item " + printItem.getItemIdentifier(), 1);}
-						targetAudiences.add(collection.toLowerCase());
+						String collectionLower = collection.toLowerCase(Locale.ROOT);
+						if (hasTranslation("audience", collectionLower)) {
+							String translatedValue = translateValue("audience", collectionLower, identifier, true);
+							if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Target audience includes " + translatedValue + " based on collection " + collectionLower + " for item " + printItem.getItemIdentifier(), 1);}
+							printItem.setTargetAudience(translatedValue);
+							translatedAudiences.add(translatedValue);
+						}
+
 					}
 				}
 			}else if (settings.getDetermineAudienceBy() == 2) {
@@ -1915,8 +1921,13 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				for (ItemInfo printItem : printItems){
 					String shelfLocationCode = printItem.getShelfLocationCode();
 					if (shelfLocationCode != null) {
-						if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Target audience includes code " + shelfLocationCode.toLowerCase() + " based on shelf location for item " + printItem.getItemIdentifier(), 1);}
-						targetAudiences.add(shelfLocationCode.toLowerCase());
+						String shelfLocationCodeLower = shelfLocationCode.toLowerCase(Locale.ROOT);
+						if (hasTranslation("audience", shelfLocationCodeLower)) {
+							String translatedValue = translateValue("audience", shelfLocationCodeLower, identifier, true);
+							if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Target audience includes " + translatedValue + " based on shelf location " + shelfLocationCodeLower + " for item " + printItem.getItemIdentifier(), 1);}
+							printItem.setTargetAudience(translatedValue);
+							translatedAudiences.add(translatedValue);
+						}
 					}
 				}
 			}else if (settings.getDetermineAudienceBy() == 3){
@@ -1927,16 +1938,18 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 					for (String audienceCode : audienceCodes) {
 						String audienceCodeLower = audienceCode.toLowerCase();
 						if (hasTranslation("audience", audienceCodeLower)) {
-							if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Target audience includes code " + audienceCodeLower + " based on subfield for item " + printItem.getItemIdentifier(), 1);}
-							targetAudiences.add(audienceCodeLower);
+							String translatedValue = translateValue("audience", audienceCodeLower, identifier, true);
+							if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Target audience includes code " + translatedValue + " based on subfield " + audienceCodeLower + " for item " + printItem.getItemIdentifier(), 1);}
+							printItem.setTargetAudience(translatedValue);
+							translatedAudiences.add(translatedValue);
 						}
 					}
 				}
 			}
-			HashSet<String> translatedAudiences = translateCollection("audience", targetAudiences, identifier, true);
-			if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Target audience code(s) " + targetAudiences + " translate(s) to " + translatedAudiences, 1);}
+			//HashSet<String> translatedAudiences = translateCollection("audience", targetAudiences, identifier, true);
+			//if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Target audience code(s) " + targetAudiences + " translate(s) to " + translatedAudiences, 1);}
 
-			if (! settings.getTreatUnknownAudienceAs().equals("Unknown") && translatedAudiences.contains("Unknown")) {
+			if (!settings.isTreatUnknownAudienceAsUnknown() && translatedAudiences.contains("Unknown")) {
 				translatedAudiences.remove("Unknown");
 				translatedAudiences.add( settings.getTreatUnknownAudienceAs());
 				if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Replacing unknown target audience with " + settings.getTreatUnknownAudienceAs(), 1);}
@@ -1944,11 +1957,11 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			if (translatedAudiences.isEmpty()){
 				//We didn't get anything from the items (including Unknown), check the bib record
 				if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Could not find target audience based on item - checking the bib record", 1);}
-				super.loadTargetAudiences(groupedWork, record, printItems, identifier,  settings.getTreatUnknownAudienceAs());
+				super.loadTargetAudiences(groupedWork, record, recordInfo, printItems, identifier,  settings.getTreatUnknownAudienceAs());
 			}else {
 				if (groupedWork != null) {
-					groupedWork.addTargetAudiences(translatedAudiences);
-					groupedWork.addTargetAudiencesFull(translatedAudiences);
+					groupedWork.addTargetAudiences(translatedAudiences, recordInfo);
+					groupedWork.addTargetAudiencesFull(translatedAudiences, recordInfo);
 				}
 			}
 		}

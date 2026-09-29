@@ -64,9 +64,9 @@
 					<a href="#" onclick="AspenDiscovery.Account.renewAll()" class="btn btn-sm btn-default">{translate text="Renew All" isPublicFacing=true}</a>
 				{/if}
 			{/if}
-			<a class="btn btn-sm btn-default" id="exportToExcel" onclick="return AspenDiscovery.Account.exportCheckouts('{$source}', $('#accountSort_{$source} option:selected').val());">{translate text="Export to CSV" isPublicFacing=true}</a>
+			<a href="#" class="btn btn-sm btn-default" id="exportToExcel" onclick="return AspenDiscovery.Account.exportCheckouts('{$source}', $('#accountSort_{$source} option:selected').val());">{translate text="Export to CSV" isPublicFacing=true}</a>
 			{if $allowSelectingCheckoutsToExport}
-				<a class="btn btn-sm btn-default" id="exportSelectedToExcel" onclick="return AspenDiscovery.Account.exportOnlySelectedCheckouts('{$source}', $('#accountSort_{$source} option:selected').val());">{translate text="Export Selected Titles to CSV" isPublicFacing=true}</a>
+				<a href="#" class="btn btn-sm btn-default" id="exportSelectedToExcel" onclick="return AspenDiscovery.Account.exportOnlySelectedCheckouts('{$source}', $('#accountSort_{$source} option:selected').val());">{translate text="Export Selected Titles to CSV" isPublicFacing=true}</a>
 			{/if}
 		</div>
 	</form>

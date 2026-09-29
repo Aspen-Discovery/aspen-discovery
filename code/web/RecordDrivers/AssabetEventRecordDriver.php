@@ -443,4 +443,8 @@ class AssabetEventRecordDriver extends IndexRecordDriver {
 			'titleURL' => null,
 		];
 	}
+
+	public function getCategories(): null {
+		return null;
+	}
 }

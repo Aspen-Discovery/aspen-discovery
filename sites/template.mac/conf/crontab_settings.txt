@@ -92,43 +92,43 @@
 #########################
 # Update Translations from Community #
 #########################
-15 1 * * * root php /usr/local/aspen-discovery/code/web/cron/updateCommunityTranslations.php {sitename}
+15 1 * * * aspen php /usr/local/aspen-discovery/code/web/cron/updateCommunityTranslations.php {sitename}
 
 ##############################################
 # Generate Materials Request Hold Candidates #
 ##############################################
-0 9 * * * root php /usr/local/aspen-discovery/code/web/cron/generateMaterialRequestHoldCandidates.php template.linux
+0 9 * * * aspen php /usr/local/aspen-discovery/code/web/cron/generateMaterialRequestHoldCandidates.php template.linux
 
 #######################################
 # Dismiss old Year in Review messages #
 #######################################
-0 3 * * * root php /usr/local/aspen-discovery/code/web/cron/dismissYearInReviewMessages.php {sitename}
+0 3 * * * aspen php /usr/local/aspen-discovery/code/web/cron/dismissYearInReviewMessages.php {sitename}
 
 ###########################
 # Cleanup Shared Sessions #
 ###########################
-15 * * * * root php /usr/local/aspen-discovery/code/web/cron/cleanupSharedSessions.php {sitename}
+15 * * * * aspen php /usr/local/aspen-discovery/code/web/cron/cleanupSharedSessions.php {sitename}
 
 ####################################
 # Update grouped works for TalpaAI #
 ####################################
-0 1 * * * root php /usr/local/aspen-discovery/code/web/cron/talpaWorksCron.php {sitename}
+0 1 * * * aspen php /usr/local/aspen-discovery/code/web/cron/talpaWorksCron.php {sitename}
 
 ##############################################
 # Send Campaign Emails #
 ##############################################
-0 6 * * * root php /usr/local/aspen-discovery/code/web/cron/sendCampaignEmails.php {sitename}
-0 6 * * * root php /usr/local/aspen-discovery/code/web/cron/sendCampaignEndingEmails.php {sitename}
+0 6 * * * aspen php /usr/local/aspen-discovery/code/web/cron/sendCampaignEmails.php {sitename}
+0 6 * * * aspen php /usr/local/aspen-discovery/code/web/cron/sendCampaignEndingEmails.php {sitename}
 
 ##########################################
 # Load Initial Reading History for Users #
 ##########################################
-*/5 * * * * root php /usr/local/aspen-discovery/code/web/cron/loadInitialReadingHistory.php {sitename}
+*/5 * * * * aspen php /usr/local/aspen-discovery/code/web/cron/loadInitialReadingHistory.php {sitename}
 
 #######################
 "# Fetch ILS Messages #
 #######################
-*/40 8-19 * * * root php /usr/local/aspen-discovery/code/web/cron/fetchILSMessages.php {sitename}
+*/40 8-19 * * * aspen php /usr/local/aspen-discovery/code/web/cron/fetchILSMessages.php {sitename}
 
 #######################
 # Send ILS Messages  #
@@ -138,12 +138,12 @@
 #######################################################
 # Update holds and checkouts for Community Engagement #
 #######################################################
-59 23 * * * root php /usr/local/aspen-discovery/code/web/cron/updateCommunityEngagementMilestones.php {sitename}
+59 23 * * * aspen php /usr/local/aspen-discovery/code/web/cron/updateCommunityEngagementMilestones.php {sitename}
 
 #######################################
 # Purge User App Request Logs #
 #######################################
-0 */12 * * * root php /usr/local/aspen-discovery/code/web/cron/purgeUserAppRequestLogs.php {sitename}
+0 */12 * * * aspen php /usr/local/aspen-discovery/code/web/cron/purgeUserAppRequestLogs.php {sitename}
 
 ##################################################
 # Update Expired Registration Invites for Events #

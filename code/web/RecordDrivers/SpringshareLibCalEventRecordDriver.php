@@ -471,4 +471,8 @@ class SpringshareLibCalEventRecordDriver extends IndexRecordDriver {
 			'titleURL' => null,
 		];
 	}
+
+	public function getProgramTypes(): null {
+		return null;
+	}
 }

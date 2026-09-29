@@ -113,7 +113,7 @@
 .panel-title {
   margin-top: 0;
   margin-bottom: 0;
-  font-size: ceil((@font-size-base * 1.125));
+  font-size: calc(var(--aspen-base-font-size) * 1.125);
   color: inherit;
 
   > a {
@@ -121,7 +121,7 @@
   }
 
   h2 {
-    font-size: 13px;
+    font-size: calc(var(--aspen-base-font-size) * 0.9286);
     display: unset;
     margin: unset;
   }

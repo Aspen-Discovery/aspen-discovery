@@ -97,7 +97,7 @@ class Axis360Processor {
 					groupedWork.addSeriesWithVolume(series, primaryAuthor, "", 2, true);
 				}
 
-				String targetAudience = loadAxis360Subjects(groupedWork, rawResponse);
+				String targetAudience = loadAxis360Subjects(groupedWork, rawResponse, axis360Record);
 
 				//Believe these are all
 				axis360Record.setPrimaryLanguage("English");
@@ -147,8 +147,6 @@ class Axis360Processor {
 					itemInfo.setIsEContent(true);
 					itemInfo.setShelfLocation("Online Boundless Collection");
 					itemInfo.setDetailedLocation("Online Boundless Collection");
-					itemInfo.setCallNumber("Online Boundless");
-					itemInfo.setSortableCallNumber("Online Boundless");
 					itemInfo.setFormat(primaryFormat);
 					itemInfo.setFormatCategory(formatCategory);
 
@@ -225,7 +223,7 @@ class Axis360Processor {
 	 *
 	 * @return String the targetAudience of the record
 	 */
-	private String loadAxis360Subjects(AbstractGroupedWorkSolr groupedWork, JSONObject titleData) throws JSONException {
+	private String loadAxis360Subjects(AbstractGroupedWorkSolr groupedWork, JSONObject titleData, RecordInfo recordInfo) throws JSONException {
 		//Load subject data
 
 		HashSet<String> topics = new HashSet<>();
@@ -277,8 +275,8 @@ class Axis360Processor {
 		}
 		if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Target audience is " + targetAudience + " based on Boundless record", 2);}
 		if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Full target audience list is " + targetAudienceFull + " based on Boundless record", 2);}
-		groupedWork.addTargetAudience(targetAudience);
-		groupedWork.addTargetAudienceFull(targetAudienceFull);
+		groupedWork.addTargetAudience(targetAudience, recordInfo);
+		groupedWork.addTargetAudienceFull(targetAudienceFull, recordInfo);
 
 		return targetAudience;
 	}

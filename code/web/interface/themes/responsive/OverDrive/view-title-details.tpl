@@ -1,7 +1,7 @@
 {strip}
 	{* Display more information about the title*}
 	{if $recordDriver->getAuthor()}
-		<div class="row">
+		<div class="full-record-property full-record-author row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text="Author" isPublicFacing=true} </div>
 			<div class="result-value col-sm-8 col-xs-12">
 				<a href='/Author/Home?author="{$recordDriver->getAuthor()|escape:"url"}"'>{$recordDriver->getAuthor()|highlight}</a>
@@ -10,7 +10,7 @@
 	{/if}
 
 	{if $recordDriver->getDetailedContributors()}
-		<div class="row">
+		<div class="full-record-property full-record-contributors row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='Contributors' isPublicFacing=true}</div>
 			<div class="result-value col-sm-8 col-xs-12">
 				{foreach from=$recordDriver->getDetailedContributors() item=contributor name=loop}
@@ -41,11 +41,11 @@
 	{/if}
 
 	{if !empty($showSeries)}
-		<div class="series row" id="seriesPlaceholder{$recordDriver->getPermanentId()}"></div>
+		<div class="full-record-property full-record-series series row" id="seriesPlaceholder{$recordDriver->getPermanentId()}"></div>
 	{/if}
 
 	{if !empty($showPublicationDetails) && $recordDriver->getPublicationDetails()}
-		<div class="row">
+		<div class="full-record-property full-record-publication-details row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='Published' isPublicFacing=true}</div>
 			<div class="result-value col-sm-8 col-xs-12">
 				{implode subject=$recordDriver->getPublicationDetails() glue=", "}
@@ -54,7 +54,7 @@
 	{/if}
 
 	{if !empty($showFormats)}
-		<div class="row">
+		<div class="full-record-property full-record-publication-details row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='Format' isPublicFacing=true}</div>
 			<div class="result-value col-sm-8 col-xs-12">
 				{implode subject=$recordDriver->getFormats() glue=", "}
@@ -63,7 +63,7 @@
 	{/if}
 
 	{if !empty($showEditions) && $recordDriver->getEditions()}
-		<div class="row">
+		<div class="full-record-property full-record-edition row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='Edition' isPublicFacing=true}</div>
 			<div class="result-value col-sm-8 col-xs-12">
 				{implode subject=$recordDriver->getEditions() glue=", "}
@@ -72,7 +72,7 @@
 	{/if}
 
 	{if !empty($showPhysicalDescriptions) && $recordDriver->getDuration()}
-		<div class="row">
+		<div class="full-record-property full-record-duration row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='Duration' isPublicFacing=true}</div>
 			<div class="result-value col-sm-8 col-xs-12">
 				{math equation="floor(x/60)" x=$recordDriver->getDuration() assign="hours"}
@@ -92,7 +92,7 @@
 
 
 	{if !empty($showISBNs) && count($recordDriver->getISBNs()) > 0}
-		<div class="row">
+		<div class="full-record-property full-record-isbn row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='ISBN' isPublicFacing=true}</div>
 			<div class="result-value col-sm-8 col-xs-12">
 				{implode subject=$recordDriver->getISBNs() glue=", "}
@@ -101,7 +101,7 @@
 	{/if}
 
 	{if !empty($showArInfo) && $recordDriver->getAcceleratedReaderDisplayString()}
-		<div class="row">
+		<div class="full-record-property full-record-accelerated-reader row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='Accelerated Reader' isPublicFacing=true} </div>
 			<div class="result-value col-sm-8 col-xs-12">
 				{$recordDriver->getAcceleratedReaderDisplayString()}
@@ -110,7 +110,7 @@
 	{/if}
 
 	{if !empty($showLexileInfo) && $recordDriver->getLexileDisplayString()}
-		<div class="row">
+		<div class="full-record-property full-record-lexile-measure row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='Lexile measure' isPublicFacing=true} </div>
 			<div class="result-value col-sm-8 col-xs-12">
 				{$recordDriver->getLexileDisplayString()}
@@ -119,7 +119,7 @@
 	{/if}
 
 	{if !empty($showFountasPinnell) && $recordDriver->getFountasPinnellLevel()}
-		<div class="row">
+		<div class="full-record-property full-record-fountas-pinnell row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='Fountas & Pinnell' isPublicFacing=true}</div>
 			<div class="result-value col-sm-8 col-xs-12">
 				{$recordDriver->getFountasPinnellLevel()|escape}
@@ -131,7 +131,7 @@
 
 	{include file="GroupedWork/readingHistoryIndicator.tpl" isSearchResults=false}
 
-	<div class="row">
+	<div class="full-record-property full-record-status row">
 		<div class="result-label col-sm-4 col-xs-12">{translate text='Status' isPublicFacing=true}</div>
 		<div class="result-value col-sm-8 col-xs-12 result-value-bold statusValue {$holdingsSummary.class}" id="statusValue">{translate text=$holdingsSummary.status isPublicFacing=true}</div>
 	</div>

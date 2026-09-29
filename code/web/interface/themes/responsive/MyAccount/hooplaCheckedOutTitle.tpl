@@ -1,5 +1,5 @@
 {strip}
-	<div id="hoopla_{$record->recordId|escape}" class="result row">
+	<div class="result row" id="hoopla_{$record->recordId|escape}" data-record-type="hoopla" data-record-id="{$record->recordId}">
 
 		{* Cover Column *}
 		{if !empty($showCovers)}

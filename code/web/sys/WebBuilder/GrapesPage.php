@@ -91,7 +91,7 @@ class GrapesPage extends DB_LibraryLinkedObject {
 				'label' => 'Libraries',
 				'description' => 'Define libraries that use these settings',
 				'values' => $libraryList,
-				'hideInLists' => true,
+				'hideInLists' => false,
 			],
 			'htmlData' => [
 				'property' => 'htmlData',
@@ -123,7 +123,7 @@ class GrapesPage extends DB_LibraryLinkedObject {
 			],
 		];
 		if ($context == 'addNew') {
-			unset($structure['templateSelect']);
+			unset($structure['templatesSelect']);
 		}
 
 		if ($context != 'addNew') {

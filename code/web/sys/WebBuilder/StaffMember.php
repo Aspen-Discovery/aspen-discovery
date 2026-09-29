@@ -11,6 +11,7 @@ class StaffMember extends DataObject {
 	public $libraryId;
 	public $photo;
 	public $description;
+	public $displayOrder;
 
 	static $_objectStructure = [];
 	static function getObjectStructure(string $context = ''): array {
@@ -40,6 +41,14 @@ class StaffMember extends DataObject {
 				'description' => 'The name of the staffer',
 				'size' => '100',
 				'maxLength' => 100,
+			],
+			'displayOrder' => [
+				'property' => 'displayOrder',
+				'type' => 'integer',
+				'label' => 'Display Order',
+				'description' => 'Use 0 when no order is assigned. Otherwise, enter a number starting at 1; lower numbers appear first. Staff members in the same library with the same order are sorted alphabetically by name.',
+				'default' => 0,
+				'min' => 0,
 			],
 			'role' => [
 				'property' => 'role',

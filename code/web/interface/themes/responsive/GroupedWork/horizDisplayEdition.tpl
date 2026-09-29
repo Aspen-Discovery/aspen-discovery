@@ -77,9 +77,9 @@
 					{if ($numDisplayed < $maxToDisplay || ($totalSummariesToDisplay == 3 && count($itemSummary) == 3) && $showQuickCopy != 2) && $curItemSummary.displayByDefault}
 						{assign var=numDisplayed value=$numDisplayed+1}
 						<div class="col-tn-4">
-							<div><strong>{$curItemSummary.shelfLocation}</strong></div>
-							<div>{$curItemSummary.callNumber}</div>
-							<div>{$curItemSummary.availableCopies} of {$curItemSummary.totalCopies} available</div>
+							<div class="shelf-location-value"><strong>{$curItemSummary.shelfLocation}</strong></div>
+							<div class="call-number-value">{$curItemSummary.callNumber}</div>
+							<div class="available-copies-value">{$curItemSummary.availableCopies} of {$curItemSummary.totalCopies} available</div>
 						</div>
 					{/if}
 				{/foreach}

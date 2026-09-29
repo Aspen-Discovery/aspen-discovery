@@ -1,5 +1,5 @@
 {strip}
-<div id="record{$summId|escape}" class="resultsList row">
+<div id="record{$summId|escape}" class="resultsList-course-reserve resultsList row">
 	{if !empty($showCovers)}
 		<div class="coversColumn col-xs-3 col-sm-3 col-md-3 col-lg-2 text-center" aria-hidden="true" role="presentation">
 			{if $disableCoverArt != 1}
@@ -14,7 +14,7 @@
 	<div class="{if empty($showCovers)}col-xs-12{else}col-xs-9 col-sm-9 col-md-9 col-lg-10{/if}">{* May turn out to be more than one situation to consider here *}
 		{* Title Row *}
 
-		<div class="row">
+		<div class="result-title-row row">
 			<div class="col-xs-12">
 				<span class="result-index">{$resultIndex})</span>&nbsp;
 				<a href="/CourseReserves/{$summShortId}" class="result-title notranslate">
@@ -27,7 +27,7 @@
 		</div>
 
 		{if !empty($summAuthor)}
-			<div class="row">
+			<div class="result-author row">
 				<div class="result-label col-tn-3">{translate text="Instructor" isPublicFacing=true} </div>
 				<div class="result-value col-tn-9 notranslate">
 					{if is_array($summAuthor)}
@@ -42,7 +42,7 @@
 		{/if}
 
 		{if !empty($summNumTitles)}
-			<div class="row">
+			<div class="result-number-of-titles row">
 				<div class="result-label col-tn-3">{translate text="Number of Titles" isPublicFacing=true} </div>
 				<div class="result-value col-tn-9 notranslate">
 					{translate text="%1% titles are in this list." 1=$summNumTitles isPublicFacing=true}

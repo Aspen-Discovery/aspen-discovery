@@ -29,5 +29,15 @@
 		{else}
 			<input type="hidden" id="preferredTheme" name="preferredTheme" value="{$activeThemeId}">
 		{/if}
+		<div class="form-group propertyRow">
+			<label for="preferredTextSize" class="control-label">{translate text='Preferred Text Size' isPublicFacing=true}</label>
+			<select id="preferredTextSize" name="preferredTextSize" class="form-control">
+				{foreach from=$fontSizeOptions key=fontSize item=fontSizeDisplay}
+					<option value="{$fontSize}"{if $displaySettingTextSize==$fontSize} selected="selected"{/if}>
+						{$fontSizeDisplay|escape}
+					</option>
+				{/foreach}
+			</select>
+		</div>
 	</form>
 {/strip}

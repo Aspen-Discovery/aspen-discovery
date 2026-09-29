@@ -127,6 +127,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 
 	// Whether to ignore on-order records when selecting titles for display in grouped works.
 	private boolean prioritizeAvailableRecordsForTitleSelection = false;
+	private boolean isTreatUnknownAudienceAsUnknown;
 
 	public IndexingProfile(String serverName, BaseIndexingLogEntry logEntry){
 		//This is only intended to be used for unit testing
@@ -261,6 +262,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 		this.treatUnknownLanguageAs = indexingProfileRS.getString("treatUnknownLanguageAs");
 		treatUndeterminedLanguageAs = indexingProfileRS.getString("treatUndeterminedLanguageAs");
 		this.customMarcFieldsToIndexAsKeyword = indexingProfileRS.getString("customMarcFieldsToIndexAsKeyword");
+		this.excludePublisherFromKeywordIndex = indexingProfileRS.getBoolean("excludePublisherFromKeywordIndex");
 		this.processRecordLinking = indexingProfileRS.getBoolean("processRecordLinking");
 
 		this.evergreenOrgUnitSchema = indexingProfileRS.getInt("evergreenOrgUnitSchema");
@@ -1159,8 +1161,13 @@ public class IndexingProfile extends BaseIndexingSettings {
 		return treatUnknownAudienceAs;
 	}
 
+	public boolean isTreatUnknownAudienceAsUnknown() {
+		return isTreatUnknownAudienceAsUnknown;
+	}
+
 	public void setTreatUnknownAudienceAs(String treatUnknownAudienceAs) {
 		this.treatUnknownAudienceAs = treatUnknownAudienceAs;
+		this.isTreatUnknownAudienceAsUnknown = treatUnknownAudienceAs.equals("Unknown");
 	}
 
 	public SierraExportFieldMapping getSierraExportFieldMappings() {

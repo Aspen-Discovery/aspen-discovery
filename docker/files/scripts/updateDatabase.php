@@ -26,6 +26,11 @@ if (!checkDatabaseConnection($aspen_db) || !isDatabaseInitialized($aspen_db)) {
 	exit(1);
 }
 
+// Some update scripts render theme CSS as part of the update itself (e.g. 26.09.00.php),
+// so $interface must exist before updates run, not just before updateCssForAllThemes().
+global $interface;
+$interface = new UInterface();
+
 DockerLogger::info("Running pending database updates");
 
 $systemAPI = new SystemAPI();
@@ -39,8 +44,6 @@ if (!$completedUpdates['success']) {
 }
 
 DockerLogger::info("Updating CSS for all themes");
-global $interface;
-$interface = new UInterface();
 $result = $systemAPI->updateCssForAllThemes();
 if ($result['success'] != true) {
 	DockerLogger::warn("Error updating CSS: " . $result['message']);

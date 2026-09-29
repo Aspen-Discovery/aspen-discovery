@@ -1368,11 +1368,12 @@ AspenDiscovery.Account = (function () {
 			var reactivationDate = $("#reactivationDate").val();
 			AspenDiscovery.loadingMessage();
 			// noinspection JSUnresolvedFunction
-			$.getJSON(Globals.path + "/MyAccount/AJAX?method=freezeHoldAll&patronId=" + userId + "&reactivationDate=" + reactivationDate, function (data) {
+			$.getJSON(Globals.path + "/MyAccount/AJAX?method=freezeHoldAll&patronId=" + encodeURIComponent(userId) + "&reactivationDate=" + encodeURIComponent(reactivationDate), function (data) {
 				if (data.success) {
 					AspenDiscovery.Account.reloadHolds();
 					AspenDiscovery.showMessage(data.title, data.message, true, false);
 				} else {
+					AspenDiscovery.Account.reloadHolds();
 					AspenDiscovery.showMessage(data.title, data.message);
 				}
 			}).fail(AspenDiscovery.ajaxFail);

@@ -223,6 +223,9 @@ class IndexingProfile extends DataObject {
 		$numExtractionThreads;
 	public /** @noinspection PhpUnused */
 		$prioritizeAvailableRecordsForTitleSelection;
+	public /** @noinspection PhpUnused */
+		$excludePublisherFromKeywordIndex;
+
 
 	/** @noinspection PhpUnused */
 	public $index896asSeries;
@@ -827,6 +830,14 @@ class IndexingProfile extends DataObject {
 						'type' => 'checkbox',
 						'label' => 'Prioritize Available Records for Title Selection',
 						'description' => 'When checked, if there are available records in a grouped work, titles from those available records will be prioritized as the display title for the grouped work.',
+						'default' => 0,
+						'forcesReindex' => true,
+					],
+					'excludePublisherFromKeywordIndex' => [
+						'property' => 'excludePublisherFromKeywordIndex',
+						'type' => 'checkbox',
+						'label' => 'Exclude Publisher from Keyword Index',
+						'description' => 'When checked, publisher information gathered from the notes field will be excluded from the keyword index for searching.',
 						'default' => 0,
 						'forcesReindex' => true,
 					],

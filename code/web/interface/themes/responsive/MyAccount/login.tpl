@@ -44,19 +44,19 @@
 							<input type="password" name="password" id="password" size="28" onkeypress="return AspenDiscovery.submitOnEnter(event, '#loginForm');" class="form-control" maxlength="70">
 							{if $forgotPasswordType != 'null' && $forgotPasswordType != 'none'}
 								<p class="text-muted help-block">
-									<strong>{translate text="Forgot %1%?" 1=$passwordLabel isPublicFacing=true}</strong>&nbsp;&nbsp;
+									<strong>{translate text="Forgot %1%?" 1=$passwordLabel translateParameters=true isPublicFacing=true}</strong>&nbsp;&nbsp;
 									{if $forgotPasswordType == 'emailAspenResetLink'}
-										<a href="/MyAccount/InitiateResetPin">{translate text="Reset My %1%" 1=$passwordLabel isPublicFacing=true}</a>
+										<a href="/MyAccount/InitiateResetPin">{translate text="Reset My %1%" 1=$passwordLabel translateParameters=true isPublicFacing=true}</a>
 									{elseif $forgotPasswordType == 'emailResetLink'}
-										<a href="/MyAccount/EmailResetPin">{translate text="Reset My %1%" 1=$passwordLabel isPublicFacing=true}</a>
+										<a href="/MyAccount/EmailResetPin">{translate text="Reset My %1%" 1=$passwordLabel translateParameters=true isPublicFacing=true}</a>
 									{else}
-										<a href="/MyAccount/EmailPin">{translate text="Email my %1%" 1=$passwordLabel isPublicFacing=true}</a>
+										<a href="/MyAccount/EmailPin">{translate text="Email my %1%" 1=$passwordLabel translateParameters=true isPublicFacing=true}</a>
 									{/if}
 								</p>
 							{/if}
 							{if $enableForgotBarcode}
 								 <p class="text-muted help-block">
-									<strong>{translate text="Forgot %1%?" 1=$usernameLabel isPublicFacing=true}</strong>&nbsp;&nbsp;<a href="/MyAccount/ForgotBarcode">{translate text="Send My %1% by Text" 1=$usernameLabel isPublicFacing=true}</a>
+									<strong>{translate text="Forgot %1%?" 1=$usernameLabel translateParameters=true isPublicFacing=true}</strong>&nbsp;&nbsp;<a href="/MyAccount/ForgotBarcode">{translate text="Send My %1% by Text" 1=$usernameLabel translateParameters=true isPublicFacing=true}</a>
 								 </p>
 							{/if}
 
@@ -90,7 +90,7 @@
 						<div class="col-xs-12 col-sm-offset-4 col-sm-8">
 							<label for="showPwd" class="checkbox">
 								<input type="checkbox" id="showPwd" name="showPwd" onclick="return AspenDiscovery.pwdToText('password')">
-								{translate text="Reveal %1%" 1=$passwordLabel isPublicFacing=true}
+								{translate text="Reveal %1%" 1=$passwordLabel translateParameters=true isPublicFacing=true}
 							</label>
 
 							{if empty($inLibrary) && empty($isOpac) && empty($isStandalonePage)}
@@ -105,7 +105,7 @@
 					<div id="loginActions" class="form-group">
 						<div class="col-xs-12 col-sm-offset-4 col-sm-8">
 							{if !$ssoStaffOnly && $ssoService == 'ldap' && !empty($ldapLabel)}
-								<input type="submit" name="submit" value="{translate text="Sign in with %1%" 1=$ldapLabel isPublicFacing=true}" id="loginFormSubmit" class="btn btn-primary" onclick="return AspenDiscovery.Account.preProcessLogin();">
+								<input type="submit" name="submit" value="{translate text="Sign in with %1%" 1=$ldapLabel translateParameters=true isPublicFacing=true}" id="loginFormSubmit" class="btn btn-primary" onclick="return AspenDiscovery.Account.preProcessLogin();">
 							{else}
 								<input type="submit" name="submit" value="{translate text="Login" isPublicFacing=true}" id="loginFormSubmit" class="btn btn-primary" onclick="return AspenDiscovery.Account.preProcessLogin();">
 							{/if}

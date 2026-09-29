@@ -131,7 +131,7 @@
 
 			<div class="col-xs-12 col-md-3">
 				<div class="btn-group btn-group-vertical btn-block">
-					<a href="#" onclick='return AspenDiscovery.Account.ReadingHistory.deleteGroupedEntry("{$selectedUser}", "{$record.permanentId}", "{$record.title|escape:"javascript"}", "{$record.author|escape:"javascript"}", "{$record.id}");' class="btn btn-sm btn-primary">{translate text='Delete' isPublicFacing=true}</a>
+					<a href="#" onclick="return AspenDiscovery.Account.ReadingHistory.deleteGroupedEntry('{$selectedUser}', '{$record.permanentId}', '{$record.title|escape:"javascript"}', '{$record.author|escape:"javascript"}', '{$record.id}');" class="btn btn-sm btn-primary">{translate text='Delete' isPublicFacing=true}</a>
 				</div>
 				{if !empty($showYouMightAlsoLike)}
 					{if !$record.isIll}

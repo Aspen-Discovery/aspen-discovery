@@ -1,5 +1,5 @@
 {strip}
-	<div class="result row cloudLibraryCheckout_{$record->recordId|escape}">
+	<div class="result row cloudLibraryCheckout_{$record->recordId|escape}" data-record-type="cloudlibrary" data-record-id="{$record->recordId}">
 
 		{* Cover Column *}
 		{if !empty($showCovers)}

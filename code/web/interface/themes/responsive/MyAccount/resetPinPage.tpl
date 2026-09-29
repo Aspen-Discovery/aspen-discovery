@@ -13,7 +13,7 @@
 				{include file='ilsMessages.tpl' messages=$ilsMessages}
 			{/if}
 
-			<h1>{translate text='Reset %1%' 1=$passwordLabel isPublicFacing=true}</h1>
+			<h1>{translate text='Reset %1%' 1=$passwordLabel translateParameters=true isPublicFacing=true}</h1>
 			{if !empty($offline)}
 				<div class="alert alert-warning"><strong>{translate text=$offlineMessage isPublicFacing=true}</strong></div>
 			{else}
@@ -31,9 +31,9 @@
 					{if !empty($pinValidationRules.requireStrongPassword)}
 						{translate text="A strong password from 12 to 50 characters including at least one uppercase, lowercase, number, and special character (-_~!@#$%^&*.+)." isPublicFacing=true 1=$pinValidationRules.minLength 2=$pinValidationRules.maxLength}
 					{elseif !empty($pinValidationRules.onlyDigitsAllowed)}
-						{translate text="%3% must be between %1% and %2% digits." isPublicFacing=true 1=$pinValidationRules.minLength 2=$pinValidationRules.maxLength 3=$passwordLabel}
+						{translate text="%3% must be between %1% and %2% digits." isPublicFacing=true translateParameters=true 1=$pinValidationRules.minLength 2=$pinValidationRules.maxLength 3=$passwordLabel}
 					{else}
-						{translate text="%3% must be between %1% and %2% characters." isPublicFacing=true 1=$pinValidationRules.minLength 2=$pinValidationRules.maxLength 3=$passwordLabel}
+						{translate text="%3% must be between %1% and %2% characters." isPublicFacing=true translateParameters=true 1=$pinValidationRules.minLength 2=$pinValidationRules.maxLength 3=$passwordLabel}
 					{/if}
 				</div>
 

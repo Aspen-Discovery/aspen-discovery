@@ -11,7 +11,7 @@ class StaffDirectory extends Action {
 
 		require_once ROOT_DIR . '/sys/WebBuilder/StaffMember.php';
 		$staffMember = new StaffMember();
-		$staffMember->orderBy('name');
+		$staffMember->orderBy('CASE WHEN displayOrder = 0 THEN 1 ELSE 0 END, displayOrder ASC, name ASC, id ASC');
 		$staffMember->libraryId = $library->libraryId;
 		$staffMember->find();
 		$staffMembers = [];

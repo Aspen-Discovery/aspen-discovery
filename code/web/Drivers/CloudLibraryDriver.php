@@ -299,6 +299,7 @@ class CloudLibraryDriver extends AbstractEContentDriver {
 
 					$key = $hold->type . $hold->sourceId . $hold->userId;
 					$hold->position = (string)$holdFromCloudLibrary->Position;
+					$hold->status = 'Pending';
 					$holds['unavailable'][$key] = $hold;
 				}
 			}
@@ -309,6 +310,7 @@ class CloudLibraryDriver extends AbstractEContentDriver {
 					$hold->available = true;
 
 					$key = $hold->type . $hold->sourceId . $hold->userId;
+					$hold->status = 'Ready For Pickup';
 					$holds['available'][$key] = $hold;
 				}
 			}

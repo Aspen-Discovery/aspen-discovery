@@ -28,7 +28,7 @@
 			<div class="checkbox">
 				{*this assumes a simple array, eg list *}
 				{foreach from=$property.values item=propertyName}
-					<input name='{$propName}[]' type="checkbox" value='{$propertyName}' {if is_array($propValue) && in_array($propertyName, $propValue)}checked='checked'{/if} {if !empty($property.readOnly)}readonly disabled{/if}> {if !empty($property.translateValues)}{translate text=$propertyName|escape inAttribute=true isPublicFacing=$property.isPublicFacing isAdminFacing=$property.isAdminFacing }{else}{$propertyName|escape}{/if}<br>
+					<input name='{$propName}[]' type="checkbox" value='{$propertyName}' {if !empty($property.required)}required{/if} {if is_array($propValue) && in_array($propertyName, $propValue)}checked='checked'{/if} {if !empty($property.readOnly)}readonly disabled{/if}> {if !empty($property.translateValues)}{translate text=$propertyName|escape inAttribute=true isPublicFacing=$property.isPublicFacing isAdminFacing=$property.isAdminFacing }{else}{$propertyName|escape}{/if}<br>
 				{/foreach}
 			</div>
 		{elseif $property.listStyle == 'checkboxWithOptions'}

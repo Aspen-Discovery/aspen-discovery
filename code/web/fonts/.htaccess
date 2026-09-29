@@ -1,7 +1,21 @@
-<IfModule mod_rewrite.c>
-  RewriteEngine Off
+Options -ExecCGI -Indexes -MultiViews
+
+# Remove common executable handlers in this directory.
+RemoveHandler .php .php3 .php4 .php5 .php7 .php8 .phtml .phar .cgi .pl .py .sh
+RemoveType .php .php3 .php4 .php5 .php7 .php8 .phtml .phar
+
+# Correct font content types.
+AddType font/ttf .ttf
+AddType font/otf .otf
+AddType font/woff .woff
+AddType font/woff2 .woff2
+
+<IfModule mod_headers.c>
+	Header always set X-Content-Type-Options "nosniff"
 </IfModule>
 
-
-# Dynamic CSS
-AddType text/css .css
+# Reject any URL that does not end with an allowed font extension.
+<IfModule mod_rewrite.c>
+	RewriteEngine On
+	RewriteRule !\.(ttf|otf|woff|woff2)$ - [F,NC]
+</IfModule>

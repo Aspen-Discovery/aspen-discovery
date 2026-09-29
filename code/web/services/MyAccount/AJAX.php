@@ -3905,13 +3905,15 @@ class MyAccount_AJAX extends JSON_Action {
 
 		$filteredHolds = [];
 
-		// Check if we're filtering by a specific user
+		// A filter option's value may be derived from more than the matching Hold
+		// property (for example, Available and Unavailable status values). Always
+		// use getHoldFilterValue() so building options and applying filters agree.
 		foreach ($allHolds as $group => $holdGroup) {
 			$filteredHolds[$group] = [];
 			foreach ($holdGroup as $hold) {
 				$holdIsValid = true;
 				foreach ($filters as $field => $filterInformation) {
-					if (!in_array($hold->$field, $filterInformation['selected'])) {
+					if ($this->isInvalidHold($hold, $field, $filterInformation)) {
 						$holdIsValid = false;
 						break;
 					}
@@ -3923,6 +3925,21 @@ class MyAccount_AJAX extends JSON_Action {
 		}
 
 		return $filteredHolds;
+	}
+
+	private function isInvalidHold(Hold|array $hold, string $field, array $filterInformation) : bool {
+		$selectedValues = array_map('strval', $filterInformation['selected']);
+		$isSourceField = $field === 'source';
+
+		// "all" is a wildcard for source — always valid, skip the value checks
+		if ($isSourceField && in_array('all', $selectedValues, true)) {
+			return false;
+		}
+
+		$filterValue = $this->getHoldFilterValue($hold, $field);
+		$absentFromArray = !in_array($filterValue['value'], $filterInformation['selected']);
+
+		return $absentFromArray || $filterValue === null || !in_array((string) $filterValue['value'], $selectedValues, true);
 	}
 
 	private function filterCheckoutsByUser(array $allCheckedOut, string $selectedUser): array {
@@ -3992,8 +4009,6 @@ class MyAccount_AJAX extends JSON_Action {
 			$this->setShowCovers();
 
 			$user = UserAccount::getActiveUserObj();
-
-			$selectedUser = $this->setFilterLinkedUser();
 
 			if ($user->getHomeLibrary() != null) {
 				$allowSelectingHoldsToExport = $user->getHomeLibrary()->allowSelectingHoldsToExport;
@@ -4169,12 +4184,14 @@ class MyAccount_AJAX extends JSON_Action {
 
 				// Get & Set Filter Options
 				$activeFilters = $this->getActiveHoldFilters($filtersList);
-				$filters = $this->getHoldFiltersForUser($user, $activeFilters, $filtersList);
+				$allHolds = $user->getHolds(true, $selectedUnavailableSortOption, $selectedAvailableSortOption, 'all', $defaultCancelledSortOption);
+				$filters = $this->getHoldFiltersForUser($user, $allHolds, $activeFilters, $filtersList);
 				//If we have nothing to filter, don't show the filter options
 				$showFilterOptions = false;
 				foreach ($filters as $filter) {
 					if (count($filter['options']) > 1) {
 						$showFilterOptions = true;
+						break;
 					}
 				}
 				if ($showFilterOptions) {
@@ -4183,7 +4200,7 @@ class MyAccount_AJAX extends JSON_Action {
 				}
 
 
-				$allHolds = $this->filterHolds($user->getHolds(true, $selectedUnavailableSortOption, $selectedAvailableSortOption, 'all', $defaultCancelledSortOption), $filters);
+				$allHolds = $this->filterHolds($allHolds, $filters);
 				$hyperHolds = [];
 				$hiddenHoldIds = [];
 
@@ -4280,59 +4297,51 @@ class MyAccount_AJAX extends JSON_Action {
 	}
 
 	/** Hold Filtering Functions */
-	private function getHoldFilterValue(Hold|array $hold, string $field): ?array {
-		if (is_array($hold)) {
-			$fieldValue = isset($hold[$field]) ? (string)$hold[$field] : null;
-		}else{
-			$fieldValue = $hold->$field;
+	private function getHoldPropertyValue(Hold|array $hold, string $field): mixed {
+		return is_array($hold) ? ($hold[$field] ?? null) : $hold->$field;
+	}
+
+	private function getHoldFilterFieldValue(Hold|array $hold, string $field): ?string {
+		$fieldValue = $this->getHoldPropertyValue($hold, $field);
+
+		if ($field === 'status') {
+			if ($this->getHoldPropertyValue($hold, 'available')) {
+				return 'Ready For Pickup';
+			}elseif ($this->getHoldPropertyValue($hold, 'cancelled')) {
+				return 'Cancelled';
+			}elseif ($this->getHoldPropertyValue($hold, 'frozen')) {
+				return 'Frozen';
+			}elseif (!empty($fieldValue)) {
+				return 'Pending';
+			}else {
+				return 'Pending';
+			}
 		}
 
-		$label = $fieldValue;
-		//Do special processing of some fields
-		switch ($field) {
-			case "userId":
-				$label = $hold->getUserName();
-				break;
-			case "status":
-				if ($hold->available) {
-					$label = translate(['text' => 'Available', 'isPublicFacing' => true]);
-				}else{
-					if (empty($hold->status)) {
-						$label = translate(['text' => 'Unavailable', 'isPublicFacing' => true]);
-					}else{
-						$label = translate(['text' => (string)$hold->$field, 'isPublicFacing' => true]);
-					}
-				}
-				break;
-			case "format":
-				$label = translate(['text' => (string)$hold->$field, 'isPublicFacing' => true]);
-				break;
-			case "source":
-				switch ($hold->source) {
-					case 'ils':
-						$sourceUntranslated = 'Physical Materials';
-						break;
-					case 'overdrive':
-						$readerName = new OverDriveDriver();
-						$sourceUntranslated = $readerName->getReaderName();
-						break;
-					case 'cloud_library':
-						$sourceUntranslated = 'Cloud Library';
-						break;
-					case 'hoopla':
-						$sourceUntranslated = 'Hoopla';
-						break;
-					case 'axis360':
-						$sourceUntranslated = 'Boundless';
-						break;
-					default:
-						$sourceUntranslated = 'Unknown';
-				}
-				$label = translate(['text' => $sourceUntranslated, 'isPublicFacing' => true]);
-				break;
-			default:
-				$label = (string)$hold->$field;
-		}
+		return $fieldValue === null ? null : (string)$fieldValue;
+	}
+
+	private function getHoldFilterValue(Hold|array $hold, string $field): ?array {
+		$fieldValue = $this->getHoldFilterFieldValue($hold, $field);
+
+		$getSourceUT = fn($fv) => match($fv) {
+			'ils' => 'Physical Materials',
+			'overdrive' => (new OverDriveDriver())->getReaderName(),
+			'cloud_library' => 'Cloud Library',
+			'hoopla' => 'Hoopla',
+			'axis360' => 'Boundless',
+			'palace_project' => 'Palace Project',
+			default => 'Unknown'
+		};
+
+		$label = match($field) {
+			'userId' => is_array($hold) ? $fieldValue : $hold->getUserName(),
+			'status' => translate(['text' => $fieldValue, 'isPublicFacing' => true]),
+			'format' => translate(['text' => (string)$fieldValue, 'isPublicFacing' => true]),
+			'source' => translate(['text' => $getSourceUT($fieldValue), 'isPublicFacing' => true]),
+			default => (string)$fieldValue
+		};
+
 		return [
 			'value' => $fieldValue,
 			'label' => $label
@@ -4343,14 +4352,12 @@ class MyAccount_AJAX extends JSON_Action {
 	 * Get the filters that apply to the active user's holds.
 	 *
 	 * @param User $user - The user that we are getting the filters for
+	 * @param array $allHolds - The holds for the user
 	 * @param array $activeFilters - The filters that have been applied by the user
 	 * @param array $filtersList - The list of filters that are available to the user
 	 * @return array
 	 */
-	private function getHoldFiltersForUser(User $user, array $activeFilters, array $filtersList): array {
-		//Get all holds for the user including linked users
-		$allHolds = $user->getHolds();
-
+	private function getHoldFiltersForUser(User $user, array $allHolds, array $activeFilters, array $filtersList): array {
 		//Gather all holds into a single array
 		$holds = [];
 		foreach ($allHolds as $group => $holdGroup) {
@@ -5433,8 +5440,14 @@ class MyAccount_AJAX extends JSON_Action {
 		if (isset($_REQUEST['token'])) {
 			if ($paymentType == 'square') {
 				$payment->squareToken = $_REQUEST['token'];
-			} else {
+			} elseif ($paymentType == 'ACI') {
 				$payment->aciToken = $_REQUEST['token'];
+
+				$data = random_bytes(16);
+				assert(strlen($data) == 16);
+				$data[6] = chr(ord($data[6]) & 0x0f | 0x40);
+				$data[8] = chr(ord($data[8]) & 0x3f | 0x80);
+				$payment->orderId = vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
 			}
 		}
 
@@ -7413,7 +7426,6 @@ class MyAccount_AJAX extends JSON_Action {
 		$patronId = $_REQUEST['patronId'];
 		$transactionType = $_REQUEST['type'];
 		$fundingToken = $_REQUEST['fundingToken'];
-		$accessToken = $_REQUEST['accessToken'];
 		$paymentId = $_REQUEST['paymentId'];
 		$billerAccount = $_REQUEST['billerAccountId'];
 		global $library;
@@ -7433,8 +7445,6 @@ class MyAccount_AJAX extends JSON_Action {
 				if (!$donation->find(true)) {
 					header("Location: " . $configArray['Site']['url'] . '/Donations/DonationCancelled?id=' . $payment->id);
 					return [];
-				}else{
-					return $this->failureResult(null, 'ACI Donation payment not applied.');
 				}
 			} else {
 				header("Location: " . $configArray['Site']['url'] . '/Donations/DonationCancelled?id=' . $payment->id);
@@ -7444,7 +7454,6 @@ class MyAccount_AJAX extends JSON_Action {
 			//Get the order information
 			$payment->userId = $patronId;
 			if ($payment->find(true)) {
-
 				$user = UserAccount::getLoggedInUser();
 				$patronId = $_REQUEST['patronId'];
 
@@ -7456,18 +7465,19 @@ class MyAccount_AJAX extends JSON_Action {
 				if ($systemVariables->libraryToUseForPayments == 0) {
 					$paymentLibrary = $userLibrary;
 				}
-
-				$aciSpeedpaySettings = new ACISpeedpaySetting();
-				$aciSpeedpaySettings->id = $paymentLibrary->aciSpeedpaySettingId;
-				if ($aciSpeedpaySettings->find(true)) {
-					return $aciSpeedpaySettings->submitTransaction($patron, $payment, $fundingToken, $billerAccount);
-				} else {
-					return $this->failureResult(null, 'Could not complete payment. ACI Speedpay is not setup for this library.');
-				}
 			} else {
 				return $this->failureResult(null, 'Unable to find payment in system to complete.');
 			}
 		}
+
+		$aciSpeedpaySettings = new ACISpeedpaySetting();
+		$aciSpeedpaySettings->id = $paymentLibrary->aciSpeedpaySettingId;
+		if (!$aciSpeedpaySettings->find(true)) {
+			return $this->failureResult(null, 'Could not complete payment. ACI Speedpay is not setup for this library.');
+		}
+
+		return $aciSpeedpaySettings->submitTransaction($patron ?? null, $payment, $fundingToken, $billerAccount, $donation ?? null);
+
 	}
 
 	/** @noinspection PhpUnused */

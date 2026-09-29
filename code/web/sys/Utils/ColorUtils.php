@@ -41,8 +41,8 @@ class ColorUtils {
 		if ($h < 0) {
 			$h = 0;
 		}
-		if ($h > 360) {
-			$h = 360;
+		if ($h >= 360) {
+			$h = 359.9999;
 		}
 		if ($s < 0) {
 			$s = 0;
@@ -53,10 +53,9 @@ class ColorUtils {
 		if ($l < 0) {
 			$l = 0;
 		}
-		if ($l > 360) {
-			$l = 360;
+		if ($l > 100) {
+			$l = 100;
 		}
-
 		if ($h > 1) {
 			$h /= 360;
 		}
@@ -181,6 +180,122 @@ class ColorUtils {
 			$luminanceVal = pow(($component + 0.055) / 1.055, 2.4);
 		}
 		return $luminanceVal;
+	}
+
+	private static function normalizeHexColor(string $color): string {
+		$temp = trim($color);
+
+		if (!str_starts_with($temp, '#')) {
+			$temp = '#' . $temp;
+		}
+
+		if (preg_match('/^#([0-9a-fA-F]{3})$/', $temp)) {
+			return sprintf('#%1$s%1$s%2$s%2$s%3$s%3$s', strtolower($temp[1]), strtolower($temp[2]), strtolower($temp[3]));
+		}
+
+		if (preg_match('/^#([0-9a-fA-F]{6})$/', $temp)) {
+			return strtolower($temp);
+		}
+
+		return $color;
+	}
+
+	/**
+	 * Generates a palette of colors based on a base color and calculates the contrast ratio with a text color.
+	 *
+	 * @param string $baseHex The base color in hex format (e.g., #RRGGBB).
+	 * @param string $textHex The text color in hex format (e.g., #RRGGBB).
+	 * @return array An associative array containing the generated palette with contrast ratios and WCAG AA compliance.
+	 */
+	public static function generatePalette(string $baseHex, string $textHex): array {
+		$LIGHTNESS_MAP = [
+			0.95,
+			0.85,
+			0.75,
+			0.65,
+			0.55,
+			0.45,
+			0.35,
+			0.25,
+			0.15,
+			0.05
+		];
+		$SATURATION_MAP = [
+			0.32,
+			0.16,
+			0.08,
+			0.04,
+			0.00,
+			0.00,
+			0.04,
+			0.08,
+			0.16,
+			0.32
+		];
+
+		$normalizedBase = self::normalizeHexColor($baseHex);
+		$normalizedText = self::normalizeHexColor($textHex);
+
+		$r = hexdec(substr($normalizedBase, 1, 2));
+		$g = hexdec(substr($normalizedBase, 3, 2));
+		$b = hexdec(substr($normalizedBase, 5, 2));
+
+		$baseHsl = self::colorRgbToHsl($r, $g, $b);
+		$baseHue = $baseHsl[0];
+		$baseSaturation = $baseHsl[1]; // 0..1
+		$baseLightness = $baseHsl[2];  // 0..1
+		$baseLuminance = self::getLuminanceForColor($normalizedBase);
+
+		$closestLightness = $LIGHTNESS_MAP[0];
+		$baseColorIndex = 0;
+		foreach ($LIGHTNESS_MAP as $i => $lightness) {
+			if (abs($lightness - $baseLightness) < abs($closestLightness - $baseLightness)) {
+				$closestLightness = $lightness;
+				$baseColorIndex = $i;
+			}
+		}
+
+		$colors = [];
+		foreach ($LIGHTNESS_MAP as $i => $lightness) {
+			$saturationDelta = $SATURATION_MAP[$i] - $SATURATION_MAP[$baseColorIndex];
+			$targetSaturation = $baseSaturation + $saturationDelta;
+
+			if ($targetSaturation < 0) {
+				$targetSaturation = 0;
+			}
+			if ($targetSaturation > 1) {
+				$targetSaturation = 1;
+			}
+
+			$rgb = self::colorHSLToRGB($baseHue, $targetSaturation * 100, $lightness * 100);
+			$colors[$i] = sprintf('#%02x%02x%02x', $rgb['r'], $rgb['g'], $rgb['b']);
+		}
+
+		// Preserve the exact original base color at its closest tonal slot
+		$colors[$baseColorIndex] = $normalizedBase;
+
+		$lighter = $normalizedBase;
+		for ($i = $baseColorIndex - 1; $i >= 0; $i--) {
+			if (self::getLuminanceForColor($colors[$i]) > $baseLuminance && self::calculateColorContrast($colors[$i], $normalizedText) >= 4.5) {
+				$lighter = $colors[$i];
+				break;
+			}
+		}
+
+		$darker = $normalizedBase;
+		for ($i = $baseColorIndex + 1; $i < count($colors); $i++) {
+			if (self::getLuminanceForColor($colors[$i]) < $baseLuminance && self::calculateColorContrast($colors[$i], $normalizedText) >= 4.5) {
+				$darker = $colors[$i];
+				break;
+			}
+		}
+
+		return [
+			'lighter' => $lighter,
+			'base' => $normalizedBase,
+			'text' => $normalizedText,
+			'darker' => $darker,
+		];
 	}
 
 }

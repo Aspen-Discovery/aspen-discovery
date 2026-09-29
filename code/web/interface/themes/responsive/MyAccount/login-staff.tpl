@@ -47,13 +47,13 @@
 							{* disable forgot password if sso only since its managed else where *}
 								{if $forgotPasswordType != 'null' && $forgotPasswordType != 'none'}
 									<p class="text-muted help-block">
-										<strong>{translate text="Forgot %1%?" 1=$passwordLabel isPublicFacing=true}</strong>&nbsp;&nbsp;
+										<strong>{translate text="Forgot %1%?" 1=$passwordLabel translateParameters=true isPublicFacing=true}</strong>&nbsp;&nbsp;
 										{if $forgotPasswordType == 'emailAspenResetLink'}
-											<a href="/MyAccount/InitiateResetPin">{translate text="Reset My %1%" 1=$passwordLabel isPublicFacing=true}</a>
+											<a href="/MyAccount/InitiateResetPin">{translate text="Reset My %1%" 1=$passwordLabel translateParameters=true isPublicFacing=true}</a>
 										{elseif $forgotPasswordType == 'emailResetLink'}
-											<a href="/MyAccount/EmailResetPin">{translate text="Reset My %1%" 1=$passwordLabel isPublicFacing=true}</a>
+											<a href="/MyAccount/EmailResetPin">{translate text="Reset My %1%" 1=$passwordLabel translateParameters=true isPublicFacing=true}</a>
 										{else}
-											<a href="/MyAccount/EmailPin">{translate text="Email my %1%" 1=$passwordLabel isPublicFacing=true}</a>
+											<a href="/MyAccount/EmailPin">{translate text="Email my %1%" 1=$passwordLabel translateParameters=true isPublicFacing=true}</a>
 										{/if}
 									</p>
 								{/if}
@@ -61,13 +61,13 @@
 								{if $ssoLoginOptions != 1 && empty($ssoService)}
 									{if $forgotPasswordType != 'null' && $forgotPasswordType != 'none'}
 										<p class="text-muted help-block">
-											<strong>{translate text="Forgot %1%?" 1=$passwordLabel isPublicFacing=true}</strong>&nbsp;&nbsp;
+											<strong>{translate text="Forgot %1%?" 1=$passwordLabel translateParameters=true isPublicFacing=true}</strong>&nbsp;&nbsp;
 											{if $forgotPasswordType == 'emailAspenResetLink'}
-												<a href="/MyAccount/InitiateResetPin">{translate text="Reset My %1%" 1=$passwordLabel isPublicFacing=true}</a>
+												<a href="/MyAccount/InitiateResetPin">{translate text="Reset My %1%" 1=$passwordLabel translateParameters=true isPublicFacing=true}</a>
 											{elseif $forgotPasswordType == 'emailResetLink'}
-												<a href="/MyAccount/EmailResetPin">{translate text="Reset My %1%" 1=$passwordLabel isPublicFacing=true}</a>
+												<a href="/MyAccount/EmailResetPin">{translate text="Reset My %1%" 1=$passwordLabel translateParameters=true isPublicFacing=true}</a>
 											{else}
-												<a href="/MyAccount/EmailPin">{translate text="Email my %1%" 1=$passwordLabel isPublicFacing=true}</a>
+												<a href="/MyAccount/EmailPin">{translate text="Email my %1%" 1=$passwordLabel translateParameters=true isPublicFacing=true}</a>
 											{/if}
 										</p>
 									{/if}
@@ -86,7 +86,7 @@
 						<div class="col-xs-12 col-sm-offset-4 col-sm-8">
 							<label for="showPwd" class="checkbox">
 								<input type="checkbox" id="showPwd" name="showPwd" onclick="return AspenDiscovery.pwdToText('password')">
-								{translate text="Reveal %1%" 1=$passwordLabel isPublicFacing=true}
+								{translate text="Reveal %1%" 1=$passwordLabel translateParameters=true isPublicFacing=true}
 							</label>
 
 							{if !$canLoginSSO}
@@ -112,7 +112,7 @@
 					<div id="loginActions" class="form-group">
 						<div class="col-xs-12 col-sm-offset-4 col-sm-8">
 						{if !empty($ldapLabel) && $canLoginSSO}
-							<input type="submit" name="submit" value="{translate text="Sign in with %1%" 1=$ldapLabel isPublicFacing=true}" id="loginFormSubmit" class="btn btn-primary" onclick="return AspenDiscovery.Account.preProcessLogin();">
+							<input type="submit" name="submit" value="{translate text="Sign in with %1%" 1=$ldapLabel translateParameters=true isPublicFacing=true}" id="loginFormSubmit" class="btn btn-primary" onclick="return AspenDiscovery.Account.preProcessLogin();">
 						{else}
 							<input type="submit" name="submit" value="{translate text="Login" isPublicFacing=true}" id="loginFormSubmit" class="btn btn-primary" onclick="return AspenDiscovery.Account.preProcessLogin();">
 						{/if}

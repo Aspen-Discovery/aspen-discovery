@@ -24,10 +24,12 @@ public class RecordInfo {
 	private long formatBoost = 1;
 
 	private String edition;
+	// The raw audience from the 521a
 	private String audience;
+
+	private HashSet<String> targetAudience = new HashSet<>();
+	private HashSet<String> targetAudienceFull = new HashSet<>();
 	private String primaryLanguage;
-	private final HashSet<String> languages = new HashSet<>();
-	protected HashSet<String> translations = new HashSet<>();
 	protected Long languageBoost = 1L;
 	protected Long languageBoostSpanish = 1L;
 	private String publisher;
@@ -86,6 +88,30 @@ public class RecordInfo {
 		return audience;
 	}
 
+	void addTargetAudiences(HashSet<String> targetAudiences) {
+		this.targetAudience.addAll(targetAudiences);
+	}
+
+	void addTargetAudience(String targetAudiences) {
+		this.targetAudience.add(targetAudiences);
+	}
+
+	public String getTargetAudience() {
+		return String.join(", ", targetAudience);
+	}
+
+	void addTargetAudiencesFull(HashSet<String> targetAudiencesFull) {
+		this.targetAudienceFull.addAll(targetAudiencesFull);
+	}
+
+	void addTargetAudienceFull(String targetAudiencesFull) {
+		this.targetAudienceFull.add(targetAudiencesFull);
+	}
+
+	public String getTargetAudienceFull() {
+		return String.join(", ", targetAudienceFull);
+	}
+
 	void setPrimaryLanguage(String primaryLanguage) {
 		this.primaryLanguage = primaryLanguage;
 	}
@@ -107,14 +133,12 @@ public class RecordInfo {
 	}
 
 	public void addLanguage(String language) {
-		this.languages.add(language);
 		if (this.primaryLanguage == null) {
 			this.setPrimaryLanguage(language);
 		}
 	}
 
 	void setLanguages(HashSet<String> languages) {
-		this.languages.addAll(languages);
 		if (this.primaryLanguage == null) {
 			setPrimaryLanguage(languages.iterator().next());
 		}
@@ -397,6 +421,10 @@ public class RecordInfo {
 		this.formatBoost = recordInfo.formatBoost;
 		this.edition = recordInfo.edition;
 		this.audience = recordInfo.audience;
+		//noinspection unchecked
+		this.targetAudience = (HashSet<String>)recordInfo.targetAudience.clone();
+		//noinspection unchecked
+		this.targetAudienceFull = (HashSet<String>)recordInfo.targetAudienceFull.clone();
 		this.primaryLanguage = recordInfo.primaryLanguage;
 		this.publisher = recordInfo.publisher;
 		this.placeOfPublication = recordInfo.placeOfPublication;
@@ -495,7 +523,7 @@ public class RecordInfo {
 	}
 
 	@SuppressWarnings("DuplicatedCode")
-	public ArrayList<SolrInputDocument> getRecordScopeSolrDocuments(GroupedWorkIndexer groupedWorkIndexer, Long daysAddedSincePubDate) {
+	public ArrayList<SolrInputDocument> getRecordScopeSolrDocuments(GroupedWorkIndexer groupedWorkIndexer, AbstractGroupedWorkSolr parentWork, Long daysAddedSincePubDate) {
 		if (databaseId == -1) {
 			//This did not save for some reason
 			return null;
@@ -509,17 +537,12 @@ public class RecordInfo {
 		ArrayList<SolrInputDocument> recordSolrScopeDocuments = new ArrayList<>();
 		HashSet<String> formatsForRecord = getFormats();
 		HashSet<String> formatCategoriesForRecord = getFormatCategories();
-		if (formatsForRecord.contains("eAudiobook")) {
-			formatCategoriesForRecord.add("eBook");
-		}
-		if (formatsForRecord.contains("CD + Book")) {
-			formatCategoriesForRecord.add("Books");
-			formatCategoriesForRecord.add("#udio Books");
-		}
-		if (formatsForRecord.contains("VOX Books")) {
-			formatCategoriesForRecord.add("Books");
-			formatCategoriesForRecord.add("Audio Books");
-		}
+
+		HashSet<String> filteredTargetAudiences = groupedWorkIndexer.cleanTargetAudiences(targetAudience);
+		HashSet<String> filteredTargetAudiencesFull = groupedWorkIndexer.cleanTargetAudiences(targetAudienceFull);
+		if (parentWork.isDebugEnabled()) {parentWork.addDebugMessage("Final target audience for " + this.recordIdentifier + " is " + targetAudience, 1);}
+		if (parentWork.isDebugEnabled()) {parentWork.addDebugMessage("Final full target audience " + this.recordIdentifier + " is " + targetAudienceFull, 1);}
+
 
 		for (String scopeName : relatedScopes) {
 			Scope curScope = groupedWorkIndexer.getScopes().get(scopeName);
@@ -528,20 +551,22 @@ public class RecordInfo {
 			}
 			SolrInputDocument recordDoc = new SolrInputDocument();
 			recordDoc.setField("id", "record_" + databaseId + "_" + scopeName);
-			recordDoc.setField("_nest_path_", "/record_scoping");
 			recordDoc.setField("recordtype", "record_scoping");
 			recordDoc.setField("scope", scopeName);
-			recordDoc.setField("format", formatsForRecord);
-			recordDoc.setField("format_category", formatCategoriesForRecord);
+
 
 			AvailabilityToggleInfo availabilityToggleValuesForScope = new AvailabilityToggleInfo();
-			int availableCopiesForScope = 0;
 			Long daysSinceAddedForScope = null;
 			String sortableCallNumberForScope = null;
 			int libraryBoostForScope = 0;
 
 			String scopeFacetLabel = curScope.getFacetLabel();
 			GroupedWorkDisplaySettings scopeDisplaySettings = curScope.getGroupedWorkDisplaySettings();
+
+			HashSet<String> formatsForRecordScope = new HashSet<>(formatsForRecord);
+			HashSet<String> formatCategoriesForRecordScope = new HashSet<>(formatCategoriesForRecord);
+
+			HashSet<String> targetAudiencesForScopeByItem = new HashSet<>();
 
 			for (ItemInfo curItem : relatedItems) {
 				ScopingInfo scopingInfo = curItem.getScopingInfo().get(scopeName);
@@ -552,10 +577,13 @@ public class RecordInfo {
 				String trimmedIType = curItem.getTrimmedIType();
 
 				if (curItem.getFormat() != null) {
-					formatsForRecord.add(curItem.getFormat());
+					formatsForRecordScope.add(curItem.getFormat());
 				}
 				if (curItem.getFormatCategory() != null) {
-					formatsForRecord.add(curItem.getFormatCategory());
+					formatCategoriesForRecordScope.add(curItem.getFormatCategory());
+				}
+				if (curItem.getTargetAudience() != null) {
+					targetAudiencesForScopeByItem.add(curItem.getTargetAudience());
 				}
 
 				boolean addAllOwningLocations = false;
@@ -577,7 +605,6 @@ public class RecordInfo {
 					recordDoc.addField("owning_library", trimmedEContentSource);
 					if (isAvailable) {
 						recordDoc.addField("available_at", trimmedEContentSource);
-						availableCopiesForScope += curItem.getNumCopies();
 					}
 					recordDoc.addField("econtent_source", trimmedEContentSource);
 				} else { //physical materials
@@ -622,9 +649,6 @@ public class RecordInfo {
 							recordDoc.addField("owning_library", libraryOwnedName);
 						}
 						addAllOwningLocations = true;
-					}
-					if (isAvailable) {
-						availableCopiesForScope += curItem.getNumCopies();
 					}
 				}
 
@@ -680,6 +704,30 @@ public class RecordInfo {
 				}
 			} // End looping through items
 
+			if (formatsForRecordScope.contains("eAudiobook")) {
+				formatCategoriesForRecordScope.add("eBook");
+			}
+			if (formatsForRecordScope.contains("CD + Book")) {
+				formatCategoriesForRecordScope.add("Books");
+				formatCategoriesForRecordScope.add("#udio Books");
+			}
+			if (formatsForRecordScope.contains("VOX Books")) {
+				formatCategoriesForRecordScope.add("Books");
+				formatCategoriesForRecordScope.add("Audio Books");
+			}
+
+			recordDoc.setField("format", formatsForRecordScope);
+			recordDoc.setField("format_category", formatCategoriesForRecordScope);
+
+			if (targetAudiencesForScopeByItem.isEmpty()) {
+				recordDoc.setField("target_audience", filteredTargetAudiences);
+				recordDoc.setField("target_audience_full", filteredTargetAudiencesFull);
+			}else{
+				HashSet<String> cleanedAudiencesForScopeByItem = groupedWorkIndexer.cleanTargetAudiences(targetAudiencesForScopeByItem);
+				recordDoc.setField("target_audience", cleanedAudiencesForScopeByItem);
+				recordDoc.setField("target_audience_full", cleanedAudiencesForScopeByItem);
+			}
+
 			recordDoc.addField("availability_toggle", availabilityToggleValuesForScope.getValues());
 			if (curScope.getLocationsToExcludeAvailabilityForPattern() != null) {
 				//Filter available At by locationsToExcludeAvailabilityFor
@@ -693,8 +741,6 @@ public class RecordInfo {
 				recordDoc.addField("local_time_since_added", DateUtils.getTimeSinceAdded(daysSinceAddedForScope));
 			}
 			recordDoc.addField("lib_boost", libraryBoostForScope);
-			recordDoc.addField("available_copies", availableCopiesForScope);
-			recordDoc.addField("callnumber_sort", sortableCallNumberForScope);
 
 			recordSolrScopeDocuments.add(recordDoc);
 		}

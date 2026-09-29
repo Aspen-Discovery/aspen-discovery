@@ -428,7 +428,9 @@ class GroupedWorksSolrConnector2 extends Solr {
 		// Break apart sort into field name and sort direction (note error
 		// suppression to prevent notice when direction is left blank):
 		$sort = trim($sort);
-		@list($sortField, $sortDirection) = explode(' ', $sort);
+		$parts = explode(' ', $sort, 2);
+		$sortField = $parts[0];
+		$sortDirection = $parts[1] ?? '';
 
 		// Default sort order (may be overridden by switch below):
 		$defaultSortDirection = 'asc';
