@@ -1553,7 +1553,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 				$actions[] = [
 					'title' => $title,
 					'url' => $libKeyLink ? $libKeyLink : $relatedUrls[0]['url'],
-					'requireLogin' => false,
+					'requireLogin' => $this->urlRequiresLogin($libKeyLink ? $libKeyLink : $relatedUrls[0]['url']),
 					'type' => 'access_online',
 					'id' => "accessOnline_{$this->getId()}",
 					'target' => '_blank',
@@ -1584,7 +1584,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 						'url' => $action,
 						'redirectUrl' => $fileOrUrl,
 						'title' => $title,
-						'requireLogin' => false,
+						'requireLogin' => $this->urlRequiresLogin($fileOrUrl),
 						'alt' => $alt,
 						'target' => '_blank',
 						'type' => 'access_online'
@@ -1614,7 +1614,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 						'url' => $action,
 						'redirectUrl' => $fileOrUrl,
 						'title' => $title,
-						'requireLogin' => false,
+						'requireLogin' => $this->urlRequiresLogin($fileOrUrl),
 						'alt' => $alt,
 						'target' => '_blank',
 					];
@@ -2942,7 +2942,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 	 * @param string $url
 	 * @return bool true if the URL must be hidden for the current (logged out) user
 	 */
-	private function urlRequiresLogin(string $url): bool {
+	protected function urlRequiresLogin(string $url): bool {
 		if (UserAccount::isLoggedIn()) {
 			return false;
 		}
