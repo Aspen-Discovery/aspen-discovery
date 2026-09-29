@@ -1371,9 +1371,9 @@ public class GroupedWorkIndexer implements AutoCloseable {
 
 			//Write the record to Solr.
 			try {
-				if (this.isStoreRecordDetailsInDatabase()) {
+				/*if (this.isStoreRecordDetailsInDatabase()) {
 					groupedWork.saveRecordsToDatabase(id);
-				}
+				}*/
 
 				//Check to see if the grouped work has parent records and if so, skip it.
 				SolrInputDocument inputDocument = groupedWork.getSolrDocument(logEntry);
@@ -1460,7 +1460,7 @@ public class GroupedWorkIndexer implements AutoCloseable {
 				groupedWork.setLexileScore(lexileTitle.getLexileScore());
 				groupedWork.addAwards(lexileTitle.getAwards());
 				if (!lexileTitle.getSeries().isEmpty()){
-					groupedWork.addSeriesWithVolume(lexileTitle.getSeries(), lexileTitle.getAuthor(), "", 1, false);
+					groupedWork.addSeriesWithVolume(lexileTitle.getSeries(), lexileTitle.getAuthor(), "", 1, false, false);
 				}
 				break;
 			}
@@ -1587,7 +1587,7 @@ public class GroupedWorkIndexer implements AutoCloseable {
 						if (novelistRS.wasNull()) {
 							volume = "";
 						}
-						groupedWork.addSeriesWithVolume(series, "", volume, 2, false);
+						groupedWork.addSeriesWithVolume(series, "", volume, 2, false, false);
 					}
 				}
 				novelistRS.close();
@@ -1643,9 +1643,12 @@ public class GroupedWorkIndexer implements AutoCloseable {
 				}
 			}
 
+			boolean hasNonEContentSeries = groupedWork.series.values().stream().anyMatch(s -> !s.fromEContent());
+
 			for (SeriesInfo seriesInfo : groupedWork.series.values()) {
 				//Don't create series module records from untraced series
-				if (!seriesInfo.isTraced() && !include490_0) {
+				//Prefer non-econtent series info but use as fallback if no other series info exists
+				if ((!seriesInfo.isTraced() && !include490_0) || (seriesInfo.fromEContent() && hasNonEContentSeries)) {
 					continue;
 				}
 				long timeNow = new Date().getTime() / 1000;
@@ -2108,7 +2111,7 @@ public class GroupedWorkIndexer implements AutoCloseable {
 						if (seriesDisplayOrder == null) {
 							seriesDisplayOrder = "";
 						}
-						groupedWork.addSeriesWithVolume(seriesName, author, seriesDisplayOrder, 2, false);
+						groupedWork.addSeriesWithVolume(seriesName, author, seriesDisplayOrder, 2, false, false);
 					}else{
 						if (groupedWork.isDebugEnabled()) {
 							groupedWork.addDebugMessage("Not applying series data for grouped work because no series was defined", 2);

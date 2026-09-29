@@ -181,7 +181,7 @@ class HooplaProcessor2 {
 						}
 						volume += "Episode " + rawResponse.optString("episodeNumber", rawResponse.optString("episode", ""));
 					}
-					groupedWork.addSeriesWithVolume(series, primaryAuthor, volume, 2, false);
+					groupedWork.addSeriesWithVolume(series, primaryAuthor, volume, 2, false, true);
 				}
 
 				if (rawResponse.has("atosBookLevel")) {

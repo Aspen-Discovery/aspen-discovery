@@ -94,7 +94,7 @@ class Axis360Processor {
 
 				String series = getFieldValue(rawResponse,"series");
 				if (!series.isEmpty()){
-					groupedWork.addSeriesWithVolume(series, primaryAuthor, "", 2, true);
+					groupedWork.addSeriesWithVolume(series, primaryAuthor, "", 2, true, false);
 				}
 
 				String targetAudience = loadAxis360Subjects(groupedWork, rawResponse, axis360Record);

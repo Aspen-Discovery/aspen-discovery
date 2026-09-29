@@ -16,6 +16,7 @@ public class SeriesInfo {
 	private String language;
 	private int priorityScore;
 	private boolean isTraced = false;
+	private boolean fromEContent = false;
 
 	private boolean isIndexed = true;
 
@@ -180,12 +181,22 @@ public class SeriesInfo {
 		return isTraced;
 	}
 
+	public boolean fromEContent() {
+		return fromEContent;
+	}
+
 	/**
 	 * If at least one instance of the series is traced, we will mark it as traced and add it
 	 */
 	public void setTraced(boolean traced) {
 		if (traced) {
 			isTraced = true;
+		}
+	}
+
+	public void setFromEContent(boolean eContent) {
+		if (eContent) {
+			fromEContent = true;
 		}
 	}
 
