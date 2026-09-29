@@ -22,6 +22,8 @@ abstract class EventRecordDriver extends IndexRecordDriver {
 		];
 	}
 
+	public abstract function isValid();
+
 	public abstract function getEventDateCoverType() : string;
 
 	public function getBookcoverUrl($size = 'small', $absolutePath = false) : string {
