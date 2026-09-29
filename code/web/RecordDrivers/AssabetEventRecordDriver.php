@@ -119,17 +119,8 @@ class AssabetEventRecordDriver extends EventRecordDriver {
 		return 'RecordDrivers/Events/assabet_result.tpl';
 	}
 
-	public function getBookcoverUrl($size = 'small', $absolutePath = false) {
-		global $configArray;
-
-		if ($absolutePath) {
-			$bookCoverUrl = $configArray['Site']['url'];
-		} else {
-			$bookCoverUrl = '';
-		}
-		$bookCoverUrl .= "/bookcover.php?id={$this->getUniqueID()}&size={$size}&type=assabet_event";
-
-		return $bookCoverUrl;
+	public function getEventDateCoverType() : string {
+		return 'assabet_event';
 	}
 
 	public function getModule(): string {

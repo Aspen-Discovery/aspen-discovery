@@ -1965,18 +1965,19 @@ class BookCoverProcessor {
 		return $this->eventDateCoverProps;
 	}
 
+	//Callers that know the event send the fingerprint so the cover can be named without
+	//loading the record
 	private function getEventDateCoverFingerprint() : string {
-		$eventDateCoverProps = $this->resolveEventDateCoverProps();
-		$props = $eventDateCoverProps['props'];
-		$eventDate = $props['eventDate'] instanceof DateTime ? $props['eventDate']->getTimestamp() : '';
+		$requestedFingerprint = $_GET['fingerprint'] ?? '';
+		if (is_string($requestedFingerprint)) {
+			$requestedFingerprint = preg_replace('/[^a-f0-9]/', '', $requestedFingerprint);
+			if (!empty($requestedFingerprint)) {
+				return substr($requestedFingerprint, 0, 8);
+			}
+		}
 
-		return substr(md5(implode('|', [
-			$eventDateCoverProps['title'],
-			$eventDate,
-			$props['branch'],
-			$props['displayBranchOnThumbnail'],
-			$props['isPastEvent'],
-		])), 0, 8);
+		require_once ROOT_DIR . '/RecordDrivers/EventRecordDriver.php';
+		return EventRecordDriver::buildEventDateCoverFingerprint($this->resolveEventDateCoverProps());
 	}
 
 	private function getEventDateCoverProps(EventRecordDriver $driver, string $id) : array {

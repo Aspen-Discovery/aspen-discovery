@@ -160,17 +160,20 @@ class AspenEventRecordDriver extends EventRecordDriver {
 		return 'RecordDrivers/Events/aspenEvent_result.tpl';
 	}
 
-	public function getBookcoverUrl($size = 'small', $absolutePath = false, $type = "aspenEvent_event") {
+	public function getEventDateCoverType() : string {
+		return 'aspenEvent_event';
+	}
+
+	public function getBookcoverUrl($size = 'small', $absolutePath = false, $type = "aspenEvent_event") : string {
+		if ($type == $this->getEventDateCoverType()) {
+			return parent::getBookcoverUrl($size, $absolutePath);
+		}
+
 		global $configArray;
 
-		if ($absolutePath) {
-			$bookCoverUrl = $configArray['Site']['url'];
-		} else {
-			$bookCoverUrl = '';
-		}
-		$bookCoverUrl .= "/bookcover.php?id={$this->getUniqueID()}&size={$size}&type={$type}";
+		$bookCoverUrl = $absolutePath ? $configArray['Site']['url'] : '';
 
-		return $bookCoverUrl;
+		return $bookCoverUrl . "/bookcover.php?id={$this->getUniqueID()}&size={$size}&type={$type}";
 	}
 
 	public function getModule(): string {

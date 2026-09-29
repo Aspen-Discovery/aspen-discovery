@@ -129,18 +129,9 @@ class LocalHopEventRecordDriver extends EventRecordDriver
 		return 'RecordDrivers/Events/localhop_result.tpl';
 	}
 
-	public function getBookcoverUrl($size = 'small', $absolutePath = false)
+	public function getEventDateCoverType() : string
 	{
-		global $configArray;
-
-		if ($absolutePath) {
-			$bookCoverUrl = $configArray['Site']['url'];
-		} else {
-			$bookCoverUrl = '';
-		}
-		$bookCoverUrl .= "/bookcover.php?id={$this->getUniqueID()}&size={$size}&type=localhop_event";
-
-		return $bookCoverUrl;
+		return 'localhop_event';
 	}
 
 	public function getModule(): string

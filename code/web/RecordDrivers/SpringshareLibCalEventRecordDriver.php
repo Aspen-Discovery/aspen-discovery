@@ -123,17 +123,8 @@ class SpringshareLibCalEventRecordDriver extends EventRecordDriver {
 		return 'RecordDrivers/Events/springshare_libcal_result.tpl';
 	}
 
-	public function getBookcoverUrl($size = 'small', $absolutePath = false) {
-		global $configArray;
-
-		if ($absolutePath) {
-			$bookCoverUrl = $configArray['Site']['url'];
-		} else {
-			$bookCoverUrl = '';
-		}
-		$bookCoverUrl .= "/bookcover.php?id={$this->getUniqueID()}&size={$size}&type=springshare_libcal_event";
-
-		return $bookCoverUrl;
+	public function getEventDateCoverType() : string {
+		return 'springshare_libcal_event';
 	}
 
 	public function getModule(): string {

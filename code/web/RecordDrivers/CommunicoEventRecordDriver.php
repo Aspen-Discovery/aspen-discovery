@@ -122,24 +122,18 @@ class CommunicoEventRecordDriver extends EventRecordDriver {
 		return 'RecordDrivers/Events/communico_result.tpl';
 	}
 
-	public function getBookcoverUrl($size = 'small', $absolutePath = false): string {
-		global $configArray;
+	public function getEventDateCoverType() : string {
+		return 'communico_event';
+	}
 
-		if ($absolutePath) {
-			$bookCoverUrl = $configArray['Site']['url'];
-		} else {
-			$bookCoverUrl = '';
-		}
-
+	protected function getEventCoverId() {
 		// For expired events that don't have a valid ID, use the original ID from constructor.
 		$uniqueId = $this->getUniqueID();
 		if (empty($uniqueId) && !$this->isValid() && !empty($this->originalId)) {
-			$uniqueId = $this->originalId;
+			return $this->originalId;
 		}
 
-		$bookCoverUrl .= "/bookcover.php?id={$uniqueId}&size={$size}&type=communico_event";
-
-		return $bookCoverUrl;
+		return $uniqueId;
 	}
 
 	public function getModule(): string {

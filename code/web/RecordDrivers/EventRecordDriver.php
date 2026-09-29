@@ -22,6 +22,38 @@ abstract class EventRecordDriver extends IndexRecordDriver {
 		];
 	}
 
+	public abstract function getEventDateCoverType() : string;
+
+	public function getBookcoverUrl($size = 'small', $absolutePath = false) : string {
+		global $configArray;
+
+		$bookCoverUrl = $absolutePath ? $configArray['Site']['url'] : '';
+		$type = $this->getEventDateCoverType();
+
+		return $bookCoverUrl . "/bookcover.php?id={$this->getEventCoverId()}&size={$size}&type={$type}&fingerprint={$this->getEventDateCoverFingerprint()}";
+	}
+
+	protected function getEventCoverId() {
+		return $this->getUniqueID();
+	}
+
+	public function getEventDateCoverFingerprint() : string {
+		return self::buildEventDateCoverFingerprint($this->getEventDateCoverData());
+	}
+
+	public static function buildEventDateCoverFingerprint(array $eventDateCoverData) : string {
+		$props = $eventDateCoverData['props'];
+		$eventDate = $props['eventDate'] instanceof DateTime ? $props['eventDate']->getTimestamp() : '';
+
+		return substr(md5(implode('|', [
+			$eventDateCoverData['title'],
+			$eventDate,
+			$props['branch'],
+			$props['displayBranchOnThumbnail'],
+			$props['isPastEvent'],
+		])), 0, 8);
+	}
+
 	public function getEventDateCoverDataFromDB(string $id) : array {
 		$startDate = $this->getStartDateFromDB($id);
 		return [
