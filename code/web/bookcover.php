@@ -3,7 +3,7 @@ require_once 'bootstrap.php';
 require_once 'bootstrap_aspen.php';
 
 global $aspenUsage;
-$aspenUsage->coverViews++;
+$aspenUsage->incCoverViews();
 require_once ROOT_DIR . '/sys/Covers/BookCoverProcessor.php';
 
 global $configArray;
@@ -18,13 +18,5 @@ if ($processor->error) {
 	$logger->log("Error processing cover " . $processor->error, Logger::LOG_ERROR);
 	echo($processor->error);
 }
-try {
-	if (!empty($aspenUsage->__get('id'))) {
-		$aspenUsage->update();
-	} else {
-		$aspenUsage->insert();
-	}
-	//Do not need to update usage by IP here since it is done in bootstrap
-} catch (Exception $e) {
-	//The table is not created yet, ignore
-}
+//Do not need to update aspen usage here because we are doing it atomically as values update
+//Do not need to update usage by IP here since it is done in bootstrap

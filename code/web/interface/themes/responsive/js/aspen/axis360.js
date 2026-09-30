@@ -7,18 +7,18 @@ AspenDiscovery.Axis360 = (function () {
 				cache: false,
 				success: function (data) {
 					if (data.success) {
-						AspenDiscovery.showMessage("Hold Cancelled", data.message, true);
+						AspenDiscovery.showMessage(__('Hold Cancelled'), data.message, true);
 						$(".axis360Hold_" + id + "_" + patronId).hide();
 						AspenDiscovery.Account.loadMenuData();
 					} else {
-						AspenDiscovery.showMessage("Error Cancelling Hold", data.message, true);
+						AspenDiscovery.showMessage(__('Error Cancelling Hold'), data.message, true);
 					}
 
 				},
 				dataType: 'json',
 				async: false,
 				error: function () {
-					AspenDiscovery.showMessage("Error Cancelling Hold", "An error occurred processing your request in Boundless.  Please try again in a few minutes.", false);
+					AspenDiscovery.showMessage(__('Error Cancelling Hold'), __('An error occurred processing your request in Boundless.  Please try again in a few minutes.'), false);
 				}
 			});
 		},
@@ -94,7 +94,7 @@ AspenDiscovery.Axis360 = (function () {
 						if (data.availableForCheckout) {
 							AspenDiscovery.Axis360.doCheckOut(patronId, id);
 						} else {
-							AspenDiscovery.showMessage("Placed Hold", data.message, !data.hasWhileYouWait);
+							AspenDiscovery.showMessage(__('Placed Hold'), data.message, !data.hasWhileYouWait);
 							AspenDiscovery.Account.loadMenuData();
 						}
 					});
@@ -102,7 +102,7 @@ AspenDiscovery.Axis360 = (function () {
 				dataType: 'json',
 				async: false,
 				error: function () {
-					AspenDiscovery.showMessage("Error Placing Hold", "An error occurred processing your request in Boundless.  Please try again in a few minutes.", false);
+					AspenDiscovery.showMessage(__('Error Placing Hold'), __('An error occurred processing your request in Boundless.  Please try again in a few minutes.'), false);
 				}
 			});
 			return true;
@@ -212,16 +212,16 @@ AspenDiscovery.Axis360 = (function () {
 				cache: false,
 				success: function (data) {
 					if (data.success) {
-						AspenDiscovery.showMessage("Title Renewed", data.message, true);
+						AspenDiscovery.showMessage(__('Title Renewed'), data.message, true);
 					} else {
-						AspenDiscovery.showMessage("Unable to Renew Title", data.message, true);
+						AspenDiscovery.showMessage(__('Unable to Renew Title'), data.message, true);
 					}
 
 				},
 				dataType: 'json',
 				async: false,
 				error: function () {
-					AspenDiscovery.showMessage("Error Renewing Checkout", "An error occurred processing your request in Boundless.  Please try again in a few minutes.", false);
+					AspenDiscovery.showMessage(__('Error Renewing Checkout'), __('An error occurred processing your request in Boundless.  Please try again in a few minutes.'), false);
 				}
 			});
 		},
@@ -233,18 +233,18 @@ AspenDiscovery.Axis360 = (function () {
 				cache: false,
 				success: function (data) {
 					if (data.success) {
-						AspenDiscovery.showMessage("Title Returned", data.message, true);
+						AspenDiscovery.showMessage(__('Title Returned'), data.message, true);
 						$(".axis360Checkout_" + recordId + "_" + patronId).hide();
 						AspenDiscovery.Account.loadMenuData();
 					} else {
-						AspenDiscovery.showMessage("Error Returning Title", data.message, true);
+						AspenDiscovery.showMessage(__('Error Returning Title'), data.message, true);
 					}
 
 				},
 				dataType: 'json',
 				async: false,
 				error: function () {
-					AspenDiscovery.showMessage("Error Returning Checkout", "An error occurred processing your request in Boundless.  Please try again in a few minutes.", false);
+					AspenDiscovery.showMessage(__('Error Returning Checkout'), __('An error occurred processing your request in Boundless.  Please try again in a few minutes.'), false);
 				}
 			});
 		},
@@ -253,7 +253,7 @@ AspenDiscovery.Axis360 = (function () {
 			var url = Globals.path + "/Axis360/" + id + "/AJAX?method=getStaffView";
 			$.getJSON(url, function (data) {
 				if (!data.success) {
-					AspenDiscovery.showMessage('Error', data.message);
+					AspenDiscovery.showMessage(__('Error'), data.message);
 				} else {
 					$("#staffViewPlaceHolder").replaceWith(data.staffView);
 				}
@@ -270,9 +270,9 @@ AspenDiscovery.Axis360 = (function () {
 			};
 			$.getJSON(url, params, function(data){
 				if (data.success) {
-					AspenDiscovery.showMessage("Success", data.message, true, true);
+					AspenDiscovery.showMessage(__('Success'), data.message, true, true);
 				} else {
-					AspenDiscovery.showMessage("Error", data.message);
+					AspenDiscovery.showMessage(__('Error'), data.message);
 				}
 			}).error(AspenDiscovery.ajaxFail);
 		},
@@ -288,9 +288,9 @@ AspenDiscovery.Axis360 = (function () {
 			};
 			$.getJSON(url, params, function(data){
 				if (data.success) {
-					AspenDiscovery.showMessage("Success", data.message, true, true);
+					AspenDiscovery.showMessage(__('Success'), data.message, true, true);
 				} else {
-					AspenDiscovery.showMessage("Error", data.message);
+					AspenDiscovery.showMessage(__('Error'), data.message);
 				}
 			}).error(AspenDiscovery.ajaxFail);
 		},

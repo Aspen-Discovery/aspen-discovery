@@ -10,7 +10,7 @@ class Lists_Results extends ResultsAction {
 		global $interface;
 		global $timer;
 		global $aspenUsage;
-		$aspenUsage->userListSearches++;
+		$aspenUsage->incUserListSearches();
 
 		// Include Search Engine Class
 		require_once ROOT_DIR . '/sys/SolrConnector/Solr.php';
