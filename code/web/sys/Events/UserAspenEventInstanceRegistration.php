@@ -323,18 +323,23 @@ class UserAspenEventInstanceRegistration extends DataObject {
 		return !empty($this->registeredByStaffId);
 	}
 
-	public function saveEventFieldValue(int $eventFieldId, string $value): void {
+	public function saveEventFieldValue(int $eventFieldId, string $value): bool {
 		if (empty($value) && $value !== '0') {
-			return;
+			return true;
 		}
 		require_once ROOT_DIR . '/sys/Events/UserAspenEventInstanceRegistrationEventField.php';
 		$fieldEntry = new UserAspenEventInstanceRegistrationEventField();
 		$fieldEntry->eventInstanceRegistrationId = $this->id;
 		$fieldEntry->eventFieldId = $eventFieldId;
 		if ($fieldEntry->find(true)) {
-			return;
+			return true;
 		}
 		$fieldEntry->value = $value;
-		$fieldEntry->insert();
+		if ($fieldEntry->insert() === false) {
+			global $logger;
+			$logger->log("Failed to save event field value (registrationId=$this->id, eventFieldId=$eventFieldId): " . $fieldEntry->getLastError(), Logger::LOG_ERROR);
+			return false;
+		}
+		return true;
 	}
 }
