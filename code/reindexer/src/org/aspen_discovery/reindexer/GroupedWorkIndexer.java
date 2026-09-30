@@ -1371,9 +1371,9 @@ public class GroupedWorkIndexer implements AutoCloseable {
 
 			//Write the record to Solr.
 			try {
-				/*if (this.isStoreRecordDetailsInDatabase()) {
+				if (this.isStoreRecordDetailsInDatabase()) {
 					groupedWork.saveRecordsToDatabase(id);
-				}*/
+				}
 
 				//Check to see if the grouped work has parent records and if so, skip it.
 				SolrInputDocument inputDocument = groupedWork.getSolrDocument(logEntry);
