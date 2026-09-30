@@ -108,6 +108,29 @@ class DateUtils {
 		return $formatter->format($timestamp);
 	}
 
+	static function formatHour(?string $time): string {
+		if (empty($time)) {
+			return '';
+		}
+
+		$parsedTime = date_parse($time);
+		$isOnTheHour = $parsedTime['minute'] === 0 && $parsedTime['second'] === 0;
+		if ($isOnTheHour && $parsedTime['hour'] === 12) {
+			return translate([
+				'text' => 'Noon',
+				'isPublicFacing' => true,
+			]);
+		}
+		if ($isOnTheHour && $parsedTime['hour'] % 24 === 0) {
+			return translate([
+				'text' => 'Midnight',
+				'isPublicFacing' => true,
+			]);
+		}
+
+		return date('g:i A', strtotime($time));
+	}
+
 	static function formatTimeRange($startTime, $endTime, $format = null): string {
 		$parts = self::formatTimeRangeParts($startTime, $endTime, $format);
 		if ($parts['start'] === '' && $parts['end'] === '') {

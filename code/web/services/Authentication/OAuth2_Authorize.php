@@ -9,6 +9,7 @@ use Psr\Http\Message\ServerRequestInterface;
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/sys/Authentication/OAuth2/OAuth2ServerConfig.php';
 require_once ROOT_DIR . '/sys/Authentication/OAuth2/OAuth2Client.php';
+require_once ROOT_DIR . '/sys/Authentication/OAuth2/OAuth2UserConsent.php';
 require_once ROOT_DIR . '/sys/Authentication/OAuth2/RateLimiter/OAuth2RateLimiter.php';
 require_once ROOT_DIR . '/sys/Authentication/OAuth2/Entities/OAuth2UserEntity.php';
 require_once ROOT_DIR . '/sys/UserAccount.php';
@@ -56,7 +57,15 @@ class Authentication_OAuth2_Authorize extends Action {
 			}
 
 			$this->authRequest = $this->server->validateAuthorizationRequest($request);
-			$this->displayLoginForm();
+			if (UserAccount::isLoggedIn() && $this->completeAuthorizationIfConsentAlreadyGranted()) {
+				return;
+			}
+
+			if (UserAccount::isLoggedIn()) {
+				$this->displayApprovalForm();
+			} else {
+				$this->displayLoginForm();
+			}
 
 		} catch (OAuthServerException $exception) {
 			$logger->log("[OAuth2] OAuthServerException caught: " . $exception->getErrorType() . " - " . $exception->getMessage(), Logger::LOG_ERROR);
@@ -81,6 +90,9 @@ class Authentication_OAuth2_Authorize extends Action {
 
 			if (isset($_POST['username']) && isset($_POST['password'])) {
 				if ($this->handleLogin($_POST['username'], $_POST['password'])) {
+					if ($this->completeAuthorizationIfConsentAlreadyGranted()) {
+						return;
+					}
 					$this->displayApprovalForm();
 					return;
 				} else {
@@ -105,6 +117,8 @@ class Authentication_OAuth2_Authorize extends Action {
 				if (!$user) {
 					throw new Exception('No authenticated user found');
 				}
+
+				$this->storeConsentForUser($user->id);
 
 				$userEntity = new OAuth2UserEntity();
 				$userEntity->setIdentifier($user->id);
@@ -168,15 +182,16 @@ class Authentication_OAuth2_Authorize extends Action {
 			return;
 		}
 
-		$client = new OAuth2Client();
-		$client->setClientId($this->authRequest->getClient()->getIdentifier());
-		$client->find(true);
-
-		$scopeDescriptions = [];
-		foreach ($this->authRequest->getScopes() as $scope) {
-			$scopeId = $scope->getIdentifier();
-			$scopeDescriptions[$scopeId] = $this->getScopeDescription($scopeId);
-		}
+		$client = $this->getOAuth2ClientRecord();
+		$requestedScopeIds = $this->getRequestedScopeIdentifiers();
+		$scopeDescriptions = $this->getScopeDescriptions($requestedScopeIds);
+		$existingConsent = $client ? $this->getExistingConsentForUser($user->id, $client) : null;
+		$previouslyApprovedScopeIds = $existingConsent ? $existingConsent->getScopesArray() : [];
+		$newScopeIds = array_values(array_diff($requestedScopeIds, $previouslyApprovedScopeIds));
+		$removedScopeIds = array_values(array_diff($previouslyApprovedScopeIds, $requestedScopeIds));
+		$consentChanged = $existingConsent !== null && (!$existingConsent->hasExactScopes($requestedScopeIds));
+		$clientName = $client ? $client->getName() : $this->authRequest->getClient()->getName();
+		$clientIdentifier = $client ? $client->getClientId() : $this->authRequest->getClient()->getIdentifier();
 
 		$userInfo = [
 			'id' => $user->id,
@@ -185,14 +200,18 @@ class Authentication_OAuth2_Authorize extends Action {
 		];
 
 		$interface->assign('client', (object)[
-			'id' => $client->getClientId(),
-			'name' => $client->getName(),
+			'id' => $clientIdentifier,
+			'name' => $clientName,
 		]);
 		$interface->assign('scopes', $scopeDescriptions);
+		$interface->assign('hasPriorConsent', $existingConsent !== null);
+		$interface->assign('consentChanged', $consentChanged);
+		$interface->assign('newScopes', $this->getScopeDescriptions($newScopeIds));
+		$interface->assign('removedScopes', $this->getScopeDescriptions($removedScopeIds));
 		$interface->assign('user', (object)$userInfo);
 		$interface->assign('authorizationUrl', $_SERVER['REQUEST_URI']);
 
-		$this->display('../OAuth2/oauth2_authorize.tpl', 'Authorize ' . $client->getName(), false, true);
+		$this->display('../OAuth2/oauth2_authorize.tpl', 'Authorize ' . $clientName, false, true);
 	}
 
 	/**
@@ -225,9 +244,99 @@ class Authentication_OAuth2_Authorize extends Action {
 	/**
 	 * Get human-readable description for scope
 	 */
-	private function getScopeDescription(string $scope): string {
-		$descriptions = OAuth2Client::getScopeOptions();
-		return $descriptions[$scope] ?? $scope;
+	private function getScopeDescription(string $scope): ?string {
+		$descriptions = OAuth2Client::getUserConsentScopeOptions();
+		return $descriptions[$scope] ?? null;
+	}
+
+	private function getScopeDescriptions(array $scopeIds): array {
+		$scopeDescriptions = [];
+		foreach ($scopeIds as $scopeId) {
+			$scopeDescription = $this->getScopeDescription($scopeId);
+			if ($scopeDescription !== null) {
+				$scopeDescriptions[$scopeId] = $scopeDescription;
+			}
+		}
+		return $scopeDescriptions;
+	}
+
+	private function getRequestedScopeIdentifiers(): array {
+		$scopeIds = [];
+		foreach ($this->authRequest->getScopes() as $scope) {
+			$scopeIds[] = $scope->getIdentifier();
+		}
+		return OAuth2UserConsent::normalizeScopes($scopeIds);
+	}
+
+	private function getOAuth2ClientRecord(): ?OAuth2Client {
+		$client = new OAuth2Client();
+		$client->setClientId($this->authRequest->getClient()->getIdentifier());
+		$client->setIsActive(1);
+		return $client->find(true) ? $client : null;
+	}
+
+	private function getExistingConsentForUser(int $userId, OAuth2Client $client): ?OAuth2UserConsent {
+		$consent = new OAuth2UserConsent();
+		$consent->user_id = $userId;
+		$consent->oauth2_client_id = $client->id;
+		return $consent->find(true) ? $consent : null;
+	}
+
+	private function completeAuthorizationIfConsentAlreadyGranted(): bool {
+		global $logger;
+
+		$user = UserAccount::getLoggedInUser();
+		if (!$user) {
+			return false;
+		}
+
+		$client = $this->getOAuth2ClientRecord();
+		if (!$client) {
+			return false;
+		}
+
+		$existingConsent = $this->getExistingConsentForUser($user->id, $client);
+		if (!$existingConsent) {
+			return false;
+		}
+
+		$requestedScopeIds = $this->getRequestedScopeIdentifiers();
+		if (!$existingConsent->hasExactScopes($requestedScopeIds)) {
+			return false;
+		}
+
+		$logger->log("[OAuth2] Reusing remembered consent for user {$user->id} and client {$client->getClientId()}", Logger::LOG_DEBUG);
+
+		$userEntity = new OAuth2UserEntity();
+		$userEntity->setIdentifier($user->id);
+		$this->authRequest->setUser($userEntity);
+		$this->authRequest->setAuthorizationApproved(true);
+
+		$response = $this->createResponse();
+		$response = $this->server->completeAuthorizationRequest($this->authRequest, $response);
+		$this->sendPsr7Response($response);
+		return true;
+	}
+
+	private function storeConsentForUser(int $userId): void {
+		$client = $this->getOAuth2ClientRecord();
+		if (!$client) {
+			return;
+		}
+
+		$consent = $this->getExistingConsentForUser($userId, $client);
+		if (!$consent) {
+			$consent = new OAuth2UserConsent();
+			$consent->user_id = $userId;
+			$consent->oauth2_client_id = $client->id;
+		}
+
+		$consent->scopes = $this->getRequestedScopeIdentifiers();
+		if (!empty($consent->id)) {
+			$consent->update();
+		} else {
+			$consent->insert();
+		}
 	}
 
 	/**

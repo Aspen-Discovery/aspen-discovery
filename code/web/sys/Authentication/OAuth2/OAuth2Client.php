@@ -168,6 +168,20 @@ class OAuth2Client extends DataObject {
 		];
 	}
 
+	static function getUserConsentScopeOptions(): array {
+		return [
+			'user:read' => 'View your basic library account details',
+			'user:write' => 'Update parts of your library account on your behalf',
+			'list:read' => 'View your lists and their contents',
+			'list:write' => 'Create or update your saved lists on your behalf',
+			'event:read' => 'View saved library event details',
+			'event:write' => 'Make changes to your saved events on your behalf',
+			'openid' => 'Sign you in with your library account',
+			'profile' => 'View your basic profile information',
+			'email' => 'View your email address',
+		];
+	}
+
 	public function fetch(): bool|DataObject|null {
 		$result = parent::fetch();
 		if ($result && !empty($this->scopes)) {

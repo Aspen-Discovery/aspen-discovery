@@ -25,6 +25,18 @@
 					</div>
 				</div>
 
+				{if $consentChanged}
+					<hr>
+					<div class="alert alert-warning" style="margin-bottom: 20px;">
+						<p>
+							<strong>{translate text="This application's requested permissions have changed since you last approved it." isPublicFacing=true}</strong>
+						</p>
+						<p style="margin-bottom: 0;">
+							{translate text="Please review the updated access below before authorizing again." isPublicFacing=true}
+						</p>
+					</div>
+				{/if}
+
 				{if !empty($scopes)}
 					<hr>
 				<div style="margin-bottom: 20px;">
@@ -32,22 +44,49 @@
                         {translate text="This will allow %1% to:" 1=$client->name isPublicFacing=true}
 					</div>
 					<ul style="margin: 0; padding-left: 20px; list-style: none;">
-						{foreach from=$scopes item=scope}
-							{if $scope == 'openid'}
-							{elseif $scope == 'profile'}
-								<li style="margin-bottom: 8px; padding-left: 24px; position: relative;">
-									<i class="fas fa-check-circle text-info" style="position: absolute; left: 0; margin-top: 1px;"></i>
-                                    {translate text="See your library account info" isPublicFacing=true}
-								</li>
-							{elseif $scope == 'email'}
-								<li style="margin-bottom: 8px; padding-left: 24px; position: relative;">
-									<i class="fas fa-check-circle text-info" style="position: absolute; left: 0; margin-top: 1px;"></i>
-                                    {translate text="Access your email address" isPublicFacing=true}
-								</li>
-							{/if}
+						{foreach from=$scopes key=scopeId item=scopeLabel}
+							<li style="margin-bottom: 8px; padding-left: 24px; position: relative;">
+								<i class="fas fa-check-circle text-info" style="position: absolute; left: 0; margin-top: 1px;"></i>
+								{$scopeLabel}
+							</li>
 						{/foreach}
 					</ul>
 				</div>
+				{/if}
+
+				{if $consentChanged && (!empty($newScopes) || !empty($removedScopes))}
+					<hr>
+					<div style="margin-bottom: 20px;">
+						<div style="margin-bottom: 12px;">
+							{translate text="What's changed since your last consent:" isPublicFacing=true}
+						</div>
+						{if !empty($newScopes)}
+							<div style="margin-bottom: 12px;">
+								<strong>{translate text="New permissions requested" isPublicFacing=true}</strong>
+								<ul style="margin: 8px 0 0; padding-left: 20px; list-style: none;">
+									{foreach from=$newScopes key=scopeId item=scopeLabel}
+										<li style="margin-bottom: 6px; padding-left: 24px; position: relative;">
+											<i class="fas fa-plus-circle text-warning" style="position: absolute; left: 0; margin-top: 1px;"></i>
+											{$scopeLabel}
+										</li>
+									{/foreach}
+								</ul>
+							</div>
+						{/if}
+						{if !empty($removedScopes)}
+							<div>
+								<strong>{translate text="Previously approved, but no longer requested" isPublicFacing=true}</strong>
+								<ul style="margin: 8px 0 0; padding-left: 20px; list-style: none;">
+									{foreach from=$removedScopes key=scopeId item=scopeLabel}
+										<li style="margin-bottom: 6px; padding-left: 24px; position: relative;">
+											<i class="fas fa-minus-circle text-muted" style="position: absolute; left: 0; margin-top: 1px;"></i>
+											{$scopeLabel}
+										</li>
+									{/foreach}
+								</ul>
+							</div>
+						{/if}
+					</div>
 				{/if}
 				<hr>
 				<div style="padding-top: 16px;">

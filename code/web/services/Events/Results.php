@@ -10,7 +10,7 @@ class Events_Results extends ResultsAction {
 		global $interface;
 		global $timer;
 		global $aspenUsage;
-		$aspenUsage->eventsSearches++;
+		$aspenUsage->incEventsSearches();
 
 		// Include Search Engine Class
 		require_once ROOT_DIR . '/sys/SolrConnector/Solr.php';

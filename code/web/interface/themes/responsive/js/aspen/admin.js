@@ -2298,29 +2298,38 @@ AspenDiscovery.Admin = (function () {
 		searchProperties: function () {
 			var searchValue = $("#propertySearch").val();
 			var searchRegex = new RegExp(searchValue, 'i');
+			var propertyRows = $(".propertyRow");
 			if (searchValue.length === 0) {
-				$(".propertyRow").show();
+				propertyRows.show();
 				$(".propertySectionHeading").show();
 				$(".propertySection").show();
+				if ($("#activeIls").length > 0) {
+					AspenDiscovery.Admin.toggleIlsSpecificFields();
+				}
 				//Collapse all panels
 				$(".editor .panel-title a").removeClass('expanded').addClass('collapsed').attr("aria-expanded", "false");
 				$(".editor .panel").removeClass('active').attr("aria-expanded", "false");
 				$(".editor .accordion_body").removeClass('in').hide();
 			} else {
-				var allAPropertyRows = $(".propertyRow");
-				allAPropertyRows.each(function () {
-					var curRow = $(this);
-					var rowText = curRow.text();
-					if (searchRegex.test(rowText)) {
-						curRow.show();
-					} else {
-						curRow.hide();
-					}
+				var activeIls = $("#activeIls").val();
+				propertyRows.hide();
+				propertyRows.filter(function () {
+					var row = $(this);
+					var isSection = row.find(".propertyRow").length > 0;
+					var relatedIls = row.closest("[data-related-ils]").data("related-ils");
+					var appliesToIls = relatedIls === undefined || relatedIls.includes("~" + activeIls + "~");
+
+					return !isSection && appliesToIls && searchRegex.test(row.text());
+				}).each(function () {
+					var row = $(this);
+					// Show the matching field and parent section
+					row.show();
+					row.parents(".propertyRow").show();
 				});
-				//Expand all panels
-				$(".editor .panel-title a").removeClass('collapsed').addClass('expanded').attr("aria-expanded", "true");
-				$(".editor .panel").addClass('active').attr("aria-expanded", "true");
-				$(".editor .accordion_body").addClass('in').show();
+				//Expand only sections that contain a matching visible field
+				$(".propertySection:visible .panel-title a").removeClass("collapsed").addClass("expanded").attr("aria-expanded", "true");
+				$(".propertySection:visible .panel").addClass("active").attr("aria-expanded", "true");
+				$(".propertySection:visible .accordion_body").addClass("in").show();
 			}
 		},
 
