@@ -2735,8 +2735,11 @@ class GroupedWorkDriver extends IndexRecordDriver {
 
 		if (!empty($this->fields)) {
 			$fields = $this->fields;
+			$recordScoping = empty($fields['record_scoping']) ? null : $fields['record_scoping'];
+			unset($fields['record_scoping']);
 			ksort($fields);
 			$interface->assign('details', $fields);
+			$interface->assign('recordScoping', $recordScoping);
 		}
 
 		if (IPAddress::showDebuggingInformation()) {
