@@ -119,6 +119,17 @@ function getUpdates26_09_00(): array {
 		],
 		//add_aspen_lida_themes_location
 
+		'add_theme_options_branded_app_settings' => [
+			'title' => 'Add additional theme configuration options to Branded App Settings',
+			'description' => 'Add columns to Branded App Settings for configuring theme options.',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE aspen_lida_branded_settings ADD COLUMN useSingleTheme TINYINT(1) DEFAULT 1",
+				"ALTER TABLE aspen_lida_branded_settings ADD COLUMN overallTheme VARCHAR(11) DEFAULT -1",
+			],
+		],
+		//add_theme_options_branded_app_settings
+
 
 		//kodi
 		'theme_font_size' => [
@@ -212,19 +223,28 @@ function getUpdates26_09_00(): array {
  * theme.css.tpl has no effect until every theme is regenerated.
  */
 function regenerateThemeCssForFontSize(&$update): void {
-	require_once ROOT_DIR . '/sys/Theming/Theme.php';
-	$theme = new Theme();
-	$theme->find();
-	$numUpdated = 0;
-	while ($theme->fetch()) {
-		$themeToUpdate = clone $theme;
-		$themeToUpdate->generateCss(true);
-		$numUpdated++;
+	global $interface;
+	if (!empty($interface)) {
+		require_once ROOT_DIR . '/sys/Theming/Theme.php';
+		$theme = new Theme();
+		$theme->find();
+		$numUpdated = 0;
+		while ($theme->fetch()) {
+			$themeToUpdate = clone $theme;
+			$themeToUpdate->generateCss(true);
+			$numUpdated++;
+		}
+		$update['success'] = true;
+		$update['status'] = translate([
+			'text' => 'Regenerated CSS for %1% themes',
+			1 => $numUpdated,
+			'isAdminFacing' => true,
+		]);
+	} else {
+		$update['success'] = true;
+		$update['status'] = translate([
+			'text' => 'Theme regeneration skipped (typically this will happen for aspen-dev-box bootups).',
+			'isAdminFacing' => true,
+		]);
 	}
-	$update['success'] = true;
-	$update['status'] = translate([
-		'text' => 'Regenerated CSS for %1% themes',
-		1 => $numUpdated,
-		'isAdminFacing' => true,
-	]);
 }

@@ -800,8 +800,8 @@ class BookCoverProcessor {
 			$this->loadGroupedWork();
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 			if ($this->groupedWork) {
-				$title = ucwords($this->groupedWork->getTitle());
-				$author = ucwords($this->groupedWork->getPrimaryAuthor());
+				$title = $this->groupedWork->getTitle();
+				$author = $this->groupedWork->getPrimaryAuthor();
 			}
 		} else {
 			if ($recordDriver == null) {

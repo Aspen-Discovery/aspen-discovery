@@ -76,7 +76,7 @@ class UsageByIPAddress extends DataObject {
 		return $this->incrementField('numFailedLoginAttempts');
 	}
 
-	public function getId() : int {
+	public function getId() : ?int {
 		return $this->id;
 	}
 
@@ -86,16 +86,21 @@ class UsageByIPAddress extends DataObject {
 	}
 
 	private function incrementField(string $fieldName) : bool {
+		if (!property_exists($this, $fieldName)) {
+			return false;
+		}
 		$now = time();
 		$this->lastRequest = $now;
 		$this->$fieldName++;
 		try {
 			if (SystemVariables::getSystemVariables()->trackIpAddresses) {
-				if (empty($this->id)) {
-					return $this->insert() !== false;
-				}else{
-					return $this->query("UPDATE usage_by_ip_address SET $fieldName = $fieldName + 1, lastRequest = IF (lastRequest < $now, $now, lastRequest) WHERE id = $this->id");
-				}
+				//The unique key on ( year, month, instance, ipAddress ) lets one statement create this month's row or
+				//add to it if another request got there first, so a race can no longer throw the increment away
+				$instance = $this->escape($this->instance);
+				$ipAddress = $this->escape($this->ipAddress);
+				$year = (int)$this->year;
+				$month = (int)$this->month;
+				return $this->query("INSERT INTO usage_by_ip_address (instance, ipAddress, year, month, $fieldName, lastRequest) VALUES ($instance, $ipAddress, $year, $month, 1, $now) ON DUPLICATE KEY UPDATE $fieldName = $fieldName + 1, lastRequest = IF (lastRequest < $now, $now, lastRequest)");
 			}else{
 				return true;
 			}

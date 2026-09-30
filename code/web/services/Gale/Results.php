@@ -8,7 +8,7 @@ class Gale_Results extends ResultsAction {
 		global $timer;
 		global $aspenUsage;
 
-		$aspenUsage->galeSearches++;
+		$aspenUsage->incGaleSearches();
 
 		// Check to see if the date range has been set and if so, convert to a filter and resend.
 		$dateFilters = [
