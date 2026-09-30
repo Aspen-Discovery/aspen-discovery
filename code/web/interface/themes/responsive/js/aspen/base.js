@@ -859,11 +859,13 @@ var AspenDiscovery = (function(){
 		updateDisplaySettings: function () {
 			var preferredLanguage = aspenJQ("#preferredLanguage option:selected").val();
 			var preferredTheme = aspenJQ("#preferredTheme option:selected").val();
+			var preferredTextSize = aspenJQ("#preferredTextSize option:selected").val();
 			var url = Globals.path + "/AJAX/JSON";
 			var params =  {
 				method : 'updateDisplaySettings',
 				preferredLanguage : preferredLanguage,
-				preferredTheme: preferredTheme
+				preferredTheme: preferredTheme,
+				preferredTextSize: preferredTextSize
 			};
 			$.getJSON(url, params,
 				function(data) {

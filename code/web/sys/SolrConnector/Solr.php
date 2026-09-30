@@ -128,6 +128,8 @@ abstract class Solr {
 	/** return string */
 	abstract public function getSearchesFile();
 
+	protected ?string $childQuery = null;
+
 	/**
 	 * Constructor
 	 *
@@ -698,7 +700,7 @@ abstract class Solr {
 			$values['onephrase'] = '"' . str_replace('"', '', implode(' ', $tokenized)) . '"';
 			if (count($tokenized) > 1) {
 				$values['proximal'] = $values['onephrase'] . '~10';
-				$values['proximal2'] = $values['onephrase'] . '~2';
+				$values['proximal2'] = $values['onephrase'] . '~3';
 				$values['single_word'] = null;
 			} else {
 				$values['proximal'] = null;
@@ -1300,6 +1302,10 @@ abstract class Solr {
 
 		if (isset($facet['additionalOptions'])) {
 			$options = array_merge($options, $facet['additionalOptions']);
+		}
+
+		if (!empty($this->childQuery)) {
+			$options['child_query'] = $this->childQuery;
 		}
 
 		$timer->logTime("build facet options");

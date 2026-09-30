@@ -772,8 +772,10 @@ class Axis360Driver extends AbstractEContentDriver {
 		$hold->userId = $user->id;
 		$key = $hold->source . $hold->sourceId . $hold->userId;
 		if ($available) {
+			$hold->status = 'Ready For Pickup';
 			$holds['available'][$key] = $hold;
 		} else {
+			$hold->status = $hold->status ?? 'Pending';
 			$holds['unavailable'][$key] = $hold;
 		}
 	}

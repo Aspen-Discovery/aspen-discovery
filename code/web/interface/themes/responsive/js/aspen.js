@@ -1819,11 +1819,13 @@ var AspenDiscovery = (function(){
 		updateDisplaySettings: function () {
 			var preferredLanguage = aspenJQ("#preferredLanguage option:selected").val();
 			var preferredTheme = aspenJQ("#preferredTheme option:selected").val();
+			var preferredTextSize = aspenJQ("#preferredTextSize option:selected").val();
 			var url = Globals.path + "/AJAX/JSON";
 			var params =  {
 				method : 'updateDisplaySettings',
 				preferredLanguage : preferredLanguage,
-				preferredTheme: preferredTheme
+				preferredTheme: preferredTheme,
+				preferredTextSize: preferredTextSize
 			};
 			$.getJSON(url, params,
 				function(data) {
@@ -3833,11 +3835,12 @@ AspenDiscovery.Account = (function () {
 			var reactivationDate = $("#reactivationDate").val();
 			AspenDiscovery.loadingMessage();
 			// noinspection JSUnresolvedFunction
-			$.getJSON(Globals.path + "/MyAccount/AJAX?method=freezeHoldAll&patronId=" + userId + "&reactivationDate=" + reactivationDate, function (data) {
+			$.getJSON(Globals.path + "/MyAccount/AJAX?method=freezeHoldAll&patronId=" + encodeURIComponent(userId) + "&reactivationDate=" + encodeURIComponent(reactivationDate), function (data) {
 				if (data.success) {
 					AspenDiscovery.Account.reloadHolds();
 					AspenDiscovery.showMessage(data.title, data.message, true, false);
 				} else {
+					AspenDiscovery.Account.reloadHolds();
 					AspenDiscovery.showMessage(data.title, data.message);
 				}
 			}).fail(AspenDiscovery.ajaxFail);
@@ -9640,8 +9643,8 @@ AspenDiscovery.Admin = (function () {
 			});
 		},
 		toggleBrandedAppThemeOptions: function () {
-			const useIndividualThemes = $("#useIndividualThemes").prop("checked");
-			if (useIndividualThemes) {
+			const useSingleTheme = $("#useSingleTheme").prop("checked");
+			if (useSingleTheme) {
 				$('#propertyRowoverallTheme').show();
 			} else {
 				$('#propertyRowoverallTheme').hide();

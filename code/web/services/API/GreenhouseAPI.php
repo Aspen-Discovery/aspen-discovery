@@ -468,70 +468,59 @@ class GreenhouseAPI extends AbstractAPI {
 						}
 					}*/
 
-					//get the theme for the location
-					$themeArray = [];
-					$theme = new Theme();
-					if (isset($location) && ($location->useLibraryThemes || empty($location->getThemes()))) {
-						$theme->id = $library->getPrimaryTheme()->themeId;
+					// Get the first theme for the location for fetching icon to display when selecting library at login.
+					$icon = null;
+					$imageUrl = $configArray['Site']['url'] . '/files/original/';
+					$appThemesArray = [];
+					$tempAppThemes = $location->getAspenLiDAThemes();
+					if (!$location->useLibraryThemesForAspenLiDA || !empty($tempAppThemes)) {
+						$appThemesArray = $tempAppThemes;
 					} else {
-						$theme->id = $location->getPrimaryTheme()->themeId;
+						$appThemesArray = $library->getAspenLiDAThemes();
 					}
-					if ($theme->find(true)) {
-						$theme->applyDefaults();
 
-						$themeArray['themeId'] = $theme->id;
-
-						if($theme->logoName) {
-							$themeArray['logo'] = $configArray['Site']['url'] . '/files/original/' . $theme->logoName;
-						}else{
-							$themeArray['logo'] = '';
+					require_once ROOT_DIR . '/sys/AspenLiDA/Theme.php';
+					foreach ($appThemesArray as $aspenLiDATheme) {
+						$appTheme = new AspenLiDATheme();
+						$appTheme->id = $aspenLiDATheme->themeId;
+						if ($appTheme->find(true)) {
+							$icon = $appTheme->logo ? $imageUrl . $appTheme->logo : null;
 						}
-						if($theme->favicon) {
-							$themeArray['favicon'] = $configArray['Site']['url'] . '/files/original/' . $theme->favicon;
-						}else{
-							$themeArray['favicon'] = '';
-						}
-						if($theme->headerLogoApp) {
-							$themeArray['headerLogo'] = $configArray['Site']['url'] . '/files/original/' . $theme->headerLogoApp;
-							[
-								$width,
-								$height,
-							] = @getimagesize(ROOT_DIR . '/files/original/' . $theme->headerLogoApp);
-							$themeArray['headerLogoWidth'] = $width;
-							$themeArray['headerLogoHeight'] = $height;
-						}else{
-							$themeArray['headerLogo'] = '';
-							$themeArray['headerLogoWidth'] = 0;
-							$themeArray['headerLogoHeight'] = 0;
-						}
-						$themeArray['headerLogoAlignment'] = $theme->headerLogoAlignmentApp;
-						$themeArray['headerLogoBackgroundColor'] = $theme->headerLogoAlignmentApp;
-						$themeArray['primaryBackgroundColor'] = $theme->primaryBackgroundColor;
-						$themeArray['primaryForegroundColor'] = $theme->primaryForegroundColor;
-						$themeArray['secondaryBackgroundColor'] = $theme->secondaryBackgroundColor;
-						$themeArray['secondaryForegroundColor'] = $theme->secondaryForegroundColor;
-						$themeArray['tertiaryBackgroundColor'] = $theme->tertiaryBackgroundColor;
-						$themeArray['tertiaryForegroundColor'] = $theme->tertiaryForegroundColor;
-
-						$return['library'][] = [
-							'latitude' => $latitude,
-							'longitude' => $longitude,
-							'unit' => $location->unit,
-							'name' => $location->displayName,
-							'locationId' => (string)$location->locationId,
-							'libraryId' => (string)$library->libraryId,
-							'siteId' => $library->libraryId . '.' . $location->locationId,
-							'solrScope' => $solrScope,
-							'baseUrl' => $baseUrl,
-							'releaseChannel' => $releaseChannel,
-							'favicon' => $themeArray['favicon'],
-							'logo' => $themeArray['logo'],
-							'theme' => $themeArray,
-							'distance' => $distance,
-						];
-
-						$num = $num + 1;
 					}
+
+					// If no Aspen LiDA Theme is found, fall back to the primary theme of the library or location.
+					if (empty($icon)) {
+						$webTheme = new Theme();
+						if (isset($location) && ($location->useLibraryThemes || empty($location->getThemes()))) {
+							$webTheme->id = $library->getPrimaryTheme()->themeId;
+						} else {
+							$webTheme->id = $location->getPrimaryTheme()->themeId;
+						}
+
+						if ($webTheme->find(true)) {
+							$webTheme->applyDefaults();
+							$iconFile = $webTheme->favicon ?? $webTheme->logoApp ?? null;
+							$icon = !empty($iconFile) ? $imageUrl . $iconFile : null;
+						}
+					}
+
+					$return['library'][] = [
+						'latitude' => $latitude,
+						'longitude' => $longitude,
+						'unit' => $location->unit,
+						'name' => $location->displayName,
+						'locationId' => (string)$location->locationId,
+						'libraryId' => (string)$library->libraryId,
+						'siteId' => $library->libraryId . '.' . $location->locationId,
+						'solrScope' => $solrScope,
+						'baseUrl' => $baseUrl,
+						'releaseChannel' => $releaseChannel,
+						'favicon' => $icon,
+						'distance' => $distance,
+					];
+
+					$num = $num + 1;
+
 				}
 			}
 		}

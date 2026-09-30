@@ -1644,7 +1644,7 @@ class SearchObject_TalpaSearcher extends SearchObject_BaseSearcher{
 		return $this->facetConfig;
 	}
 
-	protected function getFieldsToReturn() : string {
+	protected function getFieldsToReturn($childDocFilters = []) : string {
 		if (isset($_REQUEST['allFields'])) {
 			$fieldsToReturn = '*,score';
 		} else {

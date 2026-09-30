@@ -497,8 +497,6 @@ class HooplaProcessor2 {
 				baseItemInfo.seteContentUrl(rawResponse.getString("url"));
 				baseItemInfo.setShelfLocation("Online Hoopla Collection");
 				baseItemInfo.setDetailedLocation("Online Hoopla Collection");
-				baseItemInfo.setCallNumber("Online Hoopla");
-				baseItemInfo.setSortableCallNumber("Online Hoopla");
 				baseItemInfo.setFormat(primaryFormat);
 				baseItemInfo.setFormatCategory(formatCategory);
 				baseItemInfo.setInLibraryUseOnly(false);

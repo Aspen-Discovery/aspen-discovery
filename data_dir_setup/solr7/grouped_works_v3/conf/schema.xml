@@ -210,6 +210,9 @@
 		<field name="recordtype" type="unchanged_string" indexed="true" stored="true" multiValued="false" required="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 		<!-- The scope for this record if the recordtype is record_scoping -->
 		<field name="scope" type="unchanged_string" indexed="true" stored="false" docValues="true" omitNorms="true" omitTermFreqAndPositions="true" />
+		<!-- Relevant scopes for the grouped_work -->
+		<field name="related_scopes" type="unchanged_string" indexed="true" stored="false" docValues="false" multiValued="true" omitNorms="true" omitTermFreqAndPositions="true" />
+
 		<field name="_version_" type="long" indexed="true" stored="true"/>
 
 		<!-- Grouped Work Level Fields -->
@@ -313,7 +316,7 @@
 		<!-- This is returned and used as a facet -->
 		<field name="availability_toggle" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true" omitNorms="true" omitTermFreqAndPositions="true"/>
 		<!-- This is used for sorting titles within lists -->
-		<field name="available_copies" type="integer" indexed="false" docValues="true" stored="false" multiValued="true"/>
+		<dynamicField name="available_copies_*" type="integer" indexed="false" docValues="true" stored="false" multiValued="false"/>
 
 		<!-- Language Related Fields -->
 		<!-- This is used as a facet -->
@@ -439,7 +442,9 @@
 		<field name="local_callnumber" type="callnumber-search" indexed="true" stored="true" multiValued="true"/>
 		<field name="local_callnumber_exact" type="text-exact" indexed="true" stored="false" multiValued="true"/>
 		<field name="local_callnumber_left" type="text-left" indexed="true" stored="false" multiValued="true"/>
-		<field name="callnumber_sort" type="sortableText" indexed="true" stored="false" multiValued="false"/>
+		<!--Call number sort is set per scope on the grouped work (sorting based on child doc is problematic) -->
+		<dynamicField name="callnumber_sort_lowercase_*" type="unchanged_string" indexed="false" stored="false" docValues="true" multiValued="false" sortMissingLast="true"/>
+		<dynamicField name="callnumber_sort_*" type="unchanged_string" indexed="false" stored="false" docValues="true" multiValued="false" sortMissingLast="true"/>
 
 		<!-- Broad Search Terms -->
 		<field name="table_of_contents" type="searchable_text" indexed="true" stored="false" multiValued="true"/>

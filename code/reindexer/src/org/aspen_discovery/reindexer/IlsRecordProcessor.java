@@ -1898,15 +1898,21 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Determining target audience by bib record data", 1);}
 			super.loadTargetAudiences(groupedWork, record, recordInfo, printItems, identifier, settings.getTreatUnknownAudienceAs());
 		}else{
-			HashSet<String> targetAudiences = new HashSet<>();
+			HashSet<String> translatedAudiences = new HashSet<>();
 			if (settings.getDetermineAudienceBy() == 1) {
 				//Load based on collection
 				if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Determining audience by collection", 1);}
 				for (ItemInfo printItem : printItems){
 					String collection = printItem.getCollection();
 					if (collection != null) {
-						if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Target audience code includes " + collection.toLowerCase() + " based on collection for item " + printItem.getItemIdentifier(), 1);}
-						targetAudiences.add(collection.toLowerCase());
+						String collectionLower = collection.toLowerCase(Locale.ROOT);
+						if (hasTranslation("audience", collectionLower)) {
+							String translatedValue = translateValue("audience", collectionLower, identifier, true);
+							if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Target audience includes " + translatedValue + " based on collection " + collectionLower + " for item " + printItem.getItemIdentifier(), 1);}
+							printItem.setTargetAudience(translatedValue);
+							translatedAudiences.add(translatedValue);
+						}
+
 					}
 				}
 			}else if (settings.getDetermineAudienceBy() == 2) {
@@ -1915,8 +1921,13 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				for (ItemInfo printItem : printItems){
 					String shelfLocationCode = printItem.getShelfLocationCode();
 					if (shelfLocationCode != null) {
-						if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Target audience includes code " + shelfLocationCode.toLowerCase() + " based on shelf location for item " + printItem.getItemIdentifier(), 1);}
-						targetAudiences.add(shelfLocationCode.toLowerCase());
+						String shelfLocationCodeLower = shelfLocationCode.toLowerCase(Locale.ROOT);
+						if (hasTranslation("audience", shelfLocationCodeLower)) {
+							String translatedValue = translateValue("audience", shelfLocationCodeLower, identifier, true);
+							if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Target audience includes " + translatedValue + " based on shelf location " + shelfLocationCodeLower + " for item " + printItem.getItemIdentifier(), 1);}
+							printItem.setTargetAudience(translatedValue);
+							translatedAudiences.add(translatedValue);
+						}
 					}
 				}
 			}else if (settings.getDetermineAudienceBy() == 3){
@@ -1927,16 +1938,18 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 					for (String audienceCode : audienceCodes) {
 						String audienceCodeLower = audienceCode.toLowerCase();
 						if (hasTranslation("audience", audienceCodeLower)) {
-							if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Target audience includes code " + audienceCodeLower + " based on subfield for item " + printItem.getItemIdentifier(), 1);}
-							targetAudiences.add(audienceCodeLower);
+							String translatedValue = translateValue("audience", audienceCodeLower, identifier, true);
+							if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Target audience includes code " + translatedValue + " based on subfield " + audienceCodeLower + " for item " + printItem.getItemIdentifier(), 1);}
+							printItem.setTargetAudience(translatedValue);
+							translatedAudiences.add(translatedValue);
 						}
 					}
 				}
 			}
-			HashSet<String> translatedAudiences = translateCollection("audience", targetAudiences, identifier, true);
-			if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Target audience code(s) " + targetAudiences + " translate(s) to " + translatedAudiences, 1);}
+			//HashSet<String> translatedAudiences = translateCollection("audience", targetAudiences, identifier, true);
+			//if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Target audience code(s) " + targetAudiences + " translate(s) to " + translatedAudiences, 1);}
 
-			if (! settings.getTreatUnknownAudienceAs().equals("Unknown") && translatedAudiences.contains("Unknown")) {
+			if (!settings.isTreatUnknownAudienceAsUnknown() && translatedAudiences.contains("Unknown")) {
 				translatedAudiences.remove("Unknown");
 				translatedAudiences.add( settings.getTreatUnknownAudienceAs());
 				if (groupedWork != null && groupedWork.isDebugEnabled()) {groupedWork.addDebugMessage("Replacing unknown target audience with " + settings.getTreatUnknownAudienceAs(), 1);}

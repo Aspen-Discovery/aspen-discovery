@@ -3995,10 +3995,11 @@ class GroupedWorkDriver extends IndexRecordDriver {
 	}
 
 	private function getCallNumber() {
-		foreach (array_keys(($this->fields)) as $key) {
-			if (str_contains($key, 'callnumber_sort')) {
-				return $this->fields[$key] ?? null;
-			}
+		global $solrScope;
+		if (array_key_exists('callnumber_sort', $this->fields)) {
+			return $this->fields['callnumber_sort'] ?? null;
+		}else if (array_key_exists("callnumber_sort_$solrScope", $this->fields)) {
+			return $this->fields["callnumber_sort_$solrScope"] ?? null;
 		}
 		return null;
 	}

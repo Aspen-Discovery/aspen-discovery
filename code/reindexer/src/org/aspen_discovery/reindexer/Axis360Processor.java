@@ -147,8 +147,6 @@ class Axis360Processor {
 					itemInfo.setIsEContent(true);
 					itemInfo.setShelfLocation("Online Boundless Collection");
 					itemInfo.setDetailedLocation("Online Boundless Collection");
-					itemInfo.setCallNumber("Online Boundless");
-					itemInfo.setSortableCallNumber("Online Boundless");
 					itemInfo.setFormat(primaryFormat);
 					itemInfo.setFormatCategory(formatCategory);
 

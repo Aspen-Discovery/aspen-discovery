@@ -301,8 +301,6 @@ public class PalaceProjectProcessor {
 						}
 						itemInfo.setShelfLocation("Online " + collectionName);
 						itemInfo.setDetailedLocation("Online " + collectionName);
-						itemInfo.setCallNumber("Online " + collectionName);
-						itemInfo.setSortableCallNumber("Online " + collectionName);
 						itemInfo.setFormat(primaryFormat);
 						itemInfo.setFormatCategory(formatCategory);
 						//Palace Project does not currently provide more info so can't give accurate number of copies, but we can tell if it's available or not

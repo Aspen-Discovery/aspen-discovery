@@ -396,7 +396,7 @@ class DataObjectUtil {
 				if ($fileForProperty["error"] > 0) {
 					//return an error to the browser
 					$logger->log("Error uploading file " . $fileForProperty["error"], Logger::LOG_ERROR);
-				} elseif (true) { //TODO: validate the file type
+				} else {
 					if (array_key_exists('validTypes', $property)) {
 						$fileType = $fileForProperty["type"];
 						if (!in_array($fileType, $property['validTypes'])) {
@@ -451,7 +451,7 @@ class DataObjectUtil {
 				}
 			}
 		} elseif ($property['type'] == 'uploaded_font') {
-			//Make sure that the type is correct (jpg, png, or gif)
+			//Make sure that the type is correct (ttf, otf, woff, woff2)
 			if (isset($_REQUEST["remove$propertyName"])) {
 				$object->setProperty($propertyName, '', $property);
 			} elseif (isset($_REQUEST["{$propertyName}_existing"]) && $_FILES[$propertyName]['error'] == 4) {
@@ -461,8 +461,41 @@ class DataObjectUtil {
 				if ($fileForProperty["error"] > 0) {
 					//return an error to the browser
 					$logger->log("Error uploading file " . $fileForProperty["error"], Logger::LOG_ERROR);
-				} elseif (true) { //TODO: validate the file type
+				} else {
 					$destFileName = $fileForProperty["name"];
+					//Check the file size
+					$maxSize = 10 * 1024 * 1024;
+					if ($fileForProperty['size'] <= 0 || $fileForProperty['size'] > $maxSize) {
+						throw new RuntimeException('The font must be between 1 byte and 10 MB.');
+					}
+
+					//Check the file type
+					$fileExtension = substr($destFileName, strrpos($destFileName, '.') + 1);
+					if (!in_array($fileExtension, ['ttf', 'otf', 'woff', 'woff2'])) {
+						AspenError::raiseError('Incorrect file type uploaded ' . $fileExtension);
+					}
+
+					//Check the signature
+					$tmpName = $fileForProperty["tmp_name"];
+					$signature = file_get_contents($tmpName, false, null,0,4);
+					if ($signature === false || strlen($signature) !== 4) {
+						throw new RuntimeException('Unable to read the font header.');
+					}
+					$detectedFormat = match ($signature) {
+						"\x00\x01\x00\x00" => 'ttf',
+						"OTTO"             => 'otf',
+						"wOFF"             => 'woff',
+						"wOF2"             => 'woff2',
+						default            => null,
+					};
+					if ($detectedFormat === null) {
+						AspenError::raiseError('Invalid font file uploaded, does not have a recognized font signature.');
+					}
+
+					if ($detectedFormat !== $fileExtension) {
+						AspenError::raiseError('Invalid font file uploaded, extension does not match detected font signature.');
+					}
+
 					$copyResult = StorageDriverFactory::get()->write('fonts/' . $destFileName, $fileForProperty["tmp_name"]);
 					if ($copyResult) {
 						$logger->log("Stored font file: fonts/{$destFileName}", Logger::LOG_NOTICE);
