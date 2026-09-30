@@ -660,7 +660,7 @@ AspenDiscovery.Record = (function () {
 			var url = Globals.path + "/" + module + "/" + id + "/AJAX?method=getStaffView";
 			$.getJSON(url, function (data) {
 				if (!data.success) {
-					AspenDiscovery.showMessage('Error', data.message);
+					AspenDiscovery.showMessage(__('Error'), data.message);
 				} else {
 					$("#staffViewPlaceHolder").replaceWith(data.staffView);
 				}
@@ -674,7 +674,7 @@ AspenDiscovery.Record = (function () {
 				recordSource: recordSource
 			};
 			$.getJSON(url, params, function (data) {
-					AspenDiscovery.showMessage("Success", data.message, true, false);
+					AspenDiscovery.showMessage(__('Success'), data.message, true, false);
 					setTimeout("AspenDiscovery.closeLightbox();", 3000);
 				}
 			);

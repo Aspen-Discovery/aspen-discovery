@@ -48,7 +48,7 @@ AspenDiscovery.Searches = (function(){
 			}
 			$.getJSON(url+params, function(data){
 				if (data.success === 'false'){
-					AspenDiscovery.showMessage("Error loading results", data.error);
+					AspenDiscovery.showMessage(__('Error loading results'), data.error);
 				}else{
 					$('#combined-results-section-results-' + shortId).html(data.results);
 				}
@@ -120,7 +120,7 @@ AspenDiscovery.Searches = (function(){
 			}
 			$.getJSON(url+params, function(data){
 				if (data.success === 'false'){
-					AspenDiscovery.showMessage("Error loading search information", "Sorry, we were not able to retrieve additional results.");
+					AspenDiscovery.showMessage(__('Error loading search information'), __('Sorry, we were not able to retrieve additional results.'));
 				}else{
 					if (AspenDiscovery.Browse.browseStyle === 'masonry') {
 						AspenDiscovery.Searches.colcade = new Colcade('#home-page-browse-results .grid', {
@@ -182,7 +182,7 @@ AspenDiscovery.Searches = (function(){
 					};
 				}
 			} catch (e) {
-				alert("error during autocomplete setup:\n" + e);
+				alert(__('error during autocomplete setup:\n') + e);
 			}
 		},
 
@@ -204,9 +204,9 @@ AspenDiscovery.Searches = (function(){
 						},
 						function(data) {
 							if (data.result) {
-								AspenDiscovery.showMessage("Success", data.message);
+								AspenDiscovery.showMessage(__('Success'), data.message);
 							} else {
-								AspenDiscovery.showMessage("Error", data.message);
+								AspenDiscovery.showMessage(__('Error'), data.message);
 							}
 						}
 				);
@@ -330,7 +330,7 @@ AspenDiscovery.Searches = (function(){
 						$("#facetLock_unlockIcon_" + clusterName).show();
 						AspenDiscovery.Searches.updateAppliedFilterBadges(clusterName, true);
 					}else{
-						AspenDiscovery.showMessage('Error', data.message, true);
+						AspenDiscovery.showMessage(__('Error'), data.message, true);
 					}
 				}
 			);
@@ -349,7 +349,7 @@ AspenDiscovery.Searches = (function(){
 						$("#facetLock_unlockIcon_" + clusterName).hide();
 						AspenDiscovery.Searches.updateAppliedFilterBadges(clusterName, false);
 					}else{
-						AspenDiscovery.showMessage('Error', data.message, true);
+						AspenDiscovery.showMessage(__('Error'), data.message, true);
 					}
 				}
 			);
@@ -396,7 +396,7 @@ AspenDiscovery.Searches = (function(){
 					if (data.success === true){
 						window.location = removalUrl;
 					}else{
-						AspenDiscovery.showMessage('Error', data.message, true);
+						AspenDiscovery.showMessage(__('Error'), data.message, true);
 					}
 				}
 			);
@@ -413,7 +413,7 @@ AspenDiscovery.Searches = (function(){
 					if (data.success === true){
 						window.location = removeAllFiltersUrl;
 					}else{
-						AspenDiscovery.showMessage('Error', data.message, true);
+						AspenDiscovery.showMessage(__('Error'), data.message, true);
 					}
 				}
 			);

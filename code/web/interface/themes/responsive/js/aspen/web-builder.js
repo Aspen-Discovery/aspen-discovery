@@ -112,7 +112,7 @@ AspenDiscovery.WebBuilder = function () {
 							}
 						}
 					}else{
-						AspenDiscovery.showMessage('Sorry', data.message);
+						AspenDiscovery.showMessage(__('Sorry'), data.message);
 					}
 				});
 			}
@@ -142,7 +142,7 @@ AspenDiscovery.WebBuilder = function () {
 						}
 					}
 				}else{
-					AspenDiscovery.showMessage('Sorry', data.message);
+					AspenDiscovery.showMessage(__('Sorry'), data.message);
 				}
 			});
 		},
@@ -172,7 +172,7 @@ AspenDiscovery.WebBuilder = function () {
 						AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons, '', '', false, '', true);
 					}
 				}else{
-					AspenDiscovery.showMessage('Sorry', data.message);
+					AspenDiscovery.showMessage(__('Sorry'), data.message);
 				}
 			})
 		},
@@ -199,7 +199,7 @@ AspenDiscovery.WebBuilder = function () {
 				if (data.success === true){
 					AspenDiscovery.WebBuilder.saveLinkedObjCallback();
 				}else{
-					AspenDiscovery.showMessage('Sorry', data.message);
+					AspenDiscovery.showMessage(__('Sorry'), data.message);
 				}
 			});
 		},
@@ -224,7 +224,7 @@ AspenDiscovery.WebBuilder = function () {
 					if (data.success) {
 						AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 					} else {
-						AspenDiscovery.showMessage('An error occurred', data.message)
+						AspenDiscovery.showMessage(__('An error occurred'), data.message)
 					}
 				}
 			).fail(AspenDiscovery.ajaxFail);
@@ -279,7 +279,7 @@ AspenDiscovery.WebBuilder = function () {
 					}
 					AspenDiscovery.closeLightbox();
 				} else {
-					AspenDiscovery.showMessage('Error Deleting Cell', data.message);
+					AspenDiscovery.showMessage(__('Error Deleting Cell'), data.message);
 				}
 			});
 			return false;
@@ -303,7 +303,7 @@ AspenDiscovery.WebBuilder = function () {
 					$("#portalRow" + id).hide();
 					AspenDiscovery.closeLightbox();
 				} else {
-					AspenDiscovery.showMessage('Error Deleting Row', data.message);
+					AspenDiscovery.showMessage(__('Error Deleting Row'), data.message);
 				}
 			});
 			return false;
@@ -319,7 +319,7 @@ AspenDiscovery.WebBuilder = function () {
 				if (data.success){
 					$('#portal-rows').append(data.newRow);
 				} else {
-					AspenDiscovery.showMessage('An error occurred', data.message);
+					AspenDiscovery.showMessage(__('An error occurred'), data.message);
 				}
 			});
 			return false;
@@ -335,7 +335,7 @@ AspenDiscovery.WebBuilder = function () {
 				if (data.success){
 					$('#portalRow' + rowId).replaceWith(data.newRow);
 				} else {
-					AspenDiscovery.showMessage('An error occurred', data.message);
+					AspenDiscovery.showMessage(__('An error occurred'), data.message);
 				}
 			});
 			return false;
@@ -358,7 +358,7 @@ AspenDiscovery.WebBuilder = function () {
 						row1.before(row2);
 					}
 				} else {
-					AspenDiscovery.showMessage('An error occurred', data.message);
+					AspenDiscovery.showMessage(__('An error occurred'), data.message);
 				}
 			});
 			return false;
@@ -381,7 +381,7 @@ AspenDiscovery.WebBuilder = function () {
 						cell1.before(cell2);
 					}
 				} else {
-					AspenDiscovery.showMessage('An error occurred', data.message);
+					AspenDiscovery.showMessage(__('An error occurred'), data.message);
 				}
 			});
 			return false;
@@ -397,7 +397,7 @@ AspenDiscovery.WebBuilder = function () {
 				if (data.success){
 					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons)
 				} else {
-					AspenDiscovery.showMessage('An error occurred', data.message);
+					AspenDiscovery.showMessage(__('An error occurred'), data.message);
 				}
 			});
 			return false;
@@ -515,9 +515,9 @@ AspenDiscovery.WebBuilder = function () {
 		},
 
 		promptContinueToResource(id, fromPlacard = false) {
-			const message = `<p>You're logged in. Click below to continue to your resource.</p><button type="button" class="btn btn-primary" id="continueToResourceBtn">Continue</button>`;
+			const message = `<p>${__('You\'re logged in. Click below to continue to your resource.')}</p><button type="button" class="btn btn-primary" id="continueToResourceBtn">${__('Continue')}</button>`;
 
-			AspenDiscovery.showMessage("Continue", message);
+			AspenDiscovery.showMessage(__('Continue'), message);
 
 			$('#continueToResourceBtn').off('click').on('click', () => {
 				setTimeout("AspenDiscovery.closeLightbox();", 3000);
@@ -564,7 +564,7 @@ AspenDiscovery.WebBuilder = function () {
 				if (data.success){
 					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons)
 				} else {
-					AspenDiscovery.showMessage('An error occurred', data.message);
+					AspenDiscovery.showMessage(__('An error occurred'), data.message);
 				}
 			});
 			return false;
@@ -585,7 +585,7 @@ AspenDiscovery.WebBuilder = function () {
 					$('#newOptionPlaceholder').before(data.formattedOption);
 					AspenDiscovery.closeLightbox();
 				} else {
-					AspenDiscovery.showMessage('An error occurred', data.message);
+					AspenDiscovery.showMessage(__('An error occurred'), data.message);
 				}
 			});
 			return false;
