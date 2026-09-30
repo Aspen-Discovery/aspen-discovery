@@ -3510,5 +3510,13 @@ AspenDiscovery.Admin = (function () {
 				});
 			});
 		},
+		toggleBrandedAppThemeOptions: function () {
+			const useSingleTheme = $("#useSingleTheme").prop("checked");
+			if (useSingleTheme) {
+				$('#propertyRowoverallTheme').show();
+			} else {
+				$('#propertyRowoverallTheme').hide();
+			}
+		},
 	};
 }(AspenDiscovery.Admin || {}));
