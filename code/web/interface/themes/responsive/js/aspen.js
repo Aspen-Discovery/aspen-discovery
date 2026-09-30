@@ -9639,6 +9639,14 @@ AspenDiscovery.Admin = (function () {
 				});
 			});
 		},
+		toggleBrandedAppThemeOptions: function () {
+			const useIndividualThemes = $("#useIndividualThemes").prop("checked");
+			if (useIndividualThemes) {
+				$('#propertyRowoverallTheme').show();
+			} else {
+				$('#propertyRowoverallTheme').hide();
+			}
+		},
 	};
 }(AspenDiscovery.Admin || {}));
 AspenDiscovery.Authors = (function () {

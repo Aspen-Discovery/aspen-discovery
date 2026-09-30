@@ -1,5 +1,6 @@
 <?php /** @noinspection PhpMissingFieldTypeInspection */
 require_once ROOT_DIR . '/sys/AspenLiDA/LiDALoadingMessage.php';
+require_once ROOT_DIR . '/sys/AspenLiDA/Theme.php';
 
 class BrandedAppSetting extends DataObject {
 	public $__table = 'aspen_lida_branded_settings';
@@ -18,6 +19,8 @@ class BrandedAppSetting extends DataObject {
 	public $logoNotification;
 	public $appName;
 	public $autoPickUserHomeLocation;
+	public $useSingleTheme;
+	public $overallTheme;
 
 	//API Keys that are used instead of Greenhouse Settings if needed.
 	/** @noinspection PhpUnused */
@@ -43,6 +46,25 @@ class BrandedAppSetting extends DataObject {
 		}
 
 		$lidaLoadingMessageStructure = LiDALoadingMessage::getObjectStructure($context);
+
+		$themeOptions = [
+			'-1' => 'Use built-in app theme',
+		];
+
+		$theme = new AspenLiDATheme();
+		$theme->orderBy('name');
+		$theme->find();
+		while ($theme->fetch()) {
+			$themeOptions['app-' . $theme->id] = $theme->name . ' (Aspen LiDA, id ' . $theme->id . ')';
+		}
+
+		$webTheme = new Theme();
+		$webTheme->orderBy('displayName');
+		$webTheme->find();
+		while ($webTheme->fetch()) {
+			$themeOptions['web-' . $webTheme->id] = $webTheme->displayName . ' (Aspen Discovery, id ' . $webTheme->id . ')';
+		}
+
 		$structure = [
 			'id' => [
 				'property' => 'id',
@@ -115,6 +137,33 @@ class BrandedAppSetting extends DataObject {
 				'hideInLists' => true,
 				'required' => true,
 				'thumbWidth' => 96,
+			],
+			'themeSettings' => [
+				'property' => 'themeSettings',
+				'type' => 'section',
+				'label' => 'Theme Settings',
+				'renderAsHeading' => true,
+				'showBottomBorder' => true,
+				'properties' => [
+					'useSingleTheme' => [
+						'property' => 'useSingleTheme',
+						'type' => 'checkbox',
+						'label' => 'All locations should display the same theme, as set below',
+						'description' => 'Whether or not to use the same theme for all locations, or allow each location to have its own theme(s)',
+						'hideInLists' => true,
+						'required' => false,
+						'onchange' => 'return AspenDiscovery.Admin.toggleBrandedAppThemeOptions();',
+					],
+					'overallTheme' => [
+						'property' => 'overallTheme',
+						'type' => 'enum',
+						'label' => 'Theme',
+						'description' => 'The theme that all locations should use',
+						'hideInLists' => true,
+						'required' => false,
+						'values' => $themeOptions,
+					],
+				]
 			],
 			'privacyPolicyInformationSection' => [
 				'property' => 'privacyPolicyInformationSection',

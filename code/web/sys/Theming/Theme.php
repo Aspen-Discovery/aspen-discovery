@@ -1152,7 +1152,7 @@ class Theme extends DataObject {
 				'label' => 'Heading Font',
 				'description' => 'Heading Font',
 				'validFonts' => $validHeadingFonts,
-				'previewFontSize' => '20px',
+				'previewFontSize' => 'calc(var(--aspen-base-font-size) * 1.42857)', //20px if base font is 14px
 				'required' => false,
 				'hideInLists' => true,
 				'default' => 'Ubuntu',
@@ -1171,7 +1171,7 @@ class Theme extends DataObject {
 				'label' => 'Body Font',
 				'description' => 'Body Font',
 				'validFonts' => $validBodyFonts,
-				'previewFontSize' => '14px',
+				'previewFontSize' => 'var(--aspen-base-font-size)',
 				'required' => false,
 				'hideInLists' => true,
 				'default' => 'Lato',
