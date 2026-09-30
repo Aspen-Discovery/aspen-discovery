@@ -44,18 +44,22 @@ class ExternalEContent_AccessOnline extends Action {
 			$selectedAction = $recordActions[$actionIndex];
 			$redirectUrl = $selectedAction['redirectUrl'];
 
-			//Track Usage
-			global $sideLoadSettings;
-			$sideLoadId = -1;
-			foreach ($sideLoadSettings as $sideLoad) {
-				if ($sideLoad->name == $this->recordDriver->getRecordType()) {
-					$sideLoadId = $sideLoad->id;
+			if (!empty($selectedAction['requireLogin']) && !UserAccount::isLoggedIn()) {
+				$redirectUrl = $this->recordDriver->getRecordUrl();
+			} else {
+				//Track Usage
+				global $sideLoadSettings;
+				$sideLoadId = -1;
+				foreach ($sideLoadSettings as $sideLoad) {
+					if ($sideLoad->name == $this->recordDriver->getRecordType()) {
+						$sideLoadId = $sideLoad->id;
+					}
 				}
-			}
 
-			if ($sideLoadId != -1) {
-				$this->trackRecordUsage($sideLoadId, $this->recordDriver->getId());
-				$this->trackUserUsageOfSideLoad($sideLoadId);
+				if ($sideLoadId != -1) {
+					$this->trackRecordUsage($sideLoadId, $this->recordDriver->getId());
+					$this->trackUserUsageOfSideLoad($sideLoadId);
+				}
 			}
 		} else {
 			$redirectUrl = $this->recordDriver->getLinkUrl(true);
