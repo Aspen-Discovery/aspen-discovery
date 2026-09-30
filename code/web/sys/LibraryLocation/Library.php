@@ -190,6 +190,7 @@ class Library extends DataObject {
 		$axis360ScopeId;
 	public $palaceProjectLibraryId;
 	public $palaceProjectScopeId;
+	private $_omekaScopes;
 	public /** @noinspection PhpUnused */
 		$systemsToRepeatIn;
 	public $additionalLocationsToShowAvailabilityFor;
@@ -980,6 +981,10 @@ class Library extends DataObject {
 		while ($palaceProjectScope->fetch()) {
 			$palaceProjectScopes[$palaceProjectScope->id] = $palaceProjectScope->name;
 		}
+
+		require_once ROOT_DIR . '/sys/Omeka/LibraryOmekaScope.php';
+		$libraryOmekaScopeStructure = LibraryOmekaScope::getObjectStructure($context);
+		unset($libraryOmekaScopeStructure['libraryId']);
 
 		require_once ROOT_DIR . '/sys/Ebsco/EDSSettings.php';
 		$edsSetting = new EDSSettings();
@@ -4794,6 +4799,33 @@ class Library extends DataObject {
 					],
 				],
 			],
+			'omekaSection' => [
+				'property' => 'omekaSection',
+				'type' => 'section',
+				'label' => 'Omeka',
+				'hideInLists' => true,
+				'renderAsHeading' => true,
+				'permissions' => ['Library Records included in Catalog'],
+				'properties' => [
+					'omekaScopes' => [
+						'property' => 'omekaScopes',
+						'type' => 'oneToMany',
+						'label' => 'Omeka Scopes',
+						'description' => 'The Omeka scopes to include in this library',
+						'keyThis' => 'libraryId',
+						'keyOther' => 'libraryId',
+						'subObjectType' => 'LibraryOmekaScope',
+						'structure' => $libraryOmekaScopeStructure,
+						'sortable' => false,
+						'storeDb' => true,
+						'allowEdit' => true,
+						'canEdit' => true,
+						'canAddNew' => true,
+						'canDelete' => true,
+						'forcesReindex' => true,
+					],
+				],
+			],
 			'genealogySection' => [
 				'property' => 'genealogySection',
 				'type' => 'section',
@@ -5290,6 +5322,9 @@ class Library extends DataObject {
 		if (!array_key_exists('Palace Project', $enabledModules)) {
 			unset($structure['palaceProjectSection']);
 		}
+		if (!array_key_exists('Omeka', $enabledModules)) {
+			unset($structure['omekaSection']);
+		}
 		if (!array_key_exists('Events', $enabledModules)) {
 			unset($structure['eventSection']);
 		}
@@ -5475,6 +5510,8 @@ class Library extends DataObject {
 			return $this->getRecordsToInclude();
 		} elseif ($name == 'sideLoadScopes') {
 			return $this->getSideLoadScopes();
+		} elseif ($name == 'omekaScopes') {
+			return $this->getOmekaScopes();
 		} elseif ($name == 'overDriveScopes') {
 			return $this->getLibraryOverDriveScopes();
 		} elseif ($name == 'overDriveSettings') {
@@ -5515,6 +5552,8 @@ class Library extends DataObject {
 			$this->_recordsToInclude = $value;
 		} elseif ($name == 'sideLoadScopes') {
 			$this->_sideLoadScopes = $value;
+		} elseif ($name == 'omekaScopes') {
+			$this->_omekaScopes = $value;
 		} elseif ($name == 'overDriveScopes') {
 			$this->_libraryOverDriveScopes = $value;
 		}elseif ($name == 'overDriveSettings') {
@@ -5593,6 +5632,7 @@ class Library extends DataObject {
 			$this->saveHolidays();
 			$this->saveRecordsToInclude();
 			$this->saveSideLoadScopes();
+			$this->saveOmekaScopes();
 			$this->saveOverDriveScopes();
 			$this->saveOverDriveSettings();
 			$this->saveHooplaSettings();
@@ -5661,6 +5701,7 @@ class Library extends DataObject {
 			$this->saveHolidays();
 			$this->saveRecordsToInclude();
 			$this->saveSideLoadScopes();
+			$this->saveOmekaScopes();
 			$this->saveOverDriveScopes();
 			$this->saveOverDriveSettings();
 			$this->saveHooplaSettings();
@@ -5739,6 +5780,32 @@ class Library extends DataObject {
 		if (isset ($this->_sideLoadScopes) && is_array($this->_sideLoadScopes)) {
 			$this->saveOneToManyOptions($this->_sideLoadScopes, 'libraryId');
 			unset($this->_sideLoadScopes);
+		}
+	}
+
+	/**
+	 * @return LibraryOmekaScope[]
+	 */
+	public function getOmekaScopes() : array {
+		if (!isset($this->_omekaScopes)) {
+			$this->_omekaScopes = [];
+			if (!empty($this->libraryId)) {
+				require_once ROOT_DIR . '/sys/Omeka/LibraryOmekaScope.php';
+				$object = new LibraryOmekaScope();
+				$object->libraryId = $this->libraryId;
+				$object->find();
+				while ($object->fetch()) {
+					$this->_omekaScopes[$object->id] = clone($object);
+				}
+			}
+		}
+		return $this->_omekaScopes;
+	}
+
+	public function saveOmekaScopes() : void {
+		if (isset ($this->_omekaScopes) && is_array($this->_omekaScopes)) {
+			$this->saveOneToManyOptions($this->_omekaScopes, 'libraryId');
+			unset($this->_omekaScopes);
 		}
 	}
 
@@ -7191,6 +7258,13 @@ class Library extends DataObject {
 			$this->getSideLoadScopes();
 			$index = -1;
 			foreach ($this->_sideLoadScopes as $subObject) {
+				$subObject->id = $index;
+				unset($subObject->libraryId);
+				$index--;
+			}
+			$this->getOmekaScopes();
+			$index = -1;
+			foreach ($this->_omekaScopes as $subObject) {
 				$subObject->id = $index;
 				unset($subObject->libraryId);
 				$index--;

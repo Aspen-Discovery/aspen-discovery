@@ -17,6 +17,7 @@
       <module fileurl="file://$PROJECT_DIR$/../code/java_shared_libraries/java_shared_libraries.iml" filepath="$PROJECT_DIR$/../code/java_shared_libraries/java_shared_libraries.iml" />
       <module fileurl="file://$PROJECT_DIR$/../code/koha_export/koha_export.iml" filepath="$PROJECT_DIR$/../code/koha_export/koha_export.iml" />
       <module fileurl="file://$PROJECT_DIR$/../code/oai_indexer/oai_indexer.iml" filepath="$PROJECT_DIR$/../code/oai_indexer/oai_indexer.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../code/omeka_export/omeka_export.iml" filepath="$PROJECT_DIR$/../code/omeka_export/omeka_export.iml" />
       <module fileurl="file://$PROJECT_DIR$/../code/overdrive_extract/overdrive_extract.iml" filepath="$PROJECT_DIR$/../code/overdrive_extract/overdrive_extract.iml" />
       <module fileurl="file://$PROJECT_DIR$/../code/palace_project_export/palace_project_export.iml" filepath="$PROJECT_DIR$/../code/palace_project_export/palace_project_export.iml" />
       <module fileurl="file://$PROJECT_DIR$/../code/polaris_export/polaris_export.iml" filepath="$PROJECT_DIR$/../code/polaris_export/polaris_export.iml" />

@@ -4519,7 +4519,7 @@ parameters:
 			path: code/web/services/API/ItemAPI.php
 
 		-
-			message: '#^PHPDoc tag @var with type GroupedWorkDriver\|MarcRecordDriver\|OverDriveRecordDriver is not subtype of native type AspenError\|Axis360RecordDriver\|CourseReservesRecordDriver\|HooplaRecordDriver\|MarcRecordDriver\|OpenArchivesRecordDriver\|OverDriveRecordDriver\|PalaceProjectRecordDriver\|TalpaRecordDriver\|null\.$#'
+			message: '#^PHPDoc tag @var with type GroupedWorkDriver\|MarcRecordDriver\|OverDriveRecordDriver is not subtype of native type AspenError\|Axis360RecordDriver\|CourseReservesRecordDriver\|HooplaRecordDriver\|MarcRecordDriver\|OmekaRecordDriver\|OpenArchivesRecordDriver\|OverDriveRecordDriver\|PalaceProjectRecordDriver\|TalpaRecordDriver\|null\.$#'
 			identifier: varTag.nativeType
 			count: 1
 			path: code/web/services/API/ItemAPI.php
@@ -4999,7 +4999,7 @@ parameters:
 			path: code/web/services/Admin/AJAX.php
 
 		-
-			message: '#^PHPDoc tag @var with type GroupedWorkSubDriver is not subtype of native type AspenError\|Axis360RecordDriver\|CourseReservesRecordDriver\|HooplaRecordDriver\|MarcRecordDriver\|OpenArchivesRecordDriver\|OverDriveRecordDriver\|PalaceProjectRecordDriver\|TalpaRecordDriver\|null\.$#'
+			message: '#^PHPDoc tag @var with type GroupedWorkSubDriver is not subtype of native type AspenError\|Axis360RecordDriver\|CourseReservesRecordDriver\|HooplaRecordDriver\|MarcRecordDriver\|OmekaRecordDriver\|OpenArchivesRecordDriver\|OverDriveRecordDriver\|PalaceProjectRecordDriver\|TalpaRecordDriver\|null\.$#'
 			identifier: varTag.nativeType
 			count: 1
 			path: code/web/services/Admin/AJAX.php
@@ -7993,7 +7993,7 @@ parameters:
 			path: code/web/services/Record/AJAX.php
 
 		-
-			message: '#^Property Record_AccessOnline\:\:\$recordDriver \(SideLoadedRecord\) does not accept AspenError\|Axis360RecordDriver\|CourseReservesRecordDriver\|HooplaRecordDriver\|MarcRecordDriver\|OpenArchivesRecordDriver\|OverDriveRecordDriver\|PalaceProjectRecordDriver\|TalpaRecordDriver\|null\.$#'
+			message: '#^Property Record_AccessOnline\:\:\$recordDriver \(SideLoadedRecord\) does not accept AspenError\|Axis360RecordDriver\|CourseReservesRecordDriver\|HooplaRecordDriver\|MarcRecordDriver\|OmekaRecordDriver\|OpenArchivesRecordDriver\|OverDriveRecordDriver\|PalaceProjectRecordDriver\|TalpaRecordDriver\|null\.$#'
 			identifier: assign.propertyType
 			count: 1
 			path: code/web/services/Record/AccessOnline.php

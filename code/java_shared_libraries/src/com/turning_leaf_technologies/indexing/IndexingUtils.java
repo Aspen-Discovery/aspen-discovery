@@ -27,12 +27,13 @@ public class IndexingUtils {
 			HashMap<Long, Axis360Scope> axis360Scopes = loadAxis360Scopes(dbConn, logger);
 			HashMap<Long, CloudLibraryScope> cloudLibraryScopes = loadCloudLibraryScopes(dbConn, logger);
 			HashMap<Long, PalaceProjectScope> palaceProjectScopes = loadPalaceProjectScopes(dbConn, logger);
+			HashMap<Long, OmekaScope> omekaScopes = loadOmekaScopes(dbConn, logger);
 			HashMap<Long, SideLoadScope> sideLoadScopes = loadSideLoadScopes(dbConn, logger);
 			HashMap<Long, GroupedWorkDisplaySettings> groupedWorkDisplaySettings = loadGroupedWorkDisplaySettings(dbConn, logger);
 
-			loadLibraryScopes(scopes, groupedWorkDisplaySettings, overDriveScopes, hooplaScopes, cloudLibraryScopes, axis360Scopes, palaceProjectScopes, sideLoadScopes, dbConn, logger);
+			loadLibraryScopes(scopes, groupedWorkDisplaySettings, overDriveScopes, hooplaScopes, cloudLibraryScopes, axis360Scopes, palaceProjectScopes, omekaScopes, sideLoadScopes, dbConn, logger);
 
-			loadLocationScopes(scopes, groupedWorkDisplaySettings, overDriveScopes, hooplaScopes, cloudLibraryScopes, axis360Scopes, palaceProjectScopes, sideLoadScopes, dbConn, logger);
+			loadLocationScopes(scopes, groupedWorkDisplaySettings, overDriveScopes, hooplaScopes, cloudLibraryScopes, axis360Scopes, palaceProjectScopes, omekaScopes, sideLoadScopes, dbConn, logger);
 		} catch (SQLException e) {
 			logger.error("Error setting up scopes", e);
 			return null;
@@ -163,6 +164,36 @@ public class IndexingUtils {
 		return palaceProjectScopes;
 	}
 
+	private static void addLibraryOmekaScopes(Scope scope, HashMap<Long, OmekaScope> omekaScopes, PreparedStatement libraryOmekaScopesStmt, long libraryId) throws SQLException {
+		libraryOmekaScopesStmt.setLong(1, libraryId);
+		ResultSet libraryOmekaScopesRS = libraryOmekaScopesStmt.executeQuery();
+		while (libraryOmekaScopesRS.next()) {
+			scope.addOmekaScope(omekaScopes.get(libraryOmekaScopesRS.getLong("omekaScopeId")));
+		}
+	}
+
+	private static HashMap<Long, OmekaScope> loadOmekaScopes(Connection dbConn, Logger logger) {
+		HashMap<Long, OmekaScope> omekaScopes = new HashMap<>();
+		try {
+			PreparedStatement omekaScopeStmt = dbConn.prepareStatement("SELECT * from omeka_scopes", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			ResultSet omekaScopesRS = omekaScopeStmt.executeQuery();
+
+			while (omekaScopesRS.next()) {
+				OmekaScope omekaScope = new OmekaScope();
+				omekaScope.setId(omekaScopesRS.getLong("id"));
+				omekaScope.setName(omekaScopesRS.getString("name"));
+				omekaScope.setSettingId(omekaScopesRS.getLong("settingId"));
+				omekaScope.setIncludeAllItemSets(omekaScopesRS.getBoolean("includeAllItemSets"));
+				omekaScope.setItemSetIds(omekaScopesRS.getString("itemSetIds"));
+
+				omekaScopes.put(omekaScope.getId(), omekaScope);
+			}
+		} catch (SQLException e) {
+			logger.error("Error loading Omeka scopes", e);
+		}
+		return omekaScopes;
+	}
+
 	private static HashMap<Long, OverDriveScope> loadOverDriveScopes(Connection dbConn, Logger logger) {
 		HashMap<Long, OverDriveScope> overDriveScopes = new HashMap<>();
 		try {
@@ -245,7 +276,7 @@ public class IndexingUtils {
 		return sideLoadScopes;
 	}
 
-	private static void loadLocationScopes(HashMap<String, Scope> scopes, HashMap<Long, GroupedWorkDisplaySettings> groupedWorkDisplaySettings, HashMap<Long, OverDriveScope> overDriveScopes, HashMap<Long, HooplaScope> hooplaScopes, HashMap<Long, CloudLibraryScope> cloudLibraryScopes, HashMap<Long, Axis360Scope> axis360Scopes, HashMap<Long, PalaceProjectScope> palaceProjectScopes, HashMap<Long, SideLoadScope> sideLoadScopes, Connection dbConn, Logger logger) throws SQLException {
+	private static void loadLocationScopes(HashMap<String, Scope> scopes, HashMap<Long, GroupedWorkDisplaySettings> groupedWorkDisplaySettings, HashMap<Long, OverDriveScope> overDriveScopes, HashMap<Long, HooplaScope> hooplaScopes, HashMap<Long, CloudLibraryScope> cloudLibraryScopes, HashMap<Long, Axis360Scope> axis360Scopes, HashMap<Long, PalaceProjectScope> palaceProjectScopes, HashMap<Long, OmekaScope> omekaScopes, HashMap<Long, SideLoadScope> sideLoadScopes, Connection dbConn, Logger logger) throws SQLException {
 		// To minimize the amount of data in the index, only load locations that have more than one location within the library.
 		PreparedStatement librariesWithMoreThanOneLocationStmt = dbConn.prepareStatement("SELECT libraryId, COUNT(*) AS numLocations FROM location WHERE createSearchInterface = 1 GROUP BY libraryId HAVING numLocations > 1", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		ResultSet librariesWithMoreThanOneLocation = librariesWithMoreThanOneLocationStmt.executeQuery();
@@ -280,6 +311,8 @@ public class IndexingUtils {
 		PreparedStatement locationOverDriveScopesStmt = dbConn.prepareStatement("SELECT * from location_overdrive_scope WHERE locationId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		PreparedStatement librarySideLoadScopesStmt = dbConn.prepareStatement("SELECT * from library_sideload_scopes WHERE libraryId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		PreparedStatement locationSideLoadScopesStmt = dbConn.prepareStatement("SELECT * from location_sideload_scopes WHERE locationId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+		PreparedStatement libraryOmekaScopesStmt = dbConn.prepareStatement("SELECT * from library_omeka_scopes WHERE libraryId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+		PreparedStatement locationOmekaScopesStmt = dbConn.prepareStatement("SELECT * from location_omeka_scopes WHERE locationId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		PreparedStatement libraryRecordInclusionRulesStmt = dbConn.prepareStatement("SELECT library_records_to_include.*, indexing_profiles.name from library_records_to_include INNER JOIN indexing_profiles ON indexingProfileId = indexing_profiles.id WHERE libraryId = ? and markRecordsAsOwned = 0", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 
 		ResultSet locationInformationRS = locationInformationStmt.executeQuery();
@@ -417,6 +450,20 @@ public class IndexingUtils {
 				}
 			} else if (palaceProjectScopeLocation != -2) {
 				locationScopeInfo.setPalaceProjectScope(palaceProjectScopes.get(palaceProjectScopeLocation));
+			}
+
+			locationOmekaScopesStmt.setLong(1, locationId);
+			ResultSet locationOmekaScopesRS = locationOmekaScopesStmt.executeQuery();
+			while (locationOmekaScopesRS.next()) {
+				long locationOmekaScopeId = locationOmekaScopesRS.getLong("omekaScopeId");
+				if (locationOmekaScopeId == -1) {
+					addLibraryOmekaScopes(locationScopeInfo, omekaScopes, libraryOmekaScopesStmt, libraryId);
+				} else {
+					locationScopeInfo.addOmekaScope(omekaScopes.get(locationOmekaScopeId));
+				}
+			}
+			if (includeLibraryRecordsToInclude) {
+				addLibraryOmekaScopes(locationScopeInfo, omekaScopes, libraryOmekaScopesStmt, libraryId);
 			}
 
 			locationSideLoadScopesStmt.setLong(1, locationId);
@@ -594,7 +641,7 @@ public class IndexingUtils {
 		}
 	}
 
-	private static void loadLibraryScopes(HashMap<String, Scope> scopes, HashMap<Long, GroupedWorkDisplaySettings> groupedWorkDisplaySettings, HashMap<Long, OverDriveScope> overDriveScopes, HashMap<Long, HooplaScope> hooplaScopes, HashMap<Long, CloudLibraryScope> cloudLibraryScopes, HashMap<Long, Axis360Scope> axis360Scopes, HashMap<Long, PalaceProjectScope> palaceProjectScopes, HashMap<Long, SideLoadScope> sideLoadScopes, Connection dbConn, Logger logger) throws SQLException {
+	private static void loadLibraryScopes(HashMap<String, Scope> scopes, HashMap<Long, GroupedWorkDisplaySettings> groupedWorkDisplaySettings, HashMap<Long, OverDriveScope> overDriveScopes, HashMap<Long, HooplaScope> hooplaScopes, HashMap<Long, CloudLibraryScope> cloudLibraryScopes, HashMap<Long, Axis360Scope> axis360Scopes, HashMap<Long, PalaceProjectScope> palaceProjectScopes, HashMap<Long, OmekaScope> omekaScopes, HashMap<Long, SideLoadScope> sideLoadScopes, Connection dbConn, Logger logger) throws SQLException {
 		PreparedStatement libraryInformationStmt = dbConn.prepareStatement("SELECT libraryId, ilsCode, subdomain, " +
 						"displayName, facetLabel, restrictOwningBranchesAndSystems, publicListsToInclude, isConsortialCatalog, " +
 						"additionalLocationsToShowAvailabilityFor, locationsToExcludeAvailabilityFor, courseReserveLibrariesToInclude, " +
@@ -605,6 +652,7 @@ public class IndexingUtils {
 		PreparedStatement libraryRecordInclusionRulesStmt = dbConn.prepareStatement("SELECT library_records_to_include.*, indexing_profiles.name from library_records_to_include INNER JOIN indexing_profiles ON indexingProfileId = indexing_profiles.id WHERE libraryId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		ResultSet libraryInformationRS = libraryInformationStmt.executeQuery();
 		PreparedStatement librarySideLoadScopesStmt = dbConn.prepareStatement("SELECT * from library_sideload_scopes WHERE libraryId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+		PreparedStatement libraryOmekaScopesStmt = dbConn.prepareStatement("SELECT * from library_omeka_scopes WHERE libraryId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		PreparedStatement libraryCloudLibraryScopesStmt = dbConn.prepareStatement("SELECT * from library_cloud_library_scope WHERE libraryId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		PreparedStatement libraryOverDriveScopesStmt = dbConn.prepareStatement("SELECT * from library_overdrive_scope WHERE libraryId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 
@@ -698,6 +746,8 @@ public class IndexingUtils {
 			if (palaceProjectScopeLibrary != -1) {
 				newScope.setPalaceProjectScope(palaceProjectScopes.get(palaceProjectScopeLibrary));
 			}
+
+			addLibraryOmekaScopes(newScope, omekaScopes, libraryOmekaScopesStmt, libraryId);
 
 			librarySideLoadScopesStmt.setLong(1, libraryId);
 			ResultSet librarySideLoadScopesRS = librarySideLoadScopesStmt.executeQuery();

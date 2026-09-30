@@ -93,6 +93,7 @@ class Location extends DataObject {
 		$axis360ScopeId;
 	public /** @noinspection PhpUnused */
 		$palaceProjectScopeId;
+	private $_omekaScopes;
 	public $showHoldButton;
 	public $curbsidePickupInstructions;
 	public $repeatSearchOption;
@@ -1357,6 +1358,40 @@ class Location extends DataObject {
 			];
 		}
 
+		if (array_key_exists('Omeka', $enabledModules)) {
+			require_once ROOT_DIR . '/sys/Omeka/LocationOmekaScope.php';
+			$locationOmekaScopeStructure = LocationOmekaScope::getObjectStructure($context);
+			unset($locationOmekaScopeStructure['locationId']);
+
+			$structure['omekaSection'] = [
+				'property' => 'omekaSection',
+				'type' => 'section',
+				'label' => 'Omeka',
+				'hideInLists' => true,
+				'renderAsHeading' => true,
+				'permissions' => ['Location Records included in Catalog'],
+				'properties' => [
+					'omekaScopes' => [
+						'property' => 'omekaScopes',
+						'type' => 'oneToMany',
+						'label' => 'Omeka Scopes',
+						'description' => 'The Omeka scopes to include in this location',
+						'keyThis' => 'locationId',
+						'keyOther' => 'locationId',
+						'subObjectType' => 'LocationOmekaScope',
+						'structure' => $locationOmekaScopeStructure,
+						'sortable' => false,
+						'storeDb' => true,
+						'allowEdit' => true,
+						'canEdit' => true,
+						'canAddNew' => true,
+						'canDelete' => true,
+						'forcesReindex' => true,
+					],
+				],
+			];
+		}
+
 		if (array_key_exists('EBSCOhost', $enabledModules)) {
 			require_once ROOT_DIR . '/sys/Ebsco/EBSCOhostSetting.php';
 			$ebscohostSetting = new EBSCOhostSearchSetting();
@@ -2109,6 +2144,8 @@ class Location extends DataObject {
 			return $this->getRecordsToInclude();
 		} elseif ($name == 'sideLoadScopes') {
 			return $this->getSideLoadScopes();
+		} elseif ($name == 'omekaScopes') {
+			return $this->getOmekaScopes();
 		} elseif ($name == 'overDriveScopes') {
 			return $this->getLocationOverDriveScopes();
 		} elseif ($name == 'combinedResultSections') {
@@ -2135,6 +2172,8 @@ class Location extends DataObject {
 			$this->_recordsToInclude = $value;
 		} elseif ($name == 'sideLoadScopes') {
 			$this->_sideLoadScopes = $value;
+		} elseif ($name == 'omekaScopes') {
+			$this->_omekaScopes = $value;
 		} elseif ($name == 'overDriveScopes') {
 			$this->_locationOverDriveScopes = $value;
 		} elseif ($name == 'combinedResultSections') {
@@ -2164,6 +2203,7 @@ class Location extends DataObject {
 			$this->saveMoreDetailsOptions();
 			$this->saveRecordsToInclude();
 			$this->saveSideLoadScopes();
+			$this->saveOmekaScopes();
 			$this->saveOverDriveScopes();
 			$this->saveCombinedResultSections();
 			$this->saveCloudLibraryScopes();
@@ -2191,6 +2231,7 @@ class Location extends DataObject {
 			$this->saveMoreDetailsOptions();
 			$this->saveRecordsToInclude();
 			$this->saveSideLoadScopes();
+			$this->saveOmekaScopes();
 			$this->saveOverDriveScopes();
 			$this->saveCombinedResultSections();
 			$this->saveCloudLibraryScopes();
@@ -2679,6 +2720,32 @@ class Location extends DataObject {
 		if (isset ($this->_sideLoadScopes) && is_array($this->_sideLoadScopes)) {
 			$this->saveOneToManyOptions($this->_sideLoadScopes, 'locationId');
 			unset($this->_sideLoadScopes);
+		}
+	}
+
+	/**
+	 * @return LocationOmekaScope[]
+	 */
+	public function getOmekaScopes(): array {
+		if (!isset($this->_omekaScopes)) {
+			$this->_omekaScopes = [];
+			if (!empty($this->locationId)) {
+				require_once ROOT_DIR . '/sys/Omeka/LocationOmekaScope.php';
+				$object = new LocationOmekaScope();
+				$object->locationId = $this->locationId;
+				$object->find();
+				while ($object->fetch()) {
+					$this->_omekaScopes[$object->id] = clone($object);
+				}
+			}
+		}
+		return $this->_omekaScopes;
+	}
+
+	public function saveOmekaScopes() : void {
+		if (isset ($this->_omekaScopes) && is_array($this->_omekaScopes)) {
+			$this->saveOneToManyOptions($this->_omekaScopes, 'locationId');
+			unset($this->_omekaScopes);
 		}
 	}
 
@@ -3363,6 +3430,13 @@ class Location extends DataObject {
 			$this->getSideLoadScopes();
 			$index = -1;
 			foreach ($this->_sideLoadScopes as $subObject) {
+				$subObject->id = $index;
+				unset($subObject->locationId);
+				$index--;
+			}
+			$this->getOmekaScopes();
+			$index = -1;
+			foreach ($this->_omekaScopes as $subObject) {
 				$subObject->id = $index;
 				unset($subObject->locationId);
 				$index--;

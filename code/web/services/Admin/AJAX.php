@@ -174,6 +174,9 @@ class Admin_AJAX extends JSON_Action {
 		} elseif ($source == 'palace_project') {
 			require_once ROOT_DIR . '/sys/PalaceProject/PalaceProjectLogEntry.php';
 			$extractLog = new PalaceProjectLogEntry();
+		} elseif ($source == 'omeka') {
+			require_once ROOT_DIR . '/sys/Omeka/OmekaExportLogEntry.php';
+			$extractLog = new OmekaExportLogEntry();
 		} elseif ($source == 'events') {
 			require_once ROOT_DIR . '/sys/Events/EventsIndexingLogEntry.php';
 			$extractLog = new EventsIndexingLogEntry();

@@ -151,6 +151,10 @@ class BookCoverProcessor {
 				if ($this->getPalaceProjectCover($this->id, true)) {
 					return true;
 				}
+			} elseif ($this->type == 'omeka') {
+				if ($this->getOmekaCover($this->id, true)) {
+					return true;
+				}
 			} elseif ($this->type == 'Colorado State Government Documents') {
 				if ($this->getColoradoGovDocCover()) {
 					return true;
@@ -411,6 +415,25 @@ class BookCoverProcessor {
 					return false;
 				}
 			}
+		}
+		return false;
+	}
+
+	private function getOmekaCover(string $id, bool $createDefaultIfNotFound = false) : bool {
+		if (str_starts_with($id, 'omeka')) {
+			$id = str_replace('omeka:', '', $id);
+		}
+		require_once ROOT_DIR . '/RecordDrivers/OmekaRecordDriver.php';
+		$driver = new OmekaRecordDriver($id);
+		if (!$driver->isValid()) {
+			return false;
+		}
+		$coverUrl = $driver->getOmekaBookcoverUrl();
+		if ($coverUrl != null) {
+			return $this->processImageURL('omeka', $coverUrl);
+		}
+		if ($createDefaultIfNotFound) {
+			return $this->getDefaultCover($driver);
 		}
 		return false;
 	}
@@ -1527,6 +1550,10 @@ class BookCoverProcessor {
 					}
 				} elseif (strcasecmp($relatedRecord->source, 'palace_project') == 0) {
 					if ($this->getPalaceProjectCover($relatedRecord->id)) {
+						return true;
+					}
+				} elseif (strcasecmp($relatedRecord->source, 'omeka') == 0) {
+					if ($this->getOmekaCover($relatedRecord->id)) {
 						return true;
 					}
 				} elseif (strcasecmp($relatedRecord->source, 'Colorado State Government Documents') == 0) {
