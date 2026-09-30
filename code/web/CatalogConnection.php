@@ -1951,8 +1951,8 @@ class CatalogConnection {
 		return $this->driver->restrictValidPickupLocationsForRecordByILS();
 	}
 
-	public function getValidPickupLocationsForRecordFromILS(string $recordId, User $user): array {
-		return $this->driver->getValidPickupLocationsForRecordFromILS($recordId, $user);
+	public function getValidPickupLocationsForRecordFromILS(string $recordId, User $user, array $locations): array {
+		return $this->driver->getValidPickupLocationsForRecordFromILS($recordId, $user, $locations);
 	}
 
 	public function isPromptForHoldNotifications(): bool {

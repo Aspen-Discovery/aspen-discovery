@@ -540,7 +540,7 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 	 * @param User $patron
 	 * @return array An array containing success status and a message.
 	 */
-	public function getValidPickupLocationsForRecordFromILS($recordId, $patron): array {
+	public function getValidPickupLocationsForRecordFromILS($recordId, $patron, $locations): array {
 		return [
 			'success' => false,
 			'message' => 'This functionality has not been implemented for this ILS.',
