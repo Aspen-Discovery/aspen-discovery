@@ -678,6 +678,7 @@ class UInterface extends Smarty {
 		$this->assign('showLoginButton', $library->showLoginButton && ($offlineMode == false || $this->getVariable('enableEContentWhileOffline')));
 		$this->assign('showMinimalSelfRegButton', $library->enableSelfRegistration == 1 && $library->useMinimalSelfRegistrationModal);
 		$this->assign('showAdvancedSearchbox', $library->showAdvancedSearchbox);
+		$this->assign('simplifiedSearchBox', $library->simplifiedSearchBox);
 		$this->assign('enableInnReachIntegration', $library->enableInnReachIntegration);
 		$this->assign('enableShareItIntegration', $library->ILLSystem == 3);
 		$groupedWorkDisplaySettings = $library->getGroupedWorkDisplaySettings();

@@ -49,6 +49,13 @@ var AspenDiscovery = (function(){
 		const $lookfor = aspenJQ("#lookfor");
 		const $clearAddon = $lookfor.siblings('.clear-search');
 
+		// In simplified search mode, the Search button sits inside the input-group, so
+		// shift the clear button left by the button's width to keep them from overlapping.
+		const $searchBtnGroup = $lookfor.closest('.input-group').find('.input-group-btn');
+		if ($searchBtnGroup.length) {
+			$clearAddon.css('right', ($searchBtnGroup.outerWidth() + 5) + 'px');
+		}
+
 		$lookfor.on("input", function() {
 			if (aspenJQ(this).val().length > 0) {
 				$clearAddon.css('display', 'block');
