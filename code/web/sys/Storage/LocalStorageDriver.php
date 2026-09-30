@@ -4,19 +4,32 @@ require_once ROOT_DIR . '/sys/Storage/StorageDriver.php';
 
 class LocalStorageDriver implements StorageDriver {
 	private string $dataRoot;
+	private string $publicRoot;
 
-	public function __construct(string $dataRoot) {
+	// Served directly by Apache from the docroot on every deployment type; see StorageDriverFactory::resolvePublicRoot().
+	private const PUBLIC_KEY_PREFIXES = ['files/', 'images/', 'fonts/'];
+
+	public function __construct(string $dataRoot, string $publicRoot) {
 		$this->dataRoot = rtrim($dataRoot, '/');
+		$this->publicRoot = rtrim($publicRoot, '/');
+	}
+
+	private function isPublicKey(string $key): bool {
+		foreach (self::PUBLIC_KEY_PREFIXES as $prefix) {
+			if (str_starts_with($key, $prefix)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private function fullPath(string $key): string {
-		return $this->dataRoot . '/' . ltrim($key, '/');
+		$root = $this->isPublicKey($key) ? $this->publicRoot : $this->dataRoot;
+		return $root . '/' . ltrim($key, '/');
 	}
 
 	public function url(string $key, array $transforms = []): string {
-		// Files under dataRoot are not served directly by Apache; callers
-		// must proxy the bytes themselves via read().
-		return '';
+		return $this->isPublicKey($key) ? '/' . $key : '';
 	}
 
 	public function read(string $key): string|false {

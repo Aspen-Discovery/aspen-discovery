@@ -5,8 +5,9 @@ interface StorageDriver {
 	 * Returns a public-facing URL the caller can redirect a browser to, or an
 	 * empty string if this driver cannot serve the key directly and the
 	 * caller must proxy the bytes itself via read() instead.
-	 * LocalStorageDriver always returns ''. Uploaded files live outside the
-	 * Apache docroot and there is no alias serving them directly.
+	 * LocalStorageDriver returns a direct URL only for files/, images/, and
+	 * fonts/ keys (Apache serves those straight from the docroot on every
+	 * deployment type); everything else returns ''.
 	 * Remote drivers return an absolute URL when configured with a public
 	 * base URL, enabling the browser to fetch bytes directly from the
 	 * backend instead of round-tripping through the app server.
