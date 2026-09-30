@@ -4243,18 +4243,6 @@ parameters:
 			path: code/web/services/AJAX/JSON.php
 
 		-
-			message: '#^Binary operation "\+\=" between string and 12 results in an error\.$#'
-			identifier: assignOp.invalid
-			count: 2
-			path: code/web/services/AJAX/JSON.php
-
-		-
-			message: '#^Binary operation "\-\=" between string and 12 results in an error\.$#'
-			identifier: assignOp.invalid
-			count: 2
-			path: code/web/services/AJAX/JSON.php
-
-		-
 			message: '#^Parameter \#5 \$version of static method UserAppRequestLogEntry\:\:logRequest\(\) expects string, float given\.$#'
 			identifier: argument.type
 			count: 1
@@ -8451,18 +8439,6 @@ parameters:
 		-
 			message: '#^Attribute class JetBrains\\PhpStorm\\NoReturn does not exist\.$#'
 			identifier: attribute.notFound
-			count: 2
-			path: code/web/services/WebBuilder/AJAX.php
-
-		-
-			message: '#^Binary operation "\+\=" between string and 12 results in an error\.$#'
-			identifier: assignOp.invalid
-			count: 2
-			path: code/web/services/WebBuilder/AJAX.php
-
-		-
-			message: '#^Binary operation "\-\=" between string and 12 results in an error\.$#'
-			identifier: assignOp.invalid
 			count: 2
 			path: code/web/services/WebBuilder/AJAX.php
 
@@ -15578,18 +15554,6 @@ parameters:
 			identifier: function.impossibleType
 			count: 1
 			path: code/web/sys/WebBuilder/GrapesPage.php
-
-		-
-			message: '#^Binary operation "\+\=" between string and 12 results in an error\.$#'
-			identifier: assignOp.invalid
-			count: 2
-			path: code/web/sys/WebBuilder/PortalCell.php
-
-		-
-			message: '#^Binary operation "\-\=" between string and 12 results in an error\.$#'
-			identifier: assignOp.invalid
-			count: 2
-			path: code/web/sys/WebBuilder/PortalCell.php
 
 		-
 			message: '#^Call to DataObject\:\:finishCopy\(\) on a separate line has no effect\.$#'
