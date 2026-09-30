@@ -2632,69 +2632,6 @@ class SearchAPI extends AbstractAPI {
 						// Search Browse Category //
 					} else {
 						global $configArray;
-						$lmBypass = false;
-						$communicoBypass = false;
-						$springShareBypass = false;
-						$assabetBypass = false;
-						$lmAddToList = false;
-						$communicoAddToList = false;
-						$springShareAddToList = false;
-						$assabetAddToList = false;
-						$aspenEventsBypass = false;
-						$aspenEventsAddToList = false;
-						$libraryEventSettings = [];
-
-						if($browseCategory->source === 'Events') {
-							$searchLibrary = Library::getSearchLibrary();
-							require_once ROOT_DIR . '/sys/Events/LibraryEventsSetting.php';
-							$libraryEventsSetting = new LibraryEventsSetting();
-							$libraryEventsSetting->libraryId = $searchLibrary->libraryId;
-							$libraryEventSettings = $libraryEventsSetting->fetchAll();
-
-							foreach($libraryEventSettings as $setting) {
-								$source = $setting->settingSource;
-								$id = $setting->settingId;
-								if($source == 'library_market') {
-									require_once ROOT_DIR . '/sys/Events/LMLibraryCalendarSetting.php';
-									$eventSetting = new LMLibraryCalendarSetting();
-									$eventSetting->id = $id;
-									if($eventSetting->find(true)) {
-										$lmBypass = $eventSetting->bypassAspenEventPages;
-										$lmAddToList = $eventSetting->eventsInLists;
-									}
-								} else if ($source == 'communico') {
-									require_once ROOT_DIR . '/sys/Events/CommunicoSetting.php';
-									$eventSetting = new CommunicoSetting();
-									$eventSetting->id = $id;
-									if($eventSetting->find(true)) {
-										$communicoBypass = $eventSetting->bypassAspenEventPages;
-										$communicoAddToList = $eventSetting->eventsInLists;
-									}
-								} else if ($source == 'springshare') {
-									require_once ROOT_DIR . '/sys/Events/SpringshareLibCalSetting.php';
-									$eventSetting = new SpringshareLibCalSetting();
-									$eventSetting->id = $id;
-									if($eventSetting->find(true)) {
-										$springShareBypass = $eventSetting->bypassAspenEventPages;
-										$springShareAddToList = $eventSetting->eventsInLists;
-									}
-								} else if ($source == 'assabet') {
-									require_once ROOT_DIR . '/sys/Events/AssabetSetting.php';
-									$eventSetting = new AssabetSetting();
-									$eventSetting->id = $id;
-									if($eventSetting->find(true)) {
-										$assabetBypass = $eventSetting->bypassAspenEventPages;
-										$assabetAddToList = $eventSetting->eventsInLists;
-									}
-								} else if ($source == 'aspenEvents') {
-									$aspenEventsAddToList = true;
-									$aspenEventsBypass = false;
-								} else {
-									// invalid event source
-								}
-							}
-						}
-
 						$searchObject = SearchObjectFactory::initSearchObject($browseCategory->source);
 						$defaultFilterInfo = $browseCategory->defaultFilter;
 						$defaultFilters = preg_split('/[\r\n,;]+/', $defaultFilterInfo);
@@ -2739,77 +2676,73 @@ class SearchAPI extends AbstractAPI {
 						$searchObject->close();
 						foreach ($records as $recordKey => $record) {
 							if($browseCategory->source === 'Events') {
+								$eventDriver = null;
+								$eventSource = '';
 								if(str_starts_with($record['id'], 'lc')) {
 									$eventSource = 'library_calendar';
-									$bypass = $lmBypass;
-									$addToList = $lmAddToList;
+									require_once ROOT_DIR . '/RecordDrivers/LibraryCalendarEventRecordDriver.php';
+									$eventDriver = new LibraryCalendarEventRecordDriver($record['id']);
 								} else if (str_starts_with($record['id'], 'communico')) {
 									$eventSource = 'communico';
-									$bypass = $communicoBypass;
-									$addToList = $communicoAddToList;
+									require_once ROOT_DIR . '/RecordDrivers/CommunicoEventRecordDriver.php';
+									$eventDriver = new CommunicoEventRecordDriver($record['id']);
 								} else if (str_starts_with($record['id'], 'libcal')) {
 									$eventSource = 'springshare_libcal';
-									$bypass = $springShareBypass;
-									$addToList = $springShareAddToList;
+									require_once ROOT_DIR . '/RecordDrivers/SpringshareLibCalEventRecordDriver.php';
+									$eventDriver = new SpringshareLibCalEventRecordDriver($record['id']);
 								} else if (str_starts_with($record['id'], 'assabet')) {
 									$eventSource = 'assabet';
-									$bypass = $assabetBypass;
-									$addToList = $assabetAddToList;
-								} else if (str_starts_with($record['id'], 'aspenEvents')) {
-									$eventSource = 'aspenEvents';
-									$bypass = $aspenEventsBypass;
-									$addToList = $aspenEventsAddToList;
-								} else {
-									$eventSource = 'unknown';
-									$bypass = false;
-									$addToList = false;
+									require_once ROOT_DIR . '/RecordDrivers/AssabetEventRecordDriver.php';
+									$eventDriver = new AssabetEventRecordDriver($record['id']);
+								} else if (str_starts_with($record['id'], 'aspenEvent')) {
+									$eventSource = 'aspenEvent';
+									require_once ROOT_DIR . '/RecordDrivers/AspenEventRecordDriver.php';
+									$eventDriver = new AspenEventRecordDriver($record['id']);
+								} else if (str_starts_with($record['id'], 'localhop')) {
+									$eventSource = 'localhop';
+									require_once ROOT_DIR . '/RecordDrivers/LocalHopEventRecordDriver.php';
+									$localHopDriver = new LocalHopEventRecordDriver($_REQUEST['id']);
 								}
 
-								$registrationRequired = false;
-								if (isset($record['registration_required'])) {
-									if ($record['registration_required'] == 'Yes' || $record['registration_required'] == 'yes') {
-										$registrationRequired = true;
+								if ($eventDriver->isValid()) {
+									$locationInfo = null;
+									if ($record['branch']) {
+										require_once ROOT_DIR . '/services/API/EventAPI.php';
+										$eventApi = new EventAPI();
+										$locationInfo = $eventApi->getDiscoveryBranchDetails($record['branch'][0]);
 									}
-								}
 
-								$locationInfo = null;
-								if($record['branch']) {
-									require_once ROOT_DIR . '/services/API/EventAPI.php';
-									$eventApi = new EventAPI();
-									$locationInfo = $eventApi->getDiscoveryBranchDetails($record['branch'][0]);
-								}
-								$items[$recordKey]['key'] = $record['id'];
-								$items[$recordKey]['source'] = $eventSource;
-								$items[$recordKey]['title'] = $record['title'];
-								$items[$recordKey]['author'] = null;
-								$items[$recordKey]['image'] = $configArray['Site']['url'] . '/bookcover.php?id=' . $record['id'] . '&size=medium&type=' . $eventSource . '_event';
-								$items[$recordKey]['language'] = null;
-								$items[$recordKey]['summary'] = isset($record['description']) ? strip_tags($record['description']) : null;
-								$items[$recordKey]['registration_required'] = $registrationRequired;
-								$items[$recordKey]['event_day'] = $record['event_day'];
-								$items[$recordKey]['location'] = $locationInfo;
-								$items[$recordKey]['room'] = $record['room'] ?? null;
-								$items[$recordKey]['type'] = 'event';
+									$items[$recordKey]['key'] = $record['id'];
+									$items[$recordKey]['source'] = $eventSource;
+									$items[$recordKey]['title'] = $eventDriver->getTitle();
+									$items[$recordKey]['author'] = null;
+									$items[$recordKey]['image'] = $configArray['Site']['url'] . $eventDriver->getBookcoverUrl('medium');
+									$items[$recordKey]['language'] = null;
+									$items[$recordKey]['summary'] = strip_tags($eventDriver->getDescription());
+									$items[$recordKey]['registration_required'] = $eventDriver->isRegistrationRequired();
+									$items[$recordKey]['event_day'] = $record['event_day'];
+									$items[$recordKey]['location'] = $locationInfo;
+									$items[$recordKey]['room'] = $record['room'] ?? null;
+									$items[$recordKey]['type'] = 'event';
 
-								$startDate = new DateTime($record['start_date']);
-								$items[$recordKey]['start_date'] = $startDate->setTimezone(new DateTimeZone(date_default_timezone_get()));
-								$endDate = new DateTime($record['end_date']);
-								$items[$recordKey]['end_date'] = $endDate->setTimezone(new DateTimeZone(date_default_timezone_get()));
+									$items[$recordKey]['start_date'] = $eventDriver->getStartDate();
+									$items[$recordKey]['end_date'] = $eventDriver->getEndDate();
 
-								$items[$recordKey]['url'] = $record['url'] ?? null;
-								$items[$recordKey]['bypass'] = $bypass;
-								$items[$recordKey]['canAddToList'] = false;
+									$items[$recordKey]['url'] = $eventDriver->getExternalUrl();
+									$items[$recordKey]['bypass'] = $eventDriver->getBypassSetting();
+									$items[$recordKey]['canAddToList'] = false;
 
-								$user = $this->getUserForApiCall();
-								if ($user && !($user instanceof AspenError)) {
-									$source = $eventSource;
-									if($eventSource == 'springshare_libcal') {
-										$source = 'springshare';
+									$user = $this->getUserForApiCall();
+									if ($user && !($user instanceof AspenError)) {
+										$source = $eventSource;
+										if ($eventSource == 'springshare_libcal') {
+											$source = 'springshare';
+										}
+										$items[$recordKey]['canAddToList'] = $user->isAllowedToAddEventsToList($source);
 									}
-									$items[$recordKey]['canAddToList'] = $user->isAllowedToAddEventsToList($source);
-								}
 
-								$items[$recordKey]['itemList'] = [];
+									$items[$recordKey]['itemList'] = [];
+								}
 
 							} else {
 								$items[$recordKey]['key'] = $record['id'];
@@ -2827,7 +2760,6 @@ class SearchAPI extends AbstractAPI {
 								$items[$recordKey]['itemList'] = $formats;
 							}
 						}
-
 					}
 					if (!$id) {
 						$response['key'] = $browseCategory->textId;
