@@ -11,7 +11,9 @@
 				{if empty($productionServer)}
 					<small class='location_info'>{$physicalLocation}{if !empty($debug)} ({$activeIp}){/if} - {$deviceName}</small>
 				{/if}
-				<small class='version_info'>{if empty($productionServer)} / {/if}{translate text="v. %1%" 1=$aspenVersion isPublicFacing=true}</small>
+				{if empty($hideAspenVersion)}
+					<small class='version_info'>{if empty($productionServer)} / {/if}{translate text="v. %1%" 1=$aspenVersion isPublicFacing=true}</small>
+				{/if}
 				{if !empty($debug)}
 					<small class='session_info'> / {translate text="session %1%" 1=$session isAdminFacing=true}</small>
 					<small class='scope_info'> / {translate text="scope %1%" 1=$solrScope isAdminFacing=true}</small>
@@ -52,7 +54,7 @@
 				{/if}
 			</div>
 			<div class="col-tn-12 col-sm-4 col-md-4 text-right" id="connect-with-us-info">
-				{if $twitterLink || $facebookLink || !empty($generalContactLink) || $youtubeLink || $instagramLink || $pinterestLink || $goodreadsLink || $tiktokLink}
+				{if $twitterLink || $facebookLink || !empty($generalContactLink) || $youtubeLink || $instagramLink || $pinterestLink || $goodreadsLink || $tiktokLink || !empty($blueskyLink) || !empty($threadsLink)}
 					<span id="connect-with-us-label" class="large">{translate text='CONNECT WITH US' isPublicFacing=true}</span>
 					{if !empty($twitterLink)}
 						<a href="{$twitterLink}" class="connect-icon" target="_blank" title="{translate text="Follow us on X" inAttribute=true isPublicFacing=true}" aria-label="{translate text="Follow us on X" inAttribute=true isPublicFacing=true}  ({translate text="opens in a new window" isPublicFacing=true inAttribute=true})"><i class='fa-brands fa-x-twitter fa-lg' role="presentation"></i></a>
