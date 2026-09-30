@@ -1,0 +1,100 @@
+name: Regenerate aspen.sql
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - '[0-9][0-9].[0-9][0-9].[0-9][0-9]'
+    paths:
+      - 'code/web/sys/DBMaintenance/**'
+      - 'code/web/cron/createDefaultDatabaseScript.php'
+      - 'code/web/cron/runDatabaseUpdates.php'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: regenerate-aspen-sql-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  regenerate_aspen_sql:
+    name: Regenerate aspen.sql and commit drift
+    if: github.event_name == 'workflow_dispatch' || github.repository == 'Aspen-Discovery/aspen-discovery'
+    runs-on: ubuntu-latest
+
+    env:
+      TARGET_BRANCH: ${{ github.ref_name }}
+
+    steps:
+      - name: Checkout target branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TARGET_BRANCH }}
+
+      - name: Install aspen-dev-box
+        run: |
+          cd ..
+          git clone --depth 1 https://github.com/Aspen-Discovery/aspen-dev-box-image.git aspen-dev-box
+          cd aspen-dev-box
+          cp .env.example .env
+          echo "$(pwd)/bin/linux" >> "$GITHUB_PATH"
+
+      - name: Set up environment variables
+        run: |
+          {
+            echo "ASPEN_DOCKER=$(readlink -f ../aspen-dev-box)"
+            echo "ASPEN_CLONE=$GITHUB_WORKSPACE"
+            echo "ASPEN_STACK=aspenci"
+            echo "UID=$(id -u)"
+            echo "GID=$(id -g)"
+          } >> "$GITHUB_ENV"
+
+      - name: Launch adb instance
+        run: adb up -d --ils none
+
+      - name: Wait for adb to be ready
+        run: |
+          timeout 300 bash -c 'until curl -sf http://localhost:8083/ > /dev/null; do sleep 5; done'
+          echo "Aspen dev box is ready"
+
+      - name: Reset the database to a clean state
+        run: |
+          docker exec "${ASPEN_STACK}"-aspen-dev-box-1 bash -c '
+            service cron stop
+            mysql -h aspen-db -uroot -p"$DATABASE_ROOT_PASSWORD" -e "DROP DATABASE $DATABASE_NAME; CREATE DATABASE $DATABASE_NAME"
+            mysql -h aspen-db -uroot -p"$DATABASE_ROOT_PASSWORD" "$DATABASE_NAME" < /usr/local/aspen-discovery/install/aspen.sql
+          '
+
+      - name: Apply pending database updates
+        run: docker exec "${ASPEN_STACK}"-aspen-dev-box-1 bash -c 'cd /usr/local/aspen-discovery/code/web/cron && php runDatabaseUpdates.php "$SITE_NAME"'
+
+      - name: Regenerate aspen.sql
+        run: docker exec -u www-data "${ASPEN_STACK}"-aspen-dev-box-1 bash -c 'cd /usr/local/aspen-discovery/code/web/cron && php createDefaultDatabaseScript.php "$SITE_NAME"'
+
+      - name: Commit regenerated aspen.sql
+        run: |
+          cp install/aspen.sql "$RUNNER_TEMP/aspen.sql.regenerated"
+          git fetch origin "$TARGET_BRANCH"
+          git reset --hard FETCH_HEAD
+          cp "$RUNNER_TEMP/aspen.sql.regenerated" install/aspen.sql
+          if git diff --quiet -- install/aspen.sql; then
+            echo "install/aspen.sql is up to date."
+            exit 0
+          fi
+          git diff --stat -- install/aspen.sql
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add install/aspen.sql
+          git commit -m "[CI]: Regenerate aspen.sql"
+          git push origin "HEAD:$TARGET_BRANCH"
+
+      - name: Show logs on failure
+        if: failure()
+        run: |
+          docker logs "${ASPEN_STACK}"-aspen-dev-box-1 --tail 100 || true
+          docker logs "${ASPEN_STACK}"-aspen-db-1 --tail 50 || true
+
+      - name: Cleanup adb instance
+        if: always()
+        run: adb down || true
