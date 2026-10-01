@@ -55,6 +55,12 @@ class StorageDriverFactory {
 		return $configArray['Site']['local'];
 	}
 
+	public static function resolveGroupOwner(): ?string {
+		global $configArray;
+		// An empty value disables the chgrp
+		return ($configArray['Site']['fileGroupOwner'] ?? '') ?: null;
+	}
+
 	private static function create(): StorageDriver {
 		return self::getLocalDriver();
 	}
@@ -65,7 +71,7 @@ class StorageDriverFactory {
 
 	private static function getLocalDriver(): StorageDriver {
 		if (self::$localInstance === null) {
-			self::$localInstance = new LocalStorageDriver(self::resolveDataRoot(), self::resolvePublicRoot());
+			self::$localInstance = new LocalStorageDriver(self::resolveDataRoot(), self::resolvePublicRoot(), self::resolveGroupOwner());
 		}
 		return self::$localInstance;
 	}
