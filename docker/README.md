@@ -37,6 +37,7 @@ Access Aspen at http://localhost:85 (default credentials: `aspen_admin` / `secre
 | `ASPEN_HOME` | `./aspen` | Directory where instance files are stored (conf, data, logs) |
 | `ASPEN_ADMIN_PASSWORD` | `secretPass123` | Admin password |
 | `SUPPORTING_COMPANY` | `ByWater Solutions` | Support company name |
+| `FILE_GROUP_OWNER` | `www-data` | Group assigned to directories Aspen creates for uploaded files |
 
 ### Database
 
