@@ -3,7 +3,7 @@
 	<div class="row">
 		<div class="col-tn-12 col-sm-8 col-md-6 col-lg -3">
 			{if (empty($aciError))}
-				<script data-aci-speedpay src="https://{$sdkUrl}/js-sdk/1.5.0/speedpay.js?billerId={$billerId}" integrity="{$sriHash}" crossorigin="anonymous" referrerpolicy="strict-origin"></script>
+				<script data-aci-speedpay src="https://{$sdkUrl}/js-sdk/1.7.14/speedpay.js?billerId={$billerId}" integrity="{$sriHash}" crossorigin="anonymous" referrerpolicy="strict-origin"></script>
 
 				<div class="form-group">
 					<label id="card-number" class="control-label">Card Number</label>

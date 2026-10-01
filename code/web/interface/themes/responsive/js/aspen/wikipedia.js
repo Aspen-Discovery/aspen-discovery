@@ -22,7 +22,7 @@ AspenDiscovery.Wikipedia = (() => {
 			})
 			.fail((jqXHR, textStatus) => {
 				$("#wikipedia_placeholder")
-					.html(`<div class="alert alert-danger">Failed to load article: ${textStatus}</div>`)
+					.html(`<div class="alert alert-danger">${__('Failed to load article:')} ${textStatus}</div>`)
 					.fadeIn();
 			});
 		}

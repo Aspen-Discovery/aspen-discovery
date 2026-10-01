@@ -5,8 +5,8 @@ require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 require_once ROOT_DIR . '/sys/Covers/CoverImageUtils.php';
 
 class DefaultCoverImageBuilder {
-	private $imageWidth = 280; //Pixels
-	private $imageHeight = 400; // Pixels
+	private int $imageWidth;
+	private int $imageHeight;
 	private $topMargin = 10;
 	private $titleFont;
 	private $authorFont;
@@ -14,7 +14,9 @@ class DefaultCoverImageBuilder {
 	private $foregroundColor;
 	private $defaultCoverImage;
 
-	public function __construct($invertColors = false) {
+	public function __construct($invertColors = false, int $imageWidth = 280, int $imageHeight = 400) {
+		$this->imageWidth = $imageWidth;
+		$this->imageHeight = $imageHeight;
 		global $interface;
 		if ($interface == null) {
 			//Need to initialize the interface to get access to the themes

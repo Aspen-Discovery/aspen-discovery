@@ -10,14 +10,14 @@ AspenDiscovery.CommunityEngagement = function() {
 				function(data) {
 					if (data.success) {
 						var button = $('.set-reward-btn[data-user-id="' + userId + '"][data-campaign-id="' + campaignId + '"]');
-						button.replaceWith('<span>Reward Given</span>');
+						button.replaceWith('<span>' + __('Reward Given') + '</span>');
 					} else {
-						alert("Error: " + data.message);
+						alert(__('Error: ') + data.message);
 					}
 				})
 				.fail(function(jqXHR, textStatus, errorThrown){
 			   
-				alert('An error occurred while updating the reward status.' + textStatus + ', ' + errorThrown);
+				alert(__('An error occurred while updating the reward status.') + textStatus + ', ' + errorThrown);
 				});
 		},
 		milestoneRewardGiven: function(userId, campaignId, milestoneId) {
@@ -31,13 +31,13 @@ AspenDiscovery.CommunityEngagement = function() {
 				function(data) {
 					if (data.success) {
 						var button = $('.set-reward-btn-milestone[data-user-id="' + userId + '"][data-campaign-id="' + campaignId + '"][data-milestone-id="' + milestoneId + '"]');
-						button.replaceWith('<span>Milestone Reward Given</span>');
+						button.replaceWith('<span>' + __('Milestone Reward Given') + '</span>');
 					} else {
-						alert("Error: " + data.message);
+						alert(__('Error: ') + data.message);
 					}
 				})
 				.fail(function(jqXHR, textStatus, errorThrown) {
-					alert('An error occurred while updating the reward status for this milestone.' + textStatus + ', ' + errorThrown);
+					alert(__('An error occurred while updating the reward status for this milestone.') + textStatus + ', ' + errorThrown);
 				});
 		},
 		filterDropdownOptions: function(filterType) {
@@ -75,7 +75,7 @@ AspenDiscovery.CommunityEngagement = function() {
 						filteredCampaign.style.display = "block"; 
 						campaignsList.style.display = "none";
 					} else {
-						alert("Error:" +  data.message);
+						alert(__('Error:') +  data.message);
 					}
 				})
 				.fail(function() {
@@ -751,11 +751,11 @@ AspenDiscovery.CommunityEngagement = function() {
 					if (refreshData.success && refreshData.html) {
 						$("#filteredCampaign").html(refreshData.html);
 					} else {
-						AspenDiscovery.showMessage('Error', 'Failed to refresh campaign data.');
+						AspenDiscovery.showMessage(__('Error'), __('Failed to refresh campaign data.'));
 					}
 				});
 			}).catch(() => {
-				AspenDiscovery.showMessage('Error', 'Failed to load user data.');
+				AspenDiscovery.showMessage(__('Error'), __('Failed to load user data.'));
 			});
 		},
 		displayExtraCreditBentoBox: function () {
@@ -806,7 +806,7 @@ AspenDiscovery.CommunityEngagement = function() {
 					}
 				})
 				.fail(function(jqXHR, textStatus, errorThrown) {
-					alert('An error occurred while updating the reward status for this milestone.' + textStatus + ', ' + errorThrown);
+					alert(__('An error occurred while updating the reward status for this milestone.') + textStatus + ', ' + errorThrown);
 				});
 		},
 		adminManuallyProgressExtraCredit: function(extraCreditActivityId, userId, campaignId) {

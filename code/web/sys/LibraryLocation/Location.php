@@ -203,7 +203,7 @@ class Location extends DataObject {
 
 	static $_objectStructure = [];
 	static function getObjectStructure(string $context = ''): array {
-		if (isset(self::$_objectStructure[$context]) && self::$_objectStructure[$context] !== null) {
+		if (isset(self::$_objectStructure[$context])) {
 			return self::$_objectStructure[$context];
 		}
 		//Load Libraries for lookup values
@@ -2373,8 +2373,8 @@ class Location extends DataObject {
 							'open' => $specialOpen,
 							'close' => $specialClose,
 							'closed' => false,
-							'openFormatted' => ($holiday->open == '12:00' ? 'Noon' : date("g:i A", strtotime($holiday->open))),
-							'closeFormatted' => ($holiday->close == '12:00' ? 'Noon' : date("g:i A", strtotime($holiday->close))),
+							'openFormatted' => DateUtils::formatHour($holiday->open),
+							'closeFormatted' => DateUtils::formatHour($holiday->close),
 						]];
 					}
 				}
@@ -2397,8 +2397,8 @@ class Location extends DataObject {
 						'open' => ltrim($hours->open, '0'),
 						'close' => ltrim($hours->close, '0'),
 						'closed' => (bool)$hours->closed,
-						'openFormatted' => ($hours->open == '12:00' ? 'Noon' : date("g:i A", strtotime($hours->open))),
-						'closeFormatted' => ($hours->close == '12:00' ? 'Noon' : date("g:i A", strtotime($hours->close))),
+						'openFormatted' => DateUtils::formatHour($hours->open),
+						'closeFormatted' => DateUtils::formatHour($hours->close),
 					];
 					if (($openHours[$ctr]['open'] == $openHours[$ctr]['close'])) {
 						$openHours[$ctr]['closed'] = true;

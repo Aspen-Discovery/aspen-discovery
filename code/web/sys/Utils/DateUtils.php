@@ -8,6 +8,10 @@ class DateUtils {
 		return $newdate;
 	}
 
+	static function isPastDate(?DateTime $date) : bool {
+		return $date !== null && $date < new DateTime();
+	}
+
 	static function addMinutes($givendate, $minutes) {
 		$cd = strtotime($givendate);
 		$newdate = date('Y-m-d H:i:s', mktime(date('H', $cd), date('i', $cd) + $minutes, date('s', $cd), date('m', $cd), date('d', $cd), date('Y', $cd)));
@@ -106,6 +110,29 @@ class DateUtils {
 		}
 
 		return $formatter->format($timestamp);
+	}
+
+	static function formatHour(?string $time): string {
+		if (empty($time)) {
+			return '';
+		}
+
+		$parsedTime = date_parse($time);
+		$isOnTheHour = $parsedTime['minute'] === 0 && $parsedTime['second'] === 0;
+		if ($isOnTheHour && $parsedTime['hour'] === 12) {
+			return translate([
+				'text' => 'Noon',
+				'isPublicFacing' => true,
+			]);
+		}
+		if ($isOnTheHour && $parsedTime['hour'] % 24 === 0) {
+			return translate([
+				'text' => 'Midnight',
+				'isPublicFacing' => true,
+			]);
+		}
+
+		return date('g:i A', strtotime($time));
 	}
 
 	static function formatTimeRange($startTime, $endTime, $format = null): string {

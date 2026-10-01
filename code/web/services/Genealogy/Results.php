@@ -10,7 +10,7 @@ class Genealogy_Results extends ResultsAction {
 		global $interface;
 		global $timer;
 		global $aspenUsage;
-		$aspenUsage->genealogySearches++;
+		$aspenUsage->incGenealogySearches();
 
 		//Check to see if a user is logged in with admin permissions
 		if (UserAccount::isLoggedIn() && UserAccount::userHasPermission('Administer Genealogy')) {

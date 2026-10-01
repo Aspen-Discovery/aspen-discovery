@@ -232,9 +232,9 @@ AspenDiscovery.Browse = (function(){
 				if (AspenDiscovery.Browse.loadingCategory === loadingID) {
 					if (data.success === false) {
 						if (data.message) {
-							AspenDiscovery.showMessage("Error loading browse information", data.message);
+							AspenDiscovery.showMessage(__('Error loading browse information'), data.message);
 						} else {
-							AspenDiscovery.showMessage("Error loading browse information", "Sorry, we were not able to find titles for that category");
+							AspenDiscovery.showMessage(__('Error loading browse information'), __('Sorry, we were not able to find titles for that category'));
 						}
 					} else {
 						var newUrl = AspenDiscovery.buildUrl(document.location.origin + document.location.pathname, 'browseCategory', categoryTextId);
@@ -321,7 +321,7 @@ AspenDiscovery.Browse = (function(){
 			};
 			$.getJSON(url, params, function(data){
 				if (data.success === false){
-					AspenDiscovery.showMessage("Error loading browse information", "Sorry, we were not able to find titles for that category");
+					AspenDiscovery.showMessage(__('Error loading browse information'), __('Sorry, we were not able to find titles for that category'));
 				}else {
 					var resultsTabPanel = document.getElementById('swiper-browse-category-' + categoryTextId) ;
 					resultsTabPanel.innerHTML = "";
@@ -441,7 +441,7 @@ AspenDiscovery.Browse = (function(){
 
 			$.getJSON(url, params, function(data){
 				if (data.success === false){
-					AspenDiscovery.showMessage("Error loading browse information", "Sorry, we were not able to find titles for that category");
+					AspenDiscovery.showMessage(__('Error loading browse information'), __('Sorry, we were not able to find titles for that category'));
 				}else{
 					var newUrl = AspenDiscovery.buildUrl(document.location.origin + document.location.pathname, 'browseCategory', AspenDiscovery.Browse.curCategory);
 					newUrl += "&subCategory=" + subCategoryTextId;
@@ -539,7 +539,7 @@ AspenDiscovery.Browse = (function(){
 
 			$.getJSON(url, params, function(data){
 				if (data.success === false){
-					AspenDiscovery.showMessage("Error loading browse information", "Sorry, we were not able to find titles for that category");
+					AspenDiscovery.showMessage(__('Error loading browse information'), __('Sorry, we were not able to find titles for that category'));
 				}else{
 					window.location = data.searchUrl;
 				}
@@ -726,9 +726,9 @@ AspenDiscovery.Browse = (function(){
 			}
 			$.getJSON(url, params, function (data) {
 				if (data.success === false) {
-					AspenDiscovery.showMessage("Unable to Create Browse Category", data.message);
+					AspenDiscovery.showMessage(__('Unable to Create Browse Category'), data.message);
 				} else {
-					AspenDiscovery.showMessage("Successfully Added Browse Category", data.message, true);
+					AspenDiscovery.showMessage(__('Successfully Added Browse Category'), data.message, true);
 				}
 			}).fail(AspenDiscovery.ajaxFail);
 			return false;
@@ -748,7 +748,7 @@ AspenDiscovery.Browse = (function(){
 					divClass = this.browseModeClasses[this.browseMode]; //|| this.browseModeClasses[Object.keys(this.browseModeClasses)[0]]; // if browseMode isn't set grab the first class
 			$.getJSON(url, params, function(data){
 				if (data.success === false){
-					AspenDiscovery.showMessage("Error loading browse information", "Sorry, we were not able to find titles for that category");
+					AspenDiscovery.showMessage(__('Error loading browse information'), __('Sorry, we were not able to find titles for that category'));
 				}else{
 					if(!AspenDiscovery.Browse.accessibleMode) {
 						if (AspenDiscovery.Browse.browseStyle === 'masonry') {
@@ -779,7 +779,7 @@ AspenDiscovery.Browse = (function(){
 			return $.getJSON(url, params)
 			.done(function(data){
 				if (data.success === false) {
-					AspenDiscovery.showMessage('Error Loading Subcategories', 'Sorry, unable to load subcategories for that category.');
+					AspenDiscovery.showMessage(__('Error Loading Subcategories'), __('Sorry, unable to load subcategories for that category.'));
 				} else {
 					// Replace placeholder with actual tabs.
 					const $tabs = $('#tabs-' + categoryTextId);

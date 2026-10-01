@@ -2,6 +2,15 @@
 require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
 
 class BookCoverProcessor {
+	private const EVENT_DATE_COVER_DRIVERS = [
+		'library_calendar_event' => 'LibraryCalendarEventRecordDriver',
+		'springshare_libcal_event' => 'SpringshareLibCalEventRecordDriver',
+		'communico_event' => 'CommunicoEventRecordDriver',
+		'assabet_event' => 'AssabetEventRecordDriver',
+		'localhop_event' => 'LocalHopEventRecordDriver',
+		'aspenEvent_event' => 'AspenEventRecordDriver',
+	];
+
 	/**
 	 * @var ?BookCoverInfo
 	 */
@@ -15,6 +24,7 @@ class BookCoverProcessor {
 	private ?string $cloudSourceIndex;
 	private string $type;
 	private string $cacheName;
+	private ?array $eventDateCoverProps = null;
 	private string $cacheFile;
 	private string $defaultCoverCacheFile; //Includes servername so each member of a consortium can have different covers
 	public ?string $error = null;
@@ -73,28 +83,8 @@ class BookCoverProcessor {
 			if ($this->getCourseReservesCover($this->id)) {
 				return true;
 			}
-		} elseif ($this->type == 'library_calendar_event') {
-			if ($this->getLibraryCalendarCover($this->id)) {
-				return true;
-			}
-		} elseif ($this->type == 'springshare_libcal_event') {
-			if ($this->getSpringshareLibCalCover($this->id)) {
-				return true;
-			}
-		} elseif ($this->type == 'communico_event') {
-			if ($this->getCommunicoCover($this->id)){
-				return true;
-			}
-		} elseif ($this->type == 'assabet_event') {
-			if ($this->getAssabetCover($this->id)){
-				return true;
-			}
-		} elseif ($this->type == 'localhop_event') {
-			if ($this->getLocalHopCover($this->id)){
-				return true;
-			}
-		}elseif ($this->type == 'aspenEvent_event') {
-			if ($this->getAspenEventsDateCover($this->id)){
+		} elseif (array_key_exists($this->type, self::EVENT_DATE_COVER_DRIVERS)) {
+			if ($this->getEventDateCover()) {
 				return true;
 			}
 		} elseif ($this->type == 'aspenEvent_eventRecord') {
@@ -538,6 +528,9 @@ class BookCoverProcessor {
 			return false;
 		}
 		$this->cacheName = preg_replace('/[^a-zA-Z0-9_.-]/', '', $this->cacheName);
+		if (array_key_exists($this->type, self::EVENT_DATE_COVER_DRIVERS)) {
+			$this->cacheName .= '~' . $this->getEventDateCoverFingerprint();
+		}
 		$this->cacheFile = $this->bookCoverPath . '/' . $this->size . '/' . $this->cacheName . '.png';
 		global $library;
 		$this->defaultCoverCacheFile = $this->bookCoverPath . '/' . $this->size . '/' . $library->subdomain . '_' . $this->cacheName . '.png';
@@ -800,8 +793,8 @@ class BookCoverProcessor {
 			$this->loadGroupedWork();
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 			if ($this->groupedWork) {
-				$title = ucwords($this->groupedWork->getTitle());
-				$author = ucwords($this->groupedWork->getPrimaryAuthor());
+				$title = $this->groupedWork->getTitle();
+				$author = $this->groupedWork->getPrimaryAuthor();
 			}
 		} else {
 			if ($recordDriver == null) {
@@ -829,13 +822,39 @@ class BookCoverProcessor {
 			}
 		}
 
-		require_once ROOT_DIR . '/sys/Covers/DefaultCoverImageBuilder.php';
-		$coverBuilder = new DefaultCoverImageBuilder();
-		if (strlen($title) === 0) {
+		$titleResolved = strlen($title) > 0;
+
+		$coverBuilder = $this->getSizedDefaultCoverBuilder();
+		if (!$titleResolved) {
 			$title = 'Unknown Title';
 		}
 		$coverBuilder->getCover($title, $author, $this->defaultCoverCacheFile);
-		return $this->processImageURL('default', $this->defaultCoverCacheFile, false);
+		$result = $this->processImageURL('default', $this->defaultCoverCacheFile, false);
+
+		if (!$titleResolved && $result) {
+			match($this->size) {
+				'small'  => $this->bookCoverInfo->setThumbnailLoaded(0),
+				'medium' => $this->bookCoverInfo->setMediumLoaded(0),
+				default  => $this->bookCoverInfo->setLargeLoaded(0),
+			};
+			$this->bookCoverInfo->update();
+		}
+		return $result;
+	}
+
+	/**
+	 * Generated covers are rendered directly at the requested size instead of one universal
+	 * canvas that then gets resized -- a placeholder has no source resolution to preserve, so
+	 * there's no reason to introduce a lossy resize step it doesn't need.
+	 */
+	private function getSizedDefaultCoverBuilder(bool $invertColors = false) : DefaultCoverImageBuilder {
+		require_once ROOT_DIR . '/sys/Covers/DefaultCoverImageBuilder.php';
+		[$width, $height] = match ($this->size) {
+			'small' => [75, 100],
+			'medium' => [150, 200],
+			default => [280, 400],
+		};
+		return new DefaultCoverImageBuilder($invertColors, $width, $height);
 	}
 
 	function processImageURL($source, $url, $attemptRefetch = true, $authentication = null) : bool {
@@ -1833,8 +1852,7 @@ class BookCoverProcessor {
 				}
 				if (!empty($sourceCollection->defaultCover)) {
 					//Build a cover based on the title of the page
-					require_once ROOT_DIR . '/sys/Covers/DefaultCoverImageBuilder.php';
-					$coverBuilder = new DefaultCoverImageBuilder();
+					$coverBuilder = $this->getSizedDefaultCoverBuilder();
 					require_once ROOT_DIR . '/RecordDrivers/OpenArchivesRecordDriver.php';
 
 					$OAIRecordDriver = new OpenArchivesRecordDriver($id);
@@ -1904,8 +1922,7 @@ class BookCoverProcessor {
 
 	private function getSeriesMemberCover($id) : bool {
 		//Build a cover based on the titles within list
-		require_once ROOT_DIR . '/sys/Covers/DefaultCoverImageBuilder.php';
-		$coverBuilder = new DefaultCoverImageBuilder();
+		$coverBuilder = $this->getSizedDefaultCoverBuilder();
 		require_once ROOT_DIR . '/sys/Series/SeriesMember.php';
 		$seriesMember = new SeriesMember();
 		$seriesMember->id = $id;
@@ -1943,293 +1960,76 @@ class BookCoverProcessor {
 	}
 
 
-	private function getLibraryCalendarCover(string $id) : bool {
-		if (str_contains($id, ':')) {
-			[
-				,
-				$id,
-			] = explode(":", $id);
-		}
-		require_once ROOT_DIR . '/RecordDrivers/LibraryCalendarEventRecordDriver.php';
-		$driver = new LibraryCalendarEventRecordDriver($id);
+	private function getEventDateCover() : bool {
+		$eventDateCoverProps = $this->resolveEventDateCoverProps();
+
 		require_once ROOT_DIR . '/sys/Covers/EventCoverBuilder.php';
-		if (!($driver->isValid())){ //if driver isn't valid, likely a past event on a list
-			require_once ROOT_DIR . '/sys/Events/UserEventsEntry.php';
-			$coverBuilder = new EventCoverBuilder();
-			$userEntry = new UserEventsEntry();
-			$userEntry->sourceId = $id;
-			if ($userEntry->find(true)){
-				$startDate = new DateTime("@$userEntry->eventDate");
-				/** @noinspection PhpUnhandledExceptionInspection */
-				$startDate->setTimezone(new DateTimeZone(date_default_timezone_get()));
-				$props = [
-					'eventDate' => $startDate,
-					'isPastEvent' => true,
-				];
-				$title = $userEntry->title;
-			} else{
-				$props = [
-					'eventDate' => $driver->getStartDateFromDB($id),
-					'isPastEvent' => true,
-				];
-				$title = $driver->getTitleFromDB($id);
-			}
-			$coverBuilder->getCover($title, $this->cacheFile, $props);
-		} else {
-			$coverBuilder = new EventCoverBuilder();
-			$isPast = false;
-			if (array_key_exists('isPast', $_REQUEST)){
-				$isPast = $_REQUEST['isPast'];
-			}
-			$props = [
-				'eventDate' => $driver->getStartDate(),
-				'isPastEvent' => $isPast,
-			];
-			$coverBuilder->getCover($driver->getTitle(), $this->cacheFile, $props);
-		}
+		$coverBuilder = new EventCoverBuilder();
+		$coverBuilder->getCover($eventDateCoverProps['title'], $this->cacheFile, $eventDateCoverProps['props']);
 		return $this->processImageURL('default_event', $this->cacheFile, false);
 	}
 
-	private function getSpringshareLibCalCover($id) : bool {
+	private function resolveEventDateCoverProps() : array {
+		if ($this->eventDateCoverProps !== null) {
+			return $this->eventDateCoverProps;
+		}
+
+		$id = $this->id;
 		if (str_contains($id, ':')) {
 			[
 				,
 				$id,
 			] = explode(":", $id);
 		}
-		require_once ROOT_DIR . '/RecordDrivers/SpringshareLibCalEventRecordDriver.php';
-		$driver = new SpringshareLibCalEventRecordDriver($id);
-		require_once ROOT_DIR . '/sys/Covers/EventCoverBuilder.php';
-		if (!($driver->isValid())){ //if driver isn't valid, likely a past event on a list
-			require_once ROOT_DIR . '/sys/Events/UserEventsEntry.php';
-			$coverBuilder = new EventCoverBuilder();
-			$userEntry = new UserEventsEntry();
-			$userEntry->sourceId = $id;
-			if ($userEntry->find(true)){
-				$startDate = new DateTime("@$userEntry->eventDate");
-				/** @noinspection PhpUnhandledExceptionInspection */
-				$startDate->setTimezone(new DateTimeZone(date_default_timezone_get()));
-				$props = [
-					'eventDate' => $startDate,
-					'isPastEvent' => true,
-				];
-				$title = $userEntry->title;
-			} else{
-				$props = [
-					'eventDate' => $driver->getStartDateFromDB($id),
-					'isPastEvent' => true,
-				];
-				$title = $driver->getTitleFromDB($id);
-			}
-			$coverBuilder->getCover($title, $this->cacheFile, $props);
-		} else {
-			$coverBuilder = new EventCoverBuilder();
-			$isPast = false;
-			if (array_key_exists('isPast', $_REQUEST)){
-				$isPast = $_REQUEST['isPast'];
-			}
-			$props = [
-				'eventDate' => $driver->getStartDate(),
-				'isPastEvent' => $isPast,
-			];
-			$coverBuilder->getCover($driver->getTitle(), $this->cacheFile, $props);
-		}
-		return $this->processImageURL('default_event', $this->cacheFile, false);
+		$driverClass = self::EVENT_DATE_COVER_DRIVERS[$this->type];
+		require_once ROOT_DIR . '/RecordDrivers/' . $driverClass . '.php';
+		$driver = new $driverClass($id);
+
+		$this->eventDateCoverProps = $this->getEventDateCoverProps($driver, $id);
+		return $this->eventDateCoverProps;
 	}
 
-	private function getCommunicoCover($id) : bool {
-		if (str_contains($id, ':')) {
-			[
-				,
-				$id,
-			] = explode(":", $id);
-		}
-		require_once ROOT_DIR . '/RecordDrivers/CommunicoEventRecordDriver.php';
-		$driver = new CommunicoEventRecordDriver($id);
-		require_once ROOT_DIR . '/sys/Covers/EventCoverBuilder.php';
-		if (!($driver->isValid())){ //if driver isn't valid, likely a past event on a list
-			require_once ROOT_DIR . '/sys/Events/UserEventsEntry.php';
-			$coverBuilder = new EventCoverBuilder();
-			$userEntry = new UserEventsEntry();
-			$userEntry->sourceId = $id;
-			if ($userEntry->find(true)){
-				$startDate = new DateTime("@$userEntry->eventDate");
-				/** @noinspection PhpUnhandledExceptionInspection */
-				$startDate->setTimezone(new DateTimeZone(date_default_timezone_get()));
-				$props = [
-					'eventDate' => $startDate,
-					'isPastEvent' => true,
-				];
-				$title = $userEntry->title;
-			} else{
-				$props = [
-					'eventDate' => $driver->getStartDateFromDB($id),
-					'isPastEvent' => true,
-				];
-				$title = $driver->getTitleFromDB($id);
+	//Callers that know the event send the fingerprint so the cover can be named without
+	//loading the record
+	private function getEventDateCoverFingerprint() : string {
+		$requestedFingerprint = $_GET['fingerprint'] ?? '';
+		if (is_string($requestedFingerprint)) {
+			$requestedFingerprint = preg_replace('/[^a-f0-9]/', '', $requestedFingerprint);
+			if (!empty($requestedFingerprint)) {
+				return substr($requestedFingerprint, 0, 8);
 			}
-			$coverBuilder->getCover($title, $this->cacheFile, $props);
-		} else {
-			$coverBuilder = new EventCoverBuilder();
-			$isPast = false;
-			if (array_key_exists('isPast', $_REQUEST)){
-				$isPast = $_REQUEST['isPast'];
-			}
-			$props = [
-				'eventDate' => $driver->getStartDate(),
-				'isPastEvent' => $isPast,
-			];
-			$coverBuilder->getCover($driver->getTitle(), $this->cacheFile, $props);
 		}
-		return $this->processImageURL('default_event', $this->cacheFile, false);
+
+		require_once ROOT_DIR . '/RecordDrivers/EventRecordDriver.php';
+		return EventRecordDriver::buildEventDateCoverFingerprint($this->resolveEventDateCoverProps());
 	}
 
-	private function getAssabetCover($id) : bool {
-		if (str_contains($id, ':')) {
-			[
-				,
-				$id,
-			] = explode(":", $id);
+	private function getEventDateCoverProps(EventRecordDriver $driver, string $id) : array {
+		if ($driver->isValid()) {
+			return $driver->getEventDateCoverData();
 		}
-		require_once ROOT_DIR . '/RecordDrivers/AssabetEventRecordDriver.php';
-		$driver = new AssabetEventRecordDriver($id);
-		require_once ROOT_DIR . '/sys/Covers/EventCoverBuilder.php';
-		if (!($driver->isValid())){ //if driver isn't valid, likely a past event on a list
-			require_once ROOT_DIR . '/sys/Events/UserEventsEntry.php';
-			$coverBuilder = new EventCoverBuilder();
-			$userEntry = new UserEventsEntry();
-			$userEntry->sourceId = $id;
-			if ($userEntry->find(true)){
-				$startDate = new DateTime("@$userEntry->eventDate");
-				/** @noinspection PhpUnhandledExceptionInspection */
-				$startDate->setTimezone(new DateTimeZone(date_default_timezone_get()));
-				$props = [
-					'eventDate' => $startDate,
-					'isPastEvent' => true,
-				];
-				$title = $userEntry->title;
-			} else{
-				$props = [
-					'eventDate' => $driver->getStartDateFromDB($id),
-					'isPastEvent' => true,
-				];
-				$title = $driver->getTitleFromDB($id);
-			}
-			$coverBuilder->getCover($title, $this->cacheFile, $props);
-		} else {
-			$coverBuilder = new EventCoverBuilder();
-			$isPast = false;
-			if (array_key_exists('isPast', $_REQUEST)){
-				$isPast = $_REQUEST['isPast'];
-			}
-			$props = [
-				'eventDate' => $driver->getStartDate(),
-				'isPastEvent' => $isPast,
-			];
-			$coverBuilder->getCover($driver->getTitle(), $this->cacheFile, $props);
-		}
-		return $this->processImageURL('default_event', $this->cacheFile, false);
-	}
 
-	private function getLocalHopCover($id) : bool {
-		if (str_contains($id, ':')) {
-			[
-				,
-				$id,
-			] = explode(":", $id);
-		}
-		require_once ROOT_DIR . '/RecordDrivers/LocalHopEventRecordDriver.php';
-		$driver = new LocalHopEventRecordDriver($id);
-		require_once ROOT_DIR . '/sys/Covers/EventCoverBuilder.php';
-		if (!($driver->isValid())){ //if driver isn't valid, likely a past event on a list
-			require_once ROOT_DIR . '/sys/Events/UserEventsEntry.php';
-			$coverBuilder = new EventCoverBuilder();
-			$userEntry = new UserEventsEntry();
-			$userEntry->sourceId = $id;
-			if ($userEntry->find(true)){
-				$startDate = new DateTime("@$userEntry->eventDate");
-				/** @noinspection PhpUnhandledExceptionInspection */
-				$startDate->setTimezone(new DateTimeZone(date_default_timezone_get()));
-				$props = [
+		//driver isn't valid, likely a past event on a list
+		require_once ROOT_DIR . '/sys/Events/UserEventsEntry.php';
+		require_once ROOT_DIR . '/sys/Utils/DateUtils.php';
+		$userEntry = new UserEventsEntry();
+		$userEntry->sourceId = $id;
+		if ($userEntry->find(true)) {
+			$startDate = new DateTime("@$userEntry->eventDate");
+			/** @noinspection PhpUnhandledExceptionInspection */
+			$startDate->setTimezone(new DateTimeZone(date_default_timezone_get()));
+			return [
+				'title' => $userEntry->title,
+				'props' => [
 					'eventDate' => $startDate,
-					'isPastEvent' => true,
-				];
-				$title = $userEntry->title;
-			} else{
-				$props = [
-					'eventDate' => $driver->getStartDateFromDB($id),
-					'isPastEvent' => true,
-				];
-				$title = $driver->getTitleFromDB($id);
-			}
-			$coverBuilder->getCover($title, $this->cacheFile, $props);
-		} else {
-			$coverBuilder = new EventCoverBuilder();
-			$isPast = false;
-			if (array_key_exists('isPast', $_REQUEST)){
-				$isPast = $_REQUEST['isPast'];
-			}
-			$props = [
-				'eventDate' => $driver->getStartDate(),
-				'isPastEvent' => $isPast,
-			];
-			$coverBuilder->getCover($driver->getTitle(), $this->cacheFile, $props);
-		}
-		return $this->processImageURL('default_event', $this->cacheFile, false);
-	}
-
-	private function getAspenEventsDateCover($id) : bool {
-		if (str_contains($id, ':')) {
-			[
-				,
-				$id,
-			] = explode(":", $id);
-		}
-		require_once ROOT_DIR . '/RecordDrivers/AspenEventRecordDriver.php';
-		$driver = new AspenEventRecordDriver($id);
-		require_once ROOT_DIR . '/sys/Covers/EventCoverBuilder.php';
-		if (!($driver->isValid())){ //if driver isn't valid, likely a past event on a list
-			require_once ROOT_DIR . '/sys/Events/UserEventsEntry.php';
-			$coverBuilder = new EventCoverBuilder();
-			$userEntry = new UserEventsEntry();
-			$userEntry->sourceId = $id;
-			if ($userEntry->find(true)){
-				$startDate = new DateTime("@$userEntry->eventDate");
-				/** @noinspection PhpUnhandledExceptionInspection */
-				$startDate->setTimezone(new DateTimeZone(date_default_timezone_get()));
-				$props = [
-					'eventDate' => $startDate,
-					'isPastEvent' => true,
+					'isPastEvent' => DateUtils::isPastDate($startDate),
 					'branch' => $userEntry->location,
 					'displayBranchOnThumbnail' => $userEntry->displayEventBranchOnThumbnail,
-				];
-				$title = $userEntry->title;
-			} else{
-				$props = [
-					'eventDate' => $driver->getStartDateFromDB($id),
-					'isPastEvent' => true,
-					'branch' => $driver->getBranchFromDB($id),
-					'displayBranchOnThumbnail' => $driver->getDisplayBranchOnThumbnailFromDB($id),
-				];
-				$title = $driver->getTitleFromDB($id);
-			}
-			$coverBuilder->getCover($title, $this->cacheFile, $props);
-		} else {
-			$coverBuilder = new EventCoverBuilder();
-			$isPast = false;
-			if (array_key_exists('isPast', $_REQUEST)){
-				$isPast = $_REQUEST['isPast'];
-			}
-			$props = [
-				'eventDate' => $driver->getStartDate(),
-				'isPastEvent' => $isPast,
-				'branch' => $driver->getBranch(),
-				'displayBranchOnThumbnail' => $driver->getDisplayBranchOnThumbnail(),
-
+				],
 			];
-			$coverBuilder->getCover($driver->getTitle(), $this->cacheFile, $props);
 		}
-		return $this->processImageURL('default_event', $this->cacheFile, false);
+
+		return $driver->getEventDateCoverDataFromDB($id);
 	}
 
 	private function getAspenEventsImageCover($id) : bool {
@@ -2493,8 +2293,7 @@ class BookCoverProcessor {
 
 	private function getCloudSourceCover($id) : bool {
 		//Build a cover based on the title of the page
-		require_once ROOT_DIR . '/sys/Covers/DefaultCoverImageBuilder.php';
-		$coverBuilder = new DefaultCoverImageBuilder();
+		$coverBuilder = $this->getSizedDefaultCoverBuilder();
 		require_once ROOT_DIR . '/RecordDrivers/CloudSourceRecordDriver.php';
 
 		$cloudSourceRecordDriver = new CloudSourceRecordDriver($id);
@@ -2517,8 +2316,7 @@ class BookCoverProcessor {
 
 	private function getEbscohostCover($id) : bool {
 		//Build a cover based on the title of the page
-		require_once ROOT_DIR . '/sys/Covers/DefaultCoverImageBuilder.php';
-		$coverBuilder = new DefaultCoverImageBuilder();
+		$coverBuilder = $this->getSizedDefaultCoverBuilder();
 		require_once ROOT_DIR . '/RecordDrivers/EbscohostRecordDriver.php';
 
 		$ebscohostRecordDriver = new EbscohostRecordDriver($id);
