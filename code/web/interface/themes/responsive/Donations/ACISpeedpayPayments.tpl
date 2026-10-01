@@ -43,7 +43,7 @@
 							singleUse: 'true',
 							paymentMethod: 'Card',
 							billerAccountId: '{$billerAccountId}',
-							styles: {ldelim}
+							userInterface: {ldelim}
 								input: {ldelim}
 									color: '#555555',
 									fontsize: '14px',
