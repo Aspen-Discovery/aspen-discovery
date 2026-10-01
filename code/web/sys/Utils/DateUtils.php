@@ -8,6 +8,10 @@ class DateUtils {
 		return $newdate;
 	}
 
+	static function isPastDate(?DateTime $date) : bool {
+		return $date !== null && $date < new DateTime();
+	}
+
 	static function addMinutes($givendate, $minutes) {
 		$cd = strtotime($givendate);
 		$newdate = date('Y-m-d H:i:s', mktime(date('H', $cd), date('i', $cd) + $minutes, date('s', $cd), date('m', $cd), date('d', $cd), date('Y', $cd)));

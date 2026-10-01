@@ -2246,9 +2246,46 @@ class Sierra extends AbstractIlsDriver {
 				elseif ($field == 'homeLibraryCode' || $field == 'home_library_code') {
 					$params[$field] = $_REQUEST['pickupLocation'];
 				}
-				elseif ($field == 'pin' || $field == 'birthDate') {
+
+				elseif ($field == 'pin') {
+					$pin = $_REQUEST[$field];
+					$pinValidationRules = $this->getPasswordPinValidationRules();
+
+					if (strlen($pin) < $pinValidationRules['minLength']) {
+						return [
+							'success' => false,
+							'message' => translate([
+								'text' => "PIN must be at least {$pinValidationRules['minLength']} characters long.",
+								'isPublicFacing' => true,
+							]),
+						];
+					}
+					if (strlen($pin) > $pinValidationRules['maxLength']) {
+						return [
+							'success' => false,
+							'message' => translate([
+								'text' => "PIN must be no more than {$pinValidationRules['maxLength']} characters long.",
+								'isPublicFacing' => true,
+							]),
+						];
+					}
+
+					if ($pinValidationRules['onlyDigitsAllowed'] && !ctype_digit($pin)) {
+						return [
+							'success' => false,
+							'message' => translate([
+								'text' => 'PIN must only contain numbers.',
+								'isPublicFacing' => true,
+							]),
+						];
+					}
+
+					$params[$field] = $pin;
+				}
+				elseif ($field == 'birthDate') {
 					$params[$field] = $_REQUEST[$field];
 				}
+
 			}
 
 			$barcodePrefix = '';
