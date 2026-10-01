@@ -1,9 +1,9 @@
 <?php
 
-require_once 'IndexRecordDriver.php';
+require_once 'EventRecordDriver.php';
 require_once ROOT_DIR . '/sys/Events/LMLibraryCalendarEvent.php';
 
-class LibraryCalendarEventRecordDriver extends IndexRecordDriver {
+class LibraryCalendarEventRecordDriver extends EventRecordDriver {
 	private $valid;
 	/** @var LMLibraryCalendarEvent */
 	private $eventObject;
@@ -123,24 +123,18 @@ class LibraryCalendarEventRecordDriver extends IndexRecordDriver {
 		return 'RecordDrivers/Events/library_calendar_result.tpl';
 	}
 
-	public function getBookcoverUrl($size = 'small', $absolutePath = false): string {
-		global $configArray;
+	public function getEventDateCoverType() : string {
+		return 'library_calendar_event';
+	}
 
-		if ($absolutePath) {
-			$bookCoverUrl = $configArray['Site']['url'];
-		} else {
-			$bookCoverUrl = '';
-		}
-
+	protected function getEventCoverId() {
 		// For expired events that don't have a valid ID, use the original ID from constructor.
 		$uniqueId = $this->getUniqueID();
 		if (empty($uniqueId) && !$this->isValid() && !empty($this->originalId)) {
-			$uniqueId = $this->originalId;
+			return $this->originalId;
 		}
 
-		$bookCoverUrl .= "/bookcover.php?id={$uniqueId}&size={$size}&type=library_calendar_event";
-
-		return $bookCoverUrl;
+		return $uniqueId;
 	}
 
 	public function getModule(): string {
@@ -264,7 +258,7 @@ class LibraryCalendarEventRecordDriver extends IndexRecordDriver {
 		return $this->eventObject;
 	}
 
-	function getStartDateFromDB($id) : ?object {
+	function getStartDateFromDB(string $id) : ?object {
 		if ($this->eventObject == null) {
 			$this->eventObject = new LMLibraryCalendarEvent();
 			$this->eventObject->externalId = preg_replace('/^lc_\d+_/', '', $id);
@@ -285,7 +279,7 @@ class LibraryCalendarEventRecordDriver extends IndexRecordDriver {
 
 	}
 
-	function getTitleFromDB($id) {
+	function getTitleFromDB(string $id) {
 		if ($this->eventObject == null) {
 			$this->eventObject = new LMLibraryCalendarEvent();
 			$this->eventObject->externalId = preg_replace('/^lc_\d+_/', '', $id);

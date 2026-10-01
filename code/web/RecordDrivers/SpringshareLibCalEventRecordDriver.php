@@ -1,9 +1,9 @@
 <?php
 
-require_once 'IndexRecordDriver.php';
+require_once 'EventRecordDriver.php';
 require_once ROOT_DIR . '/sys/Events/SpringshareLibCalEvent.php';
 
-class SpringshareLibCalEventRecordDriver extends IndexRecordDriver {
+class SpringshareLibCalEventRecordDriver extends EventRecordDriver {
 	private $valid;
 	/** @var SpringshareLibCalEvent */
 	private $eventObject;
@@ -123,17 +123,8 @@ class SpringshareLibCalEventRecordDriver extends IndexRecordDriver {
 		return 'RecordDrivers/Events/springshare_libcal_result.tpl';
 	}
 
-	public function getBookcoverUrl($size = 'small', $absolutePath = false) {
-		global $configArray;
-
-		if ($absolutePath) {
-			$bookCoverUrl = $configArray['Site']['url'];
-		} else {
-			$bookCoverUrl = '';
-		}
-		$bookCoverUrl .= "/bookcover.php?id={$this->getUniqueID()}&size={$size}&type=springshare_libcal_event";
-
-		return $bookCoverUrl;
+	public function getEventDateCoverType() : string {
+		return 'springshare_libcal_event';
 	}
 
 	public function getModule(): string {
@@ -260,7 +251,7 @@ class SpringshareLibCalEventRecordDriver extends IndexRecordDriver {
 		return $this->eventObject;
 	}
 
-	function getStartDateFromDB($id) : ?object {
+	function getStartDateFromDB(string $id) : ?object {
 		if ($this->eventObject == null) {
 			$this->eventObject = new SpringshareLibCalEvent();
 			$this->eventObject->externalId = preg_replace('/^libcal_\d+_/', '', $id);
@@ -281,7 +272,7 @@ class SpringshareLibCalEventRecordDriver extends IndexRecordDriver {
 
 	}
 
-	function getTitleFromDB($id) {
+	function getTitleFromDB(string $id) {
 		if ($this->eventObject == null) {
 			$this->eventObject = new SpringshareLibCalEvent();
 			$this->eventObject->externalId = preg_replace('/^libcal_\d+_/', '', $id);
