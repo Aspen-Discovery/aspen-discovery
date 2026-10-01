@@ -1365,7 +1365,7 @@ class IndexingProfile extends DataObject {
 						'maxLength' => 1,
 						'description' => 'Subfield for when the item was last checked in',
 						'forcesReindex' => true,
-						'relatedIls' => ['polaris','symphony']
+						'relatedIls' => ['polaris','symphony','sierra']
 					],
 					'lastCheckinFormat' => [
 						'property' => 'lastCheckinFormat',
@@ -1374,7 +1374,7 @@ class IndexingProfile extends DataObject {
 						'maxLength' => 20,
 						'description' => 'The format of the date the item was last checked in.  I.e. yyMMdd see SimpleDateFormat for Java',
 						'forcesReindex' => true,
-						'relatedIls' => ['polaris','symphony']
+						'relatedIls' => ['polaris','symphony','sierra']
 					],
 					'lastYearCheckouts' => [
 						'property' => 'lastYearCheckouts',
