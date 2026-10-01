@@ -8009,7 +8009,7 @@ class Koha extends AbstractIlsDriver {
 						];
 					}
 				}
-				if ($curRow['debarred'] != null) {
+				if ($curRow['debarred'] !== null && $curRow['debarred'] >= date('Y-m-d')) {
 					$message = '<strong>' . translate([
 							'text' => 'Please note: Your account has been frozen.',
 							'isPublicFacing' => true,
