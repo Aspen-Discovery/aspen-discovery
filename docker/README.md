@@ -80,7 +80,7 @@ Environment variables are synced to configuration files on every container start
 
 **Supported variables for runtime updates:**
 - `DATABASE_HOST`, `DATABASE_PORT`, `DATABASE_NAME`, `DATABASE_USER`, `DATABASE_PASSWORD`
-- `TZ`, `URL`, `TITLE`, `LIBRARY`
+- `TZ`, `URL`, `TITLE`, `LIBRARY`, `FILE_GROUP_OWNER`
 - `SOLR_HOST`, `SOLR_PORT`
 
 **Note:** Changing database credentials requires the MariaDB user to already exist. MariaDB only creates users on first initialization.
