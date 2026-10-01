@@ -49,4 +49,9 @@ interface StorageDriver {
 	 * Returns true if a file exists for the given key.
 	 */
 	public function exists(string $key): bool;
+
+	/**
+	 * Returns the file size in bytes for the given key, or false if not found.
+	 */
+	public function size(string $key): int|false;
 }

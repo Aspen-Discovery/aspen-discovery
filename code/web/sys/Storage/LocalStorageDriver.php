@@ -55,4 +55,12 @@ class LocalStorageDriver implements StorageDriver {
 	public function exists(string $key): bool {
 		return file_exists($this->fullPath($key));
 	}
+
+	public function size(string $key): int|false {
+		$path = $this->fullPath($key);
+		if (!file_exists($path)) {
+			return false;
+		}
+		return filesize($path);
+	}
 }
