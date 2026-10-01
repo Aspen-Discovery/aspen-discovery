@@ -556,7 +556,6 @@ public class GroupedWorkIndexer implements AutoCloseable {
 					}
 				}
 			}
-			}
 			getSideLoadSettingsStmt.close();
 
 		}catch (Exception e){
@@ -1103,7 +1102,6 @@ public class GroupedWorkIndexer implements AutoCloseable {
 		PreparedStatement getPrimaryIdentifiersForGroupedWorkStmt = dbConn.prepareStatement("SELECT count(*) as numIdentifiers from grouped_work_primary_identifiers where grouped_work_id = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 		logEntry.addNote("Starting to process grouped works with no records attached to them.");
 
-		int numDeleted = 0;
 		int numProcessed = 0;
 		boolean localRegroupAll = this.regroupAllRecords;
 		setRegroupAllRecords(true);
@@ -1129,8 +1127,6 @@ public class GroupedWorkIndexer implements AutoCloseable {
 					processGroupedWork(groupedWorkId, permanentId, emptyGroupedWorksRS.getString("grouping_category"));
 				}else {
 					deleteRecord(permanentId, groupedWorkId);
-					numDeleted++;
-				numDeleted++;
 				}
 				numProcessed++;
 				if (numProcessed % 1000 == 0) {
@@ -1957,7 +1953,7 @@ public class GroupedWorkIndexer implements AutoCloseable {
 			addSeriesMemberStmt.setString(2, groupedWork.getId());
 			if (!volume.isEmpty()) {
 				addSeriesMemberStmt.setString(3, AspenStringUtils.trimTo(100, volume)); // Add volume
-				long seriesWeight = 0;
+				long seriesWeight;
 				if (AspenStringUtils.isNumeric(volume)) {
 					float seriesWeightFloat = Float.parseFloat(volume);
 					seriesWeight = (int)seriesWeightFloat;
