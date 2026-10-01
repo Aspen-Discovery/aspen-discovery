@@ -1116,7 +1116,7 @@ AspenDiscovery.Admin = (function () {
 			if (selectedObjects.length === 2) {
 				return true;
 			} else {
-				AspenDiscovery.showMessage("Failed to Compare Objects", "Please select only two objects to compare.");
+				AspenDiscovery.showMessage(__('Failed to Compare Objects'), __('Please select only two objects to compare.'));
 				return false;
 			}
 		},
@@ -1135,13 +1135,13 @@ AspenDiscovery.Admin = (function () {
 						if (data.success) {
 							AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 						} else {
-							$("#releaseNotes").html("Error + " + data.message);
+							$("#releaseNotes").html(__('Error') + " " + data.message);
 						}
 					}
 				).fail(AspenDiscovery.ajaxFail);
 				return false;
 			} else {
-				AspenDiscovery.showMessage("Error", "Please select at least one object to update");
+				AspenDiscovery.showMessage(__('Error'), __('Please select at least one object to update'));
 				return false;
 			}
 		},
@@ -1182,7 +1182,7 @@ AspenDiscovery.Admin = (function () {
 				).fail(AspenDiscovery.ajaxFail);
 				return false;
 			} else {
-				AspenDiscovery.showMessage("Error", "Please select at least one object to update");
+				AspenDiscovery.showMessage(__('Error'), __('Please select at least one object to update'));
 				return false;
 			}
 		},
@@ -1277,13 +1277,13 @@ AspenDiscovery.Admin = (function () {
 						if (data.success) {
 							AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 						} else {
-							$("#releaseNotes").html("Error + " + data.message);
+							$("#releaseNotes").html(__('Error') + " " + data.message);
 						}
 					}
 				).fail(AspenDiscovery.ajaxFail);
 				return false;
 			} else {
-				AspenDiscovery.showMessage("Error", "Please select at least one object to delete");
+				AspenDiscovery.showMessage(__('Error'), __('Please select at least one object to delete'));
 				return false;
 			}
 		},
@@ -1311,7 +1311,7 @@ AspenDiscovery.Admin = (function () {
 				).fail(AspenDiscovery.ajaxFail);
 				return false;
 			} else {
-				AspenDiscovery.showMessage("Error", "Please select at least one object to delete");
+				AspenDiscovery.showMessage(__('Error'), __('Please select at least one object to delete'));
 				return false;
 			}
 		},
@@ -1706,7 +1706,7 @@ AspenDiscovery.Admin = (function () {
 					if (data.success) {
 						window.location.href = Globals.path + '/Admin/Permissions?roleId=' + data.roleId;
 					} else {
-						AspenDiscovery.showMessage('Error', data.message, false);
+						AspenDiscovery.showMessage(__('Error'), data.message, false);
 					}
 				}
 			).fail(AspenDiscovery.ajaxFail);
@@ -1723,7 +1723,7 @@ AspenDiscovery.Admin = (function () {
 					if (data.success) {
 						window.location.href = Globals.path + '/Admin/Permissions';
 					} else {
-						AspenDiscovery.showMessage('Error', data.message, false);
+						AspenDiscovery.showMessage(__('Error'), data.message, false);
 					}
 				}
 			).fail(AspenDiscovery.ajaxFail);
@@ -1755,7 +1755,7 @@ AspenDiscovery.Admin = (function () {
 			var listId = id;
 			if (confirm(__('Are you sure you want to delete this list?'))) {
 				$.getJSON(Globals.path + '/Admin/AJAX?method=deleteNYTList&id=' + listId, function (data) {
-					AspenDiscovery.showMessage("Success", data.message, true, true);
+					AspenDiscovery.showMessage(__('Success'), data.message, true, true);
 				})
 			}
 			return false;
@@ -1883,19 +1883,19 @@ AspenDiscovery.Admin = (function () {
 			var selectedPath = $("#deepLinkPathSelect").val();
 			if (selectedPath === "search") {
 				$('#propertyRowdeepLinkId').show();
-				$('label[for="deepLinkId"]').text("Search Term");
+				$('label[for="deepLinkId"]').text(__('Search Term'));
 			} else if (selectedPath === "search/grouped_work") {
 				$('#propertyRowdeepLinkId').show();
-				$('label[for="deepLinkId"]').text("Grouped Work Id");
+				$('label[for="deepLinkId"]').text(__('Grouped Work Id'));
 			} else if (selectedPath === "search/browse_category") {
 				$('#propertyRowdeepLinkId').show();
-				$('label[for="deepLinkId"]').text("Browse Category Text Id");
+				$('label[for="deepLinkId"]').text(__('Browse Category Text Id'));
 			} else if (selectedPath === "search/author") {
 				$('#propertyRowdeepLinkId').show();
-				$('label[for="deepLinkId"]').text("Author");
+				$('label[for="deepLinkId"]').text(__('Author'));
 			} else if (selectedPath === "search/list") {
 				$('#propertyRowdeepLinkId').show();
-				$('label[for="deepLinkId"]').text("List Id");
+				$('label[for="deepLinkId"]').text(__('List Id'));
 			} else {
 				$('#propertyRowdeepLinkId').hide();
 			}
@@ -2538,7 +2538,7 @@ AspenDiscovery.Admin = (function () {
 				if (data.success) {
 					$('#fieldLock' + field).replaceWith(data.lockToggle);
 				} else {
-					AspenDiscovery.showMessage('An error occurred', data.message);
+					AspenDiscovery.showMessage(__('An error occurred'), data.message);
 				}
 			});
 			return false;
@@ -2555,7 +2555,7 @@ AspenDiscovery.Admin = (function () {
 				if (data.success) {
 					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 				} else {
-					AspenDiscovery.showMessage('An error occurred', data.message);
+					AspenDiscovery.showMessage(__('An error occurred'), data.message);
 				}
 			});
 			return false;
@@ -2572,7 +2572,7 @@ AspenDiscovery.Admin = (function () {
 				if (data.success) {
 					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 				} else {
-					AspenDiscovery.showMessage('An error occurred', data.message);
+					AspenDiscovery.showMessage(__('An error occurred'), data.message);
 				}
 			});
 			return false;
@@ -3195,11 +3195,11 @@ AspenDiscovery.Admin = (function () {
 					if (data.success) {
 						AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 					} else {
-						AspenDiscovery.showMessage("Error", data.message);
+						AspenDiscovery.showMessage(__('Error'), data.message);
 					}
 				})
 				.fail(function () {
-					AspenDiscovery.showMessage("Error", "An error occurred while retrieving rate limit configuration.");
+					AspenDiscovery.showMessage(__('Error'), __('An error occurred while retrieving rate limit configuration.'));
 				});
 
 			return false;
@@ -3336,7 +3336,7 @@ AspenDiscovery.Admin = (function () {
 						},
 						error: function () {
 							$('#aspenFullPageLoadingOverlay').remove();
-							AspenDiscovery.showMessage('Error', 'Could not populate from ILS.');
+							AspenDiscovery.showMessage(__('Error'), __('Could not populate from ILS.'));
 						}
 					});
 				} else if (objectType === "countyCodes") {
@@ -3369,7 +3369,7 @@ AspenDiscovery.Admin = (function () {
 						},
 						error: function () {
 							$('#aspenFullPageLoadingOverlay').remove();
-							AspenDiscovery.showMessage('Error', 'Could not populate from ILS.');
+							AspenDiscovery.showMessage(__('Error'), __('Could not populate from ILS.'));
 						}
 					});
 				}

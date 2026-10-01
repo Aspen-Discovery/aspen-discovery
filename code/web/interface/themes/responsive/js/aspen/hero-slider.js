@@ -146,14 +146,14 @@ AspenDiscovery.HeroSlider = (function(){
 						if (isPaused) {
 							swiper.autoplay.start();
 							pauseButton.innerHTML = '<i class="fas fa-pause"></i>';
-							pauseButton.setAttribute('aria-label', 'Pause auto-rotation');
-							pauseButton.setAttribute('title', 'Pause');
+							pauseButton.setAttribute('aria-label', __('Pause auto-rotation'));
+							pauseButton.setAttribute('title', __('Pause'));
 							isPaused = false;
 						} else {
 							swiper.autoplay.stop();
 							pauseButton.innerHTML = '<i class="fas fa-play"></i>';
-							pauseButton.setAttribute('aria-label', 'Resume auto-rotation');
-							pauseButton.setAttribute('title', 'Play');
+							pauseButton.setAttribute('aria-label', __('Resume auto-rotation'));
+							pauseButton.setAttribute('title', __('Play'));
 							isPaused = true;
 						}
 					});
