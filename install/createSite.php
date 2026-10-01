@@ -168,7 +168,7 @@ if (!$foundConfig) {
 
 	if ($siteOnMac) {
 		$variables['apacheGroup'] = readline("Enter the name of the group Apache belongs to (default _www, but this may sometimes be admin). ");
-		if (empty($apacheGroup)) {
+		if (empty($variables['apacheGroup'])) {
 			$variables['apacheGroup'] = "_www";
 		}
 	}
