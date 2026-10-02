@@ -117,6 +117,13 @@ class User extends DataObject {
 	//Data that we load, but don't store in the User table
 	public $_fullname;
 	public $_preferredName;
+	// and preferred name broken down for editing purposes
+	// for ILSs such as Evergreen that support it
+	public $_pref_prefix;
+	public $_pref_first_given_name;
+	public $_pref_second_given_name;
+	public $_pref_family_name;
+	public $_pref_suffix;
 	public $_address1;
 	public $_address2;
 	public $_city;
