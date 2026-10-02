@@ -1752,86 +1752,121 @@ class BookCoverProcessor {
 		$openArchivesRecord = new OpenArchivesRecord();
 		$openArchivesRecord->id = $id;
 		if ($openArchivesRecord->find(true)) {
-			$url = $openArchivesRecord->permanentUrl;
-			//Need the full curl wrapper to handle redirects
-			require_once ROOT_DIR . '/sys/CurlWrapper.php';
-			$curlWrapper = new CurlWrapper();
-			$pageContents = $curlWrapper->curlGetPage($url);
-			$curlInfo = curl_getinfo($curlWrapper->curl_connection);
-			if ($curlInfo['url'] != $url) {
-				//If these don't match, some form of redirect was done.
-				$url = $curlInfo['url'];
+			//coverUrl is resolved live, on demand, via the platform's REST API if not already
+			//known, and is shared across all cover sizes. It is null when never attempted, ''
+			//when attempted and confirmed no cover exists (so it isn't retried on every
+			//request), or the resolved URL otherwise.
+			if ($openArchivesRecord->coverUrl === null) {
+				require_once ROOT_DIR . '/sys/OpenArchives/OpenArchivesCollection.php';
+				$sourceCollection = new OpenArchivesCollection();
+				$sourceCollection->id = $openArchivesRecord->sourceCollection;
+				if ($sourceCollection->find(true) && $sourceCollection->coverSourceType === 'dspace') {
+					$resolvedUrl = $this->resolveDSpaceCoverUrlOnDemand($openArchivesRecord, $sourceCollection);
+					//false means the attempt itself failed (network error, etc.) rather than
+					//DSpace confirming there's no cover — leave coverUrl null so it's retried
+					//on a future request instead of being permanently written off.
+					if ($resolvedUrl !== false) {
+						$openArchivesRecord->coverUrl = $resolvedUrl ?? '';
+						$openArchivesRecord->update();
+					}
+				}
 			}
-			$curlWrapper->close_curl();
-			$matches = [];
-			if (preg_match('~<meta property="og:image" content="(.*?)" />~', $pageContents, $matches)) {
-				$bookcoverUrl = html_entity_decode($matches[1]);
-				if ($this->processImageURL('open_archives', $bookcoverUrl)){
+
+			//coverUrl was resolved via DSpace's REST API rather than scraping the record page,
+			//but Aspen still downloads/caches/resizes/serves it like any other cover.
+			if (!empty($openArchivesRecord->coverUrl)) {
+				if ($this->processImageURL('open_archives', $openArchivesRecord->coverUrl)) {
 					return true;
 				}
 			}
-			if (preg_match('~<img src="(.*?)" border="0" alt="Thumbnail image">~', $pageContents, $matches)) {
-				$bookcoverUrl = html_entity_decode($matches[1]);
-				if (!str_starts_with($bookcoverUrl, 'http')) {
-					$urlComponents = parse_url($url);
-					$bookcoverUrl = $urlComponents['scheme'] . '://' . $urlComponents['host'] . $bookcoverUrl;
+
+			//A confirmed-empty coverUrl means DSpace has already told us this record has no
+			//cover — skip straight past the scrape attempt below rather than repeating a
+			//lookup and a scrape that are both known to fail for this record.
+			if ($openArchivesRecord->coverUrl !== '') {
+
+				$url = $openArchivesRecord->permanentUrl;
+				//Need the full curl wrapper to handle redirects
+				require_once ROOT_DIR . '/sys/CurlWrapper.php';
+				$curlWrapper = new CurlWrapper();
+				$pageContents = $curlWrapper->curlGetPage($url);
+				$curlInfo = curl_getinfo($curlWrapper->curl_connection);
+				if ($curlInfo['url'] != $url) {
+					//If these don't match, some form of redirect was done.
+					$url = $curlInfo['url'];
 				}
-				if ($this->processImageURL('open_archives', $bookcoverUrl)){
-					return true;
+				$curlWrapper->close_curl();
+				$matches = [];
+				if (preg_match('~<meta property="og:image" content="(.*?)" />~', $pageContents, $matches)) {
+					$bookcoverUrl = html_entity_decode($matches[1]);
+					if ($this->processImageURL('open_archives', $bookcoverUrl)){
+						return true;
+					}
 				}
-			}
-			if (preg_match('~<div id="item-images">.*<img src="(.*?)".*>~s', $pageContents, $matches)) {
-				$bookcoverUrl = html_entity_decode($matches[1]);
-				if (!str_starts_with($bookcoverUrl, 'http')) {
-					$urlComponents = parse_url($url);
-					$bookcoverUrl = $urlComponents['scheme'] . '://' . $urlComponents['host'] . $bookcoverUrl;
+				if (preg_match('~<img src="(.*?)" border="0" alt="Thumbnail image">~', $pageContents, $matches)) {
+					$bookcoverUrl = html_entity_decode($matches[1]);
+					if (!str_starts_with($bookcoverUrl, 'http')) {
+						$urlComponents = parse_url($url);
+						$bookcoverUrl = $urlComponents['scheme'] . '://' . $urlComponents['host'] . $bookcoverUrl;
+					}
+					if ($this->processImageURL('open_archives', $bookcoverUrl)){
+						return true;
+					}
 				}
-				if ($this->processImageURL('open_archives', $bookcoverUrl)){
-					return true;
+				if (preg_match('~<div id="item-images">.*<img src="(.*?)".*>~s', $pageContents, $matches)) {
+					$bookcoverUrl = html_entity_decode($matches[1]);
+					if (!str_starts_with($bookcoverUrl, 'http')) {
+						$urlComponents = parse_url($url);
+						$bookcoverUrl = $urlComponents['scheme'] . '://' . $urlComponents['host'] . $bookcoverUrl;
+					}
+					if ($this->processImageURL('open_archives', $bookcoverUrl)){
+						return true;
+					}
 				}
-			}
-			if (preg_match('~<img class="full".*?src="(.*?)".*>~s', $pageContents, $matches)) {
-				$bookcoverUrl = html_entity_decode($matches[1]);
-				if (!str_starts_with($bookcoverUrl, 'http')) {
-					$urlComponents = parse_url($url);
-					$bookcoverUrl = $urlComponents['scheme'] . '://' . $urlComponents['host'] . $bookcoverUrl;
+				if (preg_match('~<img class="full".*?src="(.*?)".*>~s', $pageContents, $matches)) {
+					$bookcoverUrl = html_entity_decode($matches[1]);
+					if (!str_starts_with($bookcoverUrl, 'http')) {
+						$urlComponents = parse_url($url);
+						$bookcoverUrl = $urlComponents['scheme'] . '://' . $urlComponents['host'] . $bookcoverUrl;
+					}
+					if ($this->processImageURL('open_archives', $bookcoverUrl)){
+						return true;
+					}
 				}
-				if ($this->processImageURL('open_archives', $bookcoverUrl)){
-					return true;
+				if (preg_match('/\\\\"thumbnailUri\\\\":\\\\"(.*?)\\\\"/', $pageContents, $matches)) {
+					$bookcoverUrl = $matches[1];
+					if (!str_starts_with($bookcoverUrl, 'http')) {
+						$urlComponents = parse_url($url);
+						$bookcoverUrl = $urlComponents['scheme'] . '://' . $urlComponents['host'] . '/digital' . $bookcoverUrl;
+					}
+					$bookcoverUrl = str_replace('\/', '/', $bookcoverUrl);
+					if ($this->processImageURL('open_archives', $bookcoverUrl)){
+						return true;
+					}
 				}
-			}
-			if (preg_match('/\\\\"thumbnailUri\\\\":\\\\"(.*?)\\\\"/', $pageContents, $matches)) {
-				$bookcoverUrl = $matches[1];
-				if (!str_starts_with($bookcoverUrl, 'http')) {
-					$urlComponents = parse_url($url);
-					$bookcoverUrl = $urlComponents['scheme'] . '://' . $urlComponents['host'] . '/digital' . $bookcoverUrl;
+				if (preg_match('~<img class=".*?img-preview-large.*?".*?src="(.*?)".*>~', $pageContents, $matches)) {
+					$bookcoverUrl = $matches[1];
+					if (!str_starts_with($bookcoverUrl, 'http')) {
+						$urlComponents = parse_url($url);
+						$bookcoverUrl = $urlComponents['scheme'] . '://' . $urlComponents['host'] . $bookcoverUrl;
+					}
+					$bookcoverUrl = str_replace('\/', '/', $bookcoverUrl);
+					if ($this->processImageURL('open_archives', $bookcoverUrl)){
+						return true;
+					}
 				}
-				$bookcoverUrl = str_replace('\/', '/', $bookcoverUrl);
-				if ($this->processImageURL('open_archives', $bookcoverUrl)){
-					return true;
+				if (preg_match('~<img class=".*?img-thumbnail.*?".*?src="(.*?)".*>~', $pageContents, $matches)) {
+					$bookcoverUrl = $matches[1];
+					if (!str_starts_with($bookcoverUrl, 'http')) {
+						$urlComponents = parse_url($url);
+						$bookcoverUrl = $urlComponents['scheme'] . '://' . $urlComponents['host'] . $bookcoverUrl;
+					}
+					$bookcoverUrl = str_replace('\/', '/', $bookcoverUrl);
+					if ($this->processImageURL('open_archives', $bookcoverUrl)){
+						return true;
+					}
 				}
-			}
-			if (preg_match('~<img class=".*?img-preview-large.*?".*?src="(.*?)".*>~', $pageContents, $matches)) {
-				$bookcoverUrl = $matches[1];
-				if (!str_starts_with($bookcoverUrl, 'http')) {
-					$urlComponents = parse_url($url);
-					$bookcoverUrl = $urlComponents['scheme'] . '://' . $urlComponents['host'] . $bookcoverUrl;
-				}
-				$bookcoverUrl = str_replace('\/', '/', $bookcoverUrl);
-				if ($this->processImageURL('open_archives', $bookcoverUrl)){
-					return true;
-				}
-			}
-			if (preg_match('~<img class=".*?img-thumbnail.*?".*?src="(.*?)".*>~', $pageContents, $matches)) {
-				$bookcoverUrl = $matches[1];
-				if (!str_starts_with($bookcoverUrl, 'http')) {
-					$urlComponents = parse_url($url);
-					$bookcoverUrl = $urlComponents['scheme'] . '://' . $urlComponents['host'] . $bookcoverUrl;
-				}
-				$bookcoverUrl = str_replace('\/', '/', $bookcoverUrl);
-				if ($this->processImageURL('open_archives', $bookcoverUrl)){
-					return true;
-				}
+
 			}
 
 			//Create default image
@@ -1870,6 +1905,54 @@ class BookCoverProcessor {
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * On-demand DSpace 7+ cover discovery, called live when coverUrl isn't already known. Two
+	 * REST calls: resolve the handle to an item UUID, then read that item's own thumbnail
+	 * relation.
+	 *
+	 * Return value distinguishes a confirmed negative from a failed attempt, since the caller
+	 * persists the two very differently: string is the resolved URL, null means DSpace was
+	 * reached and confirmed there's no cover (safe to remember indefinitely), and false means
+	 * the attempt itself failed — caller should leave coverUrl unset so it's retried later
+	 * rather than being permanently written off.
+	 */
+	private function resolveDSpaceCoverUrlOnDemand(OpenArchivesRecord $openArchivesRecord, OpenArchivesCollection $sourceCollection): string|false|null {
+		if (!preg_match('~^(https?://[^/]+)/server/oai/~i', $sourceCollection->baseUrl, $hostMatches)) {
+			//Collection isn't configured with a DSpace-shaped OAI base URL — retrying against
+			//the same fixed input would fail identically, so this is a confirmed dead end.
+			return null;
+		}
+		if (!preg_match('~/handle/(.+)$~i', $openArchivesRecord->permanentUrl, $handleMatches)) {
+			//Record's permanentUrl isn't a DSpace handle URL — same reasoning as above.
+			return null;
+		}
+		$restApiBase = $hostMatches[1] . '/server/api';
+
+		require_once ROOT_DIR . '/sys/CurlWrapper.php';
+		//One instance reused for both calls so the Throttler's per-host state applies across
+		//them. This only smooths the two calls within a single resolution — it isn't a shared
+		//rate limit across separate requests/processes.
+		$curlWrapper = new CurlWrapper('', 250);
+		$itemJson = $curlWrapper->curlGetPage($restApiBase . '/pid/find?id=' . urlencode($handleMatches[1]));
+		if ($itemJson === false) {
+			$curlWrapper->close_curl();
+			return false;
+		}
+		$item = json_decode($itemJson, true);
+		if (empty($item['uuid'])) {
+			$curlWrapper->close_curl();
+			return null;
+		}
+
+		$thumbnailJson = $curlWrapper->curlGetPage($restApiBase . '/core/items/' . $item['uuid'] . '/thumbnail');
+		$curlWrapper->close_curl();
+		if ($thumbnailJson === false) {
+			return false;
+		}
+		$thumbnail = json_decode($thumbnailJson, true);
+		return $thumbnail['_links']['content']['href'] ?? null;
 	}
 
 	private function getListCover(string $id) : bool {
