@@ -2932,6 +2932,34 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 		return $issueSummaries;
 	}
 
+	/**
+	 * Determine whether an 856 URL should be hidden from the current user because it requires login.
+	 *
+	 * Libraries can configure a regular expression (hideUrlsWhenLoggedOutRegex on the grouped work
+	 * display settings). When a URL matches that expression and the current user is not logged in,
+	 * the URL is withheld and the caller should present a "please log in" message instead.
+	 *
+	 * @param string $url
+	 * @return bool true if the URL must be hidden for the current (logged out) user
+	 */
+	private function urlRequiresLogin(string $url): bool {
+		if (UserAccount::isLoggedIn()) {
+			return false;
+		}
+		global $library;
+		if ($library == null) {
+			return false;
+		}
+		$hideRegex = $library->getGroupedWorkDisplaySettings()->hideUrlsWhenLoggedOutRegex;
+		if (empty($hideRegex)) {
+			return false;
+		}
+		//Guard against an invalid pattern taking down the page; @ suppresses the warning and a
+		//false return (invalid regex) is treated as "not matching" so links stay visible.
+		$matches = @preg_match('/' . str_replace('/', '\/', $hideRegex) . '/i', $url);
+		return $matches === 1;
+	}
+
 	private function getLinks() {
 		$links = [];
 		$marcRecord = $this->getMarcRecord();
@@ -2960,10 +2988,20 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 						} else {
 							$title = $url;
 						}
-						$links[] = [
-							'title' => $title,
-							'url' => $url,
-						];
+						if ($this->urlRequiresLogin($url)) {
+							//Withhold the URL but keep the title so the template can prompt the patron to log in
+							$links[] = [
+								'title' => $title,
+								'url' => '',
+								'requiresLogin' => true,
+							];
+						} else {
+							$links[] = [
+								'title' => $title,
+								'url' => $url,
+								'requiresLogin' => false,
+							];
+						}
 					}
 				}
 			}
@@ -3420,10 +3458,21 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 						} else {
 							$label = $subfieldU->getData();
 						}
-						$validUrls[] = [
-							'url' => $subfieldU->getData(),
-							'label' => $label,
-						];
+						$url = $subfieldU->getData();
+						if ($this->urlRequiresLogin($url)) {
+							//Withhold the URL but keep the label so the caller can prompt the patron to log in
+							$validUrls[] = [
+								'url' => '',
+								'label' => $label,
+								'requiresLogin' => true,
+							];
+						} else {
+							$validUrls[] = [
+								'url' => $url,
+								'label' => $label,
+								'requiresLogin' => false,
+							];
+						}
 					}
 				}
 			}

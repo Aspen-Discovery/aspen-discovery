@@ -36,6 +36,13 @@ function getUpdates26_10_00(): array {
 		//lucas
 
 		//tomas
+		'hide_urls_when_logged_out' => [
+			'title' => 'Hide URLs When Logged Out',
+			'description' => 'Add a regular expression to hide matching 856 URLs from patrons who are not logged in.',
+			'sql' => [
+				"ALTER TABLE grouped_work_display_settings ADD COLUMN hideUrlsWhenLoggedOutRegex VARCHAR(500) NOT NULL DEFAULT ''",
+			],
+		], //hide_urls_when_logged_out
 
 		// stephen
 
