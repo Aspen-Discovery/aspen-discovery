@@ -58,10 +58,10 @@ yum -y install epel-release
 yum -y install certbot python3-certbot-apache
 
 echo "Generate new root password for mariadb at: https://passwordsgenerator.net/ and store in passbolt"
-#mysql_secure_installation
+mysql_secure_installation
 #echo "Setting timezone to Mountain Time, update as necessary with timedatectl set-timezone timezone"
 echo "Enter the timezone of the server"
-#read timezone
+read timezone
 timedatectl set-timezone $timezone
 
 bash ./install_solr_9.sh
