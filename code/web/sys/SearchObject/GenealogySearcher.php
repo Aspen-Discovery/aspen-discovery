@@ -533,7 +533,7 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher {
 		return $this->processSearchSuggestions($searchTerm, $suggestionHandler);
 	}
 
-	protected function getFieldsToReturn($childDocFilters = []) : string {
+	protected function getFieldsToReturn() : string {
 		return 'id,recordtype,title,comments,firstName,lastName,middleName,maidenName,otherName,nickName,fullName,veteranOf,birthDate,birthYear,deathYear,ageAtDeath,cemeteryName,mortuaryName,sex,race,causeOfDeath,obituaryDate,obituarySource,obituaryText,spouseName,marriageDate,marriageComments';
 	}
 

@@ -562,10 +562,17 @@ class WebResource extends DB_LibraryLinkedObject {
 		$placard->sourceType = 'web_resource';
 		$placard->sourceId = $this->id;
 		if (!$placard->find(true)){//if placard exists don't update (user will be prompted separately)
+			$fileType = substr($this->logo, -3);
+			$fileType = match ($fileType) {
+				'gif' => ".gif",
+				'png' => ".png",
+				'svg' => ".svg",
+				default => ".jpg",
+			};
 			$placard->sourceType = 'web_resource';
 			$placard->sourceId = $this->id;
 			$placard->title = $this->name;
-			$placard->image = $this->logo;
+			$placard->image = "web_resource_image_".$this->id.$fileType;
 			$placard->link = $this->url;
 			$placard->body = empty($this->teaser) ? $this->description : $this->teaser;
 			$placard->generatedFromSource = 'web_resource:' . $this->id;

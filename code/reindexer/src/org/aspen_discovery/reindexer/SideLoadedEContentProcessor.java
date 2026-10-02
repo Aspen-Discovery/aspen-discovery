@@ -146,6 +146,7 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 
 							loadDateAdded(identifier, itemInfo);
 							itemInfo.setLocationCode(settings.getName());
+							itemInfo.setCallNumber("Online " + settings.getName());
 							itemInfo.setItemIdentifier(identifier + "_" + urlIndex);
 							itemInfo.setShelfLocation(settings.getName());
 							itemInfo.setDetailedLocation(settings.getName());

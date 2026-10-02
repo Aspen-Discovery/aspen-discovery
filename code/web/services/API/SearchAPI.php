@@ -2753,13 +2753,9 @@ class SearchAPI extends AbstractAPI {
 								$items[$recordKey]['summary'] = null;
 								$items[$recordKey]['type'] = 'grouped_work';
 								$formats = [];
-								// DIS-2951: Check that the format key exists and is an array before iterating over it to populate the formats array.
-								// This prevents errors when the format key is missing or not an array.
-								if ($record['format'] && is_array($record['format'])) {
-									foreach ($record['format'] as $key => $format) {
-										$formats[$format]['key'] = $key;
-										$formats[$format]['name'] = $format;
-									}
+								foreach($record['format'] as $key => $format) {
+									$formats[$format]['key'] = $key;
+									$formats[$format]['name'] = $format;
 								}
 								$items[$recordKey]['itemList'] = $formats;
 							}

@@ -206,7 +206,7 @@ class OverDriveProcessor implements AutoCloseable {
 
 								String primaryAuthor = productRS.getString("primaryCreatorName");
 								if (series != null && !series.isEmpty()) {
-									groupedWork.addSeriesWithVolume(series, primaryAuthor, "", 2, false, true);
+									groupedWork.addSeriesWithVolume(series, primaryAuthor, "", 2, false);
 								}
 								groupedWork.setAuthor(primaryAuthor);
 								groupedWork.setAuthAuthor(primaryAuthor);
@@ -384,6 +384,8 @@ class OverDriveProcessor implements AutoCloseable {
 											itemInfo.seteContentSource(readerName);
 											itemInfo.setShelfLocation(overDriveScope.getSettingName());
 											itemInfo.setDetailedLocation(readerName + " " + overDriveScope.getSettingName());
+											itemInfo.setCallNumber(readerName);
+											itemInfo.setSortableCallNumber(readerName);
 
 											//Load availability & determine which scopes are valid for the record
 											//This does not include any shared records since those are included in the main collection

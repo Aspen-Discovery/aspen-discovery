@@ -864,7 +864,7 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher {
 		return $allSuggestions;
 	}
 
-	protected function getFieldsToReturn($childDocFilters = []) : string {
+	protected function getFieldsToReturn() : string {
 		return '*,score';
 	}
 

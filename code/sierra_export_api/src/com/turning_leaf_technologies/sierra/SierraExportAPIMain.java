@@ -1257,6 +1257,10 @@ public class SierraExportAPIMain {
 					}else{
 						itemField.addSubfield(marcFactory.newSubfield(indexingProfile.getDueDateSubfield(), ""));
 					}
+					//price
+					if (fixedFields.has("62") && indexingProfile.getReplacementCostSubfield() != ' '){
+						itemField.addSubfield(marcFactory.newSubfield(indexingProfile.getReplacementCostSubfield(), fixedFields.getJSONObject("62").getString("value")));
+					}
 					//total checkouts
 					if (fixedFields.has("76") && indexingProfile.getTotalCheckoutsSubfield() != ' '){
 						itemField.addSubfield(marcFactory.newSubfield(indexingProfile.getTotalCheckoutsSubfield(), fixedFields.getJSONObject("76").getString("value")));
@@ -1299,7 +1303,7 @@ public class SierraExportAPIMain {
 							itemField.addSubfield(marcFactory.newSubfield(indexingProfile.getNoteSubfield(), noteValue));
 						}
 					}
-					//Replacement Cost / price
+					//Replacement Cost
 					if (fixedFields.has("62") && indexingProfile.getReplacementCostSubfield() != ' '){
 						String replacementCost = fixedFields.getJSONObject("62").getString("value").trim();
 						if (!replacementCost.isEmpty() && !replacementCost.equals("-")) {

@@ -163,21 +163,6 @@ class UserList extends DataObject {
 		if (!empty($selectedResourceTypes)) {
 			$listEntry->whereAddIn('source', $selectedResourceTypes, true);
 		}
-		// Ignore inaccessible nested lists toward the count
-		if (!UserAccount::userHasPermission('Edit All Lists')) {
-			$userId = UserAccount::getActiveUserId();
-			$listEntry->whereAdd(
-				"(source != 'Lists'
-					OR NOT EXISTS (
-						SELECT 1
-						FROM user_list
-						WHERE user_list.id = user_list_entry.sourceId
-						AND user_list.public = 0
-						AND user_list.user_id != " . (int)$userId . "
-					) 
-				)"
-			);
-    	}
 
 		return $listEntry->count();
 	}
@@ -804,7 +789,7 @@ class UserList extends DataObject {
 					$userList->id = $id;
 					
 					if ($userList->find(true)) {
-						if ($userList->isVisibleToUser()) {
+						if ($userList->public) {
 							$records[] = new ListsRecordDriver([
 								'id' => $userList->id,
 								'title_display' => $userList->title,
@@ -2073,15 +2058,11 @@ class UserList extends DataObject {
 		return $listEntry->count();
 	}
 
-	public function isVisibleToUser() {
-		return $this->public || $this->user_id === UserAccount::getActiveUserId() || UserAccount::userHasPermission('Edit All Lists');
-	}
-
 	private function getSolrSort(string $sort) : string {
 		require_once ROOT_DIR . '/sys/SystemVariables.php';
 		$systemVariables = SystemVariables::getSystemVariables();
-		global $solrScope;
 		if ($systemVariables->searchVersion == 2) {
+			global $solrScope;
 			return match ($sort) {
 				'title' => 'title asc',
 				'author' => 'author asc,title asc',
@@ -2096,13 +2077,13 @@ class UserList extends DataObject {
 			};
 		}else {
 			return match ($sort) {
-				'title' => 'title_sort asc',
+				'title' => 'title asc',
 				'author' => 'author asc,title asc',
 				'dateAdded' => "list_entry_date_added_$this->id asc",
 				'recentlyAdded' => "list_entry_date_added_$this->id desc",
-				'call_number' => "callnumber_sort_lowercase_$solrScope asc,title_sort asc",
-				'copies_available', 'availability_desc' => "available_copies_$solrScope desc,title_sort asc",
-				'copies_available_asc', 'availability' => "available_copies_$solrScope asc,title_sort asc",
+				'call_number' => "callnumber_sort asc,title asc",
+				'copies_available', 'availability_desc' => "available_copies desc,title asc",
+				'copies_available_asc', 'availability' => "available_copies asc,title asc",
 				'custom' => "list_entry_weight_$this->id asc",
 				'publication_date' => "year asc,title asc",
 				'publication_date_desc' => "year desc,title asc"

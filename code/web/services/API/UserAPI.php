@@ -996,7 +996,6 @@ class UserAPI extends AbstractAPI {
 			} else {
 				$userData->hideSoftDeleteListUI = false;
 			}
-			$userData->barcodeStyle = $patronHomeLibrary ? $patronHomeLibrary->libraryCardBarcodeStyle : 'none';
 
 			// Get list group information
 			require_once ROOT_DIR . '/sys/UserLists/UserListGroup.php';

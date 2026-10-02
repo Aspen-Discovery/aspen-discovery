@@ -3520,8 +3520,8 @@ AspenDiscovery.Admin = (function () {
 			});
 		},
 		toggleBrandedAppThemeOptions: function () {
-			const useSingleTheme = $("#useSingleTheme").prop("checked");
-			if (useSingleTheme) {
+			const useIndividualThemes = $("#useIndividualThemes").prop("checked");
+			if (useIndividualThemes) {
 				$('#propertyRowoverallTheme').show();
 			} else {
 				$('#propertyRowoverallTheme').hide();

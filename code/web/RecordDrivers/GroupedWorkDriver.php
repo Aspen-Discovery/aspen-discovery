@@ -52,24 +52,6 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		}
 	}
 
-	private static function compareMagazineEditionDates(Grouping_Record $a, Grouping_Record $b): int
-	{
-		$dateA = self::getComparableMagazineDate($a);
-		$dateB = self::getComparableMagazineDate($b);
-
-		// Newer first
-		return $dateB <=> $dateA;
-	}
-
-	private static function getComparableMagazineDate(Grouping_Record $record): int
-	{
-		if (!empty($record->publicationDate) && preg_match('/(\d{4})/', $record->publicationDate, $matches)) {
-			return (int)$matches[1];
-		}
-
-		return 0;
-	}
-
 	private static function compareOwnedEditions(Grouping_Record $a, Grouping_Record $b): int {
 		global $searchSource;
 		$searchLocation = Location::getSearchLocation($searchSource);
@@ -338,14 +320,13 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		2. Optionally sort owned editions first
 		3. Put anything that is holdable first
 		4. Compare by language to put English titles before Spanish by default
-		5. Put anything with locally available items first
-		6. Anything that is available elsewhere goes higher
-		7. Put anything with a local copy higher
-		8. Do a status check to make sure we don't place a hold on something that will be slow to come in
-		9. Compare editions for non-fiction if available
-		10. For magazines, sort newer editions first (only among otherwise-equal availability)
-		11. All else being equal, sort by hold ratio
-		12. If hold ratio is the same, compare number of copies (more copies first)
+		5. Compare editions for non-fiction if available
+		6. Put anything with locally available items first
+		7. Anything that is available elsewhere goes higher
+		8. Put anything with a local copy higher
+		9. Do a status check to make sure we don't place a hold on something that will be slow to come in
+		10. All else being equal, sort by hold ratio
+		11. If hold ratio is the same, compare number of copies (more copies first)
 		*/
 		$comparators = [
 			fn() => $this->compareFormats($a->format, $b->format),
@@ -360,7 +341,6 @@ class GroupedWorkDriver extends IndexRecordDriver {
 			//Status rankings should be between 4 (checked out and 1 currently available), we prefer the highest but could group some
 			fn() => $b->getStatusRanking() <=> $a->getStatusRanking(),
 			fn() => GroupedWorkDriver::compareEditionsForRecords($literaryForm, $a, $b),
-			fn() => $a->format === 'Magazine' ? GroupedWorkDriver::compareMagazineEditionDates($a, $b) : 0,
 			fn() => $a->getHoldRatio() <=> $b->getHoldRatio(),
 			fn() => $b->getCopies() <=> $a->getCopies(),
 		];
@@ -2755,11 +2735,8 @@ class GroupedWorkDriver extends IndexRecordDriver {
 
 		if (!empty($this->fields)) {
 			$fields = $this->fields;
-			$recordScoping = empty($fields['record_scoping']) ? null : $fields['record_scoping'];
-			unset($fields['record_scoping']);
 			ksort($fields);
 			$interface->assign('details', $fields);
-			$interface->assign('recordScoping', $recordScoping);
 		}
 
 		if (IPAddress::showDebuggingInformation()) {
@@ -4018,11 +3995,10 @@ class GroupedWorkDriver extends IndexRecordDriver {
 	}
 
 	private function getCallNumber() {
-		global $solrScope;
-		if (array_key_exists('callnumber_sort', $this->fields)) {
-			return $this->fields['callnumber_sort'] ?? null;
-		}else if (array_key_exists("callnumber_sort_$solrScope", $this->fields)) {
-			return $this->fields["callnumber_sort_$solrScope"] ?? null;
+		foreach (array_keys(($this->fields)) as $key) {
+			if (str_contains($key, 'callnumber_sort')) {
+				return $this->fields[$key] ?? null;
+			}
 		}
 		return null;
 	}

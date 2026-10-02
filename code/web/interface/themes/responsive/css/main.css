@@ -7596,7 +7596,7 @@ a.bg-overdue:focus {
   width: 98%;
 }
 #google_translate_element {
-  font-size: calc(var(--aspen-base-font-size) * 0.8571);
+  font-size: smaller;
   padding-left: 5px;
 }
 .goog-te-gadget {
@@ -8616,7 +8616,7 @@ a.placard-image-link {
 .exploreMoreBar .jcarousel-wrapper .jcarousel .explore-more-option {
   padding-left: 10px;
   padding-right: 10px;
-  height: 180px;
+  height: 175px;
   border: 0 !important;
   display: inline-block;
 }
@@ -9379,7 +9379,7 @@ body.fullWidthContent div#categoryValues.row {
   background-image: none;
 }
 .categoryValue {
-  font-size: calc(var(--aspen-base-font-size) * 0.8571);
+  font-size: smaller;
 }
 .categoryValue img {
   max-width: 50px;
@@ -9965,7 +9965,7 @@ a.browse-thumbnail.active {
   position: absolute;
   top: -15px;
   left: -10px;
-  font-size: var(--aspen-base-font-size);
+  font-size: medium;
   font-weight: bold;
   border-radius: 0;
   background-color: #FFEDD4;
@@ -10414,13 +10414,13 @@ td[data-entry-id]:has(.date-edit:focus)::after {
  * Additional Styling related to the help system
  */
 .faqQuestion {
-  font-size: var(--aspen-base-font-size);
+  font-size: medium;
   color: blue;
   font-weight: bold;
   margin-top: 15px;
 }
 .faqAnswer {
-  font-size: calc(var(--aspen-base-font-size) * 0.9286);
+  font-size: small;
   font-style: italic;
   margin-left: 1em;
 }
@@ -10926,7 +10926,7 @@ td[data-entry-id]:has(.date-edit:focus)::after {
   text-indent: -1.2em;
   margin-left: 30px;
   color: #888888;
-  font-size: calc(var(--aspen-base-font-size) * 0.9286);
+  font-size: small;
   font-weight: bold;
 }
 .facetValue a {
@@ -10937,9 +10937,6 @@ td[data-entry-id]:has(.date-edit:focus)::after {
 }
 .facetValue:last-of-type {
   margin-bottom: 3px;
-}
-.facetValue * {
-  font-size: inherit;
 }
 .facet-form {
   margin: 5px 30px;
@@ -10987,7 +10984,7 @@ td[data-entry-id]:has(.date-edit:focus)::after {
   margin: 3px 3px 3px 3px;
   padding: 2px 7px 2px 5px;
   border-radius: 15px;
-  font-size: calc(var(--aspen-base-font-size) * 0.8571);
+  font-size: smaller;
   display: inline-block;
   white-space: nowrap;
 }
@@ -10995,7 +10992,7 @@ td[data-entry-id]:has(.date-edit:focus)::after {
   vertical-align: baseline !important;
 }
 .result-head {
-  font-size: calc(var(--aspen-base-font-size) * 0.8571);
+  font-size: smaller;
   color: #3174AF;
 }
 #replacement-search-info {
@@ -11230,7 +11227,7 @@ td[data-entry-id]:has(.date-edit:focus)::after {
   position: absolute;
   top: -12px;
   left: -10px;
-  font-size: var(--aspen-base-font-size);
+  font-size: medium;
   font-weight: bold;
   border-radius: 0;
   background-color: #FFEDD4;
@@ -11441,8 +11438,8 @@ td[data-entry-id]:has(.date-edit:focus)::after {
   position: relative;
   width: auto !important;
   min-width: 150px;
-  font-size: calc(var(--aspen-base-font-size) * 0.9286);
-  height: 3.5em;
+  font-size: small;
+  height: 50px;
   display: inline-block;
   border: 1px solid #dddddd;
   flex-direction: column;
@@ -11458,7 +11455,7 @@ td[data-entry-id]:has(.date-edit:focus)::after {
   text-align: center;
 }
 .horizontal-format-button .related-manifestation-shelf-status {
-  font-size: calc(var(--aspen-base-font-size) * 0.8571);
+  font-size: smaller;
   font-weight: normal;
   text-transform: uppercase;
 }
@@ -11517,13 +11514,13 @@ td[data-entry-id]:has(.date-edit:focus)::after {
 }
 .horizDisplayShelfLocations {
   margin-top: 2em;
-  font-size: calc(var(--aspen-base-font-size) * 0.9286);
+  font-size: small;
 }
 #multiple-variations-column.formatDisplayHorizontal .horizDisplayShelfLocations .col-tn-4:first-child {
   padding-left: 0;
 }
 .relatedRecord {
-  font-size: calc(var(--aspen-base-font-size) * 0.9286);
+  font-size: small;
 }
 .viewAllLocationsBtn {
   width: 100%;
@@ -11563,7 +11560,7 @@ td[data-entry-id]:has(.date-edit:focus)::after {
   padding-right: 0.75em;
 }
 .horizontal-edition-option .edition-data {
-  font-size: calc(var(--aspen-base-font-size) * 0.8571);
+  font-size: smaller;
 }
 .horizontal-edition-option .edition-data .label {
   margin-top: 0.75em;
@@ -12300,7 +12297,7 @@ td[data-entry-id]:has(.date-edit:focus)::after {
 }
 #releaseNotes .settings {
   margin-left: 60px;
-  font-size: calc(var(--aspen-base-font-size) * 0.8571);
+  font-size: smaller;
 }
 .staff-member {
   padding: 5px 10px;

@@ -143,7 +143,7 @@ class HooplaProcessor {
 					if (rawResponse.has("episode")){
 						volume = rawResponse.get("episode").toString();
 					}
-					groupedWork.addSeriesWithVolume(series, primaryAuthor, volume, 2, false, true);
+					groupedWork.addSeriesWithVolume(series, primaryAuthor, volume, 2, false);
 				}
 
 				boolean children = rawResponse.getBoolean("children");
@@ -400,6 +400,8 @@ class HooplaProcessor {
 				itemInfo.seteContentUrl(rawResponse.getString("url"));
 				itemInfo.setShelfLocation("Online Hoopla Collection");
 				itemInfo.setDetailedLocation("Online Hoopla Collection");
+				itemInfo.setCallNumber("Online Hoopla");
+				itemInfo.setSortableCallNumber("Online Hoopla");
 				itemInfo.setFormat(primaryFormat);
 				itemInfo.setFormatCategory(formatCategory);
 

@@ -838,10 +838,8 @@ class OverDriveDriver extends AbstractEContentDriver {
 
 						$key = $hold->type . $hold->sourceId . $hold->userId;
 						if ($hold->available) {
-							$hold->status = 'Ready For Pickup';
 							$holds['available'][$key] = $hold;
 						} else {
-							$hold->status = $hold->status ?? 'Pending';
 							$holds['unavailable'][$key] = $hold;
 						}
 					}

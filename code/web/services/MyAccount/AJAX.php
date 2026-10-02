@@ -3928,18 +3928,14 @@ class MyAccount_AJAX extends JSON_Action {
 	}
 
 	private function isInvalidHold(Hold|array $hold, string $field, array $filterInformation) : bool {
-		$selectedValues = array_map('strval', $filterInformation['selected']);
-		$isSourceField = $field === 'source';
-
-		// "all" is a wildcard for source — always valid, skip the value checks
-		if ($isSourceField && in_array('all', $selectedValues, true)) {
-			return false;
-		}
-
 		$filterValue = $this->getHoldFilterValue($hold, $field);
-		$absentFromArray = !in_array($filterValue['value'], $filterInformation['selected']);
+		$selectedValues = array_map('strval', $filterInformation['selected']);
+		$absentFromArray = !in_array($hold->$field, $filterInformation['selected']);
+		$isSourceField = $field === "source";
 
-		return $absentFromArray || $filterValue === null || !in_array((string) $filterValue['value'], $selectedValues, true);
+		return $absentFromArray && (!$isSourceField || !in_array("all", $filterInformation['selected']))
+			|| $filterValue === null
+			|| !in_array($filterValue['value'], $selectedValues, true);
 	}
 
 	private function filterCheckoutsByUser(array $allCheckedOut, string $selectedUser): array {
@@ -4009,6 +4005,8 @@ class MyAccount_AJAX extends JSON_Action {
 			$this->setShowCovers();
 
 			$user = UserAccount::getActiveUserObj();
+
+			$selectedUser = $this->setFilterLinkedUser();
 
 			if ($user->getHomeLibrary() != null) {
 				$allowSelectingHoldsToExport = $user->getHomeLibrary()->allowSelectingHoldsToExport;
@@ -4184,14 +4182,12 @@ class MyAccount_AJAX extends JSON_Action {
 
 				// Get & Set Filter Options
 				$activeFilters = $this->getActiveHoldFilters($filtersList);
-				$allHolds = $user->getHolds(true, $selectedUnavailableSortOption, $selectedAvailableSortOption, 'all', $defaultCancelledSortOption);
-				$filters = $this->getHoldFiltersForUser($user, $allHolds, $activeFilters, $filtersList);
+				$filters = $this->getHoldFiltersForUser($user, $activeFilters, $filtersList);
 				//If we have nothing to filter, don't show the filter options
 				$showFilterOptions = false;
 				foreach ($filters as $filter) {
 					if (count($filter['options']) > 1) {
 						$showFilterOptions = true;
-						break;
 					}
 				}
 				if ($showFilterOptions) {
@@ -4200,7 +4196,7 @@ class MyAccount_AJAX extends JSON_Action {
 				}
 
 
-				$allHolds = $this->filterHolds($allHolds, $filters);
+				$allHolds = $this->filterHolds($user->getHolds(true, $selectedUnavailableSortOption, $selectedAvailableSortOption, 'all', $defaultCancelledSortOption), $filters);
 				$hyperHolds = [];
 				$hiddenHoldIds = [];
 
@@ -4306,16 +4302,9 @@ class MyAccount_AJAX extends JSON_Action {
 
 		if ($field === 'status') {
 			if ($this->getHoldPropertyValue($hold, 'available')) {
-				return 'Ready For Pickup';
-			}elseif ($this->getHoldPropertyValue($hold, 'cancelled')) {
-				return 'Cancelled';
-			}elseif ($this->getHoldPropertyValue($hold, 'frozen')) {
-				return 'Frozen';
-			}elseif (!empty($fieldValue)) {
-				return 'Pending';
-			}else {
-				return 'Pending';
+				return 'available';
 			}
+			return empty($fieldValue) ? 'unavailable' : (string)$fieldValue;
 		}
 
 		return $fieldValue === null ? null : (string)$fieldValue;
@@ -4324,19 +4313,23 @@ class MyAccount_AJAX extends JSON_Action {
 	private function getHoldFilterValue(Hold|array $hold, string $field): ?array {
 		$fieldValue = $this->getHoldFilterFieldValue($hold, $field);
 
+		$getStatus = fn($fv) => match($fv) {
+			'available' => 'Available',
+			'unavailable' => 'Unavailable',
+			default => (string) $fv
+		};
 		$getSourceUT = fn($fv) => match($fv) {
 			'ils' => 'Physical Materials',
 			'overdrive' => (new OverDriveDriver())->getReaderName(),
 			'cloud_library' => 'Cloud Library',
 			'hoopla' => 'Hoopla',
 			'axis360' => 'Boundless',
-			'palace_project' => 'Palace Project',
 			default => 'Unknown'
 		};
 
 		$label = match($field) {
 			'userId' => is_array($hold) ? $fieldValue : $hold->getUserName(),
-			'status' => translate(['text' => $fieldValue, 'isPublicFacing' => true]),
+			'status' => translate(['text' => $getStatus($fieldValue), 'isPublicFacing' => true]),
 			'format' => translate(['text' => (string)$fieldValue, 'isPublicFacing' => true]),
 			'source' => translate(['text' => $getSourceUT($fieldValue), 'isPublicFacing' => true]),
 			default => (string)$fieldValue
@@ -4352,12 +4345,14 @@ class MyAccount_AJAX extends JSON_Action {
 	 * Get the filters that apply to the active user's holds.
 	 *
 	 * @param User $user - The user that we are getting the filters for
-	 * @param array $allHolds - The holds for the user
 	 * @param array $activeFilters - The filters that have been applied by the user
 	 * @param array $filtersList - The list of filters that are available to the user
 	 * @return array
 	 */
-	private function getHoldFiltersForUser(User $user, array $allHolds, array $activeFilters, array $filtersList): array {
+	private function getHoldFiltersForUser(User $user, array $activeFilters, array $filtersList): array {
+		//Get all holds for the user including linked users
+		$allHolds = $user->getHolds();
+
 		//Gather all holds into a single array
 		$holds = [];
 		foreach ($allHolds as $group => $holdGroup) {

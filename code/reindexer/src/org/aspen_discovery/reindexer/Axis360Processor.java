@@ -94,7 +94,7 @@ class Axis360Processor {
 
 				String series = getFieldValue(rawResponse,"series");
 				if (!series.isEmpty()){
-					groupedWork.addSeriesWithVolume(series, primaryAuthor, "", 2, true, false);
+					groupedWork.addSeriesWithVolume(series, primaryAuthor, "", 2, true);
 				}
 
 				String targetAudience = loadAxis360Subjects(groupedWork, rawResponse, axis360Record);
@@ -147,6 +147,8 @@ class Axis360Processor {
 					itemInfo.setIsEContent(true);
 					itemInfo.setShelfLocation("Online Boundless Collection");
 					itemInfo.setDetailedLocation("Online Boundless Collection");
+					itemInfo.setCallNumber("Online Boundless");
+					itemInfo.setSortableCallNumber("Online Boundless");
 					itemInfo.setFormat(primaryFormat);
 					itemInfo.setFormatCategory(formatCategory);
 

@@ -852,6 +852,14 @@ public class GroupedWorkIndexer implements AutoCloseable {
 	public void finishIndexingFromExtract(BaseIndexingLogEntry logEntry){
 		processScheduledWorks(logEntry, true, 100);
 
+		/*try {
+			updateServer.commit(false, false, true);
+		}catch (Exception e) {
+			logEntry.incErrors("Error in final commit while finishing extract, shutting down", e);
+			logEntry.setFinished();
+			logEntry.saveResults();
+			System.exit(-3);
+		}*/
 		try {
 			logEntry.addNote("Shutting down the update server");
 			updateServer.blockUntilFinished();
@@ -874,6 +882,14 @@ public class GroupedWorkIndexer implements AutoCloseable {
 			System.exit(-5);
 		}
 	}
+
+	/*public void commitChanges(){
+		try {
+			updateServer.commit(false, false, true);
+		}catch (Exception e) {
+			logEntry.incErrors("Error committing changes ", e);
+		}
+	}*/
 
 	/**
 	 * This is called from all the indexers, so we would like to prevent scheduled works from being processed multiple times.
@@ -939,6 +955,9 @@ public class GroupedWorkIndexer implements AutoCloseable {
 				}
 
 				numWorksProcessed++;
+				/*if (numWorksProcessed % this.indexCommitInterval == 0) {
+					this.commitChanges();
+				}*/
 			}
 			if (numWorksProcessed > 0){
 				if (doLogging) {
@@ -958,6 +977,8 @@ public class GroupedWorkIndexer implements AutoCloseable {
 		logEntry.addNote("Finishing indexing");
 		if (fullReindex) {
 			try {
+				//logEntry.addNote("Calling final commit");
+				//updateServer.commit(false, false, true);
 				logEntry.addNote("Waiting for update server to finish");
 				updateServer.blockUntilFinished();
 			} catch (Exception e) {
@@ -992,8 +1013,9 @@ public class GroupedWorkIndexer implements AutoCloseable {
 			updateLastReindexTime();
 		}else {
 			try {
-				logEntry.addNote("Waiting for update server to finish");
+				logEntry.addNote("Doing a soft commit to make sure changes are saved");
 				updateServer.blockUntilFinished();
+				//updateServer.commit(false, false, true);
 				logEntry.addNote("Shutting down the update server");
 				updateServer.shutdownNow();
 				updateServer.close();
@@ -1071,6 +1093,14 @@ public class GroupedWorkIndexer implements AutoCloseable {
 					//Testing shows that regular commits do seem to improve performance.
 					//However, we can't do it too often, or we get errors with too many searchers warming.
 					//This is happening now with the auto commit settings in solrconfig.xml
+					/*if (numWorksProcessed % indexCommitInterval == 0) {
+						try {
+							logger.info("Doing a regular commit during full indexing");
+							updateServer.commit(false, false, true);
+						} catch (Exception e) {
+							logger.warn("Error committing changes", e);
+						}
+					}*/
 					//Change to a debug statement to avoid filling up the notes.
 					logger.debug("Processed {} grouped works processed.", numWorksProcessed);
 				}
@@ -1102,6 +1132,7 @@ public class GroupedWorkIndexer implements AutoCloseable {
 		PreparedStatement getPrimaryIdentifiersForGroupedWorkStmt = dbConn.prepareStatement("SELECT count(*) as numIdentifiers from grouped_work_primary_identifiers where grouped_work_id = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 		logEntry.addNote("Starting to process grouped works with no records attached to them.");
 
+		int numDeleted = 0;
 		int numProcessed = 0;
 		boolean localRegroupAll = this.regroupAllRecords;
 		setRegroupAllRecords(true);
@@ -1127,6 +1158,14 @@ public class GroupedWorkIndexer implements AutoCloseable {
 					processGroupedWork(groupedWorkId, permanentId, emptyGroupedWorksRS.getString("grouping_category"));
 				}else {
 					deleteRecord(permanentId, groupedWorkId);
+					numDeleted++;
+					/*if (numDeleted % this.deletionCommitInterval == 0) {
+						try {
+							updateServer.commit(false, false, true);
+						} catch (Exception e) {
+							logger.warn("Error committing changes", e);
+						}
+					}*/
 				}
 				numProcessed++;
 				if (numProcessed % 1000 == 0) {
@@ -1154,6 +1193,9 @@ public class GroupedWorkIndexer implements AutoCloseable {
 				}
 			}
 			totalRecordsHandled++;
+			/*if (totalRecordsHandled % this.indexCommitInterval == 0) {
+				updateServer.commit(false, false, true);
+			}*/
 		} catch (Exception e) {
 			logEntry.incErrors("Error indexing grouped work " + permanentId + " by id", e);
 		}
@@ -1420,7 +1462,7 @@ public class GroupedWorkIndexer implements AutoCloseable {
 				groupedWork.setLexileScore(lexileTitle.getLexileScore());
 				groupedWork.addAwards(lexileTitle.getAwards());
 				if (!lexileTitle.getSeries().isEmpty()){
-					groupedWork.addSeriesWithVolume(lexileTitle.getSeries(), lexileTitle.getAuthor(), "", 1, false, false);
+					groupedWork.addSeriesWithVolume(lexileTitle.getSeries(), lexileTitle.getAuthor(), "", 1, false);
 				}
 				break;
 			}
@@ -1547,7 +1589,7 @@ public class GroupedWorkIndexer implements AutoCloseable {
 							if (novelistRS.wasNull()) {
 								volume = "";
 							}
-							groupedWork.addSeriesWithVolume(series, "", volume, 2, false, false);
+							groupedWork.addSeriesWithVolume(series, "", volume, 2, false);
 						}
 					}
 				}
@@ -1603,12 +1645,9 @@ public class GroupedWorkIndexer implements AutoCloseable {
 				}
 			}
 
-			boolean hasNonEContentSeries = groupedWork.series.values().stream().anyMatch(s -> !s.fromEContent());
-
 			for (SeriesInfo seriesInfo : groupedWork.series.values()) {
 				//Don't create series module records from untraced series
-				//Prefer non-econtent series info but use as fallback if no other series info exists
-				if ((!seriesInfo.isTraced() && !include490_0) || (seriesInfo.fromEContent() && hasNonEContentSeries)) {
+				if (!seriesInfo.isTraced() && !include490_0) {
 					continue;
 				}
 				long timeNow = new Date().getTime() / 1000;
@@ -1953,7 +1992,7 @@ public class GroupedWorkIndexer implements AutoCloseable {
 			addSeriesMemberStmt.setString(2, groupedWork.getId());
 			if (!volume.isEmpty()) {
 				addSeriesMemberStmt.setString(3, AspenStringUtils.trimTo(100, volume)); // Add volume
-				long seriesWeight;
+				long seriesWeight = 0;
 				if (AspenStringUtils.isNumeric(volume)) {
 					float seriesWeightFloat = Float.parseFloat(volume);
 					seriesWeight = (int)seriesWeightFloat;
@@ -2071,7 +2110,7 @@ public class GroupedWorkIndexer implements AutoCloseable {
 							if (seriesDisplayOrder == null) {
 								seriesDisplayOrder = "";
 							}
-							groupedWork.addSeriesWithVolume(seriesName, author, seriesDisplayOrder, 2, false, false);
+							groupedWork.addSeriesWithVolume(seriesName, author, seriesDisplayOrder, 2, false);
 						}else{
 							if (groupedWork.isDebugEnabled()) {
 								groupedWork.addDebugMessage("Not applying series data for grouped work because no series was defined", 2);

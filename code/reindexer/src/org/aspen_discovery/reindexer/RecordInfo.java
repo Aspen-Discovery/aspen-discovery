@@ -537,7 +537,17 @@ public class RecordInfo {
 		ArrayList<SolrInputDocument> recordSolrScopeDocuments = new ArrayList<>();
 		HashSet<String> formatsForRecord = getFormats();
 		HashSet<String> formatCategoriesForRecord = getFormatCategories();
-
+		if (formatsForRecord.contains("eAudiobook")) {
+			formatCategoriesForRecord.add("eBook");
+		}
+		if (formatsForRecord.contains("CD + Book")) {
+			formatCategoriesForRecord.add("Books");
+			formatCategoriesForRecord.add("#udio Books");
+		}
+		if (formatsForRecord.contains("VOX Books")) {
+			formatCategoriesForRecord.add("Books");
+			formatCategoriesForRecord.add("Audio Books");
+		}
 		HashSet<String> filteredTargetAudiences = groupedWorkIndexer.cleanTargetAudiences(targetAudience);
 		HashSet<String> filteredTargetAudiencesFull = groupedWorkIndexer.cleanTargetAudiences(targetAudienceFull);
 		if (parentWork.isDebugEnabled()) {parentWork.addDebugMessage("Final target audience for " + this.recordIdentifier + " is " + targetAudience, 1);}
@@ -551,22 +561,22 @@ public class RecordInfo {
 			}
 			SolrInputDocument recordDoc = new SolrInputDocument();
 			recordDoc.setField("id", "record_" + databaseId + "_" + scopeName);
+			recordDoc.setField("_nest_path_", "/record_scoping");
 			recordDoc.setField("recordtype", "record_scoping");
 			recordDoc.setField("scope", scopeName);
-
+			recordDoc.setField("format", formatsForRecord);
+			recordDoc.setField("format_category", formatCategoriesForRecord);
+			recordDoc.setField("target_audience", filteredTargetAudiences);
+			recordDoc.setField("target_audience_full", filteredTargetAudiencesFull);
 
 			AvailabilityToggleInfo availabilityToggleValuesForScope = new AvailabilityToggleInfo();
+			int availableCopiesForScope = 0;
 			Long daysSinceAddedForScope = null;
 			String sortableCallNumberForScope = null;
 			int libraryBoostForScope = 0;
 
 			String scopeFacetLabel = curScope.getFacetLabel();
 			GroupedWorkDisplaySettings scopeDisplaySettings = curScope.getGroupedWorkDisplaySettings();
-
-			HashSet<String> formatsForRecordScope = new HashSet<>(formatsForRecord);
-			HashSet<String> formatCategoriesForRecordScope = new HashSet<>(formatCategoriesForRecord);
-
-			HashSet<String> targetAudiencesForScopeByItem = new HashSet<>();
 
 			for (ItemInfo curItem : relatedItems) {
 				ScopingInfo scopingInfo = curItem.getScopingInfo().get(scopeName);
@@ -577,13 +587,10 @@ public class RecordInfo {
 				String trimmedIType = curItem.getTrimmedIType();
 
 				if (curItem.getFormat() != null) {
-					formatsForRecordScope.add(curItem.getFormat());
+					formatsForRecord.add(curItem.getFormat());
 				}
 				if (curItem.getFormatCategory() != null) {
-					formatCategoriesForRecordScope.add(curItem.getFormatCategory());
-				}
-				if (curItem.getTargetAudience() != null) {
-					targetAudiencesForScopeByItem.add(curItem.getTargetAudience());
+					formatsForRecord.add(curItem.getFormatCategory());
 				}
 
 				boolean addAllOwningLocations = false;
@@ -605,6 +612,7 @@ public class RecordInfo {
 					recordDoc.addField("owning_library", trimmedEContentSource);
 					if (isAvailable) {
 						recordDoc.addField("available_at", trimmedEContentSource);
+						availableCopiesForScope += curItem.getNumCopies();
 					}
 					recordDoc.addField("econtent_source", trimmedEContentSource);
 				} else { //physical materials
@@ -649,6 +657,9 @@ public class RecordInfo {
 							recordDoc.addField("owning_library", libraryOwnedName);
 						}
 						addAllOwningLocations = true;
+					}
+					if (isAvailable) {
+						availableCopiesForScope += curItem.getNumCopies();
 					}
 				}
 
@@ -704,30 +715,6 @@ public class RecordInfo {
 				}
 			} // End looping through items
 
-			if (formatsForRecordScope.contains("eAudiobook")) {
-				formatCategoriesForRecordScope.add("eBook");
-			}
-			if (formatsForRecordScope.contains("CD + Book")) {
-				formatCategoriesForRecordScope.add("Books");
-				formatCategoriesForRecordScope.add("#udio Books");
-			}
-			if (formatsForRecordScope.contains("VOX Books")) {
-				formatCategoriesForRecordScope.add("Books");
-				formatCategoriesForRecordScope.add("Audio Books");
-			}
-
-			recordDoc.setField("format", formatsForRecordScope);
-			recordDoc.setField("format_category", formatCategoriesForRecordScope);
-
-			if (targetAudiencesForScopeByItem.isEmpty()) {
-				recordDoc.setField("target_audience", filteredTargetAudiences);
-				recordDoc.setField("target_audience_full", filteredTargetAudiencesFull);
-			}else{
-				HashSet<String> cleanedAudiencesForScopeByItem = groupedWorkIndexer.cleanTargetAudiences(targetAudiencesForScopeByItem);
-				recordDoc.setField("target_audience", cleanedAudiencesForScopeByItem);
-				recordDoc.setField("target_audience_full", cleanedAudiencesForScopeByItem);
-			}
-
 			recordDoc.addField("availability_toggle", availabilityToggleValuesForScope.getValues());
 			if (curScope.getLocationsToExcludeAvailabilityForPattern() != null) {
 				//Filter available At by locationsToExcludeAvailabilityFor
@@ -741,6 +728,8 @@ public class RecordInfo {
 				recordDoc.addField("local_time_since_added", DateUtils.getTimeSinceAdded(daysSinceAddedForScope));
 			}
 			recordDoc.addField("lib_boost", libraryBoostForScope);
+			recordDoc.addField("available_copies", availableCopiesForScope);
+			recordDoc.addField("callnumber_sort", sortableCallNumberForScope);
 
 			recordSolrScopeDocuments.add(recordDoc);
 		}
