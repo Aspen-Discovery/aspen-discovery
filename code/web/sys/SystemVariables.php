@@ -8,6 +8,7 @@ class SystemVariables extends DataObject {
 	public $searchErrorEmail;
 	public $loadCoversFrom020z;
 	public $currencyCode;
+	public $timeFormat;
 	public $runNightlyFullIndex;
 	public $nightlyIndexTrigger;
 	public $regroupAllRecordsDuringNightlyIndex;
@@ -141,6 +142,19 @@ class SystemVariables extends DataObject {
 				'required' => true,
 				'maxLength' => 3,
 				'default' => 'USD',
+			],
+			'timeFormat' => [
+				'property' => 'timeFormat',
+				'type' => 'enum',
+				'label' => 'Time Format',
+				'values' => [
+					1 => 'Locale-based system default',
+					2 => '12-hour format',
+					3 => '24-hour format',
+				],
+				'description' => 'Whether to override the locale-based default, and if so, with which format',
+				'required' => true,
+				'default' => 1,
 			],
 			'indexingSection' => [
 				'property' => 'indexingSection',

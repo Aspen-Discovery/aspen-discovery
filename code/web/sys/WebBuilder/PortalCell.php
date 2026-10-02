@@ -531,34 +531,16 @@ class PortalCell extends DataObject {
 				}
 			}
 		} elseif ($this->sourceType == 'hours_locations') {
-			global $library;
 			$libraryLocations = [];
-
-			// Check if using static location or dynamic selection.
 			$locationsToProcess = [];
-			$tmpLocation = new Location();
 			if (!empty($this->staticLocationId) && $this->staticLocationId != -1) {
-				// Get a single specific location.
-				$tmpLocation->locationId = $this->staticLocationId;
-				if ($tmpLocation->find(true)) {
-					$locationsToProcess[] = clone $tmpLocation;
+				$staticLocation = new Location();
+				$staticLocation->locationId = $this->staticLocationId;
+				if ($staticLocation->find(true)) {
+					$locationsToProcess[] = clone $staticLocation;
 				}
 			} else {
-				// Get all locations as before (dynamic selection).
-				$tmpLocation->libraryId = $library->libraryId;
-				$tmpLocation->showInLocationsAndHoursList = 1;
-				$tmpLocation->orderBy('isMainBranch DESC, displayName');
-				$tmpLocation->find();
-				if ($tmpLocation->getNumResults() == 0) {
-					$tmpLocation = new Location();
-					$tmpLocation->showInLocationsAndHoursList = 1;
-					$tmpLocation->orderBy('displayName');
-					$tmpLocation->find();
-				}
-
-				while ($tmpLocation->fetch()) {
-					$locationsToProcess[] = clone $tmpLocation;
-				}
+				$locationsToProcess = Location::getPubliclyListedLocations();
 			}
 
 			require_once ROOT_DIR . '/sys/Enrichment/GoogleApiSetting.php';
@@ -568,42 +550,8 @@ class PortalCell extends DataObject {
 			} else {
 				$mapsKey = null;
 			}
-			require_once ROOT_DIR . '/sys/Parsedown/AspenParsedown.php';
-			$parsedown = AspenParsedown::instance();
-			$parsedown->setBreaksEnabled(true);
 			foreach ($locationsToProcess as $locationToProcess) {
-				$mapAddress = urlencode(preg_replace('/\r\n|\r|\n/', '+', $locationToProcess->address));
-				$hours = $locationToProcess->getHours();
-				foreach ($hours as $key => $hourObj) {
-					if (!$hourObj->closed) {
-						$hourObj->open = DateUtils::formatHour($hourObj->open);
-						$hourObj->close = DateUtils::formatHour($hourObj->close);
-					}
-					$hours[$key] = $hourObj;
-				}
-				$libraryLocation = [
-					'id' => $locationToProcess->locationId,
-					'name' => $locationToProcess->displayName,
-					'address' => preg_replace('/\r\n|\r|\n/', '<br>', $locationToProcess->address),
-					'phone' => $locationToProcess->phone,
-					'tty' => $locationToProcess->tty,
-					'email' => $locationToProcess->contactEmail,
-					//'map_image' => "http://maps.googleapis.com/maps/api/staticmap?center=$mapAddress&zoom=15&size=200x200&sensor=false&markers=color:red%7C$mapAddress",
-					'hours' => $hours,
-					'hasValidHours' => $locationToProcess->hasValidHours(),
-					'description' => $parsedown->parse($locationToProcess->description),
-					'image' => $locationToProcess->locationImage ? $configArray['Site']['url'] . '/files/original/' . $locationToProcess->locationImage : null,
-					'longitude' => floatval($locationToProcess->longitude),
-					'latitude' => floatval($locationToProcess->latitude),
-					'homeLink' => (!empty($locationToProcess->homeLink) && ($locationToProcess->homeLink != 'default')) ? $locationToProcess->homeLink : (!is_null($locationToProcess->getParentLibrary()) ? $locationToProcess->getParentLibrary()->homeLink : null),
-					'hoursMessage' => Location::getLibraryHoursMessage($locationToProcess->locationId, true),
-					'useLocationNameForMaps' => $locationToProcess->useLocationNameForMaps,
-				];
-
-				if (!empty($mapsKey)) {
-					$libraryLocation['map_link'] = "https://maps.google.com/maps?f=q&hl=en&geocode=&q=$mapAddress&ie=UTF8&z=15&iwloc=addr&om=1&t=m&key=$mapsKey";
-				}
-				$libraryLocations[$locationToProcess->locationId] = $libraryLocation;
+				$libraryLocations[$locationToProcess->locationId] = $locationToProcess->getPublicLocationInfo($locationToProcess->getFormattedHours(true), $mapsKey);
 			}
 
 			global $interface;

@@ -2373,8 +2373,8 @@ class Location extends DataObject {
 							'open' => $specialOpen,
 							'close' => $specialClose,
 							'closed' => false,
-							'openFormatted' => DateUtils::formatHour($holiday->open),
-							'closeFormatted' => DateUtils::formatHour($holiday->close),
+							'openFormatted' => DateUtils::formatHour($holiday->open, true),
+							'closeFormatted' => DateUtils::formatHour($holiday->close, true),
 						]];
 					}
 				}
@@ -2397,8 +2397,8 @@ class Location extends DataObject {
 						'open' => ltrim($hours->open, '0'),
 						'close' => ltrim($hours->close, '0'),
 						'closed' => (bool)$hours->closed,
-						'openFormatted' => DateUtils::formatHour($hours->open),
-						'closeFormatted' => DateUtils::formatHour($hours->close),
+						'openFormatted' => DateUtils::formatHour($hours->open, true),
+						'closeFormatted' => DateUtils::formatHour($hours->close, true),
 					];
 					if (($openHours[$ctr]['open'] == $openHours[$ctr]['close'])) {
 						$openHours[$ctr]['closed'] = true;
@@ -2790,6 +2790,17 @@ class Location extends DataObject {
 		return $this->_hours;
 	}
 
+	public function getFormattedHours(bool $useNoonAndMidnight = false): array {
+		$formattedHours = [];
+		foreach ($this->getHours() as $key => $hourObj) {
+			$formattedHourObj = clone $hourObj;
+			$formattedHourObj->_openFormatted = DateUtils::formatHour($hourObj->open, $useNoonAndMidnight);
+			$formattedHourObj->_closeFormatted = DateUtils::formatHour($hourObj->close, $useNoonAndMidnight);
+			$formattedHours[$key] = $formattedHourObj;
+		}
+		return $formattedHours;
+	}
+
 	public function hasValidHours(): bool {
 		$hours = new LocationHours();
 		$hours->locationId = $this->locationId;
@@ -3014,6 +3025,58 @@ class Location extends DataObject {
 			}
 		}
 		return Location::$locationListAsObjects;
+	}
+
+	static function getPubliclyListedLocations(): array {
+		global $library;
+		$location = new Location();
+		$location->libraryId = $library->libraryId;
+		$location->showInLocationsAndHoursList = 1;
+		$location->orderBy('isMainBranch DESC, displayName');
+		$location->find();
+		if ($location->getNumResults() == 0) {
+			$location = new Location();
+			$location->showInLocationsAndHoursList = 1;
+			$location->orderBy('displayName');
+			$location->find();
+		}
+
+		$locations = [];
+		while ($location->fetch()) {
+			$locations[] = clone $location;
+		}
+		return $locations;
+	}
+
+	public function getPublicLocationInfo(array $hours, ?string $mapsKey): array {
+		global $configArray;
+		$parsedown = AspenParsedown::instance();
+		$parsedown->setBreaksEnabled(true);
+
+		$mapAddress = urlencode(preg_replace('/\r\n|\r|\n/', '+', $this->address));
+		$parentLibrary = $this->getParentLibrary();
+		$locationInfo = [
+			'id' => $this->locationId,
+			'name' => $this->displayName,
+			'address' => preg_replace('/\r\n|\r|\n/', '<br>', $this->address),
+			'phone' => $this->phone,
+			'tty' => $this->tty,
+			'email' => $this->contactEmail,
+			'hours' => $hours,
+			'hasValidHours' => $this->hasValidHours(),
+			'description' => $parsedown->parse($this->description),
+			'image' => $this->locationImage ? $configArray['Site']['url'] . '/files/original/' . $this->locationImage : null,
+			'longitude' => floatval($this->longitude),
+			'latitude' => floatval($this->latitude),
+			'homeLink' => (!empty($this->homeLink) && $this->homeLink !== 'default') ? $this->homeLink : ((!empty($parentLibrary->homeLink) && $parentLibrary->homeLink !== 'default') ? $parentLibrary->homeLink : null),
+			'hoursMessage' => Location::getLibraryHoursMessage($this->locationId, true),
+			'useLocationNameForMaps' => $this->useLocationNameForMaps,
+		];
+
+		if (!empty($mapsKey)) {
+			$locationInfo['map_link'] = "https://maps.google.com/maps?f=q&hl=en&geocode=&q=$mapAddress&ie=UTF8&z=15&iwloc=addr&om=1&t=m&key=$mapsKey";
+		}
+		return $locationInfo;
 	}
 
 	/**

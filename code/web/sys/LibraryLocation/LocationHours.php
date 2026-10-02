@@ -14,6 +14,10 @@ class LocationHours extends DataObject {
 	public $closed;
 	public $notes;
 
+	// Display-only, not persisted 
+	public $_openFormatted;
+	public $_closeFormatted;
+
 	public static $dayNames = [
 		'Sunday',
 		'Monday',
