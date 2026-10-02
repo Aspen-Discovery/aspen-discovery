@@ -642,7 +642,7 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 		$this->fieldsToReturn = $fields;
 	}
 
-	protected function getFieldsToReturn() : string {
+	protected function getFieldsToReturn($childDocFilters = []) : string {
 		if (isset($_REQUEST['allFields'])) {
 			$fieldsToReturn = '*,score';
 		} elseif ($this->fieldsToReturn != null) {

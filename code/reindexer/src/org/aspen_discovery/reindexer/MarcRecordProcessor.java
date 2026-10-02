@@ -410,7 +410,7 @@ abstract class MarcRecordProcessor {
 			if (seriesField.getIndicator2() == '1' && seriesField.getSubfield('a') != null) {
 				seriesAuthor = seriesField.getSubfield('a').getData();
 			}
-			groupedWork.addSeriesWithVolume(series, seriesAuthor, volume, 3, false);
+			groupedWork.addSeriesWithVolume(series, seriesAuthor, volume, 3, false, false);
 		}
 
 		seriesFields = MarcUtil.getDataFields(record, seriesFieldsToIndexWith800);
@@ -445,7 +445,7 @@ abstract class MarcRecordProcessor {
 			if (seriesField.getSubfield('a') != null) {
 				seriesAuthor = seriesField.getSubfield('a').getData();
 			}
-			groupedWork.addSeriesWithVolume(series, seriesAuthor, volume, 5, false);
+			groupedWork.addSeriesWithVolume(series, seriesAuthor, volume, 5, false, false);
 		}
 
 		seriesFields = MarcUtil.getDataFields(record, 490);
@@ -468,7 +468,7 @@ abstract class MarcRecordProcessor {
 
 				//490 does not have a series author field
 				String seriesAuthor = "";
-				groupedWork.addSeriesWithVolume(series, seriesAuthor, volume, 1, true);
+				groupedWork.addSeriesWithVolume(series, seriesAuthor, volume, 1, true, false);
 			}
 		}
 

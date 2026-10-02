@@ -66,7 +66,7 @@
 		<div class="result-date-purchased result-value col-sm-8 col-xs-12">{$datePurchased|date_format:"%m/%d/%Y"}</div>
 	{elseif $sortValue =="callnumber_sort"}
 		<div class="result-call-number result-label col-sm-4 col-xs-12">{translate text="Call Number" isPublicFacing=true} </div>
-		<div class="result-call-number result-value col-sm-8 col-xs-12">{$callNumber}</div>
+		<div class="result-call-number result-value col-sm-8 col-xs-12">{if empty($callNumber)}&nbsp;{else}{$callNumber}{/if}</div>
 	{elseif $sortValue =="total_holds desc"}
 		<div class="result-number-of-holds result-label col-sm-4 col-xs-12">{translate text="Number of Holds" isPublicFacing=true} </div>
 		<div class="result-number-of-holds result-value col-sm-8 col-xs-12">{$totalHolds}</div>

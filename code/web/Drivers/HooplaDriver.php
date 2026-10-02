@@ -888,8 +888,10 @@ class HooplaDriver extends AbstractEContentDriver {
 		$key = $hold->source . $hold->recordId . $hold->userId;
 
 		if ($hold->available) {
+			$hold->status = 'Ready For Pickup';
 			$holds['available'][$key] = $hold;
 		} else {
+			$hold->status = 'Pending';
 			$holds['unavailable'][$key] = $hold;
 		}
 

@@ -430,6 +430,9 @@ class UInterface extends Smarty {
 				if (isset($_SESSION['preferredTheme']) && array_key_exists($_SESSION['preferredTheme'], $allActiveThemes)) {
 					$theme->id = $_SESSION['preferredTheme'];
 				}
+				if (isset($_SESSION['preferredTextSize'])) {
+					$this->assign('userFontSizeOverride', Theme::$fontSizes[$_SESSION['preferredTextSize']] ?? '');
+				}
 			}
 			$this->assign('allActiveThemes', $allActiveThemes);
 			$fontSizeOptions = [

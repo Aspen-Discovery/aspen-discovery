@@ -672,6 +672,20 @@ class Record_AJAX extends JSON_Action {
 				if (!($variation->isEContent())) {
 					foreach ($variation->getRecords() as $record) {
 						if ($record->id == $relatedRecord->id) {
+							// determine edition data per record, not once per item
+							$editionData = [];
+							foreach ($variation->getRelatedRecords() as $edition) {
+								$editionId = $edition->id;
+								$editionData[$editionId] = [
+									'plainEdition' => (object)get_object_vars($edition),
+									'status' => $interface->fetch('GroupedWork/statusIndicator.tpl', [
+										'statusInformation' => $record->getStatusInformation(),
+										'viewingIndividualRecord' => 1
+									]),
+									'coverUrl' => $record->getBookcoverUrl('small'),
+								];
+							}
+
 							foreach ($record->getItems() as $item) {
 								if (!$item->isEContent) {
 									if (empty($item->volume)) {
@@ -682,19 +696,10 @@ class Record_AJAX extends JSON_Action {
 											if ($item->libraryOwned || $item->locallyOwned) {
 												$volumeData[$item->volumeId]->setHasLocalItems(true);
 											}
-										}
-										foreach ($variation->getRelatedRecords() as $edition) {
-											$editionId = $edition->id;
-											$plainEdition = (object)get_object_vars($edition);
-											$status = $interface->fetch('GroupedWork/statusIndicator.tpl', [
-												'statusInformation' => $record->getStatusInformation(),
-												'viewingIndividualRecord' => 1
-											]);
-											$coverUrl = $record->getBookcoverUrl('small');
-											if (array_key_exists($item->volumeId, $volumeData)) {
-												$volumeData[$item->volumeId]->setEdition($editionId, $plainEdition);
-												$volumeData[$item->volumeId]->setEditionStatus($editionId, $status);
-												$volumeData[$item->volumeId]->setEditionCover($editionId, $coverUrl);
+											foreach ($editionData as $editionId => $data) {
+												$volumeData[$item->volumeId]->setEdition($editionId, $data['plainEdition']);
+												$volumeData[$item->volumeId]->setEditionStatus($editionId, $data['status']);
+												$volumeData[$item->volumeId]->setEditionCover($editionId, $data['coverUrl']);
 											}
 										}
 										$numItemsWithVolumes++;

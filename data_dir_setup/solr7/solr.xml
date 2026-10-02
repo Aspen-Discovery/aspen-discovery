@@ -17,37 +17,44 @@
 -->
 
 <!--
-   This is an example of a simple "solr.xml" file for configuring one or 
-   more Solr Cores, as well as allowing Cores to be added, removed, and 
+   This is an example of a simple "solr.xml" file for configuring one or
+   more Solr Cores, as well as allowing Cores to be added, removed, and
    reloaded via HTTP requests.
 
-   More information about options available in this configuration file, 
+   More information about options available in this configuration file,
    and Solr Core administration can be found online:
-   http://wiki.apache.org/solr/CoreAdmin
+   https://lucene.apache.org/solr/guide/format-of-solr-xml.html
 -->
 
 <solr>
 
-  <solrcloud>
+	<int name="maxBooleanClauses">${solr.max.booleanClauses:1024}</int>
+	<str name="sharedLib">${solr.sharedLib:}</str>
+	<str name="allowPaths">${solr.allowPaths:}</str>
 
-    <str name="host">${host:}</str>
-    <int name="hostPort">${jetty.port:8983}</int>
-    <str name="hostContext">${hostContext:solr}</str>
+	<solrcloud>
 
-    <bool name="genericCoreNodeNames">${genericCoreNodeNames:true}</bool>
+		<str name="host">${host:}</str>
+		<int name="hostPort">${solr.port.advertise:0}</int>
+		<str name="hostContext">${hostContext:solr}</str>
 
-    <int name="zkClientTimeout">${zkClientTimeout:30000}</int>
-    <int name="distribUpdateSoTimeout">${distribUpdateSoTimeout:600000}</int>
-    <int name="distribUpdateConnTimeout">${distribUpdateConnTimeout:60000}</int>
-    <str name="zkCredentialsProvider">${zkCredentialsProvider:org.apache.solr.common.cloud.DefaultZkCredentialsProvider}</str>
-    <str name="zkACLProvider">${zkACLProvider:org.apache.solr.common.cloud.DefaultZkACLProvider}</str>
+		<bool name="genericCoreNodeNames">${genericCoreNodeNames:true}</bool>
 
-  </solrcloud>
+		<int name="zkClientTimeout">${zkClientTimeout:30000}</int>
+		<int name="distribUpdateSoTimeout">${distribUpdateSoTimeout:600000}</int>
+		<int name="distribUpdateConnTimeout">${distribUpdateConnTimeout:60000}</int>
+		<str name="zkCredentialsProvider">${zkCredentialsProvider:org.apache.solr.common.cloud.DefaultZkCredentialsProvider}</str>
+		<str name="zkACLProvider">${zkACLProvider:org.apache.solr.common.cloud.DefaultZkACLProvider}</str>
 
-  <shardHandlerFactory name="shardHandlerFactory"
-    class="HttpShardHandlerFactory">
-    <int name="socketTimeout">${socketTimeout:600000}</int>
-    <int name="connTimeout">${connTimeout:60000}</int>
-  </shardHandlerFactory>
+	</solrcloud>
+
+	<shardHandlerFactory name="shardHandlerFactory"
+						 class="HttpShardHandlerFactory">
+		<int name="socketTimeout">${socketTimeout:600000}</int>
+		<int name="connTimeout">${connTimeout:60000}</int>
+		<str name="shardsWhitelist">${solr.shardsWhitelist:}</str>
+	</shardHandlerFactory>
+
+	<metrics enabled="${metricsEnabled:true}"/>
 
 </solr>

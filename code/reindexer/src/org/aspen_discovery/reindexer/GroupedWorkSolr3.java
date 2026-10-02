@@ -396,12 +396,60 @@ public class GroupedWorkSolr3 extends AbstractGroupedWorkSolr implements Cloneab
 			daysAddedSincePubDate = DateUtils.getDaysSinceAddedForDate(publicationDate.getTime());
 		}
 
+		groupedWorkDoc.addField("related_scopes", relatedScopes.keySet());
+
+		//Determine sortable call numbers and available copies for each scope
+		try {
+			for (String scopeName : relatedScopes.keySet()) {
+				String sortableCallNumberForScope = null;
+				boolean hasBookCallNumber = false;
+				boolean hasLargePrintCallNumber = false;
+				ArrayList<ScopingInfo> itemsWithScopingInfoForActiveScope = relatedScopes.get(scopeName);
+				int numAvailableCopies = 0;
+				for (ScopingInfo scopingInfo : itemsWithScopingInfoForActiveScope) {
+					ItemInfo curItem = scopingInfo.getItem();
+					if (curItem.isAvailable()) {
+						numAvailableCopies++;
+					}
+					if (curItem.getSortableCallNumber() == null || curItem.getSortableCallNumber().isEmpty()) {
+						continue;
+					}
+					if (!hasBookCallNumber && (scopingInfo.isLocallyOwned() || scopingInfo.isLibraryOwned() || !scopingInfo.getScope().isRestrictOwningLibraryAndLocationFacets())) {
+						String itemFormat = curItem.getPrimaryFormat().toLowerCase(Locale.ROOT);
+						if (itemFormat.equals("book")) {
+							sortableCallNumberForScope = curItem.getSortableCallNumber();
+							break;
+						} else if (itemFormat.equals("large print")) {
+							//Use the first large print call number
+							if (!hasLargePrintCallNumber) {
+								sortableCallNumberForScope = curItem.getSortableCallNumber();
+								hasLargePrintCallNumber = true;
+							}
+						} else {
+							if (sortableCallNumberForScope == null) {
+								sortableCallNumberForScope = curItem.getSortableCallNumber();
+							}
+						}
+					}
+				}
+				if (sortableCallNumberForScope != null) {
+					groupedWorkDoc.addField("callnumber_sort_" + scopeName, sortableCallNumberForScope);
+					groupedWorkDoc.addField("callnumber_sort_lowercase_" + scopeName, sortableCallNumberForScope.toLowerCase(Locale.ROOT));
+				}
+				groupedWorkDoc.addField("available_copies_" + scopeName, numAvailableCopies);
+			}
+		}catch (Exception e) {
+			logEntry.incErrors("Error determining call number sort", e);
+		}
+
+		ArrayList<SolrInputDocument> allScopingDocuments = new ArrayList<>();
 		for (RecordInfo recordInfo : relatedRecords.values()) {
 			ArrayList<SolrInputDocument> recordDocuments = recordInfo.getRecordScopeSolrDocuments(groupedWorkIndexer, this, daysAddedSincePubDate);
 			if (recordDocuments != null) {
-				groupedWorkDoc.addChildDocuments(recordDocuments);
+				allScopingDocuments.addAll(recordDocuments);
 			}
 		}
+		groupedWorkDoc.setField("record_scoping", allScopingDocuments);
 
 		return groupedWorkDoc;
 	}

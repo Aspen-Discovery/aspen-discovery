@@ -58,6 +58,7 @@ public class ItemInfo{
 	private DataField marcField;
 	private String barcode;
 	private String note;
+	private String targetAudience;
 
 	public void setRecordInfo(RecordInfo recordInfo) {
 		this.recordInfo = recordInfo;
@@ -196,6 +197,14 @@ public class ItemInfo{
 
 	void setSubFormats(String subFormats){
 		this.subFormat = subFormats;
+	}
+
+	public void setTargetAudience(String targetAudience) {
+		this.targetAudience = targetAudience;
+	}
+
+	public String getTargetAudience() {
+		return targetAudience;
 	}
 
 	int getNumCopies() {

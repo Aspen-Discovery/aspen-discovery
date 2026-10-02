@@ -7,6 +7,9 @@ require_once ROOT_DIR . '/sys/SystemVariables.php';
 
 class GroupedWorksSolrConnector3 extends GroupedWorksSolrConnector2
 {
+	private array $childDocFields = [];
+	private array $childDocFilters = [];
+
 	function __construct($host, $index = '')
 	{
 		parent::__construct($host, 'grouped_works_v3');
@@ -14,6 +17,71 @@ class GroupedWorksSolrConnector3 extends GroupedWorksSolrConnector2
 
 	function getDefaultFieldsToReturn() : string {
 		return SearchObject_GroupedWorkSearcher3::$fields_to_return;
+	}
+
+	/**
+	 * Retrieves a document specified by the ID.
+	 *
+	 * @param ?array $ids A list of document to retrieve from Solr
+	 * @param ?string $fieldsToReturn An optional list of fields to return separated by commas
+	 * @param bool $applyScoping whether scoping should be applied to the search
+	 * @return    array                            The requested resources
+	 * @throws    AspenError
+	 */
+	function getRecords(?array $ids, ?string $fieldsToReturn = null, bool $applyScoping = false) : array {
+		if (empty($ids)) {
+			return [];
+		}
+		//Solr does not seem to be able to return more than 50 records at a time,
+		//If we have more than 50 ids, we will need to make multiple calls and
+		//concatenate the results.
+		$records = [];
+		$startIndex = 0;
+		$batchSize = 40;
+
+		$lastBatch = false;
+		while (true) {
+			$endIndex = $startIndex + $batchSize;
+			if ($endIndex >= count($ids)) {
+				$lastBatch = true;
+				$endIndex = count($ids);
+				$batchSize = count($ids) - $startIndex;
+			}
+			$tmpIds = array_slice($ids, $startIndex, $batchSize);
+
+			// Query String Parameters
+			$idString = implode(' OR ', $tmpIds);
+			$options = ['q' => "id:($idString)"];
+			$options['fl'] = $fieldsToReturn;
+			$options['rows'] = count($tmpIds);
+
+			if ($applyScoping) {
+				global $solrScope;
+				$options['fq'] = "{!parent which=\"recordtype:grouped_work\" tag=child_filter}(availability_toggle:global AND scope:$solrScope)";
+			}
+
+			// Send Request
+			global $timer;
+			$timer->logTime("Prepare to send get (ids)  request to solr");
+			$getRecordsUrl = $this->host . "/select?" . http_build_query($options);
+			$result = $this->client->curlGetPage($getRecordsUrl);
+			$timer->logTime("Send data to solr for getRecords");
+
+			if ($result) {
+				$result = $this->_process($result);
+
+				foreach ($result['response']['docs'] as $record) {
+					$records[$record['id']] = $record;
+				}
+			}
+			if ($lastBatch) {
+				break;
+			} else {
+				$startIndex = $endIndex;
+			}
+		}
+		//echo("Found " . count($records) . " records.	Should have found " . count($ids) . "\r\n<br/>");
+		return $records;
 	}
 
 	protected $mltPrefixThese = '{!mlt qf="language^1000 subject_facet^800 topic_facet^600 awards_facet^100 authorStr^75 era^50 genre_facet^50 geographic_facet^50 personal_name_facet^50 corporate_name_facet^50 content_rating accelerated_reader_interest_level mpaa_rating" mlt.fl=language,subject_facet,topic_facet,awards_facet,authorStr,era,genre_facet,geographic_facet,personal_name_facet,corporate_name_facet,content_rating,accelerated_reader_interest_level,mpaa_rating mintf=1 mindf=2}';
@@ -258,6 +326,65 @@ class GroupedWorksSolrConnector3 extends GroupedWorksSolrConnector2
 		return $result;
 	}
 
+	public function setChildDocFields(array $childDocFields) : void {
+		$this->childDocFields = $childDocFields;
+	}
+
+	public function setChildDocFilters(array $childDocFilters) : void {
+		$this->childDocFilters = $childDocFilters;
+	}
+
+	/**
+	 * Normalize a sort option.
+	 *
+	 * @param string $sort The sort option.
+	 *
+	 * @return string            The normalized sort value.
+	 * @access private
+	 */
+	protected function _normalizeSort($sort) {
+		// Break apart sort into field name and sort direction (note error
+		// suppression to prevent notice when direction is left blank):
+		$sort = trim($sort);
+		$parts = explode(' ', $sort, 2);
+		$sortField = $parts[0];
+		$sortDirection = $parts[1] ?? '';
+
+		// Default sort order (may be overridden by switch below):
+		$defaultSortDirection = 'asc';
+		global $solrScope;
+
+		// Translate special sort values into appropriate Solr fields:
+		switch ($sortField) {
+			case 'year':
+			case 'publishDate':
+				$sortField = 'publishDateSort';
+				$defaultSortDirection = 'desc';
+				break;
+			case 'author':
+				$sortField = 'author_sort asc, title_sort';
+				break;
+			case 'title':
+				$sortField = 'title_sort asc, author_sort';
+				break;
+			case 'callnumber_sort':
+				$sortField = 'callnumber_sort_' . $solrScope;
+				break;
+			case 'copies_available':
+				return "available_copies_$solrScope desc,title_sort asc";
+			case 'copies_available_asc':
+				return "available_copies_$solrScope asc,title_sort asc";
+		}
+
+		// Normalize sort direction to either "asc" or "desc":
+		$sortDirection = strtolower(trim($sortDirection));
+		if ($sortDirection != 'desc' && $sortDirection != 'asc') {
+			$sortDirection = $defaultSortDirection;
+		}
+
+		return $sortField . ' ' . $sortDirection;
+	}
+
 	/**
 	 * Load Boost factors for a query
 	 *
@@ -365,6 +492,7 @@ class GroupedWorksSolrConnector3 extends GroupedWorksSolrConnector2
 	 */
 	protected function _applySearchSpecs($structure, $values, $joiner = "OR") : string {
 		$clauses = [];
+		$childClauses = [];
 		foreach ($structure as $field => $clauseArray) {
 			if (is_numeric($field)) {
 				// shift off the join string and weight
@@ -447,12 +575,27 @@ class GroupedWorksSolrConnector3 extends GroupedWorksSolrConnector2
 					}
 
 					// ..and push it on the stack of clauses
-					$clauses[] = $searchString;
+					if (in_array($field, $this->childDocFields)) {
+						$childClauses[] = $searchString;
+					} else {
+						$clauses[] = $searchString;
+					}
 				}
 			}
 		}
 
 		// Join it all together
-		return implode(' ' . $joiner . ' ', $clauses);
+		$search = implode(' ' . $joiner . ' ', $clauses);
+		if (!empty($childClauses)) {
+			if (!empty($search)) {
+				$search .= ' OR ';
+			}
+			$search .= '_query_:"{!parent which=recordtype:grouped_work score=max v=$child_query}"';
+			global $solrScope;
+			//TODO: add additional child filters
+			$childFilterString = '+' . implode(' +', $this->childDocFilters);
+			$this->childQuery = "+recordtype:record_scoping $childFilterString +(" . implode(' ' . $joiner . ' ', $childClauses) . ')';
+		}
+		return $search;
 	}
 }

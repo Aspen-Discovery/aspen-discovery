@@ -782,7 +782,7 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 		this.series.clear();
 	}
 
-	void addSeriesWithVolume(String seriesName, String seriesAuthor, String volume, int priority, boolean untraced) {
+	void addSeriesWithVolume(String seriesName, String seriesAuthor, String volume, int priority, boolean untraced, boolean fromEContent) {
 		if (seriesName == null || seriesName.isEmpty()) {
 			return;
 		}
@@ -820,6 +820,7 @@ public abstract class AbstractGroupedWorkSolr implements DebugLogger {
 			seriesInfo = series.get(seriesKey);
 		}
 		seriesInfo.setTraced(!untraced);
+		seriesInfo.setFromEContent(fromEContent);
 		seriesInfo.addPriority(priority);
 		seriesInfo.addVolume(volume);
 	}
