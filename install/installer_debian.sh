@@ -5,7 +5,20 @@ git config --global --add safe.directory /usr/local/aspen-discovery
 #Expects to be installed on Debian 11 Bullseye or later
 #Run as sudo ./installer_debian.sh
 apt-get update
-apt-get -y install cron wget rsyslog gpg openjdk-17-jre-headless apache2 certbot python3-certbot-apache mariadb-server apt-transport-https lsb-release ca-certificates zip pigz
+apt-get -y install cron \
+    wget \
+    rsyslog \
+    gpg \
+    openjdk-17-jre-headless \
+    apache2 \
+    certbot \
+    python3-certbot-apache \
+    mariadb-server \
+    apt-transport-https \
+    lsb-release \
+    ca-certificates \
+    zip \
+    pigz
 
 # Modify version as needed
 ./debian_install_php.sh 8.4
