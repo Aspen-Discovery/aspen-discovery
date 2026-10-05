@@ -2,7 +2,7 @@
 /** @noinspection SqlDialectInspection */
 
 /** @noinspection PhpUnused */
-function getUpdates26_10_00(): array {
+function getUpdates26_11_00(): array {
 	$now = time();
 
 	return [
