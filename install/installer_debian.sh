@@ -23,6 +23,9 @@ apt-get -y install cron \
 # Modify version as needed
 ./debian_install_php.sh 8.4
 
+# Install Composer after PHP upgrade
+apt-get -y install composer
+
 # Rebuild GD with RAQM support for enhanced placeholder cover image support.
 ./rebuild_gd_raqm.sh --php-version 8.4 --gd-version gd-2.3.3
 
