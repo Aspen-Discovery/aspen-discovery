@@ -51,7 +51,7 @@
 						"singleUse": 'true',
 						"paymentMethod": 'Card',
 						"billerAccountId": '{/literal}{$billerAccountId}{literal}',
-						"styles": {
+						"userInterface": {
 							"input": {
 								"fontfamily": "Helvetica",
 								"color": "{/literal}{$bodyTextColor}{literal}",
