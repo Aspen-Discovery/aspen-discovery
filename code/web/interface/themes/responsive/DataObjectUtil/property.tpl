@@ -582,12 +582,12 @@
 		{elseif $property.type == 'image' || $property.type == 'file'}
 			{if !empty($propValue) && $property.type == 'image'}
 				{if !empty($property.thumbWidth)}
-					<img src='/files/thumbnail/{$propValue}' style="display: block" alt="Selected Image for {$property.label}">
+					<img src='/files/thumbnail/{$propValue}?v={$smarty.now}' style="display: block" alt="Selected Image for {$property.label}">
 				{else}
 					{if !empty($property.displayUrl)}
 						<img src='{$property.displayUrl}{$object->id}' style="display: block; max-width: 100%;" alt="Selected Image for {$property.label}">
 					{else}
-						<img src='/files/original/{$propValue}' style="display: block; max-width: 100%" alt="Selected Image for {$property.label}">
+						<img src='/files/original/{$propValue}?v={$smarty.now}' style="display: block; max-width: 100%" alt="Selected Image for {$property.label}">
 					{/if}
 				{/if}
 			{/if}
