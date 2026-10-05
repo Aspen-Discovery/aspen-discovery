@@ -1014,7 +1014,8 @@ public class SymphonyExportMain {
 			logEntry.saveResults();
 
 			String lastRecordProcessed = "";
-			if (hasFullExportFile && curBibFile.equals(fullExportFile) && indexingProfile.getLastChangeProcessed() > 0){
+			boolean isFullExportFile = hasFullExportFile && curBibFile.equals(fullExportFile);
+			if (isFullExportFile && indexingProfile.getLastChangeProcessed() > 0){
 				logEntry.addNote("Skipping the first " + indexingProfile.getLastChangeProcessed() + " records because they were processed previously see (Last Record ID Processed for the Indexing Profile).");
 				logEntry.saveResults();
 			}
@@ -1034,7 +1035,7 @@ public class SymphonyExportMain {
 						DataField marc245 = curBib.getDataField(245);
 						boolean has245 = marc245 != null;
 						RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, indexingProfile);
-						if (hasFullExportFile && curBibFile.equals(fullExportFile) && has245 && (numRecordsRead < indexingProfile.getLastChangeProcessed())) {
+						if (isFullExportFile && has245 && (numRecordsRead < indexingProfile.getLastChangeProcessed())) {
 							//We're skipping this record because we are doing a full export that got paused part way through
 							if (recordIdentifier != null) {
 								recordGroupingProcessor.removeExistingRecord(recordIdentifier.getIdentifier());
@@ -1100,7 +1101,9 @@ public class SymphonyExportMain {
 								deleteRecord = true;
 							}
 							lastIdentifier = recordIdentifier;
-							indexingProfile.setLastChangeProcessed(numRecordsRead);
+							if (isFullExportFile){
+								indexingProfile.setLastChangeProcessed(numRecordsRead);
+							}
 							if (deleteRecord) {
 								RemoveRecordFromWorkResult result = recordGroupingProcessor.removeRecordFromGroupedWork(indexingProfile.getName(), recordIdentifier.getIdentifier());
 								if (result.reindexWork) {
@@ -1116,14 +1119,14 @@ public class SymphonyExportMain {
 					}catch (MarcException me){
 						logEntry.incErrors("Error processing individual record  on record " + numRecordsRead + " of " + curBibFile.getAbsolutePath() + " the last record processed was " + lastRecordProcessed + " trying to continue", me);
 					}
-					if (numRecordsRead % 250 == 0) {
+					if (isFullExportFile && numRecordsRead % 250 == 0) {
 						logEntry.saveResults();
 						indexingProfile.updateLastChangeProcessed(dbConn, logEntry);
 					}
 				}
 				marcFileStream.close();
 
-				if (hasFullExportFile){
+				if (isFullExportFile){
 					indexingProfile.setLastChangeProcessed(0);
 					indexingProfile.updateLastChangeProcessed(dbConn, logEntry);
 					logEntry.addNote("Updated " + numRecordsRead + " records");
