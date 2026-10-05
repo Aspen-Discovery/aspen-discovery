@@ -3231,10 +3231,10 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 						$marcSubfieldB = $marc852Field->getSubfield('b');
 						if ($marcSubfieldB != false) {
 							//handle sierra quirks of location codes where the library can be indicated with the first part of a location code
-							$owningLibraryCode = trim(strtolower($marcSubfieldB->getData()));
+							$owningLibraryCode = trim($marcSubfieldB->getData());
 							$owningLibrary = $owningLibraryCode;
 							for ($i = strlen($owningLibraryCode); $i >= 1; $i--) {
-								$tmpOwningLibraryCode = substr($owningLibraryCode, 0, $i);
+								$tmpOwningLibraryCode = substr(strtolower($owningLibraryCode), 0, $i);
 								if (array_key_exists($tmpOwningLibraryCode, $libraryCodeToDisplayName)) {
 									$owningLibrary = $libraryCodeToDisplayName[$tmpOwningLibraryCode];
 									break;
