@@ -2340,6 +2340,7 @@ class Location extends DataObject {
 	}
 
 	public static function getLibraryHours($locationId, $timeToCheck): ?array {
+		require_once ROOT_DIR . '/sys/Utils/DateUtils.php';
 		$location = new Location();
 		$location->locationId = $locationId;
 		if ($locationId > 0 && $location->find(true)) {
