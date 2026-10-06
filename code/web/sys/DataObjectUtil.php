@@ -475,7 +475,9 @@ class DataObjectUtil {
 					$logger->log("Error uploading file " . $fileForProperty["error"], Logger::LOG_ERROR);
 				} elseif (true) { //TODO: validate the file type
 					$destFileName = $fileForProperty["name"];
-					$copyResult = StorageDriverFactory::get()->write('fonts/' . $destFileName, $fileForProperty["tmp_name"], mime_content_type($fileForProperty["tmp_name"]));
+					// Always local: theme CSS loads fonts from the same-origin /fonts/ path,
+					// and a CDN-hosted font would also need CORS on the bucket
+					$copyResult = StorageDriverFactory::getById(null)->write('fonts/' . $destFileName, $fileForProperty["tmp_name"], mime_content_type($fileForProperty["tmp_name"]));
 					if ($copyResult) {
 						$logger->log("Stored font file: fonts/{$destFileName}", Logger::LOG_NOTICE);
 					} else {
