@@ -94,7 +94,7 @@ abstract class BaseEContentDriver extends MarcRecordDriver {
 					'url' => $action,
 					'redirectUrl' => $fileOrUrl,
 					'title' => $title,
-					'requireLogin' => false,
+					'requireLogin' => $this->urlRequiresLogin($fileOrUrl),
 					'alt' => $alt,
 					'target' => '_blank',
 				];
@@ -123,7 +123,7 @@ abstract class BaseEContentDriver extends MarcRecordDriver {
 						'url' => $action,
 						'redirectUrl' => $fileOrUrl,
 						'title' => $title,
-						'requireLogin' => false,
+						'requireLogin' => $this->urlRequiresLogin($fileOrUrl),
 						'alt' => $alt,
 						'target' => '_blank',
 					];

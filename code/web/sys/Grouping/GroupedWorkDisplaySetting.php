@@ -71,6 +71,7 @@ class GroupedWorkDisplaySetting extends DataObject {
 
 	// Full record display
 	public $show856LinksAsTab;
+	public $hideUrlsWhenLoggedOutRegex;
 	public $showCheckInGrid;
 	public $showStaffView;
 	public $showLCSubjects; // Library of Congress Subjects
@@ -353,6 +354,16 @@ class GroupedWorkDisplaySetting extends DataObject {
 						'description' => 'Whether or not 856 links will be shown in their own tab or on the same tab as holdings.',
 						'hideInLists' => true,
 						'default' => 1,
+					],
+					'hideUrlsWhenLoggedOutRegex' => [
+						'property' => 'hideUrlsWhenLoggedOutRegex',
+						'type' => 'regularExpression',
+						'label' => 'Hide URLs When Logged Out (Regular Expression)',
+						'description' => 'A regular expression matched against 856 URLs. Matching URLs are hidden from patrons who are not logged in on both search results and record pages, and a message prompting the patron to log in is shown instead. Leave blank to disable.',
+						'maxLength' => 500,
+						'required' => false,
+						'default' => '',
+						'hideInLists' => true,
 					],
 					'showCheckInGrid' => [
 						'property' => 'showCheckInGrid',
@@ -1133,6 +1144,7 @@ class GroupedWorkDisplaySetting extends DataObject {
 		$defaultDisplaySettings->sortOwnedEditionsFirst = true;
 		$defaultDisplaySettings->applyNumberOfHoldingsBoost = true;
 		$defaultDisplaySettings->includeOutOfSystemExternalLinks = false;
+		$defaultDisplaySettings->hideUrlsWhenLoggedOutRegex = '';
 		$defaultDisplaySettings->showSearchTools = true;
 		$defaultDisplaySettings->showSearchToolsAtTop = true;
 		$defaultDisplaySettings->showQuickCopy = true;
