@@ -1,7 +1,6 @@
 #!/bin/sh
 
 #This will need to be copied to the server manually to do the setup.
-#Expects to be installed on CentOS7
 #Run as sudo ./installer_centos9.sh
 yum check-update
 yum -y install wget
@@ -17,6 +16,7 @@ yum -y install php-pecl-ssh2
 yum -y install php-pgsql
 yum -y install php-imagick
 yum -y install php-ldap
+yum -y install composer
 service httpd start
 chkconfig httpd on
 # New PHP ini file
@@ -55,7 +55,7 @@ systemctl daemon-reload
 systemctl start rngd
 
 yum -y install epel-release
-yum -y install certbot python2-certbot-apache
+yum -y install certbot python3-certbot-apache
 
 echo "Generate new root password for mariadb at: https://passwordsgenerator.net/ and store in passbolt"
 mysql_secure_installation
