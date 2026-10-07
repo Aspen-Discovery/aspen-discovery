@@ -15,6 +15,7 @@ class SeriesMember extends DataObject {
 	public $weight;
 	public $cover;
 	public $userAdded;
+	public $userDefinedVolume;
 	public $excluded;
 	public $deleted;
 	/** @noinspection PhpUnused */
@@ -105,6 +106,12 @@ class SeriesMember extends DataObject {
 				'label' => 'User Added',
 				'readOnly' => true,
 			],
+			'userDefinedVolume' => [
+				'property' => 'userDefinedVolume',
+				'type' => 'hidden',
+				'label' => 'User Defined Volume',
+				'readOnly' => true,
+			],
 			'excluded' => [
 				'property' => 'excluded',
 				'type' => 'checkbox',
@@ -120,6 +127,9 @@ class SeriesMember extends DataObject {
 
 	public function update(string $context = '') : int|bool {
 		if ($this->groupedWorkPermanentId) {
+			if (in_array('volume', $this->_changedFields, true)) {
+				$this->userDefinedVolume = true;
+			}
 			$this->isPlaceholder = false;
 		} else {
 			$this->isPlaceholder = true;
@@ -142,6 +152,7 @@ class SeriesMember extends DataObject {
 			'pubDate',
 			'isPlaceholder',
 			'userAdded',
+			'userDefinedVolume',
 			'excluded'
 		];
 	}

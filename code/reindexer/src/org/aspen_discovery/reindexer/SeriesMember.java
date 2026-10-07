@@ -15,6 +15,7 @@ public class SeriesMember {
 	private final String seriesPermanentId;
 	private final String groupedWorkSeriesTitle;
 	private String author;
+	private String groupedWorkPermanentId;
 	@SuppressWarnings("FieldCanBeLocal")
 	private final String seriesLanguage;
 	//A list of volumes found in the database with a flag for if it was found in the current index
@@ -24,6 +25,7 @@ public class SeriesMember {
 	private int version;
 	private boolean foundInCurrentIndex = false;
 	private boolean deleted;
+	private boolean userDefinedVolume;
 
 	/**
 	 * Constructor for use when loading series that are already linked to a Grouped Work via a Series Member
@@ -32,13 +34,15 @@ public class SeriesMember {
 		this.seriesId = seriesMemberRS.getLong("seriesId");
 		this.seriesPermanentId = seriesMemberRS.getString("seriesPermanentId");
 		this.groupedWorkSeriesTitle = seriesMemberRS.getString("groupedWorkSeriesTitle");
+		this.groupedWorkPermanentId = seriesMemberRS.getString("groupedWorkPermanentId");
 		this.author = seriesMemberRS.getString("author");
 		this.seriesLanguage = seriesMemberRS.getString("seriesLanguage");
-		this.volumes.put(seriesMemberRS.getString("volume"), new SeriesMemberVolume(seriesMemberRS.getString("volume"), seriesMemberRS.getBoolean("deleted"), seriesMemberRS.getBoolean("userAdded")));
+		this.volumes.put(seriesMemberRS.getString("volume"), new SeriesMemberVolume(seriesMemberRS.getString("volume"), seriesMemberRS.getBoolean("deleted"), seriesMemberRS.getBoolean("userAdded"), seriesMemberRS.getBoolean("userDefinedVolume")));
 		this.priorityScore =  seriesMemberRS.getInt("priorityScore");
 		this.isIndexed = seriesMemberRS.getBoolean("isIndexed");
 		this.version = seriesMemberRS.getInt("version");
 		this.deleted = seriesMemberRS.getBoolean("deleted");
+		this.userDefinedVolume = seriesMemberRS.getBoolean("userDefinedVolume");
 	}
 
 	/**
@@ -83,6 +87,14 @@ public class SeriesMember {
 
 	public String getSeriesPermanentId() {
 		return seriesPermanentId;
+	}
+
+	public String getMemberGroupedWorkPermanentId() {
+		return groupedWorkPermanentId;
+	}
+
+	public boolean hasUserDefinedVolume() {
+		return userDefinedVolume;
 	}
 
 	private String normalizedSeriesName;
@@ -135,6 +147,10 @@ public class SeriesMember {
 		}
 	}
 
+	public void setUserDefinedVolume(boolean userDefinedVolume) {
+		this.userDefinedVolume = userDefinedVolume;
+	}
+
 	public boolean isIndexed() {
 		return isIndexed;
 	}
@@ -151,8 +167,8 @@ public class SeriesMember {
 		this.version = version;
 	}
 
-	public void addVolume(String volume, boolean deleted, boolean userAdded) {
-		this.volumes.put(volume, new SeriesMemberVolume(volume, deleted, userAdded));
+	public void addVolume(String volume, boolean deleted, boolean userAdded, boolean userDefinedVolume) {
+		this.volumes.put(volume, new SeriesMemberVolume(volume, deleted, userAdded, userDefinedVolume));
 	}
 
 	public boolean isDeleted() {
