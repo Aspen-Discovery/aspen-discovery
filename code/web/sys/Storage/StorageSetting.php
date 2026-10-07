@@ -203,7 +203,7 @@ class StorageSetting extends DataObject {
 			return false;
 		}
 		try {
-			$client = $this->buildTestClient();
+			$client = $this->buildS3Client();
 			$result = $client->listObjectsV2(new ListObjectsV2Request([
 				'Bucket'  => $this->bucket,
 				'MaxKeys' => 1,
@@ -234,7 +234,7 @@ class StorageSetting extends DataObject {
 
 		$probeKey = 'uploads/.aspen-connection-test';
 		try {
-			$client = $this->buildTestClient();
+			$client = $this->buildS3Client();
 			$client->putObject(new PutObjectRequest([
 				'Bucket'      => $this->bucket,
 				'Key'         => $probeKey,
@@ -280,7 +280,10 @@ class StorageSetting extends DataObject {
 		}
 	}
 
-	private function buildTestClient(): S3Client {
+	// The only place S3 clients are built. The explicit httpClient sets short timeouts
+	// so an unreachable endpoint fails fast, and stops AsyncAws probing for the
+	// optional amphp/http-client package, which crashes this codebase's autoloader.
+	public function buildS3Client(): S3Client {
 		$httpClient = new \Symfony\Component\HttpClient\CurlHttpClient(['timeout' => 5, 'max_duration' => 15]);
 		return new S3Client(
 			[
@@ -288,7 +291,8 @@ class StorageSetting extends DataObject {
 				'accessKeySecret'  => $this->accessKeySecret,
 				'region'           => $this->region ?: 'us-east-1',
 				'endpoint'         => $this->endpoint ?: null,
-				'pathStyleEndpoint' => !empty($this->endpoint),
+				// String, as AsyncAws types every option
+				'pathStyleEndpoint' => !empty($this->endpoint) ? 'true' : 'false',
 			],
 			null,
 			$httpClient

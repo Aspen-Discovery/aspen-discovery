@@ -74,27 +74,7 @@ class StorageDriverFactory {
 	private static function buildDriver(?StorageSetting $setting): StorageDriver {
 		if ($setting !== null && $setting->driver === 's3' && !empty($setting->bucket)) {
 			require_once ROOT_DIR . '/sys/Storage/S3StorageDriver.php';
-
-			// Short timeouts so an unreachable S3 endpoint fails fast instead
-			// of tying up a PHP-FPM worker for the platform default (which
-			// can run well past a minute).
-			$httpClient = new Symfony\Component\HttpClient\CurlHttpClient([
-				'timeout' => 5,
-				'max_duration' => 15,
-			]);
-			$client = new AsyncAws\S3\S3Client(
-				[
-					'accessKeyId'      => $setting->accessKeyId,
-					'accessKeySecret'  => $setting->accessKeySecret,
-					'region'           => $setting->region ?: 'us-east-1',
-					'endpoint'         => $setting->endpoint ?: null,
-					'pathStyleEndpoint' => !empty($setting->endpoint),
-				],
-				null,
-				$httpClient
-			);
-
-			return new S3StorageDriver($client, $setting->bucket, $setting->baseUrl);
+			return new S3StorageDriver($setting->buildS3Client(), $setting->bucket, $setting->baseUrl);
 		}
 
 		return self::getLocalDriver();

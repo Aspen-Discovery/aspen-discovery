@@ -82,22 +82,7 @@ if (empty($setting->bucket) || empty($setting->accessKeyId) || empty($setting->a
 require_once ROOT_DIR . '/sys/Storage/StorageDriverFactory.php';
 $dataRoot = rtrim(StorageDriverFactory::resolveDataRoot(), '/');
 
-require_once ROOT_DIR . '/sys/Storage/S3StorageDriver.php';
-// Explicit httpClient avoids AsyncAws probing for the optional amphp/http-client
-// package, which crashes under this codebase's autoloader when it's not installed.
-$httpClient = new \Symfony\Component\HttpClient\CurlHttpClient(['timeout' => 5, 'max_duration' => 15]);
-$client = new AsyncAws\S3\S3Client(
-	[
-		'accessKeyId'      => $setting->accessKeyId,
-		'accessKeySecret'  => $setting->accessKeySecret,
-		'region'           => $setting->region ?: 'us-east-1',
-		'endpoint'         => $setting->endpoint ?: null,
-		'pathStyleEndpoint' => !empty($setting->endpoint),
-	],
-	null,
-	$httpClient
-);
-$target = new S3StorageDriver($client, $setting->bucket, $setting->baseUrl);
+$target = StorageDriverFactory::getById($settingId);
 
 // =============================================================================
 // Walk the image uploads directory and migrate
