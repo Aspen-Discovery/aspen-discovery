@@ -5,7 +5,7 @@ ContributingOrg: Prairie Lakes Library System
 Sponsor: Prairie Lakes Library System
 GroveRelease: 26.10.00
 CommunityRelease: 26.11.00
-Component: Symphony
+Component: Symphony ILS
 Description:
   - Fix Symphony full import file time comparison to use consistent time units.
 NewSettings:
