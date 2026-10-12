@@ -556,7 +556,8 @@ class Event extends DataObject {
 			$this->saveLibraries();
 			$this->saveLocations();
 			$this->saveFields();
-			$this->generateInstances();
+			$this->generateInstances(true);
+			$this->_changedFields = [];
 		}
 		return $ret;
 	}
@@ -794,7 +795,7 @@ class Event extends DataObject {
 		}
 	}
 
-	public function generateInstances() : void {
+	public function generateInstances(bool $isNewEvent = false) : void {
 		// If event doesn't repeat and there is a start date, time and event length
 		if (isset($this->startDate) && isset($this->startTime) && isset($this->eventLength)) {
 			if ($this->recurrenceOption == '1') {
@@ -808,8 +809,7 @@ class Event extends DataObject {
 				$instance->update();
 			} else { // If event does repeat and there are preview dates
 				if ($this->_dates && is_array($this->_dates)) {
-					if (in_array('dates', $this->_changedFields)) {
-						// Should add more user options about which events to change
+					if ($isNewEvent || in_array('dates', $this->_changedFields)) {
 						$this->clearFutureInstances();
 						foreach ($this->_dates as $date) {
 							// Can create instances in the past
