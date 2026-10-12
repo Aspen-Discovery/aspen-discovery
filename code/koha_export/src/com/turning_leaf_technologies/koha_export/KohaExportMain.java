@@ -371,6 +371,15 @@ public class KohaExportMain {
 		return kohaVersion;
 	}
 
+	private static void importHoliday(PreparedStatement addHolidayStmt, long libraryId, long locationId, java.sql.Date holidayDate, String title, HashMap<java.sql.Date, Long> existingHolidayDates) throws SQLException {
+		addHolidayStmt.setLong(1, libraryId);
+		addHolidayStmt.setLong(2, locationId);
+		addHolidayStmt.setDate(3, holidayDate);
+		addHolidayStmt.setString(4, title);
+		addHolidayStmt.executeUpdate();
+		existingHolidayDates.remove(holidayDate);
+	}
+
 	private static void exportBookCovers(Connection dbConn, Connection kohaConn) {
 		//Get a list of all images within the Koha database
 		int numCoversExported = 0;
@@ -1224,22 +1233,12 @@ public class KohaExportMain {
 								String holidayDate = currentYear + "-" + kohaRepeatableHolidaysRS.getString("month") + "-" + kohaRepeatableHolidaysRS.getString("day");
 								java.sql.Date holidayDateAsDate = java.sql.Date.valueOf(holidayDate);
 								String title = kohaRepeatableHolidaysRS.getString("title");
-								addHolidayStmt.setLong(1, libraryId);
-								addHolidayStmt.setLong(2, existingLocationId);
-								addHolidayStmt.setDate(3, holidayDateAsDate);
-								addHolidayStmt.setString(4, title);
-								addHolidayStmt.executeUpdate();
-								existingHolidayDates.remove(holidayDateAsDate);
+								importHoliday(addHolidayStmt, libraryId, existingLocationId, holidayDateAsDate, title, existingHolidayDates);
 
 								// Add the holiday for next year.
 								holidayDate = nextYear + "-" + kohaRepeatableHolidaysRS.getString("month") + "-" + kohaRepeatableHolidaysRS.getString("day");
 								holidayDateAsDate = java.sql.Date.valueOf(holidayDate);
-								addHolidayStmt.setLong(1, libraryId);
-								addHolidayStmt.setLong(2, existingLocationId);
-								addHolidayStmt.setDate(3, holidayDateAsDate);
-								addHolidayStmt.setString(4, title);
-								addHolidayStmt.executeUpdate();
-								existingHolidayDates.remove(holidayDateAsDate);
+								importHoliday(addHolidayStmt, libraryId, existingLocationId, holidayDateAsDate, title, existingHolidayDates);
 							}
 						}
 					}
@@ -1256,12 +1255,7 @@ public class KohaExportMain {
 							String holidayDate = kohaSpecialHolidaysRS.getString("year") + "-" + kohaSpecialHolidaysRS.getString("month") + "-" + kohaSpecialHolidaysRS.getString("day");
 							java.sql.Date holidayDateAsDate = java.sql.Date.valueOf(holidayDate);
 							String title = kohaSpecialHolidaysRS.getString("title");
-							addHolidayStmt.setLong(1, libraryId);
-							addHolidayStmt.setLong(2, existingLocationId);
-							addHolidayStmt.setDate(3, holidayDateAsDate);
-							addHolidayStmt.setString(4, title);
-							addHolidayStmt.executeUpdate();
-							existingHolidayDates.remove(holidayDateAsDate);
+							importHoliday(addHolidayStmt, libraryId, existingLocationId, holidayDateAsDate, title, existingHolidayDates);
 						}
 						kohaSpecialHolidaysRS.close();
 					}
