@@ -796,44 +796,51 @@ class Event extends DataObject {
 	}
 
 	public function generateInstances(bool $isNewEvent = false) : void {
-		// If event doesn't repeat and there is a start date, time and event length
-		if (isset($this->startDate) && isset($this->startTime) && isset($this->eventLength)) {
-			if ($this->recurrenceOption == '1') {
-				// Can generate dates in the past
+		if (!isset($this->startDate) || !isset($this->startTime) || !isset($this->eventLength)) {
+			return;
+		}
+
+		if ($this->recurrenceOption == '1') {
+			$instance = new EventInstance();
+			$instance->eventId = $this->id;
+			$instance->find(true);
+			$instance->date = $this->startDate;
+			$instance->time = $this->startTime;
+			$instance->length = $this->eventLength;
+			$instance->update();
+			return;
+		}
+
+		if (!$this->_dates || !is_array($this->_dates)) {
+			return;
+		}
+
+		if ($isNewEvent || in_array('dates', $this->_changedFields)) {
+			$this->clearFutureInstances();
+			foreach ($this->_dates as $date) {
+				if (!$isNewEvent && strtotime("$date {$this->startTime}") <= time()) {
+					continue;
+				}
 				$instance = new EventInstance();
 				$instance->eventId = $this->id;
-				$instance->find(true); // Update event if it already exists
-				$instance->date = $this->startDate;
+				$instance->date = $date;
 				$instance->time = $this->startTime;
 				$instance->length = $this->eventLength;
 				$instance->update();
-			} else { // If event does repeat and there are preview dates
-				if ($this->_dates && is_array($this->_dates)) {
-					if ($isNewEvent || in_array('dates', $this->_changedFields)) {
-						$this->clearFutureInstances();
-						foreach ($this->_dates as $date) {
-							// Can create instances in the past
-							$instance = new EventInstance();
-							$instance->eventId = $this->id;
-							$instance->date = $date;
-							$instance->time = $this->startTime;
-							$instance->length = $this->eventLength;
-							$instance->update();
-						}
-					} else if (in_array('startTime', $this->_changedFields) || in_array('eventLength', $this->_changedFields)) { // If only the time or length has changed, we can just update existing events
-						foreach ($this->_dates as $date) {
-							// Can create instances in the past
-							$instance = new EventInstance();
-							$instance->eventId = $this->id;
-							$instance->date = $date;
-							$instance->find();
-							if ($instance->fetch()) {
-								$instance->time = $this->startTime;
-								$instance->length = $this->eventLength;
-								$instance->update();
-							}
-						}
-					}
+			}
+			return;
+		}
+
+		if (array_intersect(['startTime', 'eventLength'], $this->_changedFields)) {
+			// If only the time or length has changed, we can just update existing events
+			foreach ($this->_dates as $date) {
+				$instance = new EventInstance();
+				$instance->eventId = $this->id;
+				$instance->date = $date;
+				if ($instance->find(true)) {
+					$instance->time = $this->startTime;
+					$instance->length = $this->eventLength;
+					$instance->update();
 				}
 			}
 		}
