@@ -20,16 +20,12 @@ AspenDiscovery.CollectionSpotlights = (function(){
 				});
 				html += '</ul>';
 
-					var carouselElement = $('#collectionSpotlightCarousel' + spotlightListId);
-					carouselElement.html(html);
-					var jCarousel = carouselElement.jcarousel();
-
-					// Reload carousel
-					jCarousel.jcarousel('reload');
-				} else {
-					AspenDiscovery.showMessage(__('Error'), data.message);
-				}
-			}).fail(AspenDiscovery.ajaxFail);
+				var carouselElement = $('#collectionSpotlightCarousel' + spotlightListId);
+				carouselElement.html(html);
+				carouselElement.jcarousel().jcarousel('reload');
+			} else {
+				AspenDiscovery.showMessage(__('Error'), data.message);
+			}
 		},
 		updateSpotlightFields: function () {
 			var collectionSpotlightId = $('#collectionSpotlightId').val();
