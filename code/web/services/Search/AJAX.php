@@ -247,32 +247,24 @@ class AJAX extends JSON_Action {
 	}
 
 	/**
-	 * Gets a spotlight list's title data for either the AJAX endpoint or the
-	 * initial embedded-spotlight response.
+	 * Gets a spotlight list's title data for the initial embedded-spotlight response.
+	 *
+	 * Results are cached per server name since the active library (and therefore the
+	 * search scope) depends on the host the spotlight is loaded from.
 	 */
-	function getSpotlightTitlesForList(int $listId, string $scrollerName, string $coverSize = 'medium', bool $reload = false): array {
+	function getSpotlightTitlesForList(int $listId, string $scrollerName, bool $reload = false): array {
 		global $interface, $memCache;
 
-		$cacheKey = "spotlight_titles_" . $listId;
+		$serverName = $_SERVER['SERVER_NAME'] ?? '';
+		$cacheKey = "spotlight_titles_{$serverName}_{$listId}";
 
-		$interface->assign('listName', $scrollerName);
-
-		// 1. Check Cache
-		if ($memCache) {
+		if ($memCache && !$reload) {
 			$cachedResult = $memCache->get($cacheKey);
-			if ($cachedResult !== false && !$reload) {
-				$cachedResult['success'] = true;
-				$cachedResult['currentIndex'] = $cachedResult['currentIndex']
-					?? (count($cachedResult['titles']) > 5 ? floor(count($cachedResult['titles']) / 2) : 0);
-				// Re-hydrate formattedTitle for cached titles
-				foreach ($cachedResult['titles'] as $index => &$item) {
-					$item['formattedTitle'] = $this->buildFormattedTitle($item, $scrollerName, $index, $coverSize);
-				}
+			if ($cachedResult !== false) {
 				return $cachedResult;
 			}
 		}
 
-		// 2. Cache Miss: Execute regular fetch logic
 		require_once ROOT_DIR . '/sys/LocalEnrichment/CollectionSpotlightList.php';
 		$collectionSpotlightList = new CollectionSpotlightList();
 		$collectionSpotlightList->id = $listId;
@@ -284,60 +276,21 @@ class AJAX extends JSON_Action {
 			];
 		}
 
-		// List found, setup result
-		$result = [
-			'success' => true,
-			'titles' => [],
-		];
-
 		require_once ROOT_DIR . '/sys/LocalEnrichment/CollectionSpotlight.php';
 		$collectionSpotlight = new CollectionSpotlight();
 		$collectionSpotlight->id = $collectionSpotlightList->collectionSpotlightId;
 		$collectionSpotlight->find(true);
 
+		$interface->assign('listName', $scrollerName);
 		$interface->assign('collectionSpotlight', $collectionSpotlight);
 		$interface->assign('showViewMoreLink', $collectionSpotlight->showViewMoreLink);
 
 		$result = $this->resolveSpotlightSource($collectionSpotlightList, $collectionSpotlight);
 		$result['success'] = true;
 		$result['currentIndex'] = count($result['titles']) > 5 ? floor(count($result['titles']) / 2) : 0;
-		
-		// 3. Prepare Lightweight Payload for Caching
-		$cachePayload = $result;
-		if (!empty($cachePayload['titles'])) {
-			foreach ($cachePayload['titles'] as &$item) {
-				// Extract record ID from HTML string if not explicitly set
-				if (empty($item['id']) && !empty($item['formattedTitle'])) {
-					if (preg_match('#/GroupedWork/([^/]+)/Home#', $item['formattedTitle'], $matches)) {
-						$item['id'] = $matches[1];
-					} elseif (preg_match('#bookcover\.php\?[^"]*id=([^&"#]+)#', $item['formattedTitle'], $matches)) {
-						$item['id'] = $matches[1];
-					}
-				}
-				unset($item['formattedTitle']); // Drop bloated HTML string before storing
-			}
 
-			// 4. Save Lightweight Data to Cache (1 hour)
-			if ($memCache) {
-				$memCache->set($cacheKey, $cachePayload, 3600);
-			}
-		}
-
-		// 5. Ensure formattedTitle is present on live un-cached response
-		if (!empty($result['titles'])) {
-			foreach ($result['titles'] as $index => &$item) {
-				if (!empty($item['formattedTitle'])) {
-					$item['formattedTitle'] = $this->rewriteSpotlightCoverUrls($item['formattedTitle']);
-				}
-				if (empty($item['id']) && !empty($item['formattedTitle'])) {
-					if (preg_match('#/GroupedWork/([^/]+)/Home#', $item['formattedTitle'], $matches)) {
-						$item['id'] = $matches[1];
-					}
-				}
-				if (!isset($item['formattedTitle']) || empty($item['id'])) {
-					$item['formattedTitle'] = $this->buildFormattedTitle($item, $scrollerName, $index, $coverSize);
-				}
-			}
+		if ($memCache && !empty($result['titles'])) {
+			$memCache->set($cacheKey, $result, 3600);
 		}
 
 		return $result;
@@ -390,38 +343,6 @@ class AJAX extends JSON_Action {
 				? $searchObject->getSpotlightResults($collectionSpotlight)
 				: [],
 		];
-	}
-
-	private function buildFormattedTitle(array $item, string $scrollerName, int $index, string $coverSize = 'medium'): string {
-		$id = htmlspecialchars($item['id'] ?? '', ENT_QUOTES);
-		$title = htmlspecialchars($item['title'] ?? '', ENT_QUOTES);
-		$type = htmlspecialchars($item['type'] ?? 'grouped_work', ENT_QUOTES);
-		$category = htmlspecialchars($item['category'] ?? 'Books', ENT_QUOTES);
-		$scrollerNameClean = preg_replace('/\W/', '', $scrollerName);
-
-		$link = "/GroupedWork/{$id}/Home";
-		$imgSrc = "/API/SearchAPI?method=getCollectionSpotlightCover&amp;id={$id}&amp;size={$coverSize}&amp;type={$type}&amp;category={$category}";
-
-		return '<div id="scrollerTitle' . $scrollerNameClean . $index . '" class="carouselScrollerTitle">' .
-			'<a href="' . $link . '" tabindex="1">' .
-				'<div class="carouselScrollerTitleImage">' .
-					'<img src="' . $imgSrc . '" class="scrollerTitleCover" alt="' . $title . ' Cover" aria-hidden="true"/>' .
-				'</div>' .
-				'<div class="carouselScrollerTitleLabel"><span>' . $title . '</span></div>' .
-			'</a>' .
-		'</div>';
-	}
-
-	/**
-	 * Routes spotlight cover requests through SearchAPI so an embedded spotlight
-	 * does not require direct access to /bookcover.php.
-	 */
-	private function rewriteSpotlightCoverUrls(string $formattedTitle): string {
-		return preg_replace(
-			'#(?:(?:https?:)?//[^/]+)?/bookcover\\.php\\?#',
-			'/API/SearchAPI?method=getCollectionSpotlightCover&amp;',
-			$formattedTitle
-		);
 	}
 
 	/** @noinspection PhpUnused */

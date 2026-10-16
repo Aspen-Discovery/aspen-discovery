@@ -12,7 +12,6 @@ class SearchAPI extends AbstractAPI {
 		if (in_array($method, [
 			'getListWidget',
 			'getCollectionSpotlight',
-			'getCollectionSpotlightCover',
 			'getEmbeddableEventsCalendar'
 		])) {
 			header('Content-type: text/html');
@@ -24,42 +23,6 @@ class SearchAPI extends AbstractAPI {
 		}
 
 		$this->handleAPIRequestAuto($method, 'search_api');
-	}
-
-	/**
-	 * Serves a cover requested by an embedded collection spotlight.
-	 *
-	 * Keeping these requests under SearchAPI lets an embedding site allow-list the
-	 * spotlight and its covers through the same API path while retaining the
-	 * BookCoverProcessor's existing cache, conditional-response, and redirect logic.
-	 */
-	function getCollectionSpotlightCover() : void {
-		global $aspenUsage;
-		global $configArray;
-		global $timer;
-		global $logger;
-
-		// This cast isn't explicitly necessary, but it makes automated tools happy
-		// and doesn't hurt anything to do.
-		$configArray = (array) $configArray;
-
-		$aspenUsage->coverViews++;
-		require_once ROOT_DIR . '/sys/Covers/BookCoverProcessor.php';
-
-		$processor = new BookCoverProcessor();
-		$processor->loadCover($configArray, $timer, $logger);
-		if ($processor->error) {
-			header('Content-type: text/plain');
-			$logger->log("Error processing cover " . $processor->error, Logger::LOG_ERROR);
-			echo $processor->error;
-		}
-
-		try {
-			$method = !empty($aspenUsage->__get('id')) ? "update" : "insert";
-			$aspenUsage->$method();
-		} catch (Exception $e) {
-			// The usage table may not have been created yet.
-		}
 	}
 
 	// The time intervals in seconds beyond which we consider the status as not current
@@ -1054,7 +1017,6 @@ class SearchAPI extends AbstractAPI {
 				$titleData[$list->id] = $spotlightAjax->getSpotlightTitlesForList(
 					(int)$list->id,
 					(string)$list->id,
-					$collectionSpotlight->coverSize,
 					$reload
 				);
 			}
