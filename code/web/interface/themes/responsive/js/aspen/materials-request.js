@@ -316,7 +316,7 @@ AspenDiscovery.MaterialsRequest = (function(){
 					if (data.success) {
 						AspenDiscovery.showMessage(data.title, data.modalBody);
 					} else {
-						AspenDiscovery.showMessage('An error occurred', data.message);
+						AspenDiscovery.showMessage(__('An error occurred'), data.message);
 					}
 				}
 			).fail(AspenDiscovery.ajaxFail);
@@ -344,7 +344,7 @@ AspenDiscovery.MaterialsRequest = (function(){
 					if (data.success) {
 						AspenDiscovery.showMessage(data.title, data.modalBody);
 					} else {
-						AspenDiscovery.showMessage('An error occurred', data.message);
+						AspenDiscovery.showMessage(__('An error occurred'), data.message);
 					}
 				}
 			).fail(AspenDiscovery.ajaxFail);

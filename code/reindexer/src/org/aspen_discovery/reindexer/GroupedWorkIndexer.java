@@ -483,80 +483,80 @@ public class GroupedWorkIndexer implements AutoCloseable {
 		try {
 			PreparedStatement getIndexingProfilesStmt = dbConn.prepareStatement("SELECT * from indexing_profiles");
 
-			ResultSet indexingProfilesRS = getIndexingProfilesStmt.executeQuery();
+			try (ResultSet indexingProfilesRS = getIndexingProfilesStmt.executeQuery()) {
 
-			while (indexingProfilesRS.next()){
-				String ilsIndexingClassString = indexingProfilesRS.getString("indexingClass");
-				String curType = indexingProfilesRS.getString("name");
-				IndexingProfile indexingProfile = new IndexingProfile(serverName, indexingProfilesRS, dbConn, logEntry);
-				switch (ilsIndexingClassString) {
-					case "ArlingtonKoha":
-						ilsRecordProcessors.put(curType, new ArlingtonKohaRecordProcessor(serverName, this, curType, dbConn, indexingProfilesRS, logger, fullReindex));
-						break;
-					case "CarlX":
-						ilsRecordProcessors.put(curType, new CarlXRecordProcessor(serverName, this, curType, dbConn, indexingProfilesRS, logger, fullReindex));
-						break;
-					case "NashvilleCarlX":
-						ilsRecordProcessors.put(curType, new NashvilleCarlXRecordProcessor(serverName, this, curType, dbConn, indexingProfilesRS, logger, fullReindex));
-						break;
-					case "III":
-						ilsRecordProcessors.put(curType, new IIIRecordProcessor(serverName, this, curType, dbConn, indexingProfilesRS, logger, fullReindex));
-						break;
-					case "SideLoadedEContent":
-						ilsRecordProcessors.put(curType, new SideLoadedEContentProcessor(serverName, this, curType, dbConn, indexingProfilesRS, logger, fullReindex));
-						break;
-					case "Koha":
-						ilsRecordProcessors.put(curType, new KohaRecordProcessor(serverName, this, curType, dbConn, indexingProfilesRS, logger, fullReindex));
-						break;
-					case "Symphony":
-						ilsRecordProcessors.put(curType, new SymphonyRecordProcessor(serverName, this, curType, dbConn, indexingProfilesRS, logger, fullReindex));
-						break;
-					case "Polaris":
-						ilsRecordProcessors.put(curType, new PolarisRecordProcessor(serverName, this, curType, dbConn, indexingProfilesRS, logger, fullReindex));
-						break;
-					case "Evergreen":
-						ilsRecordProcessors.put(curType, new EvergreenRecordProcessor(serverName, this, curType, dbConn, indexingProfilesRS, logger, fullReindex));
-						break;
-					case "Evolve":
-						ilsRecordProcessors.put(curType, new EvolveRecordProcessor(serverName, this, curType, dbConn, indexingProfilesRS, logger, fullReindex));
-						break;
-					case "Folio":
-						ilsRecordProcessors.put(curType, new FolioRecordProcessor(serverName, this, curType, dbConn, indexingProfilesRS, logger, fullReindex));
-						break;
-					default:
-						logEntry.incErrors("Unknown indexing class " + ilsIndexingClassString);
-						continue;
-				}
-				ilsRecordGroupers.put(curType, new MarcRecordGrouper(serverName, dbConn, indexingProfile, logEntry, logger));
+				while (indexingProfilesRS.next()){
+					String ilsIndexingClassString = indexingProfilesRS.getString("indexingClass");
+					String curType = indexingProfilesRS.getString("name");
+					IndexingProfile indexingProfile = new IndexingProfile(serverName, indexingProfilesRS, dbConn, logEntry);
+					switch (ilsIndexingClassString) {
+						case "ArlingtonKoha":
+							ilsRecordProcessors.put(curType, new ArlingtonKohaRecordProcessor(serverName, this, curType, dbConn, indexingProfilesRS, logger, fullReindex));
+							break;
+						case "CarlX":
+							ilsRecordProcessors.put(curType, new CarlXRecordProcessor(serverName, this, curType, dbConn, indexingProfilesRS, logger, fullReindex));
+							break;
+						case "NashvilleCarlX":
+							ilsRecordProcessors.put(curType, new NashvilleCarlXRecordProcessor(serverName, this, curType, dbConn, indexingProfilesRS, logger, fullReindex));
+							break;
+						case "III":
+							ilsRecordProcessors.put(curType, new IIIRecordProcessor(serverName, this, curType, dbConn, indexingProfilesRS, logger, fullReindex));
+							break;
+						case "SideLoadedEContent":
+							ilsRecordProcessors.put(curType, new SideLoadedEContentProcessor(serverName, this, curType, dbConn, indexingProfilesRS, logger, fullReindex));
+							break;
+						case "Koha":
+							ilsRecordProcessors.put(curType, new KohaRecordProcessor(serverName, this, curType, dbConn, indexingProfilesRS, logger, fullReindex));
+							break;
+						case "Symphony":
+							ilsRecordProcessors.put(curType, new SymphonyRecordProcessor(serverName, this, curType, dbConn, indexingProfilesRS, logger, fullReindex));
+							break;
+						case "Polaris":
+							ilsRecordProcessors.put(curType, new PolarisRecordProcessor(serverName, this, curType, dbConn, indexingProfilesRS, logger, fullReindex));
+							break;
+						case "Evergreen":
+							ilsRecordProcessors.put(curType, new EvergreenRecordProcessor(serverName, this, curType, dbConn, indexingProfilesRS, logger, fullReindex));
+							break;
+						case "Evolve":
+							ilsRecordProcessors.put(curType, new EvolveRecordProcessor(serverName, this, curType, dbConn, indexingProfilesRS, logger, fullReindex));
+							break;
+						case "Folio":
+							ilsRecordProcessors.put(curType, new FolioRecordProcessor(serverName, this, curType, dbConn, indexingProfilesRS, logger, fullReindex));
+							break;
+						default:
+							logEntry.incErrors("Unknown indexing class " + ilsIndexingClassString);
+							continue;
+					}
+					ilsRecordGroupers.put(curType, new MarcRecordGrouper(serverName, dbConn, indexingProfile, logEntry, logger));
 
-				//Load how to treat unknown audiences for the entire indexer, this will be based on the last indexing profile encountered (at least for now since we only have one no big deal)
-				this.treatUnknownAudienceAs = indexingProfilesRS.getString("treatUnknownAudienceAs");
-				if ("Unknown".equals(this.treatUnknownAudienceAs)) {
-					treatUnknownAudienceAsUnknown = true;
+					//Load how to treat unknown audiences for the entire indexer, this will be based on the last indexing profile encountered (at least for now since we only have one no big deal)
+					this.treatUnknownAudienceAs = indexingProfilesRS.getString("treatUnknownAudienceAs");
+					if ("Unknown".equals(this.treatUnknownAudienceAs)) {
+						treatUnknownAudienceAsUnknown = true;
+					}
+					this.treatUnknownLanguageAs = indexingProfilesRS.getString("treatUnknownLanguageAs");
 				}
-				this.treatUnknownLanguageAs = indexingProfilesRS.getString("treatUnknownLanguageAs");
 			}
-			indexingProfilesRS.close();
 			getIndexingProfilesStmt.close();
 
 			PreparedStatement getSideLoadSettingsStmt = dbConn.prepareStatement("SELECT * from sideloads");
-			ResultSet getSideLoadSettingsRS = getSideLoadSettingsStmt.executeQuery();
+			try (ResultSet getSideLoadSettingsRS = getSideLoadSettingsStmt.executeQuery()) {
 
-			while (getSideLoadSettingsRS.next()) {
-				String curType = getSideLoadSettingsRS.getString("name").toLowerCase();
-				String sideLoadIndexingClassString = getSideLoadSettingsRS.getString("indexingClass");
-				if ("SideLoadedEContent".equals(sideLoadIndexingClassString) || "SideLoadedEContentProcessor".equals(sideLoadIndexingClassString)) {
-					SideLoadedEContentProcessor sideloadProcessor = new SideLoadedEContentProcessor(serverName, this, curType, dbConn, getSideLoadSettingsRS, logger, fullReindex);
-					sideLoadProcessors.put(curType, sideloadProcessor);
-					sideLoadRecordGroupers.put(curType, new SideLoadedRecordGrouper(serverName, dbConn, sideloadProcessor.getSettings(), logEntry, logger));
-				} else {
-					logEntry.incErrors("Unknown side load processing class " + sideLoadIndexingClassString);
-					okToIndex = false;
-					return;
+				while (getSideLoadSettingsRS.next()) {
+					String curType = getSideLoadSettingsRS.getString("name").toLowerCase();
+					String sideLoadIndexingClassString = getSideLoadSettingsRS.getString("indexingClass");
+					if ("SideLoadedEContent".equals(sideLoadIndexingClassString) || "SideLoadedEContentProcessor".equals(sideLoadIndexingClassString)) {
+						SideLoadedEContentProcessor sideloadProcessor = new SideLoadedEContentProcessor(serverName, this, curType, dbConn, getSideLoadSettingsRS, logger, fullReindex);
+						sideLoadProcessors.put(curType, sideloadProcessor);
+						sideLoadRecordGroupers.put(curType, new SideLoadedRecordGrouper(serverName, dbConn, sideloadProcessor.getSettings(), logEntry, logger));
+					} else {
+						logEntry.incErrors("Unknown side load processing class " + sideLoadIndexingClassString);
+						okToIndex = false;
+						return;
+					}
 				}
 			}
 			getSideLoadSettingsStmt.close();
-			getSideLoadSettingsRS.close();
 
 		}catch (Exception e){
 			logEntry.incErrors("Error loading record processors for ILS records", e);
@@ -912,19 +912,18 @@ public class GroupedWorkIndexer implements AutoCloseable {
 			long startTime = new Date().getTime() / 1000;
 
 			getNumScheduledWorksStmt.setLong(1, startTime);
-			ResultSet numScheduledWorksRS = getNumScheduledWorksStmt.executeQuery();
 			int numScheduledWorks = 0;
-			if (numScheduledWorksRS.next()) {
-				numScheduledWorks = numScheduledWorksRS.getInt("numScheduledWorks");
-				if (numScheduledWorks > 0) {
-					logEntry.addNote("There are " + numScheduledWorks + " scheduled works to be indexed");
-					logEntry.saveResults();
-				}else{
-					numScheduledWorksRS.close();
-					return;
+			try (ResultSet numScheduledWorksRS = getNumScheduledWorksStmt.executeQuery()) {
+				if (numScheduledWorksRS.next()) {
+					numScheduledWorks = numScheduledWorksRS.getInt("numScheduledWorks");
+					if (numScheduledWorks > 0) {
+						logEntry.addNote("There are " + numScheduledWorks + " scheduled works to be indexed");
+						logEntry.saveResults();
+					}else{
+						return;
+					}
 				}
 			}
-			numScheduledWorksRS.close();
 
 			if (maxWorksToProcess == -1){
 				maxWorksToProcess = numScheduledWorks;
@@ -934,27 +933,28 @@ public class GroupedWorkIndexer implements AutoCloseable {
 
 			while (numWorksProcessed < maxWorksToProcess) {
 				getScheduledWorksStmt.setLong(1, startTime);
-				ResultSet scheduledWorksRS = getScheduledWorksStmt.executeQuery();
-				if (scheduledWorksRS.next()) {
-					String workToProcess = scheduledWorksRS.getString("permanent_id");
-
-					markScheduledWorkProcessedStmt.setString(1, workToProcess);
-					markScheduledWorkProcessedStmt.setLong(2, new Date().getTime() / 1000);
-					markScheduledWorkProcessedStmt.executeUpdate();
-
-					//reindex the actual work
-					try {
-						this.processGroupedWork(workToProcess, true);
-					}catch (Exception e){
-						logEntry.incErrors("Error processing scheduled work " + workToProcess, e);
+				String workToProcess = null;
+				try (ResultSet scheduledWorksRS = getScheduledWorksStmt.executeQuery()) {
+					if (scheduledWorksRS.next()) {
+						workToProcess = scheduledWorksRS.getString("permanent_id");
 					}
-
-					numWorksProcessed++;
-					scheduledWorksRS.close();
-				}else{
-					scheduledWorksRS.close();
+				}
+				if (workToProcess == null) {
 					break;
 				}
+
+				markScheduledWorkProcessedStmt.setString(1, workToProcess);
+				markScheduledWorkProcessedStmt.setLong(2, new Date().getTime() / 1000);
+				markScheduledWorkProcessedStmt.executeUpdate();
+
+				//reindex the actual work
+				try {
+					this.processGroupedWork(workToProcess, true);
+				}catch (Exception e){
+					logEntry.incErrors("Error processing scheduled work " + workToProcess, e);
+				}
+
+				numWorksProcessed++;
 				/*if (numWorksProcessed % this.indexCommitInterval == 0) {
 					this.commitChanges();
 				}*/
@@ -1066,10 +1066,12 @@ public class GroupedWorkIndexer implements AutoCloseable {
 			}
 
 			//Get the number of works we will be processing
-			ResultSet numWorksToIndexRS = getNumWorksToIndex.executeQuery();
-			numWorksToIndexRS.next();
-			long numWorksToIndex = numWorksToIndexRS.getLong(1);
-			numWorksToIndexRS.close();
+			long numWorksToIndex = 0;
+			try (ResultSet numWorksToIndexRS = getNumWorksToIndex.executeQuery()) {
+				if (numWorksToIndexRS.next()) {
+					numWorksToIndex = numWorksToIndexRS.getLong(1);
+				}
+			}
 			logEntry.addNote("Starting to process " + numWorksToIndex + " grouped works");
 
 			ResultSet groupedWorks = getAllGroupedWorks.executeQuery();
@@ -1130,47 +1132,47 @@ public class GroupedWorkIndexer implements AutoCloseable {
 		PreparedStatement getPrimaryIdentifiersForGroupedWorkStmt = dbConn.prepareStatement("SELECT count(*) as numIdentifiers from grouped_work_primary_identifiers where grouped_work_id = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 		logEntry.addNote("Starting to process grouped works with no records attached to them.");
 
-		ResultSet emptyGroupedWorksRS = getEmptyGroupedWorksStmt.executeQuery();
 		int numDeleted = 0;
+		int numProcessed = 0;
 		boolean localRegroupAll = this.regroupAllRecords;
 		setRegroupAllRecords(true);
 		logEntry.addNote("Preparing to process empty grouped works");
 		logEntry.saveResults();
 
-		int numProcessed = 0;
-		while (emptyGroupedWorksRS.next()) {
-			long groupedWorkId = emptyGroupedWorksRS.getLong("grouped_work_id");
-			String permanentId = emptyGroupedWorksRS.getString("permanent_id");
+		try (ResultSet emptyGroupedWorksRS = getEmptyGroupedWorksStmt.executeQuery()) {
+			while (emptyGroupedWorksRS.next()) {
+				long groupedWorkId = emptyGroupedWorksRS.getLong("grouped_work_id");
+				String permanentId = emptyGroupedWorksRS.getString("permanent_id");
 
-			getPrimaryIdentifiersForGroupedWorkStmt.setLong(1, groupedWorkId);
-			ResultSet numPrimaryIdentifiersRS = getPrimaryIdentifiersForGroupedWorkStmt.executeQuery();
-			boolean hasIdentifiersAttached = false;
-			if (numPrimaryIdentifiersRS.next()) {
-				if (numPrimaryIdentifiersRS.getLong("numIdentifiers") > 0) {
-					hasIdentifiersAttached = true;
+				getPrimaryIdentifiersForGroupedWorkStmt.setLong(1, groupedWorkId);
+				boolean hasIdentifiersAttached = false;
+				try (ResultSet numPrimaryIdentifiersRS = getPrimaryIdentifiersForGroupedWorkStmt.executeQuery()) {
+					if (numPrimaryIdentifiersRS.next()) {
+						if (numPrimaryIdentifiersRS.getLong("numIdentifiers") > 0) {
+							hasIdentifiersAttached = true;
+						}
+					}
+				}
+
+				if (hasIdentifiersAttached) {
+					processGroupedWork(groupedWorkId, permanentId, emptyGroupedWorksRS.getString("grouping_category"));
+				}else {
+					deleteRecord(permanentId, groupedWorkId);
+					numDeleted++;
+					/*if (numDeleted % this.deletionCommitInterval == 0) {
+						try {
+							updateServer.commit(false, false, true);
+						} catch (Exception e) {
+							logger.warn("Error committing changes", e);
+						}
+					}*/
+				}
+				numProcessed++;
+				if (numProcessed % 1000 == 0) {
+					logEntry.addNote("Processed " + numProcessed);
 				}
 			}
-			numPrimaryIdentifiersRS.close();
-
-			if (hasIdentifiersAttached) {
-				processGroupedWork(groupedWorkId, permanentId, emptyGroupedWorksRS.getString("grouping_category"));
-			}else {
-				deleteRecord(permanentId, groupedWorkId);
-				numDeleted++;
-				/*if (numDeleted % this.deletionCommitInterval == 0) {
-					try {
-						updateServer.commit(false, false, true);
-					} catch (Exception e) {
-						logger.warn("Error committing changes", e);
-					}
-				}*/
-			}
-			numProcessed++;
-			if (numProcessed % 1000 == 0) {
-				logEntry.addNote("Processed " + numProcessed);
-			}
 		}
-		emptyGroupedWorksRS.close();
 		setRegroupAllRecords(localRegroupAll);
 		logEntry.addNote("Finished processing empty grouped works, processed " + numProcessed + ".");
 		logEntry.saveResults();
@@ -1183,13 +1185,13 @@ public class GroupedWorkIndexer implements AutoCloseable {
 	public synchronized void processGroupedWork(String permanentId, boolean allowRegrouping) {
 		try{
 			getGroupedWorkInfoStmt.setString(1, permanentId);
-			ResultSet getGroupedWorkInfoRS = getGroupedWorkInfoStmt.executeQuery();
-			if (getGroupedWorkInfoRS.next()) {
-				long id = getGroupedWorkInfoRS.getLong("id");
-				String grouping_category = getGroupedWorkInfoRS.getString("grouping_category");
-				processGroupedWork(id, permanentId, grouping_category, allowRegrouping);
+			try (ResultSet getGroupedWorkInfoRS = getGroupedWorkInfoStmt.executeQuery()) {
+				if (getGroupedWorkInfoRS.next()) {
+					long id = getGroupedWorkInfoRS.getLong("id");
+					String grouping_category = getGroupedWorkInfoRS.getString("grouping_category");
+					processGroupedWork(id, permanentId, grouping_category, allowRegrouping);
+				}
 			}
-			getGroupedWorkInfoRS.close();
 			totalRecordsHandled++;
 			/*if (totalRecordsHandled % this.indexCommitInterval == 0) {
 				updateServer.commit(false, false, true);
@@ -1395,17 +1397,17 @@ public class GroupedWorkIndexer implements AutoCloseable {
 							for (Long autoReindexTime : autoReindexTimes) {
 								getScheduledWorkStmt.setString(1, groupedWork.getId());
 								getScheduledWorkStmt.setLong(2, autoReindexTime);
-								ResultSet getScheduledWorkRS = getScheduledWorkStmt.executeQuery();
-								if (!getScheduledWorkRS.next()) {
-									try {
-										addScheduledWorkStmt.setString(1, groupedWork.getId());
-										addScheduledWorkStmt.setLong(2, autoReindexTime);
-										addScheduledWorkStmt.executeUpdate();
-									} catch (SQLException sqe) {
-										logEntry.incErrors("Error adding scheduled reindex time", sqe);
+								try (ResultSet getScheduledWorkRS = getScheduledWorkStmt.executeQuery()) {
+									if (!getScheduledWorkRS.next()) {
+										try {
+											addScheduledWorkStmt.setString(1, groupedWork.getId());
+											addScheduledWorkStmt.setLong(2, autoReindexTime);
+											addScheduledWorkStmt.executeUpdate();
+										} catch (SQLException sqe) {
+											logEntry.incErrors("Error adding scheduled reindex time", sqe);
+										}
 									}
 								}
-								getScheduledWorkRS.close();
 							}
 						}
 					} catch (Exception e) {
@@ -1471,35 +1473,35 @@ public class GroupedWorkIndexer implements AutoCloseable {
 		try {
 			for (String isbn : groupedWork.getIsbns()){
 				getArBookIdForIsbnStmt.setString(1, isbn);
-				ResultSet arBookIdRS = getArBookIdForIsbnStmt.executeQuery();
-				if (arBookIdRS.next()){
-					String arBookId = arBookIdRS.getString("arBookId");
-					getArBookInfoStmt.setString(1, arBookId);
-					ResultSet arBookInfoRS = getArBookInfoStmt.executeQuery();
-					if (arBookInfoRS.next()){
-						String bookLevel = arBookInfoRS.getString("bookLevel");
-						String arPoints = arBookInfoRS.getString("arPoints");
-						String interestLevel = arBookInfoRS.getString("interestLevel");
-						boolean foundUsableArData = false;
-						if (bookLevel != null && !bookLevel.trim().isEmpty()){
-							groupedWork.setAcceleratedReaderReadingLevel(bookLevel);
-							foundUsableArData = true;
-						}
-						if (arPoints != null && !arPoints.trim().isEmpty()){
-							groupedWork.setAcceleratedReaderPointValue(arPoints);
-							foundUsableArData = true;
-						}
-						if (interestLevel != null && !interestLevel.trim().isEmpty()){
-							groupedWork.setAcceleratedReaderInterestLevel(interestLevel);
-							foundUsableArData = true;
-						}
-						if (foundUsableArData){
-							break;
+				try (ResultSet arBookIdRS = getArBookIdForIsbnStmt.executeQuery()) {
+					if (arBookIdRS.next()){
+						String arBookId = arBookIdRS.getString("arBookId");
+						getArBookInfoStmt.setString(1, arBookId);
+						try (ResultSet arBookInfoRS = getArBookInfoStmt.executeQuery()) {
+							if (arBookInfoRS.next()){
+								String bookLevel = arBookInfoRS.getString("bookLevel");
+								String arPoints = arBookInfoRS.getString("arPoints");
+								String interestLevel = arBookInfoRS.getString("interestLevel");
+								boolean foundUsableArData = false;
+								if (bookLevel != null && !bookLevel.trim().isEmpty()){
+									groupedWork.setAcceleratedReaderReadingLevel(bookLevel);
+									foundUsableArData = true;
+								}
+								if (arPoints != null && !arPoints.trim().isEmpty()){
+									groupedWork.setAcceleratedReaderPointValue(arPoints);
+									foundUsableArData = true;
+								}
+								if (interestLevel != null && !interestLevel.trim().isEmpty()){
+									groupedWork.setAcceleratedReaderInterestLevel(interestLevel);
+									foundUsableArData = true;
+								}
+								if (foundUsableArData){
+									break;
+								}
+							}
 						}
 					}
-					arBookInfoRS.close();
 				}
-				arBookIdRS.close();
 			}
 		} catch (SQLException e) {
 			logEntry.incErrors("Error loading accelerated reader information", e);
@@ -1510,14 +1512,14 @@ public class GroupedWorkIndexer implements AutoCloseable {
 		//Load rating
 		try{
 			getRatingStmt.setString(1, groupedWork.getId());
-			ResultSet ratingsRS = getRatingStmt.executeQuery();
-			if (ratingsRS.next()){
-				float averageRating = ratingsRS.getFloat("averageRating");
-				if (!ratingsRS.wasNull()){
-					groupedWork.setRating(averageRating);
+			try (ResultSet ratingsRS = getRatingStmt.executeQuery()) {
+				if (ratingsRS.next()){
+					float averageRating = ratingsRS.getFloat("averageRating");
+					if (!ratingsRS.wasNull()){
+						groupedWork.setRating(averageRating);
+					}
 				}
 			}
-			ratingsRS.close();
 		}catch (Exception e){
 			logEntry.incErrors("Unable to load local enrichment", e);
 		}
@@ -1537,60 +1539,60 @@ public class GroupedWorkIndexer implements AutoCloseable {
 	private void loadNotInterestedLinksForUsers(AbstractGroupedWorkSolr groupedWork) throws SQLException {
 		//Add users who are not interested in the title
 		getUserNotInterestedLinkStmt.setString(1, groupedWork.getId());
-		ResultSet userNotInterestedRS = getUserNotInterestedLinkStmt.executeQuery();
-		while (userNotInterestedRS.next()) {
-			groupedWork.addNotInterestedLink(userNotInterestedRS.getLong("userId"));
+		try (ResultSet userNotInterestedRS = getUserNotInterestedLinkStmt.executeQuery()) {
+			while (userNotInterestedRS.next()) {
+				groupedWork.addNotInterestedLink(userNotInterestedRS.getLong("userId"));
+			}
 		}
-		userNotInterestedRS.close();
 	}
 
 	private void loadRatingLinksForUsers(AbstractGroupedWorkSolr groupedWork) throws SQLException {
 		//Add users who rated the title
 		getUserRatingLinkStmt.setString(1, groupedWork.getId());
-		ResultSet userRatingRS = getUserRatingLinkStmt.executeQuery();
-		while (userRatingRS.next()){
-			groupedWork.addRatingLink(userRatingRS.getLong("userId"));
+		try (ResultSet userRatingRS = getUserRatingLinkStmt.executeQuery()) {
+			while (userRatingRS.next()){
+				groupedWork.addRatingLink(userRatingRS.getLong("userId"));
+			}
 		}
-		userRatingRS.close();
 	}
 
 	private void loadReadingHistoryLinksForUsers (AbstractGroupedWorkSolr groupedWork) throws SQLException {
 		//Add users with the work in their reading history
 		getUserReadingHistoryLinkStmt.setString(1, groupedWork.getId());
-		ResultSet userReadingHistoryRS = getUserReadingHistoryLinkStmt.executeQuery();
-		while (userReadingHistoryRS.next()){
-			groupedWork.addReadingHistoryLink(userReadingHistoryRS.getLong("userId"));
+		try (ResultSet userReadingHistoryRS = getUserReadingHistoryLinkStmt.executeQuery()) {
+			while (userReadingHistoryRS.next()){
+				groupedWork.addReadingHistoryLink(userReadingHistoryRS.getLong("userId"));
+			}
 		}
-		userReadingHistoryRS.close();
 	}
 
 	private void loadListLinksForUsers (AbstractGroupedWorkSolr groupedWork) throws SQLException {
 		//Add users with the work in their reading history
 		getListLinkStmt.setString(1, groupedWork.getId());
-		ResultSet userListLinkRS = getListLinkStmt.executeQuery();
-		while (userListLinkRS.next()){
-			groupedWork.addListLink(userListLinkRS.getLong("listId"), userListLinkRS.getLong("weight"), userListLinkRS.getLong("dateAdded"));
+		try (ResultSet userListLinkRS = getListLinkStmt.executeQuery()) {
+			while (userListLinkRS.next()){
+				groupedWork.addListLink(userListLinkRS.getLong("listId"), userListLinkRS.getLong("weight"), userListLinkRS.getLong("dateAdded"));
+			}
 		}
-		userListLinkRS.close();
 	}
 
 	private void loadNovelistInfo(AbstractGroupedWorkSolr groupedWork){
 		if (enableNovelistSeriesIntegration && !seriesModuleEnabled) {
 			try {
 				getNovelistStmt.setString(1, groupedWork.getId());
-				ResultSet novelistRS = getNovelistStmt.executeQuery();
-				if (novelistRS.next()) {
-					String series = novelistRS.getString("seriesTitle");
-					if (!novelistRS.wasNull()) {
-						//Don't clear since there are valid cases when they are different
-						String volume = novelistRS.getString("volume");
-						if (novelistRS.wasNull()) {
-							volume = "";
+				try (ResultSet novelistRS = getNovelistStmt.executeQuery()) {
+					if (novelistRS.next()) {
+						String series = novelistRS.getString("seriesTitle");
+						if (!novelistRS.wasNull()) {
+							//Don't clear since there are valid cases when they are different
+							String volume = novelistRS.getString("volume");
+							if (novelistRS.wasNull()) {
+								volume = "";
+							}
+							groupedWork.addSeriesWithVolume(series, "", volume, 2, false);
 						}
-						groupedWork.addSeriesWithVolume(series, "", volume, 2, false);
 					}
 				}
-				novelistRS.close();
 			} catch (Exception e) {
 				logEntry.incErrors("Unable to load novelist data", e);
 			}
@@ -1921,13 +1923,13 @@ public class GroupedWorkIndexer implements AutoCloseable {
 					//Check to see if this has already been added
 					checkIfSeriesMemberExistsStmt.setLong(1, existingSeriesRS.getLong("id"));
 					checkIfSeriesMemberExistsStmt.setString(2, groupedWork.getId());
-					ResultSet checkIfSeriesMemberExistsRS = checkIfSeriesMemberExistsStmt.executeQuery();
-					if (!checkIfSeriesMemberExistsRS.next()) {
-						for (String volume : seriesMember.getVolumes()) {
-							addSeriesMemberWithVolume(existingSeriesRS.getLong("id"), seriesInfo, volume, groupedWork, timeNow, 1);
+					try (ResultSet checkIfSeriesMemberExistsRS = checkIfSeriesMemberExistsStmt.executeQuery()) {
+						if (!checkIfSeriesMemberExistsRS.next()) {
+							for (String volume : seriesMember.getVolumes()) {
+								addSeriesMemberWithVolume(existingSeriesRS.getLong("id"), seriesInfo, volume, groupedWork, timeNow, 1);
+							}
 						}
 					}
-					checkIfSeriesMemberExistsRS.close();
 				}
 			}
 		} catch (Exception e) {
@@ -2067,72 +2069,72 @@ public class GroupedWorkIndexer implements AutoCloseable {
 	private void loadDisplayInfo(AbstractGroupedWorkSolr groupedWork) {
 		try {
 			getDisplayInfoStmt.setString(1, groupedWork.getId());
-			ResultSet displayInfoRS = getDisplayInfoStmt.executeQuery();
-			if (displayInfoRS.next()) {
-				if (groupedWork.isDebugEnabled()) {
-					groupedWork.addDebugMessage("Applying Display Info for grouped work", 1);
-				}
+			try (ResultSet displayInfoRS = getDisplayInfoStmt.executeQuery()) {
+				if (displayInfoRS.next()) {
+					if (groupedWork.isDebugEnabled()) {
+						groupedWork.addDebugMessage("Applying Display Info for grouped work", 1);
+					}
 
-				String title = displayInfoRS.getString("title");
-				if (!title.isEmpty()){
-					if (groupedWork.isDebugEnabled()) {
-						groupedWork.addDebugMessage("Setting title to " + title + " based on display info", 2);
-					}
-					groupedWork.setTitle(title, "", AspenStringUtils.makeValueSortable(title), "", true, null);
-					groupedWork.clearSubTitle();
-				}else{
-					if (groupedWork.isDebugEnabled()) {
-						groupedWork.addDebugMessage("No title set in display info, not changing title", 2);
-					}
-				}
-				String author = displayInfoRS.getString("author");
-				if (!author.isEmpty()){
-					if (groupedWork.isDebugEnabled()) {
-						groupedWork.addDebugMessage("Setting author to " + author + " based on display info", 2);
-					}
-					//Force a format category of Books since we want to preserve this
-					groupedWork.setAuthorDisplay(author);
-				}else{
-					if (groupedWork.isDebugEnabled()) {
-						groupedWork.addDebugMessage("No author set in display info, not changing author", 2);
-					}
-				}
-				if (!seriesModuleEnabled) {
-					String seriesName = displayInfoRS.getString("seriesName");
-					String seriesDisplayOrder = displayInfoRS.getString("seriesDisplayOrder");
-					if (seriesName != null && !seriesName.isEmpty()) {
+					String title = displayInfoRS.getString("title");
+					if (!title.isEmpty()){
 						if (groupedWork.isDebugEnabled()) {
-							groupedWork.addDebugMessage("Setting series to " + seriesName + " " + seriesDisplayOrder + " based on display info", 2);
+							groupedWork.addDebugMessage("Setting title to " + title + " based on display info", 2);
 						}
-						groupedWork.clearSeries();
-						if (seriesDisplayOrder == null) {
-							seriesDisplayOrder = "";
-						}
-						groupedWork.addSeriesWithVolume(seriesName, author, seriesDisplayOrder, 2, false);
+						groupedWork.setTitle(title, "", AspenStringUtils.makeValueSortable(title), "", true, null);
+						groupedWork.clearSubTitle();
 					}else{
 						if (groupedWork.isDebugEnabled()) {
-							groupedWork.addDebugMessage("Not applying series data for grouped work because no series was defined", 2);
+							groupedWork.addDebugMessage("No title set in display info, not changing title", 2);
 						}
 					}
-				}else{
-					if (groupedWork.isDebugEnabled()) {
-						groupedWork.addDebugMessage("Not applying series data for grouped work because series module is enabled", 2);
+					String author = displayInfoRS.getString("author");
+					if (!author.isEmpty()){
+						if (groupedWork.isDebugEnabled()) {
+							groupedWork.addDebugMessage("Setting author to " + author + " based on display info", 2);
+						}
+						//Force a format category of Books since we want to preserve this
+						groupedWork.setAuthorDisplay(author);
+					}else{
+						if (groupedWork.isDebugEnabled()) {
+							groupedWork.addDebugMessage("No author set in display info, not changing author", 2);
+						}
 					}
-				}
-				String description = displayInfoRS.getString("description");
-				if (description != null && !description.isEmpty()){
-					if (groupedWork.isDebugEnabled()) {
-						groupedWork.addDebugMessage("Setting description to " + description + " based on display info", 2);
+					if (!seriesModuleEnabled) {
+						String seriesName = displayInfoRS.getString("seriesName");
+						String seriesDisplayOrder = displayInfoRS.getString("seriesDisplayOrder");
+						if (seriesName != null && !seriesName.isEmpty()) {
+							if (groupedWork.isDebugEnabled()) {
+								groupedWork.addDebugMessage("Setting series to " + seriesName + " " + seriesDisplayOrder + " based on display info", 2);
+							}
+							groupedWork.clearSeries();
+							if (seriesDisplayOrder == null) {
+								seriesDisplayOrder = "";
+							}
+							groupedWork.addSeriesWithVolume(seriesName, author, seriesDisplayOrder, 2, false);
+						}else{
+							if (groupedWork.isDebugEnabled()) {
+								groupedWork.addDebugMessage("Not applying series data for grouped work because no series was defined", 2);
+							}
+						}
+					}else{
+						if (groupedWork.isDebugEnabled()) {
+							groupedWork.addDebugMessage("Not applying series data for grouped work because series module is enabled", 2);
+						}
 					}
-					groupedWork.setDisplayDescription(description);
-				} else {
-					if (groupedWork.isDebugEnabled()) {
-						groupedWork.addDebugMessage("No description set in display info, not changing description", 2);
+					String description = displayInfoRS.getString("description");
+					if (description != null && !description.isEmpty()){
+						if (groupedWork.isDebugEnabled()) {
+							groupedWork.addDebugMessage("Setting description to " + description + " based on display info", 2);
+						}
+						groupedWork.setDisplayDescription(description);
+					} else {
+						if (groupedWork.isDebugEnabled()) {
+							groupedWork.addDebugMessage("No description set in display info, not changing description", 2);
+						}
 					}
-				}
 
+				}
 			}
-			displayInfoRS.close();
 		}catch (Exception e){
 			logEntry.incErrors("Unable to load display info", e);
 		}
@@ -2279,11 +2281,11 @@ public class GroupedWorkIndexer implements AutoCloseable {
 
 	private void loadHideSubjects() {
 		try {
-			ResultSet hideSubjectsRS = getHideSubjectsStmt.executeQuery();
-			while (hideSubjectsRS.next()) {
-				hideSubjects.add(hideSubjectsRS.getString("subjectNormalized"));
+			try (ResultSet hideSubjectsRS = getHideSubjectsStmt.executeQuery()) {
+				while (hideSubjectsRS.next()) {
+					hideSubjects.add(hideSubjectsRS.getString("subjectNormalized"));
+				}
 			}
-			hideSubjectsRS.close();
 		} catch (SQLException e) {
 			logEntry.incErrors("Error loading subjects to hide: ", e);
 		}
@@ -2291,11 +2293,11 @@ public class GroupedWorkIndexer implements AutoCloseable {
 
 	private void loadHideSeries() {
 		try {
-			ResultSet hideSeriesRS = getHideSeriesStmt.executeQuery();
-			while (hideSeriesRS.next()) {
-				hideSeries.add(hideSeriesRS.getString("seriesNormalized").toLowerCase());
+			try (ResultSet hideSeriesRS = getHideSeriesStmt.executeQuery()) {
+				while (hideSeriesRS.next()) {
+					hideSeries.add(hideSeriesRS.getString("seriesNormalized").toLowerCase());
+				}
 			}
-			hideSeriesRS.close();
 		} catch (SQLException e) {
 			logEntry.incErrors("Error loading series to hide: ", e);
 		}
@@ -2310,12 +2312,12 @@ public class GroupedWorkIndexer implements AutoCloseable {
 		HashMap<String, SavedRecordInfo> existingRecords = new HashMap<>();
 		try {
 			getExistingRecordsForWorkStmt.setLong(1, groupedWorkId);
-			ResultSet getExistingRecordsForWorkRS = getExistingRecordsForWorkStmt.executeQuery();
-			while (getExistingRecordsForWorkRS.next()){
-				String key = getExistingRecordsForWorkRS.getString("sourceId") + ":" + getExistingRecordsForWorkRS.getString("recordIdentifier"); // + ":" + getExistingRecordsForWorkRS.getLong("formatId");
-				existingRecords.put(key, new SavedRecordInfo(getExistingRecordsForWorkRS));
+			try (ResultSet getExistingRecordsForWorkRS = getExistingRecordsForWorkStmt.executeQuery()) {
+				while (getExistingRecordsForWorkRS.next()){
+					String key = getExistingRecordsForWorkRS.getString("sourceId") + ":" + getExistingRecordsForWorkRS.getString("recordIdentifier"); // + ":" + getExistingRecordsForWorkRS.getLong("formatId");
+					existingRecords.put(key, new SavedRecordInfo(getExistingRecordsForWorkRS));
+				}
 			}
-			getExistingRecordsForWorkRS.close();
 		} catch (SQLException e) {
 			logEntry.incErrors("Error loading existing records for grouped works", e);
 		}
@@ -2345,19 +2347,19 @@ public class GroupedWorkIndexer implements AutoCloseable {
 				addRecordForWorkStmt.setLong(15, getAudienceId(recordInfo.getAudience(), 1));
 				addRecordForWorkStmt.setLong(16, getDurationId(recordInfo.getDuration(), 1));
 				addRecordForWorkStmt.executeUpdate();
-				ResultSet addRecordForWorkRS = addRecordForWorkStmt.getGeneratedKeys();
-				if (addRecordForWorkRS.next()) {
-					recordId = addRecordForWorkRS.getLong(1);
-				} else {
-					getIdForRecordStmt.setLong(1, sourceId);
-					getIdForRecordStmt.setString(2, recordInfo.getRecordIdentifier());
-					ResultSet getIdForRecordRS = getIdForRecordStmt.executeQuery();
-					if (getIdForRecordRS.next()) {
-						recordId = getIdForRecordRS.getLong("id");
+				try (ResultSet addRecordForWorkRS = addRecordForWorkStmt.getGeneratedKeys()) {
+					if (addRecordForWorkRS.next()) {
+						recordId = addRecordForWorkRS.getLong(1);
+					} else {
+						getIdForRecordStmt.setLong(1, sourceId);
+						getIdForRecordStmt.setString(2, recordInfo.getRecordIdentifier());
+						try (ResultSet getIdForRecordRS = getIdForRecordStmt.executeQuery()) {
+							if (getIdForRecordRS.next()) {
+								recordId = getIdForRecordRS.getLong("id");
+							}
+						}
 					}
-					getIdForRecordRS.close();
 				}
-				addRecordForWorkRS.close();
 			}else{
 				recordId = existingRecord.id;
 				//Check to see if we have any changes
@@ -2421,31 +2423,32 @@ public class GroupedWorkIndexer implements AutoCloseable {
 		Long sourceId = sourceIds.get(key);
 		if (sourceId == null){
 			try {
-				ResultSet getRecordSourceRS;
+				PreparedStatement recordSourceStmt;
 				if (subSource == null) {
 					getRecordSourceWithNoSubSourceStmt.setString(1, source);
-					getRecordSourceRS = getRecordSourceWithNoSubSourceStmt.executeQuery();
+					recordSourceStmt = getRecordSourceWithNoSubSourceStmt;
 				}else{
 					getRecordSourceStmt.setString(1, source);
 					getRecordSourceStmt.setString(2, subSource);
-					getRecordSourceRS = getRecordSourceStmt.executeQuery();
+					recordSourceStmt = getRecordSourceStmt;
 				}
-				if (getRecordSourceRS.next()){
-					sourceId = getRecordSourceRS.getLong("id");
-				}else {
-					addRecordSourceStmt.setString(1, source);
-					addRecordSourceStmt.setString(2, subSource);
-					addRecordSourceStmt.executeUpdate();
-					ResultSet addRecordSourceRS = addRecordSourceStmt.getGeneratedKeys();
-					if (addRecordSourceRS.next()) {
-						sourceId = addRecordSourceRS.getLong(1);
-					} else {
-						logEntry.incErrors("Could not add source");
-						sourceId = -1L;
+				try (ResultSet getRecordSourceRS = recordSourceStmt.executeQuery()) {
+					if (getRecordSourceRS.next()){
+						sourceId = getRecordSourceRS.getLong("id");
+					}else {
+						addRecordSourceStmt.setString(1, source);
+						addRecordSourceStmt.setString(2, subSource);
+						addRecordSourceStmt.executeUpdate();
+						try (ResultSet addRecordSourceRS = addRecordSourceStmt.getGeneratedKeys()) {
+							if (addRecordSourceRS.next()) {
+								sourceId = addRecordSourceRS.getLong(1);
+							} else {
+								logEntry.incErrors("Could not add source");
+								sourceId = -1L;
+							}
+						}
 					}
-					addRecordSourceRS.close();
 				}
-				getRecordSourceRS.close();
 			} catch (SQLException e) {
 				//Another thread already created it, call it again
 				if (numTries == 1) {
@@ -2469,22 +2472,22 @@ public class GroupedWorkIndexer implements AutoCloseable {
 		if (id == null){
 			try {
 				getFormatCategoryStmt.setString(1, formatCategory);
-				ResultSet getFormatCategoryRS = getFormatCategoryStmt.executeQuery();
-				if (getFormatCategoryRS.next()){
-					id = getFormatCategoryRS.getLong("id");
-				}else {
-					addFormatCategoryStmt.setString(1, formatCategory);
-					addFormatCategoryStmt.executeUpdate();
-					ResultSet addFormatCategoryRS = addFormatCategoryStmt.getGeneratedKeys();
-					if (addFormatCategoryRS.next()) {
-						id = addFormatCategoryRS.getLong(1);
-					} else {
-						logEntry.incErrors("Could not add format category");
-						id = -1L;
+				try (ResultSet getFormatCategoryRS = getFormatCategoryStmt.executeQuery()) {
+					if (getFormatCategoryRS.next()){
+						id = getFormatCategoryRS.getLong("id");
+					}else {
+						addFormatCategoryStmt.setString(1, formatCategory);
+						addFormatCategoryStmt.executeUpdate();
+						try (ResultSet addFormatCategoryRS = addFormatCategoryStmt.getGeneratedKeys()) {
+							if (addFormatCategoryRS.next()) {
+								id = addFormatCategoryRS.getLong(1);
+							} else {
+								logEntry.incErrors("Could not add format category");
+								id = -1L;
+							}
+						}
 					}
-					addFormatCategoryRS.close();
 				}
-				getFormatCategoryRS.close();
 			} catch (SQLException e) {
 				//Another thread already created it, call it again
 				if (numTries == 1) {
@@ -2508,22 +2511,22 @@ public class GroupedWorkIndexer implements AutoCloseable {
 		if (id == null){
 			try {
 				getFormatStmt.setString(1, format);
-				ResultSet getFormatRS = getFormatStmt.executeQuery();
-				if (getFormatRS.next()){
-					id = getFormatRS.getLong("id");
-				}else {
-					addFormatStmt.setString(1, format);
-					addFormatStmt.executeUpdate();
-					ResultSet addFormatRS = addFormatStmt.getGeneratedKeys();
-					if (addFormatRS.next()) {
-						id = addFormatRS.getLong(1);
-					} else {
-						logEntry.incErrors("Could not add format");
-						id = -1L;
+				try (ResultSet getFormatRS = getFormatStmt.executeQuery()) {
+					if (getFormatRS.next()){
+						id = getFormatRS.getLong("id");
+					}else {
+						addFormatStmt.setString(1, format);
+						addFormatStmt.executeUpdate();
+						try (ResultSet addFormatRS = addFormatStmt.getGeneratedKeys()) {
+							if (addFormatRS.next()) {
+								id = addFormatRS.getLong(1);
+							} else {
+								logEntry.incErrors("Could not add format");
+								id = -1L;
+							}
+						}
 					}
-					addFormatRS.close();
 				}
-				getFormatRS.close();
 			} catch (SQLException e) {
 				//Another thread already created it, call it again
 				if (numTries == 1) {
@@ -2547,22 +2550,22 @@ public class GroupedWorkIndexer implements AutoCloseable {
 		if (id == null){
 			try {
 				getLanguageStmt.setString(1, language);
-				ResultSet getLanguageRS = getLanguageStmt.executeQuery();
-				if (getLanguageRS.next()){
-					id = getLanguageRS.getLong("id");
-				}else {
-					addLanguageStmt.setString(1, language);
-					addLanguageStmt.executeUpdate();
-					ResultSet addLanguageRS = addLanguageStmt.getGeneratedKeys();
-					if (addLanguageRS.next()) {
-						id = addLanguageRS.getLong(1);
-					} else {
-						logEntry.incErrors("Could not add language");
-						id = -1L;
+				try (ResultSet getLanguageRS = getLanguageStmt.executeQuery()) {
+					if (getLanguageRS.next()){
+						id = getLanguageRS.getLong("id");
+					}else {
+						addLanguageStmt.setString(1, language);
+						addLanguageStmt.executeUpdate();
+						try (ResultSet addLanguageRS = addLanguageStmt.getGeneratedKeys()) {
+							if (addLanguageRS.next()) {
+								id = addLanguageRS.getLong(1);
+							} else {
+								logEntry.incErrors("Could not add language");
+								id = -1L;
+							}
+						}
 					}
-					addLanguageRS.close();
 				}
-				getLanguageRS.close();
 			} catch (SQLException e) {
 				//Another thread already created it, call it again
 				if (numTries == 1) {
@@ -2589,22 +2592,22 @@ public class GroupedWorkIndexer implements AutoCloseable {
 		if (id == null){
 			try {
 				getEditionStmt.setString(1, edition);
-				ResultSet getEditionRS = getEditionStmt.executeQuery();
-				if (getEditionRS.next()){
-					id = getEditionRS.getLong("id");
-				}else {
-					addEditionStmt.setString(1, edition);
-					addEditionStmt.executeUpdate();
-					ResultSet addEditionRS = addEditionStmt.getGeneratedKeys();
-					if (addEditionRS.next()) {
-						id = addEditionRS.getLong(1);
-					} else {
-						logEntry.incErrors("Could not add edition");
-						id = -1L;
+				try (ResultSet getEditionRS = getEditionStmt.executeQuery()) {
+					if (getEditionRS.next()){
+						id = getEditionRS.getLong("id");
+					}else {
+						addEditionStmt.setString(1, edition);
+						addEditionStmt.executeUpdate();
+						try (ResultSet addEditionRS = addEditionStmt.getGeneratedKeys()) {
+							if (addEditionRS.next()) {
+								id = addEditionRS.getLong(1);
+							} else {
+								logEntry.incErrors("Could not add edition");
+								id = -1L;
+							}
+						}
 					}
-					addEditionRS.close();
 				}
-				getEditionRS.close();
 			} catch (SQLException e) {
 				//Another thread already created it, call it again
 				if (numTries == 1) {
@@ -2631,22 +2634,22 @@ public class GroupedWorkIndexer implements AutoCloseable {
 		if (id == null){
 			try {
 				getAudienceStmt.setString(1, audience);
-				ResultSet getAudienceRS = getAudienceStmt.executeQuery();
-				if (getAudienceRS.next()){
-					id = getAudienceRS.getLong("id");
-				}else {
-					addAudienceStmt.setString(1, audience);
-					addAudienceStmt.executeUpdate();
-					ResultSet addAudienceRS = addAudienceStmt.getGeneratedKeys();
-					if (addAudienceRS.next()) {
-						id = addAudienceRS.getLong(1);
-					} else {
-						logEntry.incErrors("Could not add audience");
-						id = -1L;
+				try (ResultSet getAudienceRS = getAudienceStmt.executeQuery()) {
+					if (getAudienceRS.next()){
+						id = getAudienceRS.getLong("id");
+					}else {
+						addAudienceStmt.setString(1, audience);
+						addAudienceStmt.executeUpdate();
+						try (ResultSet addAudienceRS = addAudienceStmt.getGeneratedKeys()) {
+							if (addAudienceRS.next()) {
+								id = addAudienceRS.getLong(1);
+							} else {
+								logEntry.incErrors("Could not add audience");
+								id = -1L;
+							}
+						}
 					}
-					addAudienceRS.close();
 				}
-				getAudienceRS.close();
 			} catch (SQLException e) {
 				//Another thread already created it, call it again
 				if (numTries == 1) {
@@ -2674,22 +2677,22 @@ public class GroupedWorkIndexer implements AutoCloseable {
 		if (id == null){
 			try {
 				getPublisherStmt.setString(1, publisher);
-				ResultSet getPublisherRS = getPublisherStmt.executeQuery();
-				if (getPublisherRS.next()){
-					id = getPublisherRS.getLong("id");
-				}else {
-					addPublisherStmt.setString(1, publisher);
-					addPublisherStmt.executeUpdate();
-					ResultSet addPublisherRS = addPublisherStmt.getGeneratedKeys();
-					if (addPublisherRS.next()) {
-						id = addPublisherRS.getLong(1);
-					} else {
-						logEntry.incErrors("Could not add publisher");
-						id = -1L;
+				try (ResultSet getPublisherRS = getPublisherStmt.executeQuery()) {
+					if (getPublisherRS.next()){
+						id = getPublisherRS.getLong("id");
+					}else {
+						addPublisherStmt.setString(1, publisher);
+						addPublisherStmt.executeUpdate();
+						try (ResultSet addPublisherRS = addPublisherStmt.getGeneratedKeys()) {
+							if (addPublisherRS.next()) {
+								id = addPublisherRS.getLong(1);
+							} else {
+								logEntry.incErrors("Could not add publisher");
+								id = -1L;
+							}
+						}
 					}
-					addPublisherRS.close();
 				}
-				getPublisherRS.close();
 			} catch (SQLException e) {
 				//Another thread already created it, call it again
 				if (numTries == 1) {
@@ -2716,22 +2719,22 @@ public class GroupedWorkIndexer implements AutoCloseable {
 		if (id == null){
 			try {
 				getPublicationDateStmt.setString(1, publicationDate);
-				ResultSet getPublicationDateRS = getPublicationDateStmt.executeQuery();
-				if (getPublicationDateRS.next()){
-					id = getPublicationDateRS.getLong("id");
-				}else {
-					addPublicationDateStmt.setString(1, publicationDate);
-					addPublicationDateStmt.executeUpdate();
-					ResultSet addPublicationDateRS = addPublicationDateStmt.getGeneratedKeys();
-					if (addPublicationDateRS.next()) {
-						id = addPublicationDateRS.getLong(1);
-					} else {
-						logEntry.incErrors("Could not add publicationDate");
-						id = -1L;
+				try (ResultSet getPublicationDateRS = getPublicationDateStmt.executeQuery()) {
+					if (getPublicationDateRS.next()){
+						id = getPublicationDateRS.getLong("id");
+					}else {
+						addPublicationDateStmt.setString(1, publicationDate);
+						addPublicationDateStmt.executeUpdate();
+						try (ResultSet addPublicationDateRS = addPublicationDateStmt.getGeneratedKeys()) {
+							if (addPublicationDateRS.next()) {
+								id = addPublicationDateRS.getLong(1);
+							} else {
+								logEntry.incErrors("Could not add publicationDate");
+								id = -1L;
+							}
+						}
 					}
-					addPublicationDateRS.close();
 				}
-				getPublicationDateRS.close();
 			} catch (SQLException e) {
 				//Another thread already created it, call it again
 				if (numTries == 1) {
@@ -2759,22 +2762,22 @@ public class GroupedWorkIndexer implements AutoCloseable {
 		if (id == null) {
 			try {
 				getPlaceOfPublicationStmt.setString(1, placeOfPublication);
-				ResultSet getPlaceOfPublicationRS = getPlaceOfPublicationStmt.executeQuery();
-				if(getPlaceOfPublicationRS.next()) {
-					id = getPlaceOfPublicationRS.getLong("id");
-				} else {
-					addPlaceOfPublicationStmt.setString(1, placeOfPublication);
-					addPlaceOfPublicationStmt.executeUpdate();
-					ResultSet addPlaceOfPublicationRS = addPlaceOfPublicationStmt.getGeneratedKeys();
-					if(addPlaceOfPublicationRS.next()) {
-						id = addPlaceOfPublicationRS.getLong(1);
+				try (ResultSet getPlaceOfPublicationRS = getPlaceOfPublicationStmt.executeQuery()) {
+					if(getPlaceOfPublicationRS.next()) {
+						id = getPlaceOfPublicationRS.getLong("id");
 					} else {
-						logEntry.incErrors("Could not add placeOfPublication");
-						id = -1L;
+						addPlaceOfPublicationStmt.setString(1, placeOfPublication);
+						addPlaceOfPublicationStmt.executeUpdate();
+						try (ResultSet addPlaceOfPublicationRS = addPlaceOfPublicationStmt.getGeneratedKeys()) {
+							if(addPlaceOfPublicationRS.next()) {
+								id = addPlaceOfPublicationRS.getLong(1);
+							} else {
+								logEntry.incErrors("Could not add placeOfPublication");
+								id = -1L;
+							}
+						}
 					}
-					addPlaceOfPublicationRS.close();
 				}
-				getPlaceOfPublicationRS.close();
 			} catch (SQLException e) {
 				//Another thread already created it, call it again
 				if (numTries == 1) {
@@ -2802,22 +2805,22 @@ public class GroupedWorkIndexer implements AutoCloseable {
 		if (id == null){
 			try {
 				getPhysicalDescriptionStmt.setString(1, physicalDescription);
-				ResultSet getPhysicalDescriptionRS = getPhysicalDescriptionStmt.executeQuery();
-				if (getPhysicalDescriptionRS.next()){
-					id = getPhysicalDescriptionRS.getLong("id");
-				}else {
-					addPhysicalDescriptionStmt.setString(1, physicalDescription);
-					addPhysicalDescriptionStmt.executeUpdate();
-					ResultSet addPhysicalDescriptionRS = addPhysicalDescriptionStmt.getGeneratedKeys();
-					if (addPhysicalDescriptionRS.next()) {
-						id = addPhysicalDescriptionRS.getLong(1);
-					} else {
-						logEntry.incErrors("Could not add physicalDescription");
-						id = -1L;
+				try (ResultSet getPhysicalDescriptionRS = getPhysicalDescriptionStmt.executeQuery()) {
+					if (getPhysicalDescriptionRS.next()){
+						id = getPhysicalDescriptionRS.getLong("id");
+					}else {
+						addPhysicalDescriptionStmt.setString(1, physicalDescription);
+						addPhysicalDescriptionStmt.executeUpdate();
+						try (ResultSet addPhysicalDescriptionRS = addPhysicalDescriptionStmt.getGeneratedKeys()) {
+							if (addPhysicalDescriptionRS.next()) {
+								id = addPhysicalDescriptionRS.getLong(1);
+							} else {
+								logEntry.incErrors("Could not add physicalDescription");
+								id = -1L;
+							}
+						}
 					}
-					addPhysicalDescriptionRS.close();
 				}
-				getPhysicalDescriptionRS.close();
 			} catch (SQLException e) {
 				//Another thread already created it, call it again
 				if (numTries == 1) {
@@ -2841,22 +2844,22 @@ public class GroupedWorkIndexer implements AutoCloseable {
 		if (id == null){
 			try {
 				getDurationStmt.setInt(1, duration);
-				ResultSet getPhysicalDescriptionRS = getDurationStmt.executeQuery();
-				if (getPhysicalDescriptionRS.next()){
-					id = getPhysicalDescriptionRS.getLong("id");
-				}else {
-					addDurationStmt.setInt(1, duration);
-					addDurationStmt.executeUpdate();
-					ResultSet addDurationRS = addDurationStmt.getGeneratedKeys();
-					if (addDurationRS.next()) {
-						id = addDurationRS.getLong(1);
-					} else {
-						logEntry.incErrors("Could not add duration");
-						id = -1L;
+				try (ResultSet getPhysicalDescriptionRS = getDurationStmt.executeQuery()) {
+					if (getPhysicalDescriptionRS.next()){
+						id = getPhysicalDescriptionRS.getLong("id");
+					}else {
+						addDurationStmt.setInt(1, duration);
+						addDurationStmt.executeUpdate();
+						try (ResultSet addDurationRS = addDurationStmt.getGeneratedKeys()) {
+							if (addDurationRS.next()) {
+								id = addDurationRS.getLong(1);
+							} else {
+								logEntry.incErrors("Could not add duration");
+								id = -1L;
+							}
+						}
 					}
-					addDurationRS.close();
 				}
-				getPhysicalDescriptionRS.close();
 			} catch (SQLException e) {
 				//Another thread already created it, call it again
 				if (numTries == 1) {
@@ -2880,22 +2883,22 @@ public class GroupedWorkIndexer implements AutoCloseable {
 		if (id == null){
 			try {
 				getEContentSourceStmt.setString(1, eContentSource);
-				ResultSet getEContentSourceRS = getEContentSourceStmt.executeQuery();
-				if (getEContentSourceRS.next()) {
-					id = getEContentSourceRS.getLong("id");
-				} else {
-					addEContentSourceStmt.setString(1, eContentSource);
-					addEContentSourceStmt.executeUpdate();
-					ResultSet addEContentSourceRS = addEContentSourceStmt.getGeneratedKeys();
-					if (addEContentSourceRS.next()) {
-						id = addEContentSourceRS.getLong(1);
+				try (ResultSet getEContentSourceRS = getEContentSourceStmt.executeQuery()) {
+					if (getEContentSourceRS.next()) {
+						id = getEContentSourceRS.getLong("id");
 					} else {
-						logEntry.incErrors("Could not add eContentSource");
-						id = -1L;
+						addEContentSourceStmt.setString(1, eContentSource);
+						addEContentSourceStmt.executeUpdate();
+						try (ResultSet addEContentSourceRS = addEContentSourceStmt.getGeneratedKeys()) {
+							if (addEContentSourceRS.next()) {
+								id = addEContentSourceRS.getLong(1);
+							} else {
+								logEntry.incErrors("Could not add eContentSource");
+								id = -1L;
+							}
+						}
 					}
-					addEContentSourceRS.close();
 				}
-				getEContentSourceRS.close();
 			} catch (SQLIntegrityConstraintViolationException cve) {
 				//Another thread already created it, call it again
 				if (numTries == 1) {
@@ -2922,22 +2925,22 @@ public class GroupedWorkIndexer implements AutoCloseable {
 		if (id == null){
 			try {
 				getShelfLocationStmt.setString(1, shelfLocation);
-				ResultSet getShelfLocationRS = getShelfLocationStmt.executeQuery();
-				if (getShelfLocationRS.next()){
-					id = getShelfLocationRS.getLong("id");
-				}else {
-					addShelfLocationStmt.setString(1, shelfLocation);
-					addShelfLocationStmt.executeUpdate();
-					ResultSet addShelfLocationRS = addShelfLocationStmt.getGeneratedKeys();
-					if (addShelfLocationRS.next()) {
-						id = addShelfLocationRS.getLong(1);
-					} else {
-						logEntry.incErrors("Could not add shelfLocation");
-						id = -1L;
+				try (ResultSet getShelfLocationRS = getShelfLocationStmt.executeQuery()) {
+					if (getShelfLocationRS.next()){
+						id = getShelfLocationRS.getLong("id");
+					}else {
+						addShelfLocationStmt.setString(1, shelfLocation);
+						addShelfLocationStmt.executeUpdate();
+						try (ResultSet addShelfLocationRS = addShelfLocationStmt.getGeneratedKeys()) {
+							if (addShelfLocationRS.next()) {
+								id = addShelfLocationRS.getLong(1);
+							} else {
+								logEntry.incErrors("Could not add shelfLocation");
+								id = -1L;
+							}
+						}
 					}
-					addShelfLocationRS.close();
 				}
-				getShelfLocationRS.close();
 			} catch (SQLException e) {
 				//Another thread already created it, call it again
 				if (numTries == 1) {
@@ -3063,22 +3066,22 @@ public class GroupedWorkIndexer implements AutoCloseable {
 		if (id == null){
 			try {
 				getStatusStmt.setString(1, status);
-				ResultSet getStatusRS = getStatusStmt.executeQuery();
-				if (getStatusRS.next()){
-					id = getStatusRS.getLong("id");
-				}else {
-					addStatusStmt.setString(1, status);
-					addStatusStmt.executeUpdate();
-					ResultSet addStatusRS = addStatusStmt.getGeneratedKeys();
-					if (addStatusRS.next()) {
-						id = addStatusRS.getLong(1);
-					} else {
-						logEntry.incErrors("Could not add status");
-						id = -1L;
+				try (ResultSet getStatusRS = getStatusStmt.executeQuery()) {
+					if (getStatusRS.next()){
+						id = getStatusRS.getLong("id");
+					}else {
+						addStatusStmt.setString(1, status);
+						addStatusStmt.executeUpdate();
+						try (ResultSet addStatusRS = addStatusStmt.getGeneratedKeys()) {
+							if (addStatusRS.next()) {
+								id = addStatusRS.getLong(1);
+							} else {
+								logEntry.incErrors("Could not add status");
+								id = -1L;
+							}
+						}
 					}
-					addStatusRS.close();
 				}
-				getStatusRS.close();
 			} catch (SQLException e) {
 				//Another thread already created it, call it again
 				if (numTries == 1) {
@@ -3102,22 +3105,22 @@ public class GroupedWorkIndexer implements AutoCloseable {
 		if (id == null){
 			try {
 				getLocationCodeStmt.setString(1, locationCode);
-				ResultSet getLocationCodeRS = getLocationCodeStmt.executeQuery();
-				if (getLocationCodeRS.next()){
-					id = getLocationCodeRS.getLong("id");
-				}else {
-					addLocationCodeStmt.setString(1, locationCode);
-					addLocationCodeStmt.executeUpdate();
-					ResultSet addLocationCodeRS = addLocationCodeStmt.getGeneratedKeys();
-					if (addLocationCodeRS.next()) {
-						id = addLocationCodeRS.getLong(1);
-					} else {
-						logEntry.incErrors("Could not add locationCode");
-						id = -1L;
+				try (ResultSet getLocationCodeRS = getLocationCodeStmt.executeQuery()) {
+					if (getLocationCodeRS.next()){
+						id = getLocationCodeRS.getLong("id");
+					}else {
+						addLocationCodeStmt.setString(1, locationCode);
+						addLocationCodeStmt.executeUpdate();
+						try (ResultSet addLocationCodeRS = addLocationCodeStmt.getGeneratedKeys()) {
+							if (addLocationCodeRS.next()) {
+								id = addLocationCodeRS.getLong(1);
+							} else {
+								logEntry.incErrors("Could not add locationCode");
+								id = -1L;
+							}
+						}
 					}
-					addLocationCodeRS.close();
 				}
-				getLocationCodeRS.close();
 			} catch (SQLException e) {
 				//Another thread already created it, call it again
 				if (numTries == 1) {
@@ -3141,22 +3144,22 @@ public class GroupedWorkIndexer implements AutoCloseable {
 		if (id == null){
 			try {
 				getSubLocationCodeStmt.setString(1, subLocationCode);
-				ResultSet getSubLocationCodeRS = getSubLocationCodeStmt.executeQuery();
-				if (getSubLocationCodeRS.next()){
-					id = getSubLocationCodeRS.getLong("id");
-				}else {
-					addSubLocationCodeStmt.setString(1, subLocationCode);
-					addSubLocationCodeStmt.executeUpdate();
-					ResultSet addSubLocationCodeRS = addSubLocationCodeStmt.getGeneratedKeys();
-					if (addSubLocationCodeRS.next()) {
-						id = addSubLocationCodeRS.getLong(1);
-					} else {
-						logEntry.incErrors("Could not add subLocationCode");
-						id = -1L;
+				try (ResultSet getSubLocationCodeRS = getSubLocationCodeStmt.executeQuery()) {
+					if (getSubLocationCodeRS.next()){
+						id = getSubLocationCodeRS.getLong("id");
+					}else {
+						addSubLocationCodeStmt.setString(1, subLocationCode);
+						addSubLocationCodeStmt.executeUpdate();
+						try (ResultSet addSubLocationCodeRS = addSubLocationCodeStmt.getGeneratedKeys()) {
+							if (addSubLocationCodeRS.next()) {
+								id = addSubLocationCodeRS.getLong(1);
+							} else {
+								logEntry.incErrors("Could not add subLocationCode");
+								id = -1L;
+							}
+						}
 					}
-					addSubLocationCodeRS.close();
 				}
-				getSubLocationCodeRS.close();
 			} catch (SQLException e) {
 				//Another thread already created it, call it again
 				if (numTries == 1) {
@@ -3174,26 +3177,26 @@ public class GroupedWorkIndexer implements AutoCloseable {
 	private void loadLocationLabels() {
 		locationLabelsByCode.clear();
 		try (PreparedStatement getLocationLabelsStmt = dbConn.prepareStatement("SELECT code, facetLabel, displayName FROM location", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)) {
-			ResultSet locationLabelsRS = getLocationLabelsStmt.executeQuery();
-			while (locationLabelsRS.next()) {
-				String code = locationLabelsRS.getString("code");
-				if (code == null) {
-					continue;
+			try (ResultSet locationLabelsRS = getLocationLabelsStmt.executeQuery()) {
+				while (locationLabelsRS.next()) {
+					String code = locationLabelsRS.getString("code");
+					if (code == null) {
+						continue;
+					}
+					String normalizedCode = code.trim().toLowerCase();
+					if (normalizedCode.isEmpty()) {
+						continue;
+					}
+					String label = locationLabelsRS.getString("facetLabel");
+					if (label == null || label.isEmpty()) {
+						label = locationLabelsRS.getString("displayName");
+					}
+					if (label == null || label.isEmpty()) {
+						label = code.trim();
+					}
+					locationLabelsByCode.put(normalizedCode, label);
 				}
-				String normalizedCode = code.trim().toLowerCase();
-				if (normalizedCode.isEmpty()) {
-					continue;
-				}
-				String label = locationLabelsRS.getString("facetLabel");
-				if (label == null || label.isEmpty()) {
-					label = locationLabelsRS.getString("displayName");
-				}
-				if (label == null || label.isEmpty()) {
-					label = code.trim();
-				}
-				locationLabelsByCode.put(normalizedCode, label);
 			}
-			locationLabelsRS.close();
 		} catch (SQLException e) {
 			logEntry.incErrors("Error loading location names from the Location table", e);
 		}
@@ -3223,17 +3226,17 @@ public class GroupedWorkIndexer implements AutoCloseable {
 		HashMap<VariationInfo, Long> existingVariations = new HashMap<>();
 		try {
 			getExistingVariationsForWorkStmt.setLong(1, groupedWorkId);
-			ResultSet getExistingVariationsForWorkRS = getExistingVariationsForWorkStmt.executeQuery();
-			while (getExistingVariationsForWorkRS.next()){
-				VariationInfo variation = new VariationInfo();
-				variation.databaseId = getExistingVariationsForWorkRS.getLong("id");
-				variation.primaryLanguageId = getExistingVariationsForWorkRS.getLong("primaryLanguageId");
-				variation.eContentSourceId = getExistingVariationsForWorkRS.getLong("eContentSourceId");
-				variation.formatId = getExistingVariationsForWorkRS.getLong("formatId");
-				variation.formatCategoryId = getExistingVariationsForWorkRS.getLong("formatCategoryId");
-				existingVariations.put(variation, variation.databaseId);
+			try (ResultSet getExistingVariationsForWorkRS = getExistingVariationsForWorkStmt.executeQuery()) {
+				while (getExistingVariationsForWorkRS.next()){
+					VariationInfo variation = new VariationInfo();
+					variation.databaseId = getExistingVariationsForWorkRS.getLong("id");
+					variation.primaryLanguageId = getExistingVariationsForWorkRS.getLong("primaryLanguageId");
+					variation.eContentSourceId = getExistingVariationsForWorkRS.getLong("eContentSourceId");
+					variation.formatId = getExistingVariationsForWorkRS.getLong("formatId");
+					variation.formatCategoryId = getExistingVariationsForWorkRS.getLong("formatCategoryId");
+					existingVariations.put(variation, variation.databaseId);
+				}
 			}
-			getExistingVariationsForWorkRS.close();
 		}catch (SQLException e){
 			logEntry.incErrors("Could not get existing variations for grouped work", e);
 		}
@@ -3260,28 +3263,26 @@ public class GroupedWorkIndexer implements AutoCloseable {
 				addVariationForWorkStmt.setLong(4, curVariationInfo.formatId);
 				addVariationForWorkStmt.setLong(5, curVariationInfo.formatCategoryId);
 				addVariationForWorkStmt.executeUpdate();
-				ResultSet addVariationForWorkRS = addVariationForWorkStmt.getGeneratedKeys();
-				if (addVariationForWorkRS.next()){
-					curVariationInfo.databaseId = addVariationForWorkRS.getLong(1);
-					existingVariations.put(curVariationInfo, curVariationInfo.databaseId);
-					addVariationForWorkRS.close();
-					return curVariationInfo.databaseId;
-				}else{
-					getIdForVariationStmt.setLong(1, groupedWorkId);
-					getIdForVariationStmt.setLong(2, curVariationInfo.primaryLanguageId);
-					getIdForVariationStmt.setLong(3, curVariationInfo.eContentSourceId);
-					getIdForVariationStmt.setLong(4, curVariationInfo.formatId);
-					getIdForVariationStmt.setLong(5, curVariationInfo.formatCategoryId);
-					ResultSet getIdForVariationRS = getIdForVariationStmt.executeQuery();
-					if (getIdForVariationRS.next()) {
-						curVariationInfo.databaseId = getIdForVariationRS.getLong("id");
+				try (ResultSet addVariationForWorkRS = addVariationForWorkStmt.getGeneratedKeys()) {
+					if (addVariationForWorkRS.next()){
+						curVariationInfo.databaseId = addVariationForWorkRS.getLong(1);
 						existingVariations.put(curVariationInfo, curVariationInfo.databaseId);
-						getIdForVariationRS.close();
 						return curVariationInfo.databaseId;
+					}else{
+						getIdForVariationStmt.setLong(1, groupedWorkId);
+						getIdForVariationStmt.setLong(2, curVariationInfo.primaryLanguageId);
+						getIdForVariationStmt.setLong(3, curVariationInfo.eContentSourceId);
+						getIdForVariationStmt.setLong(4, curVariationInfo.formatId);
+						getIdForVariationStmt.setLong(5, curVariationInfo.formatCategoryId);
+						try (ResultSet getIdForVariationRS = getIdForVariationStmt.executeQuery()) {
+							if (getIdForVariationRS.next()) {
+								curVariationInfo.databaseId = getIdForVariationRS.getLong("id");
+								existingVariations.put(curVariationInfo, curVariationInfo.databaseId);
+								return curVariationInfo.databaseId;
+							}
+						}
 					}
-					getIdForVariationRS.close();
 				}
-				addVariationForWorkRS.close();
 			} catch (SQLException e) {
 				logEntry.incErrors("Error saving grouped work variation", e);
 			}
@@ -3303,11 +3304,11 @@ public class GroupedWorkIndexer implements AutoCloseable {
 		HashMap<String, SavedItemInfo> existingItems = new HashMap<>();
 		try{
 			getExistingItemsForRecordStmt.setLong(1, recordId);
-			ResultSet getExistingItemsForRecordRS = getExistingItemsForRecordStmt.executeQuery();
-			while (getExistingItemsForRecordRS.next()){
-				existingItems.put(getExistingItemsForRecordRS.getString("itemId").toLowerCase(), new SavedItemInfo(getExistingItemsForRecordRS));
+			try (ResultSet getExistingItemsForRecordRS = getExistingItemsForRecordStmt.executeQuery()) {
+				while (getExistingItemsForRecordRS.next()){
+					existingItems.put(getExistingItemsForRecordRS.getString("itemId").toLowerCase(), new SavedItemInfo(getExistingItemsForRecordRS));
+				}
 			}
-			getExistingItemsForRecordRS.close();
 		}catch (SQLException e){
 			logEntry.incErrors("Error loading existing items for record", e);
 		}
@@ -3400,20 +3401,20 @@ public class GroupedWorkIndexer implements AutoCloseable {
 					addItemForRecordStmt.setString(23, itemInfo.getNote());
 					addItemForRecordStmt.setString(24, itemInfo.getDueDate());
 					addItemForRecordStmt.executeUpdate();
-					ResultSet addItemForWorkRS = addItemForRecordStmt.getGeneratedKeys();
-					if (addItemForWorkRS.next()) {
-						itemId = addItemForWorkRS.getLong(1);
-					} else {
-						getIdForItemStmt.setLong(1, recordId);
-						getIdForItemStmt.setLong(2, variationId);
-						getIdForItemStmt.setString(3, itemInfo.getItemIdentifier());
-						ResultSet getIdForItemRS = getIdForItemStmt.executeQuery();
-						if (getIdForItemRS.next()) {
-							recordId = getIdForItemRS.getLong("id");
+					try (ResultSet addItemForWorkRS = addItemForRecordStmt.getGeneratedKeys()) {
+						if (addItemForWorkRS.next()) {
+							itemId = addItemForWorkRS.getLong(1);
+						} else {
+							getIdForItemStmt.setLong(1, recordId);
+							getIdForItemStmt.setLong(2, variationId);
+							getIdForItemStmt.setString(3, itemInfo.getItemIdentifier());
+							try (ResultSet getIdForItemRS = getIdForItemStmt.executeQuery()) {
+								if (getIdForItemRS.next()) {
+									recordId = getIdForItemRS.getLong("id");
+								}
+							}
 						}
-						getIdForItemRS.close();
 					}
-					addItemForWorkRS.close();
 					SavedItemInfo savedItemInfo = new SavedItemInfo(itemId, recordId, variationId, itemInfo.getItemIdentifier(), shelfLocationId, callNumberId, sortableCallNumberId, itemInfo.getNumCopies(),
 						itemInfo.isOrderItem(), statusId, itemInfo.getDateAdded(), locationCodeId, subLocationId, itemInfo.getLastCheckinDate(), groupedStatusId, itemInfo.isAvailable(),
 						itemInfo.isHoldable(), itemInfo.getBarcode(), itemInfo.getNote(), itemInfo.getDueDate(), itemInfo.isInLibraryUseOnly(),
@@ -3523,11 +3524,11 @@ public class GroupedWorkIndexer implements AutoCloseable {
 			addScopeStmt.setBoolean(2, scope.isLibraryScope());
 			addScopeStmt.setBoolean(3, scope.isLocationScope());
 			addScopeStmt.executeUpdate();
-			ResultSet addScopeRS = addScopeStmt.getGeneratedKeys();
-			if (addScopeRS.next()){
-				scopeId = addScopeRS.getLong(1);
+			try (ResultSet addScopeRS = addScopeStmt.getGeneratedKeys()) {
+				if (addScopeRS.next()){
+					scopeId = addScopeRS.getLong(1);
+				}
 			}
-			addScopeRS.close();
 		} catch (SQLException e) {
 			logEntry.incErrors("Error saving scope", e);
 		}
@@ -3538,16 +3539,16 @@ public class GroupedWorkIndexer implements AutoCloseable {
 	HashMap<String, ExistingScopeInfo> getExistingScopes() {
 		HashMap<String, ExistingScopeInfo> existingScopes = new HashMap<>();
 		try {
-			ResultSet getExistingScopesRS = getExistingScopesStmt.executeQuery();
-			while (getExistingScopesRS.next()){
-				ExistingScopeInfo scopeInfo = new ExistingScopeInfo();
-				scopeInfo.id = getExistingScopesRS.getLong("id");
-				scopeInfo.scopeName = getExistingScopesRS.getString("name");
-				scopeInfo.isLibraryScope = getExistingScopesRS.getBoolean("isLibraryScope");
-				scopeInfo.isLocationScope = getExistingScopesRS.getBoolean("isLocationScope");
-				existingScopes.put(scopeInfo.scopeName, scopeInfo);
+			try (ResultSet getExistingScopesRS = getExistingScopesStmt.executeQuery()) {
+				while (getExistingScopesRS.next()){
+					ExistingScopeInfo scopeInfo = new ExistingScopeInfo();
+					scopeInfo.id = getExistingScopesRS.getLong("id");
+					scopeInfo.scopeName = getExistingScopesRS.getString("name");
+					scopeInfo.isLibraryScope = getExistingScopesRS.getBoolean("isLibraryScope");
+					scopeInfo.isLocationScope = getExistingScopesRS.getBoolean("isLocationScope");
+					existingScopes.put(scopeInfo.scopeName, scopeInfo);
+				}
 			}
-			getExistingScopesRS.close();
 		} catch (SQLException e) {
 			logEntry.incErrors("Error loading existing scopes", e);
 		}
@@ -3698,35 +3699,35 @@ public class GroupedWorkIndexer implements AutoCloseable {
 			//check to see if we need to make an update
 			getExistingRecordInfoForIdentifierStmt.setString(1, ilsId);
 			getExistingRecordInfoForIdentifierStmt.setString(2, indexingProfile.getName());
-			ResultSet getExistingRecordInfoForIdentifierRS = getExistingRecordInfoForIdentifierStmt.executeQuery();
-			if (getExistingRecordInfoForIdentifierRS.next()){
-				foundExisting = true;
-				long existingChecksum = getExistingRecordInfoForIdentifierRS.getLong("checksum");
-				long uncompressedLength = getExistingRecordInfoForIdentifierRS.getLong("sourceDataLength");
-				boolean deleted = getExistingRecordInfoForIdentifierRS.getBoolean("deleted");
-				//String marcAsString = new String(marcAsBytes);
-				if (deleted || (marcAsBytes.length != uncompressedLength) || (existingChecksum != checksumCalculator.getValue())){
-					long curTime = new Date().getTime() / 1000;
-					updateRecordInDBStmt.setLong(1, checksumCalculator.getValue());
-					updateRecordInDBStmt.setBlob(2, new ByteArrayInputStream(marcAsBytes));
-					updateRecordInDBStmt.setLong(3, curTime);
-					updateRecordInDBStmt.setLong(4, getExistingRecordInfoForIdentifierRS.getLong("id"));
-					updateRecordInDBStmt.executeUpdate();
-					returnValue = MarcStatus.CHANGED;
-				}
-			}else {
-				long lastModified = new Date().getTime() / 1000;
+			try (ResultSet getExistingRecordInfoForIdentifierRS = getExistingRecordInfoForIdentifierStmt.executeQuery()) {
+				if (getExistingRecordInfoForIdentifierRS.next()){
+					foundExisting = true;
+					long existingChecksum = getExistingRecordInfoForIdentifierRS.getLong("checksum");
+					long uncompressedLength = getExistingRecordInfoForIdentifierRS.getLong("sourceDataLength");
+					boolean deleted = getExistingRecordInfoForIdentifierRS.getBoolean("deleted");
+					//String marcAsString = new String(marcAsBytes);
+					if (deleted || (marcAsBytes.length != uncompressedLength) || (existingChecksum != checksumCalculator.getValue())){
+						long curTime = new Date().getTime() / 1000;
+						updateRecordInDBStmt.setLong(1, checksumCalculator.getValue());
+						updateRecordInDBStmt.setBlob(2, new ByteArrayInputStream(marcAsBytes));
+						updateRecordInDBStmt.setLong(3, curTime);
+						updateRecordInDBStmt.setLong(4, getExistingRecordInfoForIdentifierRS.getLong("id"));
+						updateRecordInDBStmt.executeUpdate();
+						returnValue = MarcStatus.CHANGED;
+					}
+				}else {
+					long lastModified = new Date().getTime() / 1000;
 
-				addRecordToDBStmt.setString(1, ilsId);
-				addRecordToDBStmt.setString(2, indexingProfile.getName());
-				addRecordToDBStmt.setLong(3, checksumCalculator.getValue());
-				addRecordToDBStmt.setLong(4, lastModified);
-				addRecordToDBStmt.setBlob(5, new ByteArrayInputStream(marcAsBytes));
-				addRecordToDBStmt.setLong(6, lastModified);
-				addRecordToDBStmt.executeUpdate();
-				returnValue = MarcStatus.NEW;
+					addRecordToDBStmt.setString(1, ilsId);
+					addRecordToDBStmt.setString(2, indexingProfile.getName());
+					addRecordToDBStmt.setLong(3, checksumCalculator.getValue());
+					addRecordToDBStmt.setLong(4, lastModified);
+					addRecordToDBStmt.setBlob(5, new ByteArrayInputStream(marcAsBytes));
+					addRecordToDBStmt.setLong(6, lastModified);
+					addRecordToDBStmt.executeUpdate();
+					returnValue = MarcStatus.NEW;
+				}
 			}
-			getExistingRecordInfoForIdentifierRS.close();
 
 		}catch (Exception e){
 			logEntry.incErrors("Error saving MARC record to database for " + ilsId + " found existing? " + foundExisting, e);
@@ -3758,16 +3759,16 @@ public class GroupedWorkIndexer implements AutoCloseable {
 			try {
 				getRecordForIdentifierStmt.setString(1, identifier);
 				getRecordForIdentifierStmt.setString(2, source);
-				ResultSet getRecordForIdentifierRS = getRecordForIdentifierStmt.executeQuery();
-				if (getRecordForIdentifierRS.next()) {
-					byte[] marcData = getRecordForIdentifierRS.getBytes("sourceData");
-					if (marcData != null && marcData.length > 0) {
-						String marcRecordRaw = new String(marcData, StandardCharsets.UTF_8);
-						marcRecord = MarcUtil.readJsonFormattedRecord(identifier, marcRecordRaw, logEntry);
-						marcRecordCache.put(key, marcRecord);
+				try (ResultSet getRecordForIdentifierRS = getRecordForIdentifierStmt.executeQuery()) {
+					if (getRecordForIdentifierRS.next()) {
+						byte[] marcData = getRecordForIdentifierRS.getBytes("sourceData");
+						if (marcData != null && marcData.length > 0) {
+							String marcRecordRaw = new String(marcData, StandardCharsets.UTF_8);
+							marcRecord = MarcUtil.readJsonFormattedRecord(identifier, marcRecordRaw, logEntry);
+							marcRecordCache.put(key, marcRecord);
+						}
 					}
 				}
-				getRecordForIdentifierRS.close();
 			} catch (Exception e) {
 				logEntry.incErrors("Error loading MARC record " + source + " " + identifier + " from database", e);
 			}

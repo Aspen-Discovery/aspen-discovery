@@ -11,9 +11,9 @@ AspenDiscovery.GroupedWork = (function(){
 				if (data.result === true){
 					$('.rate' + groupedWorkId).find('.ui-rater-starsOn').width(0);
 					$('#myRating' + groupedWorkId).hide();
-					AspenDiscovery.showMessage('Success', data.message, true);
+					AspenDiscovery.showMessage(__('Success'), data.message, true);
 				}else{
-					AspenDiscovery.showMessage('Sorry', data.message);
+					AspenDiscovery.showMessage(__('Sorry'), data.message);
 				}
 			});
 			return false;
@@ -24,7 +24,7 @@ AspenDiscovery.GroupedWork = (function(){
 			$.getJSON(
 				url, function(data){
 					if (data.result === false){
-						AspenDiscovery.showMessage('Sorry', "There was an error updating the title.");
+						AspenDiscovery.showMessage(__('Sorry'), __('There was an error updating the title.'));
 					}else{
 						$("#notInterested" + notInterestedId).hide();
 					}
@@ -38,9 +38,9 @@ AspenDiscovery.GroupedWork = (function(){
 				$.getJSON(url, function(data){
 					if (data.result === true){
 						$('#review_' + reviewId).hide();
-						AspenDiscovery.showMessage('Success', data.message, true);
+						AspenDiscovery.showMessage(__('Success'), data.message, true);
 					}else{
-						AspenDiscovery.showMessage('Sorry', data.message);
+						AspenDiscovery.showMessage(__('Sorry'), data.message);
 					}
 				});
 			}
@@ -200,7 +200,7 @@ AspenDiscovery.GroupedWork = (function(){
 					AspenDiscovery.initCarousels('.ajax-carousel');
 
 				} catch (e) {
-					alert("error loading enrichment: " + e);
+					alert(__('error loading enrichment: ') + e);
 				}
 			});
 		},
@@ -279,7 +279,7 @@ AspenDiscovery.GroupedWork = (function(){
 							if (data.result === true){
 								$("#groupedRecord" + recordId).parent('.result').hide();
 							}else{
-								AspenDiscovery.showMessage('Sorry', data.message);
+								AspenDiscovery.showMessage(__('Sorry'), data.message);
 							}
 						}
 				);
@@ -292,7 +292,7 @@ AspenDiscovery.GroupedWork = (function(){
 		reloadCover: function (id){
 			var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=reloadCover';
 			$.getJSON(url, function (data){
-						AspenDiscovery.showMessage("Success", data.message, true, true);
+						AspenDiscovery.showMessage(__('Success'), data.message, true, true);
 					}
 			);
 			return false;
@@ -326,7 +326,7 @@ AspenDiscovery.GroupedWork = (function(){
 							}
 							AspenDiscovery.closeLightbox();
 						} else {
-							AspenDiscovery.showMessage("Error", data.message);
+							AspenDiscovery.showMessage(__('Error'), data.message);
 						}
 					}
 				).fail(AspenDiscovery.ajaxFail);
@@ -350,9 +350,9 @@ AspenDiscovery.GroupedWork = (function(){
 				};
 				$.getJSON(url, params, function(data) {
 					if (data.result) {
-						AspenDiscovery.showMessage("Success", data.message);
+						AspenDiscovery.showMessage(__('Success'), data.message);
 					} else {
-						AspenDiscovery.showMessage("Error", data.message);
+						AspenDiscovery.showMessage(__('Error'), data.message);
 					}
 				}).fail(AspenDiscovery.ajaxFail);
 			}
@@ -422,7 +422,7 @@ AspenDiscovery.GroupedWork = (function(){
 		thirdPartyCoverToggle: function (groupedWorkId, recordType, recordId){
 			var url = Globals.path + '/GroupedWork/' + groupedWorkId + '/AJAX?method=thirdPartyCoverToggle&recordType=' + recordType + '&recordId=' + recordId;
 			$.getJSON(url, function (data){
-				AspenDiscovery.showMessage("Success", data.message, true, true);
+				AspenDiscovery.showMessage(__('Success'), data.message, true, true);
 			});
 			return false;
 		},
@@ -430,7 +430,7 @@ AspenDiscovery.GroupedWork = (function(){
 		clearUploadedCover: function (groupedWorkId, recordType, recordId){
 			var url = Globals.path + '/GroupedWork/' + groupedWorkId + '/AJAX?method=clearUploadedCover&recordType=' + recordType + '&recordId=' + recordId;
 			$.getJSON(url, function (data){
-				AspenDiscovery.showMessage("Success", data.message, true, true);
+				AspenDiscovery.showMessage(__('Success'), data.message, true, true);
 			});
 			return false;
 		},
@@ -512,7 +512,7 @@ AspenDiscovery.GroupedWork = (function(){
 		clearRelatedCover: function (id){
 			var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=clearRelatedCover';
 			$.getJSON(url, function (data){
-				AspenDiscovery.showMessage("Success", data.message, true, true);
+				AspenDiscovery.showMessage(__('Success'), data.message, true, true);
 			});
 			return false;
 		},
@@ -525,7 +525,7 @@ AspenDiscovery.GroupedWork = (function(){
 					if (data.success){
 						AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 					}else{
-						AspenDiscovery.showMessage("An error occurred", data.message);
+						AspenDiscovery.showMessage(__('An error occurred'), data.message);
 					}
 
 				}).fail(AspenDiscovery.ajaxFail);
@@ -544,7 +544,7 @@ AspenDiscovery.GroupedWork = (function(){
 					if (data.success){
 						AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 					}else{
-						AspenDiscovery.showMessage("An error occurred", data.message);
+						AspenDiscovery.showMessage(__('An error occurred'), data.message);
 					}
 
 				}).fail(AspenDiscovery.ajaxFail);
@@ -564,7 +564,7 @@ AspenDiscovery.GroupedWork = (function(){
 					if (data.success){
 						AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 					}else{
-						AspenDiscovery.showMessage("An error occurred", data.message);
+						AspenDiscovery.showMessage(__('An error occurred'), data.message);
 					}
 
 				}).fail(AspenDiscovery.ajaxFail);
@@ -594,9 +594,9 @@ AspenDiscovery.GroupedWork = (function(){
 			//AspenDiscovery.closeLightbox();
 			$.getJSON(url, function(data){
 				if (data.success){
-					AspenDiscovery.showMessage("Success", data.message, true, false);
+					AspenDiscovery.showMessage(__('Success'), data.message, true, false);
 				}else{
-					AspenDiscovery.showMessage("An error occurred", data.message, false, false);
+					AspenDiscovery.showMessage(__('An error occurred'), data.message, false, false);
 				}
 			}).fail(AspenDiscovery.ajaxFail);
 		},
@@ -606,9 +606,9 @@ AspenDiscovery.GroupedWork = (function(){
 				var url = Globals.path + "/Admin/AJAX?method=ungroupRecord&recordId=" + recordId;
 				$.getJSON(url, function(data){
 					if (data.success){
-						AspenDiscovery.showMessage("Success", data.message);
+						AspenDiscovery.showMessage(__('Success'), data.message);
 					}else{
-						AspenDiscovery.showMessage("An error occurred", data.message);
+						AspenDiscovery.showMessage(__('An error occurred'), data.message);
 					}
 
 				}).fail(AspenDiscovery.ajaxFail);
@@ -669,7 +669,7 @@ AspenDiscovery.GroupedWork = (function(){
 			var url = Globals.path + "/GroupedWork/" + id + "/AJAX?method=getStaffView";
 			$.getJSON(url, function (data){
 				if (!data.success){
-					AspenDiscovery.showMessage('Error', data.message);
+					AspenDiscovery.showMessage(__('Error'), data.message);
 				}else{
 					$("#staffViewPlaceHolder").replaceWith(data.staffView);
 				}
@@ -680,7 +680,7 @@ AspenDiscovery.GroupedWork = (function(){
 			var url = Globals.path + "/GroupedWork/" + id + "/AJAX?method=getWhileYouWait&activeFormat=" + format;
 			$.getJSON(url, function (data){
 				if (!data.success){
-					AspenDiscovery.showMessage('Error', data.message);
+					AspenDiscovery.showMessage(__('Error'), data.message);
 				}else{
 					AspenDiscovery.showMessage(data.title, data.body);
 				}
@@ -692,7 +692,7 @@ AspenDiscovery.GroupedWork = (function(){
 			var url = Globals.path + "/GroupedWork/" + id + "/AJAX?method=getYouMightAlsoLike&activeFormat=" + format;
 			$.getJSON(url, function (data){
 				if (!data.success){
-					AspenDiscovery.showMessage('Error', data.message);
+					AspenDiscovery.showMessage(__('Error'), data.message);
 				}else{
 					AspenDiscovery.showMessage(data.title, data.body);
 				}
@@ -741,7 +741,7 @@ AspenDiscovery.GroupedWork = (function(){
 			var url = Globals.path + "/GroupedWork/" + id + "/AJAX?method=getDisplayInfoForm";
 			$.getJSON(url, function (data){
 				if (!data.success){
-					AspenDiscovery.showMessage('Error', data.message);
+					AspenDiscovery.showMessage(__('Error'), data.message);
 				}else{
 					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 				}
@@ -761,7 +761,7 @@ AspenDiscovery.GroupedWork = (function(){
 			}
 			$.getJSON(url, params, function (data){
 				if (!data.success){
-					AspenDiscovery.showMessage('Error', data.message);
+					AspenDiscovery.showMessage(__('Error'), data.message);
 				}else{
 					AspenDiscovery.showMessage(data.title, data.message);
 				}
@@ -905,7 +905,7 @@ AspenDiscovery.GroupedWork = (function(){
 		},
 
 		showEdition: function(workId, format, variationId) {
-			$("#variationInfo_" + workId).html("Loading");
+			$("#variationInfo_" + workId).html(__('Loading'));
 			var url = Globals.path + '/GroupedWork/' + workId + '/AJAX';
 			let params = {
 				'method': 'getHorizDisplayFormatEdition',

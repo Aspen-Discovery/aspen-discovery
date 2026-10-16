@@ -9,6 +9,8 @@ services:
     image: ${BACKEND_IMAGE_TAG:-aspendiscovery/aspen}
     env_file:
       - .env
+    environment:
+      - DATABASE_SSL_MODE=${DATABASE_SSL_MODE:-DISABLED}
     networks:
       - net-aspen
     tty: true

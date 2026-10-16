@@ -279,6 +279,9 @@ class SystemAPI extends AbstractAPI {
 					$settings['autoPickUserHomeLocation'] = $app->autoPickUserHomeLocation;
 				}
 
+				$settings['useSingleTheme'] = $app->useSingleTheme;
+				$settings['overallTheme'] = $app->overallTheme;
+
 				//Check to see if we should use custom loading text
 
 				$settings['loadingMessageType'] = $app->loadingMessageType;

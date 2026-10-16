@@ -34,7 +34,7 @@ TitleScroller.prototype.loadTitlesFrom = function(jsonUrl) {
 	$.getJSON(jsonUrl, function(data) {
 		scroller.loadTitlesFromJsonData(data);
 	}).fail(function(){
-		scrollerBody.html("Unable to load titles. Please try again later.").show();
+		scrollerBody.html(__("Unable to load titles. Please try again later.")).show();
 		$(".scrollerLoadingContainer").hide();
 	});
 };
@@ -45,7 +45,7 @@ TitleScroller.prototype.loadTitlesFromJsonData = function(data) {
 	try {
 		if (data.error) throw {description:data.error};
 		if (data.titles.length === 0) {
-			scrollerBody.html("No titles were found for this list. Please try again later.");
+			scrollerBody.html(__("No titles were found for this list. Please try again later."));
 			$('#' + this.scrollerId + " .scrollerBodyContainer .scrollerLoadingContainer").hide();
 			scrollerBody.show();
 		} else {
@@ -64,7 +64,7 @@ TitleScroller.prototype.loadTitlesFromJsonData = function(data) {
 		}
 	} catch (err) {
 		if (scrollerBody != null){
-			scrollerBody.html("Error loading titles from data : '" + err.description + "' Please try again later.").show();
+			scrollerBody.html(__("Error loading titles from data : '") + err.description + __("' Please try again later.")).show();
 			$(".scrollerLoadingContainer").hide();
 		}
 	}
@@ -108,8 +108,8 @@ TitleScroller.prototype.updateScroller = function() {
 		}
 
 	} catch (err) {
-		alert("error in updateScroller for scroller " + this.scrollerId + " " + err.description);
-		scrollerBody.html("Error loading titles from data: '" + err + "' Please try again later.").show();
+		alert(__("error in updateScroller for scroller ") + this.scrollerId + " " + err.description);
+		scrollerBody.html(__("Error loading titles from data: '") + err + __("' Please try again later.")).show();
 		$(".scrollerLoadingContainer").hide();
 	}
 

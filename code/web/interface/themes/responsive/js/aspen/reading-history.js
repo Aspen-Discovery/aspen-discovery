@@ -403,7 +403,7 @@ AspenDiscovery.Account.ReadingHistory = (function(){
 			if (!newDateStr || !/^\d{4}-\d{2}-\d{2}$/.test(newDateStr)) {
 				$input.hide();
 				$display.show();
-				AspenDiscovery.showMessageWithButtons('Invalid Date', 'Please enter a valid date in YYYY-MM-DD format.');
+				AspenDiscovery.showMessageWithButtons(__('Invalid Date'), __('Please enter a valid date in YYYY-MM-DD format.'));
 				return;
 			}
 
@@ -417,7 +417,7 @@ AspenDiscovery.Account.ReadingHistory = (function(){
 			if (newTimestamp > todayTimestamp) {
 				$input.hide();
 				$display.show();
-				AspenDiscovery.showMessageWithButtons('Invalid Date', 'Return date cannot be in the future.');
+				AspenDiscovery.showMessageWithButtons(__('Invalid Date'), __('Return date cannot be in the future.'));
 				return;
 			}
 
@@ -457,7 +457,7 @@ AspenDiscovery.Account.ReadingHistory = (function(){
 				.fail(() => {
 					$input.hide();
 					$display.show();
-					AspenDiscovery.showMessageWithButtons('Error', 'Failed to update return date. Please try again.');
+					AspenDiscovery.showMessageWithButtons(__('Error'), __('Failed to update return date. Please try again.'));
 				});
 		}
 	};

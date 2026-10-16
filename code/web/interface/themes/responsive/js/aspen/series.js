@@ -12,7 +12,7 @@ AspenDiscovery.Series = (function(){
 				if (data.success){
 					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 				}else{
-					AspenDiscovery.showMessage("An error occurred", data.message);
+					AspenDiscovery.showMessage(__('An error occurred'), data.message);
 				}
 			}).fail(AspenDiscovery.ajaxFail);
 			return false;
@@ -24,9 +24,9 @@ AspenDiscovery.Series = (function(){
 			//AspenDiscovery.closeLightbox();
 			$.getJSON(url, function(data){
 				if (data.success){
-					AspenDiscovery.showMessage("Success", data.message, true, false);
+					AspenDiscovery.showMessage(__('Success'), data.message, true, false);
 				}else{
-					AspenDiscovery.showMessage("An error occurred", data.message, false, false);
+					AspenDiscovery.showMessage(__('An error occurred'), data.message, false, false);
 				}
 			}).fail(AspenDiscovery.ajaxFail);
 		},
@@ -56,9 +56,9 @@ AspenDiscovery.Series = (function(){
 				},
 				function(data) {
 					if (data.result) {
-						AspenDiscovery.showMessage("Success", data.message);
+						AspenDiscovery.showMessage(__('Success'), data.message);
 					} else {
-						AspenDiscovery.showMessage("Error", data.message);
+						AspenDiscovery.showMessage(__('Error'), data.message);
 					}
 				}
 			);
@@ -73,9 +73,9 @@ AspenDiscovery.Series = (function(){
 			//AspenDiscovery.closeLightbox();
 			$.getJSON(url, function(data){
 				if (data.success){
-					AspenDiscovery.showMessage("Success", data.message, false, true);
+					AspenDiscovery.showMessage(__('Success'), data.message, false, true);
 				}else{
-					AspenDiscovery.showMessage("An error occurred", data.message, false, false);
+					AspenDiscovery.showMessage(__('An error occurred'), data.message, false, false);
 				}
 			}).fail(AspenDiscovery.ajaxFail);
 		}

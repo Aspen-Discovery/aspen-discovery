@@ -46,13 +46,15 @@ class AspenUsage extends AbstractUsage {
 
 	public function getNumericColumnNames(): array {
 		return [
+			'year',
+			'month',
+			'day',
 			'pageViews',
 			'pageViewsByBots',
 			'pageViewsByAuthenticatedUsers',
 			'pagesWithErrors',
-			'slowPages',
+			'sessionsStarted',
 			'ajaxRequests',
-			'slowAjaxRequests',
 			'coverViews',
 			'genealogySearches',
 			'groupedWorkSearches',
@@ -60,11 +62,15 @@ class AspenUsage extends AbstractUsage {
 			'userListSearches',
 			'websiteSearches',
 			'eventsSearches',
+			'ebscoEdsSearches',
+			'ebscohostSearches',
+			'galeSearches',
+			'summonSearches',
+			'blockedRequests',
+			'blockedApiRequests',
 			'timedOutSearches',
 			'timedOutSearchesWithHighLoad',
 			'searchesWithErrors',
-			'ebscohostSearches',
-			'galeSearches',
 			'emailsSent',
 			'emailsFailed'
 		];
@@ -124,27 +130,118 @@ class AspenUsage extends AbstractUsage {
 		return $this->instance;
 	}
 
-	public function incEmailsSent() : void {
-		$this->__set('emailsSent', $this->emailsSent+1);
+	public function incEmailsSent() : bool {
+		return $this->incrementField('emailsSent');
 	}
 
-	public function incEmailsFailed() : void {
-		$this->__set('emailsFailed', $this->emailsFailed+1);
+	public function incEmailsFailed() : bool {
+		return $this->incrementField('emailsFailed');
 	}
 
-	public function incGroupedWorkSearches() {
-		$this->__set('groupedWorkSearches', $this->groupedWorkSearches+1);
+	public function incGroupedWorkSearches() : bool {
+		return $this->incrementField('groupedWorkSearches');
 	}
 
-	public function incTimedOutSearchesWithHighLoad() {
-		$this->__set('timedOutSearchesWithHighLoad', $this->timedOutSearchesWithHighLoad+1);
+	public function incTimedOutSearchesWithHighLoad() : bool {
+		return $this->incrementField('timedOutSearchesWithHighLoad');
 	}
 
-	public function incTimedOutSearches() {
-		$this->__set('timedOutSearches', $this->timedOutSearches+1);
+	public function incTimedOutSearches() : bool {
+		return $this->incrementField('timedOutSearches');
 	}
 
-	public function incSearchesWithErrors() {
-		$this->__set('searchesWithErrors', $this->searchesWithErrors+1);
+	public function incSearchesWithErrors() : bool {
+		return $this->incrementField('searchesWithErrors');
+	}
+
+	public function incPageViews() : bool {
+		return $this->incrementField('pageViews');
+	}
+
+	public function incPageViewsByBots() : bool {
+		return $this->incrementField('pageViewsByBots');
+	}
+
+	public function incPageViewsByAuthenticatedUsers() : bool {
+		return $this->incrementField('pageViewsByAuthenticatedUsers');
+	}
+
+	public function incPagesWithErrors() : bool {
+		return $this->incrementField('pagesWithErrors');
+	}
+
+	public function incSessionsStarted() : bool {
+		return $this->incrementField('sessionsStarted');
+	}
+
+	public function incAjaxRequests() : bool {
+		return $this->incrementField('ajaxRequests');
+	}
+
+	public function incCoverViews() : bool {
+		return $this->incrementField('coverViews');
+	}
+
+	public function incGenealogySearches() : bool {
+		return $this->incrementField('genealogySearches');
+	}
+
+	public function incOpenArchivesSearches() : bool {
+		return $this->incrementField('openArchivesSearches');
+	}
+
+	public function incUserListSearches() : bool {
+		return $this->incrementField('userListSearches');
+	}
+
+	public function incWebsiteSearches() : bool {
+		return $this->incrementField('websiteSearches');
+	}
+
+	public function incEventsSearches() : bool {
+		return $this->incrementField('eventsSearches');
+	}
+
+	public function incEbscoEdsSearches() : bool {
+		return $this->incrementField('ebscoEdsSearches');
+	}
+
+	public function incEbscohostSearches() : bool {
+		return $this->incrementField('ebscohostSearches');
+	}
+
+	public function incGaleSearches() : bool {
+		return $this->incrementField('galeSearches');
+	}
+
+	public function incSummonSearches() : bool {
+		return $this->incrementField('summonSearches');
+	}
+
+	public function incBlockedRequests() : bool {
+		return $this->incrementField('blockedRequests');
+	}
+
+	public function incBlockedApiRequests() : bool {
+		return $this->incrementField('blockedApiRequests');
+	}
+
+	private function incrementField(string $fieldName) : bool {
+		if (!property_exists($this, $fieldName)) {
+			return false;
+		}
+		$this->$fieldName++;
+		try {
+			//The unique key on ( instance, year, month, day ) lets one statement create today's row or add to it if
+			//another request got there first, so concurrent requests can't lose counts or duplicate the row
+			$instance = $this->escape($this->instance);
+			$year = (int)$this->year;
+			$month = (int)$this->month;
+			$day = (int)$this->day;
+			return $this->query("INSERT INTO aspen_usage (instance, year, month, day, $fieldName) VALUES ($instance, $year, $month, $day, 1) ON DUPLICATE KEY UPDATE $fieldName = $fieldName + 1");
+		} catch (Exception) {
+			//Ignore this, the table has not been created yet
+			return true;
+		}
 	}
 }

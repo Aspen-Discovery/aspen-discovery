@@ -8,6 +8,9 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.sql.Connection;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
@@ -43,7 +46,17 @@ public class BookCoverCleanup implements IProcessHandler {
 				processLog.saveResults();
 				File[] filesToCheck = coverDirectoryFile.listFiles((dir, name) -> name.toLowerCase().endsWith("jpg") || name.toLowerCase().endsWith("png"));
 				if (filesToCheck != null) {
+					Set<File> supersededCovers = findSupersededCovers(filesToCheck);
 					for (File curFile : filesToCheck) {
+						if (supersededCovers.contains(curFile)) {
+							if (curFile.delete()) {
+								numFilesDeleted++;
+								processLog.incUpdated();
+								continue;
+							}
+							processLog.incErrors("Unable to delete file " + curFile);
+							continue;
+						}
 						//Remove any files created more than 2 weeks ago.
 						try {
 							BasicFileAttributes fileAttributes = Files.readAttributes(curFile.toPath(), BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
@@ -77,5 +90,45 @@ public class BookCoverCleanup implements IProcessHandler {
 		}
 		processLog.setFinished();
 		processLog.saveResults();
+	}
+
+	//Covers whose name carries a fingerprint are written as <cacheName>~<fingerprint>.png,
+	//so anything sharing a prefix with a newer file can no longer be requested.
+	private Set<File> findSupersededCovers(File[] coverFiles) {
+		HashMap<String, File> newestByPrefix = new HashMap<>();
+		HashSet<File> supersededCovers = new HashSet<>();
+
+		for (File file : coverFiles) {
+			String fileName = file.getName();
+			int delimiterIndex = fileName.lastIndexOf('~');
+
+			if (delimiterIndex < 0) {
+				continue;
+			}
+
+			String prefix = fileName.substring(0, delimiterIndex);
+			File newestFile = newestByPrefix.get(prefix);
+			if (newestFile == null) {
+				newestByPrefix.put(prefix, file);
+				continue;
+			}
+
+			try {
+				if (getLastModified(file) > getLastModified(newestFile)) {
+					newestByPrefix.put(prefix, file);
+					supersededCovers.add(newestFile);
+					continue;
+				}
+				supersededCovers.add(file);
+			} catch (IOException e) {
+				//Never supersede a cover we could not compare
+			}
+		}
+
+		return supersededCovers;
+	}
+
+	private long getLastModified(File file) throws IOException {
+		return Files.getLastModifiedTime(file.toPath()).toMillis();
 	}
 }

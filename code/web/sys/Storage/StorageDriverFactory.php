@@ -49,6 +49,12 @@ class StorageDriverFactory {
 		return $configArray['Site']['dataPath'] ?? '/data/aspen-discovery/' . $serverName;
 	}
 
+	// The docroot, base for LocalStorageDriver's files/images/fonts keys.
+	public static function resolvePublicRoot(): string {
+		global $configArray;
+		return $configArray['Site']['local'];
+	}
+
 	private static function create(): StorageDriver {
 		return self::getLocalDriver();
 	}
@@ -59,7 +65,7 @@ class StorageDriverFactory {
 
 	private static function getLocalDriver(): StorageDriver {
 		if (self::$localInstance === null) {
-			self::$localInstance = new LocalStorageDriver(self::resolveDataRoot());
+			self::$localInstance = new LocalStorageDriver(self::resolveDataRoot(), self::resolvePublicRoot());
 		}
 		return self::$localInstance;
 	}

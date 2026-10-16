@@ -64,4 +64,5 @@
 		{/if}
 		<button type="submit" class="btn btn-sm btn-primary" name="submit">{translate text="Update Settings" isPublicFacing=true}</button>
 	</form>
+</div>
 {/strip}

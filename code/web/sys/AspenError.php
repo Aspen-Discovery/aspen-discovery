@@ -76,7 +76,7 @@ class AspenError extends DataObject {
 
 	static $_objectStructure = [];
 	static function getObjectStructure(string $context = ''): array {
-		if (isset(self::$_objectStructure[$context]) && self::$_objectStructure[$context] !== null) {
+		if (isset(self::$_objectStructure[$context])) {
 			return self::$_objectStructure[$context];
 		}
 		$structure =  [
@@ -184,12 +184,7 @@ class AspenError extends DataObject {
 
 		global $aspenUsage;
 		if (!empty($aspenUsage)) {
-			$aspenUsage->pagesWithErrors++;
-			try {
-				$aspenUsage->update();
-			} catch (Exception $e) {
-				//Table does not exist yet
-			}
+			$aspenUsage->incPagesWithErrors();
 		}
 
 		//Do not need to save UsageByIP since it is done in bootstrap and in realtime as counters update

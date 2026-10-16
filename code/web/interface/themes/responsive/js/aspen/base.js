@@ -126,8 +126,8 @@ var AspenDiscovery = (function(){
 			var modalDialog = aspenJQ("#modalDialog");
 			if (modalDialog.is(":visible")){
 				modalDialog.modal('hide');
-				aspenJQ('.modal-body').html("Loading...");
-				aspenJQ(".modal-title").text("Loading...");
+				aspenJQ('.modal-body').html(__('Loading...'));
+				aspenJQ(".modal-title").text(__('Loading...'));
 
 				if (callback !== undefined){
 					modalDialog.on('hidden.bs.modal', function (e) {
@@ -255,7 +255,7 @@ var AspenDiscovery = (function(){
 					var dialogTitle = trigger.attr("title") ? trigger.attr("title") : trigger.data("title");
 					var dialogDestination = trigger.attr("href");
 					aspenJQ("#myModalLabel").text(dialogTitle);
-					aspenJQ(".modal-body").html('Loading.').load(dialogDestination);
+					aspenJQ(".modal-body").html(__('Loading.')).load(dialogDestination);
 					aspenJQ(".extraModalButton").hide();
 					aspenJQ("#modalDialog").modal("show");
 					return false;
@@ -329,7 +329,7 @@ var AspenDiscovery = (function(){
 				return aspenJQ(this).attr('name');
 			}).get().join(",");
 			if (selectedSites.length === 0){
-				AspenDiscovery.showMessage("Error", "Please select at least one site to update");
+				AspenDiscovery.showMessage(__('Error'), __('Please select at least one site to update'));
 				return false;
 			}
 			return selectedSites;
@@ -617,14 +617,14 @@ var AspenDiscovery = (function(){
 					if (data.success) {
 						if (data.message.length > 0){
 							//User was logged in, show a message about how to update
-							AspenDiscovery.showMessage('Success', data.message, true, true);
+							AspenDiscovery.showMessage(__('Success'), data.message, true, true);
 						}else{
 							//Refresh the page
 							// noinspection SillyAssignmentJS
 							window.location.href = window.location.href;
 						}
 					} else {
-						AspenDiscovery.showMessage("Error", data.message);
+						AspenDiscovery.showMessage(__('Error'), data.message);
 					}
 				}
 			).fail(AspenDiscovery.ajaxFail);
@@ -674,7 +674,7 @@ var AspenDiscovery = (function(){
 						aspenJQ(".translation_id_" + translationId ).removeClass('not_translated').addClass("translated");
 						AspenDiscovery.closeLightbox();
 					} else {
-						AspenDiscovery.showMessage("Error", data.message);
+						AspenDiscovery.showMessage(__('Error'), data.message);
 					}
 				}
 			).fail(AspenDiscovery.ajaxFail);
@@ -788,7 +788,7 @@ var AspenDiscovery = (function(){
 					if (data.result.success) {
 						aspenJQ(elementToUpdate).text(data.result.formattedValue);
 					} else {
-						aspenJQ(elementToUpdate).text('Unable to format currency');
+						aspenJQ(elementToUpdate).text(__('Unable to format currency'));
 					}
 				}
 			).fail(AspenDiscovery.ajaxFail);
@@ -870,14 +870,14 @@ var AspenDiscovery = (function(){
 					if (data.success) {
 						if (data.message.length > 0){
 							//User was logged in, show a message about how to update
-							AspenDiscovery.showMessage('Success', data.message, true, true);
+							AspenDiscovery.showMessage(__('Success'), data.message, true, true);
 						}else{
 							//Refresh the page
 							// noinspection SillyAssignmentJS
 							window.location.href = window.location.href;
 						}
 					} else {
-						AspenDiscovery.showMessage("Error", data.message);
+						AspenDiscovery.showMessage(__('Error'), data.message);
 					}
 				}
 			).fail(AspenDiscovery.ajaxFail);
@@ -1241,7 +1241,7 @@ jQuery.validator.addMethod("multiemail", function (value, element) {
 		valid = valid && jQuery.validator.methods.email.call(this, value, element);
 	}
 	return valid;
-}, "Invalid email format: please use a comma to separate multiple email addresses.");
+}, __('Invalid email format: please use a comma to separate multiple email addresses.'));
 
 jQuery.validator.addMethod("email2", function (value, element) {
 	if (this.optional(element)) {
@@ -1249,7 +1249,7 @@ jQuery.validator.addMethod("email2", function (value, element) {
 	}
 	var emailToMatch = aspenJQ("#email").val();
 	return value === emailToMatch;
-}, "Email addresses must match.");
+}, __('Email addresses must match.'));
 
 $.validator.addMethod('repeat', function(value, element){
 	if(element.id.lastIndexOf('Repeat') === element.id.length - 6) {
@@ -1257,7 +1257,7 @@ $.validator.addMethod('repeat', function(value, element){
 		var valueOriginal = aspenJQ('#' + idOriginal).val();
 		return value === valueOriginal;
 	}
-}, "Repeat fields must match.");
+}, __('Repeat fields must match.'));
 
 jQuery.validator.addMethod("pinConfirmation", function (value, element) {
 	if (this.optional(element)) {
@@ -1265,7 +1265,7 @@ jQuery.validator.addMethod("pinConfirmation", function (value, element) {
 	}
 	var pinToMatch = aspenJQ("#pin").val();
 	return value === pinToMatch;
-}, "PINs must match.");
+}, __('PINs must match.'));
 
 /**
  * serverValidate is an alternative to jQuery validate's remote(). It owns 
@@ -1361,16 +1361,16 @@ jQuery.validator.addMethod("strongPassword", function(value, element) {
 }, function(params, element) {
 	const errors = [];
 	if (!$(element).data('pwdUpperValid')) {
-		errors.push('At least one uppercase letter is required.');
+		errors.push(__('At least one uppercase letter is required.'));
 	}
 	if (!$(element).data('pwdLowerValid')) {
-		errors.push('At least one lowercase letter is required.');
+		errors.push(__('At least one lowercase letter is required.'));
 	}
 	if (!$(element).data('pwdNumberValid')) {
-		errors.push('At least one number is required.');
+		errors.push(__('At least one number is required.'));
 	}
 	if (!$(element).data('pwdSpecialValid')) {
-		errors.push('At least one special character (-_~!@#$%^&*.+) is required.');
+		errors.push(__('At least one special character (-_~!@#$%^&*.+) is required.'));
 	}
 
 	return '<ul class="password-error-list" style="margin-top:5px; margin-bottom:0; padding-left:1.25em; list-style-type:disc"><li>' + errors.join('</li><li>') + '</li></ul>';

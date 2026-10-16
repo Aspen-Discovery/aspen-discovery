@@ -121,9 +121,9 @@ AspenDiscovery.Lists = (function () {
 				},
 				function (data) {
 					if (data.result) {
-						AspenDiscovery.showMessage("Success", data.message);
+						AspenDiscovery.showMessage(__('Success'), data.message);
 					} else {
-						AspenDiscovery.showMessage("Error", data.message);
+						AspenDiscovery.showMessage(__('Error'), data.message);
 					}
 				}
 			);
@@ -260,7 +260,7 @@ AspenDiscovery.Lists = (function () {
 					}
 					location.reload();
 				} else {
-					AspenDiscovery.showMessage('An error occurred', data.message);
+					AspenDiscovery.showMessage(__('An error occurred'), data.message);
 				}
 			});
 			return false;

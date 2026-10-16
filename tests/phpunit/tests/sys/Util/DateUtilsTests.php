@@ -187,4 +187,20 @@ class DateUtilsTests extends TestCase {
 	public function testFormatDateLocaleSkeletonOverridesPattern(): void {
 		$this->assertSame('Mar 2025', \DateUtils::formatDateLocale('2025-03-15', 'medium', 'none', 'yyyy-MM-dd', 'yMMM'));
 	}
+
+	public static function hourProvider(): array {
+		return [
+			'12:00' => ['12:00', 'Noon'],
+			'00:00' => ['00:00', 'Midnight'],
+			'24:00' => ['24:00', 'Midnight'],
+			'09:37' => ['09:37', '9:37 AM'],
+			'16:01' => ['16:01', '4:01 PM'],
+			'00:05' => ['00:05', '12:05 AM'],
+		];
+	}
+
+	#[DataProvider('hourProvider')]
+	public function testFormatHour(string $input, string $expected): void {
+		$this->assertSame($expected, \DateUtils::formatHour($input));
+	}
 }

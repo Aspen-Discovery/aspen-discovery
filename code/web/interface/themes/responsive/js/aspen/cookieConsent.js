@@ -29,21 +29,21 @@ AspenDiscovery.CookieConsent = (function() {
 					if (data.success) {
 						if (data.message.length > 0){
 							//User was logged in, show a message about how to update
-							AspenDiscovery.showMessage('Success', data.message, true, true);
+							AspenDiscovery.showMessage(__('Success'), data.message, true, true);
 						}else{
 							//Refresh the page
 							// noinspection SillyAssignmentJS
 							window.location.href = window.location.href;
 						}
 					} else {
-						AspenDiscovery.showMessage("Error", data.message);
+						AspenDiscovery.showMessage(__('Error'), data.message);
 					}
 				}
 			).fail(AspenDiscovery.ajaxFail);
 			return false;
 		},
 		cookieDisagree: function() {
-			AspenDiscovery.showMessage("Cookie Policy", Globals.cookiePolicyHTML);
+			AspenDiscovery.showMessage(__('Cookie Policy'), Globals.cookiePolicyHTML);
 			return;
 		},
 		cookieManage: function() {
@@ -61,10 +61,10 @@ AspenDiscovery.CookieConsent = (function() {
 			$.getJSON(url, params,
 				function(data) {
 					if(data.success){
-						AspenDiscovery.showMessageWithButtons("Manage Your Privacy Settings", data.modalBody, data.modalButtons);
+						AspenDiscovery.showMessageWithButtons(__('Manage Your Privacy Settings'), data.modalBody, data.modalButtons);
 						$('.stripPopup').hide();
 					} else {
-						AspenDiscovery.showMessage("There was an error retreiving your privacy settings");
+						AspenDiscovery.showMessage(__('There was an error retreiving your privacy settings'));
 					}
 				}
 			 ).fail(AspenDiscovery.ajaxFail);
@@ -86,7 +86,7 @@ AspenDiscovery.CookieConsent = (function() {
 				if(data.success) {
 					AspenDiscovery.showMessage(data.message);
 				} else {
-					AspenDiscovery.showMessage("There was an error updating your privacy settings");
+					AspenDiscovery.showMessage(__('There was an error updating your privacy settings'));
 				}
 			}
 		).fail(AspenDiscovery.ajaxFail);

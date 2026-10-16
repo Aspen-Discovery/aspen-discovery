@@ -10,7 +10,7 @@ class Websites_Results extends ResultsAction {
 		global $interface;
 		global $timer;
 		global $aspenUsage;
-		$aspenUsage->websiteSearches++;
+		$aspenUsage->incWebsiteSearches();
 
 		// Include Search Engine Class
 		require_once ROOT_DIR . '/sys/SolrConnector/Solr.php';

@@ -121,12 +121,6 @@ if (IPAddress::logTimingInformation()) {
 }
 $timer->logTime("Initial configuration");
 
-try {
-	$aspenUsage->find(true);
-} catch (Exception $e) {
-	//Table has not been created yet, ignore it
-}
-
 global $userAgent;
 $userAgentString = 'Unknown';
 if (isset($_SERVER['HTTP_USER_AGENT'])) {
@@ -229,8 +223,7 @@ try {
 
 //Check to see if we should be blocking based on the IP address
 if (IPAddress::isClientIpBlocked()) {
-	$aspenUsage->blockedRequests++;
-	$aspenUsage->update();
+	$aspenUsage->incBlockedRequests();
 
 	$usageByIPAddress->incrementNumBlockedRequests();
 

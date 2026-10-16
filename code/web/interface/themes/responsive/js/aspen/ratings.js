@@ -23,14 +23,14 @@ AspenDiscovery.Ratings = (function(){
 		doRatingReview: function (id){
 			$.getJSON(Globals.path + "/GroupedWork/"+id+"/AJAX?method=getPromptForReviewForm", function(data){
 				if (data.prompt) AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons); // only ask if user hasn't set the setting already
-				if (data.error)  AspenDiscovery.showMessage('Error', data.message);
+				if (data.error)  AspenDiscovery.showMessage(__('Error'), data.message);
 			}).fail(AspenDiscovery.ajaxFail)
 		},
 
 		doNoRatingReviews : function (){
 			$.getJSON(Globals.path + "/GroupedWork/AJAX?method=setNoMoreReviews", function(data){
-				if (data.success) AspenDiscovery.showMessage('Success', 'You will no longer be asked to give a review.', true)
-				else AspenDiscovery.showMessage('Error', 'Failed to save your setting.')
+				if (data.success) AspenDiscovery.showMessage(__('Success'), __('You will no longer be asked to give a review.'), true)
+				else AspenDiscovery.showMessage(__('Error'), __('Failed to save your setting.'))
 			}).fail(AspenDiscovery.ajaxFail);
 		}
 	};
@@ -92,7 +92,7 @@ $.fn.rater = function(options) {
 
 $.fn.rater.defaults = {
 	url : location.href,
-	ratings: ['Hated It', "Didn't Like It", 'Liked It', 'Really Liked It', 'Loved It'],
+	ratings: [__('Hated It'), __("Didn't Like It"), __('Liked It'), __('Really Liked It'), __('Loved It')],
 	step : 1
 };
 
@@ -103,7 +103,7 @@ $.fn.rater.rate = function($this, opts, rating) {
 		$off.fadeTo(600, 0.4, function() {
 			$.getJSON(opts.url, {method: 'rateTitle', id: opts.id, rating: rating}, function(data) {
 				if (data.error) {
-					AspenDiscovery.showMessage('Error', data.error);
+					AspenDiscovery.showMessage(__('Error'), data.error);
 					$off.fadeTo(500, 1).mouseleave(); // Reset rater in light of failure
 				}
 				if (data.rating) { // success

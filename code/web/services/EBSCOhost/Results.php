@@ -12,7 +12,7 @@ class EBSCOhost_Results extends ResultsAction {
 			$_REQUEST['lookfor'] = '*';
 		}
 
-		$aspenUsage->ebscohostSearches++;
+		$aspenUsage->incEbscohostSearches();
 
 		//Set default sort by setting the request variable so the init grabs it
 		if (!array_key_exists('sort', $_REQUEST) && UserAccount::isLoggedIn()) {

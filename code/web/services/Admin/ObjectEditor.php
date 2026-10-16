@@ -800,6 +800,16 @@ abstract class ObjectEditor extends Admin_Admin {
 				$user->updateMessageIsError = 0;
 				$user->update();
 
+				// Since we're trying again, make sure that the
+				// structure appropriate to a wholly new object
+				// is loaded.
+				$this->objectAction = 'addNew';
+				$interface->assign('context', $this->getContext());
+				$structure = $this->getObjectStructure($this->getContext());
+				$structure = $this->applyPermissionsToObjectStructure($structure);
+				$interface->assign('structure', $structure);
+				$interface->assign('objectAction', $objectAction);
+
 				//Redisplay the form
 				$this->viewIndividualObject($structure);
 				return;

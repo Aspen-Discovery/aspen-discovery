@@ -181,7 +181,7 @@ class MyAccount_Fines extends MyAccount {
 						}
 						$interface->assign('accessToken', $accessToken);
 
-						$aciManifest = "https://cds.officialpayments.com/js-sdk/1.5.0/manifest.json";
+						$aciManifest = "https://cds.officialpayments.com/js-sdk/1.7.14/manifest.json";
 						$aciManifest = file_get_contents($aciManifest);
 						$aciManifest = json_decode($aciManifest, true);
 						$sriHash = "";
