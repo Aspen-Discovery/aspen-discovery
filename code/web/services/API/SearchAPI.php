@@ -43,7 +43,7 @@ class SearchAPI extends AbstractAPI {
 		// and doesn't hurt anything to do.
 		$configArray = (array) $configArray;
 
-		$aspenUsage->coverViews++;
+		$aspenUsage->incCoverViews();
 		require_once ROOT_DIR . '/sys/Covers/BookCoverProcessor.php';
 
 		$processor = new BookCoverProcessor();
@@ -52,13 +52,6 @@ class SearchAPI extends AbstractAPI {
 			header('Content-type: text/plain');
 			$logger->log("Error processing cover " . $processor->error, Logger::LOG_ERROR);
 			echo $processor->error;
-		}
-
-		try {
-			$method = !empty($aspenUsage->__get('id')) ? "update" : "insert";
-			$aspenUsage->$method();
-		} catch (Exception $e) {
-			// The usage table may not have been created yet.
 		}
 	}
 
