@@ -288,6 +288,12 @@ class AJAX extends JSON_Action {
 		$result = $this->resolveSpotlightSource($collectionSpotlightList, $collectionSpotlight);
 		$result['success'] = true;
 		$result['currentIndex'] = count($result['titles']) > 5 ? floor(count($result['titles']) / 2) : 0;
+		foreach ($result['titles'] as &$title) {
+			if (!empty($title['formattedTitle'])) {
+				$title['formattedTitle'] = $this->rewriteSpotlightCoverUrls($title['formattedTitle']);
+			}
+		}
+		unset($title);
 
 		if ($memCache && !empty($result['titles'])) {
 			$memCache->set($cacheKey, $result, 3600);
@@ -343,6 +349,18 @@ class AJAX extends JSON_Action {
 				? $searchObject->getSpotlightResults($collectionSpotlight)
 				: [],
 		];
+	}
+
+	/**
+	 * Routes spotlight cover requests through SearchAPI so an embedded spotlight
+	 * does not require direct access to /bookcover.php.
+	 */
+	private function rewriteSpotlightCoverUrls(string $formattedTitle): string {
+		return preg_replace(
+			'#(?:(?:https?:)?//[^/]+)?/bookcover\\.php\\?#',
+			'/API/SearchAPI?method=getCollectionSpotlightCover&amp;',
+			$formattedTitle
+		);
 	}
 
 	/** @noinspection PhpUnused */
