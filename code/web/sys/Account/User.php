@@ -677,7 +677,9 @@ class User extends DataObject {
 				$administrationLocation->userId = $this->id;
 				$administrationLocation->find();
 				while ($administrationLocation->fetch()) {
-					$this->_additionalAdministrationLocations[$administrationLocation->locationId] = $locationsList[$administrationLocation->locationId];
+					if (array_key_exists($administrationLocation->locationId, $locationsList)) {
+						$this->_additionalAdministrationLocations[$administrationLocation->locationId] = $locationsList[$administrationLocation->locationId];
+					}
 				}
 			}
 		}
@@ -5898,7 +5900,7 @@ class User extends DataObject {
 				$this->_twoFactorAuthenticationSetting = null;
 			}else{
 				require_once ROOT_DIR . '/sys/TwoFactorAuthSetting.php';
-				$this->_twoFactorAuthenticationSetting = new TwoFactorAuthSetting();
+				$this->_twoFactorAuthenticationSetting = null;
 
 				// First we should check if they are required by role and have a role that requires 2FA. If so, we will return that setting.
 				$permissionRoles = $this->getRoles();
@@ -5908,43 +5910,56 @@ class User extends DataObject {
 							continue;
 						}
 						$roleSetting = new TwoFactorAuthSetting();
+						$roleSetting->accountProfileId = $this->getAccountProfile()->id;
+						$roleSetting->whereAdd("isEnabled <> 'notAllowed'");
+						$roleSetting->assignToUsersBy = "role";
 						$roleSetting->id = $role->twoFactorAuthSettingId;
-						if ($roleSetting->find(true) && $roleSetting->assignToUsersBy == "role") {
+						if ($roleSetting->find(true)) {
 							$this->_twoFactorAuthenticationSetting = $roleSetting;
 							return $this->_twoFactorAuthenticationSetting;
 						}
 					}
 				}
 
-				// As a backup, we will check if the user is required to use 2FA based on their patron type or account profile.
+				//Next check by patron type and library
+				$twoFaByPatronTypeAndLibrarySettings = new TwoFactorAuthSetting();
+				$twoFaByPatronTypeAndLibrarySettings->accountProfileId = $this->getAccountProfile()->id;
+				$twoFaByPatronTypeAndLibrarySettings->whereAdd("isEnabled <> 'notAllowed'");
+				$twoFaByPatronTypeAndLibrarySettings->assignToUsersBy = 'patronType';
+				$twoFaByPatronTypeAndLibrarySettings->find();
 				$patronType = $this->getPTypeObj();
-				$fallbackSetting = new TwoFactorAuthSetting();
-				if (!empty($patronType) && !empty($patronType->twoFactorAuthSettingId) && $patronType->twoFactorAuthSettingId != -1) {
-					$fallbackSetting->id = $patronType->twoFactorAuthSettingId;
-				} else {
-					$accountProfile = $this->getAccountProfile();
-					if (!empty($accountProfile)) {
-						$fallbackSetting->accountProfileId = $accountProfile->id;
+				while ($twoFaByPatronTypeAndLibrarySettings->fetch()) {
+					/** @noinspection PhpUndefinedFieldInspection */
+					$ptypesForSetting = $twoFaByPatronTypeAndLibrarySettings->ptypes;
+					if (!empty($ptypesForSetting)) {
+						$isPTypeValid = array_key_exists($patronType->id, $ptypesForSetting);
+					}else{
+						$isPTypeValid = true;
+					}
+					/** @noinspection PhpUndefinedFieldInspection */
+					$librariesForSetting = $twoFaByPatronTypeAndLibrarySettings->libraries;
+					if (!empty($librariesForSetting)) {
+						$isLibraryValid = array_key_exists($this->getHomeLibrary()->libraryId, $librariesForSetting);
+					}else{
+						$isLibraryValid = true;
+					}
+					if ($isPTypeValid && $isLibraryValid) {
+						$this->_twoFactorAuthenticationSetting = $twoFaByPatronTypeAndLibrarySettings;
+						return $this->_twoFactorAuthenticationSetting;
 					}
 				}
 
-				if ($fallbackSetting->find(true)) {
-					$this->_twoFactorAuthenticationSetting = $fallbackSetting;
-				} else {
-					$this->_twoFactorAuthenticationSetting = null;
+				// Finally check based on the account profile.
+				$accountProfileSetting = new TwoFactorAuthSetting();
+				$accountProfileSetting->whereAdd("isEnabled <> 'notAllowed'");
+				$accountProfileSetting->assignToUsersBy = 'accountProfile';
+				$accountProfileSetting->accountProfileId = $this->getAccountProfile()->id;
+				if ($accountProfileSetting->find(true)) {
+					$this->_twoFactorAuthenticationSetting = $accountProfileSetting;
 				}
 			}
 		}
 		return $this->_twoFactorAuthenticationSetting;
-	}
-
-	public function get2FAStatusForPType() : bool {
-		$twoFactorAuthSetting = $this->getTwoFactorAuthenticationSetting();
-		if ($twoFactorAuthSetting == null) {
-			return false;
-		}else{
-			return $twoFactorAuthSetting->isEnabled != 'notAvailable';
-		}
 	}
 
 	public function is2FARequired() : bool {
@@ -5959,9 +5974,9 @@ class User extends DataObject {
 	public function get2FAStatus() : bool {
 		$status = $this->twoFactorStatus;
 		if ($status == '1') {
-			//Make sure that 2-factor authentication has not been disabled by ptype even though the user previously opted in
-			$twoFactorAuthByPType = $this->get2FAStatusForPType();
-			if ($twoFactorAuthByPType) {
+			//Make sure that 2-factor authentication has not been disabled even though the user previously opted in
+			$twoFactorAuthSettings = $this->getTwoFactorAuthenticationSetting();
+			if ($twoFactorAuthSettings != null) {
 				return true;
 			}
 		}

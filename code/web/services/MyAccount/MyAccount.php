@@ -64,12 +64,13 @@ abstract class MyAccount extends Action {
 			global $interface;
 			$interface->assign('accountMessages', $accountMessages);
 
-			$ilsMessages = UserAccount::getActiveUserObj()->getILSMessages();
+			$user = UserAccount::getLoggedInUser();
+			$ilsMessages = $user->getILSMessages();
 			$interface->assign('ilsMessages', $ilsMessages);
 
 			// check if 2fa is available for user
-			$twoFactor = UserAccount::has2FAEnabledForPType();
-			$interface->assign('twoFactorEnabled', $twoFactor);
+			$twoFactor = $user->getTwoFactorAuthenticationSetting();
+			$interface->assign('twoFactorEnabled', $twoFactor  != null);
 
 			$this->loadAccountSidebarVariables();
 		}

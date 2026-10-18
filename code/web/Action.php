@@ -63,8 +63,9 @@ abstract class Action
 
 	function loadAccountSidebarVariables(){
 		global $interface;
-		$twoFactor = UserAccount::has2FAEnabledForPType();
-		$interface->assign('twoFactorEnabled', $twoFactor);
+		$user = UserAccount::getLoggedInUser();
+		$twoFactor = $user->getTwoFactorAuthenticationSetting();
+		$interface->assign('twoFactorEnabled', $twoFactor !== null);
 
 		// Check to see what sidebar sections to display, if any
 		$showUserCirculationModules = $interface->getVariable('showUserCirculationModules');

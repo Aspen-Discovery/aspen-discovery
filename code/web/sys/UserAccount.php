@@ -125,20 +125,20 @@ class UserAccount {
 						$canDisableEmail = false;
 						$canDisableTotp = false;
 					}
-				}
 
-				$requiredSetupWarning = null;
-				if (!$hasEmail && !$hasTotp) {
-					if ($allowEmail && !$allowTotp) {
-						$requiredSetupWarning = translate([
-							'text' => 'You must set up email two-factor authentication to keep using two-factor authentication.',
-							'isPublicFacing' => true
-						]);
-					} elseif (!$allowEmail && $allowTotp) {
-						$requiredSetupWarning = translate([
-							'text' => 'You must set up authenticator app (TOTP) to keep using two-factor authentication.',
-							'isPublicFacing' => true
-						]);
+					$requiredSetupWarning = null;
+					if (!$hasEmail && !$hasTotp) {
+						if ($allowEmail && !$allowTotp) {
+							$requiredSetupWarning = translate([
+								'text' => 'You must set up email two-factor authentication to keep using two-factor authentication.',
+								'isPublicFacing' => true
+							]);
+						} elseif (!$allowEmail && $allowTotp) {
+							$requiredSetupWarning = translate([
+								'text' => 'You must set up authenticator app (TOTP) to keep using two-factor authentication.',
+								'isPublicFacing' => true
+							]);
+						}
 					}
 				}
 			}
@@ -735,7 +735,12 @@ class UserAccount {
 
 		// Send back the user object (which may be an AspenError):
 		if ($primaryUser) {
-			if (!$validatedViaSSO && UserAccount::isRequired2FA() && !UserAccount::has2FAEnabled() && UserAccount::$isAuthenticated === false) {
+			if ($primaryUser instanceof AspenError) {
+				return $primaryUser;
+			}
+			//User should be a user object
+			$twoFactorAuthSettings = $primaryUser->getTwoFactorAuthenticationSetting();
+			if (!$validatedViaSSO && $twoFactorAuthSettings !== null && $twoFactorAuthSettings->isEnabled == 'mandatory' && !$primaryUser->get2FAStatus() && UserAccount::$isAuthenticated === false) {
 				UserAccount::$isLoggedIn = false;
 				$logger->log("User needs to enroll in two-factor authentication", Logger::LOG_DEBUG);
 				$authStatus = UserAccount::get2FAMethodStatus();
@@ -744,7 +749,7 @@ class UserAccount {
 				$_SESSION['codeSent'] = false;
 				$_SESSION['authMethod'] = $authStatus['allowTotp'] ? 'totp' : 'email';
 				return new TwoFactorAuthenticationError(UserAccount::getActiveUserId(), TwoFactorAuthenticationError:: MUST_ENROLL, "User needs to enroll in two-factor authentication");
-			} elseif (!$validatedViaSSO && UserAccount::has2FAEnabled() && UserAccount::$isAuthenticated === false) {
+			} elseif (!$validatedViaSSO && $twoFactorAuthSettings !== null && $primaryUser->get2FAStatus() && UserAccount::$isAuthenticated === false) {
 				UserAccount::$isLoggedIn = false;
 				$logger->log("User needs to two-factor authenticate", Logger::LOG_DEBUG);
 				$authStatus = UserAccount::get2FAMethodStatus();
@@ -768,7 +773,6 @@ class UserAccount {
 					require_once ROOT_DIR . '/sys/YearInReview/YearInReviewGenerator.php';
 					generateYearInReview($primaryUser);
 				}
-				$authStatus = UserAccount::get2FAMethodStatus();
 				$_SESSION['enroll2FA'] = false;
 				$_SESSION['has2FA'] = false;
 				$_SESSION['codeSent'] = false;
@@ -1072,14 +1076,6 @@ class UserAccount {
 			if($ssoSetting->ssoAuthOnly) {
 				return true;
 			}
-		}
-		return false;
-	}
-
-	static function has2FAEnabledForPType() {
-		UserAccount::loadUserObjectFromDatabase();
-		if (UserAccount::$primaryUserObjectFromDB != false  && UserAccount::$ssoAuthOnly === false) {
-			return UserAccount::$primaryUserObjectFromDB->get2FAStatusForPType();
 		}
 		return false;
 	}
