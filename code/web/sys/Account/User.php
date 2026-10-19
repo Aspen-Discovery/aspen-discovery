@@ -5911,7 +5911,7 @@ class User extends DataObject {
 						}
 						$roleSetting = new TwoFactorAuthSetting();
 						$roleSetting->accountProfileId = $this->getAccountProfile()->id;
-						$roleSetting->whereAdd("isEnabled <> 'notAllowed'");
+						$roleSetting->whereAdd("isEnabled <> 'notAvailable'");
 						$roleSetting->assignToUsersBy = "role";
 						$roleSetting->id = $role->twoFactorAuthSettingId;
 						if ($roleSetting->find(true)) {
@@ -5924,7 +5924,7 @@ class User extends DataObject {
 				//Next check by patron type and library
 				$twoFaByPatronTypeAndLibrarySettings = new TwoFactorAuthSetting();
 				$twoFaByPatronTypeAndLibrarySettings->accountProfileId = $this->getAccountProfile()->id;
-				$twoFaByPatronTypeAndLibrarySettings->whereAdd("isEnabled <> 'notAllowed'");
+				$twoFaByPatronTypeAndLibrarySettings->whereAdd("isEnabled <> 'notAvailable'");
 				$twoFaByPatronTypeAndLibrarySettings->assignToUsersBy = 'patronType';
 				$twoFaByPatronTypeAndLibrarySettings->find();
 				$patronType = $this->getPTypeObj();
@@ -5951,7 +5951,7 @@ class User extends DataObject {
 
 				// Finally check based on the account profile.
 				$accountProfileSetting = new TwoFactorAuthSetting();
-				$accountProfileSetting->whereAdd("isEnabled <> 'notAllowed'");
+				$accountProfileSetting->whereAdd("isEnabled <> 'notAvailable'");
 				$accountProfileSetting->assignToUsersBy = 'accountProfile';
 				$accountProfileSetting->accountProfileId = $this->getAccountProfile()->id;
 				if ($accountProfileSetting->find(true)) {
