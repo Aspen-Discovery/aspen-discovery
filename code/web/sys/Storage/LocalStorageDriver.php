@@ -3,15 +3,19 @@
 require_once ROOT_DIR . '/sys/Storage/StorageDriver.php';
 
 class LocalStorageDriver implements StorageDriver {
-	private string $dataRoot;
-	private string $publicRoot;
 
 	// Served directly by Apache from the docroot on every deployment type; see StorageDriverFactory::resolvePublicRoot().
 	private const PUBLIC_KEY_PREFIXES = ['files/', 'images/', 'fonts/'];
+	private const DIRECTORY_MODE = 0775;
 
-	public function __construct(string $dataRoot, string $publicRoot) {
+	private string $dataRoot;
+	private string $publicRoot;
+	private ?string $groupOwner;
+
+	public function __construct(string $dataRoot, string $publicRoot, ?string $groupOwner = null) {
 		$this->dataRoot = rtrim($dataRoot, '/');
 		$this->publicRoot = rtrim($publicRoot, '/');
+		$this->groupOwner = $groupOwner;
 	}
 
 	private function isPublicKey(string $key): bool {
@@ -52,7 +56,22 @@ class LocalStorageDriver implements StorageDriver {
 		$dest = $this->fullPath($key);
 		$dir = dirname($dest);
 		if (!file_exists($dir)) {
-			mkdir($dir, 0755, true);
+			global $logger;
+			// Collect every missing level so intermediate directories get the same group and mode
+			$newDirs = [];
+			for ($missing = $dir; !file_exists($missing); $missing = dirname($missing)) {
+				$newDirs[] = $missing;
+			}
+			mkdir($dir, self::DIRECTORY_MODE, true);
+			// A failure here doesn't block the write, but leaves the directory unusable by the other user
+			foreach ($newDirs as $newDir) {
+				if ($this->groupOwner !== null && !@chgrp($newDir, $this->groupOwner)) {
+					$logger->log("Could not set group {$this->groupOwner} on $newDir", Logger::LOG_ERROR);
+				}
+				if (!@chmod($newDir, self::DIRECTORY_MODE)) {
+					$logger->log("Could not set mode on $newDir", Logger::LOG_ERROR);
+				}
+			}
 		}
 		return copy($tmpPath, $dest);
 	}

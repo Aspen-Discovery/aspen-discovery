@@ -37,6 +37,7 @@ Access Aspen at http://localhost:85 (default credentials: `aspen_admin` / `secre
 | `ASPEN_HOME` | `./aspen` | Directory where instance files are stored (conf, data, logs) |
 | `ASPEN_ADMIN_PASSWORD` | `secretPass123` | Admin password |
 | `SUPPORTING_COMPANY` | `ByWater Solutions` | Support company name |
+| `FILE_GROUP_OWNER` | `www-data` | Group assigned to directories Aspen creates for uploaded files |
 
 ### Database
 
@@ -79,7 +80,7 @@ Environment variables are synced to configuration files on every container start
 
 **Supported variables for runtime updates:**
 - `DATABASE_HOST`, `DATABASE_PORT`, `DATABASE_NAME`, `DATABASE_USER`, `DATABASE_PASSWORD`
-- `TZ`, `URL`, `TITLE`, `LIBRARY`
+- `TZ`, `URL`, `TITLE`, `LIBRARY`, `FILE_GROUP_OWNER`
 - `SOLR_HOST`, `SOLR_PORT`
 
 **Note:** Changing database credentials requires the MariaDB user to already exist. MariaDB only creates users on first initialization.
