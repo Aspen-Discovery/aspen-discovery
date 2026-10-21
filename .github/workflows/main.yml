@@ -1,6 +1,15 @@
 name: Publish Docker image to hub.docker.com
 on:
-  push
+  push:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Git tag to build, or latest to build the selected branch as latest'
+        required: true
+        default: 'latest'
+
+env:
+  CHECKOUT_REF: ${{ github.event_name == 'workflow_dispatch' && inputs.tag != 'latest' && format('refs/tags/{0}', inputs.tag) || '' }}
 
 jobs:
   build_docker_images:
@@ -19,6 +28,8 @@ jobs:
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4
+        with:
+          ref: ${{ env.CHECKOUT_REF }}
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -26,15 +37,29 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Extract GitHub Tag
-        if: ${{ startsWith(github.ref, 'refs/tags/') }}
-        id: extract_tag
-        run: echo "GIT_TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
-
-      - name: Add placeholder if this is not a tag
-        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
-        id: extract_tag_dummy
-        run: echo "GIT_TAG=NOTHING" >> $GITHUB_ENV
+      - name: Select image tags
+        id: image_tags
+        shell: bash
+        env:
+          IMAGE_NAME: ${{ matrix.image }}
+          REQUESTED_TAG: ${{ inputs.tag }}
+        run: |
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
+            image_tags=("$REQUESTED_TAG")
+          elif [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            image_tags=(latest "${GITHUB_REF#refs/tags/}")
+          else
+            image_tags=(latest NOTHING)
+          fi
+          {
+            echo "tags<<EOF"
+            for image_tag in "${image_tags[@]}"; do
+              for repository in aspendiscovery ghcr.io/aspen-discovery quay.io/aspen-discovery; do
+                echo "$repository/$IMAGE_NAME:$image_tag"
+              done
+            done
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Extract branch name
         shell: bash
@@ -66,11 +91,5 @@ jobs:
           context: .
           file: ${{ matrix.dockerfile }}
           platforms: linux/amd64,linux/arm64
-          push: ${{ startsWith(github.ref, 'refs/tags/') }}
-          tags: |
-            aspendiscovery/${{ matrix.image }}:latest
-            ghcr.io/aspen-discovery/${{ matrix.image }}:latest
-            quay.io/aspen-discovery/${{ matrix.image }}:latest
-            aspendiscovery/${{ matrix.image }}:${{ env.GIT_TAG }}
-            ghcr.io/aspen-discovery/${{ matrix.image }}:${{ env.GIT_TAG }}
-            quay.io/aspen-discovery/${{ matrix.image }}:${{ env.GIT_TAG }}
+          push: ${{ github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/') }}
+          tags: ${{ steps.image_tags.outputs.tags }}
