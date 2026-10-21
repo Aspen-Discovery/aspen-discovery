@@ -48,6 +48,12 @@ class Record_AccessOnline extends Action {
 				} else {
 					$selectedAction = $recordActions[$actionIndex];
 				}
+				//Do not redirect to a URL that is hidden because the patron is not logged in
+				if (!empty($selectedAction['requireLogin']) && !UserAccount::isLoggedIn()) {
+					header('Location: ' . $this->recordDriver->getRecordUrl());
+					die();
+				}
+
 				$redirectUrl = $selectedAction['redirectUrl'];
 
 				//Track Usage
