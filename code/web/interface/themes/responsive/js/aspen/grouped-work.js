@@ -874,8 +874,11 @@ AspenDiscovery.GroupedWork = (function(){
 				$.each(activeManifestationInfo.variations, function () {
 					var activeClass = (i === 0) ? ' active' : '';
 					var variationButton = '<div role="option" tabindex="0" class="slider-slide horizontal-format-button slider-sm' + activeClass + '" data-workId="' + workId + '" data-variationid="' + this.databaseId + '" data-format="' + format + '" data-cleanedWorkId="' + cleanedWorkId + '">\n' +
-						'<div>' +
-						this.label + '<br/>' + this.groupedStatus +
+						'<div class="horizontal-format-button-format">' +
+						this.label +
+						'</div>' +
+						'<div class="related-manifestation-shelf-status ' + this.cssClass + '">' +
+						this.groupedStatus +
 						'</div>' +
 						'</div>';
 					variationSlider.append(variationButton);
