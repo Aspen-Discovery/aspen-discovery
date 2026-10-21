@@ -87,6 +87,9 @@ class Theme extends DataObject {
 	public $headerBackgroundImage;
 	public $headerBackgroundImageSize;
 	public $headerBackgroundImageRepeat;
+	public $headerBackgroundImageHeight;
+	public $headerBackgroundImageAdaptHeight;
+	public $headerLogoAlignment;
 
 	public static $defaultPageBackgroundColor = '#ffffff';
 	public $pageBackgroundColor;
@@ -150,6 +153,10 @@ class Theme extends DataObject {
 	public $footerForegroundColor;
 	public /** @noinspection PhpUnused */
 		$footerForegroundColorDefault;
+	public $footerBackgroundImage;
+	public $footerBackgroundImageSize;
+	public $footerBackgroundImageRepeat;
+	public $hideAspenVersion;
 
 	//Primary color is used for the search bar
 	public static $defaultPrimaryBackgroundColor = '#0a7589';
@@ -709,6 +716,24 @@ class Theme extends DataObject {
 			"repeat-y" => 'Repeat Y',
 		];
 
+		$headerLogoAlignments = [
+			"left" => 'Left',
+			"center" => 'Center',
+			"right" => 'Right',
+		];
+
+		$footerBackgroundImageSizes = [
+			"cover" => 'Cover',
+			"contain" => 'Contain',
+		];
+
+		$footerBackgroundImageRepeat = [
+			"no-repeat" => 'No Repeat',
+			"repeat" => 'Repeat',
+			"repeat-x" => 'Repeat X',
+			"repeat-y" => 'Repeat Y',
+		];
+
 		$themesToExtend = [];
 		$themesToExtend[''] = 'None';
 		$theme = new Theme();
@@ -794,6 +819,16 @@ class Theme extends DataObject {
 				'maxWidth' => 1170,
 				'maxHeight' => 250,
 				'hideInLists' => true,
+			],
+			'headerLogoAlignment' => [
+				'property' => 'headerLogoAlignment',
+				'type' => 'enum',
+				'values' => $headerLogoAlignments,
+				'label' => 'Logo Alignment',
+				'description' => 'Where the logo sits within its space in the header.',
+				'required' => false,
+				'hideInLists' => true,
+				'default' => 'left',
 			],
 			'favicon' => [
 				'property' => 'favicon',
@@ -952,11 +987,12 @@ class Theme extends DataObject {
 				'property' => 'headerBackgroundImage',
 				'type' => 'image',
 				'label' => 'Header Background Image',
-				'description' => 'Use an image as a background for the header.',
+				'description' => 'A wide image for the header background (roughly 6:1, e.g. 2400x400), up to 2560x800. Keep any logo/text centered; edges get cropped on some screens.',
 				'required' => false,
 				'hideInLists' => true,
 				'thumbWidth' => 750,
-				'maxWidth' => 1170,
+				'maxWidth' => 2560,
+				'maxHeight' => 800,
 			],
 			'headerBackgroundImageSize' => [
 				'property' => 'headerBackgroundImageSize',
@@ -977,6 +1013,22 @@ class Theme extends DataObject {
 				'required' => false,
 				'hideInLists' => true,
 				'default' => 'no-repeat',
+			],
+			'headerBackgroundImageHeight' => [
+				'property' => 'headerBackgroundImageHeight',
+				'type' => 'text',
+				'label' => 'Header Background Image Height (px)',
+				'description' => 'Fixed header height when a Header Background Image is set. Ignored if Adapt Header Height to Image is on.',
+				'required' => false,
+				'hideInLists' => true,
+			],
+			'headerBackgroundImageAdaptHeight' => [
+				'property' => 'headerBackgroundImageAdaptHeight',
+				'type' => 'checkbox',
+				'label' => 'Adapt Header Height to Image',
+				'description' => 'Size the header to the image\'s own shape so it never crops, instead of a fixed height. A tall/square image will make the header very tall on wide screens.',
+				'required' => false,
+				'hideInLists' => true,
 			],
 
 			//Breadcrumbs
@@ -1076,6 +1128,45 @@ class Theme extends DataObject {
 				'type' => 'text',
 				'label' => 'Footer Image Alternative Text',
 				'description' => 'The text to be used for screen readers',
+				'required' => false,
+				'hideInLists' => true,
+			],
+			'footerBackgroundImage' => [
+				'property' => 'footerBackgroundImage',
+				'type' => 'image',
+				'label' => 'Footer Background Image',
+				'description' => 'An image to use as a background for the footer.',
+				'required' => false,
+				'hideInLists' => true,
+				'thumbWidth' => 750,
+				'maxWidth' => 2560,
+				'maxHeight' => 800,
+			],
+			'footerBackgroundImageSize' => [
+				'property' => 'footerBackgroundImageSize',
+				'type' => 'enum',
+				'values' => $footerBackgroundImageSizes,
+				'label' => 'Footer Background Image Fit',
+				'description' => 'Choose how the footer background image displays. Cover = image will stretch to fit the entire footer space. Contain = image size will not be adjusted. ',
+				'required' => false,
+				'hideInLists' => true,
+				'default' => 'cover',
+			],
+			'footerBackgroundImageRepeat' => [
+				'property' => 'footerBackgroundImageRepeat',
+				'type' => 'enum',
+				'values' => $footerBackgroundImageRepeat,
+				'label' => 'Footer Background Image Repeat',
+				'description' => 'These options will allow the footer background image to repeat horizontally or vertically.',
+				'required' => false,
+				'hideInLists' => true,
+				'default' => 'no-repeat',
+			],
+			'hideAspenVersion' => [
+				'property' => 'hideAspenVersion',
+				'type' => 'checkbox',
+				'label' => 'Hide Aspen Version in Footer',
+				'description' => 'Hide the "v. X.X.X" Aspen Discovery version number normally shown in the footer.',
 				'required' => false,
 				'hideInLists' => true,
 			],
@@ -3174,6 +3265,63 @@ class Theme extends DataObject {
 		$interface->assign('headerBackgroundImage', $this->headerBackgroundImage);
 		$interface->assign('headerBackgroundImageSize', $this->headerBackgroundImageSize);
 		$interface->assign('headerBackgroundImageRepeat', $this->headerBackgroundImageRepeat);
+		$headerLogoAlignment = !empty($this->headerLogoAlignment) ? $this->headerLogoAlignment : 'left';
+		$interface->assign('headerLogoAlignment', $headerLogoAlignment);
+		$headerLogoNaturalHeight = null;
+		if ($headerLogoAlignment == 'center') {
+			// Centering pulls the logo out of normal flow (see theme.css.tpl), so #header-wrapper
+			// needs a fallback min-height to avoid collapsing, but only if nothing else already
+			// gives it one. The background-image height options below only take effect at all
+			// when headerBackgroundImage is set, so check that too, not just the flags themselves.
+			$hasOtherHeightSource = !empty($this->headerBackgroundImage)
+				&& (!empty($this->headerBackgroundImageAdaptHeight) || !empty($this->headerBackgroundImageHeight));
+			if (!$hasOtherHeightSource) {
+				global $configArray;
+				$headerLogoNaturalHeight = 60;
+				if (!empty($this->logoName)) {
+					$logoPath = $configArray['Site']['local'] . '/files/original/' . $this->logoName;
+					$logoDimensions = @getimagesize($logoPath);
+					if ($logoDimensions !== false && $logoDimensions[1] > 0) {
+						$headerLogoNaturalHeight = $logoDimensions[1] + 10; // + #header-logo's own top padding
+					}
+				}
+			}
+		}
+		$interface->assign('headerLogoNaturalHeight', $headerLogoNaturalHeight);
+		if ($this->headerBackgroundImageHeight != null) {
+			$headerBackgroundImageHeight = $this->headerBackgroundImageHeight;
+			if (is_numeric($headerBackgroundImageHeight)) {
+				$headerBackgroundImageHeight = $headerBackgroundImageHeight . 'px';
+			}
+			$interface->assign('headerBackgroundImageHeight', $headerBackgroundImageHeight);
+		} else {
+			$interface->assign('headerBackgroundImageHeight', null);
+		}
+		$interface->assign('headerBackgroundImageAdaptHeight', $this->headerBackgroundImageAdaptHeight);
+		$headerBackgroundImageAspectRatio = null;
+		$headerBackgroundImageMinHeight = null;
+		if ($this->headerBackgroundImageAdaptHeight) {
+			global $configArray;
+			if (!empty($this->headerBackgroundImage)) {
+				$headerBackgroundImagePath = $configArray['Site']['local'] . '/files/original/' . $this->headerBackgroundImage;
+				$imageDimensions = @getimagesize($headerBackgroundImagePath);
+				if ($imageDimensions !== false && $imageDimensions[0] > 0 && $imageDimensions[1] > 0) {
+					$headerBackgroundImageAspectRatio = $imageDimensions[0] . ' / ' . $imageDimensions[1];
+				}
+			}
+			// A wide/short background image can compute a header shorter than the Logo itself on
+			// narrow screens, so floor the height at the Logo's own height (or a sane default with no Logo).
+			$headerBackgroundImageMinHeight = 60;
+			if (!empty($this->logoName)) {
+				$logoPath = $configArray['Site']['local'] . '/files/original/' . $this->logoName;
+				$logoDimensions = @getimagesize($logoPath);
+				if ($logoDimensions !== false && $logoDimensions[1] > 0) {
+					$headerBackgroundImageMinHeight = $logoDimensions[1] + 10; // + #header-logo's own top padding
+				}
+			}
+		}
+		$interface->assign('headerBackgroundImageAspectRatio', $headerBackgroundImageAspectRatio);
+		$interface->assign('headerBackgroundImageMinHeight', $headerBackgroundImageMinHeight);
 		$interface->assign('pageBackgroundColor', $this->pageBackgroundColor);
 		$interface->assign('breadcrumbsBackgroundColor', $this->breadcrumbsBackgroundColor);
 		$interface->assign('breadcrumbsForegroundColor', $this->breadcrumbsForegroundColor);
@@ -3182,6 +3330,9 @@ class Theme extends DataObject {
 		$interface->assign('searchToolsForegroundColor', $this->searchToolsForegroundColor);
 		$interface->assign('footerBackgroundColor', $this->footerBackgroundColor);
 		$interface->assign('footerForegroundColor', $this->footerForegroundColor);
+		$interface->assign('footerBackgroundImage', $this->footerBackgroundImage);
+		$interface->assign('footerBackgroundImageSize', $this->footerBackgroundImageSize);
+		$interface->assign('footerBackgroundImageRepeat', $this->footerBackgroundImageRepeat);
 		$interface->assign('primaryBackgroundColor', $this->primaryBackgroundColor);
 		$interface->assign('primaryForegroundColor', $this->primaryForegroundColor);
 		$interface->assign('secondaryBackgroundColor', $this->secondaryBackgroundColor);
@@ -3816,6 +3967,7 @@ class Theme extends DataObject {
 		unset($this->logoApp);
 		unset($this->headerLogoApp);
 		unset($this->headerBackgroundImage);
+		unset($this->footerBackgroundImage);
 		unset($this->customBodyFont);
 		unset($this->customHeadingFont);
 		unset($this->generatedCss);

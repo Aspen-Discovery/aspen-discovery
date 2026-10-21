@@ -519,6 +519,15 @@ class UInterface extends Smarty {
 				$this->assign('footerLogoAlt', $footerLogoAlt);
 			}
 
+			$hideAspenVersion = false;
+			foreach ($allAppliedThemes as $theme) {
+				if (!empty($theme->hideAspenVersion)) {
+					$hideAspenVersion = true;
+					break;
+				}
+			}
+			$this->assign('hideAspenVersion', $hideAspenVersion);
+
 			//Get favicon
 			$favicon = null;
 			foreach ($allAppliedThemes as $theme) {
@@ -1183,8 +1192,9 @@ class UInterface extends Smarty {
 			if ($footerLogoAlt) {
 				$this->assign('footerLogoAlt', $footerLogoAlt);
 			}
-			
-			
+
+			$this->assign('hideAspenVersion', !empty($theme->hideAspenVersion));
+
 			$systemVariables = SystemVariables::getSystemVariables();
 			if (!empty($systemVariables)) {
 				$supportingCompany = $systemVariables->supportingCompany;
