@@ -371,6 +371,27 @@ public class KohaExportMain {
 		return kohaVersion;
 	}
 
+	private static boolean kohaTableExists(Connection kohaConn, String tableName) {
+		try (PreparedStatement tableExistsStmt = kohaConn.prepareStatement("SELECT 1 FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)) {
+			tableExistsStmt.setString(1, tableName);
+			try (ResultSet tableExistsRS = tableExistsStmt.executeQuery()) {
+				return tableExistsRS.next();
+			}
+		} catch (SQLException e) {
+			logEntry.incErrors("Error checking whether Koha table " + tableName + " exists", e);
+			return false;
+		}
+	}
+
+	private static void importHoliday(PreparedStatement addHolidayStmt, long libraryId, long locationId, java.sql.Date holidayDate, String title, HashMap<java.sql.Date, Long> existingHolidayDates) throws SQLException {
+		addHolidayStmt.setLong(1, libraryId);
+		addHolidayStmt.setLong(2, locationId);
+		addHolidayStmt.setDate(3, holidayDate);
+		addHolidayStmt.setString(4, title);
+		addHolidayStmt.executeUpdate();
+		existingHolidayDates.remove(holidayDate);
+	}
+
 	private static void exportBookCovers(Connection dbConn, Connection kohaConn) {
 		//Get a list of all images within the Koha database
 		int numCoversExported = 0;
@@ -1006,8 +1027,19 @@ public class KohaExportMain {
 			PreparedStatement addAspenLocationRecordsToIncludeStmt = dbConn.prepareStatement("INSERT INTO location_records_to_include (locationId, indexingProfileId, location, subLocation, weight) VALUES (?, ?, '.*', '', 2)");
 			PreparedStatement addAspenLibraryRecordsOwnedStmt = dbConn.prepareStatement("INSERT INTO library_records_to_include (libraryId, indexingProfileId, location, subLocation, weight, markRecordsAsOwned) VALUES (?, ?, ?, '', 1, 1) ON DUPLICATE KEY UPDATE location = CONCAT(location, '|', VALUES(location))");
 			PreparedStatement addAspenLibraryRecordsToIncludeStmt = dbConn.prepareStatement("INSERT INTO library_records_to_include (libraryId, indexingProfileId, location, subLocation, weight) VALUES (?, ?, '.*', '', 2)");
-			PreparedStatement kohaRepeatableHolidaysStmt = kohaConn.prepareStatement("SELECT * FROM repeatable_holidays where branchcode = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			PreparedStatement kohaSpecialHolidaysStmt = kohaConn.prepareStatement("SELECT * FROM special_holidays where (year = ? or year = ?) AND branchcode = ? order by  year, month, day", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			boolean kohaHasNormalizedClosureTables = kohaTableExists(kohaConn, "library_weekly_closures");
+			PreparedStatement kohaWeeklyClosuresStmt;
+			PreparedStatement kohaRepeatingClosuresStmt;
+			PreparedStatement kohaSingleClosuresStmt;
+			if (kohaHasNormalizedClosureTables) {
+				kohaWeeklyClosuresStmt = kohaConn.prepareStatement("SELECT weekday FROM library_weekly_closures WHERE library_id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+				kohaRepeatingClosuresStmt = kohaConn.prepareStatement("SELECT day, month, title FROM library_repeating_closures WHERE library_id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+				kohaSingleClosuresStmt = kohaConn.prepareStatement("SELECT date, title FROM library_single_closures WHERE library_id = ? AND YEAR(date) IN (?, ?) ORDER BY date", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			} else {
+				kohaWeeklyClosuresStmt = kohaConn.prepareStatement("SELECT weekday FROM repeatable_holidays WHERE branchcode = ? AND weekday IS NOT NULL", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+				kohaRepeatingClosuresStmt = kohaConn.prepareStatement("SELECT day, month, title FROM repeatable_holidays WHERE branchcode = ? AND weekday IS NULL", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+				kohaSingleClosuresStmt = kohaConn.prepareStatement("SELECT CONCAT(year, '-', LPAD(month, 2, '0'), '-', LPAD(day, 2, '0')) AS date, title FROM special_holidays WHERE branchcode = ? AND isexception = 0 AND year IN (?, ?) ORDER BY year, month, day", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			}
 			PreparedStatement kohaLibraryHoursStmt = kohaConn.prepareStatement("SELECT day, open_time, close_time FROM library_hours WHERE library_id = ? ORDER BY day", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			PreparedStatement existingHoursStmt = dbConn.prepareStatement("SELECT count(*) FROM location_hours where locationId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			PreparedStatement locationsToUpdateHoursStmt = dbConn.prepareStatement("SELECT locationId from location where allowUpdatingHoursFromILS = 1", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
@@ -1164,7 +1196,8 @@ public class KohaExportMain {
 						existingHolidaysRS.close();
 					}
 
-					if (locationsToUpdateHours.contains(existingLocationId)) {
+					boolean updateHoursForLocation = locationsToUpdateHours.contains(existingLocationId);
+					if (updateHoursForLocation) {
 						existingHoursStmt.setLong(1, existingLocationId);
 						ResultSet existingHoursRS = existingHoursStmt.executeQuery();
 						boolean hasExistingHours = false;
@@ -1207,63 +1240,37 @@ public class KohaExportMain {
 						kohaHoursRS.close();
 					}
 
-					kohaRepeatableHolidaysStmt.setString(1, ilsCode);
-					ResultSet kohaRepeatableHolidaysRS = kohaRepeatableHolidaysStmt.executeQuery();
-					while (kohaRepeatableHolidaysRS.next()) {
-						int weekday = kohaRepeatableHolidaysRS.getInt("weekday");
-						if (!kohaRepeatableHolidaysRS.wasNull()) {
-							if (locationsToUpdateHours.contains(existingLocationId)) {
-								// The library is closed on this date.
-								markLibraryClosed.setLong(1, existingLocationId);
-								markLibraryClosed.setInt(2, weekday);
-								markLibraryClosed.executeUpdate();
-							}
-						} else {
-							if (importHolidaysForLocation) {
-								// Add the holiday for this year.
-								String holidayDate = currentYear + "-" + kohaRepeatableHolidaysRS.getString("month") + "-" + kohaRepeatableHolidaysRS.getString("day");
-								java.sql.Date holidayDateAsDate = java.sql.Date.valueOf(holidayDate);
-								String title = kohaRepeatableHolidaysRS.getString("title");
-								addHolidayStmt.setLong(1, libraryId);
-								addHolidayStmt.setLong(2, existingLocationId);
-								addHolidayStmt.setDate(3, holidayDateAsDate);
-								addHolidayStmt.setString(4, title);
-								addHolidayStmt.executeUpdate();
-								existingHolidayDates.remove(holidayDateAsDate);
-
-								// Add the holiday for next year.
-								holidayDate = nextYear + "-" + kohaRepeatableHolidaysRS.getString("month") + "-" + kohaRepeatableHolidaysRS.getString("day");
-								holidayDateAsDate = java.sql.Date.valueOf(holidayDate);
-								addHolidayStmt.setLong(1, libraryId);
-								addHolidayStmt.setLong(2, existingLocationId);
-								addHolidayStmt.setDate(3, holidayDateAsDate);
-								addHolidayStmt.setString(4, title);
-								addHolidayStmt.executeUpdate();
-								existingHolidayDates.remove(holidayDateAsDate);
-							}
+					if (updateHoursForLocation) {
+						kohaWeeklyClosuresStmt.setString(1, ilsCode);
+						ResultSet kohaWeeklyClosuresRS = kohaWeeklyClosuresStmt.executeQuery();
+						while (kohaWeeklyClosuresRS.next()) {
+							markLibraryClosed.setLong(1, existingLocationId);
+							markLibraryClosed.setInt(2, kohaWeeklyClosuresRS.getInt("weekday"));
+							markLibraryClosed.executeUpdate();
 						}
+						kohaWeeklyClosuresRS.close();
 					}
-					kohaRepeatableHolidaysRS.close();
 
-
-					// Import Special Holidays
 					if (importHolidaysForLocation) {
-						kohaSpecialHolidaysStmt.setInt(1, Integer.parseInt(currentYear));
-						kohaSpecialHolidaysStmt.setInt(2, Integer.parseInt(nextYear));
-						kohaSpecialHolidaysStmt.setString(3, ilsCode);
-						ResultSet kohaSpecialHolidaysRS = kohaSpecialHolidaysStmt.executeQuery();
-						while (kohaSpecialHolidaysRS.next()) {
-							String holidayDate = kohaSpecialHolidaysRS.getString("year") + "-" + kohaSpecialHolidaysRS.getString("month") + "-" + kohaSpecialHolidaysRS.getString("day");
-							java.sql.Date holidayDateAsDate = java.sql.Date.valueOf(holidayDate);
-							String title = kohaSpecialHolidaysRS.getString("title");
-							addHolidayStmt.setLong(1, libraryId);
-							addHolidayStmt.setLong(2, existingLocationId);
-							addHolidayStmt.setDate(3, holidayDateAsDate);
-							addHolidayStmt.setString(4, title);
-							addHolidayStmt.executeUpdate();
-							existingHolidayDates.remove(holidayDateAsDate);
+						kohaRepeatingClosuresStmt.setString(1, ilsCode);
+						ResultSet kohaRepeatingClosuresRS = kohaRepeatingClosuresStmt.executeQuery();
+						while (kohaRepeatingClosuresRS.next()) {
+							String monthAndDay = kohaRepeatingClosuresRS.getString("month") + "-" + kohaRepeatingClosuresRS.getString("day");
+							String title = kohaRepeatingClosuresRS.getString("title");
+							importHoliday(addHolidayStmt, libraryId, existingLocationId, java.sql.Date.valueOf(currentYear + "-" + monthAndDay), title, existingHolidayDates);
+							importHoliday(addHolidayStmt, libraryId, existingLocationId, java.sql.Date.valueOf(nextYear + "-" + monthAndDay), title, existingHolidayDates);
 						}
-						kohaSpecialHolidaysRS.close();
+						kohaRepeatingClosuresRS.close();
+
+						kohaSingleClosuresStmt.setString(1, ilsCode);
+						kohaSingleClosuresStmt.setInt(2, Integer.parseInt(currentYear));
+						kohaSingleClosuresStmt.setInt(3, Integer.parseInt(nextYear));
+						ResultSet kohaSingleClosuresRS = kohaSingleClosuresStmt.executeQuery();
+						while (kohaSingleClosuresRS.next()) {
+							java.sql.Date holidayDate = java.sql.Date.valueOf(kohaSingleClosuresRS.getString("date"));
+							importHoliday(addHolidayStmt, libraryId, existingLocationId, holidayDate, kohaSingleClosuresRS.getString("title"), existingHolidayDates);
+						}
+						kohaSingleClosuresRS.close();
 					}
 
 					// Remove anything leftover.
@@ -1281,8 +1288,9 @@ public class KohaExportMain {
 
 			kohaLibraryHoursStmt.close();
 			updateHoursStmt.close();
-			kohaRepeatableHolidaysStmt.close();
-			kohaSpecialHolidaysStmt.close();
+			kohaWeeklyClosuresStmt.close();
+			kohaRepeatingClosuresStmt.close();
+			kohaSingleClosuresStmt.close();
 			existingHolidaysStmt.close();
 			addHolidayStmt.close();
 			removeHolidayStmt.close();
