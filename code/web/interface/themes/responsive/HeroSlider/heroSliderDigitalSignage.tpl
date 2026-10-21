@@ -13,7 +13,7 @@
 		{foreach from=$slides item=slide name=slideLoop}
 			<div class="signage-slide"
 				 data-duration="{$slide.duration}">
-				<img src="/WebBuilder/ViewImage?id={$slide.image->id}&size=full"
+				<img src="{$slide.image->getDisplayUrl('full')}"
 					 alt="{$slide.image->altText|escape}" />
 			</div>
 		{/foreach}

@@ -72,6 +72,18 @@ class DataObjectUtil {
 					$validationResults['errors'][] = $property['property'] . ' is required.';
 				}
 			}
+			if (in_array($property['type'], ['image', 'file']) && !empty($property['required']) && empty($object->getPrimaryKeyValue())) {
+				// Inserts only; on update a failed re-upload keeps the existing file
+				if (empty($object->{$property['property']})) {
+					$fileLabel = $property['label'] ?? $property['property'];
+					$uploadError = $_FILES[$property['property']]['error'] ?? UPLOAD_ERR_NO_FILE;
+					if ($uploadError === UPLOAD_ERR_NO_FILE) {
+						$validationResults['errors'][] = $fileLabel . ' is required.';
+					} else {
+						$validationResults['errors'][] = $fileLabel . ' could not be saved, the storage backend rejected the file. Please try again.';
+					}
+				}
+			}
 			if ($property['type'] == 'password' || $property['type'] == 'storedPassword') {
 				$valueRepeat = $_REQUEST[$property['property'] . 'Repeat'] ?? null;
 				if ($value != $valueRepeat) {
@@ -463,7 +475,9 @@ class DataObjectUtil {
 					$logger->log("Error uploading file " . $fileForProperty["error"], Logger::LOG_ERROR);
 				} elseif (true) { //TODO: validate the file type
 					$destFileName = $fileForProperty["name"];
-					$copyResult = StorageDriverFactory::get()->write('fonts/' . $destFileName, $fileForProperty["tmp_name"]);
+					// Always local: theme CSS loads fonts from the same-origin /fonts/ path,
+					// and a CDN-hosted font would also need CORS on the bucket
+					$copyResult = StorageDriverFactory::getById(null)->write('fonts/' . $destFileName, $fileForProperty["tmp_name"], mime_content_type($fileForProperty["tmp_name"]));
 					if ($copyResult) {
 						$logger->log("Stored font file: fonts/{$destFileName}", Logger::LOG_NOTICE);
 					} else {
@@ -990,6 +1004,7 @@ class DataObjectUtil {
 				$storageKey = $propertyDefinition['storageKey'];
 				$destFileName = ($object->getPrimaryKeyValue() != null) ? $objectType . "_" . $serverName . "_" . $object->getPrimaryKeyValue() . $fileType : "Temp_" . $fileForProperty["name"];
 				$storage = StorageDriverFactory::get();
+				$resolvedStorageSettingId = StorageDriverFactory::getActiveSettingId();
 
 				$uploadTmp = $fileForProperty["tmp_name"];
 
@@ -1011,7 +1026,7 @@ class DataObjectUtil {
 					$storeSource = $uploadTmp;
 				}
 
-				$copyResult = $storage->write($storageKey . '/' . $destFileName, $storeSource);
+				$copyResult = $storage->write($storageKey . '/' . $destFileName, $storeSource, mime_content_type($storeSource));
 
 				if (isset($resizedTmp)) {
 					unlink($resizedTmp);
@@ -1019,18 +1034,36 @@ class DataObjectUtil {
 				}
 
 				if ($copyResult) {
+					if (property_exists($object, 'storageSettingId')) {
+						// setProperty() so update() persists it when only changed fields are written
+						$object->setProperty('storageSettingId', $resolvedStorageSettingId, null);
+					}
 					$derivativeBase = dirname($storageKey);
 					if (isset($propertyDefinition['thumbWidth'])) {
 						$thumbTmp = tempnam(sys_get_temp_dir(), 'aspen_img_');
 						resizeImage($uploadTmp, $thumbTmp, $propertyDefinition['thumbWidth'], $propertyDefinition['thumbWidth']);
-						$storage->write($derivativeBase . '/thumbnail/' . $destFileName, $thumbTmp);
+						$storage->write($derivativeBase . '/thumbnail/' . $destFileName, $thumbTmp, mime_content_type($thumbTmp));
 						unlink($thumbTmp);
 					}
 					if (isset($propertyDefinition['mediumWidth'])) {
 						$medTmp = tempnam(sys_get_temp_dir(), 'aspen_img_');
 						resizeImage($uploadTmp, $medTmp, $propertyDefinition['mediumWidth'], $propertyDefinition['mediumWidth']);
-						$storage->write($derivativeBase . '/medium/' . $destFileName, $medTmp);
+						$storage->write($derivativeBase . '/medium/' . $destFileName, $medTmp, mime_content_type($medTmp));
 						unlink($medTmp);
+					}
+				} else {
+					// Warn instead of AspenError::raiseError(), which exit()s and drops the other fields
+					$logger->log("Failed to write $propertyName to storageSettingId=" . var_export($resolvedStorageSettingId, true), Logger::LOG_ERROR);
+					$user = UserAccount::getActiveUserObj();
+					if ($user) {
+						$warning = translate([
+							'text' => "Could not upload %1%, the storage backend did not accept the file.",
+							1 => $propertyDefinition['label'] ?? $propertyName,
+							'isAdminFacing' => true,
+						]);
+						$user->updateMessage = !empty($user->updateMessage) ? $user->updateMessage . '<br/>' . $warning : $warning;
+						$user->updateMessageIsError = true;
+						$user->update();
 					}
 				}
 			} else {

@@ -107,7 +107,7 @@ class API_HeroSliderAPI extends Action {
 		foreach ($activeImages as $slide) {
 			$slides[] = [
 				'imageId' => $slide['image']->id,
-				'imageUrl' => '/WebBuilder/ViewImage?id=' . $slide['image']->id . '&size=full',
+				'imageUrl' => $slide['image']->getDisplayUrl('full'),
 				'altText' => $slide['image']->altText ?? '',
 				'duration' => $slide['duration'],
 				'pageLink' => $slide['image']->pageLink ?? ''
