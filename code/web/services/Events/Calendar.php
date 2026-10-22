@@ -183,19 +183,22 @@ class Events_Calendar extends Action {
 			$selectedLocation = $_REQUEST['location'];
 		}
 
+		//Events can be indexed under the Aspen location name or the name used by an events integration
+		$branchNamesByLocation = $this->getBranchNamesForLocations($locations);
+
 		if ($selectedLocation === 'all') {
 			if ($library->aspenEventsToInclude == 2) {
 				$libraryBranches = $locations;
 				unset($libraryBranches['all']);
-				$branchNames = array_values($libraryBranches);
+				$branchNames = $this->getBranchNames(array_keys($libraryBranches), $branchNamesByLocation);
 				if (!empty($branchNames)) {
-					$searchObject->addHiddenFilter('branch', '("' . implode('" OR "', $branchNames) . '")');
+					$searchObject->addHiddenFilter('branch', $this->getBranchFilter($branchNames));
 				}
 			}
 		} else {
 			if (!empty($locations[$selectedLocation])) {
-				$branchName = $locations[$selectedLocation];
-				$searchObject->addHiddenFilter('branch', '"' . $branchName . '"');
+				$branchNames = $this->getBranchNames([$selectedLocation], $branchNamesByLocation);
+				$searchObject->addHiddenFilter('branch', $this->getBranchFilter($branchNames));
 			}
 		}
 
@@ -260,9 +263,9 @@ class Events_Calendar extends Action {
 		if ($selectedLocation === 'all' && $library->aspenEventsToInclude == 2) {
 			$libraryBranches = $allLocations;
 			unset($libraryBranches['all']);
-			$branchNames = array_values($libraryBranches);
+			$branchNames = $this->getBranchNames(array_keys($libraryBranches), $branchNamesByLocation);
 			if (!empty($branchNames)) {
-				$dropdownSearchObject->addHiddenFilter('branch', '("' . implode('" OR "', $branchNames) . '")');
+				$dropdownSearchObject->addHiddenFilter('branch', $this->getBranchFilter($branchNames));
 			}
 		}
 
@@ -278,7 +281,13 @@ class Events_Calendar extends Action {
 		$locationFacets = $dropdownSearchObject->getFacetList(['branch' => 'Branch']);
 		$dropdownSearchObject->close();
 
-		$locationsWithEvents = array_intersect($allLocations, array_column($locationFacets['branch']['list'] ?? [], 'value'));
+		$branchesWithEvents = array_column($locationFacets['branch']['list'] ?? [], 'value');
+		$locationsWithEvents = [];
+		foreach ($allLocations as $code => $name) {
+			if (!empty(array_intersect($this->getBranchNames([$code], $branchNamesByLocation, $name), $branchesWithEvents))) {
+				$locationsWithEvents[$code] = $name;
+			}
+		}
 
 		if (!empty($locationsWithEvents)) {
 			if (isset($allLocations['all'])) {
@@ -560,4 +569,68 @@ class Events_Calendar extends Action {
 		return 0;
 	}
 
+	/**
+	 * Get the branch names that events for each location can be indexed under. Aspen Events use the location's
+	 * display name while events integrations use the Events Integration Location Name from the location map.
+	 *
+	 * @param array $locations location code => display name
+	 * @return array location code => array of branch names
+	 */
+	private function getBranchNamesForLocations(array $locations) : array {
+		$branchNamesByLocation = [];
+		foreach ($locations as $code => $displayName) {
+			$branchNamesByLocation[$code] = [$displayName];
+		}
+		if (empty($branchNamesByLocation)) {
+			return $branchNamesByLocation;
+		}
+
+		$locationCodesById = [];
+		$location = new Location();
+		$location->selectAdd();
+		$location->selectAdd('code');
+		$location->selectAdd('locationId');
+		$location->whereAddIn('code', array_keys($branchNamesByLocation), true);
+		$location->find();
+		while ($location->fetch()) {
+			$locationCodesById[$location->locationId] = $location->code;
+		}
+
+		if (!empty($locationCodesById)) {
+			require_once ROOT_DIR . '/sys/Events/EventsBranchMapping.php';
+			$locationMap = new EventsBranchMapping();
+			$locationMap->whereAddIn('locationId', array_keys($locationCodesById), false);
+			$locationMap->find();
+			while ($locationMap->fetch()) {
+				$code = $locationCodesById[$locationMap->locationId];
+				if (!empty($locationMap->eventsLocation) && !in_array($locationMap->eventsLocation, $branchNamesByLocation[$code])) {
+					$branchNamesByLocation[$code][] = $locationMap->eventsLocation;
+				}
+			}
+		}
+		return $branchNamesByLocation;
+	}
+
+	/**
+	 * @param array $locationCodes the location codes to get branch names for
+	 * @param array $branchNamesByLocation location code => array of branch names
+	 * @param string|null $defaultName the name to use if a location code has no branch names
+	 * @return array the unique branch names for the locations
+	 */
+	private function getBranchNames(array $locationCodes, array $branchNamesByLocation, ?string $defaultName = null) : array {
+		$branchNames = [];
+		foreach ($locationCodes as $code) {
+			if (isset($branchNamesByLocation[$code])) {
+				$branchNames = array_merge($branchNames, $branchNamesByLocation[$code]);
+			} elseif ($defaultName !== null) {
+				$branchNames[] = $defaultName;
+			}
+		}
+		return array_values(array_unique($branchNames));
+	}
+
+	private function getBranchFilter(array $branchNames) : string {
+		$quotedNames = array_map(fn($branchName) => '"' . addcslashes($branchName, '"\\') . '"', $branchNames);
+		return '(' . implode(' OR ', $quotedNames) . ')';
+	}
 }
