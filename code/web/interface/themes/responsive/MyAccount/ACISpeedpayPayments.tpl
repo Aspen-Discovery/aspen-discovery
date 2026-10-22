@@ -7,7 +7,7 @@
 			</div>
 			<div class="panel-body">
 		{if (empty($aciError))}
-			<script data-aci-speedpay src="https://{$sdkUrl}/js-sdk/1.5.0/speedpay.js?billerId={$billerId}" integrity="{$sriHash}" crossorigin="anonymous" referrerpolicy="strict-origin"></script>
+			<script data-aci-speedpay src="https://{$sdkUrl}/js-sdk/1.7.14/speedpay.js?billerId={$billerId}" integrity="{$sriHash}" crossorigin="anonymous" referrerpolicy="strict-origin"></script>
 
 			<div class="row">
 				<div class="form-group col-xs-6 col-lg-7">
@@ -51,7 +51,7 @@
 						"singleUse": 'true',
 						"paymentMethod": 'Card',
 						"billerAccountId": '{/literal}{$billerAccountId}{literal}',
-						"styles": {
+						"userInterface": {
 							"input": {
 								"fontfamily": "Helvetica",
 								"color": "{/literal}{$bodyTextColor}{literal}",

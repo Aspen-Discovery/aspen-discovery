@@ -67,7 +67,7 @@ AspenDiscovery.Hoopla = (function(){
 		returnCheckout(patronId, hooplaId) {
 			if (Globals.loggedIn) {
 				if (confirm(__('Are you sure you want to return this title?'))) {
-					AspenDiscovery.showMessage("Returning Title", "Returning your title in Hoopla.");
+					AspenDiscovery.showMessage(__('Returning Title'), __('Returning your title in Hoopla.'));
 					const url = Globals.path + "/Hoopla/" + hooplaId + "/AJAX",
 						params = {
 							'method': 'returnCheckout'
@@ -112,7 +112,7 @@ AspenDiscovery.Hoopla = (function(){
 				dataType: 'json',
 				async: false,
 				error: function() {
-					AspenDiscovery.showMessage("Error", "An error occurred processing your request in Hoopla. Please try again in a few minutes.");
+					AspenDiscovery.showMessage(__('Error'), __('An error occurred processing your request in Hoopla. Please try again in a few minutes.'));
 				}
 			});
 			return result;
@@ -155,7 +155,7 @@ AspenDiscovery.Hoopla = (function(){
 							if (data.buttons) {
 								AspenDiscovery.showMessageWithButtons(data.title, data.message, data.buttons);
 							} else {
-								AspenDiscovery.showMessage("Error", data.message);
+								AspenDiscovery.showMessage(__('Error'), data.message);
 							}
 							if (data.success) {
 								AspenDiscovery.Account.loadMenuData();
@@ -164,7 +164,7 @@ AspenDiscovery.Hoopla = (function(){
 					},
 					dataType: 'json',
 					error: function() {
-						AspenDiscovery.showMessage("Error", "An error occurred placing your hold. Please try again in a few minutes.");
+						AspenDiscovery.showMessage(__('Error'), __('An error occurred placing your hold. Please try again in a few minutes.'));
 					}
 				});
 			} else {
@@ -183,17 +183,17 @@ AspenDiscovery.Hoopla = (function(){
 					cache: false,
 					success: function(data) {
 						if (data.success) {
-							AspenDiscovery.showMessage("Hold Cancelled", data.message, true);
+							AspenDiscovery.showMessage(__('Hold Cancelled'), data.message, true);
 							$(".hooplaHold_" + recordId + "_" + patronId).hide();
 							AspenDiscovery.Account.loadMenuData();
 						} else {
-							AspenDiscovery.showMessage("Error Cancelling Hold", data.message, true);
+							AspenDiscovery.showMessage(__('Error Cancelling Hold'), data.message, true);
 						}
 					},
 					dataType: 'json',
 					async: false,
 					error: function() {
-						AspenDiscovery.showMessage("Error Cancelling Hold", "An error occurred processing your request in Hoopla. Please try again in a few minutes.", false);
+						AspenDiscovery.showMessage(__('Error Cancelling Hold'), __('An error occurred processing your request in Hoopla. Please try again in a few minutes.'), false);
 					}
 				});
 			}

@@ -236,6 +236,25 @@ function getSortableDate(?string $str) : ?DateTime {
 		return $sortableDateCache[$str];
 	}
 
+	// ISO Year-Month-Day (e.g., 2026-08-24)
+	if (preg_match('/\b(\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])\b/', $str, $matches)) {
+		$date = DateTime::createFromFormat('!Y-m-d', $matches[0]);
+		$errors = DateTime::getLastErrors();
+		if ($date && ($errors === false || ($errors['warning_count'] === 0 && $errors['error_count'] === 0))) {
+			$sortableDateCache[$str] = $date;
+			return $sortableDateCache[$str];
+		}
+	}
+
+	// ISO Year-Month (e.g., 2026-08)
+	if (preg_match('/\b(\d{4})-(0[1-9]|1[0-2])\b/', $str, $matches)) {
+		$date = DateTime::createFromFormat('!Y-m', $matches[0]);
+		if ($date) {
+			$sortableDateCache[$str] = $date;
+			return $sortableDateCache[$str];
+		}
+	}
+
 	// Standard Month-Day-Year
 	if (preg_match("/(\d{1,2}-\d{1,2}-\d{2,4})/i", $str, $matches)) {
 		$date = DateTime::createFromFormat('m-d-y',$matches[0]) ?: DateTime::createFromFormat('m-d-Y', $matches[0]);

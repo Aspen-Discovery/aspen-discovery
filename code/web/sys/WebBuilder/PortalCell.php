@@ -56,7 +56,7 @@ class PortalCell extends DataObject {
 
 	static $_objectStructure = [];
 	static function getObjectStructure(string $context = ''): array {
-		if (isset(self::$_objectStructure[$context]) && self::$_objectStructure[$context] !== null) {
+		if (isset(self::$_objectStructure[$context])) {
 			return self::$_objectStructure[$context];
 		}
 
@@ -531,6 +531,7 @@ class PortalCell extends DataObject {
 				}
 			}
 		} elseif ($this->sourceType == 'hours_locations') {
+			require_once ROOT_DIR . '/sys/Utils/DateUtils.php';
 			global $library;
 			$libraryLocations = [];
 
@@ -576,46 +577,8 @@ class PortalCell extends DataObject {
 				$hours = $locationToProcess->getHours();
 				foreach ($hours as $key => $hourObj) {
 					if (!$hourObj->closed) {
-						$hourString = $hourObj->open;
-						[
-							$hour,
-							$minutes,
-						] = explode(':', $hourString);
-						if ($hour < 12) {
-							if ($hour == 0) {
-								$hour += 12;
-							}
-							$hourObj->open = +$hour . ":$minutes AM"; // remove leading zeros in the hour
-						} elseif ($hour == 12 && $minutes == '00') {
-							$hourObj->open = 'Noon';
-						} elseif ($hour == 24 && $minutes == '00') {
-							$hourObj->open = 'Midnight';
-						} else {
-							if ($hour != 12) {
-								$hour -= 12;
-							}
-							$hourObj->open = "$hour:$minutes PM";
-						}
-						$hourString = $hourObj->close;
-						[
-							$hour,
-							$minutes,
-						] = explode(':', $hourString);
-						if ($hour < 12) {
-							if ($hour == 0) {
-								$hour += 12;
-							}
-							$hourObj->close = "$hour:$minutes AM";
-						} elseif ($hour == 12 && $minutes == '00') {
-							$hourObj->close = 'Noon';
-						} elseif ($hour == 24 && $minutes == '00') {
-							$hourObj->close = 'Midnight';
-						} else {
-							if ($hour != 12) {
-								$hour -= 12;
-							}
-							$hourObj->close = "$hour:$minutes PM";
-						}
+						$hourObj->open = DateUtils::formatHour($hourObj->open);
+						$hourObj->close = DateUtils::formatHour($hourObj->close);
 					}
 					$hours[$key] = $hourObj;
 				}

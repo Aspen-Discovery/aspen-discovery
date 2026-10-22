@@ -33,7 +33,7 @@ AspenDiscovery.CollectionSpotlights = (function(){
 					// Reload carousel
 					jCarousel.jcarousel('reload');
 				} else {
-					AspenDiscovery.showMessage("Error", data.message);
+					AspenDiscovery.showMessage(__('Error'), data.message);
 				}
 			}).fail(AspenDiscovery.ajaxFail);
 		},

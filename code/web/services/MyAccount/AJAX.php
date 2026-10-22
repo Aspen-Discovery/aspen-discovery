@@ -8691,18 +8691,7 @@ class MyAccount_AJAX extends JSON_Action {
 			return $result;
 		}
 
-		// add the event to saved events if it has not yet been saved
-		EventRegistrationService::saveToUserEvents($eventInstance, $userId);
-
-		// so the registered may manage their registration, also add the event to the active user's saved events if the user this was added for is a linked user
-		if ($userId != $activeUserId) {
-			EventRegistrationService::saveToUserEvents($eventInstance, $activeUserId);
-		}
-
-		// so the parent linked account display all events their linked user is registered to, save the event if the user registering have had their account linked.
-		foreach ($user->getViewerIds() as $viewerId) {
-			EventRegistrationService::saveToUserEvents($eventInstance, $viewerId);
-		}
+		EventRegistrationService::saveRegistrationToUserEvents($eventInstance, $userId, null, $activeUserId);
 
 		require_once ROOT_DIR . '/sys/Events/UserAspenEventInstanceRegistrationAttendee.php';
 		$attendeeCounts = [];
@@ -12440,7 +12429,7 @@ class MyAccount_AJAX extends JSON_Action {
 		}
 		$result['position'] = $position;
 
-		EventRegistrationService::saveToUserEvents($eventInstance, $userId);
+		EventRegistrationService::saveRegistrationToUserEvents($eventInstance, $userId, null, $activeUserId);
 
 		return $result;
 	}

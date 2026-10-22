@@ -11,7 +11,7 @@ class Summon_Results extends ResultsAction {
 			$_REQUEST['lookfor'] = '*';
 		}
 
-		$aspenUsage->summonSearches++;
+		$aspenUsage->incSummonSearches();
 
 		//Set default sort by setting the request variable so the init grabs it
 		if (!array_key_exists('sort', $_REQUEST) && UserAccount::isLoggedIn()) {

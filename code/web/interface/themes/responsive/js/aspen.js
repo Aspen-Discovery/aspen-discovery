@@ -1086,8 +1086,8 @@ var AspenDiscovery = (function(){
 			var modalDialog = aspenJQ("#modalDialog");
 			if (modalDialog.is(":visible")){
 				modalDialog.modal('hide');
-				aspenJQ('.modal-body').html("Loading...");
-				aspenJQ(".modal-title").text("Loading...");
+				aspenJQ('.modal-body').html(__('Loading...'));
+				aspenJQ(".modal-title").text(__('Loading...'));
 
 				if (callback !== undefined){
 					modalDialog.on('hidden.bs.modal', function (e) {
@@ -1215,7 +1215,7 @@ var AspenDiscovery = (function(){
 					var dialogTitle = trigger.attr("title") ? trigger.attr("title") : trigger.data("title");
 					var dialogDestination = trigger.attr("href");
 					aspenJQ("#myModalLabel").text(dialogTitle);
-					aspenJQ(".modal-body").html('Loading.').load(dialogDestination);
+					aspenJQ(".modal-body").html(__('Loading.')).load(dialogDestination);
 					aspenJQ(".extraModalButton").hide();
 					aspenJQ("#modalDialog").modal("show");
 					return false;
@@ -1289,7 +1289,7 @@ var AspenDiscovery = (function(){
 				return aspenJQ(this).attr('name');
 			}).get().join(",");
 			if (selectedSites.length === 0){
-				AspenDiscovery.showMessage("Error", "Please select at least one site to update");
+				AspenDiscovery.showMessage(__('Error'), __('Please select at least one site to update'));
 				return false;
 			}
 			return selectedSites;
@@ -1577,14 +1577,14 @@ var AspenDiscovery = (function(){
 					if (data.success) {
 						if (data.message.length > 0){
 							//User was logged in, show a message about how to update
-							AspenDiscovery.showMessage('Success', data.message, true, true);
+							AspenDiscovery.showMessage(__('Success'), data.message, true, true);
 						}else{
 							//Refresh the page
 							// noinspection SillyAssignmentJS
 							window.location.href = window.location.href;
 						}
 					} else {
-						AspenDiscovery.showMessage("Error", data.message);
+						AspenDiscovery.showMessage(__('Error'), data.message);
 					}
 				}
 			).fail(AspenDiscovery.ajaxFail);
@@ -1634,7 +1634,7 @@ var AspenDiscovery = (function(){
 						aspenJQ(".translation_id_" + translationId ).removeClass('not_translated').addClass("translated");
 						AspenDiscovery.closeLightbox();
 					} else {
-						AspenDiscovery.showMessage("Error", data.message);
+						AspenDiscovery.showMessage(__('Error'), data.message);
 					}
 				}
 			).fail(AspenDiscovery.ajaxFail);
@@ -1748,7 +1748,7 @@ var AspenDiscovery = (function(){
 					if (data.result.success) {
 						aspenJQ(elementToUpdate).text(data.result.formattedValue);
 					} else {
-						aspenJQ(elementToUpdate).text('Unable to format currency');
+						aspenJQ(elementToUpdate).text(__('Unable to format currency'));
 					}
 				}
 			).fail(AspenDiscovery.ajaxFail);
@@ -1830,14 +1830,14 @@ var AspenDiscovery = (function(){
 					if (data.success) {
 						if (data.message.length > 0){
 							//User was logged in, show a message about how to update
-							AspenDiscovery.showMessage('Success', data.message, true, true);
+							AspenDiscovery.showMessage(__('Success'), data.message, true, true);
 						}else{
 							//Refresh the page
 							// noinspection SillyAssignmentJS
 							window.location.href = window.location.href;
 						}
 					} else {
-						AspenDiscovery.showMessage("Error", data.message);
+						AspenDiscovery.showMessage(__('Error'), data.message);
 					}
 				}
 			).fail(AspenDiscovery.ajaxFail);
@@ -2201,7 +2201,7 @@ jQuery.validator.addMethod("multiemail", function (value, element) {
 		valid = valid && jQuery.validator.methods.email.call(this, value, element);
 	}
 	return valid;
-}, "Invalid email format: please use a comma to separate multiple email addresses.");
+}, __('Invalid email format: please use a comma to separate multiple email addresses.'));
 
 jQuery.validator.addMethod("email2", function (value, element) {
 	if (this.optional(element)) {
@@ -2209,7 +2209,7 @@ jQuery.validator.addMethod("email2", function (value, element) {
 	}
 	var emailToMatch = aspenJQ("#email").val();
 	return value === emailToMatch;
-}, "Email addresses must match.");
+}, __('Email addresses must match.'));
 
 $.validator.addMethod('repeat', function(value, element){
 	if(element.id.lastIndexOf('Repeat') === element.id.length - 6) {
@@ -2217,7 +2217,7 @@ $.validator.addMethod('repeat', function(value, element){
 		var valueOriginal = aspenJQ('#' + idOriginal).val();
 		return value === valueOriginal;
 	}
-}, "Repeat fields must match.");
+}, __('Repeat fields must match.'));
 
 jQuery.validator.addMethod("pinConfirmation", function (value, element) {
 	if (this.optional(element)) {
@@ -2225,7 +2225,7 @@ jQuery.validator.addMethod("pinConfirmation", function (value, element) {
 	}
 	var pinToMatch = aspenJQ("#pin").val();
 	return value === pinToMatch;
-}, "PINs must match.");
+}, __('PINs must match.'));
 
 /**
  * serverValidate is an alternative to jQuery validate's remote(). It owns 
@@ -2321,16 +2321,16 @@ jQuery.validator.addMethod("strongPassword", function(value, element) {
 }, function(params, element) {
 	const errors = [];
 	if (!$(element).data('pwdUpperValid')) {
-		errors.push('At least one uppercase letter is required.');
+		errors.push(__('At least one uppercase letter is required.'));
 	}
 	if (!$(element).data('pwdLowerValid')) {
-		errors.push('At least one lowercase letter is required.');
+		errors.push(__('At least one lowercase letter is required.'));
 	}
 	if (!$(element).data('pwdNumberValid')) {
-		errors.push('At least one number is required.');
+		errors.push(__('At least one number is required.'));
 	}
 	if (!$(element).data('pwdSpecialValid')) {
-		errors.push('At least one special character (-_~!@#$%^&*.+) is required.');
+		errors.push(__('At least one special character (-_~!@#$%^&*.+) is required.'));
 	}
 
 	return '<ul class="password-error-list" style="margin-top:5px; margin-bottom:0; padding-left:1.25em; list-style-type:disc"><li>' + errors.join('</li><li>') + '</li></ul>';
@@ -2537,9 +2537,9 @@ AspenDiscovery.Account = (function () {
 			// noinspection JSUnresolvedFunction
 			$.getJSON(url, params, function (data) {
 				if (data.success) {
-					AspenDiscovery.showMessage("Added Successfully", data.message, true, true);
+					AspenDiscovery.showMessage(__('Added Successfully'), data.message, true, true);
 				} else {
-					AspenDiscovery.showMessage("Error", data.message);
+					AspenDiscovery.showMessage(__('Error'), data.message);
 				}
 			}).fail(AspenDiscovery.ajaxFail);
 			return false;
@@ -3172,8 +3172,8 @@ AspenDiscovery.Account = (function () {
 							window.location.replace(referer);
 						} else {
 							if (doReloading) {
-								$('.modal-body').html("Loading...");
-								$(".modal-title").text("Loading...");
+								$('.modal-body').html(__('Loading...'));
+								$(".modal-title").text(__('Loading...'));
 							}
 						}
 					} else if (response.result.success === false && response.result.passwordExpired === true) {
@@ -3189,7 +3189,7 @@ AspenDiscovery.Account = (function () {
 					}
 				}, 'json').fail(function () {
 					loadingElem.hide();
-					loginErrorElem.text("There was an error processing your login, please try again.").show();
+					loginErrorElem.text(__('There was an error processing your login, please try again.')).show();
 				})
 			}
 			return false;
@@ -3252,7 +3252,7 @@ AspenDiscovery.Account = (function () {
 						}
 					},
 					error: function () {
-						loginErrorElem.text("There was an error processing the account, please try again.").show();
+						loginErrorElem.text(__('There was an error processing the account, please try again.')).show();
 					},
 					dataType: 'json',
 					type: 'post'
@@ -3281,9 +3281,9 @@ AspenDiscovery.Account = (function () {
 				var url = Globals.path + "/MyAccount/AJAX?method=removeManagingAccount&idToRemove=" + idToRemove;
 				$.getJSON(url, function (data) {
 					if (data.success === true) {
-						AspenDiscovery.showMessageWithButtons('Linked Account Removed', data.message, data.modalButtons, true);
+						AspenDiscovery.showMessageWithButtons(__('Linked Account Removed'), data.message, data.modalButtons, true);
 					} else {
-						AspenDiscovery.showMessage('Unable to Remove Account Link', data.message);
+						AspenDiscovery.showMessage(__('Unable to Remove Account Link'), data.message);
 					}
 				});
 			}
@@ -3652,9 +3652,9 @@ AspenDiscovery.Account = (function () {
 				$.getJSON(url + '?' + params,
 					function (data) {
 						if (data.result) {
-							AspenDiscovery.showMessage("Success", data.message);
+							AspenDiscovery.showMessage(__('Success'), data.message);
 						} else {
-							AspenDiscovery.showMessage("Error", data.message);
+							AspenDiscovery.showMessage(__('Error'), data.message);
 						}
 					}
 				);
@@ -3676,9 +3676,9 @@ AspenDiscovery.Account = (function () {
 			// noinspection JSUnresolvedFunction
 			$.getJSON(url, params, function (data) {
 				if (data.success) {
-					AspenDiscovery.showMessage("Success", data.message, true, true);
+					AspenDiscovery.showMessage(__('Success'), data.message, true, true);
 				} else {
-					AspenDiscovery.showMessage("Error", data.message);
+					AspenDiscovery.showMessage(__('Error'), data.message);
 				}
 			}).fail(AspenDiscovery.ajaxFail);
 		},
@@ -3971,9 +3971,9 @@ AspenDiscovery.Account = (function () {
 				$.getJSON(url, params,
 					function (data) {
 						if (data.success) {
-							AspenDiscovery.showMessage("Saved Successfully", data.message, data.modalButtons);
+							AspenDiscovery.showMessage(__('Saved Successfully'), data.message, data.modalButtons);
 						} else {
-							AspenDiscovery.showMessage("Error", data.message);
+							AspenDiscovery.showMessage(__('Error'), data.message);
 						}
 					}
 				).fail(AspenDiscovery.ajaxFail);
@@ -4281,7 +4281,7 @@ AspenDiscovery.Account = (function () {
 			}).done(
 				function (response) {
 					if (response.success === false) {
-						AspenDiscovery.showMessage("Error", response.message);
+						AspenDiscovery.showMessage(__('Error'), response.message);
 						return false;
 					} else {
 						if (paymentType === 'PayPal') {
@@ -4416,7 +4416,7 @@ AspenDiscovery.Account = (function () {
 					if (data.isDonation) {
 						window.location.href = Globals.path + '/Donations/DonationCompleted?id=' + data.paymentId;
 					} else {
-						AspenDiscovery.showMessage('Thank you', 'Your payment was processed successfully, thank you', false, true);
+						AspenDiscovery.showMessage(__('Thank you'), __('Your payment was processed successfully, thank you'), false, true);
 					}
 				} else {
 					if (data.isDonation) {
@@ -4428,13 +4428,13 @@ AspenDiscovery.Account = (function () {
 						} else {
 							message = 'Unable to process your payment, please visit the library with your receipt';
 						}
-						AspenDiscovery.showMessage('Error', message, false);
+						AspenDiscovery.showMessage(__('Error'), message, false);
 					}
 				}
 			}).fail(AspenDiscovery.ajaxFail);
 		},
 		handleACIError: function (error) {
-			AspenDiscovery.showMessage('Error', 'There was an error completing your payment. ' + error, false);
+			AspenDiscovery.showMessage(__('Error'), __('There was an error completing your payment. ') + error, false);
 		},
 		createInvoiceCloudOrder: function (finesFormId, transactionType) {
 			var url = this.createGenericOrder(finesFormId, 'InvoiceCloud', transactionType, null);
@@ -4467,7 +4467,7 @@ AspenDiscovery.Account = (function () {
 			if (result === false) {
 				// Do nothing; there was an error that should be displayed
 			} else {
-				$("#myModalLabel").html('Pay with PayPal');
+				$("#myModalLabel").html(__('Pay with PayPal'));
 				$(".modal-body").html(result);
 				$('.modal-buttons').html('');
 				$('.modal-dialog').addClass('paymentModal');
@@ -4492,7 +4492,7 @@ AspenDiscovery.Account = (function () {
 					if (data.isDonation) {
 						window.location.href = Globals.path + '/Donations/DonationCompleted?id=' + data.paymentId;
 					} else {
-						AspenDiscovery.showMessage('Thank you', data.message, false, true);
+						AspenDiscovery.showMessage(__('Thank you'), data.message, false, true);
 					}
 				} else {
 					if (data.isDonation) {
@@ -4504,7 +4504,7 @@ AspenDiscovery.Account = (function () {
 						} else {
 							message = 'Unable to process your payment, please visit the library with your receipt';
 						}
-						AspenDiscovery.showMessage('Error', message, false);
+						AspenDiscovery.showMessage(__('Error'), message, false);
 					}
 				}
 			}).fail(AspenDiscovery.ajaxFail);
@@ -4513,12 +4513,12 @@ AspenDiscovery.Account = (function () {
 			// Wait and check if a message is already open before showing PayPal popup errors.
 			setTimeout(function() {
 				if (!$("#modalDialog").hasClass("in")) {
-					AspenDiscovery.showMessage('Error', 'There was an error completing your payment. ' + error, true);
+					AspenDiscovery.showMessage(__('Error'), __('There was an error completing your payment. ') + error, true);
 				}
 			}, 300, error);
 		},
 		cancelPayPalError: function () {
-			AspenDiscovery.showMessage('Payment cancelled', 'Your payment has successfully been cancelled.', true);
+			AspenDiscovery.showMessage(__('Payment cancelled'), __('Your payment has successfully been cancelled.'), true);
 		},
 
 		completeSquareOrder: function (patronId, transactionType, token) {
@@ -4539,7 +4539,7 @@ AspenDiscovery.Account = (function () {
 						buttons = '<a href="' + safeReceiptUrl + '" target="_blank" rel="noopener noreferrer" class="btn btn-primary">' +
 							'<i class="fas fa-receipt"></i> View Receipt</a>';
 					}
-					AspenDiscovery.showMessageWithButtons('Thank You', data.message, buttons, true);
+					AspenDiscovery.showMessageWithButtons(__('Thank You'), data.message, buttons, true);
 				} else {
 					if (data.isDonation) {
 						window.location.href = Globals.path + '/Donations/DonationCancelled?id=' + data.paymentId;
@@ -4550,7 +4550,7 @@ AspenDiscovery.Account = (function () {
 						} else {
 							message = 'Unable to process your payment, please visit the library with your receipt';
 						}
-						AspenDiscovery.showMessage('Error', message, false);
+						AspenDiscovery.showMessage(__('Error'), message, false);
 					}
 				}
 			}).fail(AspenDiscovery.ajaxFail);
@@ -4584,7 +4584,7 @@ AspenDiscovery.Account = (function () {
 							buttons = '<a href="' + safeReceiptUrl + '" target="_blank" rel="noopener noreferrer" class="btn btn-primary">' +
 								'<i class="fas fa-receipt"></i> View Receipt</a>';
 						}
-						AspenDiscovery.showMessageWithButtons('Thank You', data.message, buttons, true);
+						AspenDiscovery.showMessageWithButtons(__('Thank You'), data.message, buttons, true);
 					}
 				} else {
 					// noinspection JSUnresolvedReference
@@ -4597,7 +4597,7 @@ AspenDiscovery.Account = (function () {
 						} else {
 							message = 'Unable to process your payment, please visit the library with your receipt';
 						}
-						AspenDiscovery.showMessage('Error', message, false);
+						AspenDiscovery.showMessage(__('Error'), message, false);
 						const cardButton = document.getElementById('process-stripe-payment');
 						if (cardButton) {
 							cardButton.disabled = false;
@@ -4681,7 +4681,7 @@ AspenDiscovery.Account = (function () {
 				if (data.success) {
 					$("#placard" + placardId).hide();
 				} else {
-					AspenDiscovery.showMessage('Error', data.message, false);
+					AspenDiscovery.showMessage(__('Error'), data.message, false);
 				}
 			}).fail(AspenDiscovery.ajaxFail);
 			return false;
@@ -4698,7 +4698,7 @@ AspenDiscovery.Account = (function () {
 				if (data.success) {
 					window.location = window.location.href.split("?")[0];
 				} else {
-					AspenDiscovery.showMessage('Error', data.message, false, true);
+					AspenDiscovery.showMessage(__('Error'), data.message, false, true);
 				}
 			}).fail(AspenDiscovery.ajaxFail);
 			return false;
@@ -4743,9 +4743,9 @@ AspenDiscovery.Account = (function () {
 			// noinspection JSUnresolvedFunction
 			$.getJSON(url, params, function (data) {
 				if (data.success) {
-					AspenDiscovery.showMessage('Success', data.message, true);
+					AspenDiscovery.showMessage(__('Success'), data.message, true);
 				} else {
-					AspenDiscovery.showMessage('Error', data.message, false);
+					AspenDiscovery.showMessage(__('Error'), data.message, false);
 				}
 			}).fail(AspenDiscovery.ajaxFail);
 			return false;
@@ -4816,7 +4816,7 @@ AspenDiscovery.Account = (function () {
 							AspenDiscovery.showMessage(data.title, data.message);
 						}
 					} else {
-						AspenDiscovery.showMessage("Error", data.message);
+						AspenDiscovery.showMessage(__('Error'), data.message);
 					}
 				}).fail(AspenDiscovery.ajaxFail);
 			} else {
@@ -4841,7 +4841,7 @@ AspenDiscovery.Account = (function () {
 				if (data.success) {
 					AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons, false);
 				} else {
-					AspenDiscovery.showMessage("Error", data.message);
+					AspenDiscovery.showMessage(__('Error'), data.message);
 				}
 			}).fail(AspenDiscovery.ajaxFail);
 			return false;
@@ -4991,10 +4991,10 @@ AspenDiscovery.Account = (function () {
 
 				$.getJSON(url, function (data) {
 					if (data.result === true) {
-						AspenDiscovery.showMessage('Success', data.message, false);
+						AspenDiscovery.showMessage(__('Success'), data.message, false);
 						AspenDiscovery.Account.loadEvents(page, filter);
 					} else {
-						AspenDiscovery.showMessage('Sorry', data.message);
+						AspenDiscovery.showMessage(__('Sorry'), data.message);
 					}
 				});
 			}
@@ -5071,10 +5071,10 @@ AspenDiscovery.Account = (function () {
 				// noinspection JSUnresolvedFunction
 				$.getJSON(url, params, function (data) {
 					if (data.success) {
-						AspenDiscovery.showMessage("Added Successfully", data.message, 2000); // auto-close after 2 seconds.
+						AspenDiscovery.showMessage(__('Added Successfully'), data.message, 2000); // auto-close after 2 seconds.
 						AspenDiscovery.Account.loadListData();
 					} else {
-						AspenDiscovery.showMessage("Error", data.message);
+						AspenDiscovery.showMessage(__('Error'), data.message);
 					}
 				}).fail(AspenDiscovery.ajaxFail);
 			}
@@ -5093,10 +5093,10 @@ AspenDiscovery.Account = (function () {
 				// noinspection JSUnresolvedFunction
 				$.getJSON(url, params, function (data) {
 					if (data.success) {
-						AspenDiscovery.showMessage("Added Successfully", data.message, 2000); // auto-close after 2 seconds.
+						AspenDiscovery.showMessage(__('Added Successfully'), data.message, 2000); // auto-close after 2 seconds.
 						AspenDiscovery.Account.loadListData();
 					} else {
-						AspenDiscovery.showMessage("Error", data.message);
+						AspenDiscovery.showMessage(__('Error'), data.message);
 					}
 				}).fail(AspenDiscovery.ajaxFail);
 			}
@@ -5140,7 +5140,7 @@ AspenDiscovery.Account = (function () {
 					AspenDiscovery.showMessageWithButtons(title, modalBody, modalButtons, false, '', false, false, true);
 				});
 			} else {
-				AspenDiscovery.showMessage('No Lists Selected', 'Please select one or more lists to delete.');
+				AspenDiscovery.showMessage(__('No Lists Selected'), __('Please select one or more lists to delete.'));
 			}
 			return false;
 		},
@@ -5154,9 +5154,9 @@ AspenDiscovery.Account = (function () {
 				const optOutParam = hardDelete ? '&optOutSoftDeletion=true' : '';
 				$.getJSON(Globals.path + '/MyAccount/AJAX?method=deleteList&' + selectedLists + optOutParam, function (data) {
 					if (data.success) {
-						AspenDiscovery.showMessage('Successfully Deleted Selected Lists', data.message, true, true);
+						AspenDiscovery.showMessage(__('Successfully Deleted Selected Lists'), data.message, true, true);
 					} else {
-						AspenDiscovery.showMessageWithButtons('Failed to Delete Selected Lists', data.message, '', false);
+						AspenDiscovery.showMessageWithButtons(__('Failed to Delete Selected Lists'), data.message, '', false);
 					}
 				});
 			}
@@ -5212,7 +5212,7 @@ AspenDiscovery.Account = (function () {
 						$('#recommendedForYouInfo').hide();
 					}
 				} catch (e) {
-					alert("error loading recommendations: " + e);
+					alert(__('error loading recommendations: ') + e);
 				}
 			});
 		},
@@ -5792,9 +5792,9 @@ AspenDiscovery.Account = (function () {
 			// noinspection JSUnresolvedFunction
 			$.getJSON(url, params, function (data) {
 				if (data.success) {
-					AspenDiscovery.showMessage("Added Successfully", data.message, true, true);
+					AspenDiscovery.showMessage(__('Added Successfully'), data.message, true, true);
 				} else {
-					AspenDiscovery.showMessage("Error", data.message);
+					AspenDiscovery.showMessage(__('Error'), data.message);
 				}
 			}).fail(AspenDiscovery.ajaxFail);
 			return false;
@@ -5988,7 +5988,7 @@ AspenDiscovery.Account = (function () {
 			});
 
 			if (selectedHolds.length === 0) {
-				AspenDiscovery.showMessage('No Holds Selected', 'Please select at least one hold to group.');
+				AspenDiscovery.showMessage(__('No Holds Selected'), __('Please select at least one hold to group.'));
 				return;
 			}
 
@@ -7245,7 +7245,7 @@ AspenDiscovery.Admin = (function () {
 			if (selectedObjects.length === 2) {
 				return true;
 			} else {
-				AspenDiscovery.showMessage("Failed to Compare Objects", "Please select only two objects to compare.");
+				AspenDiscovery.showMessage(__('Failed to Compare Objects'), __('Please select only two objects to compare.'));
 				return false;
 			}
 		},
@@ -7264,13 +7264,13 @@ AspenDiscovery.Admin = (function () {
 						if (data.success) {
 							AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 						} else {
-							$("#releaseNotes").html("Error + " + data.message);
+							$("#releaseNotes").html(__('Error') + " " + data.message);
 						}
 					}
 				).fail(AspenDiscovery.ajaxFail);
 				return false;
 			} else {
-				AspenDiscovery.showMessage("Error", "Please select at least one object to update");
+				AspenDiscovery.showMessage(__('Error'), __('Please select at least one object to update'));
 				return false;
 			}
 		},
@@ -7311,7 +7311,7 @@ AspenDiscovery.Admin = (function () {
 				).fail(AspenDiscovery.ajaxFail);
 				return false;
 			} else {
-				AspenDiscovery.showMessage("Error", "Please select at least one object to update");
+				AspenDiscovery.showMessage(__('Error'), __('Please select at least one object to update'));
 				return false;
 			}
 		},
@@ -7406,13 +7406,13 @@ AspenDiscovery.Admin = (function () {
 						if (data.success) {
 							AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 						} else {
-							$("#releaseNotes").html("Error + " + data.message);
+							$("#releaseNotes").html(__('Error') + " " + data.message);
 						}
 					}
 				).fail(AspenDiscovery.ajaxFail);
 				return false;
 			} else {
-				AspenDiscovery.showMessage("Error", "Please select at least one object to delete");
+				AspenDiscovery.showMessage(__('Error'), __('Please select at least one object to delete'));
 				return false;
 			}
 		},
@@ -7440,7 +7440,7 @@ AspenDiscovery.Admin = (function () {
 				).fail(AspenDiscovery.ajaxFail);
 				return false;
 			} else {
-				AspenDiscovery.showMessage("Error", "Please select at least one object to delete");
+				AspenDiscovery.showMessage(__('Error'), __('Please select at least one object to delete'));
 				return false;
 			}
 		},
@@ -7835,7 +7835,7 @@ AspenDiscovery.Admin = (function () {
 					if (data.success) {
 						window.location.href = Globals.path + '/Admin/Permissions?roleId=' + data.roleId;
 					} else {
-						AspenDiscovery.showMessage('Error', data.message, false);
+						AspenDiscovery.showMessage(__('Error'), data.message, false);
 					}
 				}
 			).fail(AspenDiscovery.ajaxFail);
@@ -7852,7 +7852,7 @@ AspenDiscovery.Admin = (function () {
 					if (data.success) {
 						window.location.href = Globals.path + '/Admin/Permissions';
 					} else {
-						AspenDiscovery.showMessage('Error', data.message, false);
+						AspenDiscovery.showMessage(__('Error'), data.message, false);
 					}
 				}
 			).fail(AspenDiscovery.ajaxFail);
@@ -7884,7 +7884,7 @@ AspenDiscovery.Admin = (function () {
 			var listId = id;
 			if (confirm(__('Are you sure you want to delete this list?'))) {
 				$.getJSON(Globals.path + '/Admin/AJAX?method=deleteNYTList&id=' + listId, function (data) {
-					AspenDiscovery.showMessage("Success", data.message, true, true);
+					AspenDiscovery.showMessage(__('Success'), data.message, true, true);
 				})
 			}
 			return false;
@@ -8012,19 +8012,19 @@ AspenDiscovery.Admin = (function () {
 			var selectedPath = $("#deepLinkPathSelect").val();
 			if (selectedPath === "search") {
 				$('#propertyRowdeepLinkId').show();
-				$('label[for="deepLinkId"]').text("Search Term");
+				$('label[for="deepLinkId"]').text(__('Search Term'));
 			} else if (selectedPath === "search/grouped_work") {
 				$('#propertyRowdeepLinkId').show();
-				$('label[for="deepLinkId"]').text("Grouped Work Id");
+				$('label[for="deepLinkId"]').text(__('Grouped Work Id'));
 			} else if (selectedPath === "search/browse_category") {
 				$('#propertyRowdeepLinkId').show();
-				$('label[for="deepLinkId"]').text("Browse Category Text Id");
+				$('label[for="deepLinkId"]').text(__('Browse Category Text Id'));
 			} else if (selectedPath === "search/author") {
 				$('#propertyRowdeepLinkId').show();
-				$('label[for="deepLinkId"]').text("Author");
+				$('label[for="deepLinkId"]').text(__('Author'));
 			} else if (selectedPath === "search/list") {
 				$('#propertyRowdeepLinkId').show();
-				$('label[for="deepLinkId"]').text("List Id");
+				$('label[for="deepLinkId"]').text(__('List Id'));
 			} else {
 				$('#propertyRowdeepLinkId').hide();
 			}
@@ -8658,7 +8658,7 @@ AspenDiscovery.Admin = (function () {
 				if (data.success) {
 					$('#fieldLock' + field).replaceWith(data.lockToggle);
 				} else {
-					AspenDiscovery.showMessage('An error occurred', data.message);
+					AspenDiscovery.showMessage(__('An error occurred'), data.message);
 				}
 			});
 			return false;
@@ -8675,7 +8675,7 @@ AspenDiscovery.Admin = (function () {
 				if (data.success) {
 					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 				} else {
-					AspenDiscovery.showMessage('An error occurred', data.message);
+					AspenDiscovery.showMessage(__('An error occurred'), data.message);
 				}
 			});
 			return false;
@@ -8692,7 +8692,7 @@ AspenDiscovery.Admin = (function () {
 				if (data.success) {
 					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 				} else {
-					AspenDiscovery.showMessage('An error occurred', data.message);
+					AspenDiscovery.showMessage(__('An error occurred'), data.message);
 				}
 			});
 			return false;
@@ -9315,11 +9315,11 @@ AspenDiscovery.Admin = (function () {
 					if (data.success) {
 						AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 					} else {
-						AspenDiscovery.showMessage("Error", data.message);
+						AspenDiscovery.showMessage(__('Error'), data.message);
 					}
 				})
 				.fail(function () {
-					AspenDiscovery.showMessage("Error", "An error occurred while retrieving rate limit configuration.");
+					AspenDiscovery.showMessage(__('Error'), __('An error occurred while retrieving rate limit configuration.'));
 				});
 
 			return false;
@@ -9456,7 +9456,7 @@ AspenDiscovery.Admin = (function () {
 						},
 						error: function () {
 							$('#aspenFullPageLoadingOverlay').remove();
-							AspenDiscovery.showMessage('Error', 'Could not populate from ILS.');
+							AspenDiscovery.showMessage(__('Error'), __('Could not populate from ILS.'));
 						}
 					});
 				} else if (objectType === "countyCodes") {
@@ -9489,7 +9489,7 @@ AspenDiscovery.Admin = (function () {
 						},
 						error: function () {
 							$('#aspenFullPageLoadingOverlay').remove();
-							AspenDiscovery.showMessage('Error', 'Could not populate from ILS.');
+							AspenDiscovery.showMessage(__('Error'), __('Could not populate from ILS.'));
 						}
 					});
 				}
@@ -9639,6 +9639,14 @@ AspenDiscovery.Admin = (function () {
 				});
 			});
 		},
+		toggleBrandedAppThemeOptions: function () {
+			const useIndividualThemes = $("#useIndividualThemes").prop("checked");
+			if (useIndividualThemes) {
+				$('#propertyRowoverallTheme').show();
+			} else {
+				$('#propertyRowoverallTheme').hide();
+			}
+		},
 	};
 }(AspenDiscovery.Admin || {}));
 AspenDiscovery.Authors = (function () {
@@ -9665,18 +9673,18 @@ AspenDiscovery.Axis360 = (function () {
 				cache: false,
 				success: function (data) {
 					if (data.success) {
-						AspenDiscovery.showMessage("Hold Cancelled", data.message, true);
+						AspenDiscovery.showMessage(__('Hold Cancelled'), data.message, true);
 						$(".axis360Hold_" + id + "_" + patronId).hide();
 						AspenDiscovery.Account.loadMenuData();
 					} else {
-						AspenDiscovery.showMessage("Error Cancelling Hold", data.message, true);
+						AspenDiscovery.showMessage(__('Error Cancelling Hold'), data.message, true);
 					}
 
 				},
 				dataType: 'json',
 				async: false,
 				error: function () {
-					AspenDiscovery.showMessage("Error Cancelling Hold", "An error occurred processing your request in Boundless.  Please try again in a few minutes.", false);
+					AspenDiscovery.showMessage(__('Error Cancelling Hold'), __('An error occurred processing your request in Boundless.  Please try again in a few minutes.'), false);
 				}
 			});
 		},
@@ -9752,7 +9760,7 @@ AspenDiscovery.Axis360 = (function () {
 						if (data.availableForCheckout) {
 							AspenDiscovery.Axis360.doCheckOut(patronId, id);
 						} else {
-							AspenDiscovery.showMessage("Placed Hold", data.message, !data.hasWhileYouWait);
+							AspenDiscovery.showMessage(__('Placed Hold'), data.message, !data.hasWhileYouWait);
 							AspenDiscovery.Account.loadMenuData();
 						}
 					});
@@ -9760,7 +9768,7 @@ AspenDiscovery.Axis360 = (function () {
 				dataType: 'json',
 				async: false,
 				error: function () {
-					AspenDiscovery.showMessage("Error Placing Hold", "An error occurred processing your request in Boundless.  Please try again in a few minutes.", false);
+					AspenDiscovery.showMessage(__('Error Placing Hold'), __('An error occurred processing your request in Boundless.  Please try again in a few minutes.'), false);
 				}
 			});
 			return true;
@@ -9870,16 +9878,16 @@ AspenDiscovery.Axis360 = (function () {
 				cache: false,
 				success: function (data) {
 					if (data.success) {
-						AspenDiscovery.showMessage("Title Renewed", data.message, true);
+						AspenDiscovery.showMessage(__('Title Renewed'), data.message, true);
 					} else {
-						AspenDiscovery.showMessage("Unable to Renew Title", data.message, true);
+						AspenDiscovery.showMessage(__('Unable to Renew Title'), data.message, true);
 					}
 
 				},
 				dataType: 'json',
 				async: false,
 				error: function () {
-					AspenDiscovery.showMessage("Error Renewing Checkout", "An error occurred processing your request in Boundless.  Please try again in a few minutes.", false);
+					AspenDiscovery.showMessage(__('Error Renewing Checkout'), __('An error occurred processing your request in Boundless.  Please try again in a few minutes.'), false);
 				}
 			});
 		},
@@ -9891,18 +9899,18 @@ AspenDiscovery.Axis360 = (function () {
 				cache: false,
 				success: function (data) {
 					if (data.success) {
-						AspenDiscovery.showMessage("Title Returned", data.message, true);
+						AspenDiscovery.showMessage(__('Title Returned'), data.message, true);
 						$(".axis360Checkout_" + recordId + "_" + patronId).hide();
 						AspenDiscovery.Account.loadMenuData();
 					} else {
-						AspenDiscovery.showMessage("Error Returning Title", data.message, true);
+						AspenDiscovery.showMessage(__('Error Returning Title'), data.message, true);
 					}
 
 				},
 				dataType: 'json',
 				async: false,
 				error: function () {
-					AspenDiscovery.showMessage("Error Returning Checkout", "An error occurred processing your request in Boundless.  Please try again in a few minutes.", false);
+					AspenDiscovery.showMessage(__('Error Returning Checkout'), __('An error occurred processing your request in Boundless.  Please try again in a few minutes.'), false);
 				}
 			});
 		},
@@ -9911,7 +9919,7 @@ AspenDiscovery.Axis360 = (function () {
 			var url = Globals.path + "/Axis360/" + id + "/AJAX?method=getStaffView";
 			$.getJSON(url, function (data) {
 				if (!data.success) {
-					AspenDiscovery.showMessage('Error', data.message);
+					AspenDiscovery.showMessage(__('Error'), data.message);
 				} else {
 					$("#staffViewPlaceHolder").replaceWith(data.staffView);
 				}
@@ -9928,9 +9936,9 @@ AspenDiscovery.Axis360 = (function () {
 			};
 			$.getJSON(url, params, function(data){
 				if (data.success) {
-					AspenDiscovery.showMessage("Success", data.message, true, true);
+					AspenDiscovery.showMessage(__('Success'), data.message, true, true);
 				} else {
-					AspenDiscovery.showMessage("Error", data.message);
+					AspenDiscovery.showMessage(__('Error'), data.message);
 				}
 			}).error(AspenDiscovery.ajaxFail);
 		},
@@ -9946,9 +9954,9 @@ AspenDiscovery.Axis360 = (function () {
 			};
 			$.getJSON(url, params, function(data){
 				if (data.success) {
-					AspenDiscovery.showMessage("Success", data.message, true, true);
+					AspenDiscovery.showMessage(__('Success'), data.message, true, true);
 				} else {
-					AspenDiscovery.showMessage("Error", data.message);
+					AspenDiscovery.showMessage(__('Error'), data.message);
 				}
 			}).error(AspenDiscovery.ajaxFail);
 		},
@@ -10197,9 +10205,9 @@ AspenDiscovery.Browse = (function(){
 				if (AspenDiscovery.Browse.loadingCategory === loadingID) {
 					if (data.success === false) {
 						if (data.message) {
-							AspenDiscovery.showMessage("Error loading browse information", data.message);
+							AspenDiscovery.showMessage(__('Error loading browse information'), data.message);
 						} else {
-							AspenDiscovery.showMessage("Error loading browse information", "Sorry, we were not able to find titles for that category");
+							AspenDiscovery.showMessage(__('Error loading browse information'), __('Sorry, we were not able to find titles for that category'));
 						}
 					} else {
 						var newUrl = AspenDiscovery.buildUrl(document.location.origin + document.location.pathname, 'browseCategory', categoryTextId);
@@ -10286,7 +10294,7 @@ AspenDiscovery.Browse = (function(){
 			};
 			$.getJSON(url, params, function(data){
 				if (data.success === false){
-					AspenDiscovery.showMessage("Error loading browse information", "Sorry, we were not able to find titles for that category");
+					AspenDiscovery.showMessage(__('Error loading browse information'), __('Sorry, we were not able to find titles for that category'));
 				}else {
 					var resultsTabPanel = document.getElementById('swiper-browse-category-' + categoryTextId) ;
 					resultsTabPanel.innerHTML = "";
@@ -10406,7 +10414,7 @@ AspenDiscovery.Browse = (function(){
 
 			$.getJSON(url, params, function(data){
 				if (data.success === false){
-					AspenDiscovery.showMessage("Error loading browse information", "Sorry, we were not able to find titles for that category");
+					AspenDiscovery.showMessage(__('Error loading browse information'), __('Sorry, we were not able to find titles for that category'));
 				}else{
 					var newUrl = AspenDiscovery.buildUrl(document.location.origin + document.location.pathname, 'browseCategory', AspenDiscovery.Browse.curCategory);
 					newUrl += "&subCategory=" + subCategoryTextId;
@@ -10504,7 +10512,7 @@ AspenDiscovery.Browse = (function(){
 
 			$.getJSON(url, params, function(data){
 				if (data.success === false){
-					AspenDiscovery.showMessage("Error loading browse information", "Sorry, we were not able to find titles for that category");
+					AspenDiscovery.showMessage(__('Error loading browse information'), __('Sorry, we were not able to find titles for that category'));
 				}else{
 					window.location = data.searchUrl;
 				}
@@ -10691,9 +10699,9 @@ AspenDiscovery.Browse = (function(){
 			}
 			$.getJSON(url, params, function (data) {
 				if (data.success === false) {
-					AspenDiscovery.showMessage("Unable to Create Browse Category", data.message);
+					AspenDiscovery.showMessage(__('Unable to Create Browse Category'), data.message);
 				} else {
-					AspenDiscovery.showMessage("Successfully Added Browse Category", data.message, true);
+					AspenDiscovery.showMessage(__('Successfully Added Browse Category'), data.message, true);
 				}
 			}).fail(AspenDiscovery.ajaxFail);
 			return false;
@@ -10713,7 +10721,7 @@ AspenDiscovery.Browse = (function(){
 					divClass = this.browseModeClasses[this.browseMode]; //|| this.browseModeClasses[Object.keys(this.browseModeClasses)[0]]; // if browseMode isn't set grab the first class
 			$.getJSON(url, params, function(data){
 				if (data.success === false){
-					AspenDiscovery.showMessage("Error loading browse information", "Sorry, we were not able to find titles for that category");
+					AspenDiscovery.showMessage(__('Error loading browse information'), __('Sorry, we were not able to find titles for that category'));
 				}else{
 					if(!AspenDiscovery.Browse.accessibleMode) {
 						if (AspenDiscovery.Browse.browseStyle === 'masonry') {
@@ -10744,7 +10752,7 @@ AspenDiscovery.Browse = (function(){
 			return $.getJSON(url, params)
 			.done(function(data){
 				if (data.success === false) {
-					AspenDiscovery.showMessage('Error Loading Subcategories', 'Sorry, unable to load subcategories for that category.');
+					AspenDiscovery.showMessage(__('Error Loading Subcategories'), __('Sorry, unable to load subcategories for that category.'));
 				} else {
 					// Replace placeholder with actual tabs.
 					const $tabs = $('#tabs-' + categoryTextId);
@@ -10787,18 +10795,18 @@ AspenDiscovery.CloudLibrary = (function () {
 				cache: false,
 				success: function (data) {
 					if (data.success) {
-						AspenDiscovery.showMessage("Hold Cancelled", data.message, true);
+						AspenDiscovery.showMessage(__('Hold Cancelled'), data.message, true);
 						$("#cloudLibraryHold_" + id).hide();
 						AspenDiscovery.Account.loadMenuData();
 					} else {
-						AspenDiscovery.showMessage("Error Cancelling Hold", data.message, true);
+						AspenDiscovery.showMessage(__('Error Cancelling Hold'), data.message, true);
 					}
 
 				},
 				dataType: 'json',
 				async: false,
 				error: function () {
-					AspenDiscovery.showMessage("Error Cancelling Hold", "An error occurred processing your request in cloudLibrary.  Please try again in a few minutes.", false);
+					AspenDiscovery.showMessage(__('Error Cancelling Hold'), __('An error occurred processing your request in cloudLibrary.  Please try again in a few minutes.'), false);
 				}
 			});
 		},
@@ -10872,14 +10880,14 @@ AspenDiscovery.CloudLibrary = (function () {
 					if (data.availableForCheckout) {
 						AspenDiscovery.CloudLibrary.doCheckOut(patronId, id);
 					} else {
-						AspenDiscovery.showMessage("Placed Hold", data.message, !data.hasWhileYouWait);
+						AspenDiscovery.showMessage(__('Placed Hold'), data.message, !data.hasWhileYouWait);
 						AspenDiscovery.Account.loadMenuData();
 					}
 				},
 				dataType: 'json',
 				async: false,
 				error: function () {
-					AspenDiscovery.showMessage("Error Placing Hold", "An error occurred processing your request in cloudLibrary.  Please try again in a few minutes.", false);
+					AspenDiscovery.showMessage(__('Error Placing Hold'), __('An error occurred processing your request in cloudLibrary.  Please try again in a few minutes.'), false);
 				}
 			});
 		},
@@ -11039,7 +11047,7 @@ AspenDiscovery.CloudLibrary = (function () {
 					$renewButton.removeClass('disabled').removeAttr('disabled');
 
 					if (data.success) {
-						AspenDiscovery.showMessage("Title Renewed", data.message, true);
+						AspenDiscovery.showMessage(__('Title Renewed'), data.message, true);
 
 						AspenDiscovery.Account.loadMenuData();
 
@@ -11097,7 +11105,7 @@ AspenDiscovery.CloudLibrary = (function () {
 						$expiresRow.css('background-color', '');
 					}, 3000);
 
-					AspenDiscovery.showMessage("Error Renewing Checkout", "An error occurred processing your request in cloudLibrary. Please try again in a few minutes.", false);
+					AspenDiscovery.showMessage(__('Error Renewing Checkout'), __('An error occurred processing your request in cloudLibrary. Please try again in a few minutes.'), false);
 				}
 			});
 
@@ -11112,17 +11120,17 @@ AspenDiscovery.CloudLibrary = (function () {
 				cache: false,
 				success: function (data) {
 					if (data.success) {
-						AspenDiscovery.showMessage("Title Returned", data.message, true);
+						AspenDiscovery.showMessage(__('Title Returned'), data.message, true);
 						$(".cloudLibraryCheckout_" + recordId).hide();
 						AspenDiscovery.Account.loadMenuData();
 					} else {
-						AspenDiscovery.showMessage("Error Returning Title", data.message, true);
+						AspenDiscovery.showMessage(__('Error Returning Title'), data.message, true);
 					}
 				},
 				dataType: 'json',
 				async: false,
 				error: function () {
-					AspenDiscovery.showMessage("Error Returning Checkout", "An error occurred processing your request in cloudLibrary.  Please try again in a few minutes.", false);
+					AspenDiscovery.showMessage(__('Error Returning Checkout'), __('An error occurred processing your request in cloudLibrary.  Please try again in a few minutes.'), false);
 				}
 			});
 		},
@@ -11131,7 +11139,7 @@ AspenDiscovery.CloudLibrary = (function () {
 			var url = Globals.path + "/CloudLibrary/" + id + "/AJAX?method=getStaffView";
 			$.getJSON(url, function (data){
 				if (!data.success){
-					AspenDiscovery.showMessage('Error', data.message);
+					AspenDiscovery.showMessage(__('Error'), data.message);
 				}else{
 					$("#staffViewPlaceHolder").replaceWith(data.staffView);
 				}
@@ -11170,17 +11178,17 @@ AspenDiscovery.CloudLibrary = (function () {
 						} else if (type === "placeHold") {
 							AspenDiscovery.CloudLibrary.doHold(patronId, id);
 						} else {
-							AspenDiscovery.showMessage("Card Added", data.message, false);
+							AspenDiscovery.showMessage(__('Card Added'), data.message, false);
 						}
 					} else {
-						AspenDiscovery.showMessage("Error Adding Card", data.message, true);
+						AspenDiscovery.showMessage(__('Error Adding Card'), data.message, true);
 					}
 
 				},
 				dataType: 'json',
 				async: false,
 				error: function () {
-					AspenDiscovery.showMessage("Error Adding Card", "An error occurred processing your request in cloudLibrary.  Please try again in a few minutes.", false);
+					AspenDiscovery.showMessage(__('Error Adding Card'), __('An error occurred processing your request in cloudLibrary.  Please try again in a few minutes.'), false);
 				}
 			});
 		},
@@ -11233,9 +11241,9 @@ AspenDiscovery.CourseReserves = (function(){
 				},
 				function(data) {
 					if (data.result) {
-						AspenDiscovery.showMessage("Success", data.message);
+						AspenDiscovery.showMessage(__('Success'), data.message);
 					} else {
-						AspenDiscovery.showMessage("Error", data.message);
+						AspenDiscovery.showMessage(__('Error'), data.message);
 					}
 				}
 			);
@@ -11456,7 +11464,7 @@ AspenDiscovery.Events = (function(){
 
 			$.getJSON(url, params, function (data) {
 				if (!data.success) {
-					AspenDiscovery.showMessage('An error occurred ', data.message);
+					AspenDiscovery.showMessage(__('An error occurred '), data.message);
 					return;
 				}
 				AspenDiscovery.Events.getFieldOptionsByUse(fieldUse, data.selectedFields)
@@ -11473,7 +11481,7 @@ AspenDiscovery.Events = (function(){
 
 			$.getJSON(url, params, function (data) {
 				if (!data.success) {
-					AspenDiscovery.showMessage('An error occurred ', data.message);
+					AspenDiscovery.showMessage(__('An error occurred '), data.message);
 					return;
 				}
 
@@ -11565,7 +11573,7 @@ AspenDiscovery.Events = (function(){
 						$("#propertyRowscheduleSection").hide();
 					}
 				} else {
-					AspenDiscovery.showMessage('An error occurred ', data.message);
+					AspenDiscovery.showMessage(__('An error occurred '), data.message);
 				}
 			});
 		},
@@ -11659,7 +11667,7 @@ AspenDiscovery.Events = (function(){
 						descriptionEditor.show(); // Prevents editor from being collapsed if it's been hidden
 					}
 				} else {
-					AspenDiscovery.showMessage('An error occurred ', data.message);
+					AspenDiscovery.showMessage(__('An error occurred '), data.message);
 				}
 			});
 			return false;
@@ -11672,9 +11680,9 @@ AspenDiscovery.Events = (function(){
 				var date = startDate.format("MMMM D");
 				var weekOfMonth = AspenDiscovery.Events.getWeekofMonth(startDate);
 				weekOfMonth = moment.localeData().ordinal(weekOfMonth); // Format as ordinal
-				$("#recurrenceOptionSelect option[value=3]").text("Weekly on " + startDay + "s");
-				$("#recurrenceOptionSelect option[value=4]").text("Monthly on the " + weekOfMonth + " " + startDay);
-				$("#recurrenceOptionSelect option[value=5]").text("Annually on " + date);
+				$("#recurrenceOptionSelect option[value=3]").text(__('Weekly on {day}s', {day: startDay}));
+				$("#recurrenceOptionSelect option[value=4]").text(__('Monthly on the {week} {day}', {week: weekOfMonth, day: startDay}));
+				$("#recurrenceOptionSelect option[value=5]").text(__('Annually on {date}', {date: date}));
 				AspenDiscovery.Events.calculateEndTime();
 				AspenDiscovery.Events.calculateRecurrenceDates();
 			}
@@ -12225,7 +12233,7 @@ AspenDiscovery.Events = (function(){
 						AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons, '', '', false, '', true);
 					}
 				}else{
-					AspenDiscovery.showMessage('Sorry', data.message);
+					AspenDiscovery.showMessage(__('Sorry'), data.message);
 				}
 			})
 		},
@@ -12309,7 +12317,7 @@ AspenDiscovery.Events = (function(){
 					if (data.success === true) {
 						AspenDiscovery.Events.saveEventsObjCallback();
 					} else {
-						AspenDiscovery.showMessage('Sorry', data.message);
+						AspenDiscovery.showMessage(__('Sorry'), data.message);
 					}
 				});
 			}else{
@@ -12335,7 +12343,7 @@ AspenDiscovery.Events = (function(){
 		lookupPatronForRegistration: function() {
 			var barcode = $("#patronBarcodeInput").val().trim();
 			if (!barcode) {
-				$("#patronLookupError").text("Please enter a barcode.").show();
+				$("#patronLookupError").text(__('Please enter a barcode.')).show();
 				$("#patronLookupResult").hide();
 				return;
 			}
@@ -12360,7 +12368,7 @@ AspenDiscovery.Events = (function(){
 					$("#patronLookupResult").hide();
 				}
 			}).fail(function() {
-				$("#patronLookupError").text("Error looking up patron.").show();
+				$("#patronLookupError").text(__('Error looking up patron.')).show();
 				$("#patronLookupResult").hide();
 			});
 		},
@@ -12370,7 +12378,7 @@ AspenDiscovery.Events = (function(){
 			const userId = $("#foundPatronId").val();
 
 			if (!eventInstanceId || !userId) {
-				AspenDiscovery.showMessage("Error", "Missing event or patron information.");
+				AspenDiscovery.showMessage(__('Error'), __('Missing event or patron information.'));
 				return;
 			}
 
@@ -12400,7 +12408,7 @@ AspenDiscovery.Events = (function(){
 		},
 
 		staffUnregisterUser: function(eventInstanceId, userId) {
-			if (!confirm("Are you sure you want to cancel this registration?")) {
+			if (!confirm(__('Are you sure you want to cancel this registration?'))) {
 				return;
 			}
 
@@ -12629,14 +12637,14 @@ AspenDiscovery.HeroSlider = (function(){
 						if (isPaused) {
 							swiper.autoplay.start();
 							pauseButton.innerHTML = '<i class="fas fa-pause"></i>';
-							pauseButton.setAttribute('aria-label', 'Pause auto-rotation');
-							pauseButton.setAttribute('title', 'Pause');
+							pauseButton.setAttribute('aria-label', __('Pause auto-rotation'));
+							pauseButton.setAttribute('title', __('Pause'));
 							isPaused = false;
 						} else {
 							swiper.autoplay.stop();
 							pauseButton.innerHTML = '<i class="fas fa-play"></i>';
-							pauseButton.setAttribute('aria-label', 'Resume auto-rotation');
-							pauseButton.setAttribute('title', 'Play');
+							pauseButton.setAttribute('aria-label', __('Resume auto-rotation'));
+							pauseButton.setAttribute('title', __('Play'));
 							isPaused = true;
 						}
 					});
@@ -12803,9 +12811,9 @@ AspenDiscovery.GroupedWork = (function(){
 				if (data.result === true){
 					$('.rate' + groupedWorkId).find('.ui-rater-starsOn').width(0);
 					$('#myRating' + groupedWorkId).hide();
-					AspenDiscovery.showMessage('Success', data.message, true);
+					AspenDiscovery.showMessage(__('Success'), data.message, true);
 				}else{
-					AspenDiscovery.showMessage('Sorry', data.message);
+					AspenDiscovery.showMessage(__('Sorry'), data.message);
 				}
 			});
 			return false;
@@ -12816,7 +12824,7 @@ AspenDiscovery.GroupedWork = (function(){
 			$.getJSON(
 				url, function(data){
 					if (data.result === false){
-						AspenDiscovery.showMessage('Sorry', "There was an error updating the title.");
+						AspenDiscovery.showMessage(__('Sorry'), __('There was an error updating the title.'));
 					}else{
 						$("#notInterested" + notInterestedId).hide();
 					}
@@ -12830,9 +12838,9 @@ AspenDiscovery.GroupedWork = (function(){
 				$.getJSON(url, function(data){
 					if (data.result === true){
 						$('#review_' + reviewId).hide();
-						AspenDiscovery.showMessage('Success', data.message, true);
+						AspenDiscovery.showMessage(__('Success'), data.message, true);
 					}else{
-						AspenDiscovery.showMessage('Sorry', data.message);
+						AspenDiscovery.showMessage(__('Sorry'), data.message);
 					}
 				});
 			}
@@ -12992,7 +13000,7 @@ AspenDiscovery.GroupedWork = (function(){
 					AspenDiscovery.initCarousels('.ajax-carousel');
 
 				} catch (e) {
-					alert("error loading enrichment: " + e);
+					alert(__('error loading enrichment: ') + e);
 				}
 			});
 		},
@@ -13071,7 +13079,7 @@ AspenDiscovery.GroupedWork = (function(){
 							if (data.result === true){
 								$("#groupedRecord" + recordId).parent('.result').hide();
 							}else{
-								AspenDiscovery.showMessage('Sorry', data.message);
+								AspenDiscovery.showMessage(__('Sorry'), data.message);
 							}
 						}
 				);
@@ -13084,7 +13092,7 @@ AspenDiscovery.GroupedWork = (function(){
 		reloadCover: function (id){
 			var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=reloadCover';
 			$.getJSON(url, function (data){
-						AspenDiscovery.showMessage("Success", data.message, true, true);
+						AspenDiscovery.showMessage(__('Success'), data.message, true, true);
 					}
 			);
 			return false;
@@ -13118,7 +13126,7 @@ AspenDiscovery.GroupedWork = (function(){
 							}
 							AspenDiscovery.closeLightbox();
 						} else {
-							AspenDiscovery.showMessage("Error", data.message);
+							AspenDiscovery.showMessage(__('Error'), data.message);
 						}
 					}
 				).fail(AspenDiscovery.ajaxFail);
@@ -13142,9 +13150,9 @@ AspenDiscovery.GroupedWork = (function(){
 				};
 				$.getJSON(url, params, function(data) {
 					if (data.result) {
-						AspenDiscovery.showMessage("Success", data.message);
+						AspenDiscovery.showMessage(__('Success'), data.message);
 					} else {
-						AspenDiscovery.showMessage("Error", data.message);
+						AspenDiscovery.showMessage(__('Error'), data.message);
 					}
 				}).fail(AspenDiscovery.ajaxFail);
 			}
@@ -13214,7 +13222,7 @@ AspenDiscovery.GroupedWork = (function(){
 		thirdPartyCoverToggle: function (groupedWorkId, recordType, recordId){
 			var url = Globals.path + '/GroupedWork/' + groupedWorkId + '/AJAX?method=thirdPartyCoverToggle&recordType=' + recordType + '&recordId=' + recordId;
 			$.getJSON(url, function (data){
-				AspenDiscovery.showMessage("Success", data.message, true, true);
+				AspenDiscovery.showMessage(__('Success'), data.message, true, true);
 			});
 			return false;
 		},
@@ -13222,7 +13230,7 @@ AspenDiscovery.GroupedWork = (function(){
 		clearUploadedCover: function (groupedWorkId, recordType, recordId){
 			var url = Globals.path + '/GroupedWork/' + groupedWorkId + '/AJAX?method=clearUploadedCover&recordType=' + recordType + '&recordId=' + recordId;
 			$.getJSON(url, function (data){
-				AspenDiscovery.showMessage("Success", data.message, true, true);
+				AspenDiscovery.showMessage(__('Success'), data.message, true, true);
 			});
 			return false;
 		},
@@ -13304,7 +13312,7 @@ AspenDiscovery.GroupedWork = (function(){
 		clearRelatedCover: function (id){
 			var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=clearRelatedCover';
 			$.getJSON(url, function (data){
-				AspenDiscovery.showMessage("Success", data.message, true, true);
+				AspenDiscovery.showMessage(__('Success'), data.message, true, true);
 			});
 			return false;
 		},
@@ -13317,7 +13325,7 @@ AspenDiscovery.GroupedWork = (function(){
 					if (data.success){
 						AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 					}else{
-						AspenDiscovery.showMessage("An error occurred", data.message);
+						AspenDiscovery.showMessage(__('An error occurred'), data.message);
 					}
 
 				}).fail(AspenDiscovery.ajaxFail);
@@ -13336,7 +13344,7 @@ AspenDiscovery.GroupedWork = (function(){
 					if (data.success){
 						AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 					}else{
-						AspenDiscovery.showMessage("An error occurred", data.message);
+						AspenDiscovery.showMessage(__('An error occurred'), data.message);
 					}
 
 				}).fail(AspenDiscovery.ajaxFail);
@@ -13356,7 +13364,7 @@ AspenDiscovery.GroupedWork = (function(){
 					if (data.success){
 						AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 					}else{
-						AspenDiscovery.showMessage("An error occurred", data.message);
+						AspenDiscovery.showMessage(__('An error occurred'), data.message);
 					}
 
 				}).fail(AspenDiscovery.ajaxFail);
@@ -13386,9 +13394,9 @@ AspenDiscovery.GroupedWork = (function(){
 			//AspenDiscovery.closeLightbox();
 			$.getJSON(url, function(data){
 				if (data.success){
-					AspenDiscovery.showMessage("Success", data.message, true, false);
+					AspenDiscovery.showMessage(__('Success'), data.message, true, false);
 				}else{
-					AspenDiscovery.showMessage("An error occurred", data.message, false, false);
+					AspenDiscovery.showMessage(__('An error occurred'), data.message, false, false);
 				}
 			}).fail(AspenDiscovery.ajaxFail);
 		},
@@ -13398,9 +13406,9 @@ AspenDiscovery.GroupedWork = (function(){
 				var url = Globals.path + "/Admin/AJAX?method=ungroupRecord&recordId=" + recordId;
 				$.getJSON(url, function(data){
 					if (data.success){
-						AspenDiscovery.showMessage("Success", data.message);
+						AspenDiscovery.showMessage(__('Success'), data.message);
 					}else{
-						AspenDiscovery.showMessage("An error occurred", data.message);
+						AspenDiscovery.showMessage(__('An error occurred'), data.message);
 					}
 
 				}).fail(AspenDiscovery.ajaxFail);
@@ -13461,7 +13469,7 @@ AspenDiscovery.GroupedWork = (function(){
 			var url = Globals.path + "/GroupedWork/" + id + "/AJAX?method=getStaffView";
 			$.getJSON(url, function (data){
 				if (!data.success){
-					AspenDiscovery.showMessage('Error', data.message);
+					AspenDiscovery.showMessage(__('Error'), data.message);
 				}else{
 					$("#staffViewPlaceHolder").replaceWith(data.staffView);
 				}
@@ -13472,7 +13480,7 @@ AspenDiscovery.GroupedWork = (function(){
 			var url = Globals.path + "/GroupedWork/" + id + "/AJAX?method=getWhileYouWait&activeFormat=" + format;
 			$.getJSON(url, function (data){
 				if (!data.success){
-					AspenDiscovery.showMessage('Error', data.message);
+					AspenDiscovery.showMessage(__('Error'), data.message);
 				}else{
 					AspenDiscovery.showMessage(data.title, data.body);
 				}
@@ -13484,7 +13492,7 @@ AspenDiscovery.GroupedWork = (function(){
 			var url = Globals.path + "/GroupedWork/" + id + "/AJAX?method=getYouMightAlsoLike&activeFormat=" + format;
 			$.getJSON(url, function (data){
 				if (!data.success){
-					AspenDiscovery.showMessage('Error', data.message);
+					AspenDiscovery.showMessage(__('Error'), data.message);
 				}else{
 					AspenDiscovery.showMessage(data.title, data.body);
 				}
@@ -13533,7 +13541,7 @@ AspenDiscovery.GroupedWork = (function(){
 			var url = Globals.path + "/GroupedWork/" + id + "/AJAX?method=getDisplayInfoForm";
 			$.getJSON(url, function (data){
 				if (!data.success){
-					AspenDiscovery.showMessage('Error', data.message);
+					AspenDiscovery.showMessage(__('Error'), data.message);
 				}else{
 					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 				}
@@ -13553,7 +13561,7 @@ AspenDiscovery.GroupedWork = (function(){
 			}
 			$.getJSON(url, params, function (data){
 				if (!data.success){
-					AspenDiscovery.showMessage('Error', data.message);
+					AspenDiscovery.showMessage(__('Error'), data.message);
 				}else{
 					AspenDiscovery.showMessage(data.title, data.message);
 				}
@@ -13697,7 +13705,7 @@ AspenDiscovery.GroupedWork = (function(){
 		},
 
 		showEdition: function(workId, format, variationId) {
-			$("#variationInfo_" + workId).html("Loading");
+			$("#variationInfo_" + workId).html(__('Loading'));
 			var url = Globals.path + '/GroupedWork/' + workId + '/AJAX';
 			let params = {
 				'method': 'getHorizDisplayFormatEdition',
@@ -14161,9 +14169,9 @@ AspenDiscovery.Lists = (function () {
 				},
 				function (data) {
 					if (data.result) {
-						AspenDiscovery.showMessage("Success", data.message);
+						AspenDiscovery.showMessage(__('Success'), data.message);
 					} else {
-						AspenDiscovery.showMessage("Error", data.message);
+						AspenDiscovery.showMessage(__('Error'), data.message);
 					}
 				}
 			);
@@ -14300,7 +14308,7 @@ AspenDiscovery.Lists = (function () {
 					}
 					location.reload();
 				} else {
-					AspenDiscovery.showMessage('An error occurred', data.message);
+					AspenDiscovery.showMessage(__('An error occurred'), data.message);
 				}
 			});
 			return false;
@@ -14552,7 +14560,7 @@ AspenDiscovery.CollectionSpotlights = (function(){
 					// Reload carousel
 					jCarousel.jcarousel('reload');
 				} else {
-					AspenDiscovery.showMessage("Error", data.message);
+					AspenDiscovery.showMessage(__('Error'), data.message);
 				}
 			}).fail(AspenDiscovery.ajaxFail);
 		},
@@ -14928,7 +14936,7 @@ AspenDiscovery.MaterialsRequest = (function(){
 					if (data.success) {
 						AspenDiscovery.showMessage(data.title, data.modalBody);
 					} else {
-						AspenDiscovery.showMessage('An error occurred', data.message);
+						AspenDiscovery.showMessage(__('An error occurred'), data.message);
 					}
 				}
 			).fail(AspenDiscovery.ajaxFail);
@@ -14956,7 +14964,7 @@ AspenDiscovery.MaterialsRequest = (function(){
 					if (data.success) {
 						AspenDiscovery.showMessage(data.title, data.modalBody);
 					} else {
-						AspenDiscovery.showMessage('An error occurred', data.message);
+						AspenDiscovery.showMessage(__('An error occurred'), data.message);
 					}
 				}
 			).fail(AspenDiscovery.ajaxFail);
@@ -14982,18 +14990,18 @@ AspenDiscovery.OverDrive = (function(){
 					cache: false,
 					success: function(data){
 						if (data.success){
-							AspenDiscovery.showMessage("Hold Cancelled", data.message, true);
+							AspenDiscovery.showMessage(__('Hold Cancelled'), data.message, true);
 							//remove the row from the holds list
 							$("#overDriveHold_" + overdriveId).hide();
 							AspenDiscovery.Account.loadMenuData();
 						}else{
-							AspenDiscovery.showMessage("Error Cancelling Hold", data.message, false);
+							AspenDiscovery.showMessage(__('Error Cancelling Hold'), data.message, false);
 						}
 					},
 					dataType: 'json',
 					async: false,
 					error: function(){
-						AspenDiscovery.showMessage("Error Cancelling Hold", "An error occurred processing your request in OverDrive.  Please try again in a few minutes.", false);
+						AspenDiscovery.showMessage(__('Error Cancelling Hold'), __('An error occurred processing your request in OverDrive.  Please try again in a few minutes.'), false);
 					}
 				});
 			}
@@ -15010,9 +15018,9 @@ AspenDiscovery.OverDrive = (function(){
 			};
 			$.getJSON(url, params, function(data){
 				if (data.success) {
-					AspenDiscovery.showMessage("Successfully Froze Hold", data.message, true, true);
+					AspenDiscovery.showMessage(__('Successfully Froze Hold'), data.message, true, true);
 				} else {
-					AspenDiscovery.showMessage("Failed to Freeze Hold", data.message);
+					AspenDiscovery.showMessage(__('Failed to Freeze Hold'), data.message);
 				}
 			}).error(AspenDiscovery.ajaxFail);
 		},
@@ -15028,9 +15036,9 @@ AspenDiscovery.OverDrive = (function(){
 			};
 			$.getJSON(url, params, function(data){
 				if (data.success) {
-					AspenDiscovery.showMessage("Success", data.message, true, true);
+					AspenDiscovery.showMessage(__('Success'), data.message, true, true);
 				} else {
-					AspenDiscovery.showMessage("Error", data.message);
+					AspenDiscovery.showMessage(__('Error'), data.message);
 				}
 			}).error(AspenDiscovery.ajaxFail);
 		},
@@ -15051,7 +15059,7 @@ AspenDiscovery.OverDrive = (function(){
 				dataType: 'json',
 				async: true,
 				error: function(){
-					AspenDiscovery.showMessage('An Error occurred', "An error occurred processing your request in OverDrive.  Please try again in a few minutes.");
+					AspenDiscovery.showMessage(__('An Error occurred'), __('An error occurred processing your request in OverDrive.  Please try again in a few minutes.'));
 					AspenDiscovery.closeLightbox();
 					if (callback) callback(false);
 				}
@@ -15093,7 +15101,7 @@ AspenDiscovery.OverDrive = (function(){
 					cache: false,
 					success: function(data){
 						if (data.success === true){
-							AspenDiscovery.showMessageWithButtons("Title Checked Out Successfully", data.message, data.buttons);
+							AspenDiscovery.showMessageWithButtons(__('Title Checked Out Successfully'), data.message, data.buttons);
 							AspenDiscovery.Account.loadMenuData();
 						}else{
 							// noinspection JSUnresolvedReference
@@ -15104,14 +15112,14 @@ AspenDiscovery.OverDrive = (function(){
 									AspenDiscovery.OverDrive.placeHold(overdriveId);
 								}
 							}else{
-								AspenDiscovery.showMessage("Error Checking Out Title", data.message, false);
+								AspenDiscovery.showMessage(__('Error Checking Out Title'), data.message, false);
 							}
 						}
 					},
 					dataType: 'json',
 					async: false,
 					error: function(){
-						AspenDiscovery.showMessage('An Error occurred', "An error occurred processing your request in OverDrive.  Please try again in a few minutes.");
+						AspenDiscovery.showMessage(__('An Error occurred'), __('An error occurred processing your request in OverDrive.  Please try again in a few minutes.'));
 					}
 				});
 			}else{
@@ -15133,14 +15141,14 @@ AspenDiscovery.OverDrive = (function(){
 						AspenDiscovery.OverDrive.doOverDriveCheckout(patronId, overDriveId);
 					}else{
 						// noinspection JSUnresolvedReference
-						AspenDiscovery.showMessage("Placed Hold", data.message, !data.hasWhileYouWait);
+						AspenDiscovery.showMessage(__('Placed Hold'), data.message, !data.hasWhileYouWait);
 						AspenDiscovery.Account.loadMenuData();
 					}
 				},
 				dataType: 'json',
 				async: false,
 				error: function(){
-					AspenDiscovery.showMessage("Error Placing Hold", "An error occurred processing your request in OverDrive.  Please try again in a few minutes.", false);
+					AspenDiscovery.showMessage(__('Error Placing Hold'), __('An error occurred processing your request in OverDrive.  Please try again in a few minutes.'), false);
 				}
 			});
 		},
@@ -15155,13 +15163,13 @@ AspenDiscovery.OverDrive = (function(){
 						// noinspection JSUnresolvedReference
 						AspenDiscovery.showMessageWithButtons(data.message, data.modalBody, data.modalButtons);
 					}else{
-						AspenDiscovery.showMessage('Error', data.message);
+						AspenDiscovery.showMessage(__('Error'), data.message);
 					}
 				},
 				dataType: 'json',
 				async: false,
 				error: function(){
-					AspenDiscovery.showMessage('An Error occurred', "An error occurred processing your request in OverDrive.  Please try again in a few minutes.");
+					AspenDiscovery.showMessage(__('An Error occurred'), __('An error occurred processing your request in OverDrive.  Please try again in a few minutes.'));
 				}
 			});
 		},
@@ -15181,14 +15189,14 @@ AspenDiscovery.OverDrive = (function(){
 							AspenDiscovery.showMessageWithButtons(data.promptTitle, data.prompts, data.buttons);
 						}
 					}else{
-						AspenDiscovery.showMessage('An Error occurred', data.message);
+						AspenDiscovery.showMessage(__('An Error occurred'), data.message);
 					}
 
 				},
 				dataType: 'json',
 				async: false,
 				error: function(){
-					AspenDiscovery.showMessage('An Error occurred', "An error occurred processing your request in OverDrive.  Please try again in a few minutes.");
+					AspenDiscovery.showMessage(__('An Error occurred'), __('An error occurred processing your request in OverDrive.  Please try again in a few minutes.'));
 				}
 			});
 			return result;
@@ -15237,23 +15245,23 @@ AspenDiscovery.OverDrive = (function(){
 				cache: false,
 				success: function(data){
 					if (data.success) {
-						AspenDiscovery.showMessage("Title Renewed", data.message, true);
+						AspenDiscovery.showMessage(__('Title Renewed'), data.message, true);
 					}else{
-						AspenDiscovery.showMessage("Unable to Renew Title", data.message, true);
+						AspenDiscovery.showMessage(__('Unable to Renew Title'), data.message, true);
 					}
 
 				},
 				dataType: 'json',
 				async: false,
 				error: function(){
-					AspenDiscovery.showMessage("Error Renewing Checkout", "An error occurred processing your request in OverDrive.  Please try again in a few minutes.", false);
+					AspenDiscovery.showMessage(__('Error Renewing Checkout'), __('An error occurred processing your request in OverDrive.  Please try again in a few minutes.'), false);
 				}
 			});
 		},
 
 		returnCheckout: function (patronId, overDriveId){
 			if (confirm(__('Are you sure you want to return this title?'))){
-				AspenDiscovery.showMessage("Returning Title", "Returning your title in OverDrive.  This may take a minute.");
+				AspenDiscovery.showMessage(__('Returning Title'), __('Returning your title in OverDrive.  This may take a minute.'));
 				var ajaxUrl = Globals.path + "/OverDrive/AJAX?method=returnCheckout&patronId=" + patronId + "&overDriveId=" + overDriveId;
 				$.ajax({
 					url: ajaxUrl,
@@ -15270,7 +15278,7 @@ AspenDiscovery.OverDrive = (function(){
 					dataType: 'json',
 					async: false,
 					error: function(){
-						AspenDiscovery.showMessage("Error Returning Title", "An error occurred processing your request in OverDrive.  Please try again in a few minutes.");
+						AspenDiscovery.showMessage(__('Error Returning Title'), __('An error occurred processing your request in OverDrive.  Please try again in a few minutes.'));
 					}
 				});
 			}
@@ -15281,7 +15289,7 @@ AspenDiscovery.OverDrive = (function(){
 			var url = Globals.path + "/OverDrive/" + id + "/AJAX?method=getStaffView";
 			$.getJSON(url, function (data){
 				if (!data.success){
-					AspenDiscovery.showMessage('Error', data.message);
+					AspenDiscovery.showMessage(__('Error'), data.message);
 				}else{
 					// noinspection JSUnresolvedReference
 					$("#staffViewPlaceHolder").replaceWith(data.staffView);
@@ -15296,7 +15304,7 @@ AspenDiscovery.OverDrive = (function(){
 					// noinspection JSUnresolvedReference
 					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 				}else{
-					AspenDiscovery.showMessage('Error', data.message);
+					AspenDiscovery.showMessage(__('Error'), data.message);
 				}
 			});
 			return false;
@@ -15417,7 +15425,7 @@ AspenDiscovery.Hoopla = (function(){
 		returnCheckout(patronId, hooplaId) {
 			if (Globals.loggedIn) {
 				if (confirm(__('Are you sure you want to return this title?'))) {
-					AspenDiscovery.showMessage("Returning Title", "Returning your title in Hoopla.");
+					AspenDiscovery.showMessage(__('Returning Title'), __('Returning your title in Hoopla.'));
 					const url = Globals.path + "/Hoopla/" + hooplaId + "/AJAX",
 						params = {
 							'method': 'returnCheckout'
@@ -15462,7 +15470,7 @@ AspenDiscovery.Hoopla = (function(){
 				dataType: 'json',
 				async: false,
 				error: function() {
-					AspenDiscovery.showMessage("Error", "An error occurred processing your request in Hoopla. Please try again in a few minutes.");
+					AspenDiscovery.showMessage(__('Error'), __('An error occurred processing your request in Hoopla. Please try again in a few minutes.'));
 				}
 			});
 			return result;
@@ -15505,7 +15513,7 @@ AspenDiscovery.Hoopla = (function(){
 							if (data.buttons) {
 								AspenDiscovery.showMessageWithButtons(data.title, data.message, data.buttons);
 							} else {
-								AspenDiscovery.showMessage("Error", data.message);
+								AspenDiscovery.showMessage(__('Error'), data.message);
 							}
 							if (data.success) {
 								AspenDiscovery.Account.loadMenuData();
@@ -15514,7 +15522,7 @@ AspenDiscovery.Hoopla = (function(){
 					},
 					dataType: 'json',
 					error: function() {
-						AspenDiscovery.showMessage("Error", "An error occurred placing your hold. Please try again in a few minutes.");
+						AspenDiscovery.showMessage(__('Error'), __('An error occurred placing your hold. Please try again in a few minutes.'));
 					}
 				});
 			} else {
@@ -15533,17 +15541,17 @@ AspenDiscovery.Hoopla = (function(){
 					cache: false,
 					success: function(data) {
 						if (data.success) {
-							AspenDiscovery.showMessage("Hold Cancelled", data.message, true);
+							AspenDiscovery.showMessage(__('Hold Cancelled'), data.message, true);
 							$(".hooplaHold_" + recordId + "_" + patronId).hide();
 							AspenDiscovery.Account.loadMenuData();
 						} else {
-							AspenDiscovery.showMessage("Error Cancelling Hold", data.message, true);
+							AspenDiscovery.showMessage(__('Error Cancelling Hold'), data.message, true);
 						}
 					},
 					dataType: 'json',
 					async: false,
 					error: function() {
-						AspenDiscovery.showMessage("Error Cancelling Hold", "An error occurred processing your request in Hoopla. Please try again in a few minutes.", false);
+						AspenDiscovery.showMessage(__('Error Cancelling Hold'), __('An error occurred processing your request in Hoopla. Please try again in a few minutes.'), false);
 					}
 				});
 			}
@@ -15648,14 +15656,14 @@ AspenDiscovery.Ratings = (function(){
 		doRatingReview: function (id){
 			$.getJSON(Globals.path + "/GroupedWork/"+id+"/AJAX?method=getPromptForReviewForm", function(data){
 				if (data.prompt) AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons); // only ask if user hasn't set the setting already
-				if (data.error)  AspenDiscovery.showMessage('Error', data.message);
+				if (data.error)  AspenDiscovery.showMessage(__('Error'), data.message);
 			}).fail(AspenDiscovery.ajaxFail)
 		},
 
 		doNoRatingReviews : function (){
 			$.getJSON(Globals.path + "/GroupedWork/AJAX?method=setNoMoreReviews", function(data){
-				if (data.success) AspenDiscovery.showMessage('Success', 'You will no longer be asked to give a review.', true)
-				else AspenDiscovery.showMessage('Error', 'Failed to save your setting.')
+				if (data.success) AspenDiscovery.showMessage(__('Success'), __('You will no longer be asked to give a review.'), true)
+				else AspenDiscovery.showMessage(__('Error'), __('Failed to save your setting.'))
 			}).fail(AspenDiscovery.ajaxFail);
 		}
 	};
@@ -15717,7 +15725,7 @@ $.fn.rater = function(options) {
 
 $.fn.rater.defaults = {
 	url : location.href,
-	ratings: ['Hated It', "Didn't Like It", 'Liked It', 'Really Liked It', 'Loved It'],
+	ratings: [__('Hated It'), __("Didn't Like It"), __('Liked It'), __('Really Liked It'), __('Loved It')],
 	step : 1
 };
 
@@ -15728,7 +15736,7 @@ $.fn.rater.rate = function($this, opts, rating) {
 		$off.fadeTo(600, 0.4, function() {
 			$.getJSON(opts.url, {method: 'rateTitle', id: opts.id, rating: rating}, function(data) {
 				if (data.error) {
-					AspenDiscovery.showMessage('Error', data.error);
+					AspenDiscovery.showMessage(__('Error'), data.error);
 					$off.fadeTo(500, 1).mouseleave(); // Reset rater in light of failure
 				}
 				if (data.rating) { // success
@@ -16167,7 +16175,7 @@ AspenDiscovery.Account.ReadingHistory = (function(){
 			if (!newDateStr || !/^\d{4}-\d{2}-\d{2}$/.test(newDateStr)) {
 				$input.hide();
 				$display.show();
-				AspenDiscovery.showMessageWithButtons('Invalid Date', 'Please enter a valid date in YYYY-MM-DD format.');
+				AspenDiscovery.showMessageWithButtons(__('Invalid Date'), __('Please enter a valid date in YYYY-MM-DD format.'));
 				return;
 			}
 
@@ -16181,7 +16189,7 @@ AspenDiscovery.Account.ReadingHistory = (function(){
 			if (newTimestamp > todayTimestamp) {
 				$input.hide();
 				$display.show();
-				AspenDiscovery.showMessageWithButtons('Invalid Date', 'Return date cannot be in the future.');
+				AspenDiscovery.showMessageWithButtons(__('Invalid Date'), __('Return date cannot be in the future.'));
 				return;
 			}
 
@@ -16221,7 +16229,7 @@ AspenDiscovery.Account.ReadingHistory = (function(){
 				.fail(() => {
 					$input.hide();
 					$display.show();
-					AspenDiscovery.showMessageWithButtons('Error', 'Failed to update return date. Please try again.');
+					AspenDiscovery.showMessageWithButtons(__('Error'), __('Failed to update return date. Please try again.'));
 				});
 		}
 	};
@@ -16889,7 +16897,7 @@ AspenDiscovery.Record = (function () {
 			var url = Globals.path + "/" + module + "/" + id + "/AJAX?method=getStaffView";
 			$.getJSON(url, function (data) {
 				if (!data.success) {
-					AspenDiscovery.showMessage('Error', data.message);
+					AspenDiscovery.showMessage(__('Error'), data.message);
 				} else {
 					$("#staffViewPlaceHolder").replaceWith(data.staffView);
 				}
@@ -16903,7 +16911,7 @@ AspenDiscovery.Record = (function () {
 				recordSource: recordSource
 			};
 			$.getJSON(url, params, function (data) {
-					AspenDiscovery.showMessage("Success", data.message, true, false);
+					AspenDiscovery.showMessage(__('Success'), data.message, true, false);
 					setTimeout("AspenDiscovery.closeLightbox();", 3000);
 				}
 			);
@@ -17308,7 +17316,7 @@ AspenDiscovery.Searches = (function(){
 			}
 			$.getJSON(url+params, function(data){
 				if (data.success === 'false'){
-					AspenDiscovery.showMessage("Error loading results", data.error);
+					AspenDiscovery.showMessage(__('Error loading results'), data.error);
 				}else{
 					$('#combined-results-section-results-' + shortId).html(data.results);
 				}
@@ -17380,7 +17388,7 @@ AspenDiscovery.Searches = (function(){
 			}
 			$.getJSON(url+params, function(data){
 				if (data.success === 'false'){
-					AspenDiscovery.showMessage("Error loading search information", "Sorry, we were not able to retrieve additional results.");
+					AspenDiscovery.showMessage(__('Error loading search information'), __('Sorry, we were not able to retrieve additional results.'));
 				}else{
 					if (AspenDiscovery.Browse.browseStyle === 'masonry') {
 						AspenDiscovery.Searches.colcade = new Colcade('#home-page-browse-results .grid', {
@@ -17442,7 +17450,7 @@ AspenDiscovery.Searches = (function(){
 					};
 				}
 			} catch (e) {
-				alert("error during autocomplete setup:\n" + e);
+				alert(__('error during autocomplete setup:\n') + e);
 			}
 		},
 
@@ -17464,9 +17472,9 @@ AspenDiscovery.Searches = (function(){
 						},
 						function(data) {
 							if (data.result) {
-								AspenDiscovery.showMessage("Success", data.message);
+								AspenDiscovery.showMessage(__('Success'), data.message);
 							} else {
-								AspenDiscovery.showMessage("Error", data.message);
+								AspenDiscovery.showMessage(__('Error'), data.message);
 							}
 						}
 				);
@@ -17590,7 +17598,7 @@ AspenDiscovery.Searches = (function(){
 						$("#facetLock_unlockIcon_" + clusterName).show();
 						AspenDiscovery.Searches.updateAppliedFilterBadges(clusterName, true);
 					}else{
-						AspenDiscovery.showMessage('Error', data.message, true);
+						AspenDiscovery.showMessage(__('Error'), data.message, true);
 					}
 				}
 			);
@@ -17609,7 +17617,7 @@ AspenDiscovery.Searches = (function(){
 						$("#facetLock_unlockIcon_" + clusterName).hide();
 						AspenDiscovery.Searches.updateAppliedFilterBadges(clusterName, false);
 					}else{
-						AspenDiscovery.showMessage('Error', data.message, true);
+						AspenDiscovery.showMessage(__('Error'), data.message, true);
 					}
 				}
 			);
@@ -17656,7 +17664,7 @@ AspenDiscovery.Searches = (function(){
 					if (data.success === true){
 						window.location = removalUrl;
 					}else{
-						AspenDiscovery.showMessage('Error', data.message, true);
+						AspenDiscovery.showMessage(__('Error'), data.message, true);
 					}
 				}
 			);
@@ -17673,7 +17681,7 @@ AspenDiscovery.Searches = (function(){
 					if (data.success === true){
 						window.location = removeAllFiltersUrl;
 					}else{
-						AspenDiscovery.showMessage('Error', data.message, true);
+						AspenDiscovery.showMessage(__('Error'), data.message, true);
 					}
 				}
 			);
@@ -17871,7 +17879,7 @@ AspenDiscovery.Series = (function(){
 				if (data.success){
 					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 				}else{
-					AspenDiscovery.showMessage("An error occurred", data.message);
+					AspenDiscovery.showMessage(__('An error occurred'), data.message);
 				}
 			}).fail(AspenDiscovery.ajaxFail);
 			return false;
@@ -17883,9 +17891,9 @@ AspenDiscovery.Series = (function(){
 			//AspenDiscovery.closeLightbox();
 			$.getJSON(url, function(data){
 				if (data.success){
-					AspenDiscovery.showMessage("Success", data.message, true, false);
+					AspenDiscovery.showMessage(__('Success'), data.message, true, false);
 				}else{
-					AspenDiscovery.showMessage("An error occurred", data.message, false, false);
+					AspenDiscovery.showMessage(__('An error occurred'), data.message, false, false);
 				}
 			}).fail(AspenDiscovery.ajaxFail);
 		},
@@ -17915,9 +17923,9 @@ AspenDiscovery.Series = (function(){
 				},
 				function(data) {
 					if (data.result) {
-						AspenDiscovery.showMessage("Success", data.message);
+						AspenDiscovery.showMessage(__('Success'), data.message);
 					} else {
-						AspenDiscovery.showMessage("Error", data.message);
+						AspenDiscovery.showMessage(__('Error'), data.message);
 					}
 				}
 			);
@@ -17932,9 +17940,9 @@ AspenDiscovery.Series = (function(){
 			//AspenDiscovery.closeLightbox();
 			$.getJSON(url, function(data){
 				if (data.success){
-					AspenDiscovery.showMessage("Success", data.message, false, true);
+					AspenDiscovery.showMessage(__('Success'), data.message, false, true);
 				}else{
-					AspenDiscovery.showMessage("An error occurred", data.message, false, false);
+					AspenDiscovery.showMessage(__('An error occurred'), data.message, false, false);
 				}
 			}).fail(AspenDiscovery.ajaxFail);
 		}
@@ -18064,7 +18072,7 @@ TitleScroller.prototype.loadTitlesFrom = function(jsonUrl) {
 	$.getJSON(jsonUrl, function(data) {
 		scroller.loadTitlesFromJsonData(data);
 	}).fail(function(){
-		scrollerBody.html("Unable to load titles. Please try again later.").show();
+		scrollerBody.html(__("Unable to load titles. Please try again later.")).show();
 		$(".scrollerLoadingContainer").hide();
 	});
 };
@@ -18075,7 +18083,7 @@ TitleScroller.prototype.loadTitlesFromJsonData = function(data) {
 	try {
 		if (data.error) throw {description:data.error};
 		if (data.titles.length === 0) {
-			scrollerBody.html("No titles were found for this list. Please try again later.");
+			scrollerBody.html(__("No titles were found for this list. Please try again later."));
 			$('#' + this.scrollerId + " .scrollerBodyContainer .scrollerLoadingContainer").hide();
 			scrollerBody.show();
 		} else {
@@ -18094,7 +18102,7 @@ TitleScroller.prototype.loadTitlesFromJsonData = function(data) {
 		}
 	} catch (err) {
 		if (scrollerBody != null){
-			scrollerBody.html("Error loading titles from data : '" + err.description + "' Please try again later.").show();
+			scrollerBody.html(__("Error loading titles from data : '") + err.description + __("' Please try again later.")).show();
 			$(".scrollerLoadingContainer").hide();
 		}
 	}
@@ -18138,8 +18146,8 @@ TitleScroller.prototype.updateScroller = function() {
 		}
 
 	} catch (err) {
-		alert("error in updateScroller for scroller " + this.scrollerId + " " + err.description);
-		scrollerBody.html("Error loading titles from data: '" + err + "' Please try again later.").show();
+		alert(__("error in updateScroller for scroller ") + this.scrollerId + " " + err.description);
+		scrollerBody.html(__("Error loading titles from data: '") + err + __("' Please try again later.")).show();
 		$(".scrollerLoadingContainer").hide();
 	}
 
@@ -18517,7 +18525,7 @@ AspenDiscovery.WebBuilder = function () {
 							}
 						}
 					}else{
-						AspenDiscovery.showMessage('Sorry', data.message);
+						AspenDiscovery.showMessage(__('Sorry'), data.message);
 					}
 				});
 			}
@@ -18547,7 +18555,7 @@ AspenDiscovery.WebBuilder = function () {
 						}
 					}
 				}else{
-					AspenDiscovery.showMessage('Sorry', data.message);
+					AspenDiscovery.showMessage(__('Sorry'), data.message);
 				}
 			});
 		},
@@ -18577,7 +18585,7 @@ AspenDiscovery.WebBuilder = function () {
 						AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons, '', '', false, '', true);
 					}
 				}else{
-					AspenDiscovery.showMessage('Sorry', data.message);
+					AspenDiscovery.showMessage(__('Sorry'), data.message);
 				}
 			})
 		},
@@ -18604,7 +18612,7 @@ AspenDiscovery.WebBuilder = function () {
 				if (data.success === true){
 					AspenDiscovery.WebBuilder.saveLinkedObjCallback();
 				}else{
-					AspenDiscovery.showMessage('Sorry', data.message);
+					AspenDiscovery.showMessage(__('Sorry'), data.message);
 				}
 			});
 		},
@@ -18629,7 +18637,7 @@ AspenDiscovery.WebBuilder = function () {
 					if (data.success) {
 						AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 					} else {
-						AspenDiscovery.showMessage('An error occurred', data.message)
+						AspenDiscovery.showMessage(__('An error occurred'), data.message)
 					}
 				}
 			).fail(AspenDiscovery.ajaxFail);
@@ -18684,7 +18692,7 @@ AspenDiscovery.WebBuilder = function () {
 					}
 					AspenDiscovery.closeLightbox();
 				} else {
-					AspenDiscovery.showMessage('Error Deleting Cell', data.message);
+					AspenDiscovery.showMessage(__('Error Deleting Cell'), data.message);
 				}
 			});
 			return false;
@@ -18708,7 +18716,7 @@ AspenDiscovery.WebBuilder = function () {
 					$("#portalRow" + id).hide();
 					AspenDiscovery.closeLightbox();
 				} else {
-					AspenDiscovery.showMessage('Error Deleting Row', data.message);
+					AspenDiscovery.showMessage(__('Error Deleting Row'), data.message);
 				}
 			});
 			return false;
@@ -18724,7 +18732,7 @@ AspenDiscovery.WebBuilder = function () {
 				if (data.success){
 					$('#portal-rows').append(data.newRow);
 				} else {
-					AspenDiscovery.showMessage('An error occurred', data.message);
+					AspenDiscovery.showMessage(__('An error occurred'), data.message);
 				}
 			});
 			return false;
@@ -18740,7 +18748,7 @@ AspenDiscovery.WebBuilder = function () {
 				if (data.success){
 					$('#portalRow' + rowId).replaceWith(data.newRow);
 				} else {
-					AspenDiscovery.showMessage('An error occurred', data.message);
+					AspenDiscovery.showMessage(__('An error occurred'), data.message);
 				}
 			});
 			return false;
@@ -18763,7 +18771,7 @@ AspenDiscovery.WebBuilder = function () {
 						row1.before(row2);
 					}
 				} else {
-					AspenDiscovery.showMessage('An error occurred', data.message);
+					AspenDiscovery.showMessage(__('An error occurred'), data.message);
 				}
 			});
 			return false;
@@ -18786,7 +18794,7 @@ AspenDiscovery.WebBuilder = function () {
 						cell1.before(cell2);
 					}
 				} else {
-					AspenDiscovery.showMessage('An error occurred', data.message);
+					AspenDiscovery.showMessage(__('An error occurred'), data.message);
 				}
 			});
 			return false;
@@ -18802,7 +18810,7 @@ AspenDiscovery.WebBuilder = function () {
 				if (data.success){
 					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons)
 				} else {
-					AspenDiscovery.showMessage('An error occurred', data.message);
+					AspenDiscovery.showMessage(__('An error occurred'), data.message);
 				}
 			});
 			return false;
@@ -18920,9 +18928,9 @@ AspenDiscovery.WebBuilder = function () {
 		},
 
 		promptContinueToResource(id, fromPlacard = false) {
-			const message = `<p>You're logged in. Click below to continue to your resource.</p><button type="button" class="btn btn-primary" id="continueToResourceBtn">Continue</button>`;
+			const message = `<p>${__('You\'re logged in. Click below to continue to your resource.')}</p><button type="button" class="btn btn-primary" id="continueToResourceBtn">${__('Continue')}</button>`;
 
-			AspenDiscovery.showMessage("Continue", message);
+			AspenDiscovery.showMessage(__('Continue'), message);
 
 			$('#continueToResourceBtn').off('click').on('click', () => {
 				setTimeout("AspenDiscovery.closeLightbox();", 3000);
@@ -18969,7 +18977,7 @@ AspenDiscovery.WebBuilder = function () {
 				if (data.success){
 					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons)
 				} else {
-					AspenDiscovery.showMessage('An error occurred', data.message);
+					AspenDiscovery.showMessage(__('An error occurred'), data.message);
 				}
 			});
 			return false;
@@ -18990,7 +18998,7 @@ AspenDiscovery.WebBuilder = function () {
 					$('#newOptionPlaceholder').before(data.formattedOption);
 					AspenDiscovery.closeLightbox();
 				} else {
-					AspenDiscovery.showMessage('An error occurred', data.message);
+					AspenDiscovery.showMessage(__('An error occurred'), data.message);
 				}
 			});
 			return false;
@@ -19029,7 +19037,7 @@ AspenDiscovery.Wikipedia = (() => {
 			})
 			.fail((jqXHR, textStatus) => {
 				$("#wikipedia_placeholder")
-					.html(`<div class="alert alert-danger">Failed to load article: ${textStatus}</div>`)
+					.html(`<div class="alert alert-danger">${__('Failed to load article:')} ${textStatus}</div>`)
 					.fadeIn();
 			});
 		}
@@ -19184,21 +19192,21 @@ AspenDiscovery.CookieConsent = (function() {
 					if (data.success) {
 						if (data.message.length > 0){
 							//User was logged in, show a message about how to update
-							AspenDiscovery.showMessage('Success', data.message, true, true);
+							AspenDiscovery.showMessage(__('Success'), data.message, true, true);
 						}else{
 							//Refresh the page
 							// noinspection SillyAssignmentJS
 							window.location.href = window.location.href;
 						}
 					} else {
-						AspenDiscovery.showMessage("Error", data.message);
+						AspenDiscovery.showMessage(__('Error'), data.message);
 					}
 				}
 			).fail(AspenDiscovery.ajaxFail);
 			return false;
 		},
 		cookieDisagree: function() {
-			AspenDiscovery.showMessage("Cookie Policy", Globals.cookiePolicyHTML);
+			AspenDiscovery.showMessage(__('Cookie Policy'), Globals.cookiePolicyHTML);
 			return;
 		},
 		cookieManage: function() {
@@ -19216,10 +19224,10 @@ AspenDiscovery.CookieConsent = (function() {
 			$.getJSON(url, params,
 				function(data) {
 					if(data.success){
-						AspenDiscovery.showMessageWithButtons("Manage Your Privacy Settings", data.modalBody, data.modalButtons);
+						AspenDiscovery.showMessageWithButtons(__('Manage Your Privacy Settings'), data.modalBody, data.modalButtons);
 						$('.stripPopup').hide();
 					} else {
-						AspenDiscovery.showMessage("There was an error retreiving your privacy settings");
+						AspenDiscovery.showMessage(__('There was an error retreiving your privacy settings'));
 					}
 				}
 			 ).fail(AspenDiscovery.ajaxFail);
@@ -19241,7 +19249,7 @@ AspenDiscovery.CookieConsent = (function() {
 				if(data.success) {
 					AspenDiscovery.showMessage(data.message);
 				} else {
-					AspenDiscovery.showMessage("There was an error updating your privacy settings");
+					AspenDiscovery.showMessage(__('There was an error updating your privacy settings'));
 				}
 			}
 		).fail(AspenDiscovery.ajaxFail);
@@ -19262,7 +19270,7 @@ AspenDiscovery.PalaceProject = (function () {
 			var url = Globals.path + "/PalaceProject/" + id + "/AJAX?method=getStaffView";
 			$.getJSON(url, function (data) {
 				if (!data.success) {
-					AspenDiscovery.showMessage('Error', data.message);
+					AspenDiscovery.showMessage(__('Error'), data.message);
 				} else {
 					$("#staffViewPlaceHolder").replaceWith(data.staffView);
 				}
@@ -19275,7 +19283,7 @@ AspenDiscovery.PalaceProject = (function () {
 				if (data.success){
 					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 				}else{
-					AspenDiscovery.showMessage('Error', data.message);
+					AspenDiscovery.showMessage(__('Error'), data.message);
 				}
 			});
 		},
@@ -19383,7 +19391,7 @@ AspenDiscovery.PalaceProject = (function () {
 				dataType: 'json',
 				async: false,
 				error: function () {
-					AspenDiscovery.showMessage("Error Returning Checkout", "An error occurred processing your request in Palace Project.  Please try again in a few minutes.", false);
+					AspenDiscovery.showMessage(__('Error Returning Checkout'), __('An error occurred processing your request in Palace Project.  Please try again in a few minutes.'), false);
 				}
 			});
 			return false;
@@ -19450,7 +19458,7 @@ AspenDiscovery.PalaceProject = (function () {
 				dataType: 'json',
 				async: false,
 				error: function () {
-					AspenDiscovery.showMessage("Error Placing Hold", "An error occurred processing your request in Palace Project.  Please try again in a few minutes.", false);
+					AspenDiscovery.showMessage(__('Error Placing Hold'), __('An error occurred processing your request in Palace Project.  Please try again in a few minutes.'), false);
 				}
 			});
 			return true;
@@ -19463,18 +19471,18 @@ AspenDiscovery.PalaceProject = (function () {
 				cache: false,
 				success: function (data) {
 					if (data.success) {
-						AspenDiscovery.showMessage("Hold Cancelled", data.message, true);
+						AspenDiscovery.showMessage(__('Hold Cancelled'), data.message, true);
 						$(".palace_projectHold_" + id + "_" + patronId).hide();
 						AspenDiscovery.Account.loadMenuData();
 					} else {
-						AspenDiscovery.showMessage("Error Cancelling Hold", data.message, true);
+						AspenDiscovery.showMessage(__('Error Cancelling Hold'), data.message, true);
 					}
 
 				},
 				dataType: 'json',
 				async: false,
 				error: function () {
-					AspenDiscovery.showMessage("Error Cancelling Hold", "An error occurred processing your request in Palace Project.  Please try again in a few minutes.", false);
+					AspenDiscovery.showMessage(__('Error Cancelling Hold'), __('An error occurred processing your request in Palace Project.  Please try again in a few minutes.'), false);
 				}
 			});
 		},
@@ -19488,14 +19496,14 @@ AspenDiscovery.PalaceProject = (function () {
 					if (data.success) {
 						AspenDiscovery.showMessage(data.title, data.message);
 					} else {
-						AspenDiscovery.showMessage("Error Loading Instructions", data.message, true);
+						AspenDiscovery.showMessage(__('Error Loading Instructions'), data.message, true);
 					}
 
 				},
 				dataType: 'json',
 				async: false,
 				error: function () {
-					AspenDiscovery.showMessage("Error Loading Instructions", "An error occurred loading instructions.  Please try again in a few minutes.", false);
+					AspenDiscovery.showMessage(__('Error Loading Instructions'), __('An error occurred loading instructions.  Please try again in a few minutes.'), false);
 				}
 			});
 		},
@@ -19527,14 +19535,14 @@ AspenDiscovery.CommunityEngagement = function() {
 				function(data) {
 					if (data.success) {
 						var button = $('.set-reward-btn[data-user-id="' + userId + '"][data-campaign-id="' + campaignId + '"]');
-						button.replaceWith('<span>Reward Given</span>');
+						button.replaceWith('<span>' + __('Reward Given') + '</span>');
 					} else {
-						alert("Error: " + data.message);
+						alert(__('Error: ') + data.message);
 					}
 				})
 				.fail(function(jqXHR, textStatus, errorThrown){
 			   
-				alert('An error occurred while updating the reward status.' + textStatus + ', ' + errorThrown);
+				alert(__('An error occurred while updating the reward status.') + textStatus + ', ' + errorThrown);
 				});
 		},
 		milestoneRewardGiven: function(userId, campaignId, milestoneId) {
@@ -19548,13 +19556,13 @@ AspenDiscovery.CommunityEngagement = function() {
 				function(data) {
 					if (data.success) {
 						var button = $('.set-reward-btn-milestone[data-user-id="' + userId + '"][data-campaign-id="' + campaignId + '"][data-milestone-id="' + milestoneId + '"]');
-						button.replaceWith('<span>Milestone Reward Given</span>');
+						button.replaceWith('<span>' + __('Milestone Reward Given') + '</span>');
 					} else {
-						alert("Error: " + data.message);
+						alert(__('Error: ') + data.message);
 					}
 				})
 				.fail(function(jqXHR, textStatus, errorThrown) {
-					alert('An error occurred while updating the reward status for this milestone.' + textStatus + ', ' + errorThrown);
+					alert(__('An error occurred while updating the reward status for this milestone.') + textStatus + ', ' + errorThrown);
 				});
 		},
 		filterDropdownOptions: function(filterType) {
@@ -19592,7 +19600,7 @@ AspenDiscovery.CommunityEngagement = function() {
 						filteredCampaign.style.display = "block"; 
 						campaignsList.style.display = "none";
 					} else {
-						alert("Error:" +  data.message);
+						alert(__('Error:') +  data.message);
 					}
 				})
 				.fail(function() {
@@ -20268,11 +20276,11 @@ AspenDiscovery.CommunityEngagement = function() {
 					if (refreshData.success && refreshData.html) {
 						$("#filteredCampaign").html(refreshData.html);
 					} else {
-						AspenDiscovery.showMessage('Error', 'Failed to refresh campaign data.');
+						AspenDiscovery.showMessage(__('Error'), __('Failed to refresh campaign data.'));
 					}
 				});
 			}).catch(() => {
-				AspenDiscovery.showMessage('Error', 'Failed to load user data.');
+				AspenDiscovery.showMessage(__('Error'), __('Failed to load user data.'));
 			});
 		},
 		displayExtraCreditBentoBox: function () {
@@ -20323,7 +20331,7 @@ AspenDiscovery.CommunityEngagement = function() {
 					}
 				})
 				.fail(function(jqXHR, textStatus, errorThrown) {
-					alert('An error occurred while updating the reward status for this milestone.' + textStatus + ', ' + errorThrown);
+					alert(__('An error occurred while updating the reward status for this milestone.') + textStatus + ', ' + errorThrown);
 				});
 		},
 		adminManuallyProgressExtraCredit: function(extraCreditActivityId, userId, campaignId) {
@@ -20464,7 +20472,7 @@ AspenDiscovery.CurbsidePickup = {
 		$.getJSON(Globals.path + "/CurbsidePickups/AJAX?method=getCurbsidePickupUnavailableDays&locationCode=" + locationCode)
 			.done(function (unavailableDaysData) {
 				if (!unavailableDaysData.success) {
-					AspenDiscovery.showMessage("Error", "Failed to load calendar. Please try again later.", false);
+					AspenDiscovery.showMessage(__('Error'), __('Failed to load calendar. Please try again later.'), false);
 					return;
 				}
 
@@ -20507,12 +20515,12 @@ AspenDiscovery.CurbsidePickup = {
 								$.getJSON(Globals.path + "/CurbsidePickups/AJAX?method=getCurbsidePickupAvailableTimes&date=" + dateStr + "&locationCode=" + locationCode)
 									.done(function (data) {
 										if (!data.success) {
-											AspenDiscovery.showMessage("Error", "Could not load time slots. Please try again.", false);
+											AspenDiscovery.showMessage(__('Error'), __('Could not load time slots. Please try again.'), false);
 											return;
 										}
 
 										if (!data.times || data.times.length === 0) {
-											AspenDiscovery.showMessage("No Times Available", "Sorry, there are no available pickup times for the selected date. Please select a different date.", false);
+											AspenDiscovery.showMessage(__('No Times Available'), __('Sorry, there are no available pickup times for the selected date. Please select a different date.'), false);
 											return;
 										}
 
@@ -20553,7 +20561,7 @@ AspenDiscovery.CurbsidePickup = {
 									})
 									.fail(function(jqXHR, textStatus, errorThrown) {
 										AspenDiscovery.closeLightbox();
-										AspenDiscovery.showMessage("Error", "Failed to load available times. Please try again later.", false);
+										AspenDiscovery.showMessage(__('Error'), __('Failed to load available times. Please try again later.'), false);
 										console.error("Error loading time slots:", textStatus, errorThrown);
 									});
 							}
@@ -20565,12 +20573,12 @@ AspenDiscovery.CurbsidePickup = {
 						$("#createCurbsidePickupSubmit").show();
 					})
 					.fail(function(jqXHR, textStatus, errorThrown) {
-						AspenDiscovery.showMessage("Error", "Failed to load available times. Please try again later.", false);
+						AspenDiscovery.showMessage(__('Error'), __('Failed to load available times. Please try again later.'), false);
 						console.error("Error loading available times:", textStatus, errorThrown);
 					});
 			})
 			.fail(function(jqXHR, textStatus, errorThrown) {
-				AspenDiscovery.showMessage("Error", "Failed to load calendar. Please try again later.", false);
+				AspenDiscovery.showMessage(__('Error'), __('Failed to load calendar. Please try again later.'), false);
 				console.error("Error loading calendar:", textStatus, errorThrown);
 			});
 		return false;

@@ -9,18 +9,18 @@ AspenDiscovery.OverDrive = (function(){
 					cache: false,
 					success: function(data){
 						if (data.success){
-							AspenDiscovery.showMessage("Hold Cancelled", data.message, true);
+							AspenDiscovery.showMessage(__('Hold Cancelled'), data.message, true);
 							//remove the row from the holds list
 							$("#overDriveHold_" + overdriveId).hide();
 							AspenDiscovery.Account.loadMenuData();
 						}else{
-							AspenDiscovery.showMessage("Error Cancelling Hold", data.message, false);
+							AspenDiscovery.showMessage(__('Error Cancelling Hold'), data.message, false);
 						}
 					},
 					dataType: 'json',
 					async: false,
 					error: function(){
-						AspenDiscovery.showMessage("Error Cancelling Hold", "An error occurred processing your request in OverDrive.  Please try again in a few minutes.", false);
+						AspenDiscovery.showMessage(__('Error Cancelling Hold'), __('An error occurred processing your request in OverDrive.  Please try again in a few minutes.'), false);
 					}
 				});
 			}
@@ -37,9 +37,9 @@ AspenDiscovery.OverDrive = (function(){
 			};
 			$.getJSON(url, params, function(data){
 				if (data.success) {
-					AspenDiscovery.showMessage("Successfully Froze Hold", data.message, true, true);
+					AspenDiscovery.showMessage(__('Successfully Froze Hold'), data.message, true, true);
 				} else {
-					AspenDiscovery.showMessage("Failed to Freeze Hold", data.message);
+					AspenDiscovery.showMessage(__('Failed to Freeze Hold'), data.message);
 				}
 			}).error(AspenDiscovery.ajaxFail);
 		},
@@ -55,9 +55,9 @@ AspenDiscovery.OverDrive = (function(){
 			};
 			$.getJSON(url, params, function(data){
 				if (data.success) {
-					AspenDiscovery.showMessage("Success", data.message, true, true);
+					AspenDiscovery.showMessage(__('Success'), data.message, true, true);
 				} else {
-					AspenDiscovery.showMessage("Error", data.message);
+					AspenDiscovery.showMessage(__('Error'), data.message);
 				}
 			}).error(AspenDiscovery.ajaxFail);
 		},
@@ -78,7 +78,7 @@ AspenDiscovery.OverDrive = (function(){
 				dataType: 'json',
 				async: true,
 				error: function(){
-					AspenDiscovery.showMessage('An Error occurred', "An error occurred processing your request in OverDrive.  Please try again in a few minutes.");
+					AspenDiscovery.showMessage(__('An Error occurred'), __('An error occurred processing your request in OverDrive.  Please try again in a few minutes.'));
 					AspenDiscovery.closeLightbox();
 					if (callback) callback(false);
 				}
@@ -120,7 +120,7 @@ AspenDiscovery.OverDrive = (function(){
 					cache: false,
 					success: function(data){
 						if (data.success === true){
-							AspenDiscovery.showMessageWithButtons("Title Checked Out Successfully", data.message, data.buttons);
+							AspenDiscovery.showMessageWithButtons(__('Title Checked Out Successfully'), data.message, data.buttons);
 							AspenDiscovery.Account.loadMenuData();
 						}else{
 							// noinspection JSUnresolvedReference
@@ -131,14 +131,14 @@ AspenDiscovery.OverDrive = (function(){
 									AspenDiscovery.OverDrive.placeHold(overdriveId);
 								}
 							}else{
-								AspenDiscovery.showMessage("Error Checking Out Title", data.message, false);
+								AspenDiscovery.showMessage(__('Error Checking Out Title'), data.message, false);
 							}
 						}
 					},
 					dataType: 'json',
 					async: false,
 					error: function(){
-						AspenDiscovery.showMessage('An Error occurred', "An error occurred processing your request in OverDrive.  Please try again in a few minutes.");
+						AspenDiscovery.showMessage(__('An Error occurred'), __('An error occurred processing your request in OverDrive.  Please try again in a few minutes.'));
 					}
 				});
 			}else{
@@ -160,14 +160,14 @@ AspenDiscovery.OverDrive = (function(){
 						AspenDiscovery.OverDrive.doOverDriveCheckout(patronId, overDriveId);
 					}else{
 						// noinspection JSUnresolvedReference
-						AspenDiscovery.showMessage("Placed Hold", data.message, !data.hasWhileYouWait);
+						AspenDiscovery.showMessage(__('Placed Hold'), data.message, !data.hasWhileYouWait);
 						AspenDiscovery.Account.loadMenuData();
 					}
 				},
 				dataType: 'json',
 				async: false,
 				error: function(){
-					AspenDiscovery.showMessage("Error Placing Hold", "An error occurred processing your request in OverDrive.  Please try again in a few minutes.", false);
+					AspenDiscovery.showMessage(__('Error Placing Hold'), __('An error occurred processing your request in OverDrive.  Please try again in a few minutes.'), false);
 				}
 			});
 		},
@@ -182,13 +182,13 @@ AspenDiscovery.OverDrive = (function(){
 						// noinspection JSUnresolvedReference
 						AspenDiscovery.showMessageWithButtons(data.message, data.modalBody, data.modalButtons);
 					}else{
-						AspenDiscovery.showMessage('Error', data.message);
+						AspenDiscovery.showMessage(__('Error'), data.message);
 					}
 				},
 				dataType: 'json',
 				async: false,
 				error: function(){
-					AspenDiscovery.showMessage('An Error occurred', "An error occurred processing your request in OverDrive.  Please try again in a few minutes.");
+					AspenDiscovery.showMessage(__('An Error occurred'), __('An error occurred processing your request in OverDrive.  Please try again in a few minutes.'));
 				}
 			});
 		},
@@ -208,14 +208,14 @@ AspenDiscovery.OverDrive = (function(){
 							AspenDiscovery.showMessageWithButtons(data.promptTitle, data.prompts, data.buttons);
 						}
 					}else{
-						AspenDiscovery.showMessage('An Error occurred', data.message);
+						AspenDiscovery.showMessage(__('An Error occurred'), data.message);
 					}
 
 				},
 				dataType: 'json',
 				async: false,
 				error: function(){
-					AspenDiscovery.showMessage('An Error occurred', "An error occurred processing your request in OverDrive.  Please try again in a few minutes.");
+					AspenDiscovery.showMessage(__('An Error occurred'), __('An error occurred processing your request in OverDrive.  Please try again in a few minutes.'));
 				}
 			});
 			return result;
@@ -264,23 +264,23 @@ AspenDiscovery.OverDrive = (function(){
 				cache: false,
 				success: function(data){
 					if (data.success) {
-						AspenDiscovery.showMessage("Title Renewed", data.message, true);
+						AspenDiscovery.showMessage(__('Title Renewed'), data.message, true);
 					}else{
-						AspenDiscovery.showMessage("Unable to Renew Title", data.message, true);
+						AspenDiscovery.showMessage(__('Unable to Renew Title'), data.message, true);
 					}
 
 				},
 				dataType: 'json',
 				async: false,
 				error: function(){
-					AspenDiscovery.showMessage("Error Renewing Checkout", "An error occurred processing your request in OverDrive.  Please try again in a few minutes.", false);
+					AspenDiscovery.showMessage(__('Error Renewing Checkout'), __('An error occurred processing your request in OverDrive.  Please try again in a few minutes.'), false);
 				}
 			});
 		},
 
 		returnCheckout: function (patronId, overDriveId){
 			if (confirm(__('Are you sure you want to return this title?'))){
-				AspenDiscovery.showMessage("Returning Title", "Returning your title in OverDrive.  This may take a minute.");
+				AspenDiscovery.showMessage(__('Returning Title'), __('Returning your title in OverDrive.  This may take a minute.'));
 				var ajaxUrl = Globals.path + "/OverDrive/AJAX?method=returnCheckout&patronId=" + patronId + "&overDriveId=" + overDriveId;
 				$.ajax({
 					url: ajaxUrl,
@@ -297,7 +297,7 @@ AspenDiscovery.OverDrive = (function(){
 					dataType: 'json',
 					async: false,
 					error: function(){
-						AspenDiscovery.showMessage("Error Returning Title", "An error occurred processing your request in OverDrive.  Please try again in a few minutes.");
+						AspenDiscovery.showMessage(__('Error Returning Title'), __('An error occurred processing your request in OverDrive.  Please try again in a few minutes.'));
 					}
 				});
 			}
@@ -308,7 +308,7 @@ AspenDiscovery.OverDrive = (function(){
 			var url = Globals.path + "/OverDrive/" + id + "/AJAX?method=getStaffView";
 			$.getJSON(url, function (data){
 				if (!data.success){
-					AspenDiscovery.showMessage('Error', data.message);
+					AspenDiscovery.showMessage(__('Error'), data.message);
 				}else{
 					// noinspection JSUnresolvedReference
 					$("#staffViewPlaceHolder").replaceWith(data.staffView);
@@ -323,7 +323,7 @@ AspenDiscovery.OverDrive = (function(){
 					// noinspection JSUnresolvedReference
 					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 				}else{
-					AspenDiscovery.showMessage('Error', data.message);
+					AspenDiscovery.showMessage(__('Error'), data.message);
 				}
 			});
 			return false;

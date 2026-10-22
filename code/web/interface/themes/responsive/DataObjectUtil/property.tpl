@@ -444,7 +444,7 @@
 					</div>
 				</div>
 				<div class="col-sm-5">
-					<div id="{$propName}-sample-text" style="font-family: {$propValue},arial; font-size: {if !empty($property.previewFontSize)}{$property.previewFontSize}{else}12px{/if}">
+					<div id="{$propName}-sample-text" style="font-family: {$propValue},arial; font-size: {if !empty($property.previewFontSize)}{$property.previewFontSize}{else}var(--aspen-base-font-size){/if}">
 						English, Español, 中文(简体), עברית
 					</div>
 				</div>
@@ -483,7 +483,7 @@
 					</script>
 				</div>
 				<div class="col-sm-5">
-					<div id="{$propName}-sample-text" style="font-family: {$propValue},arial; font-size: {if !empty($property.previewFontSize)}{$property.previewFontSize}{else}12px{/if}">
+					<div id="{$propName}-sample-text" style="font-family: {$propValue},arial; font-size: {if !empty($property.previewFontSize)}{$property.previewFontSize}{else}var(--aspen-base-font-size){/if}">
 						English, Español, 中文(简体), עברית
 					</div>
 				</div>

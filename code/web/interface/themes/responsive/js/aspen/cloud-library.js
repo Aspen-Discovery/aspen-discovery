@@ -7,18 +7,18 @@ AspenDiscovery.CloudLibrary = (function () {
 				cache: false,
 				success: function (data) {
 					if (data.success) {
-						AspenDiscovery.showMessage("Hold Cancelled", data.message, true);
+						AspenDiscovery.showMessage(__('Hold Cancelled'), data.message, true);
 						$("#cloudLibraryHold_" + id).hide();
 						AspenDiscovery.Account.loadMenuData();
 					} else {
-						AspenDiscovery.showMessage("Error Cancelling Hold", data.message, true);
+						AspenDiscovery.showMessage(__('Error Cancelling Hold'), data.message, true);
 					}
 
 				},
 				dataType: 'json',
 				async: false,
 				error: function () {
-					AspenDiscovery.showMessage("Error Cancelling Hold", "An error occurred processing your request in cloudLibrary.  Please try again in a few minutes.", false);
+					AspenDiscovery.showMessage(__('Error Cancelling Hold'), __('An error occurred processing your request in cloudLibrary.  Please try again in a few minutes.'), false);
 				}
 			});
 		},
@@ -92,14 +92,14 @@ AspenDiscovery.CloudLibrary = (function () {
 					if (data.availableForCheckout) {
 						AspenDiscovery.CloudLibrary.doCheckOut(patronId, id);
 					} else {
-						AspenDiscovery.showMessage("Placed Hold", data.message, !data.hasWhileYouWait);
+						AspenDiscovery.showMessage(__('Placed Hold'), data.message, !data.hasWhileYouWait);
 						AspenDiscovery.Account.loadMenuData();
 					}
 				},
 				dataType: 'json',
 				async: false,
 				error: function () {
-					AspenDiscovery.showMessage("Error Placing Hold", "An error occurred processing your request in cloudLibrary.  Please try again in a few minutes.", false);
+					AspenDiscovery.showMessage(__('Error Placing Hold'), __('An error occurred processing your request in cloudLibrary.  Please try again in a few minutes.'), false);
 				}
 			});
 		},
@@ -259,7 +259,7 @@ AspenDiscovery.CloudLibrary = (function () {
 					$renewButton.removeClass('disabled').removeAttr('disabled');
 
 					if (data.success) {
-						AspenDiscovery.showMessage("Title Renewed", data.message, true);
+						AspenDiscovery.showMessage(__('Title Renewed'), data.message, true);
 
 						AspenDiscovery.Account.loadMenuData();
 
@@ -317,7 +317,7 @@ AspenDiscovery.CloudLibrary = (function () {
 						$expiresRow.css('background-color', '');
 					}, 3000);
 
-					AspenDiscovery.showMessage("Error Renewing Checkout", "An error occurred processing your request in cloudLibrary. Please try again in a few minutes.", false);
+					AspenDiscovery.showMessage(__('Error Renewing Checkout'), __('An error occurred processing your request in cloudLibrary. Please try again in a few minutes.'), false);
 				}
 			});
 
@@ -332,17 +332,17 @@ AspenDiscovery.CloudLibrary = (function () {
 				cache: false,
 				success: function (data) {
 					if (data.success) {
-						AspenDiscovery.showMessage("Title Returned", data.message, true);
+						AspenDiscovery.showMessage(__('Title Returned'), data.message, true);
 						$(".cloudLibraryCheckout_" + recordId).hide();
 						AspenDiscovery.Account.loadMenuData();
 					} else {
-						AspenDiscovery.showMessage("Error Returning Title", data.message, true);
+						AspenDiscovery.showMessage(__('Error Returning Title'), data.message, true);
 					}
 				},
 				dataType: 'json',
 				async: false,
 				error: function () {
-					AspenDiscovery.showMessage("Error Returning Checkout", "An error occurred processing your request in cloudLibrary.  Please try again in a few minutes.", false);
+					AspenDiscovery.showMessage(__('Error Returning Checkout'), __('An error occurred processing your request in cloudLibrary.  Please try again in a few minutes.'), false);
 				}
 			});
 		},
@@ -351,7 +351,7 @@ AspenDiscovery.CloudLibrary = (function () {
 			var url = Globals.path + "/CloudLibrary/" + id + "/AJAX?method=getStaffView";
 			$.getJSON(url, function (data){
 				if (!data.success){
-					AspenDiscovery.showMessage('Error', data.message);
+					AspenDiscovery.showMessage(__('Error'), data.message);
 				}else{
 					$("#staffViewPlaceHolder").replaceWith(data.staffView);
 				}
@@ -390,17 +390,17 @@ AspenDiscovery.CloudLibrary = (function () {
 						} else if (type === "placeHold") {
 							AspenDiscovery.CloudLibrary.doHold(patronId, id);
 						} else {
-							AspenDiscovery.showMessage("Card Added", data.message, false);
+							AspenDiscovery.showMessage(__('Card Added'), data.message, false);
 						}
 					} else {
-						AspenDiscovery.showMessage("Error Adding Card", data.message, true);
+						AspenDiscovery.showMessage(__('Error Adding Card'), data.message, true);
 					}
 
 				},
 				dataType: 'json',
 				async: false,
 				error: function () {
-					AspenDiscovery.showMessage("Error Adding Card", "An error occurred processing your request in cloudLibrary.  Please try again in a few minutes.", false);
+					AspenDiscovery.showMessage(__('Error Adding Card'), __('An error occurred processing your request in cloudLibrary.  Please try again in a few minutes.'), false);
 				}
 			});
 		},

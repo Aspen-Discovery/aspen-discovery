@@ -19,7 +19,7 @@ class HomeScreenLinkGroup extends DataObject {
 	static $_objectStructure = [];
 
 	static function getObjectStructure(string $context = ''): array {
-		if (isset(self::$_objectStructure[$context]) && self::$_objectStructure[$context] !== null) {
+		if (isset(self::$_objectStructure[$context])) {
 			return self::$_objectStructure[$context];
 		}
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Aspen LiDA Home Screen Links'));

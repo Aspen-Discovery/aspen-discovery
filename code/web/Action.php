@@ -121,8 +121,7 @@ abstract class Action
 	protected function forbidAPIAccess() : void
 	{
 		global $aspenUsage;
-		$aspenUsage->blockedApiRequests++;
-		$aspenUsage->update();
+		$aspenUsage->incBlockedApiRequests();
 		global $usageByIPAddress;
 		$usageByIPAddress->incrementNumBlockedApiRequests();
 

@@ -5,16 +5,20 @@ require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 require_once ROOT_DIR . '/sys/Covers/CoverImageUtils.php';
 
 class DefaultCoverImageBuilder {
-	private $imageWidth = 280; //Pixels
-	private $imageHeight = 400; // Pixels
+	private int $imageWidth;
+	private int $imageHeight;
 	private $topMargin = 10;
+	// Share of the cover height reserved for title and author, independent of the canvas aspect ratio
+	private const TEXT_AREA_HEIGHT_RATIO = 0.3;
 	private $titleFont;
 	private $authorFont;
 	private $backgroundColor;
 	private $foregroundColor;
 	private $defaultCoverImage;
 
-	public function __construct($invertColors = false) {
+	public function __construct($invertColors = false, int $imageWidth = 280, int $imageHeight = 400) {
+		$this->imageWidth = $imageWidth;
+		$this->imageHeight = $imageHeight;
 		global $interface;
 		if ($interface == null) {
 			//Need to initialize the interface to get access to the themes
@@ -170,6 +174,12 @@ class DefaultCoverImageBuilder {
 		$x = 10;
 		$y = 15;
 		$width = $this->imageWidth - (20);
+		$textAreaHeight = $this->imageHeight - $artworkHeight;
+
+		$author_font_size = $this->imageWidth * 0.055;
+		$authorWidth = $this->imageWidth - (2 * $this->imageHeight * $this->topMargin / 100);
+		$author = $author ? StringUtils::trimStringToLengthAtWordBoundary($author, 40, true) : '';
+		[$authorHeight, $authorLines] = wrapTextForDisplay($this->authorFont, $author, $author_font_size, $author_font_size * .1, $authorWidth);
 
 		$titleTrimmed = StringUtils::trimStringToLengthAtWordBoundary($title, 60, true);
 		if (mb_strlen(trim(str_replace('...', '', $titleTrimmed)), 'UTF-8') === 0) {
@@ -178,20 +188,17 @@ class DefaultCoverImageBuilder {
 			$titleTrimmed = mb_substr($title, 0, 40, 'UTF-8') . '...';
 		}
 		$title = $titleTrimmed;
-		[, $titleLines,] = wrapTextForDisplay($this->titleFont, $title, $title_font_size, $title_font_size * .1, $width);
+		// Shrink the title when needed so the author still fits above the artwork.
+		$titleMaxHeight = (int)max(1, $textAreaHeight - $y - 5 - $authorHeight - 5);
+		[, $titleLines, $title_font_size] = wrapTextForDisplay($this->titleFont, $title, $title_font_size, $title_font_size * .1, $width, $titleMaxHeight);
 		// Draw title and capture the Y position returned (bottom of drawn text).
 		$y = addWrappedTextToImage($imageCanvas, $this->titleFont, $titleLines, $title_font_size, $title_font_size * .1, $x, $y, $textColor);
 
 		// Small spacing between title and author.
 		$y += 5;
 
-		$author_font_size = $this->imageWidth * 0.055;
-		$width = $this->imageWidth - (2 * $this->imageHeight * $this->topMargin / 100);
-		$author = $author ? StringUtils::trimStringToLengthAtWordBoundary($author, 40, true) : '';
-		[$authorHeight, $authorLines] = wrapTextForDisplay($this->authorFont, $author, $author_font_size, $author_font_size * .1, $width);
-
 		// Ensure author does not overlap artwork section.
-		$minYForAuthor = $this->imageHeight - $artworkHeight - $authorHeight - 5;
+		$minYForAuthor = $textAreaHeight - $authorHeight - 5;
 		if ($y < $minYForAuthor) {
 			$y = $minYForAuthor;
 		}
@@ -201,7 +208,7 @@ class DefaultCoverImageBuilder {
 
 	private function drawArtwork($imageCanvas, $backgroundColor, $foregroundColor, $title) {
 		$artworkStartX = 0;
-		$artworkStartY = $this->imageHeight - $this->imageWidth;
+		$artworkStartY = (int)round($this->imageHeight * self::TEXT_AREA_HEIGHT_RATIO);
 
 		[
 			$gridCount,
@@ -229,7 +236,7 @@ class DefaultCoverImageBuilder {
 				$this->drawShape($imageCanvas, $backgroundColor, $foregroundColor, $char, $x, $y, $gridSize);
 			}
 		}
-		return ($gridCount - $rowsToSkip) * $gridSize;
+		return $this->imageHeight - $artworkStartY - $rowsToSkip * $gridSize;
 	}
 
 	private function c64Convert($title) {

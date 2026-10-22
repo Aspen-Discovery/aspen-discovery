@@ -1,9 +1,9 @@
 <?php
 
-require_once 'IndexRecordDriver.php';
+require_once 'EventRecordDriver.php';
 require_once ROOT_DIR . '/sys/Events/LocalHopEvent.php';
 
-class LocalHopEventRecordDriver extends IndexRecordDriver
+class LocalHopEventRecordDriver extends EventRecordDriver
 {
 	private $valid;
 	/** @var LocalHopEventRecordDriver */
@@ -129,18 +129,9 @@ class LocalHopEventRecordDriver extends IndexRecordDriver
 		return 'RecordDrivers/Events/localhop_result.tpl';
 	}
 
-	public function getBookcoverUrl($size = 'small', $absolutePath = false)
+	public function getEventDateCoverType() : string
 	{
-		global $configArray;
-
-		if ($absolutePath) {
-			$bookCoverUrl = $configArray['Site']['url'];
-		} else {
-			$bookCoverUrl = '';
-		}
-		$bookCoverUrl .= "/bookcover.php?id={$this->getUniqueID()}&size={$size}&type=localhop_event";
-
-		return $bookCoverUrl;
+		return 'localhop_event';
 	}
 
 	public function getModule(): string
@@ -297,7 +288,7 @@ class LocalHopEventRecordDriver extends IndexRecordDriver
 		return $this->eventObject;
 	}
 
-	function getStartDateFromDB($id): ?object
+	function getStartDateFromDB(string $id): ?object
 	{
 		if ($this->eventObject == null) {
 			$this->eventObject = new LocalHopEvent();
@@ -319,7 +310,7 @@ class LocalHopEventRecordDriver extends IndexRecordDriver
 
 	}
 
-	function getTitleFromDB($id)
+	function getTitleFromDB(string $id)
 	{
 		if ($this->eventObject == null) {
 			$this->eventObject = new LocalHopEvent();

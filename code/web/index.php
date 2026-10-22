@@ -727,18 +727,18 @@ if ($action == "AJAX" || $action == "JSON" || ($module == 'API' && $action !== '
 	$interface->assign('showTopSearchBox', 0);
 	$interface->assign('showBreadcrumbs', 0);
 	if (BotChecker::isRequestFromBot()) {
-		$aspenUsage->pageViewsByBots++;
+		$aspenUsage->incPageViewsByBots();
 	} else {
-		$aspenUsage->ajaxRequests++;
+		$aspenUsage->incAjaxRequests();
 	}
 } else {
 	if (BotChecker::isRequestFromBot()) {
-		$aspenUsage->pageViewsByBots++;
+		$aspenUsage->incPageViewsByBots();
 	} else {
-		$aspenUsage->pageViews++;
+		$aspenUsage->incPageViews();
 	}
 	if ($isLoggedIn) {
-		$aspenUsage->pageViewsByAuthenticatedUsers++;
+		$aspenUsage->incPageViewsByAuthenticatedUsers();
 	}
 
 	//Load basic search types for use in the interface.
@@ -1019,11 +1019,7 @@ try {
 		}
 	}
 
-	if (!empty($aspenUsage->__get('id'))) {
-		$aspenUsage->update();
-	} else {
-		$aspenUsage->insert();
-	}
+	//Do not need to update aspen usage here because we are doing it atomically as values update
 
 	//Do not need to update IP address here because we are doing it atomically as values update
 } catch (Exception $e) {

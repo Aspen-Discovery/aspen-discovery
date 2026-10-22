@@ -1,9 +1,9 @@
 <?php
 
-require_once 'IndexRecordDriver.php';
+require_once 'EventRecordDriver.php';
 require_once ROOT_DIR . '/sys/Events/AssabetEvent.php';
 
-class AssabetEventRecordDriver extends IndexRecordDriver {
+class AssabetEventRecordDriver extends EventRecordDriver {
 	private $valid;
 	/** @var AssabetEventRecordDriver */
 	private $eventObject;
@@ -119,17 +119,8 @@ class AssabetEventRecordDriver extends IndexRecordDriver {
 		return 'RecordDrivers/Events/assabet_result.tpl';
 	}
 
-	public function getBookcoverUrl($size = 'small', $absolutePath = false) {
-		global $configArray;
-
-		if ($absolutePath) {
-			$bookCoverUrl = $configArray['Site']['url'];
-		} else {
-			$bookCoverUrl = '';
-		}
-		$bookCoverUrl .= "/bookcover.php?id={$this->getUniqueID()}&size={$size}&type=assabet_event";
-
-		return $bookCoverUrl;
+	public function getEventDateCoverType() : string {
+		return 'assabet_event';
 	}
 
 	public function getModule(): string {
@@ -268,7 +259,7 @@ class AssabetEventRecordDriver extends IndexRecordDriver {
 		return $this->eventObject;
 	}
 
-	function getStartDateFromDB($id) : ?object {
+	function getStartDateFromDB(string $id) : ?object {
 		if ($this->eventObject == null) {
 			$this->eventObject = new AssabetEvent();
 			$this->eventObject->externalId = preg_replace('/^assabet_\d+_/', '', $id);
@@ -289,7 +280,7 @@ class AssabetEventRecordDriver extends IndexRecordDriver {
 
 	}
 
-	function getTitleFromDB($id) {
+	function getTitleFromDB(string $id) {
 		if ($this->eventObject == null) {
 			$this->eventObject = new AssabetEvent();
 			$this->eventObject->externalId = preg_replace('/^assabet_\d+_/', '', $id);

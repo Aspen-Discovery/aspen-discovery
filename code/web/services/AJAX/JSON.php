@@ -416,6 +416,7 @@ class AJAX_JSON extends Action {
 
 	/** @noinspection PhpUnused */
 	function getHoursAndLocations() : string {
+		require_once ROOT_DIR . '/sys/Utils/DateUtils.php';
 		//Get a list of locations for the current library
 		global $library;
 		global $configArray;
@@ -453,46 +454,8 @@ class AJAX_JSON extends Action {
 			$hours = $locationToProcess->getHours();
 			foreach ($hours as $key => $hourObj) {
 				if (!$hourObj->closed) {
-					$hourString = $hourObj->open;
-					[
-						$hour,
-						$minutes,
-					] = explode(':', $hourString);
-					if ($hour < 12) {
-						if ($hour == 0) {
-							$hour += 12;
-						}
-						$hourObj->open = +$hour . ":$minutes AM"; // remove leading zeros in the hour
-					} elseif ($hour == 12 && $minutes == '00') {
-						$hourObj->open = 'Noon';
-					} elseif ($hour == 24 && $minutes == '00') {
-						$hourObj->open = 'Midnight';
-					} else {
-						if ($hour != 12) {
-							$hour -= 12;
-						}
-						$hourObj->open = "$hour:$minutes PM";
-					}
-					$hourString = $hourObj->close;
-					[
-						$hour,
-						$minutes,
-					] = explode(':', $hourString);
-					if ($hour < 12) {
-						if ($hour == 0) {
-							$hour += 12;
-						}
-						$hourObj->close = "$hour:$minutes AM";
-					} elseif ($hour == 12 && $minutes == '00') {
-						$hourObj->close = 'Noon';
-					} elseif ($hour == 24 && $minutes == '00') {
-						$hourObj->close = 'Midnight';
-					} else {
-						if ($hour != 12) {
-							$hour -= 12;
-						}
-						$hourObj->close = "$hour:$minutes PM";
-					}
+					$hourObj->open = DateUtils::formatHour($hourObj->open);
+					$hourObj->close = DateUtils::formatHour($hourObj->close);
 				}
 				$hours[$key] = $hourObj;
 			}

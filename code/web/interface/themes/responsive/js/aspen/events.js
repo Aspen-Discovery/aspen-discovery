@@ -40,7 +40,7 @@ AspenDiscovery.Events = (function(){
 
 			$.getJSON(url, params, function (data) {
 				if (!data.success) {
-					AspenDiscovery.showMessage('An error occurred ', data.message);
+					AspenDiscovery.showMessage(__('An error occurred '), data.message);
 					return;
 				}
 				AspenDiscovery.Events.getFieldOptionsByUse(fieldUse, data.selectedFields)
@@ -57,7 +57,7 @@ AspenDiscovery.Events = (function(){
 
 			$.getJSON(url, params, function (data) {
 				if (!data.success) {
-					AspenDiscovery.showMessage('An error occurred ', data.message);
+					AspenDiscovery.showMessage(__('An error occurred '), data.message);
 					return;
 				}
 
@@ -149,7 +149,7 @@ AspenDiscovery.Events = (function(){
 						$("#propertyRowscheduleSection").hide();
 					}
 				} else {
-					AspenDiscovery.showMessage('An error occurred ', data.message);
+					AspenDiscovery.showMessage(__('An error occurred '), data.message);
 				}
 			});
 		},
@@ -243,7 +243,7 @@ AspenDiscovery.Events = (function(){
 						descriptionEditor.show(); // Prevents editor from being collapsed if it's been hidden
 					}
 				} else {
-					AspenDiscovery.showMessage('An error occurred ', data.message);
+					AspenDiscovery.showMessage(__('An error occurred '), data.message);
 				}
 			});
 			return false;
@@ -256,9 +256,9 @@ AspenDiscovery.Events = (function(){
 				var date = startDate.format("MMMM D");
 				var weekOfMonth = AspenDiscovery.Events.getWeekofMonth(startDate);
 				weekOfMonth = moment.localeData().ordinal(weekOfMonth); // Format as ordinal
-				$("#recurrenceOptionSelect option[value=3]").text("Weekly on " + startDay + "s");
-				$("#recurrenceOptionSelect option[value=4]").text("Monthly on the " + weekOfMonth + " " + startDay);
-				$("#recurrenceOptionSelect option[value=5]").text("Annually on " + date);
+				$("#recurrenceOptionSelect option[value=3]").text(__('Weekly on {day}s', {day: startDay}));
+				$("#recurrenceOptionSelect option[value=4]").text(__('Monthly on the {week} {day}', {week: weekOfMonth, day: startDay}));
+				$("#recurrenceOptionSelect option[value=5]").text(__('Annually on {date}', {date: date}));
 				AspenDiscovery.Events.calculateEndTime();
 				AspenDiscovery.Events.calculateRecurrenceDates();
 			}
@@ -809,7 +809,7 @@ AspenDiscovery.Events = (function(){
 						AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons, '', '', false, '', true);
 					}
 				}else{
-					AspenDiscovery.showMessage('Sorry', data.message);
+					AspenDiscovery.showMessage(__('Sorry'), data.message);
 				}
 			})
 		},
@@ -893,7 +893,7 @@ AspenDiscovery.Events = (function(){
 					if (data.success === true) {
 						AspenDiscovery.Events.saveEventsObjCallback();
 					} else {
-						AspenDiscovery.showMessage('Sorry', data.message);
+						AspenDiscovery.showMessage(__('Sorry'), data.message);
 					}
 				});
 			}else{
@@ -919,7 +919,7 @@ AspenDiscovery.Events = (function(){
 		lookupPatronForRegistration: function() {
 			var barcode = $("#patronBarcodeInput").val().trim();
 			if (!barcode) {
-				$("#patronLookupError").text("Please enter a barcode.").show();
+				$("#patronLookupError").text(__('Please enter a barcode.')).show();
 				$("#patronLookupResult").hide();
 				return;
 			}
@@ -944,7 +944,7 @@ AspenDiscovery.Events = (function(){
 					$("#patronLookupResult").hide();
 				}
 			}).fail(function() {
-				$("#patronLookupError").text("Error looking up patron.").show();
+				$("#patronLookupError").text(__('Error looking up patron.')).show();
 				$("#patronLookupResult").hide();
 			});
 		},
@@ -954,7 +954,7 @@ AspenDiscovery.Events = (function(){
 			const userId = $("#foundPatronId").val();
 
 			if (!eventInstanceId || !userId) {
-				AspenDiscovery.showMessage("Error", "Missing event or patron information.");
+				AspenDiscovery.showMessage(__('Error'), __('Missing event or patron information.'));
 				return;
 			}
 
@@ -984,7 +984,7 @@ AspenDiscovery.Events = (function(){
 		},
 
 		staffUnregisterUser: function(eventInstanceId, userId) {
-			if (!confirm("Are you sure you want to cancel this registration?")) {
+			if (!confirm(__('Are you sure you want to cancel this registration?'))) {
 				return;
 			}
 

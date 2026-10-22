@@ -48,6 +48,12 @@ class GroupingUtilsTests extends TestCase {
 			['PERIODICAL V.205 NO.9 MAY 4 & 18, 2024', '2024-05-18'],
 			["MAG NEW YOR JUL 8, 15 '24", '2024-07-15'],
 
+			// ISO date formats
+			['J PER / RANGER R / 2024-02', '2024-02-01'],
+			['J PER / RANGER R / 2024-03', '2024-03-01'],
+			['J PER / RANGER R / 2024-04', '2024-04-01'],
+			['Adult PERIODICALS: PER / TIME / 2026-08-24', '2026-08-24'],
+
 			//Basic date
 			['MAG NEW YOR 8-8-22', '2022-08-08'],
 			['MAG NEW YOR 08-12-24', '2024-08-12'],
@@ -56,6 +62,7 @@ class GroupingUtilsTests extends TestCase {
 			// Null cases
 			['XX(518748.7580)', null],
 			['PERIODICAL V.65 NO.4', null],
+
 		];
 	}
 

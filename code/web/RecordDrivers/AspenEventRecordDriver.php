@@ -1,11 +1,11 @@
 <?php
 
-require_once 'IndexRecordDriver.php';
+require_once 'EventRecordDriver.php';
 require_once ROOT_DIR . '/sys/Events/EventInstance.php';
 require_once ROOT_DIR . '/sys/Events/Event.php';
 require_once ROOT_DIR . '/services/EventRegistrationService.php';
 
-class AspenEventRecordDriver extends IndexRecordDriver {
+class AspenEventRecordDriver extends EventRecordDriver {
 	private $valid;
 	/** @var EventInstance */
 	private $eventObject;
@@ -160,17 +160,20 @@ class AspenEventRecordDriver extends IndexRecordDriver {
 		return 'RecordDrivers/Events/aspenEvent_result.tpl';
 	}
 
-	public function getBookcoverUrl($size = 'small', $absolutePath = false, $type = "aspenEvent_event") {
+	public function getEventDateCoverType() : string {
+		return 'aspenEvent_event';
+	}
+
+	public function getBookcoverUrl($size = 'small', $absolutePath = false, $type = "aspenEvent_event") : string {
+		if ($type == $this->getEventDateCoverType()) {
+			return parent::getBookcoverUrl($size, $absolutePath);
+		}
+
 		global $configArray;
 
-		if ($absolutePath) {
-			$bookCoverUrl = $configArray['Site']['url'];
-		} else {
-			$bookCoverUrl = '';
-		}
-		$bookCoverUrl .= "/bookcover.php?id={$this->getUniqueID()}&size={$size}&type={$type}";
+		$bookCoverUrl = $absolutePath ? $configArray['Site']['url'] : '';
 
-		return $bookCoverUrl;
+		return $bookCoverUrl . "/bookcover.php?id={$this->getUniqueID()}&size={$size}&type={$type}";
 	}
 
 	public function getModule(): string {
@@ -355,39 +358,63 @@ class AspenEventRecordDriver extends IndexRecordDriver {
 		return $this->eventObject;
 	}
 
-	function getStartDateFromDB($id) : ?object {
-		if ($this->eventObject == null) {
+	private function getEventInstanceFromDB(string $id) {
+		if (strpos($id, '_') !== false) {
+			$parts = explode('_', $id);
+			$numericId = end($parts);
+		} else {
+			$numericId = $id;
+		}
+
+		if ($this->eventObject == null || $this->eventObject->id != $numericId) {
 			$this->eventObject = new EventInstance();
-			$this->eventObject->$id;
+			$this->eventObject->id = $numericId;
 
 			if (!$this->eventObject->find(true)) {
 				$this->eventObject = false;
 			}
 		}
-		$data = $this->eventObject;
+
+		return $this->eventObject;
+	}
+
+	private function getEventFromDB(string $id) {
+		$eventInstance = $this->getEventInstanceFromDB($id);
+		if (!$eventInstance) {
+			return false;
+		}
+
+		$event = new Event();
+		$event->id = $eventInstance->eventId;
+		if (!$event->find(true)) {
+			return false;
+		}
+
+		return $event;
+	}
+
+	function getStartDateFromDB(string $id) : ?object {
+		$eventInstance = $this->getEventInstanceFromDB($id);
+		if (!$eventInstance) {
+			return null;
+		}
 
 		try {
-			$startDate = new DateTime($data->date . " " . $data->time);
+			$startDate = new DateTime($eventInstance->date . " " . $eventInstance->time);
 			$startDate->setTimezone(new DateTimeZone(date_default_timezone_get()));
 			return $startDate;
 		} catch (Exception $e) {
 			return null;
 		}
-
 	}
 
-	function getTitleFromDB($id) {
-		if ($this->eventObject == null) {
-			$this->eventObject = new Event();
-			$this->eventObject->externalId;
-
-			if (!$this->eventObject->find(true)) {
-				$this->eventObject = false;
-			}
+	function getTitleFromDB(string $id) {
+		$event = $this->getEventFromDB($id);
+		if (!$event) {
+			return '';
 		}
-		$data = $this->eventObject;
 
-		return $data->title;
+		return $event->title;
 	}
 
 	public function getIdentifier() {
@@ -690,6 +717,19 @@ class AspenEventRecordDriver extends IndexRecordDriver {
 		];
 	}
 
+	public function getEventDateCoverData() : array {
+		$coverData = parent::getEventDateCoverData();
+		$coverData['props']['displayBranchOnThumbnail'] = $this->getDisplayBranchOnThumbnail();
+		return $coverData;
+	}
+
+	public function getEventDateCoverDataFromDB(string $id) : array {
+		$coverData = parent::getEventDateCoverDataFromDB($id);
+		$coverData['props']['branch'] = $this->getBranchFromDB($id);
+		$coverData['props']['displayBranchOnThumbnail'] = $this->getDisplayBranchOnThumbnailFromDB($id);
+		return $coverData;
+	}
+
 	public function getDisplayBranchOnThumbnail() {
 		$eventInstance = $this->getEventObject();
 		if ($eventInstance) {
@@ -703,74 +743,29 @@ class AspenEventRecordDriver extends IndexRecordDriver {
 		return false;
 	}
 
-	function getBranchFromDB($id) {
-	
-		if (strpos($id, '_') !== false) {
-			$parts = explode('_', $id);
-			$numericId = end($parts);
-		} else {
-			$numericId = $id;
-		}
-	
-		if ($this->eventObject == null || $this->eventObject->id != $numericId) {
-			$this->eventObject = new EventInstance();
-			$this->eventObject->id = $numericId;
-
-			if (!$this->eventObject->find(true)) {
-				$this->eventObject = false;
-				return '';
-			}
-		}
-	
-		if ($this->eventObject === false) {
+	function getBranchFromDB(string $id) {
+		$event = $this->getEventFromDB($id);
+		if (!$event) {
 			return '';
 		}
 
-		require_once ROOT_DIR . '/sys/Events/Event.php';
-		$event = new Event();
-		$event->id = $this->eventObject->eventId;
-		if ($event->find(true)) {
-			require_once ROOT_DIR . '/sys/LibraryLocation/Location.php';
-			$location = new Location();
-			$location->locationId = $event->locationId;
-			if ($location->find(true)) {
-				return $location->displayName;
-			}
+		require_once ROOT_DIR . '/sys/LibraryLocation/Location.php';
+		$location = new Location();
+		$location->locationId = $event->locationId;
+		if (!$location->find(true)) {
+			return '';
 		}
-		return false;
+
+		return $location->displayName;
 	}
 
-	function getDisplayBranchOnThumbnailFromDB($id) {
-		
-		if (strpos($id, '_') !== false) {
-			$parts = explode('_', $id);
-			$numericId = end($parts);
-		} else {
-			$numericId = $id;
-		}
-		
-		if ($this->eventObject == null || $this->eventObject->id != $numericId) {
-			$this->eventObject = new EventInstance();
-			$this->eventObject->id = $numericId;
-
-			if (!$this->eventObject->find(true)) {
-				$this->eventObject = false;
-				return false;
-			}
-		}
-		
-		if ($this->eventObject === false) {
+	function getDisplayBranchOnThumbnailFromDB(string $id) {
+		$event = $this->getEventFromDB($id);
+		if (!$event) {
 			return false;
 		}
-		
-		require_once ROOT_DIR . '/sys/Events/Event.php';
-		$event = new Event();
-		$event->id = $this->eventObject->eventId;
-		if ($event->find(true)) {
-			return $event->displayEventBranchOnThumbnail;
-		}
-		
-		return false;
+
+		return $event->displayEventBranchOnThumbnail;
 	}
 
 	public function getCategories(): null {

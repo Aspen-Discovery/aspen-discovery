@@ -22,6 +22,9 @@ $mysqlConnectionCommand = "mariadb -u$databaseUser -p$databasePassword -h$databa
 if ($databasePort != "3306") {
 	$mysqlConnectionCommand .= " --port=$databasePort";
 }
+if ((getenv('DATABASE_SSL_MODE') ?: 'DISABLED') === 'DISABLED') {
+	$mysqlConnectionCommand .= " --skip-ssl";
+}
 
 DockerLogger::info("Checking database connection to: {$databaseHost}:{$databasePort}");
 

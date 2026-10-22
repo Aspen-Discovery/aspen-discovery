@@ -5,7 +5,7 @@ AspenDiscovery.PalaceProject = (function () {
 			var url = Globals.path + "/PalaceProject/" + id + "/AJAX?method=getStaffView";
 			$.getJSON(url, function (data) {
 				if (!data.success) {
-					AspenDiscovery.showMessage('Error', data.message);
+					AspenDiscovery.showMessage(__('Error'), data.message);
 				} else {
 					$("#staffViewPlaceHolder").replaceWith(data.staffView);
 				}
@@ -18,7 +18,7 @@ AspenDiscovery.PalaceProject = (function () {
 				if (data.success){
 					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 				}else{
-					AspenDiscovery.showMessage('Error', data.message);
+					AspenDiscovery.showMessage(__('Error'), data.message);
 				}
 			});
 		},
@@ -126,7 +126,7 @@ AspenDiscovery.PalaceProject = (function () {
 				dataType: 'json',
 				async: false,
 				error: function () {
-					AspenDiscovery.showMessage("Error Returning Checkout", "An error occurred processing your request in Palace Project.  Please try again in a few minutes.", false);
+					AspenDiscovery.showMessage(__('Error Returning Checkout'), __('An error occurred processing your request in Palace Project.  Please try again in a few minutes.'), false);
 				}
 			});
 			return false;
@@ -193,7 +193,7 @@ AspenDiscovery.PalaceProject = (function () {
 				dataType: 'json',
 				async: false,
 				error: function () {
-					AspenDiscovery.showMessage("Error Placing Hold", "An error occurred processing your request in Palace Project.  Please try again in a few minutes.", false);
+					AspenDiscovery.showMessage(__('Error Placing Hold'), __('An error occurred processing your request in Palace Project.  Please try again in a few minutes.'), false);
 				}
 			});
 			return true;
@@ -206,18 +206,18 @@ AspenDiscovery.PalaceProject = (function () {
 				cache: false,
 				success: function (data) {
 					if (data.success) {
-						AspenDiscovery.showMessage("Hold Cancelled", data.message, true);
+						AspenDiscovery.showMessage(__('Hold Cancelled'), data.message, true);
 						$(".palace_projectHold_" + id + "_" + patronId).hide();
 						AspenDiscovery.Account.loadMenuData();
 					} else {
-						AspenDiscovery.showMessage("Error Cancelling Hold", data.message, true);
+						AspenDiscovery.showMessage(__('Error Cancelling Hold'), data.message, true);
 					}
 
 				},
 				dataType: 'json',
 				async: false,
 				error: function () {
-					AspenDiscovery.showMessage("Error Cancelling Hold", "An error occurred processing your request in Palace Project.  Please try again in a few minutes.", false);
+					AspenDiscovery.showMessage(__('Error Cancelling Hold'), __('An error occurred processing your request in Palace Project.  Please try again in a few minutes.'), false);
 				}
 			});
 		},
@@ -231,14 +231,14 @@ AspenDiscovery.PalaceProject = (function () {
 					if (data.success) {
 						AspenDiscovery.showMessage(data.title, data.message);
 					} else {
-						AspenDiscovery.showMessage("Error Loading Instructions", data.message, true);
+						AspenDiscovery.showMessage(__('Error Loading Instructions'), data.message, true);
 					}
 
 				},
 				dataType: 'json',
 				async: false,
 				error: function () {
-					AspenDiscovery.showMessage("Error Loading Instructions", "An error occurred loading instructions.  Please try again in a few minutes.", false);
+					AspenDiscovery.showMessage(__('Error Loading Instructions'), __('An error occurred loading instructions.  Please try again in a few minutes.'), false);
 				}
 			});
 		},

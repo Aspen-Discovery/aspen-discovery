@@ -1,4 +1,4 @@
-FROM debian:bookworm
+FROM debian:trixie
 
 # Install deps
 RUN apt -y update \
@@ -15,9 +15,7 @@ RUN apt -y update \
 	  vim \
 	  bind9 \
 	  bind9utils \
-	  software-properties-common \
-	  default-jdk \
-	  openjdk-17-jdk \
+	  openjdk-25-jdk \
 	  unzip \
 	  rng-tools \
 	  python3-certbot-apache \
@@ -42,30 +40,24 @@ RUN sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
 ENV LANG=en_US.UTF-8
 ENV LC_ALL=en_US.UTF-8
 
-# Add sury's repo
-RUN wget -O- -q https://packages.sury.org/php/apt.gpg \
-      | gpg --dearmor \
-      | tee /usr/share/keyrings/sury.gpg >/dev/null \
-   && echo "deb [signed-by=/usr/share/keyrings/sury.gpg] https://packages.sury.org/php/ bookworm main" > /etc/apt/sources.list.d/sury.list
-
-# Install php deps
+# Install php deps (trixie ships PHP 8.4 as the default version natively, no third-party repo needed)
 RUN apt -y update \
 	&& apt install -y \
-	  php8.4 \
-	  php8.4-fpm \
-	  php8.4-mcrypt \
-	  php8.4-gd \
-	  php8.4-imagick \
-	  php8.4-curl \
-	  php8.4-zip \
-	  php8.4-xml \
-	  php8.4-intl \
-	  php8.4-mbstring \
-	  php8.4-soap \
-	  php8.4-pgsql \
-	  php8.4-ssh2 \
-	  php8.4-ldap \
-	  php8.4-mysql \
+	  php \
+	  php-fpm \
+	  php-mcrypt \
+	  php-gd \
+	  php-imagick \
+	  php-curl \
+	  php-zip \
+	  php-xml \
+	  php-intl \
+	  php-mbstring \
+	  php-soap \
+	  php-pgsql \
+	  php-ssh2 \
+	  php-ldap \
+	  php-mysql \
 	&& rm -rf /var/cache/apt/archives/* \
 	&& rm -rf /var/lib/apt/lists/*
 
