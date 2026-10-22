@@ -119,7 +119,7 @@
 				{/if}
 
 				listScroller{$activeListId} = new TitleScroller('titleScroller{$activeListId}', '{$activeListId}', 'tab-{$activeListId}', {if $collectionSpotlight->autoRotate==1}true{else}false{/if}, '{$collectionSpotlight->style}');
-				listScroller{$activeListId}.loadTitlesFrom('/Search/AJAX?method=getSpotlightTitles%26id={$activeListId}%26scrollerName={$activeListId}%26coverSize={$collectionSpotlight->coverSize}%26showRatings={$collectionSpotlight->showRatings}%26numTitlesToShow={$collectionSpotlight->numTitlesToShow}{if !empty($reload)}%26reload=true{/if}', false);
+				listScroller{$activeListId}.loadTitlesFromJsonData(window.collectionSpotlightTitleData['{$activeListId}']);
 			{rdelim});
 
 			$(window).on('beforeunload', function(e) {ldelim}
@@ -160,7 +160,7 @@
 							else if (listIndex === {$index}){ldelim}
 								if (listScroller{$listId} == null){ldelim}
 									listScroller{$listId} = new TitleScroller('titleScroller{$listId}', '{$listId}', 'tab-{$listId}', {if $collectionSpotlight->autoRotate==1}true{else}false{/if}, '{$collectionSpotlight->style}');
-									listScroller{$listId}.loadTitlesFrom('/Search/AJAX?method=getSpotlightTitles%26id={$list->id}%26scrollerName={$listId}%26coverSize={$collectionSpotlight->coverSize}%26showRatings={$collectionSpotlight->showRatings}%26numTitlesToShow={$collectionSpotlight->numTitlesToShow}{if !empty($reload)}%26reload=true{/if}', false);
+									listScroller{$listId}.loadTitlesFromJsonData(window.collectionSpotlightTitleData['{$listId}']);
 								{rdelim}else{ldelim}
 									listScroller{$listId}.activateCurrentTitle();
 								{rdelim}
