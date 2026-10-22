@@ -1078,7 +1078,10 @@ public class GroupedWorkIndexer implements AutoCloseable {
 			String getBatchSql;
 			String getNumWorksSql;
 			if (fullReindex){
-				getBatchSql = "SELECT grouped_work.id, permanent_id, grouping_category, date_updated FROM grouped_work WHERE grouped_work.id > ? AND EXISTS (SELECT 1 FROM grouped_work_records WHERE groupedWorkId = grouped_work.id) ORDER BY grouped_work.id LIMIT ?";
+				//The record check is a scalar subquery rather than EXISTS.  MariaDB turns EXISTS into a
+				//semi-join that materializes all of grouped_work_records on every batch, while this form
+				//is a single index lookup per work.
+				getBatchSql = "SELECT grouped_work.id, permanent_id, grouping_category, date_updated FROM grouped_work WHERE grouped_work.id > ? AND (SELECT 1 FROM grouped_work_records WHERE groupedWorkId = grouped_work.id LIMIT 1) IS NOT NULL ORDER BY grouped_work.id LIMIT ?";
 				getNumWorksSql = "SELECT COUNT(DISTINCT permanent_id) as numWorksWithRecords FROM grouped_work INNER JOIN grouped_work_records on grouped_work.id = groupedWorkId;";
 			}else{
 				//Load all grouped works that have changed since the last time the index ran
