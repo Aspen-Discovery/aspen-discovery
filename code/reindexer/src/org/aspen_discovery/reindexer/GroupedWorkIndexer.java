@@ -67,10 +67,7 @@ public class GroupedWorkIndexer implements AutoCloseable {
 	private PreparedStatement getNovelistStmt;
 	private PreparedStatement getDisplayInfoStmt;
 
-	private PreparedStatement getUserReadingHistoryLinkStmt;
-	private PreparedStatement getListLinkStmt;
-	private PreparedStatement getUserRatingLinkStmt;
-	private PreparedStatement getUserNotInterestedLinkStmt;
+	private PreparedStatement getUserLinkagesStmt;
 	private static final AtomicBoolean setupMessageLogged = new AtomicBoolean(false);
 
 	private PreparedStatement forceReindexOfRecordStmt;
@@ -210,6 +207,8 @@ public class GroupedWorkIndexer implements AutoCloseable {
 	private int solrQueueSize;
 	private String solrPort;
 	private String solrHost;
+	private final HashSet<String> activeUserWorkIds = new HashSet<>();
+	private boolean activeUserWorkIdsLoaded = false;
 
 	public GroupedWorkIndexer(String serverName, Connection dbConn, Ini configIni, boolean fullReindex, boolean clearIndex, BaseIndexingLogEntry logEntry, Logger logger) {
 		this(serverName, dbConn, configIni, fullReindex, clearIndex, false, logEntry, logger);
@@ -598,16 +597,33 @@ public class GroupedWorkIndexer implements AutoCloseable {
 		//Load series to hide
 		loadHideSeries();
 
+		//Preload the works that have user activity so a full reindex can skip the linkage query for
+		//everything else.  Partial indexing only touches a few works, so the preload would cost more
+		//than it saves there.
+		if (fullReindex) {
+			preloadActiveUserWorkIds();
+		}
+
 		//Setup prepared statements to load local enrichment
 		try {
 			//No need to filter for ratings greater than 0 because the user has to rate from 1-5
 			getRatingStmt = dbConn.prepareStatement("SELECT AVG(rating) as averageRating, groupedRecordPermanentId from user_work_review where groupedRecordPermanentId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			getNovelistStmt = dbConn.prepareStatement("SELECT * from novelist_data where groupedRecordPermanentId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			getDisplayInfoStmt = dbConn.prepareStatement("SELECT * from grouped_work_display_info where permanent_id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			getUserReadingHistoryLinkStmt = dbConn.prepareStatement("SELECT DISTINCT userId from user_reading_history_work where groupedWorkPermanentId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			getListLinkStmt = dbConn.prepareStatement("SELECT listId, weight, dateAdded from user_list_entry where source = 'GroupedWork' and sourceId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			getUserRatingLinkStmt = dbConn.prepareStatement("SELECT DISTINCT userId from user_work_review where groupedRecordPermanentId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			getUserNotInterestedLinkStmt = dbConn.prepareStatement("SELECT DISTINCT userId from user_not_interested where groupedRecordPermanentId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getUserLinkagesStmt = dbConn.prepareStatement(
+				"SELECT 'reading_history' AS link_type, userId AS entity_id, NULL AS weight, NULL AS date_added " +
+				"FROM (SELECT DISTINCT userId FROM user_reading_history_work WHERE groupedWorkPermanentId = ?) rh " +
+				"UNION ALL " +
+				"SELECT 'rating' AS link_type, userId AS entity_id, NULL AS weight, NULL AS date_added " +
+				"FROM (SELECT DISTINCT userId FROM user_work_review WHERE groupedRecordPermanentId = ?) r " +
+				"UNION ALL " +
+				"SELECT 'not_interested' AS link_type, userId AS entity_id, NULL AS weight, NULL AS date_added " +
+				"FROM (SELECT DISTINCT userId FROM user_not_interested WHERE groupedRecordPermanentId = ?) ni " +
+				"UNION ALL " +
+				"SELECT 'list' AS link_type, listId AS entity_id, weight, dateAdded AS date_added " +
+				"FROM user_list_entry WHERE source = 'GroupedWork' AND sourceId = ?",
+				ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY
+			);
 		} catch (SQLException e) {
 			logEntry.incErrors("Could not prepare statements to load local enrichment", e);
 		}
@@ -648,6 +664,7 @@ public class GroupedWorkIndexer implements AutoCloseable {
 		hideSubjects.clear();
 		hideSeries.clear();
 		scopes.clear();
+		activeUserWorkIds.clear();
 		try {
 			closeAllActivePreparedStatements();
 
@@ -1525,54 +1542,71 @@ public class GroupedWorkIndexer implements AutoCloseable {
 		}
 	}
 
+	private void preloadActiveUserWorkIds() {
+		logger.info("Preloading active user work IDs for fast short-circuit filtering...");
+		
+		// Aggregate distinct permanent IDs across all four user interaction tables
+		String query = "SELECT groupedWorkPermanentId FROM user_reading_history_work " +
+					"UNION " +
+					"SELECT groupedRecordPermanentId FROM user_work_review " +
+					"UNION " +
+					"SELECT groupedRecordPermanentId FROM user_not_interested " +
+					"UNION " +
+					"SELECT sourceId FROM user_list_entry WHERE source = 'GroupedWork'";
+
+		try (Statement stmt = dbConn.createStatement();
+			ResultSet rs = stmt.executeQuery(query)) {
+			
+			while (rs.next()) {
+				String workId = rs.getString(1);
+				if (workId != null && !workId.isEmpty()) {
+					activeUserWorkIds.add(workId);
+				}
+			}
+			activeUserWorkIdsLoaded = true;
+			logger.info("Successfully preloaded {} unique user work IDs into memory", activeUserWorkIds.size());
+		} catch (SQLException e) {
+			logEntry.incErrors("Could not preload active user work IDs", e);
+		}
+	}
+
 	private void loadUserLinkages(AbstractGroupedWorkSolr groupedWork) {
 		try {
-			loadReadingHistoryLinksForUsers(groupedWork);
-			loadRatingLinksForUsers(groupedWork);
-			loadNotInterestedLinksForUsers(groupedWork);
-			loadListLinksForUsers(groupedWork);
-		}catch (Exception e){
+			String workId = groupedWork.getId();
+
+			// Short-circuit: skip 4-way UNION query if this work has no user activity
+			if (activeUserWorkIdsLoaded && !activeUserWorkIds.contains(workId)) {
+				return;
+			}
+
+			getUserLinkagesStmt.setString(1, workId);
+			getUserLinkagesStmt.setString(2, workId);
+			getUserLinkagesStmt.setString(3, workId);
+			getUserLinkagesStmt.setString(4, workId);
+
+			try (ResultSet rs = getUserLinkagesStmt.executeQuery()) {
+				while (rs.next()) {
+					String type = rs.getString("link_type");
+					long entityId = rs.getLong("entity_id");
+
+					switch (type) {
+						case "reading_history":
+							groupedWork.addReadingHistoryLink(entityId);
+							break;
+						case "rating":
+							groupedWork.addRatingLink(entityId);
+							break;
+						case "not_interested":
+							groupedWork.addNotInterestedLink(entityId);
+							break;
+						case "list":
+							groupedWork.addListLink(entityId, rs.getLong("weight"), rs.getLong("date_added"));
+							break;
+					}
+				}
+			}
+		} catch (Exception e) {
 			logEntry.incErrors("Unable to load user linkages", e);
-		}
-	}
-
-	private void loadNotInterestedLinksForUsers(AbstractGroupedWorkSolr groupedWork) throws SQLException {
-		//Add users who are not interested in the title
-		getUserNotInterestedLinkStmt.setString(1, groupedWork.getId());
-		try (ResultSet userNotInterestedRS = getUserNotInterestedLinkStmt.executeQuery()) {
-			while (userNotInterestedRS.next()) {
-				groupedWork.addNotInterestedLink(userNotInterestedRS.getLong("userId"));
-			}
-		}
-	}
-
-	private void loadRatingLinksForUsers(AbstractGroupedWorkSolr groupedWork) throws SQLException {
-		//Add users who rated the title
-		getUserRatingLinkStmt.setString(1, groupedWork.getId());
-		try (ResultSet userRatingRS = getUserRatingLinkStmt.executeQuery()) {
-			while (userRatingRS.next()){
-				groupedWork.addRatingLink(userRatingRS.getLong("userId"));
-			}
-		}
-	}
-
-	private void loadReadingHistoryLinksForUsers (AbstractGroupedWorkSolr groupedWork) throws SQLException {
-		//Add users with the work in their reading history
-		getUserReadingHistoryLinkStmt.setString(1, groupedWork.getId());
-		try (ResultSet userReadingHistoryRS = getUserReadingHistoryLinkStmt.executeQuery()) {
-			while (userReadingHistoryRS.next()){
-				groupedWork.addReadingHistoryLink(userReadingHistoryRS.getLong("userId"));
-			}
-		}
-	}
-
-	private void loadListLinksForUsers (AbstractGroupedWorkSolr groupedWork) throws SQLException {
-		//Add users with the work in their reading history
-		getListLinkStmt.setString(1, groupedWork.getId());
-		try (ResultSet userListLinkRS = getListLinkStmt.executeQuery()) {
-			while (userListLinkRS.next()){
-				groupedWork.addListLink(userListLinkRS.getLong("listId"), userListLinkRS.getLong("weight"), userListLinkRS.getLong("dateAdded"));
-			}
 		}
 	}
 
