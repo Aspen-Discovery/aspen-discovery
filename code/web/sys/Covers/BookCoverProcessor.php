@@ -541,7 +541,7 @@ class BookCoverProcessor {
 	private function addCachingHeader() : void {
 		//Add caching information
 		$expires = 60 * 60 * 24 * 14;  //expire the cover in 2 weeks on the client side
-		header("Cache-Control: maxage=" . $expires);
+		header("Cache-Control: max-age=" . $expires);
 		header('Expires: ' . gmdate('D, d M Y H:i:s', time() + $expires) . ' GMT');
 		$this->log("Added caching header", Logger::LOG_NOTICE);
 	}
