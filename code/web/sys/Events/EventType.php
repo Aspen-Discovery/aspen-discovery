@@ -389,7 +389,7 @@ class EventType extends DataObject {
 	}
 
 	public function getEventTypeAttendeeCategories(): array {
-		if (isset($this->_eventTypeAttendeeCategories)) {
+		if (isset($this->_eventTypeAttendeeCategories) || !isset($this->id)) {
 			return $this->_eventTypeAttendeeCategories ?? [];
 		}
 		$this->_eventTypeAttendeeCategories = [];
