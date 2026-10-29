@@ -584,7 +584,13 @@
 				{if !empty($property.thumbWidth)}
 					<img src='/files/thumbnail/{$propValue}' style="display: block" alt="Selected Image for {$property.label}">
 				{else}
-					{if !empty($property.displayUrl)}
+					{* TEMPORARY: ImageUpload is the only object type on StorageDriver
+					   so far, hence the instanceof check. Replace with a shared
+					   interface if a second type is migrated; keep in sync with
+					   the same check in Admin/propertiesList.tpl until then. *}
+					{if $object instanceof ImageUpload}
+						<img src='{$object->getDisplayUrl($propName)}' style="display: block; max-width: 100%;" alt="Selected Image for {$property.label}">
+					{elseif !empty($property.displayUrl)}
 						<img src='{$property.displayUrl}{$object->id}' style="display: block; max-width: 100%;" alt="Selected Image for {$property.label}">
 					{else}
 						<img src='/files/original/{$propValue}' style="display: block; max-width: 100%" alt="Selected Image for {$property.label}">
