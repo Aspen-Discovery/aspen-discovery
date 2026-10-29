@@ -1048,70 +1048,120 @@ public class GroupedWorkIndexer implements AutoCloseable {
 		}
 	}
 
+	/**
+	 * How many grouped works are read from the database at a time while indexing.  Each batch is fully
+	 * read into memory and the cursor closed before any of it is processed, so this bounds how much of
+	 * the grouped_work table is resident at once.
+	 */
+	private static final int GROUPED_WORK_BATCH_SIZE = 2500;
+
+	private static final class GroupedWorkToIndex {
+		final long id;
+		final String permanentId;
+		final String groupingCategory;
+		final Long lastUpdated;
+
+		GroupedWorkToIndex(long id, String permanentId, String groupingCategory, Long lastUpdated) {
+			this.id = id;
+			this.permanentId = permanentId;
+			this.groupingCategory = groupingCategory;
+			this.lastUpdated = lastUpdated;
+		}
+	}
+
 	void processGroupedWorks() {
 		long numWorksProcessed = 0L;
-		try {
-			PreparedStatement getAllGroupedWorks;
-			PreparedStatement getNumWorksToIndex;
-			PreparedStatement setLastUpdatedTime = dbConn.prepareStatement("UPDATE grouped_work set date_updated = ? where id = ?");
+		try (PreparedStatement setLastUpdatedTime = dbConn.prepareStatement("UPDATE grouped_work set date_updated = ? where id = ?")) {
+			//The driving query is paged rather than run as one statement.  MySQL buffers an entire
+			//result set client side, so selecting every grouped work at once held the whole table in
+			//the heap for the duration of the index.
+			String getBatchSql;
+			String getNumWorksSql;
 			if (fullReindex){
-				getAllGroupedWorks = dbConn.prepareStatement("SELECT grouped_work.id, permanent_id, grouping_category, date_updated FROM grouped_work INNER JOIN grouped_work_records on grouped_work.id = groupedWorkId GROUP BY permanent_id;", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-				getNumWorksToIndex = dbConn.prepareStatement("SELECT COUNT(DISTINCT permanent_id) as numWorksWithRecords FROM grouped_work INNER JOIN grouped_work_records on grouped_work.id = groupedWorkId;", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+				//The record check is a scalar subquery rather than EXISTS.  MariaDB turns EXISTS into a
+				//semi-join that materializes all of grouped_work_records on every batch, while this form
+				//is a single index lookup per work.
+				getBatchSql = "SELECT grouped_work.id, permanent_id, grouping_category, date_updated FROM grouped_work WHERE grouped_work.id > ? AND (SELECT 1 FROM grouped_work_records WHERE groupedWorkId = grouped_work.id LIMIT 1) IS NOT NULL ORDER BY grouped_work.id LIMIT ?";
+				getNumWorksSql = "SELECT COUNT(DISTINCT permanent_id) as numWorksWithRecords FROM grouped_work INNER JOIN grouped_work_records on grouped_work.id = groupedWorkId;";
 			}else{
 				//Load all grouped works that have changed since the last time the index ran
-				getAllGroupedWorks = dbConn.prepareStatement("SELECT * FROM grouped_work WHERE date_updated IS NULL OR date_updated >= ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-				getAllGroupedWorks.setLong(1, lastReindexTime);
-				getNumWorksToIndex = dbConn.prepareStatement("SELECT count(id) FROM grouped_work WHERE date_updated IS NULL OR date_updated >= ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-				getNumWorksToIndex.setLong(1, lastReindexTime);
+				getBatchSql = "SELECT id, permanent_id, grouping_category, date_updated FROM grouped_work WHERE id > ? AND (date_updated IS NULL OR date_updated >= ?) ORDER BY id LIMIT ?";
+				getNumWorksSql = "SELECT count(id) FROM grouped_work WHERE date_updated IS NULL OR date_updated >= ?";
 			}
 
 			//Get the number of works we will be processing
 			long numWorksToIndex = 0;
-			try (ResultSet numWorksToIndexRS = getNumWorksToIndex.executeQuery()) {
-				if (numWorksToIndexRS.next()) {
-					numWorksToIndex = numWorksToIndexRS.getLong(1);
+			try (PreparedStatement getNumWorksToIndex = dbConn.prepareStatement(getNumWorksSql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)) {
+				if (!fullReindex) {
+					getNumWorksToIndex.setLong(1, lastReindexTime);
+				}
+				try (ResultSet numWorksToIndexRS = getNumWorksToIndex.executeQuery()) {
+					if (numWorksToIndexRS.next()) {
+						numWorksToIndex = numWorksToIndexRS.getLong(1);
+					}
 				}
 			}
 			logEntry.addNote("Starting to process " + numWorksToIndex + " grouped works");
 
-			ResultSet groupedWorks = getAllGroupedWorks.executeQuery();
-			while (groupedWorks.next()){
-				long id = groupedWorks.getLong("id");
-				String permanentId = groupedWorks.getString("permanent_id");
-				String grouping_category = groupedWorks.getString("grouping_category");
-				Long lastUpdated = groupedWorks.getLong("date_updated");
-				if (groupedWorks.wasNull()){
-					lastUpdated = null;
-				}
-				processGroupedWork(id, permanentId, grouping_category);
+			try (PreparedStatement getBatchOfGroupedWorks = dbConn.prepareStatement(getBatchSql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)) {
+				long lastIdRead = 0L;
+				boolean moreWorksToRead = true;
+				ArrayList<GroupedWorkToIndex> batch = new ArrayList<>(GROUPED_WORK_BATCH_SIZE);
 
-				numWorksProcessed++;
-				if (logEntry instanceof NightlyIndexLogEntry){
-					((NightlyIndexLogEntry) logEntry).incNumWorksProcessed();
-				}
-				if (!this.clearIndex && (numWorksProcessed % 5000 == 0)){
-					//Testing shows that regular commits do seem to improve performance.
-					//However, we can't do it too often, or we get errors with too many searchers warming.
-					//This is happening now with the auto commit settings in solrconfig.xml
-					/*if (numWorksProcessed % indexCommitInterval == 0) {
-						try {
-							logger.info("Doing a regular commit during full indexing");
-							updateServer.commit(false, false, true);
-						} catch (Exception e) {
-							logger.warn("Error committing changes", e);
+				while (moreWorksToRead) {
+					int parameterIndex = 1;
+					getBatchOfGroupedWorks.setLong(parameterIndex++, lastIdRead);
+					if (!fullReindex) {
+						getBatchOfGroupedWorks.setLong(parameterIndex++, lastReindexTime);
+					}
+					getBatchOfGroupedWorks.setInt(parameterIndex, GROUPED_WORK_BATCH_SIZE);
+
+					//Read the whole batch up front so the cursor is closed before processGroupedWork
+					//starts issuing its own queries against this same connection.
+					batch.clear();
+					try (ResultSet groupedWorksRS = getBatchOfGroupedWorks.executeQuery()) {
+						while (groupedWorksRS.next()) {
+							long id = groupedWorksRS.getLong("id");
+							Long lastUpdated = groupedWorksRS.getLong("date_updated");
+							if (groupedWorksRS.wasNull()) {
+								lastUpdated = null;
+							}
+							batch.add(new GroupedWorkToIndex(id, groupedWorksRS.getString("permanent_id"), groupedWorksRS.getString("grouping_category"), lastUpdated));
+							lastIdRead = id;
 						}
-					}*/
-					//Change to a debug statement to avoid filling up the notes.
-					logger.debug("Processed {} grouped works processed.", numWorksProcessed);
-				}
-				if (lastUpdated == null){
-					setLastUpdatedTime.setLong(1, indexStartTime - 1); //Set just before the index started, so we don't index multiple times
-					setLastUpdatedTime.setLong(2, id);
-					setLastUpdatedTime.executeUpdate();
+					}
+					moreWorksToRead = batch.size() == GROUPED_WORK_BATCH_SIZE;
+
+					for (GroupedWorkToIndex workToIndex : batch) {
+						processGroupedWork(workToIndex.id, workToIndex.permanentId, workToIndex.groupingCategory);
+
+						numWorksProcessed++;
+						if (logEntry instanceof NightlyIndexLogEntry){
+							((NightlyIndexLogEntry) logEntry).incNumWorksProcessed();
+						}
+						if (!this.clearIndex && (numWorksProcessed % 5000 == 0)){
+							//Testing shows that regular commits do seem to improve performance.
+							//However, we can't do it too often, or we get errors with too many searchers warming.
+							//This is happening now with the auto commit settings in solrconfig.xml
+							/*if (numWorksProcessed % indexCommitInterval == 0) {
+								try {
+									logger.info("Doing a regular commit during full indexing");
+									updateServer.commit(false, false, true);
+								} catch (Exception e) {
+									logger.warn("Error committing changes", e);
+								}
+							}*/
+							//Change to a debug statement to avoid filling up the notes.
+							logger.debug("Processed {} grouped works processed.", numWorksProcessed);
+						}
+						if (workToIndex.lastUpdated == null){
+							setLastUpdatedTime.setLong(1, indexStartTime - 1); //Set just before the index started, so we don't index multiple times
+							setLastUpdatedTime.setLong(2, workToIndex.id);
+							setLastUpdatedTime.executeUpdate();
+						}
+					}
 				}
 			}
-			groupedWorks.close();
-			setLastUpdatedTime.close();
 
 			if (logEntry instanceof NightlyIndexLogEntry){
 				logEntry.addNote("Used Author authorities a total of " + getRecordGroupingProcessor().getNumAuthoritiesUsed() + " times");
