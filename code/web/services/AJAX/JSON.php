@@ -229,7 +229,6 @@ class AJAX_JSON extends Action {
 		global $logger;
 		$_SESSION['enroll2FA'] = false;
 		$_SESSION['has2FA'] = false;
-		$codeSent = $_SESSION['codeSent'] ?? false;
 		$_SESSION['codeSent'] = false;
 		$_SESSION['passwordExpired'] = false;
 		$_SESSION['authMethod'] = '';
@@ -312,7 +311,7 @@ class AJAX_JSON extends Action {
 							$interface->assign('referer', $referer);
 							$name = $_REQUEST['name'] ?? null;
 							$interface->assign('name', $name);
-							$interface->assign('codeSent', $codeSent);
+							$interface->assign('codeSent', !empty($_SESSION['codeSent']));
 							$interface->assign('hasTotp', $authStatus['hasTotp']);
 							$interface->assign('hasEmail', $authStatus['hasEmail']);
 							$interface->assign('setupMethods', $authStatus['setupMethods']);
