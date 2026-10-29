@@ -389,10 +389,19 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 						$limit = $facetInfo->numTotalEntriesToShowInMore;
 					}
 
-					$facetMethod = 'enum';
-					if (in_array($facetName, ['literary_form_full', 'target_audience', 'series_facet', 'subject_facet', 'language', 'awards_facet', 'content_rating', 'rating_facet', 'publishDate'])) {
-						$facetMethod = 'dv';
-					}
+					// Solr rebuilds enum facets after every soft commit, so only use enum for the facets warmed in 'solrconfig.xml'
+					$facetsToWarm = [
+						'availability_toggle',
+						'format_category',
+						'available_at',
+						'format',
+						'econtent_source',
+						'shelf_location',
+						'duration',
+						'translation',
+						'authorStr',
+					];
+					$facetMethod = in_array($facetName, $facetsToWarm) ? 'enum' : 'dv';
 					$jsonInfoForField = [
 						'type' => 'terms',
 						'method' => $facetMethod,

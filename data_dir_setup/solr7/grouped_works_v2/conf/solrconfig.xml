@@ -489,56 +489,56 @@
 						{
 						  "availability_toggle": {
 							"type": "terms",
-							"method": "enum",
+							"method": "dv",
 							"field": "availability_toggle",
 							"limit": 30,
 							"mincount": 1
 						  },
 						  "format_category": {
 							"type": "terms",
-							"method": "enum",
+							"method": "dv",
 							"field": "format_category",
 							"limit": 30,
 							"mincount": 1
 						  },
 						  "available_at": {
 							"type": "terms",
-							"method": "enum",
+							"method": "dv",
 							"field": "available_at",
 							"limit": 177,
 							"mincount": 1
 						  },
 						  "format": {
 							"type": "terms",
-							"method": "enum",
+							"method": "dv",
 							"field": "format",
 							"limit": 94,
 							"mincount": 1
 						  },
 						  "econtent_source": {
 							"type": "terms",
-							"method": "enum",
+							"method": "dv",
 							"field": "econtent_source",
 							"limit": 50,
 							"mincount": 1
 						  },
 						  "shelf_location": {
 							"type": "terms",
-							"method": "enum",
+							"method": "dv",
 							"field": "shelf_location",
 							"limit": 100,
 							"mincount": 1
 						  },
 						  "duration": {
 							"type": "terms",
-							"method": "enum",
+							"method": "dv",
 							"field": "duration",
 							"limit": 30,
 							"mincount": 1
 						  },
 						  "translation": {
 							"type": "terms",
-							"method": "enum",
+							"method": "dv",
 							"field": "translation",
 							"limit": 30,
 							"mincount": 1
@@ -572,7 +572,7 @@
 						  },
 						  "authorStr": {
 							"type": "terms",
-							"method": "enum",
+							"method": "dv",
 							"field": "authorStr",
 							"limit": 50,
 							"mincount": 1
@@ -621,7 +621,7 @@
 						  },
 						  "local_time_since_added_SCD": {
 							"type": "terms",
-							"method": "enum",
+							"method": "dv",
 							"field": "local_time_since_added_SCD",
 							"limit": 50,
 							"mincount": 1
@@ -651,56 +651,56 @@
 						{
 						  "availability_toggle": {
 							"type": "terms",
-							"method": "enum",
+							"method": "dv",
 							"field": "availability_toggle",
 							"limit": 30,
 							"mincount": 1
 						  },
 						  "format_category": {
 							"type": "terms",
-							"method": "enum",
+							"method": "dv",
 							"field": "format_category",
 							"limit": 30,
 							"mincount": 1
 						  },
 						  "available_at": {
 							"type": "terms",
-							"method": "enum",
+							"method": "dv",
 							"field": "available_at",
 							"limit": 177,
 							"mincount": 1
 						  },
 						  "format": {
 							"type": "terms",
-							"method": "enum",
+							"method": "dv",
 							"field": "format",
 							"limit": 94,
 							"mincount": 1
 						  },
 						  "econtent_source": {
 							"type": "terms",
-							"method": "enum",
+							"method": "dv",
 							"field": "econtent_source",
 							"limit": 50,
 							"mincount": 1
 						  },
 						  "shelf_location": {
 							"type": "terms",
-							"method": "enum",
+							"method": "dv",
 							"field": "shelf_location",
 							"limit": 100,
 							"mincount": 1
 						  },
 						  "duration": {
 							"type": "terms",
-							"method": "enum",
+							"method": "dv",
 							"field": "duration",
 							"limit": 30,
 							"mincount": 1
 						  },
 						  "translation": {
 							"type": "terms",
-							"method": "enum",
+							"method": "dv",
 							"field": "translation",
 							"limit": 30,
 							"mincount": 1
@@ -734,7 +734,7 @@
 						  },
 						  "authorStr": {
 							"type": "terms",
-							"method": "enum",
+							"method": "dv",
 							"field": "authorStr",
 							"limit": 50,
 							"mincount": 1
@@ -783,7 +783,7 @@
 						  },
 						  "local_time_since_added_SCD": {
 							"type": "terms",
-							"method": "enum",
+							"method": "dv",
 							"field": "local_time_since_added_SCD",
 							"limit": 50,
 							"mincount": 1
