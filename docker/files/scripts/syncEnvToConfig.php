@@ -37,6 +37,7 @@ $envMapping = [
 	'URL'               => ['config.ini', 'Site', 'url'],
 	'TITLE'             => ['config.ini', 'Site', 'title'],
 	'LIBRARY'           => ['config.ini', 'Site', 'libraryName'],
+	'FILE_GROUP_OWNER'  => ['config.ini', 'Site', 'fileGroupOwner'],
 
 	// Solr (config.ini)
 	'SOLR_HOST'         => ['config.ini', 'Index', 'solrHost'],
@@ -122,9 +123,7 @@ function updateIniFile(string $filePath, array $changes): bool {
 			foreach ($changes[$currentSection] as $key => $newValue) {
 				// Match key at start of line (handles various spacing)
 				if (preg_match('/^' . preg_quote($key, '/') . '\s*=/', $trimmed)) {
-					// Determine if value needs quotes
-					$needsQuotes = strpos($newValue, ' ') !== false || strpos($newValue, '{') !== false || strpos($newValue, '}') !== false || strpos($newValue, ';') !== false;
-					$formatted = $needsQuotes ? "\"{$newValue}\"" : $newValue;
+					$formatted = formatIniValue($newValue);
 
 					// Preserve original indentation
 					$indent = '';
@@ -140,11 +139,37 @@ function updateIniFile(string $filePath, array $changes): bool {
 		}
 	}
 
+	// Add keys that weren't found, right after their section header
+	foreach ($changes as $section => $remaining) {
+		if (empty($remaining)) {
+			continue;
+		}
+		foreach ($lines as $i => $line) {
+			if (trim($line) === "[{$section}]") {
+				$newLines = [];
+				foreach ($remaining as $key => $newValue) {
+					$newLines[] = "{$key} = " . formatIniValue($newValue);
+				}
+				array_splice($lines, $i + 1, 0, $newLines);
+				$modified = true;
+				break;
+			}
+		}
+	}
+
 	if ($modified) {
 		file_put_contents($filePath, implode("\n", $lines) . "\n");
 	}
 
 	return $modified;
+}
+
+/**
+ * Quote a value if it contains characters that are special in INI files.
+ */
+function formatIniValue(string $value): string {
+	$needsQuotes = strpos($value, ' ') !== false || strpos($value, '{') !== false || strpos($value, '}') !== false || strpos($value, ';') !== false;
+	return $needsQuotes ? "\"{$value}\"" : $value;
 }
 
 /**

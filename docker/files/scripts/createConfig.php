@@ -38,6 +38,7 @@ $variables = [
 	'title' => getenv('TITLE'),
 	'url' => getenv('URL'),
 	'configDir' => $siteDir,
+	'fileGroupOwner' => getenv('FILE_GROUP_OWNER') ?: 'www-data',
 	'solrHost' => getenv('SOLR_HOST') ?? 'localhost',
 	'solrPort' => getenv('SOLR_PORT') ?? 8983,
 	'phpFpmHost' => getenv('PHP_FPM_HOST') ?? 'localhost',

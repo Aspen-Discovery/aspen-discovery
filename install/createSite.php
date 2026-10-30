@@ -168,7 +168,7 @@ if (!$foundConfig) {
 
 	if ($siteOnMac) {
 		$variables['apacheGroup'] = readline("Enter the name of the group Apache belongs to (default _www, but this may sometimes be admin). ");
-		if (empty($apacheGroup)) {
+		if (empty($variables['apacheGroup'])) {
 			$variables['apacheGroup'] = "_www";
 		}
 	}
@@ -298,6 +298,7 @@ if (!$foundConfig) {
 
 $centos = [
 	'wwwUser' => 'apache',
+	'fileGroupOwner' => 'aspen_apache',
 	'service' => 'httpd',
 	'mysqlConf' => '/etc/my.cnf',
 	'permissions' => 'updateSitePermissions.sh',
@@ -306,6 +307,7 @@ $centos = [
 
 $debian = [
 	'wwwUser' => 'www-data',
+	'fileGroupOwner' => 'aspen_apache',
 	'service' => 'apache2',
 	'mysqlConf' => '/etc/mysql/mariadb.conf.d/60-aspen.cnf',
 	'permissions' => 'updateSitePermissions_debian.sh',
@@ -337,6 +339,15 @@ if (file_exists($siteDir)){
 
 
 $variables['servername'] = preg_replace('~https?://~', '', $variables['url']);
+
+//Group that directories created by the storage driver are assigned to
+if ($siteOnWindows) {
+	$variables['fileGroupOwner'] = '';
+} elseif ($siteOnMac) {
+	$variables['fileGroupOwner'] = $variables['apacheGroup'];
+} else {
+	$variables['fileGroupOwner'] = $$linuxOS['fileGroupOwner'];
+}
 
 /*
  * Set up the server
