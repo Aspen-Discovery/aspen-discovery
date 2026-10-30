@@ -488,7 +488,7 @@ class WebResource extends DB_LibraryLinkedObject {
 	public function canView(): bool {
 		global $locationSingleton;
 		$requireLoginUnlessInLibrary = $this->requireLoginUnlessInLibrary;
-		$librariesWithAccess = $this->getAllowableLibraries();
+		$librariesWithAccess = $this->getAllowableLibraries() ?? [];
 		if ($requireLoginUnlessInLibrary) {
 			$ipLocation = $locationSingleton->getIPLocation();
 			if ($ipLocation != null && in_array($ipLocation->libraryId, $librariesWithAccess)) {
