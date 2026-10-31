@@ -37,6 +37,7 @@ class BookCoverProcessor {
 	/** @var  Timer $timer */
 	private Timer $timer;
 	private bool $doTimings;
+	private const LOCALLY_CACHED_SOURCES = ['default', 'upload', 'loral'];
 
 	public function loadCover(array $configArray, Timer $timer, Logger $logger) : bool {
 		$this->configArray = $configArray;
@@ -733,10 +734,9 @@ class BookCoverProcessor {
 	}
 
 	private function getCachedCover() : bool {
-		// Always check for cached covers for default and uploaded covers regardless of useOriginalCoverUrls setting.
+		// Always check for cached covers for default, uploaded, and loral covers regardless of useOriginalCoverUrls setting.
 		if (SystemVariables::getSystemVariables()->useOriginalCoverUrls &&
-			$this->bookCoverInfo->getImageSource() !== 'default' &&
-			$this->bookCoverInfo->getImageSource() !== 'upload') {
+			!in_array($this->bookCoverInfo->getImageSource(), self::LOCALLY_CACHED_SOURCES, true)) {
 			return false;
 		}
 
@@ -2473,8 +2473,7 @@ class BookCoverProcessor {
 	 */
 	private function handleOriginalCoverUrl(string $source, string $url): string {
 		if (SystemVariables::getSystemVariables()->useOriginalCoverUrls &&
-			$source !== 'default' &&
-			$source !== 'upload' &&
+			!in_array($source, self::LOCALLY_CACHED_SOURCES, true) &&
 			preg_match('/^https?:\/\//i', $url)
 		) {
 			// Always validate the URL when first storing it or when reload is requested.
