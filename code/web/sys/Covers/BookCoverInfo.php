@@ -88,6 +88,10 @@ class BookCoverInfo extends DataObject {
 	}
 
 	public function setImageSource(string $imageSource): void {
+		if ($this->imageSource !== $imageSource) {
+			$this->clearOriginalUrls();
+			$this->setLastUrlValidation(null);
+		}
 		$this->__set('imageSource', $imageSource);
 	}
 
