@@ -247,83 +247,120 @@ class AJAX extends JSON_Action {
 	}
 
 	/**
-	 * Gets spotlight titles using a CollectionSpotlightList ID.
+	 * Gets a spotlight list's title data for the initial embedded-spotlight response.
 	 *
-	 * Determines the list type (UserList, CourseReserve, or search-based) and
-	 * returns title data for display in a carousel/spotlight format.
-	 *
-	 * @return array
-	 *
-	 * @see CollectionSpotlightList
-	 * @noinspection PhpUnused
+	 * Results are cached per server name since the active library (and therefore the
+	 * search scope) depends on the host the spotlight is loaded from.
 	 */
-	function getSpotlightTitles(): array {
-		global $interface;
-		$listName = strip_tags($_GET['scrollerName'] ?? 'List' . $_GET['id']);
-		$interface->assign('listName', $listName);
+	function getSpotlightTitlesForList(int $listId, string $scrollerName, bool $reload = false): array {
+		global $interface, $memCache;
+
+		$serverName = $_SERVER['SERVER_NAME'] ?? '';
+		$cacheKey = "spotlight_titles_{$serverName}_{$listId}";
+
+		if ($memCache && !$reload) {
+			$cachedResult = $memCache->get($cacheKey);
+			if ($cachedResult !== false) {
+				return $cachedResult;
+			}
+		}
 
 		require_once ROOT_DIR . '/sys/LocalEnrichment/CollectionSpotlightList.php';
 		$collectionSpotlightList = new CollectionSpotlightList();
-		$collectionSpotlightList->id = $_REQUEST['id'];
-		if ($collectionSpotlightList->find(true)) {
-			$result = [
-				'success' => true,
-				'titles' => [],
-			];
-			require_once ROOT_DIR . '/sys/LocalEnrichment/CollectionSpotlight.php';
-			$collectionSpotlight = new CollectionSpotlight();
-			$collectionSpotlight->id = $collectionSpotlightList->collectionSpotlightId;
-			$collectionSpotlight->find(true);
+		$collectionSpotlightList->id = $listId;
 
-			$interface->assign('collectionSpotlight', $collectionSpotlight);
-			$interface->assign('showViewMoreLink', $collectionSpotlight->showViewMoreLink);
-			if ($collectionSpotlightList->sourceListId != null && $collectionSpotlightList->sourceListId > 0) {
-				require_once ROOT_DIR . '/sys/UserLists/UserList.php';
-				$sourceList = new UserList();
-				$sourceList->id = $collectionSpotlightList->sourceListId;
-				if ($sourceList->find(true)) {
-					$result['listTitle'] = $sourceList->title;
-					$result['listDescription'] = $sourceList->description;
-					$result['titles'] = $sourceList->getSpotlightTitles($collectionSpotlight);
-					$currentIndex = 0;
-					$result['currentIndex'] = $currentIndex;
-				}
-				$result['searchUrl'] = '/MyAccount/MyList/' . $collectionSpotlightList->sourceListId;
-			} elseif ($collectionSpotlightList->sourceCourseReserveId != null && $collectionSpotlightList->sourceCourseReserveId > 0) {
-				require_once ROOT_DIR . '/sys/CourseReserves/CourseReserve.php';
-				$sourceList = new CourseReserve();
-				$sourceList->id = $collectionSpotlightList->sourceCourseReserveId;
-				if ($sourceList->find(true)) {
-					$result['listTitle'] = $sourceList->getTitle();
-					$result['listDescription'] = '';
-					$result['titles'] = $sourceList->getSpotlightTitles($collectionSpotlight);
-					$currentIndex = 0;
-					$result['currentIndex'] = $currentIndex;
-				}
-				$result['searchUrl'] = '/CourseReserves/' . $collectionSpotlightList->sourceCourseReserveId;
-			} else {
-				$searchObject = $collectionSpotlightList->getSearchObject();
-
-				$searchObject->processSearch();
-
-				$result['listTitle'] = $collectionSpotlightList->name;
-				$result['listDescription'] = '';
-				if (method_exists($searchObject, 'getSpotlightResults')) {
-					$result['titles'] = $searchObject->getSpotlightResults($collectionSpotlight);
-				}else{
-					$result['titles'] = [];
-				}
-
-				$currentIndex = 0;
-				$result['currentIndex'] = $currentIndex;
-			}
-			return $result;
-		} else {
+		if (!$collectionSpotlightList->find(true)) {
 			return [
 				'success' => false,
 				'message' => 'Information for the carousel list could not be found.',
 			];
 		}
+
+		require_once ROOT_DIR . '/sys/LocalEnrichment/CollectionSpotlight.php';
+		$collectionSpotlight = new CollectionSpotlight();
+		$collectionSpotlight->id = $collectionSpotlightList->collectionSpotlightId;
+		$collectionSpotlight->find(true);
+
+		$interface->assign('listName', $scrollerName);
+		$interface->assign('collectionSpotlight', $collectionSpotlight);
+		$interface->assign('showViewMoreLink', $collectionSpotlight->showViewMoreLink);
+
+		$result = $this->resolveSpotlightSource($collectionSpotlightList, $collectionSpotlight);
+		$result['success'] = true;
+		$result['currentIndex'] = count($result['titles']) > 5 ? floor(count($result['titles']) / 2) : 0;
+		foreach ($result['titles'] as &$title) {
+			if (!empty($title['formattedTitle'])) {
+				$title['formattedTitle'] = $this->rewriteSpotlightCoverUrls($title['formattedTitle']);
+			}
+		}
+		unset($title);
+
+		if ($memCache && !empty($result['titles'])) {
+			$memCache->set($cacheKey, $result, 3600);
+		}
+
+		return $result;
+	}
+
+	private function resolveSpotlightSource($collectionSpotlightList, $collectionSpotlight): array {
+		$sourceListId = $collectionSpotlightList->sourceListId;
+		$courseReserveId = $collectionSpotlightList->sourceCourseReserveId;
+
+		// 1. User List Source
+		if (!empty($sourceListId)) {
+			require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+			$source = new UserList();
+			$source->id = $sourceListId;
+
+			if ($source->find(true)) {
+				return [
+					'listTitle'       => $source->title,
+					'listDescription' => $source->description ?? '',
+					'titles'          => $source->getSpotlightTitles($collectionSpotlight),
+					'searchUrl'       => '/MyAccount/MyList/' . $sourceListId,
+				];
+			}
+		}
+
+		// 2. Course Reserve Source
+		if (!empty($courseReserveId)) {
+			require_once ROOT_DIR . '/sys/CourseReserves/CourseReserve.php';
+			$source = new CourseReserve();
+			$source->id = $courseReserveId;
+
+			if ($source->find(true)) {
+				return [
+					'listTitle'       => $source->getTitle(),
+					'listDescription' => '',
+					'titles'          => $source->getSpotlightTitles($collectionSpotlight),
+					'searchUrl'       => '/CourseReserves/' . $courseReserveId,
+				];
+			}
+		}
+
+		// 3. Search Object Fallback
+		$searchObject = $collectionSpotlightList->getSearchObject();
+		$searchObject->processSearch();
+
+		return [
+			'listTitle'       => $collectionSpotlightList->name,
+			'listDescription' => '',
+			'titles'          => method_exists($searchObject, 'getSpotlightResults')
+				? $searchObject->getSpotlightResults($collectionSpotlight)
+				: [],
+		];
+	}
+
+	/**
+	 * Routes spotlight cover requests through SearchAPI so an embedded spotlight
+	 * does not require direct access to /bookcover.php.
+	 */
+	private function rewriteSpotlightCoverUrls(string $formattedTitle): string {
+		return preg_replace(
+			'#(?:(?:https?:)?//[^/]+)?/bookcover\\.php\\?#',
+			'/API/SearchAPI?method=getCollectionSpotlightCover&amp;',
+			$formattedTitle
+		);
 	}
 
 	/** @noinspection PhpUnused */
