@@ -1392,6 +1392,9 @@ class Admin_AJAX extends JSON_Action {
 			$curl = new CurlWrapper();
 			$searchResults = $curl->curlGetPage($systemVariables->communityContentUrl . '/API/CommunityAPI?method=searchSharedContent&objectType=' . $objectType);
 			$decodedSearchResults = json_decode($searchResults);
+			if (isset($decodedSearchResults->result) && is_object($decodedSearchResults->result)) {
+				$decodedSearchResults = $decodedSearchResults->result;
+			}
 
 			$interface->assign('communitySearchResults', $decodedSearchResults);
 
