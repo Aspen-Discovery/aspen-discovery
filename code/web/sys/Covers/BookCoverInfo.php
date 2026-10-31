@@ -103,23 +103,32 @@ class BookCoverInfo extends DataObject {
 	public function getOriginalUrl(string $size): ?string
 	{
 		$sizeProperty = $this->getOriginalUrlPropertyForSize($size);
-		if ($sizeProperty !== null && !empty($this->$sizeProperty)) {
-			return $this->$sizeProperty;
+		$storedUrl = ($sizeProperty !== null && !empty($this->$sizeProperty)) ? $this->$sizeProperty : $this->original_url;
+		if (empty($storedUrl) || substr($storedUrl, 0, 32) !== $this->getValidationHash()) {
+			return null;
 		}
-		return $this->original_url;
+		$url = substr($storedUrl, 32);
+		return $url == '' ? null : $url;
 	}
 
 	/**
 	 * Set the original URL of the cover image
-	 * @param ?string $url
+	 * @param string $url
+	 * @param string $size
 	 */
-	public function setOriginalUrl(?string $url, string $size): void {
-		$sizeProperty = $this->getOriginalUrlPropertyForSize($size);
-		if ($sizeProperty !== null) {
-			$this->__set($sizeProperty, $url);
-			return;
-		}
-		$this->__set('original_url', $url);
+	public function setOriginalUrl(string $url, string $size): void {
+		$url = $this->getValidationHash() . $url;
+		$this->__set($this->getOriginalUrlPropertyForSize($size) ?? 'original_url', $url);
+	}
+
+	public function getValidationHash(): string {
+		return md5(implode('|', [
+			$this->getImageSource(),
+			$this->getSourceWidth(),
+			$this->getSourceHeight(),
+			$this->getUploadedImage(),
+			$this->getDisallowThirdPartyCover(),
+		]));
 	}
 
 	public function clearOriginalUrls(): void {

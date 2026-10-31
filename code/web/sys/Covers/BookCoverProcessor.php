@@ -2203,17 +2203,9 @@ class BookCoverProcessor {
 								return false;
 							}
 
-							$originalUrl = $referencedCoverInfo->getOriginalUrl($this->size);
-							if (!empty($originalUrl)) {
-								$url = $originalUrl;
-								$maybeHash = substr($originalUrl, 0, 32);
-								if (preg_match('/^[a-f0-9]{32}$/', $maybeHash)) {
-									$url = substr($originalUrl, 32);
-								}
-
-								if (!empty($url)) {
-									return $this->processImageURL('reference ' . $referenceId, $url);
-								}
+							$url = $referencedCoverInfo->getOriginalUrl($this->size);
+							if ($url !== null) {
+								return $this->processImageURL('reference ' . $referenceId, $url);
 							}
 						}
 					}
@@ -2480,16 +2472,7 @@ class BookCoverProcessor {
 			// Always validate the URL when first storing it or when reload is requested.
 			$validationResult = $this->validateCoverUrl($url, $source, true);
 			if ($validationResult !== false) {
-				$validationFields = [
-					$this->bookCoverInfo->getImageSource(),
-					$this->bookCoverInfo->getSourceWidth(),
-					$this->bookCoverInfo->getSourceHeight(),
-					$this->bookCoverInfo->getUploadedImage(),
-					$this->bookCoverInfo->getDisallowThirdPartyCover()
-				];
-				$validationHash = md5(implode('|', $validationFields));
-				$urlToStore = $validationHash . $url;
-				$this->bookCoverInfo->setOriginalUrl($urlToStore, $this->size);
+				$this->bookCoverInfo->setOriginalUrl($url, $this->size);
 				$this->bookCoverInfo->update();
 
 				header("HTTP/1.1 301 Moved Permanently");
@@ -2511,38 +2494,24 @@ class BookCoverProcessor {
 	 * @return bool Returns true if a redirect was issued, false otherwise.
 	 */
 	private function checkForEarlyRedirect(): bool {
-		if ($this->bookCoverInfo &&
-			!empty($this->bookCoverInfo->getOriginalUrl($this->size)) &&
-			SystemVariables::getSystemVariables()->useOriginalCoverUrls &&
-			!str_starts_with($this->bookCoverInfo->getImageSource(), 'reference')
-		) {
-			$validationFields = [
-				$this->bookCoverInfo->getImageSource(),
-				$this->bookCoverInfo->getSourceWidth(),
-				$this->bookCoverInfo->getSourceHeight(),
-				$this->bookCoverInfo->getUploadedImage(),
-				$this->bookCoverInfo->getDisallowThirdPartyCover()
-			];
-			$currentHash = md5(implode('|', $validationFields));
-			$originalUrl = $this->bookCoverInfo->getOriginalUrl($this->size);
-			$storedHash = substr($originalUrl, 0, 32);
-			$url = substr($originalUrl, 32);
+		if (!$this->bookCoverInfo || !SystemVariables::getSystemVariables()->useOriginalCoverUrls) {
+			return false;
+		}
+		if (str_starts_with($this->bookCoverInfo->getImageSource() ?? '', 'reference')) {
+			return false;
+		}
 
-			if ($currentHash === $storedHash && !empty($url)) {
-				$validationResult = $this->validateCoverUrl($url, $this->bookCoverInfo->getImageSource(), false);
-				if ($validationResult !== false) {
-					header("HTTP/1.1 301 Moved Permanently");
-					header("Location: $url");
-					$this->addCachingHeader();
-					exit;
-				}
-			} else {
-				$this->log("Debug - Hash validation failed: " . ($currentHash === $storedHash ? "Hashes match" : "Hashes don't match") . ", URL empty: " . (empty($url) ? "Yes" : "No"));
-			}
-		} else {
-			$this->log("Debug - Early conditions failed: BookCoverInfo exists: " . ($this->bookCoverInfo ? "Yes" : "No") .
-				", Original URL exists: " . (!empty($this->bookCoverInfo) && !empty($this->bookCoverInfo->getOriginalUrl($this->size)) ? "Yes" : "No") .
-				", useOriginalCoverUrls enabled: " . (SystemVariables::getSystemVariables()->useOriginalCoverUrls ? "Yes" : "No"));
+		$url = $this->bookCoverInfo->getOriginalUrl($this->size);
+		if ($url === null) {
+			$this->log("No valid original URL for record {$this->id} with {$this->size} size.");
+			return false;
+		}
+
+		if ($this->validateCoverUrl($url, $this->bookCoverInfo->getImageSource(), false) !== false) {
+			header("HTTP/1.1 301 Moved Permanently");
+			header("Location: $url");
+			$this->addCachingHeader();
+			exit;
 		}
 		return false;
 	}
