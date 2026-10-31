@@ -1388,12 +1388,7 @@ class Admin_AJAX extends JSON_Action {
 			$interface->assign('toolName', $toolName);
 
 			//Do the initial search
-			require_once ROOT_DIR . '/sys/CurlWrapper.php';
-			$curl = new CurlWrapper();
-			$searchResults = $curl->curlGetPage($systemVariables->communityContentUrl . '/API/CommunityAPI?method=searchSharedContent&objectType=' . $objectType);
-			$decodedSearchResults = json_decode($searchResults);
-
-			$interface->assign('communitySearchResults', $decodedSearchResults);
+			$interface->assign('communitySearchResults', $this->searchCommunitySharedContent($objectType));
 
 			return [
 				'title' => translate([
@@ -1416,6 +1411,57 @@ class Admin_AJAX extends JSON_Action {
 				'modalButtons' => '',
 			];
 		}
+	}
+
+	/** @noinspection PhpUnused */
+	function searchCommunityContent() : array {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission('Import Content from Community');
+		global $interface;
+		$objectType = $_REQUEST['objectType'] ?? '';
+		$searchTerm = $_REQUEST['communitySearchTerm'] ?? '';
+
+		$searchResults = $this->searchCommunitySharedContent($objectType, $searchTerm);
+		if ($searchResults === null || empty($searchResults->success)) {
+			return [
+				'success' => false,
+				'message' => translate([
+					'text' => 'Comminity Sharing is not available',
+					'isAdminFacing' => true,
+				]),
+			];
+		}
+		$interface->assign('toolModule', $_REQUEST['toolModule'] ?? '');
+		$interface->assign('toolName', $_REQUEST['toolName'] ?? '');
+		$interface->assign('results', array_map(fn($result) => (array)$result, $searchResults->results ?? []));
+
+		return [
+			'success' => true,
+			'communityResults' => $interface->fetch('Admin/communitySearchResults.tpl'),
+		];
+
+	}
+
+	/** @noinspection PhpUnused */
+	private function searchCommunitySharedContent(string $objectType, string $searchTerm = '') : ?object {
+		require_once ROOT_DIR . '/sys/SystemVariables.php';
+		$systemVariables = SystemVariables::getSystemVariables();
+		if (!$systemVariables || empty($systemVariables->communityContentUrl)) {
+			return null;
+		}
+
+		require_once ROOT_DIR . '/sys/CurlWrapper.php';
+		$curl = new CurlWrapper();
+		$url = $systemVariables->communityContentUrl . '/API/CommunityAPI?' . http_build_query([
+			'method' => 'searchSharedContent',
+			'objectType' => $objectType,
+			'communitySearchTerm' => $searchTerm,
+		]);
+		$searchResults = json_decode($curl->curlGetPage($url));
+		if (isset($searchResults->result) && is_object($searchResults->result)) {
+			$searchResults = $searchResults->result;
+		}
+		return is_object($searchResults) ? $searchResults : null;
 	}
 
 	/** @noinspection PhpUnused */
