@@ -8,6 +8,26 @@
 				<button class="btn btn-primary" type="submit">{translate text=Go isAdminFacing=true}</button>
 			</div>
 		</form>
+		{if !empty($canForceReindex)}
+			<form method="post" action="/OverDrive/AspenData" class="form">
+				<input type="hidden" name="overDriveId" value="{$overDriveId}">
+				<div class="form-group">
+					<label for="recordsToReindex" class="control-label">{translate text="Records to Reindex" isAdminFacing=true}</label>
+					<textarea id="recordsToReindex" name="recordsToReindex" class="form-control" rows="3"></textarea>
+					<small class="form-text text-muted">{translate text="Enter %1% Reserve IDs or Title IDs, separated by new lines or commas." 1=$readerName isAdminFacing=true}</small>
+				</div>
+				<button class="btn btn-primary" type="submit">{translate text="Reindex" isAdminFacing=true}</button>
+			</form>
+		{/if}
+		{if !empty($titleIdsNotFound)}
+			<div class="alert alert-warning">{translate text="These Title IDs were not found in Aspen, please enter the Reserve ID instead" isAdminFacing=true}: {', '|implode:$titleIdsNotFound}</div>
+		{/if}
+		{if !empty($alreadyInQueueIds)}
+			<div class="alert alert-info">{translate text="Already waiting to be reindexed" isAdminFacing=true}: {', '|implode:$alreadyInQueueIds}</div>
+		{/if}
+		{if !empty($numQueued)}
+			<div class="alert alert-success">{translate text="%1% record(s) added to the queue and will be reindexed within a few minutes." 1=$numQueued isAdminFacing=true}</div>
+		{/if}
 
 		{if !empty($errors)}
 			<div class="alert alert-warning">{$errors}</div>

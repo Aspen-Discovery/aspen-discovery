@@ -5,7 +5,11 @@ require_once ROOT_DIR . '/services/Admin/Admin.php';
 class OverDrive_AspenData extends Admin_Admin {
 	function launch() : void {
 		global $interface;
-		if (isset($_REQUEST['overDriveId'])) {
+		if (!empty($_POST['recordsToReindex']) && UserAccount::userHasPermission('Force Reindexing of Records')) {
+			$this->queueRecordsToReindex($_POST['recordsToReindex']);
+		}
+		$interface->assign('canForceReindex', UserAccount::userHasPermission('Force Reindexing of Records'));
+		if (!empty($_REQUEST['overDriveId'])) {
 			$interface->assign('overDriveId', $_REQUEST['overDriveId']);
 			require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProduct.php';
 			$overDriveProduct = new OverDriveAPIProduct();
@@ -110,6 +114,45 @@ class OverDrive_AspenData extends Admin_Admin {
 	}
 
 	function canView(): bool {
-		return UserAccount::userHasPermission('View OverDrive Test Interface');
+		return UserAccount::userHasPermission('View OverDrive Test Interface') || UserAccount::userHasPermission('Force Reindexing of Records');
+	}
+
+	private function queueRecordsToReindex(string $recordToReindex) : void {
+		global $interface;
+		require_once ROOT_DIR . '/sys/Indexing/RecordIdentifiersToReload.php';
+		require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProduct.php';
+
+		$overDriveIds = preg_split('/[\s,]+/', $recordToReindex, -1, PREG_SPLIT_NO_EMPTY);
+		$overDriveIds = array_unique(array_map(fn($id) => strtolower(trim($id)), $overDriveIds));
+
+		$titleIdsNotFound = [];
+		$alreadyInQueueIds = [];
+		$numQueued = 0;
+
+		foreach ($overDriveIds as $overDriveId) {
+			if (is_numeric($overDriveId)) {
+				//This is a crossRefId, look up the reserve id for it
+				$overDriveProduct = new OverDriveAPIProduct();
+				$overDriveProduct->crossRefId = $overDriveId;
+				if (!$overDriveProduct->find(true)) {
+					$titleIdsNotFound[] = $overDriveId;
+					continue;
+				}
+				$overDriveId = strtolower($overDriveProduct->overdriveId);
+			}
+			$recordToReload = new RecordIdentifiersToReload();
+			$recordToReload->type = 'overdrive';
+			$recordToReload->identifier = $overDriveId;
+			$recordToReload->processed = 0;
+			if ($recordToReload->count() > 0) {
+				$alreadyInQueueIds[] = $overDriveId;
+				continue;
+			}
+			$recordToReload->insert();
+			$numQueued++;
+		}
+		$interface->assign('titleIdsNotFound', $titleIdsNotFound);
+		$interface->assign('alreadyInQueueIds', $alreadyInQueueIds);
+		$interface->assign('numQueued', $numQueued);
 	}
 }
