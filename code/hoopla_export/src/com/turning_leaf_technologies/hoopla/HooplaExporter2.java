@@ -1218,9 +1218,13 @@ public class HooplaExporter2 {
 					if (responseJSON.has("contents")) {
 						JSONArray responseTitles = responseJSON.getJSONArray("contents");
 						if (responseTitles != null && !responseTitles.isEmpty()) {
-							updateTitlesInDB(responseTitles, true, false);
-							updatesRun = true;
-							logger.warn("Updated global content for " + numericSingleWorkId);
+							if (responseTitles.getJSONObject(0).getLong("id") != numericSingleWorkId) {
+								logEntry.addNote("Hoopla record " + numericSingleWorkId + " was not found in Hoopla");
+							} else {
+								updateTitlesInDB(responseTitles, true, false);
+								updatesRun = true;
+								logger.warn("Updated global content for " + numericSingleWorkId);
+							}
 						}
 					}
 				}
@@ -1284,6 +1288,7 @@ public class HooplaExporter2 {
 										if (entitlement.has("active")) {
 											boolean activeStatus = entitlement.getBoolean("active");
 											updateEntitlementsInDB(responseEntitlements, null, false, HOOPLA_TYPE_FLEX, librarySetting.getLibraryId());
+											updatesRun = true;
 											logger.warn("Updated entitlement for Hoopla Library ID " + librarySetting.getHooplaLibraryId() + " for Flex. Entitlement active = " + activeStatus);
 											if (activeStatus) {
 												// This is an active flex entitlement, so we need to update the availability
@@ -1298,7 +1303,6 @@ public class HooplaExporter2 {
 													logger.warn("Updated availability for Hoopla Library ID " + librarySetting.getHooplaLibraryId() + " for Flex.");
 													continue;
 												}
-											updatesRun = true;
 											}
 										} else {
 											logger.warn("Error returning enttlement status for Hoopla Library ID " + librarySetting.getHooplaLibraryId() + " for Flex.");
