@@ -1,10 +1,8 @@
 package com.turning_leaf_technologies.overdrive;
 
 import java.sql.*;
-import java.util.Calendar;
+import java.util.*;
 import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.HashSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -76,6 +74,7 @@ public class ExtractOverDriveInfoMain {
 			}
 
 			HashSet<OverDriveSetting> settings;
+			final Map<Long, String> queuedRecords = new HashMap<>();
 			try (Connection dbConn = DriverManager.getConnection(databaseConnectionInfo)) {
 				//Remove log entries older than 45 days
 				long earliestLogToKeep = (startTime.getTime() / 1000) - (60 * 60 * 24 * 45);
@@ -87,6 +86,9 @@ public class ExtractOverDriveInfoMain {
 				}
 
 				settings = loadSettings(dbConn, extractSingleWork);
+				if (!extractSingleWork) {
+					queuedRecords.putAll(loadQueuedRecords(dbConn));
+				}
 
 				//Check to see if the jar has changes before processing records, and if so quit
 				if (checkForUpdatedJars(myChecksumAtStart, processName, dbConn, reindexerChecksumAtStart)) {
@@ -101,6 +103,8 @@ public class ExtractOverDriveInfoMain {
 			ExecutorService es = Executors.newCachedThreadPool();
 			AtomicInteger numChanges = new AtomicInteger(0);
 			AtomicBoolean errorOccurred = new AtomicBoolean();
+			final Set<String> queuedOverDriveIds = Set.copyOf(queuedRecords.values());
+			AtomicBoolean queueComplete = new AtomicBoolean(true);
 			for(OverDriveSetting setting : settings) {
 				boolean finalExtractSingleWork = extractSingleWork;
 				String finalSingleWorkId = singleWorkId;
@@ -117,7 +121,11 @@ public class ExtractOverDriveInfoMain {
 								if (finalExtractSingleWork) {
 									numChanges.addAndGet(extractor.processSingleWork(finalSingleWorkId, configIni, serverName, localDBConnection, logEntry));
 								} else {
+									extractor.setQueuedOverDriveIds(queuedOverDriveIds);
 									numChanges.addAndGet(extractor.extractOverDriveInfo(configIni, serverName, localDBConnection, logEntry));
+									if (!queuedOverDriveIds.isEmpty() && !extractor.isQueuedRecordsProcessed()) {
+										queueComplete.set(false);
+									}
 								}
 
 								logEntry.setFinished();
@@ -156,6 +164,9 @@ public class ExtractOverDriveInfoMain {
 
 			//Reconnect to the db after the main extract runs just for updating if nightly indexing is needed
 			try (Connection dbConn = DriverManager.getConnection(databaseConnectionInfo)) {
+				if (queueComplete.get()) {
+					markQueuedRecordsProcessed(dbConn, queuedRecords.keySet());
+				}
 				//Check to see if the jar has changes, and if so quit
 				if (checkForUpdatedJars(myChecksumAtStart, processName, dbConn, reindexerChecksumAtStart)) {
 					break;
@@ -239,5 +250,33 @@ public class ExtractOverDriveInfoMain {
 			logger.error("Unable to find settings for OverDrive, please add settings to the database");
 		}
 		return settings;
+	}
+
+	private static Map<Long, String> loadQueuedRecords(Connection dbConn) {
+		Map<Long, String> queuedRecords = new HashMap<>();
+		try (PreparedStatement getQueuedRecordsStmt = dbConn.prepareStatement("SELECT id, identifier FROM record_identifiers_to_reload WHERE processed = 0 AND type = 'overdrive'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			ResultSet getQueuedRecordsRS = getQueuedRecordsStmt.executeQuery()) {
+			while (getQueuedRecordsRS.next()) {
+				queuedRecords.put(getQueuedRecordsRS.getLong("id"), getQueuedRecordsRS.getString("identifier").toLowerCase());
+			}
+		} catch (SQLException e) {
+			logger.error("Error loading queued OverDrive records", e);
+		}
+		return queuedRecords;
+	}
+
+	private static void markQueuedRecordsProcessed(Connection dbConn, Set<Long> queuedRowIds) {
+		if (queuedRowIds.isEmpty()) {
+			return;
+		}
+		try (PreparedStatement markProcessedStmt = dbConn.prepareStatement("UPDATE record_identifiers_to_reload SET processed = 1 WHERE id = ?")) {
+			for (Long rowId : queuedRowIds) {
+				markProcessedStmt.setLong(1, rowId);
+				markProcessedStmt.executeUpdate();
+			}
+			logger.info("Marked {} queued OverDrive records as processed", queuedRowIds.size());
+		} catch (SQLException e) {
+			logger.error("Error marking queued OverDrive records as processed", e);
+		}
 	}
 }

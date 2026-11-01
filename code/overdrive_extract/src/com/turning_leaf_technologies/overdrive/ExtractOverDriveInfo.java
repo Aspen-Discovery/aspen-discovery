@@ -105,6 +105,16 @@ class ExtractOverDriveInfo implements AutoCloseable {
 		this.settings = settings;
 	}
 
+	private Set<String> queuedOverDriveIds = Set.of();
+	void setQueuedOverDriveIds(Set<String> queuedOverDriveIds) {
+		this.queuedOverDriveIds = queuedOverDriveIds;
+	}
+
+	private boolean queuedRecordsProcessed = false;
+	boolean isQueuedRecordsProcessed() {
+		return queuedRecordsProcessed;
+	}
+
 	int extractOverDriveInfo(Ini configIni, String serverName, Connection dbConn, OverDriveExtractLogEntry logEntry) {
 		AtomicInteger numProcessed = new AtomicInteger(0);
 		this.configIni = configIni;
@@ -182,6 +192,8 @@ class ExtractOverDriveInfo implements AutoCloseable {
 					logEntry.addNote("Did not process " + idsToRemove.size() + " products only owned by advantage collections of Non-Aspen libraries");
 					logEntry.addNote("There are " + numProductsToUpdate + " products that need to be checked for updates");
 					logEntry.saveResults();
+
+					addQueuedRecords();
 
 					//Do some counts of the records that will be updated for logging purposes
 					int numRecordsToUpdate = 0;
@@ -266,6 +278,7 @@ class ExtractOverDriveInfo implements AutoCloseable {
 							logEntry.saveResults();
 						}
 					}
+					queuedRecordsProcessed = true;
 
 					if (checkForDeletedRecords) {
 						//Remove any records that no longer exist.
@@ -318,9 +331,6 @@ class ExtractOverDriveInfo implements AutoCloseable {
 						saveProductsToUpdateStmt.setLong(2, settings.getId());
 						saveProductsToUpdateStmt.executeUpdate();
 					}
-
-					//For any records that have been marked to reload, regroup and reindex the records
-					processRecordsToReload(logEntry);
 
 					//Finally, process any records that seem to be unlinked
 					//MDN 3/6/24 - This is no longer needed.
@@ -453,31 +463,26 @@ class ExtractOverDriveInfo implements AutoCloseable {
 		return numChanges;
 	}
 
-	private void processRecordsToReload(OverDriveExtractLogEntry logEntry) {
-		try (PreparedStatement getRecordsToReloadStmt = dbConn.prepareStatement("SELECT * from record_identifiers_to_reload WHERE processed = 0 and type='overdrive'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)) {
-			try (PreparedStatement markRecordToReloadAsProcessedStmt = dbConn.prepareStatement("UPDATE record_identifiers_to_reload SET processed = 1 where id = ?")) {
-				try (ResultSet getRecordsToReloadRS = getRecordsToReloadStmt.executeQuery()) {
-					int numRecordsToReloadProcessed = 0;
-					while (getRecordsToReloadRS.next()) {
-						long recordToReloadId = getRecordsToReloadRS.getLong("id");
-						String overDriveId = getRecordsToReloadRS.getString("identifier");
-						//Regroup the record
-						String groupedWorkId = getRecordGroupingProcessor().processOverDriveRecord(overDriveId);
-						//Reindex the record
-						getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
-
-						markRecordToReloadAsProcessedStmt.setLong(1, recordToReloadId);
-						markRecordToReloadAsProcessedStmt.executeUpdate();
-						numRecordsToReloadProcessed++;
-					}
-					if (numRecordsToReloadProcessed > 0) {
-						logEntry.addNote("Regrouped " + numRecordsToReloadProcessed + " records marked for reprocessing");
-					}
-				}
-			}
-		}catch (Exception e){
-			logEntry.incErrors("Error processing records to reload ", e);
+	private void addQueuedRecords() {
+		if (queuedOverDriveIds.isEmpty()) {
+			return;
 		}
+		int numAdded = 0;
+		for (String overDriveId : queuedOverDriveIds) {
+			OverDriveRecordInfo recordInfo = allProductsInOverDrive.get(overDriveId);
+
+			if (recordInfo == null) {
+				recordInfo = new OverDriveRecordInfo();
+				recordInfo.setId(overDriveId);
+				getExistingRecordInformationForProduct(recordInfo);
+				allProductsInOverDrive.put(recordInfo.getId(), recordInfo);
+				numAdded++;
+			}
+
+			recordInfo.hasChanges = true;
+		}
+		logEntry.addNote("Processing " + queuedOverDriveIds.size() + " queued records, " + numAdded + " were not already being updated");
+		logEntry.saveResults();
 	}
 
 	private void initOverDriveExtract(Connection dbConn, OverDriveExtractLogEntry logEntry) throws SQLException {
