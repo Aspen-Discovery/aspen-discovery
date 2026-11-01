@@ -22,6 +22,14 @@ function getUpdates26_11_00(): array {
 		//kodi
 
 		//yanjun
+		'remove_overdrive_products_to_update' => [
+			'title' => 'Remove OverDrive Products To Reindex column',
+			'description' => 'Records to reindex are now stored in record_identifiers_to_reload',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE overdrive_settings DROP COLUMN productsToUpdate',
+			],
+		], //remove_overdrive_products_to_update
 
 		//imani
 

@@ -24,8 +24,6 @@ class OverDriveSetting extends DataObject {
 	/** @noinspection PhpUnused */
 	public $numRetriesOnError;
 	/** @noinspection PhpUnused */
-	public $productsToUpdate;
-	/** @noinspection PhpUnused */
 	public $lastUpdateOfChangedRecords;
 	/** @noinspection PhpUnused */
 	public $lastUpdateOfAllRecords;
@@ -177,14 +175,6 @@ class OverDriveSetting extends DataObject {
 				'default' => 1,
 				'min' => 0,
 				'max' => 5,
-			],
-			'productsToUpdate' => [
-				'property' => 'productsToUpdate',
-				'type' => 'textarea',
-				'label' => 'Products To Reindex',
-				'description' => 'A list of products to update on the next index',
-				'canBatchUpdate' => false,
-				'hideInLists' => true,
 			],
 			'lastUpdateOfChangedRecords' => [
 				'property' => 'lastUpdateOfChangedRecords',

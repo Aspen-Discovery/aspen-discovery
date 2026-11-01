@@ -18,8 +18,6 @@ public class OverDriveSetting {
 	private final boolean enableRequestLogging;
 	private final int numRetriesOnError;
 	private final int deletionCheckHour;
-	private final HashSet<String> productsToUpdate = new HashSet<>();
-	private final HashSet<String> productsToUpdateNextTime = new HashSet<>();
 
 	OverDriveSetting(ResultSet settingRS, String serverName) throws SQLException {
 		id = settingRS.getLong("id");
@@ -38,19 +36,6 @@ public class OverDriveSetting {
 		enableRequestLogging = settingRS.getBoolean("enableRequestLogging");
 		numRetriesOnError = Math.max(1, settingRS.getInt("numRetriesOnError"));
 		deletionCheckHour = settingRS.getInt("deletionCheckHour");
-		String productsToUpdateStr = settingRS.getString("productsToUpdate");
-		if (productsToUpdateStr == null){
-			productsToUpdateStr = "";
-		}else{
-			productsToUpdateStr = productsToUpdateStr.trim();
-		}
-		String[] products = productsToUpdateStr.split("\r\n|\r|\n");
-		for (String product : products){
-			product = product.trim().toLowerCase();
-			if (!product.isEmpty()) {
-				productsToUpdate.add(product);
-			}
-		}
 	}
 
 	public long getId() {
@@ -91,18 +76,6 @@ public class OverDriveSetting {
 
 	public int getNumRetriesOnError() {
 		return numRetriesOnError;
-	}
-
-	public HashSet<String> getProductsToUpdate(){
-		return productsToUpdate;
-	}
-
-	public synchronized void addProductToUpdateNextTime(String overDriveId){
-		productsToUpdateNextTime.add(overDriveId);
-	}
-
-	public String getProductsToUpdateNextTimeAsString(){
-		return String.join("\n", productsToUpdateNextTime);
 	}
 
 	public int getDeletionCheckHour() {

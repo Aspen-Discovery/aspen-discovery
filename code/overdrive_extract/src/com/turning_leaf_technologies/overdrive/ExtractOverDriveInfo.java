@@ -201,9 +201,6 @@ class ExtractOverDriveInfo implements AutoCloseable {
 					int numNewRecords = 0;
 					int totalRecordsWithChanges = 0;
 					for (OverDriveRecordInfo curRecord : allProductsInOverDrive.values()) {
-						if (settings.getProductsToUpdate().contains(curRecord.getId().toLowerCase())){
-							curRecord.hasChanges = true;
-						}
 						//Extract data from Libby and update the database
 						if (curRecord.isNew){
 							numNewRecords++;
@@ -232,7 +229,6 @@ class ExtractOverDriveInfo implements AutoCloseable {
 									try {
 										updateOverDriveMetaData(curRecord);
 									} catch (SocketTimeoutException e) {
-										settings.addProductToUpdateNextTime(curRecord.getId());
 										logEntry.addNote("Error loading metadata for " + curRecord.getId() + " " + e.getMessage());
 										errorsEncountered[0] = true;
 									}
@@ -325,12 +321,6 @@ class ExtractOverDriveInfo implements AutoCloseable {
 						} else {
 							logger.info("Did not delete " + totalRecordsToDelete + " records that no longer exist because we received errors from Libby.");
 						}
-					}
-
-					try (PreparedStatement saveProductsToUpdateStmt = dbConn.prepareStatement("UPDATE overdrive_settings set productsToUpdate = ? WHERE id = ?")) {
-						saveProductsToUpdateStmt.setString(1, settings.getProductsToUpdateNextTimeAsString());
-						saveProductsToUpdateStmt.setLong(2, settings.getId());
-						saveProductsToUpdateStmt.executeUpdate();
 					}
 
 					//Finally, process any records that seem to be unlinked
@@ -1173,7 +1163,6 @@ class ExtractOverDriveInfo implements AutoCloseable {
 		String url = "https://api.overdrive.com/v1/collections/" + apiKey + "/products/" + overDriveInfo.getId() + "/metadata";
 		WebServiceResponse metaDataResponse = callOverDriveURL("overdriveExtract.getProductMetadata", url);
 		if (metaDataResponse.getResponseCode() != 200){
-			settings.addProductToUpdateNextTime(overDriveInfo.getId());
 			logEntry.addNote("Could not load metadata (code " + metaDataResponse.getResponseCode() + ") from " + url );
 			logger.info(metaDataResponse.getResponseCode() + ":" + metaDataResponse.getMessage());
 		}else{
@@ -1549,7 +1538,6 @@ class ExtractOverDriveInfo implements AutoCloseable {
 		try {
 			availabilityResponse = callOverDriveURL("overdriveExtract.getProductAvailability", url, false);
 		} catch (SocketTimeoutException e) {
-			settings.addProductToUpdateNextTime(overDriveInfo.getId());
 			logEntry.addNote("Error loading availability for " + overDriveInfo.getId() + " " + e.getMessage());
 			result.hadErrors = true;
 			return result;
@@ -1561,7 +1549,6 @@ class ExtractOverDriveInfo implements AutoCloseable {
 			if (singleWork) {
 				logEntry.addNote("Found availability for api key " + apiKey);
 			}
-			settings.addProductToUpdateNextTime(overDriveInfo.getId());
 			logEntry.addNote("Error availability API for product " + overDriveInfo.getId() + " collection " + collectionInfo.getName() + " response code " + availabilityResponse.getResponseCode());
 			logger.info(availabilityResponse.getResponseCode() + ":" + availabilityResponse.getMessage());
 			result.hadErrors = true;

@@ -237,12 +237,6 @@ public class ExtractOverDriveInfoMain {
 					}
 				}
 			}
-			//Clear works to update
-			if (!extractSingleWork) {
-				try (PreparedStatement clearProductsToUpdateStmt = dbConn.prepareStatement("UPDATE overdrive_settings SET productsToUpdate = ''")) {
-					clearProductsToUpdateStmt.executeUpdate();
-				}
-			}
 		} catch (SQLException e) {
 			logger.error("Error loading settings from the database", e);
 		}
