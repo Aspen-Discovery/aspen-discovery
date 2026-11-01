@@ -4902,6 +4902,7 @@ class User extends DataObject {
 				'View Dashboards',
 				'View System Reports',
 			]);
+			$sections['hoopla']->addAction(new AdminAction('Aspen Information', 'Queue Hoopla records to be reindexed.', '/Hoopla/AspenData'), 'Force Reindexing of Records');
 		}
 
 		if (array_key_exists('OverDrive', $enabledModules)) {
