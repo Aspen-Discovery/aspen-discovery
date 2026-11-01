@@ -5,10 +5,11 @@ require_once ROOT_DIR . '/services/Admin/Admin.php';
 class OverDrive_AspenData extends Admin_Admin {
 	function launch() : void {
 		global $interface;
-		if (!empty($_POST['recordsToReindex']) && UserAccount::userHasPermission('Force Reindexing of Records')) {
+		$canForceReindex = UserAccount::userHasPermission('Force Reindexing of Records');
+		$interface->assign('canForceReindex', $canForceReindex);
+		if ($canForceReindex && !empty($_POST['recordsToReindex'])) {
 			$this->queueRecordsToReindex($_POST['recordsToReindex']);
 		}
-		$interface->assign('canForceReindex', UserAccount::userHasPermission('Force Reindexing of Records'));
 		if (!empty($_REQUEST['overDriveId'])) {
 			$interface->assign('overDriveId', $_REQUEST['overDriveId']);
 			require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProduct.php';
@@ -114,7 +115,7 @@ class OverDrive_AspenData extends Admin_Admin {
 	}
 
 	function canView(): bool {
-		return UserAccount::userHasPermission('View OverDrive Test Interface') || UserAccount::userHasPermission('Force Reindexing of Records');
+		return UserAccount::userHasPermission(['View OverDrive Test Interface', 'Force Reindexing of Records']);
 	}
 
 	private function queueRecordsToReindex(string $recordToReindex) : void {

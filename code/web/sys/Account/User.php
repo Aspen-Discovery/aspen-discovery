@@ -4922,7 +4922,7 @@ class User extends DataObject {
 				'View System Reports',
 			]);
 			$sections['overdrive']->addAction(new AdminAction('API Information', 'View API information for OverDrive integration to test connections.', '/OverDrive/APIData'), 'View OverDrive Test Interface');
-			$sections['overdrive']->addAction(new AdminAction('Aspen Information', 'View information stored within Aspen about an OverDrive product.', '/OverDrive/AspenData'), 'View OverDrive Test Interface');
+			$sections['overdrive']->addAction(new AdminAction('Aspen Information', 'View information stored within Aspen about an OverDrive record and queue records to be reindexed.', '/OverDrive/AspenData'), ['View OverDrive Test Interface','Force Reindexing of Records'] );
 		}
 
 		if (array_key_exists('Palace Project', $enabledModules)) {
