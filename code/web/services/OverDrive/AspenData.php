@@ -131,7 +131,7 @@ class OverDrive_AspenData extends Admin_Admin {
 		$numQueued = 0;
 
 		foreach ($overDriveIds as $overDriveId) {
-			if (is_numeric($overDriveId)) {
+			if (ctype_digit($overDriveId)) {
 				//This is a crossRefId, look up the reserve id for it
 				$overDriveProduct = new OverDriveAPIProduct();
 				$overDriveProduct->crossRefId = $overDriveId;
