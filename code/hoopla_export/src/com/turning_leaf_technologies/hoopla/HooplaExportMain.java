@@ -181,7 +181,7 @@ public class HooplaExportMain {
 					if (singleWorkId == null) {
 						updatesRun = exporter2.exportHooplaData();
 					} else {
-						updatesRun = exporter2.exportSingleHooplaTitle(singleWorkId);
+						updatesRun = exporter2.exportSingleHooplaTitle(singleWorkId, true);
 					}
 					exporter2.exporter2CleanUp();
 					numChanges = logEntry2.getNumChanges();
