@@ -142,6 +142,7 @@ class ExtractOverDriveInfo implements AutoCloseable {
 			try {
 				if (settings.getClientSecret() == null || settings.getClientKey() == null || settings.getAccountId() == null || settings.getClientSecret().isEmpty() || settings.getClientKey().isEmpty() || settings.getAccountId().isEmpty()) {
 					logEntry.addNote("Did not find correct configuration in settings, not loading Libby titles");
+					queuedRecordsProcessed = true;
 				} else {
 					if (checkForDeletedRecords) {
 						//Load all products from API to figure out what is actually new, what is deleted, and what needs an update
