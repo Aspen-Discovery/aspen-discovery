@@ -4958,6 +4958,25 @@ class User extends DataObject {
 			$sections['overdrive']->addAction(new AdminAction('Aspen Information', 'View information stored within Aspen about an OverDrive product.', '/OverDrive/AspenData'), 'View OverDrive Test Interface');
 		}
 
+		if (array_key_exists('BorrowBox', $enabledModules)) {
+			$sections['borrowbox'] = new AdminSection('BorrowBox');
+			$borrowBoxSettingsAction = new AdminAction('Settings', 'Define connection information between BorrowBox and Aspen Discovery.', '/BorrowBox/Settings');
+			$borrowBoxScopesAction = new AdminAction('Scopes', 'Define which records are loaded for each library and location.', '/BorrowBox/Scopes');
+			if ($sections['borrowbox']->addAction($borrowBoxSettingsAction, 'Administer BorrowBox')) {
+				$borrowBoxSettingsAction->addSubAction($borrowBoxScopesAction, 'Administer BorrowBox');
+			} else {
+				$sections['borrowbox']->addAction($borrowBoxScopesAction, 'Administer BorrowBox');
+			}
+			$sections['borrowbox']->addAction(new AdminAction('Indexing Log', 'View the indexing log for BorrowBox.', '/BorrowBox/IndexingLog'), [
+				'View System Reports',
+				'View Indexing Logs',
+			]);
+			$sections['borrowbox']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for BorrowBox integration.', '/BorrowBox/Dashboard'), [
+				'View Dashboards',
+				'View System Reports',
+			]);
+		}
+
 		if (array_key_exists('Palace Project', $enabledModules)) {
 			$sections['palace_project'] = new AdminSection('Palace Project');
 			$palaceProjectSettingsAction = new AdminAction('Settings', 'Define connection information between Palace Project and Aspen Discovery.', '/PalaceProject/Settings');
