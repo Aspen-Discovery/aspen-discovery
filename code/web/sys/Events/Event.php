@@ -587,6 +587,10 @@ class Event extends DataObject {
 			// convert the array to string before storing in the database
 			$this->weekDays = implode(",", $this->weekDays);
 		}
+		$locationChanged = $this->locationDiffersFromStoredEvent();
+		if ($locationChanged) {
+			$this->clearSublocationsNotAtCurrentLocation();
+		}
 		// Save changed fields before parent::update() clears them.
 		$changedFields = $this->_changedFields;
 		$ret = parent::update();
@@ -598,6 +602,20 @@ class Event extends DataObject {
 			$this->generateInstances();
 		}
 		return $ret;
+	}
+
+	private function clearSublocationsNotAtCurrentLocation() : void {
+		$sublocationIdsAtLocation = array_keys(Location::getEventSublocations($this->locationId));
+		$sublocationIdsToKeep = empty($sublocationIdsAtLocation) ? '0' : implode(', ', $sublocationIdsAtLocation);
+		$eventId = (int)$this->id;
+		$eventInstance = new EventInstance();
+		$eventInstance->query("UPDATE event_instance SET sublocationId = null WHERE eventId = $eventId AND sublocationId NOT IN ($sublocationIdsToKeep)");
+		$eventSublocationIsValid = in_array($this->sublocationId, $sublocationIdsAtLocation);
+		if ($eventSublocationIsValid) {
+			return;
+		}
+		$this->sublocationId = '';
+		$this->_changedFields[] = 'sublocationId';
 	}
 
 	public function insert(string $context = '') : int|bool {
