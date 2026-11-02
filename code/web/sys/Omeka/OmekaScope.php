@@ -67,7 +67,7 @@ class OmekaScope extends DataObject {
 				'property' => 'itemSetIds',
 				'type' => 'text',
 				'label' => 'Item Set IDs',
-				'description' => 'A comma separated list of Omeka item set ids to include when Include All Item Sets is not checked.',
+				'description' => 'A comma separated list of Omeka S item set ids or Omeka Classic collection ids to include when Include All Item Sets is not checked.',
 				'maxLength' => 500,
 				'forcesReindex' => true,
 			],
