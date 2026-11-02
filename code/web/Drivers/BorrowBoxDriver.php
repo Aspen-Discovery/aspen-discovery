@@ -356,6 +356,30 @@ class BorrowBoxDriver extends AbstractEContentDriver {
 		return "$apiUrl/v1/sites/$siteId/patrons/$patronId/loans";
 	}
 
+	private function resolveLoanIdAndSetting(string $sourceId): string {
+		if (!str_contains($sourceId, '_')) {
+			return $sourceId;
+		}
+		list($loanId, $settingId) = explode('_', $sourceId, 2);
+		$availableSettings = $this->getAvailableSettings();
+		if (isset($availableSettings[$settingId])) {
+			$this->setSettings($availableSettings[$settingId]);
+		}
+		return $loanId;
+	}
+
+	private function buildFailureResult(string $title, string $message): array {
+		$translatedMessage = translate(['text' => $message, 'isPublicFacing' => true]);
+		return [
+			'success' => false,
+			'message' => $translatedMessage,
+			'api' => [
+				'title' => translate(['text' => $title, 'isPublicFacing' => true]),
+				'message' => $translatedMessage,
+			],
+		];
+	}
+
 	/**
 	 * Get a summary of the patron's BorrowBox account (checkout + hold counts).
 	 *
@@ -488,21 +512,12 @@ class BorrowBoxDriver extends AbstractEContentDriver {
 	 * @return array
 	 */
 	public function checkOutTitle(User $patron, string $titleId): array {
-		$result = [
-			'success' => false,
-			'message' => translate(['text' => 'Unknown error checking out BorrowBox title.', 'isPublicFacing' => true]),
-			'api' => [
-				'title' => translate(['text' => 'Unable to checkout title', 'isPublicFacing' => true]),
-				'message' => translate(['text' => 'Unknown error checking out BorrowBox title.', 'isPublicFacing' => true]),
-			],
-		];
+		$result = $this->buildFailureResult('Unable to checkout title', 'Unknown error checking out BorrowBox title.');
 
 		$this->setSettingsForProduct($titleId);
 		$loansUrl = $this->getPatronLoansUrl($patron);
 		if ($loansUrl === null) {
-			$result['message'] = translate(['text' => 'Unable to determine your library\'s BorrowBox configuration.', 'isPublicFacing' => true]);
-			$result['api']['message'] = $result['message'];
-			return $result;
+			return $this->buildFailureResult('Unable to checkout title', 'Unable to determine your library\'s BorrowBox configuration.');
 		}
 
 		$url = $loansUrl . '?intent=LOAN&productId=' . urlencode($titleId);
@@ -587,29 +602,13 @@ class BorrowBoxDriver extends AbstractEContentDriver {
 	 * @return array
 	 */
 	public function returnCheckout(User $patron, string $borrowboxId): array {
-		$result = [
-			'success' => false,
-			'message' => translate(['text' => 'Unknown error returning BorrowBox title.', 'isPublicFacing' => true]),
-			'api' => [
-				'title' => translate(['text' => 'Unable to return title', 'isPublicFacing' => true]),
-				'message' => translate(['text' => 'Unknown error returning BorrowBox title.', 'isPublicFacing' => true]),
-			],
-		];
+		$result = $this->buildFailureResult('Unable to return title', 'Unknown error returning BorrowBox title.');
 
-		$loanId = $borrowboxId;
-		if (str_contains($borrowboxId, '_')) {
-			list($loanId, $settingId) = explode('_', $borrowboxId, 2);
-			$availableSettings = $this->getAvailableSettings();
-			if (isset($availableSettings[$settingId])) {
-				$this->setSettings($availableSettings[$settingId]);
-			}
-		}
+		$loanId = $this->resolveLoanIdAndSetting($borrowboxId);
 
 		$loansUrl = $this->getPatronLoansUrl($patron);
 		if ($loansUrl === null) {
-			$result['message'] = translate(['text' => 'Unable to determine your library\'s BorrowBox configuration.', 'isPublicFacing' => true]);
-			$result['api']['message'] = $result['message'];
-			return $result;
+			return $this->buildFailureResult('Unable to return title', 'Unable to determine your library\'s BorrowBox configuration.');
 		}
 
 		$url = $loansUrl . '/' . urlencode($loanId);
@@ -677,29 +676,13 @@ class BorrowBoxDriver extends AbstractEContentDriver {
 	 * @return array
 	 */
 	public function renewCheckout(User $patron, string $recordId, ?string $itemId = null, ?string $itemIndex = null): array {
-		$result = [
-			'success' => false,
-			'message' => translate(['text' => 'Unknown error renewing BorrowBox title.', 'isPublicFacing' => true]),
-			'api' => [
-				'title' => translate(['text' => 'Unable to renew title', 'isPublicFacing' => true]),
-				'message' => translate(['text' => 'Unknown error renewing BorrowBox title.', 'isPublicFacing' => true]),
-			],
-		];
+		$result = $this->buildFailureResult('Unable to renew title', 'Unknown error renewing BorrowBox title.');
 
-		$loanId = $recordId;
-		if (str_contains($recordId, '_')) {
-			list($loanId, $settingId) = explode('_', $recordId, 2);
-			$availableSettings = $this->getAvailableSettings();
-			if (isset($availableSettings[$settingId])) {
-				$this->setSettings($availableSettings[$settingId]);
-			}
-		}
+		$loanId = $this->resolveLoanIdAndSetting($recordId);
 
 		$loansUrl = $this->getPatronLoansUrl($patron);
 		if ($loansUrl === null) {
-			$result['message'] = translate(['text' => 'Unable to determine your library\'s BorrowBox configuration.', 'isPublicFacing' => true]);
-			$result['api']['message'] = $result['message'];
-			return $result;
+			return $this->buildFailureResult('Unable to renew title', 'Unable to determine your library\'s BorrowBox configuration.');
 		}
 
 		$url = $loansUrl . '/' . urlencode($loanId);
@@ -812,21 +795,12 @@ class BorrowBoxDriver extends AbstractEContentDriver {
 	 * @return array
 	 */
 	public function placeHold(User $patron, $recordId, $pickupBranch = null, $cancelDate = null): array {
-		$result = [
-			'success' => false,
-			'message' => translate(['text' => 'Unknown error placing BorrowBox hold.', 'isPublicFacing' => true]),
-			'api' => [
-				'title' => translate(['text' => 'Unable to place hold', 'isPublicFacing' => true]),
-				'message' => translate(['text' => 'Unknown error placing BorrowBox hold.', 'isPublicFacing' => true]),
-			],
-		];
+		$result = $this->buildFailureResult('Unable to place hold', 'Unknown error placing BorrowBox hold.');
 
 		$this->setSettingsForProduct($recordId);
 		$loansUrl = $this->getPatronLoansUrl($patron);
 		if ($loansUrl === null) {
-			$result['message'] = translate(['text' => 'Unable to determine your library\'s BorrowBox configuration.', 'isPublicFacing' => true]);
-			$result['api']['message'] = $result['message'];
-			return $result;
+			return $this->buildFailureResult('Unable to place hold', 'Unable to determine your library\'s BorrowBox configuration.');
 		}
 
 		$url = $loansUrl . '?intent=RESERVE&productId=' . urlencode($recordId);
@@ -912,32 +886,16 @@ class BorrowBoxDriver extends AbstractEContentDriver {
 	 * @return array
 	 */
 	public function cancelHold(User $patron, string $recordId, ?string $cancelId = null, ?bool $isIll = false): array {
-		$result = [
-			'success' => false,
-			'message' => translate(['text' => 'Unknown error cancelling BorrowBox hold.', 'isPublicFacing' => true]),
-			'api' => [
-				'title' => translate(['text' => 'Unable to cancel hold', 'isPublicFacing' => true]),
-				'message' => translate(['text' => 'Unknown error cancelling BorrowBox hold.', 'isPublicFacing' => true]),
-			],
-		];
+		$result = $this->buildFailureResult('Unable to cancel hold', 'Unknown error cancelling BorrowBox hold.');
 
-		$loanId = $recordId;
-		if (str_contains($recordId, '_')) {
-			list($loanId, $settingId) = explode('_', $recordId, 2);
-			$availableSettings = $this->getAvailableSettings();
-			if (isset($availableSettings[$settingId])) {
-				$this->setSettings($availableSettings[$settingId]);
-			}
-		}
+		$loanId = $this->resolveLoanIdAndSetting($recordId);
 
 		$holds = $this->getHolds($patron);
 		$holdToCancel = $this->getHoldBySourceId($holds, $recordId);
 
 		$loansUrl = $this->getPatronLoansUrl($patron);
 		if ($loansUrl === null) {
-			$result['message'] = translate(['text' => 'Unable to determine your library\'s BorrowBox configuration.', 'isPublicFacing' => true]);
-			$result['api']['message'] = $result['message'];
-			return $result;
+			return $this->buildFailureResult('Unable to cancel hold', 'Unable to determine your library\'s BorrowBox configuration.');
 		}
 
 		$url = $loansUrl . '/' . urlencode($loanId);
