@@ -29,6 +29,7 @@ public class OmekaExtractor {
 	private static final String PRIMARY_MEDIA_KEY = "aspen:primaryMedia";
 	private static final long FULL_UPDATE_INTERVAL_SECONDS = 24 * 60 * 60;
 	private static final long MODIFIED_AFTER_BUFFER_SECONDS = 10 * 60;
+	private static final String[] MEDIA_KEYS_TO_KEEP = {"o:id", "o:media_type", "o:thumbnail_urls", "id", "order", "mime_type", "file_urls"};
 
 	private final String serverName;
 	private final OmekaSetting setting;
@@ -40,6 +41,7 @@ public class OmekaExtractor {
 	private final Long startTimeForLogging;
 	private final CRC32 checksumCalculator = new CRC32();
 	private final HashSet<Long> processedOmekaIds = new HashSet<>();
+	private final HashMap<Long, JSONObject> mediaCache = new HashMap<>();
 
 	private PreparedStatement addTitleStmt;
 	private PreparedStatement updateTitleStmt;
@@ -83,8 +85,13 @@ public class OmekaExtractor {
 			logEntry.saveResults();
 
 			HashMap<Long, OmekaTitle> existingTitles = loadExistingTitles();
+			HashSet<String> scopedSetIds = getScopedSetIds();
+			boolean allItemsAreScoped = scopedSetIds == null;
+			if (doFullReload && allItemsAreScoped) {
+				loadMediaCache();
+			}
 
-			boolean hadErrorsExtracting = extractItems(existingTitles);
+			boolean hadErrorsExtracting = extractItems(scopedSetIds, existingTitles);
 
 			if (!hadErrorsExtracting && doFullReload) {
 				removeTitlesNotSeenInExport(existingTitles);
@@ -145,8 +152,7 @@ public class OmekaExtractor {
 		return modifiedAfterFormatter.format(new Date(extractChangesSince * 1000));
 	}
 
-	private boolean extractItems(HashMap<Long, OmekaTitle> existingTitles) throws SQLException {
-		HashSet<String> scopedSetIds = getScopedSetIds();
+	private boolean extractItems(HashSet<String> scopedSetIds, HashMap<Long, OmekaTitle> existingTitles) {
 		if (scopedSetIds == null) {
 			return extractItemsForSet(null, existingTitles);
 		}
@@ -446,6 +452,10 @@ public class OmekaExtractor {
 	}
 
 	private JSONObject fetchPrimaryMedia(JSONObject item) {
+		JSONObject cachedMedia = mediaCache.get(getMediaCacheKey(item));
+		if (cachedMedia != null) {
+			return cachedMedia;
+		}
 		if (OmekaProcessor.isClassicItem(item)) {
 			return fetchPrimaryFile(item);
 		}
@@ -457,7 +467,7 @@ public class OmekaExtractor {
 			return null;
 		}
 		try {
-			return new JSONObject(response.getMessage());
+			return trimMedia(new JSONObject(response.getMessage()));
 		} catch (JSONException e) {
 			logEntry.incErrors("Could not parse media response from " + getRedactedUrl(url) + " as JSON", e);
 			return null;
@@ -477,11 +487,86 @@ public class OmekaExtractor {
 			if (files.isEmpty()) {
 				return new JSONObject();
 			}
-			return files.getJSONObject(0);
+			return trimMedia(files.getJSONObject(0));
 		} catch (JSONException e) {
 			logEntry.incErrors("Could not parse files response from " + getRedactedUrl(url) + " as JSON", e);
 			return null;
 		}
+	}
+
+	private long getMediaCacheKey(JSONObject item) {
+		if (OmekaProcessor.isClassicItem(item)) {
+			return getItemId(item);
+		}
+		return getPrimaryMediaId(item);
+	}
+
+	private void loadMediaCache() {
+		String path = setting.isClassic() ? "/api/files" : "/api/media";
+		String baseQueryString = "per_page=" + ITEMS_PER_PAGE;
+		if (!setting.isClassic()) {
+			baseQueryString += "&sort_by=id&sort_order=asc";
+		}
+		boolean hadErrors = readAllPages(path, baseQueryString, this::cacheMediaList);
+		if (hadErrors) {
+			logEntry.addNote("Loading media per item because the bulk media load did not complete");
+			return;
+		}
+		logEntry.addNote("Loaded " + mediaCache.size() + " media records in bulk");
+	}
+
+	private void cacheMediaList(JSONArray mediaList) {
+		for (int i = 0; i < mediaList.length(); i++) {
+			JSONObject media = mediaList.optJSONObject(i);
+			if (media == null) {
+				continue;
+			}
+			cacheMedia(media);
+		}
+	}
+
+	private void cacheMedia(JSONObject media) {
+		if (setting.isClassic()) {
+			cacheClassicFile(media);
+			return;
+		}
+		if (!media.has("o:id")) {
+			return;
+		}
+		mediaCache.put(media.getLong("o:id"), trimMedia(media));
+	}
+
+	private void cacheClassicFile(JSONObject file) {
+		JSONObject itemReference = file.optJSONObject("item");
+		boolean fileHasItem = itemReference != null && itemReference.has("id");
+		if (!fileHasItem) {
+			return;
+		}
+		long itemId = itemReference.getLong("id");
+		JSONObject cachedFile = mediaCache.get(itemId);
+		boolean fileComesFirst = cachedFile == null || compareClassicFileOrder(file, cachedFile) < 0;
+		if (fileComesFirst) {
+			mediaCache.put(itemId, trimMedia(file));
+		}
+	}
+
+	private int compareClassicFileOrder(JSONObject file, JSONObject otherFile) {
+		long order = file.optLong("order", Long.MAX_VALUE);
+		long otherOrder = otherFile.optLong("order", Long.MAX_VALUE);
+		if (order != otherOrder) {
+			return Long.compare(order, otherOrder);
+		}
+		return Long.compare(file.optLong("id", Long.MAX_VALUE), otherFile.optLong("id", Long.MAX_VALUE));
+	}
+
+	private JSONObject trimMedia(JSONObject media) {
+		JSONObject trimmedMedia = new JSONObject();
+		for (String key : MEDIA_KEYS_TO_KEEP) {
+			if (media.has(key)) {
+				trimmedMedia.put(key, media.get(key));
+			}
+		}
+		return trimmedMedia;
 	}
 
 	private long getPrimaryMediaId(JSONObject item) {
