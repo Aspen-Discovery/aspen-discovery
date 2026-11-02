@@ -1,9 +1,7 @@
 #!/bin/bash
 
-dnf install -y composer
-mkdir -p /usr/share/httpd/.composer/cache
-chown -R apache:apache /usr/share/httpd/.composer
-runuser -u apache -- composer --version
+/usr/local/aspen-discovery/install/install_composer.sh || exit 1
+runuser -u apache -- /usr/local/bin/composer --version
 cd /usr/local/aspen-discovery || exit
-runuser -u apache -- composer install --no-interaction --prefer-dist --no-dev
-runuser -u apache -- composer check-platform-reqs
+runuser -u apache -- /usr/local/bin/composer install --no-interaction --prefer-dist --no-dev --no-cache
+runuser -u apache -- /usr/local/bin/composer check-platform-reqs

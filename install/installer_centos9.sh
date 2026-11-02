@@ -16,7 +16,7 @@ yum -y install php-pecl-ssh2
 yum -y install php-pgsql
 yum -y install php-imagick
 yum -y install php-ldap
-yum -y install composer
+./install_composer.sh
 service httpd start
 chkconfig httpd on
 # New PHP ini file
