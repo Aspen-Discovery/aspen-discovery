@@ -20,6 +20,7 @@ class EventLocationChangeTests extends TestCase {
 		require_once EVENT_LOCATION_PATH_TO_ROOT . 'code/web/sys/Events/EventInstance.php';
 		require_once EVENT_LOCATION_PATH_TO_ROOT . 'code/web/sys/LibraryLocation/Location.php';
 		require_once EVENT_LOCATION_PATH_TO_ROOT . 'code/web/sys/LibraryLocation/Sublocation.php';
+		require_once EVENT_LOCATION_PATH_TO_ROOT . 'code/web/sys/Account/User.php';
 	}
 
 	protected function setUp(): void {
@@ -47,6 +48,8 @@ class EventLocationChangeTests extends TestCase {
 		$aspen_db->exec("DELETE FROM event_instance WHERE eventId = $eventId");
 		$aspen_db->exec("DELETE FROM event WHERE id = $eventId");
 		$aspen_db->exec("DELETE FROM sublocation WHERE name LIKE 'PHPUnit %'");
+		UserAccount::logout();
+		$aspen_db->exec("DELETE FROM user WHERE source = 'phpunit'");
 
 		parent::tearDown();
 	}
@@ -70,6 +73,25 @@ class EventLocationChangeTests extends TestCase {
 		$instance->sublocationId = $sublocationId;
 		$instance->insert();
 		return $instance;
+	}
+
+	private function loginTestUserAtLocation(int $locationId): void {
+		$user = new User();
+		$user->source = 'phpunit';
+		$user->username = 'phpunit_event_location';
+		$user->firstname = 'Test';
+		$user->lastname = 'EventLocation';
+		$user->displayName = 'Test EventLocation';
+		$user->created = date('Y-m-d H:i:s');
+		$user->homeLocationId = $locationId;
+		$user->myLocation1Id = 0;
+		$user->myLocation2Id = 0;
+		$user->unique_ils_id = 'phpunit_event_location';
+		$user->ils_barcode = 'PHPUNIT_EL_1';
+		$user->email = 'eventlocation@example.test';
+		$user->insert();
+
+		UserAccount::loginWithAspen($user);
 	}
 
 	private function getStoredEventSublocationId(): ?int {
@@ -109,5 +131,37 @@ class EventLocationChangeTests extends TestCase {
 		$this->event->update();
 
 		$this->assertEquals($this->originalSublocation->id, $this->getStoredEventSublocationId());
+	}
+
+	public function testValidateLocationRejectsALocationTheUserCannotAdminister(): void {
+		$this->loginTestUserAtLocation(self::ORIGINAL_LOCATION_ID);
+		$this->event->setProperty('locationId', self::NEW_LOCATION_ID, null);
+
+		$validationResults = $this->event->validateLocation();
+
+		$this->assertFalse($validationResults['validatedOk']);
+		$this->assertEquals('You do not have permission to administer events at the selected location.', $validationResults['errors'][0]);
+	}
+
+	public function testValidateLocationRejectsAnEventTypeTheLocationDoesNotOffer(): void {
+		$this->loginTestUserAtLocation(self::ORIGINAL_LOCATION_ID);
+		$this->event->setProperty('locationId', self::NEW_LOCATION_ID, null);
+		$this->event->update();
+		$this->event->setProperty('locationId', self::ORIGINAL_LOCATION_ID, null);
+
+		$validationResults = $this->event->validateLocation();
+
+		$this->assertFalse($validationResults['validatedOk']);
+		$this->assertEquals('The selected location does not offer this event type.', $validationResults['errors'][0]);
+	}
+
+	public function testValidateLocationAcceptsAnEditThatKeepsALocationNoLongerOfferingTheEventType(): void {
+		$this->loginTestUserAtLocation(self::ORIGINAL_LOCATION_ID);
+		$this->event->setProperty('title', 'PHPUnit Location Change Event Renamed', null);
+
+		$validationResults = $this->event->validateLocation();
+
+		$this->assertTrue($validationResults['validatedOk']);
+		$this->assertEmpty($validationResults['errors']);
 	}
 }
