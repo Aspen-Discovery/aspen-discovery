@@ -1293,6 +1293,11 @@ abstract class SearchObject_BaseSearcher {
 			}
 		}
 
+		$shouldIncludePageSize = $this->pageSizeRequested && $includePaginationAndSortParameters;
+		if ($shouldIncludePageSize) {
+			$params[] = "pageSize=" . urlencode($this->limit);
+		}
+
 		// View
 		if ($this->view != null && $includePaginationAndSortParameters) {
 			$params[] = "view=" . urlencode($this->view);
@@ -2737,15 +2742,18 @@ abstract class SearchObject_BaseSearcher {
 		// Stash our old data for a minute
 		$oldView = $this->view;
 		$oldPage = $this->page;
+		$oldPageSizeRequested = $this->pageSizeRequested;
 		// Add the new view
 		$this->view = 'rss';
 		// Remove page number
 		$this->page = 1;
+		$this->pageSizeRequested = false;
 		// Get the new url
 		$url = $this->renderSearchUrl();
 		// Restore the old data
 		$this->view = $oldView;
 		$this->page = $oldPage;
+		$this->pageSizeRequested = $oldPageSizeRequested;
 		// Return the URL
 		return $url;
 	}
