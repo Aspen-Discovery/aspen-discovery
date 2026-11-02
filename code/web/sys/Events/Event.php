@@ -815,46 +815,60 @@ class Event extends DataObject {
 			return;
 		}
 
-		if ($isNewEvent || in_array('dates', $this->_changedFields)) {
-			$this->clearFutureInstances();
+		if ($isNewEvent) {
 			foreach ($this->_dates as $date) {
-				if (!$isNewEvent && strtotime("$date {$this->startTime}") <= time()) {
-					continue;
-				}
-				$instance = new EventInstance();
-				$instance->eventId = $this->id;
-				$instance->date = $date;
-				$instance->time = $this->startTime;
-				$instance->length = $this->eventLength;
-				$instance->update();
+				$this->createInstance($date);
 			}
 			return;
 		}
 
+		if (in_array('dates', $this->_changedFields)) {
+			$this->updateUpcomingInstances();
+			return;
+		}
+
 		if (array_intersect(['startTime', 'eventLength'], $this->_changedFields)) {
-			// If only the time or length has changed, we can just update existing events
-			foreach ($this->_dates as $date) {
-				$instance = new EventInstance();
-				$instance->eventId = $this->id;
-				$instance->date = $date;
-				if ($instance->find(true)) {
-					$instance->time = $this->startTime;
-					$instance->length = $this->eventLength;
-					$instance->update();
-				}
+			// Only update upcoming instances, keep past as history
+			foreach ($this->getUpcomingInstances() as $instance) {
+				$instance->time = $this->startTime;
+				$instance->length = $this->eventLength;
+				$instance->update();
 			}
 		}
 	}
 
-	private function clearFutureInstances() : void {
+	private function createInstance(string $date) : void {
 		$instance = new EventInstance();
 		$instance->eventId = $this->id;
-		$todayDate = date('Y-m-d');
-		$todayTime = date('H:i:s');
-		$instance->whereAdd("date > '$todayDate' OR (date = '$todayDate' and time > '$todayTime')");
-		$instance->find();
-		while ($instance->fetch()) {
-			$instance->delete();
+		$instance->date = $date;
+		$instance->time = $this->startTime;
+		$instance->length = $this->eventLength;
+		$instance->insert();
+	}
+
+	/**
+	 * keep dates that are still scheduled, delete unneeded dates, create new dates.
+	 */
+	private function updateUpcomingInstances() : void {
+		$now = time();
+		$upcomingInstances = $this->getUpcomingInstances();
+		$futureDates = array_filter($this->_dates, fn($date) => strtotime("$date {$this->startTime}") > $now);
+		$wantedDates = array_flip($futureDates);
+
+		foreach ($upcomingInstances as $instance) {
+			if (!isset($wantedDates[$instance->date])) {
+				$instance->delete();
+				continue;
+			}
+			// Keep this instance, apply the current time and length
+			$instance->time = $this->startTime;
+			$instance->length = $this->eventLength;
+			$instance->update();
+			unset($wantedDates[$instance->date]);
+		}
+
+		foreach (array_keys($wantedDates) as $date) {
+			$this->createInstance($date);
 		}
 	}
 
