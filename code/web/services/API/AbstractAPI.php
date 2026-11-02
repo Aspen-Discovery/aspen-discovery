@@ -28,11 +28,7 @@ abstract class AbstractAPI extends Action{
 	}
 
 	protected function checkIfLiDA(): bool {
-		$userAgent = $this->getHeader('User-Agent');
-		if (!is_null($userAgent) && str_contains($userAgent, "Aspen LiDA")) {
-			return true;
-		}
-		return false;
+		return APIClientResolver::isLiDARequest();
 	}
 
 	protected function getLiDAVersion() : float {
