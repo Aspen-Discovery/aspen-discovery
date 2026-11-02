@@ -18,6 +18,9 @@ import java.util.GregorianCalendar;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Collection;
 
 public class CloudLibraryExportMain {
 	private static Logger logger;
@@ -183,6 +186,7 @@ public class CloudLibraryExportMain {
 
 	private static int extractCloudLibraryData() {
 		final int[] numChanges = {0};
+		HashMap<Long, String> recordsToReload = loadRecordsToReload();
 		//Process each setting in order.
 		ThreadPoolExecutor es = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
 		try {
@@ -193,6 +197,7 @@ public class CloudLibraryExportMain {
 				CloudLibrarySettings settings = new CloudLibrarySettings(getSettingsRS);
 				numSettings++;
 				CloudLibraryExporter exporter = new CloudLibraryExporter(serverName, configIni, settings, logger, aspenConn);
+				exporter.setRecordsToReload(new HashSet<>(recordsToReload.values()));
 				es.execute(() -> {
 					try {
 						numChanges[0] += exporter.extractRecords();
@@ -219,8 +224,38 @@ public class CloudLibraryExportMain {
 				logger.error("Error waiting for all extracts to finish");
 			}
 		}
-
+		markRecordsToReloadAsProcessed(recordsToReload.keySet());
 		return numChanges[0];
+	}
+
+	private static HashMap<Long, String> loadRecordsToReload() {
+		HashMap<Long, String> recordsToReload = new HashMap<>();
+		try (
+			PreparedStatement getRecordsToReloadStmt = aspenConn.prepareStatement("SELECT id, identifier FROM record_identifiers_to_reload WHERE processed = 0 AND type = 'cloud_library'");
+			ResultSet getRecordsToReloadRS = getRecordsToReloadStmt.executeQuery()
+		) {
+			while (getRecordsToReloadRS.next()) {
+				recordsToReload.put(getRecordsToReloadRS.getLong("id"), getRecordsToReloadRS.getString("identifier"));
+			}
+		} catch (SQLException e) {
+			logger.error("Error loading cloudLibrary records to reload", e);
+		}
+		return recordsToReload;
+	}
+
+	private static void markRecordsToReloadAsProcessed(Collection<Long> recordToReloadIds) {
+		if (recordToReloadIds.isEmpty()) {
+			return;
+		}
+		try (PreparedStatement markRecordToReloadAsProcessedStmt = aspenConn.prepareStatement("UPDATE record_identifiers_to_reload SET processed = 1 WHERE id = ?")) {
+			for (Long recordToReloadId : recordToReloadIds) {
+				markRecordToReloadAsProcessedStmt.setLong(1, recordToReloadId);
+				markRecordToReloadAsProcessedStmt.addBatch();
+			}
+			markRecordToReloadAsProcessedStmt.executeBatch();
+		} catch (SQLException e) {
+			logger.error("Error marking cloudLibrary records to reload as processed", e);
+		}
 	}
 
 	private static void disconnectDatabase(Connection aspenConn) {
