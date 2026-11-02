@@ -2990,15 +2990,19 @@ class Koha extends AbstractIlsDriver {
 			} else {
 				$error = $renewResponse->error;
 				$success = false;
-				$message = 'The item could not be renewed: ';
-				$message = $this->getRenewErrorMessage($error, $message, null);
+				$renewErrorMessage = $this->getRenewErrorMessage($error, null);
+				$message = translate([
+					'text' => 'The item could not be renewed: %1%',
+					1 => $renewErrorMessage,
+					'isPublicFacing' => true,
+				]);
 
 				// Result for API or app use
 				$result['api']['title'] = translate([
 					'text' => 'Unable to renew title',
 					'isPublicFacing' => true,
 				]);
-				$result['api']['message'] = $this->getRenewErrorMessage($error, "", null);
+				$result['api']['message'] = $renewErrorMessage;
 			}
 
 			$result['itemId'] = $itemId;
@@ -8080,11 +8084,10 @@ class Koha extends AbstractIlsDriver {
 
 	/**
 	 * @param ?SimpleXMLElement $error
-	 * @param string $message
 	 * @param string $errorAlt
 	 * @return string
 	 */
-	protected function getRenewErrorMessage(?SimpleXMLElement $error, string $message, ?string $errorAlt): string {
+	protected function getRenewErrorMessage(?SimpleXMLElement $error, ?string $errorAlt): string {
 		$code = (string)($errorAlt ?: $error);
 		$codeIsMissing = empty($code);
 		if ($codeIsMissing) {
@@ -8095,77 +8098,77 @@ class Koha extends AbstractIlsDriver {
 		}
 		switch ($code) {
 			case 'too_many':
-				return $message . translate([
+				return translate([
 					'text' => 'Renewed the maximum number of times',
 					'isPublicFacing' => true,
 				]);
 			case 'no_item':
-				return $message . translate([
+				return translate([
 					'text' => 'No matching item could be found',
 					'isPublicFacing' => true,
 				]);
 			case 'too_soon':
-				return $message . translate([
+				return translate([
 					'text' => 'Cannot be renewed yet',
 					'isPublicFacing' => true,
 				]);
 			case 'no_checkout':
-				return $message . translate([
+				return translate([
 					'text' => 'Item is not checked out',
 					'isPublicFacing' => true,
 				]);
 			case 'auto_too_soon':
-				return $message . translate([
+				return translate([
 					'text' => 'Scheduled for automatic renewal and cannot be renewed yet',
 					'isPublicFacing' => true,
 				]);
 			case 'auto_too_late':
-				return $message . translate([
+				return translate([
 					'text' => 'Scheduled for automatic renewal and cannot be renewed any more',
 					'isPublicFacing' => true,
 				]);
 			case 'auto_account_expired':
-				return $message . translate([
+				return translate([
 					'text' => 'Scheduled for automatic renewal and cannot be renewed because the patron\'s account has expired',
 					'isPublicFacing' => true,
 				]);
 			case 'auto_renew':
-				return $message . translate([
+				return translate([
 					'text' => 'Scheduled for automatic renewal',
 					'isPublicFacing' => true,
 				]);
 			case 'auto_too_much_oweing':
-				return $message . translate([
+				return translate([
 					'text' => 'Scheduled for automatic renewal and cannot be renewed because the patron has too many outstanding charges',
 					'isPublicFacing' => true,
 				]);
 			case 'on_reserve':
-				return $message . translate([
+				return translate([
 					'text' => 'On hold for another patron',
 					'isPublicFacing' => true,
 				]);
 			case 'patron_restricted':
-				return $message . translate([
+				return translate([
 					'text' => 'Patron is currently restricted',
 					'isPublicFacing' => true,
 				]);
 			case 'item_denied_renewal':
-				return $message . translate([
+				return translate([
 					'text' => 'Item is not allowed renewal',
 					'isPublicFacing' => true,
 				]);
 			case 'onsite_checkout':
-				return $message . translate([
+				return translate([
 					'text' => 'Item is an onsite checkout',
 					'isPublicFacing' => true,
 				]);
 			case 'has_fine':
-				return $message . translate([
+				return translate([
 					'text' => 'Item has an outstanding fine',
 					'isPublicFacing' => true,
 				]);
 			case 'overdue':
-				return $message . translate([
+				return translate([
 					'text' => 'Renewal is blocked by an overdue item',
 					'isPublicFacing' => true,
 				]);
@@ -8457,7 +8460,7 @@ class Koha extends AbstractIlsDriver {
 				$result['allows_renewal'] = $response->allows_renewal;
 				$result['message'] = null;
 				if($response->error) {
-					$result['message'] = $this->getRenewErrorMessage(null, '', $response->error);
+					$result['message'] = $this->getRenewErrorMessage(null, $response->error);
 				}
 			}
 		}
