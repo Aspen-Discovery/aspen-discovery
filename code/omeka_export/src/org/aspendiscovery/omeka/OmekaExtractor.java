@@ -7,6 +7,7 @@ import org.apache.logging.log4j.Logger;
 import org.aspen_discovery.grouping.RecordGroupingProcessor;
 import org.aspen_discovery.grouping.RemoveRecordFromWorkResult;
 import org.aspen_discovery.reindexer.GroupedWorkIndexer;
+import org.aspen_discovery.reindexer.OmekaProcessor;
 import org.ini4j.Ini;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -143,9 +144,10 @@ public class OmekaExtractor {
 
 	private boolean extractItems(HashMap<Long, OmekaTitle> existingTitles) {
 		boolean hadErrors = false;
-		String baseQueryString = "per_page=" + ITEMS_PER_PAGE + "&sort_by=id&sort_order=asc";
+		String baseQueryString = "per_page=" + ITEMS_PER_PAGE + "&" + getSortQueryString();
 		if (!doFullReload) {
-			baseQueryString += "&modified_after=" + URLEncoder.encode(getModifiedAfterQueryValue(), StandardCharsets.UTF_8);
+			String modifiedParameterName = setting.isClassic() ? "modified_since" : "modified_after";
+			baseQueryString += "&" + modifiedParameterName + "=" + URLEncoder.encode(getModifiedAfterQueryValue(), StandardCharsets.UTF_8);
 		}
 		int page = 1;
 		while (true) {
@@ -166,7 +168,8 @@ public class OmekaExtractor {
 					processItem(items.getJSONObject(i), existingTitles);
 				}
 				logEntry.saveResults();
-				if (items.length() < ITEMS_PER_PAGE) {
+				boolean serverMayCapPageSize = setting.isClassic();
+				if (!serverMayCapPageSize && items.length() < ITEMS_PER_PAGE) {
 					break;
 				}
 			} catch (JSONException e) {
@@ -181,10 +184,11 @@ public class OmekaExtractor {
 
 	private void processItem(JSONObject item, HashMap<Long, OmekaTitle> existingTitles) {
 		try {
-			long omekaId = item.getLong("o:id");
+			long omekaId = getItemId(item);
 			OmekaTitle existingTitle = existingTitles.get(omekaId);
 
-			boolean isPublic = item.optBoolean("o:is_public", true);
+			String publicFlagKey = OmekaProcessor.isClassicItem(item) ? "public" : "o:is_public";
+			boolean isPublic = item.optBoolean(publicFlagKey, true);
 			if (!isPublic) {
 				if (existingTitle != null && !existingTitle.isDeleted()) {
 					removeTitle(existingTitle.getId());
@@ -202,11 +206,8 @@ public class OmekaExtractor {
 			String thumbnailUrl = null;
 			if (primaryMedia != null) {
 				item.put(PRIMARY_MEDIA_KEY, primaryMedia);
-				mediaType = primaryMedia.optString("o:media_type", null);
-				JSONObject thumbnailUrls = primaryMedia.optJSONObject("o:thumbnail_urls");
-				if (thumbnailUrls != null) {
-					thumbnailUrl = thumbnailUrls.optString("large", null);
-				}
+				mediaType = OmekaProcessor.getPrimaryMediaType(primaryMedia);
+				thumbnailUrl = getThumbnailUrl(primaryMedia);
 			}
 
 			String rawResponse = item.toString();
@@ -282,8 +283,37 @@ public class OmekaExtractor {
 		}
 	}
 
+	private long getItemId(JSONObject item) {
+		if (OmekaProcessor.isClassicItem(item)) {
+			return item.getLong("id");
+		}
+		return item.getLong("o:id");
+	}
+
+	private String getSortQueryString() {
+		if (setting.isClassic()) {
+			return "sort_field=added&sort_dir=a";
+		}
+		return "sort_by=id&sort_order=asc";
+	}
+
+	private String getThumbnailUrl(JSONObject primaryMedia) {
+		JSONObject thumbnailUrls = primaryMedia.optJSONObject("o:thumbnail_urls");
+		if (thumbnailUrls != null) {
+			return thumbnailUrls.optString("large", null);
+		}
+		JSONObject fileUrls = primaryMedia.optJSONObject("file_urls");
+		if (fileUrls == null) {
+			return null;
+		}
+		return fileUrls.optString("fullsize", null);
+	}
+
 	private String getTitleForItem(JSONObject item) {
-		String title = item.optString("o:title", null);
+		String title = OmekaProcessor.getFirstLiteralValue(item, "dcterms:title");
+		if (title == null) {
+			title = item.optString("o:title", null);
+		}
 		boolean titleIsMissing = title == null || title.isEmpty() || title.equals("null");
 		if (titleIsMissing) {
 			title = "Untitled";
@@ -295,6 +325,13 @@ public class OmekaExtractor {
 	}
 
 	private String getItemSetIdsForItem(JSONObject item) {
+		if (OmekaProcessor.isClassicItem(item)) {
+			JSONObject collection = item.optJSONObject("collection");
+			if (collection == null || !collection.has("id")) {
+				return "";
+			}
+			return Long.toString(collection.getLong("id"));
+		}
 		JSONArray itemSets = item.optJSONArray("o:item_set");
 		if (itemSets == null || itemSets.isEmpty()) {
 			return "";
@@ -314,6 +351,9 @@ public class OmekaExtractor {
 	}
 
 	private JSONObject fetchPrimaryMedia(JSONObject item) {
+		if (OmekaProcessor.isClassicItem(item)) {
+			return fetchPrimaryFile(item);
+		}
 		long mediaId = getPrimaryMediaId(item);
 		if (mediaId == -1) {
 			return null;
@@ -328,6 +368,30 @@ public class OmekaExtractor {
 			return new JSONObject(response.getMessage());
 		} catch (JSONException e) {
 			logEntry.incErrors("Could not parse media response from " + url + " as JSON", e);
+			return null;
+		}
+	}
+
+	private JSONObject fetchPrimaryFile(JSONObject item) {
+		JSONObject filesInfo = item.optJSONObject("files");
+		if (filesInfo == null || filesInfo.optInt("count", 0) == 0) {
+			return null;
+		}
+		long itemId = getItemId(item);
+		String url = buildApiUrl("/api/files", "item=" + itemId + "&per_page=1");
+		WebServiceResponse response = callOmekaWithRetries(url);
+		if (response == null) {
+			logEntry.incErrors("Could not load files for item " + itemId + " from " + url);
+			return null;
+		}
+		try {
+			JSONArray files = new JSONArray(response.getMessage());
+			if (files.isEmpty()) {
+				return null;
+			}
+			return files.getJSONObject(0);
+		} catch (JSONException e) {
+			logEntry.incErrors("Could not parse files response from " + url + " as JSON", e);
 			return null;
 		}
 	}
@@ -356,10 +420,17 @@ public class OmekaExtractor {
 			separator = "&";
 		}
 		if (setting.hasApiKey()) {
-			url.append(separator).append("key_identity=").append(URLEncoder.encode(setting.getApiKeyIdentity(), StandardCharsets.UTF_8));
-			url.append("&key_credential=").append(URLEncoder.encode(setting.getApiKeyCredential(), StandardCharsets.UTF_8));
+			url.append(separator).append(getAuthQueryString());
 		}
 		return url.toString();
+	}
+
+	private String getAuthQueryString() {
+		String encodedCredential = URLEncoder.encode(setting.getApiKeyCredential(), StandardCharsets.UTF_8);
+		if (setting.isClassic()) {
+			return "key=" + encodedCredential;
+		}
+		return "key_identity=" + URLEncoder.encode(setting.getApiKeyIdentity(), StandardCharsets.UTF_8) + "&key_credential=" + encodedCredential;
 	}
 
 	private WebServiceResponse callOmekaWithRetries(String url) {
