@@ -601,4 +601,12 @@ class WebResource extends DB_LibraryLinkedObject {
 
 		return $url;
 	}
+
+	public function getListUrlForLibrary(int $libraryId): string {
+		$viewerMayOpenResource = $this->canView();
+		if (!$viewerMayOpenResource) {
+			return '/WebBuilder/WebResource?id=' . $this->id;
+		}
+		return $this->getUrlForLibrary($libraryId);
+	}
 }

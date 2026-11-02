@@ -140,4 +140,12 @@ class WebResourceRecordDriver extends IndexRecordDriver {
 
 		return $this->fields['source_url'];
 	}
+
+	public function getResourceUrlForLibrary(int $libraryId): string {
+		$webResource = $this->getWebResource();
+		if (!$webResource) {
+			return $this->getLinkUrl();
+		}
+		return $webResource->getListUrlForLibrary($libraryId);
+	}
 }
