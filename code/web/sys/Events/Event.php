@@ -319,6 +319,7 @@ class Event extends DataObject {
 				'type' => 'enum',
 				'label' => 'Repeat Options',
 				'description' => 'How this event repeats',
+				'note' => 'Changes to the schedule, start time, or length only apply to upcoming dates. Past dates are not changed.',
 				'values' => [
 					'1' => 'Does not repeat',
 					'2' => 'Daily',
