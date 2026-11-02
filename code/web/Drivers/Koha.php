@@ -8095,7 +8095,10 @@ class Koha extends AbstractIlsDriver {
 		}
 		switch ($code) {
 			case 'too_many':
-				return $message . 'Renewed the maximum number of times';
+				return $message . translate([
+					'text' => 'Renewed the maximum number of times',
+					'isPublicFacing' => true,
+				]);
 			case 'no_item':
 				return $message . 'No matching item could be found';
 			case 'too_soon':
