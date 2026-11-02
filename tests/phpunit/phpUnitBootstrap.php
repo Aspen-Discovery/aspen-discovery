@@ -1,5 +1,5 @@
 <?php
-$_SERVER['aspen_server'] = 'unit_tests.localhost';
+$_SERVER['aspen_server'] = getenv('SITE_NAME') ?: 'unit_tests.localhost';
 
 require_once __DIR__ . '/../../code/web/bootstrap.php';
 //Load a clean database at the start of unit testing?
