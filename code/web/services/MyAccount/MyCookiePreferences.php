@@ -30,6 +30,7 @@ class MyAccount_MyCookiePreferences extends MyAccount_MyPrivacySettings {
 		require_once ROOT_DIR . '/sys/Summon/UserSummonUsage.php';
 		require_once ROOT_DIR . '/sys/Gale/UserGaleUsage.php';
 		require_once ROOT_DIR . '/sys/Axis360/UserAxis360Usage.php';
+		require_once ROOT_DIR . '/sys/BorrowBox/UserBorrowBoxUsage.php';
 		require_once ROOT_DIR . '/sys/CloudLibrary/UserCloudLibraryUsage.php';
 		require_once ROOT_DIR . '/sys/Ebsco/UserEbscoEdsUsage.php';
 		require_once ROOT_DIR . '/sys/Ebsco/UserEbscohostUsage.php';
@@ -75,6 +76,10 @@ class MyAccount_MyCookiePreferences extends MyAccount_MyPrivacySettings {
 			$userOverDriveUsage = new UserOverDriveUsage();
 			$userOverDriveUsage->userId = $userId;
 			$userOverDriveUsage->delete(true);
+
+			$userBorrowBoxUsage = new UserBorrowBoxUsage();
+			$userBorrowBoxUsage->userId = $userId;
+			$userBorrowBoxUsage->delete(true);
 
 			$userPalaceProjectUsage = new UserPalaceProjectUsage();
 			$userPalaceProjectUsage->userId = $userId;
