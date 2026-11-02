@@ -212,6 +212,36 @@ class BorrowBoxRecordDriver extends GroupedWorkSubDriver {
 		return $items;
 	}
 
+	public function getSeries(): array {
+		$seriesData = $this->getGroupedWorkDriver()->getSeries();
+		if ($seriesData == null) {
+			$metaData = $this->getBorrowBoxMetaData();
+			if ($metaData !== null) {
+				$rawData = json_decode($metaData->rawData ?? '{}');
+				$seriesName = isset($rawData->series) ? $rawData->series : null;
+				if ($seriesName != null) {
+					$seriesData = [
+						'seriesTitle' => $seriesName,
+						'fromNovelist' => false,
+						'fromSeriesIndex' => false,
+					];
+				}
+			}
+		}
+		return $seriesData ?? [];
+	}
+
+	/**
+	 * The Table of Contents extracted from the record.
+	 * Returns null if no Table of Contents is available.
+	 *
+	 * @access  public
+	 * @return  null|array              Array of elements in the table of contents
+	 */
+	public function getTableOfContents(): ?array {
+		return null;
+	}
+
 	/**
 	 * Return the unique identifier of this record within the Solr index;
 	 * useful for retrieving additional information (like tags and user
@@ -222,6 +252,267 @@ class BorrowBoxRecordDriver extends GroupedWorkSubDriver {
 	 */
 	public function getUniqueID(): string {
 		return $this->id;
+	}
+
+	/**
+	 * @return string[]
+	 */
+	function getLanguage(): array {
+		$metaData = $this->getBorrowBoxMetaData();
+		$languages = [];
+		if ($metaData !== null) {
+			$rawData = json_decode($metaData->rawData ?? '{}');
+			if (isset($rawData->languages)) {
+				foreach ($rawData->languages as $language) {
+					$languages[] = is_object($language) ? $language->name : $language;
+				}
+			}
+		}
+		return $languages;
+	}
+
+	public function getDescriptionFast() {
+		$metaData = $this->getBorrowBoxMetaData();
+		if ($metaData !== null) {
+			return $metaData->fullDescription;
+		}
+		return '';
+	}
+
+	public function getDescription() {
+		$metaData = $this->getBorrowBoxMetaData();
+		if ($metaData !== null) {
+			return $metaData->fullDescription;
+		}
+		return '';
+	}
+
+	/**
+	 * Return the first valid ISBN found in the record (favoring ISBN-10 over
+	 * ISBN-13 when possible).
+	 *
+	 * @return  string
+	 */
+	public function getCleanISBN(): string {
+		require_once ROOT_DIR . '/sys/ISBN.php';
+
+		// Get all the ISBNs and initialize the return value:
+		$isbns = $this->getISBNs();
+		$isbn13 = false;
+
+		// Loop through the ISBNs:
+		foreach ($isbns as $isbn) {
+			// Strip off any unwanted notes:
+			if ($pos = strpos($isbn, ' ')) {
+				$isbn = substr($isbn, 0, $pos);
+			}
+
+			// If we find an ISBN-10, return it immediately; otherwise, if we find
+			// an ISBN-13, save it if it is the first one encountered.
+			$isbnObj = new ISBN($isbn);
+			if ($isbn10 = $isbnObj->get10()) {
+				return $isbn10;
+			}
+			if (!$isbn13) {
+				$isbn13 = $isbnObj->get13();
+			}
+		}
+		return $isbn13;
+	}
+
+	/**
+	 * Get an array of all ISBNs associated with the record (might be empty).
+	 *
+	 * @access  protected
+	 * @return  string[]
+	 */
+	public function getISBNs(): array {
+		if ($this->isbns == null) {
+			$this->isbns = [];
+			if ($this->borrowBoxProduct !== null) {
+				$metaData = $this->getBorrowBoxMetaData();
+				if ($metaData !== null) {
+					$rawData = json_decode($metaData->rawData ?? '{}');
+					if (isset($rawData->isbn)) {
+						$this->isbns[] = $rawData->isbn;
+					}
+				}
+			}
+		}
+		return $this->isbns;
+	}
+
+	public function getOCLCNumber(): string {
+		return '';
+	}
+
+	/**
+	 * Get an array of all UPCs associated with the record (might be empty).
+	 *
+	 * @access  protected
+	 * @return  string[]
+	 */
+	public function getUPCs(): array {
+		return [];
+	}
+
+	/**
+	 * Get the full title of the record.
+	 *
+	 * @return  string
+	 */
+	public function getTitle(): string {
+		if ($this->borrowBoxProduct !== null) {
+			return $this->borrowBoxProduct->title ?? '';
+		}
+		return '';
+	}
+
+	/**
+	 * Get the full title of the record.
+	 *
+	 * @return  string
+	 */
+	public function getSortableTitle(): string {
+		return $this->getTitle();
+	}
+
+	public function getShortTitle(): string {
+		return $this->getTitle();
+	}
+
+	public function getSubtitle(): string {
+		if ($this->borrowBoxProduct !== null) {
+			return $this->borrowBoxProduct->subtitle ?? '';
+		}
+		return '';
+	}
+
+	/**
+	 * Get an array of all the formats associated with the record.
+	 *
+	 * @access  protected
+	 * @return  string[]
+	 */
+	public function getFormats(): array {
+		$relatedRecord = $this->getRelatedRecord();
+		$formats = [];
+		if ($relatedRecord != null) {
+			$formats[$relatedRecord->getFormat()] = $relatedRecord->getFormat();
+		}
+		return $formats;
+	}
+
+	/**
+	 * Get an array of all the format categories associated with the record.
+	 */
+	public function getFormatCategory(): string|array|null {
+		return [$this->getGroupedWorkDriver()->getFormatCategory()];
+	}
+
+	public function getAuthor(): string {
+		if ($this->borrowBoxProduct !== null) {
+			return $this->borrowBoxProduct->primaryCreatorName ?? '';
+		}
+		return '';
+	}
+
+	public function getPrimaryAuthor(): string {
+		return $this->getAuthor();
+	}
+
+	/**
+	 * @return string[]
+	 */
+	public function getContributors(): array {
+		$contributors = [];
+		$metaData = $this->getBorrowBoxMetaData();
+		if ($metaData !== null) {
+			$rawData = json_decode($metaData->rawData ?? '{}');
+			if (isset($rawData->creators)) {
+				foreach ($rawData->creators as $creator) {
+					$contributors[$creator->fileAs ?? $creator->name ?? ''] = $creator->fileAs ?? $creator->name ?? '';
+				}
+			}
+		}
+		return $contributors;
+	}
+
+	private function getBorrowBoxMetaData(): ?object {
+		$metaDataNeedsLoading = $this->borrowBoxMetaData == null && $this->borrowBoxProduct !== null;
+		if ($metaDataNeedsLoading) {
+			require_once ROOT_DIR . '/sys/BorrowBox/BorrowBoxAPIProductMetaData.php';
+			$this->borrowBoxMetaData = new BorrowBoxAPIProductMetaData();
+			$this->borrowBoxMetaData->productId = $this->borrowBoxProduct->id;
+			if (!$this->borrowBoxMetaData->find(true)) {
+				$this->borrowBoxMetaData = null;
+			}
+		}
+		return $this->borrowBoxMetaData;
+	}
+
+	/**
+	 * @return string[]
+	 */
+	function getPublishers(): array {
+		$publishers = [];
+		$metaData = $this->getBorrowBoxMetaData();
+		if ($metaData !== null && isset($metaData->publisher)) {
+			$publishers[] = $metaData->publisher;
+		}
+		return $publishers;
+	}
+
+	/**
+	 * @return string[]
+	 */
+	function getPublicationDates(): array {
+		$publicationDates = [];
+		$metaData = $this->getBorrowBoxMetaData();
+		if ($metaData !== null) {
+			$rawData = json_decode($metaData->rawData ?? '{}');
+			if (isset($rawData->publishDate)) {
+				$publishYear = substr($rawData->publishDate, 0, 4);
+				$publicationDates[] = $publishYear;
+			}
+		}
+		return $publicationDates;
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getSubjects(): array {
+		$metaData = $this->getBorrowBoxMetaData();
+		if ($metaData === null) {
+			return [];
+		}
+		$rawData = json_decode($metaData->rawData ?? '{}');
+		$hasGenres = !empty($rawData->genres) && is_array($rawData->genres);
+		if (!$hasGenres) {
+			return [];
+		}
+		$subjects = [];
+		foreach ($rawData->genres as $genre) {
+			if (!empty($genre->name)) {
+				$subjects[] = $genre->name;
+			}
+		}
+		return array_values(array_unique($subjects));
+	}
+
+	/**
+	 * @return string[]
+	 */
+	function getPlacesOfPublication(): array {
+		return [];
+	}
+
+	/**
+	 * @return string[]
+	 */
+	public function getEditions(): array {
+		return [];
 	}
 
 	public function getGroupedWorkDriver(): ?GroupedWorkDriver {
@@ -291,5 +582,25 @@ class BorrowBoxRecordDriver extends GroupedWorkSubDriver {
 	function getNumHolds(): int {
 		// BorrowBox API does not expose hold queue counts
 		return 0;
+	}
+
+	function getRelatedRecord(): ?Grouping_Record {
+		$id = strtolower('borrowbox:' . $this->id);
+		$groupedWorkDriver = $this->getGroupedWorkDriver();
+		if ($groupedWorkDriver == null) {
+			return null;
+		} else {
+			return $groupedWorkDriver->getRelatedRecord($id);
+		}
+	}
+
+	/**
+	 * Get an array of all ISSNs associated with the record (might be empty).
+	 *
+	 * @access  public
+	 * @return  array
+	 */
+	public function getISSNs(): array {
+		return [];
 	}
 }
