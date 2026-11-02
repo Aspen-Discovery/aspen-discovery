@@ -1,6 +1,8 @@
 <?php
 
 class APIClientResolver {
+	private const LIDA_USER_AGENT_MARKER = 'Aspen LiDA';
+
 	public static function getRequestHeaders(): array {
 		$headersAvailable = function_exists('getallheaders');
 		if (!$headersAvailable) {
@@ -17,5 +19,17 @@ class APIClientResolver {
 			}
 		}
 		return null;
+	}
+
+	public static function isLiDAUserAgent(?string $userAgent): bool {
+		$userAgentMissing = is_null($userAgent);
+		if ($userAgentMissing) {
+			return false;
+		}
+		return str_contains($userAgent, self::LIDA_USER_AGENT_MARKER);
+	}
+
+	public static function isLiDARequest(): bool {
+		return self::isLiDAUserAgent(self::getRequestHeader('User-Agent'));
 	}
 }
