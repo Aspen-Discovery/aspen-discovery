@@ -34,7 +34,15 @@ public class OmekaProcessor {
 		long id;
 		String name;
 		String baseUrl;
+		boolean isClassic;
 		String siteSlug;
+
+		String getPublicUrl(long omekaId) {
+			if (isClassic) {
+				return baseUrl + "/items/show/" + omekaId;
+			}
+			return baseUrl + "/s/" + siteSlug + "/item/" + omekaId;
+		}
 	}
 
 	OmekaProcessor(GroupedWorkIndexer indexer, Connection dbConn, Logger logger) {
@@ -43,13 +51,14 @@ public class OmekaProcessor {
 
 		try {
 			getProductInfoStmt = dbConn.prepareStatement("SELECT id, settingId, omekaId, title, mediaType, thumbnailUrl, itemSetIds, dateFirstDetected, deleted, UNCOMPRESS(rawResponse) as rawResponse from omeka_title where id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			PreparedStatement getSettingsStmt = dbConn.prepareStatement("SELECT id, name, baseUrl, siteSlug from omeka_settings", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement getSettingsStmt = dbConn.prepareStatement("SELECT id, name, baseUrl, apiVersion, siteSlug from omeka_settings", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			ResultSet settingsRS = getSettingsStmt.executeQuery();
 			while (settingsRS.next()) {
 				OmekaSettingInfo settingInfo = new OmekaSettingInfo();
 				settingInfo.id = settingsRS.getLong("id");
 				settingInfo.name = settingsRS.getString("name");
 				settingInfo.baseUrl = settingsRS.getString("baseUrl");
+				settingInfo.isClassic = "classic".equals(settingsRS.getString("apiVersion"));
 				settingInfo.siteSlug = settingsRS.getString("siteSlug");
 				if (settingInfo.baseUrl != null && settingInfo.baseUrl.endsWith("/")) {
 					settingInfo.baseUrl = settingInfo.baseUrl.substring(0, settingInfo.baseUrl.length() - 1);
@@ -93,7 +102,25 @@ public class OmekaProcessor {
 		}
 	}
 
+	public static boolean isClassicItem(JSONObject itemDetails) {
+		return !itemDetails.has("o:id");
+	}
+
+	public static String getPrimaryMediaType(JSONObject primaryMedia) {
+		if (primaryMedia == null) {
+			return null;
+		}
+		String mediaType = primaryMedia.optString("o:media_type", null);
+		if (mediaType != null) {
+			return mediaType;
+		}
+		return primaryMedia.optString("mime_type", null);
+	}
+
 	public static String getFirstLiteralValue(JSONObject itemDetails, String property) {
+		if (isClassicItem(itemDetails)) {
+			return getFirstElementText(itemDetails, getClassicElementName(property));
+		}
 		JSONArray values = itemDetails.optJSONArray(property);
 		if (values == null) {
 			return null;
@@ -112,6 +139,9 @@ public class OmekaProcessor {
 	}
 
 	private static HashSet<String> getAllLiteralValues(JSONObject itemDetails, String property) {
+		if (isClassicItem(itemDetails)) {
+			return getAllElementTexts(itemDetails, getClassicElementName(property));
+		}
 		HashSet<String> literalValues = new HashSet<>();
 		JSONArray values = itemDetails.optJSONArray(property);
 		if (values == null) {
@@ -128,6 +158,61 @@ public class OmekaProcessor {
 			}
 		}
 		return literalValues;
+	}
+
+	private static String getClassicElementName(String property) {
+		String localName = property.substring(property.indexOf(':') + 1);
+		return Character.toUpperCase(localName.charAt(0)) + localName.substring(1);
+	}
+
+	private static String getFirstElementText(JSONObject itemDetails, String elementName) {
+		JSONArray elementTexts = itemDetails.optJSONArray("element_texts");
+		if (elementTexts == null) {
+			return null;
+		}
+		for (int i = 0; i < elementTexts.length(); i++) {
+			String text = getMatchingElementText(elementTexts.optJSONObject(i), elementName);
+			if (text != null) {
+				return text;
+			}
+		}
+		return null;
+	}
+
+	private static HashSet<String> getAllElementTexts(JSONObject itemDetails, String elementName) {
+		HashSet<String> texts = new HashSet<>();
+		JSONArray elementTexts = itemDetails.optJSONArray("element_texts");
+		if (elementTexts == null) {
+			return texts;
+		}
+		for (int i = 0; i < elementTexts.length(); i++) {
+			String text = getMatchingElementText(elementTexts.optJSONObject(i), elementName);
+			if (text != null) {
+				texts.add(text);
+			}
+		}
+		return texts;
+	}
+
+	private static String getMatchingElementText(JSONObject elementText, String elementName) {
+		if (elementText == null) {
+			return null;
+		}
+		JSONObject elementSet = elementText.optJSONObject("element_set");
+		boolean isDublinCore = elementSet != null && "Dublin Core".equals(elementSet.optString("name"));
+		if (!isDublinCore) {
+			return null;
+		}
+		JSONObject element = elementText.optJSONObject("element");
+		boolean matchesElement = element != null && elementName.equalsIgnoreCase(element.optString("name"));
+		if (!matchesElement) {
+			return null;
+		}
+		String text = elementText.optString("text", null);
+		if (text == null || text.isEmpty()) {
+			return null;
+		}
+		return text;
 	}
 
 	public static String formatAuthorName(String author) {
@@ -293,7 +378,7 @@ public class OmekaProcessor {
 			groupedWork.addTargetAudienceFull("Unknown", omekaRecord);
 
 			long omekaId = productRS.getLong("omekaId");
-			String publicUrl = settingInfo.baseUrl + "/s/" + settingInfo.siteSlug + "/item/" + omekaId;
+			String publicUrl = settingInfo.getPublicUrl(omekaId);
 
 			ItemInfo itemInfo = new ItemInfo();
 			itemInfo.setItemIdentifier(identifier + "_" + settingId);
