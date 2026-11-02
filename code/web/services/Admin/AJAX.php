@@ -150,6 +150,9 @@ class Admin_AJAX extends JSON_Action {
 		} elseif ($source == 'axis360') {
 			require_once ROOT_DIR . '/sys/Axis360/Axis360LogEntry.php';
 			$extractLog = new Axis360LogEntry();
+		} elseif ($source == 'borrowbox') {
+			require_once ROOT_DIR . '/sys/BorrowBox/BorrowBoxExtractLogEntry.php';
+			$extractLog = new BorrowBoxExtractLogEntry();
 		} elseif ($source == 'sideload') {
 			require_once ROOT_DIR . '/sys/Indexing/SideLoadLogEntry.php';
 			$extractLog = new SideLoadLogEntry();
