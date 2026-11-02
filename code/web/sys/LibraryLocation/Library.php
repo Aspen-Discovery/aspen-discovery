@@ -5358,6 +5358,13 @@ class Library extends DataObject {
 		return 0;
 	}
 
+	public function showFinesInMyAccount(): bool {
+		global $configArray;
+		$finesEnabledGlobally = !empty($configArray['Catalog']['showFines']);
+		$finesEnabledForLibrary = !empty($this->showFines);
+		return $finesEnabledGlobally && $finesEnabledForLibrary;
+	}
+
 	static function getSearchLibrary($searchSource = null) {
 		if ($searchSource == null) {
 			global $searchSource;
