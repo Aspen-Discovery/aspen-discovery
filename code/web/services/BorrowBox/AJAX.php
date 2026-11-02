@@ -5,51 +5,42 @@ require_once ROOT_DIR . '/JSON_Action.php';
 
 class BorrowBox_AJAX extends JSON_Action {
 
-	function placeHold(): array {
-		$borrowboxId = $_REQUEST['borrowboxId'];
+	private function getValidatedPatron(string $loginMessage, string $permissionMessage): array|User {
 		if (!UserAccount::isLoggedIn()) {
 			return [
 				'result' => false,
-				'message' => 'You must be logged in to place a hold.',
+				'message' => translate(['text' => $loginMessage, 'isPublicFacing' => true]),
 			];
 		}
-		$user = UserAccount::getLoggedInUser();
-		$patronId = $_REQUEST['patronId'];
-		$patron = $user->getUserReferredTo($patronId);
+		$patron = UserAccount::getLoggedInUser()->getUserReferredTo($_REQUEST['patronId']);
 		if (!$patron) {
 			return [
 				'result' => false,
-				'message' => translate([
-					'text' => 'Sorry, it looks like you don\'t have permissions to place holds for that user.',
-					'isPublicFacing' => true,
-				]),
+				'message' => translate(['text' => $permissionMessage, 'isPublicFacing' => true]),
 			];
 		}
+		return $patron;
+	}
+
+	private function getDriver(): BorrowBoxDriver {
 		require_once ROOT_DIR . '/Drivers/BorrowBoxDriver.php';
-		$driver = new BorrowBoxDriver();
-		return $driver->placeHold($patron, $borrowboxId);
+		return new BorrowBoxDriver();
+	}
+
+	function placeHold(): array {
+		$patron = $this->getValidatedPatron('You must be logged in to place a hold.', 'Sorry, it looks like you don\'t have permissions to place holds for that user.');
+		if (is_array($patron)) {
+			return $patron;
+		}
+		return $this->getDriver()->placeHold($patron, $_REQUEST['borrowboxId']);
 	}
 
 	function checkOutTitle(): array {
-		$user = UserAccount::getLoggedInUser();
-		$borrowboxId = $_REQUEST['borrowboxId'];
-		if (!$user) {
-			return [
-				'result' => false,
-				'message' => 'You must be logged in to checkout an item.',
-			];
+		$patron = $this->getValidatedPatron('You must be logged in to checkout an item.', 'Sorry, it looks like you don\'t have permissions to checkout titles for that user.');
+		if (is_array($patron)) {
+			return $patron;
 		}
-		$patronId = $_REQUEST['patronId'];
-		$patron = $user->getUserReferredTo($patronId);
-		if (!$patron) {
-			return [
-				'result' => false,
-				'message' => 'Sorry, it looks like you don\'t have permissions to checkout titles for that user.',
-			];
-		}
-		require_once ROOT_DIR . '/Drivers/BorrowBoxDriver.php';
-		$driver = new BorrowBoxDriver();
-		$result = $driver->checkOutTitle($patron, $borrowboxId);
+		$result = $this->getDriver()->checkOutTitle($patron, $_REQUEST['borrowboxId']);
 		if ($result['success']) {
 			$result['buttons'] = '<a class="btn btn-primary" href="/MyAccount/CheckedOut" role="button">' . translate([
 					'text' => 'View My Check Outs',
@@ -61,69 +52,27 @@ class BorrowBox_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function returnCheckout(): array {
-		$user = UserAccount::getLoggedInUser();
-		$borrowboxId = $_REQUEST['borrowboxId'];
-		if (!$user) {
-			return [
-				'result' => false,
-				'message' => 'You must be logged in to return an item.',
-			];
+		$patron = $this->getValidatedPatron('You must be logged in to return an item.', 'Sorry, it looks like you don\'t have permissions to return titles for that user.');
+		if (is_array($patron)) {
+			return $patron;
 		}
-		$patronId = $_REQUEST['patronId'];
-		$patron = $user->getUserReferredTo($patronId);
-		if (!$patron) {
-			return [
-				'result' => false,
-				'message' => 'Sorry, it looks like you don\'t have permissions to return titles for that user.',
-			];
-		}
-		require_once ROOT_DIR . '/Drivers/BorrowBoxDriver.php';
-		$driver = new BorrowBoxDriver();
-		return $driver->returnCheckout($patron, $borrowboxId);
+		return $this->getDriver()->returnCheckout($patron, $_REQUEST['borrowboxId']);
 	}
 
 	function renewCheckout(): array {
-		$user = UserAccount::getLoggedInUser();
-		$borrowboxId = $_REQUEST['borrowboxId'];
-		if (!$user) {
-			return [
-				'result' => false,
-				'message' => 'You must be logged in to renew titles.',
-			];
+		$patron = $this->getValidatedPatron('You must be logged in to renew titles.', 'Sorry, it looks like you don\'t have permissions to modify checkouts for that user.');
+		if (is_array($patron)) {
+			return $patron;
 		}
-		$patronId = $_REQUEST['patronId'];
-		$patron = $user->getUserReferredTo($patronId);
-		if (!$patron) {
-			return [
-				'result' => false,
-				'message' => 'Sorry, it looks like you don\'t have permissions to modify checkouts for that user.',
-			];
-		}
-		require_once ROOT_DIR . '/Drivers/BorrowBoxDriver.php';
-		$driver = new BorrowBoxDriver();
-		return $driver->renewCheckout($patron, $borrowboxId);
+		return $this->getDriver()->renewCheckout($patron, $_REQUEST['borrowboxId']);
 	}
 
 	function cancelHold(): array {
-		$user = UserAccount::getLoggedInUser();
-		$borrowboxId = $_REQUEST['borrowboxId'];
-		if (!$user) {
-			return [
-				'result' => false,
-				'message' => 'You must be logged in to cancel holds.',
-			];
+		$patron = $this->getValidatedPatron('You must be logged in to cancel holds.', 'Sorry, it looks like you don\'t have permissions to cancel holds for that user.');
+		if (is_array($patron)) {
+			return $patron;
 		}
-		$patronId = $_REQUEST['patronId'];
-		$patron = $user->getUserReferredTo($patronId);
-		if (!$patron) {
-			return [
-				'result' => false,
-				'message' => 'Sorry, it looks like you don\'t have permissions to cancel holds for that user.',
-			];
-		}
-		require_once ROOT_DIR . '/Drivers/BorrowBoxDriver.php';
-		$driver = new BorrowBoxDriver();
-		return $driver->cancelHold($patron, $borrowboxId);
+		return $this->getDriver()->cancelHold($patron, $_REQUEST['borrowboxId']);
 	}
 
 	/** @noinspection PhpUnused */
