@@ -61,4 +61,19 @@ class OmekaRecordDriverTests extends TestCase {
 	public function testGetThreeLetterLanguageCode(string $languageValue, string $expectedCode): void {
 		$this->assertEquals($expectedCode, OmekaRecordDriver::getThreeLetterLanguageCode($languageValue));
 	}
+
+	public static function publicationDetailProvider(): array {
+		return [
+			['Colored Conventions Project', '1968', 'Colored Conventions Project, 1968'],
+			[null, '1968', '1968'],
+			['Colored Conventions Project', null, 'Colored Conventions Project'],
+			['Smith & Sons', '1968', 'Smith &amp; Sons, 1968'],
+			[null, null, ''],
+		];
+	}
+
+	#[DataProvider('publicationDetailProvider')]
+	public function testFormatPublicationDetail(?string $publisher, ?string $date, string $expected): void {
+		$this->assertEquals($expected, OmekaRecordDriver::formatPublicationDetail($publisher, $date));
+	}
 }

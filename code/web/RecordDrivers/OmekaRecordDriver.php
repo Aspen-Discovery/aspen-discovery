@@ -352,6 +352,22 @@ class OmekaRecordDriver extends GroupedWorkSubDriver {
 		return $publicationDates;
 	}
 
+	public function getPublicationDetails(): array {
+		$publishers = $this->getPublishers();
+		$dates = $this->getPublicationDates();
+		$detailCount = max(count($publishers), count($dates));
+		$publicationDetails = [];
+		for ($i = 0; $i < $detailCount; $i++) {
+			$publicationDetails[] = self::formatPublicationDetail($publishers[$i] ?? null, $dates[$i] ?? null);
+		}
+		return $publicationDetails;
+	}
+
+	public static function formatPublicationDetail(?string $publisher, ?string $date): string {
+		$parts = array_filter([$publisher, $date], fn($part) => !empty($part));
+		return htmlentities(implode(', ', $parts));
+	}
+
 	public function getRecordType(): string {
 		return 'omeka';
 	}
