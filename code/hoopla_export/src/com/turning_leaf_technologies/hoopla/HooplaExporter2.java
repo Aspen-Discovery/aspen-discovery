@@ -135,6 +135,7 @@ public class HooplaExporter2 {
 			}
 		}
 		flushRecordsToReindex();
+		// Failures are logged but not retried, so a failing record does not loop forever
 		try (PreparedStatement markRecordToReloadAsProcessedStmt = aspenConn.prepareStatement("UPDATE record_identifiers_to_reload SET processed = 1 WHERE id = ?")) {
 			for (Map.Entry<Long, String> recordToReload : recordsToReload.entrySet()) {
 				markRecordToReloadAsProcessedStmt.setLong(1, recordToReload.getKey());
