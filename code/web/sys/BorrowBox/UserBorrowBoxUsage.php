@@ -1,0 +1,69 @@
+<?php /** @noinspection PhpMissingFieldTypeInspection */
+
+
+class UserBorrowBoxUsage extends DataObject {
+	public $__table = 'user_borrowbox_usage';
+	public $id;
+	public $instance;
+	public $userId;
+	public $year;
+	public $month;
+	public $day;
+	public $usageCount; //Number of holds/checkouts
+
+	public function getUniquenessFields(): array {
+		return [
+			'instance',
+			'userId',
+			'year',
+			'month',
+			'day',
+		];
+	}
+
+	public function toArray($includeRuntimeProperties = true, $encryptFields = false): array {
+		$return = parent::toArray($includeRuntimeProperties, $encryptFields);
+		unset($return['userId']);
+		return $return;
+	}
+
+	public function okToExport(array $selectedFilters): bool {
+		$okToExport = parent::okToExport($selectedFilters);
+		if (in_array($this->instance, $selectedFilters['instances'])) {
+			$okToExport = true;
+		}
+		if ($okToExport) {
+			$okToExport = false;
+			$user = new User();
+			$user->id = $this->userId;
+			if ($user->find(true)) {
+				if ($user->homeLocationId == 0 || in_array($user->homeLocationId, $selectedFilters['locations'])) {
+					$okToExport = true;
+				}
+			}
+		}
+		return $okToExport;
+	}
+
+	public function getLinksForJSON(): array {
+		$links = parent::getLinksForJSON();
+		$user = new User();
+		$user->id = $this->userId;
+		if ($user->find(true)) {
+			$links['user'] = $user->ils_barcode;
+		}
+		return $links;
+	}
+
+	public function loadEmbeddedLinksFromJSON($jsonData, $mappings, string $overrideExisting = 'keepExisting') : void {
+		parent::loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting);
+		if (isset($jsonData['user'])) {
+			$username = $jsonData['user'];
+			$user = new User();
+			$user->ils_barcode = $username;
+			if ($user->find(true)) {
+				$this->userId = $user->id;
+			}
+		}
+	}
+}
