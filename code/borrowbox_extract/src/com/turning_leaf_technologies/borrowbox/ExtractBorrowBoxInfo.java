@@ -107,24 +107,7 @@ class ExtractBorrowBoxInfo {
 			}
 
 			for (String productToRetry : settings.getProductsToUpdate()) {
-				BorrowBoxRecordInfo recordInfo = allProductsInBorrowBox.get(productToRetry);
-				if (recordInfo != null) {
-					recordInfo.hasChanges = true;
-					continue;
-				}
-				recordInfo = new BorrowBoxRecordInfo();
-				recordInfo.setBorrowboxId(productToRetry);
-				allProductsInBorrowBox.put(productToRetry, recordInfo);
-
-				getProductIdByBorrowBoxIdStmt.setString(1, productToRetry);
-				ResultSet existingRS = getProductIdByBorrowBoxIdStmt.executeQuery();
-				if (existingRS.next()) {
-					recordInfo.setDatabaseId(existingRS.getLong("id"));
-				} else {
-					recordInfo.isNew = true;
-				}
-				existingRS.close();
-				recordInfo.hasChanges = true;
+				getOrCreateRecordInfo(productToRetry).hasChanges = true;
 			}
 
 			int totalToProcess = 0;
@@ -294,104 +277,19 @@ class ExtractBorrowBoxInfo {
 	 * @return the 'to' timestamp from the API response for use as next 'from'
 	 */
 	private long loadAvailabilities(boolean fullUpdate, long extractStartTime) {
-		long toTimestamp = 0;
-		String baseUrl = settings.getApiUrl() + "/v1/availabilities";
-		String position = null;
-		int totalLoaded = 0;
+		return walkCursorFeed("/v1/availabilities", !fullUpdate, "borrowboxExtract.loadAvailabilities", "availability records", true, (JSONObject item) -> {
+			String productId = item.getString("productId");
+			String siteId = item.getString("siteId");
+			String availabilityStatus = item.optString("status", "UNKNOWN");
 
-		try {
-			do {
-				StringBuilder urlBuilder = new StringBuilder(baseUrl);
-				String separator = "?";
+			BorrowBoxRecordInfo recordInfo = getOrCreateRecordInfo(productId);
+			recordInfo.hasChanges = true;
+			recordInfo.addPendingAvailability(siteId, availabilityStatus, item.isNull("nextAvailableDate") ? null : item.getLong("nextAvailableDate"));
 
-				if (!fullUpdate) {
-					urlBuilder.append(separator).append("from=").append(settings.getLastUpdateOfChangedRecords());
-					separator = "&";
-				}
-
-				urlBuilder.append(separator).append("size=1000");
-				separator = "&";
-
-				if (position != null) {
-					urlBuilder.append(separator).append("position=").append(position);
-				}
-
-				WebServiceResponse response = callBorrowBoxURL("borrowboxExtract.loadAvailabilities", urlBuilder.toString());
-				if (response.getResponseCode() != 200 || response.getMessage() == null) {
-					logEntry.incErrors("Error loading availabilities, response code: " + response.getResponseCode());
-					if (response.getMessage() != null) {
-						logEntry.addNote(response.getMessage());
-					}
-					errorsWhileLoadingProducts = true;
-					break;
-				}
-
-				JSONObject responseObj = response.getJSONResponse();
-				if (responseObj == null) {
-					logEntry.incErrors("Null response loading availabilities");
-					errorsWhileLoadingProducts = true;
-					break;
-				}
-
-				if (responseObj.has("to")) {
-					toTimestamp = responseObj.getLong("to");
-				}
-
-				JSONArray items = responseObj.optJSONArray("items");
-				if (items != null) {
-					for (int i = 0; i < items.length(); i++) {
-						JSONObject item = items.getJSONObject(i);
-						String productId = item.getString("productId");
-						String siteId = item.getString("siteId");
-						String availabilityStatus = item.optString("status", "UNKNOWN");
-
-						BorrowBoxRecordInfo recordInfo = allProductsInBorrowBox.get(productId);
-						if (recordInfo == null) {
-							recordInfo = new BorrowBoxRecordInfo();
-							recordInfo.setBorrowboxId(productId);
-							allProductsInBorrowBox.put(productId, recordInfo);
-
-							getProductIdByBorrowBoxIdStmt.setString(1, productId);
-							ResultSet existingRS = getProductIdByBorrowBoxIdStmt.executeQuery();
-							if (existingRS.next()) {
-								recordInfo.setDatabaseId(existingRS.getLong("id"));
-							} else {
-								recordInfo.isNew = true;
-							}
-							existingRS.close();
-						}
-						recordInfo.hasChanges = true;
-
-						recordInfo.addPendingAvailability(siteId, availabilityStatus, item.isNull("nextAvailableDate") ? null : item.getLong("nextAvailableDate"));
-
-						if (fullUpdate) {
-							setLastSeenForProduct(extractStartTime, recordInfo);
-						}
-
-						totalLoaded++;
-					}
-				}
-
-				position = responseObj.isNull("nextPosition") ? null : responseObj.optString("nextPosition", null);
-				if (position != null && position.isEmpty()) {
-					position = null;
-				}
-
-				if (totalLoaded % 1000 == 0) {
-					logEntry.addNote("Loaded " + totalLoaded + " availability records");
-					logEntry.saveResults();
-				}
-			} while (position != null);
-
-			logEntry.addNote("Loaded " + totalLoaded + " total availability records");
-			logEntry.saveResults();
-
-		} catch (Exception e) {
-			logEntry.incErrors("Error loading availabilities from BorrowBox API", e);
-			errorsWhileLoadingProducts = true;
-		}
-
-		return toTimestamp;
+			if (fullUpdate) {
+				setLastSeenForProduct(extractStartTime, recordInfo);
+			}
+		});
 	}
 
 	/**
@@ -402,69 +300,111 @@ class ExtractBorrowBoxInfo {
 		if (settings.getLastUpdateOfChangedRecords() == 0) {
 			return;
 		}
+		walkCursorFeed("/v1/modifications", true, "borrowboxExtract.loadModifications", "modification records", false, (JSONObject item) -> {
+			getOrCreateRecordInfo(item.getString("productId")).hasChanges = true;
+		});
+	}
 
-		String baseUrl = settings.getApiUrl() + "/v1/modifications";
+	private interface BorrowBoxFeedItemHandler {
+		void handleItem(JSONObject item) throws Exception;
+	}
+
+	private long walkCursorFeed(String endpoint, boolean includeFromCursor, String operationName, String itemLabel, boolean flagProductLoadErrors, BorrowBoxFeedItemHandler itemHandler) {
+		long toTimestamp = 0;
 		String position = null;
 		int totalLoaded = 0;
 
 		try {
 			do {
-				StringBuilder urlBuilder = new StringBuilder(baseUrl);
-				urlBuilder.append("?from=").append(settings.getLastUpdateOfChangedRecords());
-				urlBuilder.append("&size=1000");
+				StringBuilder urlBuilder = new StringBuilder(settings.getApiUrl()).append(endpoint);
+				String separator = "?";
+				if (includeFromCursor) {
+					urlBuilder.append(separator).append("from=").append(settings.getLastUpdateOfChangedRecords());
+					separator = "&";
+				}
+				urlBuilder.append(separator).append("size=1000");
 				if (position != null) {
 					urlBuilder.append("&position=").append(position);
 				}
 
-				WebServiceResponse response = callBorrowBoxURL("borrowboxExtract.loadModifications", urlBuilder.toString());
-				if (response.getResponseCode() != 200 || response.getMessage() == null) {
-					logEntry.incErrors("Error loading modifications, response code: " + response.getResponseCode());
+				WebServiceResponse response = callBorrowBoxURL(operationName, urlBuilder.toString());
+				boolean requestFailed = response.getResponseCode() != 200 || response.getMessage() == null;
+				if (requestFailed) {
+					logEntry.incErrors("Error loading " + itemLabel + ", response code: " + response.getResponseCode());
+					if (response.getMessage() != null) {
+						logEntry.addNote(response.getMessage());
+					}
+					if (flagProductLoadErrors) {
+						errorsWhileLoadingProducts = true;
+					}
 					break;
 				}
 
 				JSONObject responseObj = response.getJSONResponse();
 				if (responseObj == null) {
+					logEntry.incErrors("Null response loading " + itemLabel);
+					if (flagProductLoadErrors) {
+						errorsWhileLoadingProducts = true;
+					}
 					break;
+				}
+
+				if (responseObj.has("to")) {
+					toTimestamp = responseObj.getLong("to");
 				}
 
 				JSONArray items = responseObj.optJSONArray("items");
 				if (items != null) {
 					for (int i = 0; i < items.length(); i++) {
-						JSONObject item = items.getJSONObject(i);
-						String productId = item.getString("productId");
-
-						BorrowBoxRecordInfo recordInfo = allProductsInBorrowBox.get(productId);
-						if (recordInfo == null) {
-							recordInfo = new BorrowBoxRecordInfo();
-							recordInfo.setBorrowboxId(productId);
-							allProductsInBorrowBox.put(productId, recordInfo);
-
-							getProductIdByBorrowBoxIdStmt.setString(1, productId);
-							ResultSet existingRS = getProductIdByBorrowBoxIdStmt.executeQuery();
-							if (existingRS.next()) {
-								recordInfo.setDatabaseId(existingRS.getLong("id"));
-							} else {
-								recordInfo.isNew = true;
-							}
-							existingRS.close();
-						}
-						recordInfo.hasChanges = true;
+						itemHandler.handleItem(items.getJSONObject(i));
 						totalLoaded++;
 					}
 				}
 
 				position = responseObj.isNull("nextPosition") ? null : responseObj.optString("nextPosition", null);
-				if (position != null && position.isEmpty()) {
+				boolean positionIsBlank = position != null && position.isEmpty();
+				if (positionIsBlank) {
 					position = null;
+				}
+
+				if (totalLoaded % 1000 == 0) {
+					logEntry.addNote("Loaded " + totalLoaded + " " + itemLabel);
+					logEntry.saveResults();
 				}
 			} while (position != null);
 
-			logEntry.addNote("Loaded " + totalLoaded + " modification records");
+			logEntry.addNote("Loaded " + totalLoaded + " total " + itemLabel);
 			logEntry.saveResults();
 
 		} catch (Exception e) {
-			logEntry.incErrors("Error loading modifications from BorrowBox API", e);
+			logEntry.incErrors("Error loading " + itemLabel + " from BorrowBox API", e);
+			if (flagProductLoadErrors) {
+				errorsWhileLoadingProducts = true;
+			}
 		}
+
+		return toTimestamp;
+	}
+
+	private BorrowBoxRecordInfo getOrCreateRecordInfo(String productId) throws SQLException {
+		BorrowBoxRecordInfo recordInfo = allProductsInBorrowBox.get(productId);
+		if (recordInfo != null) {
+			return recordInfo;
+		}
+
+		recordInfo = new BorrowBoxRecordInfo();
+		recordInfo.setBorrowboxId(productId);
+		allProductsInBorrowBox.put(productId, recordInfo);
+
+		getProductIdByBorrowBoxIdStmt.setString(1, productId);
+		ResultSet existingRS = getProductIdByBorrowBoxIdStmt.executeQuery();
+		if (existingRS.next()) {
+			recordInfo.setDatabaseId(existingRS.getLong("id"));
+		} else {
+			recordInfo.isNew = true;
+		}
+		existingRS.close();
+		return recordInfo;
 	}
 
 	/**
