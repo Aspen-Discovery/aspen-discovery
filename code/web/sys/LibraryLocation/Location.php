@@ -1791,6 +1791,24 @@ class Location extends DataObject {
 		return $sublocations;
 	}
 
+	/**
+	 * Get the names of all the sublocations that can host events, with the name of their location
+	 * @return string[] The "Location - Sublocation" label for each sublocation id, sorted by label
+	 */
+	static function getEventSublocationsWithLocationNames(): array {
+		$locationNames = self::getLocationList(false);
+
+		$sublocations = [];
+		foreach (self::fetchEventSublocations(null) as $sublocation) {
+			$locationName = $locationNames[$sublocation->locationId] ?? '';
+			$hasLocationName = $locationName !== '';
+			$sublocations[$sublocation->id] = $hasLocationName ? $locationName . ' - ' . $sublocation->name : $sublocation->name;
+		}
+		asort($sublocations, SORT_NATURAL | SORT_FLAG_CASE);
+
+		return $sublocations;
+	}
+
 	/** @var string|Location|null */
 	private static $activeLocation = 'unset';
 
