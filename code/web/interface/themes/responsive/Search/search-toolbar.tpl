@@ -87,7 +87,7 @@
 	</div>
 	<div class="row visible-sm visible-xs">
 		<div class="col-sm-12">
-			<button type="button" class="btn btn-default btn-sm" onclick="return AspenDiscovery.Account.showSearchToolbar('{$displayMode}', '{$showCovers}', '{if !empty($rssLink)}{$rssLink|escape}{/if}', '{if !empty($excelLink)}{$excelLink|escape}{/if}', '{if !empty($risLink)}{$risLink|escape}{/if}', '{$searchId}', [{foreach from=$sortList item=sortData key=sortLabel}{ldelim}'desc': '{$sortData.desc}','selected': '{$sortData.selected}', 'sortUrl': '{$sortData.sortUrl|escape}'{rdelim},{/foreach}]);">
+			<button type="button" class="btn btn-default btn-sm" onclick="return AspenDiscovery.Account.showSearchToolbar('{$displayMode}', '{$showCovers}', '{if !empty($rssLink)}{$rssLink|escape}{/if}', '{if !empty($excelLink)}{$excelLink|escape}{/if}', '{if !empty($risLink)}{$risLink|escape}{/if}', '{$searchId}', [{foreach from=$sortList item=sortData key=sortLabel}{ldelim}'desc': '{$sortData.desc}','selected': '{$sortData.selected}', 'sortUrl': '{$sortData.sortUrl|escape}'{rdelim},{/foreach}], {if !empty($requestedPageSize)}{$requestedPageSize|escape}{else}0{/if}, {if !empty($pageSizeList)}1{else}0{/if});">
 				<i class="fas fa-toolbox"></i> {translate text='Search Tools' isPublicFacing=true}
 			</button>
 		</div>

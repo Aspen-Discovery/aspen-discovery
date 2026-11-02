@@ -3981,17 +3981,20 @@ AspenDiscovery.Account = (function () {
 			return false;
 		},
 
-		showSearchToolbar: function (displayMode, showCovers, rssLink, excelLink, risLink, searchId, sortList) {
+		showSearchToolbar: function (displayMode, showCovers, rssLink, excelLink, risLink, searchId, sortList, pageSize, offerPageSize) {
 			var url = Globals.path + "/Search/AJAX";
 			var params = {
 				method: 'showSearchToolbar',
 				displayMode: AspenDiscovery.Searches.displayMode,
+				view: AspenDiscovery.Searches.displayMode,
 				showCovers: showCovers,
 				rssLink: rssLink,
 				excelLink: excelLink,
 				risLink: risLink,
 				searchId: searchId,
-				sortList: sortList
+				sortList: sortList,
+				pageSize: pageSize || 0,
+				offerPageSize: offerPageSize ? 1 : 0
 			};
 			// noinspection JSUnresolvedFunction
 			$.getJSON(url, params, function (data) {

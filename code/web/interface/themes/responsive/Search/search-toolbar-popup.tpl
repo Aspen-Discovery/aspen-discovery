@@ -12,6 +12,13 @@
 				</select>
 			</div>
 		</div>
+		{if !empty($pageSizeList)}
+			<div class="form-group">
+				<div class="col-xs-12">
+					{include file="Search/results-page-size.tpl" idSuffix="-modal" labelClass="control-label" selectClass="form-control"}
+				</div>
+			</div>
+		{/if}
 		<div id="hideSearchCoversSwitchModal" {if $displayMode != 'list'}style="display: none"{/if}>
 			<div class="form-group">
 				<div class="col-xs-12">
