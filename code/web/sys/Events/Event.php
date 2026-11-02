@@ -545,8 +545,39 @@ class Event extends DataObject {
 				'text' => 'You do not have permission to administer events at the selected location.',
 				'isAdminFacing' => true,
 			]);
+			return $validationResults;
+		}
+		$locationChanged = $this->locationDiffersFromStoredEvent();
+		if (!$locationChanged) {
+			return $validationResults;
+		}
+		if (empty($this->eventTypeId)) {
+			return $validationResults;
+		}
+		$eventTypeIdsAtLocation = EventType::getEventTypeIdsForLocation($this->locationId);
+		$eventTypeOfferedAtLocation = in_array($this->eventTypeId, $eventTypeIdsAtLocation);
+		if (!$eventTypeOfferedAtLocation) {
+			$validationResults['validatedOk'] = false;
+			$validationResults['errors'][] = translate([
+				'text' => 'The selected location does not offer this event type.',
+				'isAdminFacing' => true,
+			]);
 		}
 		return $validationResults;
+	}
+
+	private function locationDiffersFromStoredEvent(): bool {
+		$isNewEvent = empty($this->id);
+		if ($isNewEvent) {
+			return true;
+		}
+		$storedEvent = new Event();
+		$storedEvent->id = $this->id;
+		$storedEventFound = $storedEvent->find(true);
+		if (!$storedEventFound) {
+			return true;
+		}
+		return $storedEvent->locationId != $this->locationId;
 	}
 
 	public function update(string $context = '') : int|bool {
