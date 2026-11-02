@@ -8135,7 +8135,10 @@ class Koha extends AbstractIlsDriver {
 					'isPublicFacing' => true,
 				]);
 			case 'auto_too_much_oweing':
-				return $message . 'Scheduled for automatic renewal and cannot be renewed because the patron has too many outstanding charges';
+				return $message . translate([
+					'text' => 'Scheduled for automatic renewal and cannot be renewed because the patron has too many outstanding charges',
+					'isPublicFacing' => true,
+				]);
 			case 'on_reserve':
 				return $message . translate([
 					'text' => 'On hold for another patron',
