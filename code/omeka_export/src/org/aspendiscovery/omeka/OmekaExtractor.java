@@ -27,7 +27,7 @@ import java.util.zip.CRC32;
 public class OmekaExtractor {
 	private static final int ITEMS_PER_PAGE = 100;
 	private static final String PRIMARY_MEDIA_KEY = "aspen:primaryMedia";
-	private static final long FULL_UPDATE_INTERVAL_SECONDS = 24 * 60 * 60;
+	private static final long DAILY_SWEEP_INTERVAL_SECONDS = 24 * 60 * 60;
 	private static final long MODIFIED_AFTER_BUFFER_SECONDS = 10 * 60;
 	private static final String[] MEDIA_KEYS_TO_KEEP = {"o:id", "o:media_type", "o:thumbnail_urls", "id", "order", "mime_type", "file_urls"};
 
@@ -52,7 +52,13 @@ public class OmekaExtractor {
 	private GroupedWorkIndexer groupedWorkIndexer;
 	private RecordGroupingProcessor recordGroupingProcessorSingleton = null;
 
-	private boolean doFullReload;
+	private enum PassType {
+		INCREMENTAL,
+		DAILY_SWEEP,
+		FULL_RELOAD
+	}
+
+	private PassType passType;
 
 	public OmekaExtractor(String serverName, Connection aspenConn, OmekaSetting setting, Ini configIni, OmekaExportLogEntry logEntry, Logger logger) {
 		this.serverName = serverName;
@@ -74,26 +80,22 @@ public class OmekaExtractor {
 			markTitleDeletedStmt = aspenConn.prepareStatement("UPDATE omeka_title SET deleted = 1 WHERE id = ?");
 			getStoredResponseStmt = aspenConn.prepareStatement("SELECT UNCOMPRESS(rawResponse) as rawResponse from omeka_title where id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 
-			boolean fullUpdateIsDue = setting.getLastUpdateOfAllRecords() < (startTimeForLogging - FULL_UPDATE_INTERVAL_SECONDS);
-			doFullReload = setting.doFullReload() || fullUpdateIsDue;
-
-			if (doFullReload) {
-				logEntry.addNote("Starting full update from Omeka for setting " + setting.getName());
-			} else {
-				logEntry.addNote("Starting update of changed records from Omeka for setting " + setting.getName());
-			}
+			passType = determinePassType();
+			logEntry.addNote(getPassDescription() + " for setting " + setting.getName());
 			logEntry.saveResults();
 
 			HashMap<Long, OmekaTitle> existingTitles = loadExistingTitles();
 			HashSet<String> scopedSetIds = getScopedSetIds();
 			boolean allItemsAreScoped = scopedSetIds == null;
-			if (doFullReload && allItemsAreScoped) {
+			boolean bulkMediaLoadIsWorthwhile = passType == PassType.FULL_RELOAD && allItemsAreScoped;
+			if (bulkMediaLoadIsWorthwhile) {
 				loadMediaCache();
 			}
 
 			boolean hadErrorsExtracting = extractItems(scopedSetIds, existingTitles);
 
-			if (!hadErrorsExtracting && doFullReload) {
+			boolean everyItemWasListed = !hadErrorsExtracting && passType != PassType.INCREMENTAL;
+			if (everyItemWasListed) {
 				removeTitlesNotSeenInExport(existingTitles);
 			}
 
@@ -123,6 +125,29 @@ public class OmekaExtractor {
 			logEntry.incErrors("Error exporting Omeka data", e);
 		}
 		return logEntry.getNumChanges() > 0;
+	}
+
+	private PassType determinePassType() {
+		boolean neverFullyLoaded = setting.getLastUpdateOfAllRecords() == 0;
+		if (setting.doFullReload() || neverFullyLoaded) {
+			return PassType.FULL_RELOAD;
+		}
+		boolean sweepIsDue = setting.getLastUpdateOfAllRecords() < (startTimeForLogging - DAILY_SWEEP_INTERVAL_SECONDS);
+		if (sweepIsDue) {
+			return PassType.DAILY_SWEEP;
+		}
+		return PassType.INCREMENTAL;
+	}
+
+	private String getPassDescription() {
+		switch (passType) {
+			case FULL_RELOAD:
+				return "Starting full update from Omeka";
+			case DAILY_SWEEP:
+				return "Starting daily sweep of all Omeka items for changes and deletions";
+			default:
+				return "Starting update of changed records from Omeka";
+		}
 	}
 
 	private HashMap<Long, OmekaTitle> loadExistingTitles() throws SQLException {
@@ -203,7 +228,7 @@ public class OmekaExtractor {
 			String setFilterName = setting.isClassic() ? "collection" : "item_set_id";
 			baseQueryString += "&" + setFilterName + "=" + URLEncoder.encode(setId, StandardCharsets.UTF_8);
 		}
-		if (!doFullReload) {
+		if (passType == PassType.INCREMENTAL) {
 			String modifiedParameterName = setting.isClassic() ? "modified_since" : "modified_after";
 			baseQueryString += "&" + modifiedParameterName + "=" + URLEncoder.encode(getModifiedAfterQueryValue(), StandardCharsets.UTF_8);
 		}
@@ -290,7 +315,8 @@ public class OmekaExtractor {
 				updateLastSeenStmt.setLong(1, startTimeForLogging);
 				updateLastSeenStmt.setLong(2, existingTitle.getId());
 				updateLastSeenStmt.executeUpdate();
-				if (doFullReload) {
+				boolean regroupUnchangedTitles = passType == PassType.FULL_RELOAD;
+				if (regroupUnchangedTitles) {
 					regroupAndIndexTitle(loadStoredResponse(existingTitle.getId()), existingTitle.getId());
 				} else {
 					logEntry.incSkipped();
@@ -734,7 +760,7 @@ public class OmekaExtractor {
 	}
 
 	private void setLastUpdateTimeForSetting() throws SQLException {
-		boolean fullReloadFailed = doFullReload && logEntry.hasErrors();
+		boolean fullReloadFailed = passType == PassType.FULL_RELOAD && logEntry.hasErrors();
 		if (fullReloadFailed) {
 			PreparedStatement reactivateFullUpdateStmt = aspenConn.prepareStatement("UPDATE omeka_settings set runFullUpdate = 1 where id = ?");
 			reactivateFullUpdateStmt.setLong(1, setting.getId());
@@ -746,11 +772,16 @@ public class OmekaExtractor {
 			return;
 		}
 		PreparedStatement updateSettingsStmt;
-		if (doFullReload) {
-			updateSettingsStmt = aspenConn.prepareStatement("UPDATE omeka_settings SET lastUpdateOfAllRecords = ?, runFullUpdate = 0 WHERE id = ?");
-			logEntry.addNote("Disabling Run Full Update option after a successful full update.");
-		} else {
-			updateSettingsStmt = aspenConn.prepareStatement("UPDATE omeka_settings set lastUpdateOfChangedRecords = ? where id = ?");
+		switch (passType) {
+			case FULL_RELOAD:
+				updateSettingsStmt = aspenConn.prepareStatement("UPDATE omeka_settings SET lastUpdateOfAllRecords = ?, runFullUpdate = 0 WHERE id = ?");
+				logEntry.addNote("Disabling Run Full Update option after a successful full update.");
+				break;
+			case DAILY_SWEEP:
+				updateSettingsStmt = aspenConn.prepareStatement("UPDATE omeka_settings SET lastUpdateOfAllRecords = ? WHERE id = ?");
+				break;
+			default:
+				updateSettingsStmt = aspenConn.prepareStatement("UPDATE omeka_settings SET lastUpdateOfChangedRecords = ? WHERE id = ?");
 		}
 		updateSettingsStmt.setLong(1, startTimeForLogging);
 		updateSettingsStmt.setLong(2, setting.getId());
