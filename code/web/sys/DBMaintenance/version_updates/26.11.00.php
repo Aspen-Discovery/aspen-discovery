@@ -227,6 +227,79 @@ function getUpdates26_11_00(): array {
 				) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
 			]
 		], //borrowbox_api_product_availability
+		'borrowbox_stats' => [
+			'title' => 'BorrowBox Stats',
+			'description' => 'Create statistics table for BorrowBox',
+			'sql' => [
+				"CREATE TABLE IF NOT EXISTS borrowbox_stats (
+					id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					instance VARCHAR(100),
+					year INT(4),
+					month INT(2),
+					numCheckouts INT(11) DEFAULT 0,
+					numFailedCheckouts INT(11) DEFAULT 0,
+					numRenewals INT(11) DEFAULT 0,
+					numEarlyReturns INT(11) DEFAULT 0,
+					numHoldsPlaced INT(11) DEFAULT 0,
+					numFailedHolds INT(11) DEFAULT 0,
+					numHoldsCancelled INT(11) DEFAULT 0,
+					numApiErrors INT(11) DEFAULT 0,
+					numConnectionFailures INT(11) DEFAULT 0
+				) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
+			]
+		], //borrowbox_stats
+		'user_borrowbox_usage' => [
+			'title' => 'User BorrowBox Usage',
+			'description' => 'Create table for tracking per-user BorrowBox usage',
+			'sql' => [
+				"CREATE TABLE IF NOT EXISTS user_borrowbox_usage (
+					id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					instance VARCHAR(100),
+					userId INT(11) NOT NULL,
+					year INT(4),
+					month INT(2),
+					usageCount INT(11) DEFAULT 0
+				) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
+			]
+		], //user_borrowbox_usage
+		'borrowbox_record_usage' => [
+			'title' => 'BorrowBox Record Usage',
+			'description' => 'Create table for tracking per-record BorrowBox usage',
+			'sql' => [
+				"CREATE TABLE IF NOT EXISTS borrowbox_record_usage (
+					id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					instance VARCHAR(100),
+					borrowboxId VARCHAR(50) NOT NULL,
+					year INT(4),
+					month INT(2),
+					timesHeld INT(11) DEFAULT 0,
+					timesCheckedOut INT(11) DEFAULT 0
+				) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
+			]
+		], //borrowbox_record_usage
+		'borrowbox_extract_log' => [
+			'title' => 'BorrowBox Extract Log',
+			'description' => 'Create extract log table for BorrowBox indexing',
+			'sql' => [
+				"CREATE TABLE IF NOT EXISTS borrowbox_extract_log (
+					id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					settingId INT(11) NOT NULL,
+					startTime INT(11) NOT NULL,
+					endTime INT(11),
+					lastUpdate INT(11),
+					notes TEXT,
+					numProducts INT(11) DEFAULT 0,
+					numErrors INT(11) DEFAULT 0,
+					numAdded INT(11) DEFAULT 0,
+					numDeleted INT(11) DEFAULT 0,
+					numUpdated INT(11) DEFAULT 0,
+					numSkipped INT(11) DEFAULT 0,
+					numAvailabilityChanges INT(11) DEFAULT 0,
+					numMetadataChanges INT(11) DEFAULT 0,
+					numInvalidRecords INT(11) DEFAULT 0
+				) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
+			]
+		], //borrowbox_extract_log
 
 
 
