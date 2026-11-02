@@ -60,6 +60,7 @@ class OmekaSetting extends DataObject {
 				],
 				'description' => 'The version of Omeka running on the server',
 				'default' => 's',
+				'onchange' => 'return AspenDiscovery.Admin.updateOmekaFields();',
 			],
 			'siteSlug' => [
 				'property' => 'siteSlug',
@@ -131,6 +132,15 @@ class OmekaSetting extends DataObject {
 
 	public function __toString() {
 		return "$this->name ($this->baseUrl)";
+	}
+
+	public function updateStructureForEditingObject($structure): array {
+		if ($this->apiVersion != 'classic') {
+			return $structure;
+		}
+		$structure['siteSlug']['hiddenByDefault'] = true;
+		$structure['apiKeyIdentity']['hiddenByDefault'] = true;
+		return $structure;
 	}
 
 	public function update(string $context = '') : int|bool {

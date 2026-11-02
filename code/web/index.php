@@ -58,7 +58,7 @@ if ($activeSessionObject != null) {
 global $locationSingleton;
 getAspenVersion();
 //Set a counter for CSS and JavaScript so we can have browsers clear their cache automatically
-$interface->assign('cssJsCacheCounter', 47);
+$interface->assign('cssJsCacheCounter', 48);
 
 // Setup Translator
 global $language;
