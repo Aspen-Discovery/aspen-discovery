@@ -974,62 +974,36 @@ class BorrowBoxDriver extends AbstractEContentDriver {
 		}
 	}
 
-	/**
-	 * Track a checkout event for a BorrowBox record.
-	 *
-	 * @param string $productId
-	 */
 	public function trackRecordCheckout(string $productId): void {
-		require_once ROOT_DIR . '/sys/BorrowBox/BorrowBoxRecordUsage.php';
-		require_once ROOT_DIR . '/sys/BorrowBox/BorrowBoxAPIProduct.php';
-		$recordUsage = new BorrowBoxRecordUsage();
-		$product = new BorrowBoxAPIProduct();
-		$product->borrowboxId = $productId;
-		if (!$product->find(true)) {
-			return;
-		}
-
-		global $aspenUsage;
-		$recordUsage->instance = $aspenUsage->getInstance();
-		$recordUsage->borrowboxId = $product->id;
-		$recordUsage->year = date('Y');
-		$recordUsage->month = date('n');
-		if ($recordUsage->find(true)) {
-			$recordUsage->timesCheckedOut++;
-			$recordUsage->update();
-		} else {
-			$recordUsage->timesCheckedOut = 1;
-			$recordUsage->timesHeld = 0;
-			$recordUsage->insert();
-		}
+		$this->trackRecordUsage($productId, 'timesCheckedOut');
 	}
 
-	/**
-	 * Track a hold event for a BorrowBox record.
-	 *
-	 * @param string $productId
-	 */
 	public function trackRecordHold(string $productId): void {
+		$this->trackRecordUsage($productId, 'timesHeld');
+	}
+
+	private function trackRecordUsage(string $productId, string $counterField): void {
 		require_once ROOT_DIR . '/sys/BorrowBox/BorrowBoxRecordUsage.php';
 		require_once ROOT_DIR . '/sys/BorrowBox/BorrowBoxAPIProduct.php';
-		$recordUsage = new BorrowBoxRecordUsage();
 		$product = new BorrowBoxAPIProduct();
 		$product->borrowboxId = $productId;
 		if (!$product->find(true)) {
 			return;
 		}
 
+		$recordUsage = new BorrowBoxRecordUsage();
 		global $aspenUsage;
 		$recordUsage->instance = $aspenUsage->getInstance();
 		$recordUsage->borrowboxId = $product->id;
 		$recordUsage->year = date('Y');
 		$recordUsage->month = date('n');
+		$recordUsage->day = date('d');
 		if ($recordUsage->find(true)) {
-			$recordUsage->timesHeld++;
+			$recordUsage->$counterField++;
 			$recordUsage->update();
 		} else {
-			$recordUsage->timesCheckedOut = 0;
-			$recordUsage->timesHeld = 1;
+			$recordUsage->timesCheckedOut = $counterField === 'timesCheckedOut' ? 1 : 0;
+			$recordUsage->timesHeld = $counterField === 'timesHeld' ? 1 : 0;
 			$recordUsage->insert();
 		}
 	}
