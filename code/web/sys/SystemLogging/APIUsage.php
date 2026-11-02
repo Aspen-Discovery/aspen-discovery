@@ -11,6 +11,7 @@ class APIUsage extends AbstractUsage {
 	public $module;
 	public $method;
 	public $numCalls;
+	public $apiClient;
 
 	public function getUniquenessFields(): array {
 		return [
@@ -20,6 +21,7 @@ class APIUsage extends AbstractUsage {
 			'day',
 			'module',
 			'method',
+			'apiClient',
 		];
 	}
 
