@@ -12,6 +12,9 @@ require_once ROOT_DIR . '/sys/SearchObject/minSO.php';
  * modules (Grouped Works, Lists, OAI, Archives, etc)
  */
 abstract class SearchObject_BaseSearcher {
+	const DEFAULT_PAGE_SIZE = 20;
+	const PAGE_SIZE_OPTIONS = [20, 50, 100];
+
 	// Parsed query
 	protected $query = null;
 
@@ -35,7 +38,8 @@ abstract class SearchObject_BaseSearcher {
 	// Page number
 	protected $page = 1;
 	// Result limit
-	protected $limit = 20;
+	protected $limit = self::DEFAULT_PAGE_SIZE;
+	protected $pageSizeRequested = false;
 
 	// Used to pass hidden filter queries to Solr
 	protected $hiddenFilters = [];
@@ -1096,6 +1100,47 @@ abstract class SearchObject_BaseSearcher {
 		if ($this->page < 1) {
 			$this->page = 1;
 		}
+	}
+
+	/**
+	 * Add the number of results per page to the object based on the $_REQUEST super global.
+	 *
+	 * @access  protected
+	 */
+	protected function initPageSize() {
+		$hasPageSizeParameter = isset($_REQUEST['pageSize']);
+		if (!$hasPageSizeParameter) {
+			return;
+		}
+		$pageSize = $_REQUEST['pageSize'];
+		if (is_array($pageSize)) {
+			$pageSize = array_pop($pageSize);
+		}
+		$this->setRequestedPageSize(intval($pageSize));
+	}
+
+	/**
+	 * Apply a number of results per page chosen by the reader. Sizes that are not
+	 *    offered are ignored.
+	 *
+	 * @access  public
+	 * @param int $pageSize The number of results to show per page
+	 */
+	public function setRequestedPageSize(int $pageSize) : void {
+		$isSelectablePageSize = $this->isSelectablePageSize($pageSize);
+		if (!$isSelectablePageSize) {
+			return;
+		}
+		$this->pageSizeRequested = true;
+		$this->setLimit($pageSize);
+	}
+
+	public function hasRequestedPageSize() : bool {
+		return $this->pageSizeRequested;
+	}
+
+	protected function isSelectablePageSize(int $pageSize) : bool {
+		return in_array($pageSize, self::PAGE_SIZE_OPTIONS, true);
 	}
 
 	/**
