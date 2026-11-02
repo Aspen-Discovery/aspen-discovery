@@ -204,6 +204,15 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <configuration name="Omeka Export" type="Application" factoryName="Application">
+      <option name="INCLUDE_PROVIDED_SCOPE" value="true" />
+      <option name="MAIN_CLASS_NAME" value="org.aspendiscovery.omeka.OmekaExportMain" />
+      <module name="omeka_export" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../code/omeka_export" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="OverDrive Export" type="Application" factoryName="Application">
       <option name="INCLUDE_PROVIDED_SCOPE" value="true" />
       <option name="MAIN_CLASS_NAME" value="com.turning_leaf_technologies.overdrive.ExtractOverDriveInfoMain" />
