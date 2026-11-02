@@ -8100,7 +8100,10 @@ class Koha extends AbstractIlsDriver {
 					'isPublicFacing' => true,
 				]);
 			case 'no_item':
-				return $message . 'No matching item could be found';
+				return $message . translate([
+					'text' => 'No matching item could be found',
+					'isPublicFacing' => true,
+				]);
 			case 'too_soon':
 				return $message . 'Cannot be renewed yet';
 			case 'no_checkout':
