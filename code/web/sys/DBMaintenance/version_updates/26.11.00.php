@@ -41,6 +41,16 @@ function getUpdates26_11_00(): array {
 
 		//jacob - OpenFifth
 
+		'api_usage_client' => [
+			'title' => 'API Usage Client',
+			'description' => 'Track which third party client made each API call',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE api_usage ADD COLUMN IF NOT EXISTS apiClient VARCHAR(255) NOT NULL DEFAULT ''",
+				'ALTER TABLE api_usage DROP INDEX IF EXISTS uniqueness',
+				'ALTER TABLE api_usage ADD UNIQUE INDEX uniqueness(instance, year, month, day, module, method, apiClient)',
+			]
+		], //api_usage_client
 
 	];
 }
