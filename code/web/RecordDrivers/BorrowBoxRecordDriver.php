@@ -12,8 +12,6 @@ class BorrowBoxRecordDriver extends GroupedWorkSubDriver {
 	/** @var string[]|null */
 	private ?array $isbns = null;
 
-	//$groupedWork and $groupedWorkDriver are defined in GroupedWorkSubDriver
-
 	/**
 	 * Constructor.  We build the object using all the data retrieved
 	 * from the (Solr) index.  Since we have to
@@ -26,23 +24,22 @@ class BorrowBoxRecordDriver extends GroupedWorkSubDriver {
 	 * @access  public
 	 */
 	public function __construct($recordId = null, ?GroupedWork $groupedWork = null) {
-		if (is_string($recordId)) {
-			$this->id = $recordId;
-			require_once ROOT_DIR . '/sys/BorrowBox/BorrowBoxAPIProduct.php';
-			$borrowBoxProduct = new BorrowBoxAPIProduct();
-			$borrowBoxProduct->borrowboxId = $recordId;
-			if ($borrowBoxProduct->find(true)) {
-				$this->borrowBoxProduct = $borrowBoxProduct;
-				$this->valid = true;
-			} else {
-				$this->valid = false;
-			}
-		} else {
-			$this->valid = false;
+		$this->valid = false;
+		if (!is_string($recordId)) {
+			return;
 		}
-		if ($this->valid) {
-			parent::__construct($groupedWork);
+
+		$this->id = $recordId;
+		require_once ROOT_DIR . '/sys/BorrowBox/BorrowBoxAPIProduct.php';
+		$borrowBoxProduct = new BorrowBoxAPIProduct();
+		$borrowBoxProduct->borrowboxId = $recordId;
+		if (!$borrowBoxProduct->find(true)) {
+			return;
 		}
+
+		$this->borrowBoxProduct = $borrowBoxProduct;
+		$this->valid = true;
+		parent::__construct($groupedWork);
 	}
 
 	public function getIdWithSource(): string {
@@ -67,10 +64,12 @@ class BorrowBoxRecordDriver extends GroupedWorkSubDriver {
 		$query = "SELECT grouped_work.* FROM grouped_work INNER JOIN grouped_work_primary_identifiers ON grouped_work.id = grouped_work_id WHERE type='borrowbox' AND identifier = '" . $this->getUniqueID() . "'";
 		$groupedWork->query($query);
 
-		if ($groupedWork->getNumResults() == 1) {
-			$groupedWork->fetch();
-			$this->groupedWork = clone $groupedWork;
+		if ($groupedWork->getNumResults() != 1) {
+			return;
 		}
+
+		$groupedWork->fetch();
+		$this->groupedWork = clone $groupedWork;
 	}
 
 	public function getPermanentId(): ?string {
@@ -81,11 +80,10 @@ class BorrowBoxRecordDriver extends GroupedWorkSubDriver {
 		if ($this->groupedWork == null) {
 			$this->loadGroupedWork();
 		}
-		if ($this->groupedWork) {
-			return $this->groupedWork->permanent_id;
-		} else {
+		if ($this->groupedWork == null) {
 			return null;
 		}
+		return $this->groupedWork->permanent_id;
 	}
 
 	public function isValid(): bool {
@@ -95,8 +93,6 @@ class BorrowBoxRecordDriver extends GroupedWorkSubDriver {
 	function getStatusSummary(): array {
 		$availabilityInfo = $this->getAvailabilityInformation();
 
-		// BorrowBox uses status-based availability rather than copy counts.
-		// Determine availability from the availabilityStatus field.
 		$hasAvailable = false;
 		foreach ($availabilityInfo as $availability) {
 			if (strtoupper($availability->availabilityStatus ?? '') === 'AVAILABLE') {
@@ -104,7 +100,6 @@ class BorrowBoxRecordDriver extends GroupedWorkSubDriver {
 			}
 		}
 
-		//Load status summary
 		$statusSummary = [];
 		$statusSummary['recordId'] = $this->id;
 		$statusSummary['totalCopies'] = count($availabilityInfo);
@@ -113,7 +108,6 @@ class BorrowBoxRecordDriver extends GroupedWorkSubDriver {
 		$statusSummary['isBorrowBox'] = true;
 		$statusSummary['availableCopies'] = $hasAvailable ? 1 : 0;
 
-		// Map BorrowBox availability statuses
 		if ($this->borrowBoxProduct !== null && isset($this->borrowBoxProduct->rawStatus)) {
 			$rawStatus = $this->borrowBoxProduct->rawStatus;
 			switch ($rawStatus) {
@@ -161,7 +155,6 @@ class BorrowBoxRecordDriver extends GroupedWorkSubDriver {
 			}
 		}
 
-		//Determine which buttons to show
 		$statusSummary['holdQueueLength'] = 0;
 		$statusSummary['numHolds'] = 0;
 		$statusSummary['showPlaceHold'] = !($statusSummary['available'] ?? false);
@@ -179,17 +172,21 @@ class BorrowBoxRecordDriver extends GroupedWorkSubDriver {
 	 * @return BorrowBoxAPIProductAvailability[]
 	 */
 	function getAvailabilityInformation(): array {
-		if ($this->availability == null) {
-			require_once ROOT_DIR . '/sys/BorrowBox/BorrowBoxAPIProductAvailability.php';
-			$this->availability = [];
-			if ($this->borrowBoxProduct !== null) {
-				$availabilityObj = new BorrowBoxAPIProductAvailability();
-				$availabilityObj->productId = $this->borrowBoxProduct->id;
-				$availabilityObj->find();
-				while ($availabilityObj->fetch()) {
-					$this->availability[] = clone $availabilityObj;
-				}
-			}
+		if ($this->availability != null) {
+			return $this->availability;
+		}
+
+		require_once ROOT_DIR . '/sys/BorrowBox/BorrowBoxAPIProductAvailability.php';
+		$this->availability = [];
+		if ($this->borrowBoxProduct === null) {
+			return $this->availability;
+		}
+
+		$availabilityObj = new BorrowBoxAPIProductAvailability();
+		$availabilityObj->productId = $this->borrowBoxProduct->id;
+		$availabilityObj->find();
+		while ($availabilityObj->fetch()) {
+			$this->availability[] = clone $availabilityObj;
 		}
 		return $this->availability;
 	}
@@ -202,8 +199,6 @@ class BorrowBoxRecordDriver extends GroupedWorkSubDriver {
 	 * @return array
 	 */
 	public function getItems(): array {
-		// BorrowBox products don't have multiple formats per product like OverDrive.
-		// The format is determined at the product level.
 		$items = [];
 		$hasProduct = $this->valid && $this->borrowBoxProduct !== null;
 		if ($hasProduct) {
@@ -214,21 +209,26 @@ class BorrowBoxRecordDriver extends GroupedWorkSubDriver {
 
 	public function getSeries(): array {
 		$seriesData = $this->getGroupedWorkDriver()->getSeries();
-		if ($seriesData == null) {
-			$metaData = $this->getBorrowBoxMetaData();
-			if ($metaData !== null) {
-				$rawData = json_decode($metaData->rawData ?? '{}');
-				$seriesName = isset($rawData->series) ? $rawData->series : null;
-				if ($seriesName != null) {
-					$seriesData = [
-						'seriesTitle' => $seriesName,
-						'fromNovelist' => false,
-						'fromSeriesIndex' => false,
-					];
-				}
-			}
+		if ($seriesData != null) {
+			return $seriesData;
 		}
-		return $seriesData ?? [];
+
+		$metaData = $this->getBorrowBoxMetaData();
+		if ($metaData === null) {
+			return $seriesData ?? [];
+		}
+
+		$rawData = json_decode($metaData->rawData ?? '{}');
+		$seriesName = $rawData->seriesName ?? $this->borrowBoxProduct->series ?? null;
+		if ($seriesName == null) {
+			return $seriesData ?? [];
+		}
+
+		return [
+			'seriesTitle' => $seriesName,
+			'fromNovelist' => false,
+			'fromSeriesIndex' => false,
+		];
 	}
 
 	/**
@@ -241,27 +241,26 @@ class BorrowBoxRecordDriver extends GroupedWorkSubDriver {
 		$interface->assign('bookcoverInfo', $this->getBookcoverInfo());
 
 		$groupedWorkDriver = $this->getGroupedWorkDriver();
+		$hasValidGroupedWork = false;
 		if ($groupedWorkDriver != null) {
 			$groupedWorkDriver->assignGroupedWorkStaffView();
-			if ($groupedWorkDriver->isValid()) {
-				$interface->assign('hasValidGroupedWork', true);
-				$this->getGroupedWorkDriver()->assignGroupedWorkStaffView();
+			$hasValidGroupedWork = $groupedWorkDriver->isValid();
+		}
+		$interface->assign('hasValidGroupedWork', $hasValidGroupedWork);
 
-				require_once ROOT_DIR . '/sys/Grouping/NonGroupedRecord.php';
-				$nonGroupedRecord = new NonGroupedRecord();
-				$nonGroupedRecord->source = $this->getRecordType();
-				$nonGroupedRecord->recordId = $this->id;
-				if ($nonGroupedRecord->find(true)) {
-					$interface->assign('isUngrouped', true);
-					$interface->assign('ungroupingId', $nonGroupedRecord->id);
-				} else {
-					$interface->assign('isUngrouped', false);
-				}
+		if ($hasValidGroupedWork) {
+			$this->getGroupedWorkDriver()->assignGroupedWorkStaffView();
+
+			require_once ROOT_DIR . '/sys/Grouping/NonGroupedRecord.php';
+			$nonGroupedRecord = new NonGroupedRecord();
+			$nonGroupedRecord->source = $this->getRecordType();
+			$nonGroupedRecord->recordId = $this->id;
+			if ($nonGroupedRecord->find(true)) {
+				$interface->assign('isUngrouped', true);
+				$interface->assign('ungroupingId', $nonGroupedRecord->id);
 			} else {
-				$interface->assign('hasValidGroupedWork', false);
+				$interface->assign('isUngrouped', false);
 			}
-		} else {
-			$interface->assign('hasValidGroupedWork', false);
 		}
 
 		if ($this->borrowBoxProduct !== null) {
@@ -299,32 +298,36 @@ class BorrowBoxRecordDriver extends GroupedWorkSubDriver {
 	 */
 	function getLanguage(): array {
 		$metaData = $this->getBorrowBoxMetaData();
+		if ($metaData === null) {
+			return [];
+		}
+
+		$rawData = json_decode($metaData->rawData ?? '{}');
+		if (!isset($rawData->languageDetails)) {
+			return [];
+		}
+
 		$languages = [];
-		if ($metaData !== null) {
-			$rawData = json_decode($metaData->rawData ?? '{}');
-			if (isset($rawData->languages)) {
-				foreach ($rawData->languages as $language) {
-					$languages[] = is_object($language) ? $language->name : $language;
-				}
-			}
+		foreach ($rawData->languageDetails as $language) {
+			$languages[] = is_object($language) ? $language->name : $language;
 		}
 		return $languages;
 	}
 
 	public function getDescriptionFast() {
 		$metaData = $this->getBorrowBoxMetaData();
-		if ($metaData !== null) {
-			return $metaData->summary;
+		if ($metaData === null) {
+			return '';
 		}
-		return '';
+		return $metaData->summary;
 	}
 
 	public function getDescription() {
 		$metaData = $this->getBorrowBoxMetaData();
-		if ($metaData !== null) {
-			return $metaData->summary;
+		if ($metaData === null) {
+			return '';
 		}
-		return '';
+		return $metaData->summary;
 	}
 
 	/**
@@ -336,19 +339,14 @@ class BorrowBoxRecordDriver extends GroupedWorkSubDriver {
 	public function getCleanISBN(): string {
 		require_once ROOT_DIR . '/sys/ISBN.php';
 
-		// Get all the ISBNs and initialize the return value:
 		$isbns = $this->getISBNs();
 		$isbn13 = false;
 
-		// Loop through the ISBNs:
 		foreach ($isbns as $isbn) {
-			// Strip off any unwanted notes:
 			if ($pos = strpos($isbn, ' ')) {
 				$isbn = substr($isbn, 0, $pos);
 			}
 
-			// If we find an ISBN-10, return it immediately; otherwise, if we find
-			// an ISBN-13, save it if it is the first one encountered.
 			$isbnObj = new ISBN($isbn);
 			if ($isbn10 = $isbnObj->get10()) {
 				return $isbn10;
@@ -367,17 +365,17 @@ class BorrowBoxRecordDriver extends GroupedWorkSubDriver {
 	 * @return  string[]
 	 */
 	public function getISBNs(): array {
-		if ($this->isbns == null) {
-			$this->isbns = [];
-			if ($this->borrowBoxProduct !== null) {
-				$metaData = $this->getBorrowBoxMetaData();
-				if ($metaData !== null) {
-					$rawData = json_decode($metaData->rawData ?? '{}');
-					if (isset($rawData->isbn)) {
-						$this->isbns[] = $rawData->isbn;
-					}
-				}
-			}
+		if ($this->isbns != null) {
+			return $this->isbns;
+		}
+
+		$this->isbns = [];
+		if ($this->borrowBoxProduct === null) {
+			return $this->isbns;
+		}
+
+		if (!empty($this->borrowBoxProduct->isbn13)) {
+			$this->isbns[] = $this->borrowBoxProduct->isbn13;
 		}
 		return $this->isbns;
 	}
@@ -402,10 +400,10 @@ class BorrowBoxRecordDriver extends GroupedWorkSubDriver {
 	 * @return  string
 	 */
 	public function getTitle(): string {
-		if ($this->borrowBoxProduct !== null) {
-			return $this->borrowBoxProduct->title ?? '';
+		if ($this->borrowBoxProduct === null) {
+			return '';
 		}
-		return '';
+		return $this->borrowBoxProduct->title ?? '';
 	}
 
 	/**
@@ -422,10 +420,10 @@ class BorrowBoxRecordDriver extends GroupedWorkSubDriver {
 	}
 
 	public function getSubtitle(): string {
-		if ($this->borrowBoxProduct !== null) {
-			return $this->borrowBoxProduct->subtitle ?? '';
+		if ($this->borrowBoxProduct === null) {
+			return '';
 		}
-		return '';
+		return $this->borrowBoxProduct->subtitle ?? '';
 	}
 
 	/**
@@ -436,10 +434,12 @@ class BorrowBoxRecordDriver extends GroupedWorkSubDriver {
 	 */
 	public function getFormats(): array {
 		$relatedRecord = $this->getRelatedRecord();
-		$formats = [];
-		if ($relatedRecord != null) {
-			$formats[$relatedRecord->getFormat()] = $relatedRecord->getFormat();
+		if ($relatedRecord == null) {
+			return [];
 		}
+
+		$formats = [];
+		$formats[$relatedRecord->getFormat()] = $relatedRecord->getFormat();
 		return $formats;
 	}
 
@@ -451,10 +451,10 @@ class BorrowBoxRecordDriver extends GroupedWorkSubDriver {
 	}
 
 	public function getAuthor(): string {
-		if ($this->borrowBoxProduct !== null) {
-			return $this->borrowBoxProduct->primaryCreatorName ?? '';
+		if ($this->borrowBoxProduct === null) {
+			return '';
 		}
-		return '';
+		return $this->borrowBoxProduct->primaryCreatorName ?? '';
 	}
 
 	public function getPrimaryAuthor(): string {
@@ -465,14 +465,21 @@ class BorrowBoxRecordDriver extends GroupedWorkSubDriver {
 	 * @return string[]
 	 */
 	public function getContributors(): array {
-		$contributors = [];
 		$metaData = $this->getBorrowBoxMetaData();
-		if ($metaData !== null) {
-			$rawData = json_decode($metaData->rawData ?? '{}');
-			if (isset($rawData->creators)) {
-				foreach ($rawData->creators as $creator) {
-					$contributors[$creator->fileAs ?? $creator->name ?? ''] = $creator->fileAs ?? $creator->name ?? '';
-				}
+		if ($metaData === null) {
+			return [];
+		}
+
+		$rawData = json_decode($metaData->rawData ?? '{}');
+		if (!isset($rawData->authors)) {
+			return [];
+		}
+
+		$contributors = [];
+		foreach ($rawData->authors as $author) {
+			$name = $author->fullName ?? '';
+			if ($name !== '') {
+				$contributors[$name] = $name;
 			}
 		}
 		return $contributors;
@@ -480,11 +487,7 @@ class BorrowBoxRecordDriver extends GroupedWorkSubDriver {
 
 	public function getBookcoverUrl($size = 'small', $absolutePath = false): string {
 		global $configArray;
-		if ($absolutePath) {
-			$bookCoverUrl = $configArray['Site']['url'];
-		} else {
-			$bookCoverUrl = '';
-		}
+		$bookCoverUrl = $absolutePath ? $configArray['Site']['url'] : '';
 		$bookCoverUrl .= '/bookcover.php?size=' . $size;
 		$bookCoverUrl .= '&id=' . $this->id;
 		$bookCoverUrl .= '&type=borrowbox';
@@ -510,9 +513,8 @@ class BorrowBoxRecordDriver extends GroupedWorkSubDriver {
 		$groupedWorkId = $this->getGroupedWorkId();
 		if ($groupedWorkId == null) {
 			return null;
-		} else {
-			return $workAPI->getRatingData($this->getGroupedWorkId());
 		}
+		return $workAPI->getRatingData($this->getGroupedWorkId());
 	}
 
 	public function getMoreDetailsOptions(): array {
@@ -525,10 +527,8 @@ class BorrowBoxRecordDriver extends GroupedWorkSubDriver {
 		$interface->assign('availability', $availabilityInfo);
 		$interface->assign('showAvailability', !empty($availabilityInfo));
 
-		//Load more details options
 		$moreDetailsOptions = $this->getBaseMoreDetailsOptions($isbn);
 
-		//Other editions if applicable (only if we aren't the only record!)
 		$relatedRecords = $this->getGroupedWorkDriver()->getRelatedRecords();
 		if (count($relatedRecords) > 1) {
 			$interface->assign('relatedManifestations', $this->getGroupedWorkDriver()->getRelatedManifestations());
@@ -575,11 +575,14 @@ class BorrowBoxRecordDriver extends GroupedWorkSubDriver {
 	 * @return string[]
 	 */
 	function getPublishers(): array {
-		$publishers = [];
 		$metaData = $this->getBorrowBoxMetaData();
-		if ($metaData !== null && isset($metaData->publisher)) {
-			$publishers[] = $metaData->publisher;
+		$publisherMissing = $metaData === null || !isset($metaData->publisher);
+		if ($publisherMissing) {
+			return [];
 		}
+
+		$publishers = [];
+		$publishers[] = $metaData->publisher;
 		return $publishers;
 	}
 
@@ -587,16 +590,21 @@ class BorrowBoxRecordDriver extends GroupedWorkSubDriver {
 	 * @return string[]
 	 */
 	function getPublicationDates(): array {
-		$publicationDates = [];
 		$metaData = $this->getBorrowBoxMetaData();
-		if ($metaData !== null) {
-			$rawData = json_decode($metaData->rawData ?? '{}');
-			if (isset($rawData->releaseDate)) {
-				$publishYear = substr($rawData->releaseDate, 0, 4);
-				$publicationDates[] = $publishYear;
-			}
+		if ($metaData === null) {
+			return [];
 		}
-		return $publicationDates;
+
+		$rawData = json_decode($metaData->rawData ?? '{}');
+		if (!isset($rawData->releaseDate)) {
+			return [];
+		}
+
+		$releaseDate = $rawData->releaseDate;
+		if (is_numeric($releaseDate)) {
+			return [date('Y', intdiv((int)$releaseDate, 1000))];
+		}
+		return [substr($releaseDate, 0, 4)];
 	}
 
 	/**
@@ -639,98 +647,103 @@ class BorrowBoxRecordDriver extends GroupedWorkSubDriver {
 		$permanentId = $this->getPermanentId();
 		if ($permanentId == null) {
 			return null;
-		} else {
-			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-			if ($this->groupedWorkDriver == null) {
-				$this->groupedWorkDriver = new GroupedWorkDriver($this->getPermanentId());
-			}
-			return $this->groupedWorkDriver;
 		}
+
+		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+		if ($this->groupedWorkDriver == null) {
+			$this->groupedWorkDriver = new GroupedWorkDriver($this->getPermanentId());
+		}
+		return $this->groupedWorkDriver;
 	}
 
 	protected ?array $_actions = null;
 
 	public function getRecordActions($relatedRecord, $variationId, $isAvailable, $isHoldable, $volumeData = null): array {
-		if ($this->_actions === null) {
-			if ($relatedRecord == null) {
-				$relatedRecord = $this->getRelatedRecord();
-			}
-			$this->_actions = [];
+		if ($this->_actions !== null) {
+			return $this->_actions;
+		}
 
-			if (UserAccount::isLoggedIn()) {
-				$activeUser = UserAccount::getActiveUserObj();
-				if ($activeUser->isValidForEContentSource('borrowbox')) {
-					$this->_actions = array_merge($this->_actions, $activeUser->getCirculatedRecordActionsWithLazyLoading('borrowbox', $this->id));
-				}
-				$loadDefaultActions = count($this->_actions) == 0;
-			} else {
-				$activeUser = null;
-				$loadDefaultActions = true;
-			}
+		if ($relatedRecord == null) {
+			$relatedRecord = $this->getRelatedRecord();
+		}
+		$this->_actions = [];
 
-			if ($loadDefaultActions) {
-				global $offlineMode;
-				global $loginAllowedWhileOffline;
-				if (!$offlineMode || $loginAllowedWhileOffline) {
-					if ($isAvailable) {
-						$this->_actions[] = [
-							'title' => translate([
-								'text' => 'Borrow with BorrowBox',
-								'isPublicFacing' => true,
-							]),
-							'onclick' => "return AspenDiscovery.BorrowBox.checkOutTitle('$this->id', this);",
-							'requireLogin' => false,
-							'type' => 'borrowbox_checkout',
-						];
-					} else {
-						$this->_actions[] = [
-							'title' => translate([
-								'text' => 'Place Hold with BorrowBox',
-								'isPublicFacing' => true,
-							]),
-							'onclick' => "return AspenDiscovery.BorrowBox.placeHold('$this->id', this);",
-							'requireLogin' => false,
-							'type' => 'borrowbox_hold',
-						];
-					}
-				}
+		if (UserAccount::isLoggedIn()) {
+			$activeUser = UserAccount::getActiveUserObj();
+			if ($activeUser->isValidForEContentSource('borrowbox')) {
+				$this->_actions = array_merge($this->_actions, $activeUser->getCirculatedRecordActionsWithLazyLoading('borrowbox', $this->id));
 			}
+			$loadDefaultActions = count($this->_actions) == 0;
+		} else {
+			$activeUser = null;
+			$loadDefaultActions = true;
+		}
+
+		if (!$loadDefaultActions) {
+			return $this->_actions;
+		}
+
+		global $offlineMode;
+		global $loginAllowedWhileOffline;
+		$loginBlockedWhileOffline = $offlineMode && !$loginAllowedWhileOffline;
+		if ($loginBlockedWhileOffline) {
+			return $this->_actions;
+		}
+
+		if ($isAvailable) {
+			$this->_actions[] = [
+				'title' => translate([
+					'text' => 'Borrow with BorrowBox',
+					'isPublicFacing' => true,
+				]),
+				'onclick' => "return AspenDiscovery.BorrowBox.checkOutTitle('$this->id', this);",
+				'requireLogin' => false,
+				'type' => 'borrowbox_checkout',
+			];
+		} else {
+			$this->_actions[] = [
+				'title' => translate([
+					'text' => 'Place Hold with BorrowBox',
+					'isPublicFacing' => true,
+				]),
+				'onclick' => "return AspenDiscovery.BorrowBox.placeHold('$this->id', this);",
+				'requireLogin' => false,
+				'type' => 'borrowbox_hold',
+			];
 		}
 		return $this->_actions;
 	}
 
 	function getNumHolds(): int {
-		// BorrowBox API does not expose hold queue counts
 		return 0;
 	}
 
 	public function getSemanticData(): ?array {
-		// Schema.org
 		require_once ROOT_DIR . '/RecordDrivers/LDRecordOffer.php';
 		$relatedRecord = $this->getRelatedRecord();
-		if ($relatedRecord != null) {
-			$linkedDataRecord = new LDRecordOffer($relatedRecord);
-			$semanticData[] = [
-				'@context' => 'https://schema.org',
-				'@type' => $linkedDataRecord->getWorkType(),
-				'name' => $this->getTitle(),
-				'creator' => $this->getAuthor(),
-				'bookEdition' => $this->getEditions(),
-				'isAccessibleForFree' => true,
-				'image' => $this->getBookcoverUrl('medium', true),
-				'offers' => $linkedDataRecord->getOffers(),
-			];
-
-			global $interface;
-			$interface->assign('og_title', $this->getTitle());
-			$interface->assign('og_description', $this->getDescriptionFast());
-			$interface->assign('og_type', $this->getGroupedWorkDriver()->getOGType());
-			$interface->assign('og_image', $this->getBookcoverUrl('medium', true));
-			$interface->assign('og_url', $this->getAbsoluteUrl());
-			return $semanticData;
-		} else {
+		if ($relatedRecord == null) {
 			return null;
 		}
+
+		$linkedDataRecord = new LDRecordOffer($relatedRecord);
+		$semanticData[] = [
+			'@context' => 'https://schema.org',
+			'@type' => $linkedDataRecord->getWorkType(),
+			'name' => $this->getTitle(),
+			'creator' => $this->getAuthor(),
+			'bookEdition' => $this->getEditions(),
+			'isAccessibleForFree' => true,
+			'image' => $this->getBookcoverUrl('medium', true),
+			'offers' => $linkedDataRecord->getOffers(),
+		];
+
+		global $interface;
+		$interface->assign('og_title', $this->getTitle());
+		$interface->assign('og_description', $this->getDescriptionFast());
+		$interface->assign('og_type', $this->getGroupedWorkDriver()->getOGType());
+		$interface->assign('og_image', $this->getBookcoverUrl('medium', true));
+		$interface->assign('og_url', $this->getAbsoluteUrl());
+		return $semanticData;
 	}
 
 	function getRelatedRecord(): ?Grouping_Record {
@@ -738,9 +751,8 @@ class BorrowBoxRecordDriver extends GroupedWorkSubDriver {
 		$groupedWorkDriver = $this->getGroupedWorkDriver();
 		if ($groupedWorkDriver == null) {
 			return null;
-		} else {
-			return $groupedWorkDriver->getRelatedRecord($id);
 		}
+		return $groupedWorkDriver->getRelatedRecord($id);
 	}
 
 	/**
