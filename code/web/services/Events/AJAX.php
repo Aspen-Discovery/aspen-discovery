@@ -24,33 +24,29 @@ class Events_AJAX extends JSON_Action {
 				'isAdminFacing' => true,
 			])
 		];
-		if (!empty($_REQUEST['locationId'])) {
-			$eventTypeIds = EventType::getEventTypeIdsForLocation($_REQUEST['locationId']);
-			$eventTypes = [];
-			foreach ($eventTypeIds as $eventTypeId) {
-				$eventTypes[$eventTypeId] = EventType::getTypeName($eventTypeId);
-			}
-			$sublocations = Location::getEventSublocations($_REQUEST['locationId']);
-			if (!empty($eventTypeIds)) {
-				$result = [
-					'success' => true,
-					'eventTypes' => json_encode($eventTypes),
-					'sublocations' => json_encode($sublocations),
-				];
-			} else {
-				$result = [
-					'success' => true,
-					'eventTypeIds' => '',
-					'title' => translate([
-						'text' => "No available event types",
-						'isAdminFacing' => true,
-					]),
-					'message' => translate([
-						'text' => 'No event types are available for this location.',
-						'isAdminFacing' => true,
-					])
-				];
-			}
+		if (empty($_REQUEST['locationId'])) {
+			return $result;
+		}
+		$eventTypeIds = EventType::getEventTypeIdsForLocation($_REQUEST['locationId']);
+		$eventTypes = [];
+		foreach ($eventTypeIds as $eventTypeId) {
+			$eventTypes[$eventTypeId] = EventType::getTypeName($eventTypeId);
+		}
+		$sublocations = Location::getEventSublocations($_REQUEST['locationId']);
+		$result = [
+			'success' => true,
+			'eventTypes' => json_encode($eventTypes),
+			'sublocations' => json_encode($sublocations),
+		];
+		if (empty($eventTypeIds)) {
+			$result['title'] = translate([
+				'text' => "No available event types",
+				'isAdminFacing' => true,
+			]);
+			$result['message'] = translate([
+				'text' => 'No event types are available for this location.',
+				'isAdminFacing' => true,
+			]);
 		}
 		return $result;
 	}
