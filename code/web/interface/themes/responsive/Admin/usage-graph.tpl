@@ -19,7 +19,7 @@
 					<tr>
 						<th>{translate text="Date" isAdminFacing=true}</th>
 						{foreach from=$dataSeries key=seriesLabel item=seriesData}
-							<th>{if !empty($translateDataSeries)}{translate text=$seriesLabel isAdminFacing=true}{else}{$seriesLabel}{/if}</th>
+							<th>{if !empty($translateDataSeries)}{translate text=$seriesLabel isAdminFacing=true}{else}{$seriesLabel|escape}{/if}</th>
 						{/foreach}
 					</tr>
 				</thead>
@@ -60,7 +60,7 @@ var myChart = new Chart(ctx, {
 			{/literal}
 			{foreach from=$dataSeries key=seriesLabel item=seriesData}
 				{ldelim}
-				label: "{translate text=$seriesLabel isAdminFacing=true}",
+				label: "{if !empty($translateDataSeries)}{translate text=$seriesLabel isAdminFacing=true}{else}{$seriesLabel|escape:'javascript'}{/if}",
 				data: [
 					{foreach from=$seriesData.data item=curValue}
 						{$curValue},
