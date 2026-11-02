@@ -1006,7 +1006,23 @@ class User extends DataObject {
 					return array_key_exists('Axis 360', $enabledModules) && ($userHomeLibrary->axis360ScopeId > 0);
 				} elseif ($source == 'palace_project') {
 					return array_key_exists('Palace Project', $enabledModules) && ($userHomeLibrary->palaceProjectLibraryId > 0 || $userHomeLibrary->palaceProjectScopeId > 0);
+				} elseif ($source == 'borrowbox') {
+					return $this->isValidForBorrowBox($userHomeLibrary, $enabledModules);
 				}
+			}
+		}
+		return false;
+	}
+
+	private function isValidForBorrowBox(Library $userHomeLibrary, array $enabledModules): bool {
+		$borrowBoxUsable = !empty($this->getBarcode()) && array_key_exists('BorrowBox', $enabledModules);
+		if (!$borrowBoxUsable) {
+			return false;
+		}
+		$borrowBoxSettings = $userHomeLibrary->getLibraryBorrowBoxSettings();
+		foreach ($borrowBoxSettings as $libraryBorrowBoxSetting) {
+			if ($libraryBorrowBoxSetting->circulationEnabled) {
+				return true;
 			}
 		}
 		return false;
@@ -2001,6 +2017,15 @@ class User extends DataObject {
 			}
 		}
 
+		$loadBorrowBoxCheckouts = ($source == 'all' || $source == 'borrowbox') && $this->isValidForEContentSource('borrowbox');
+		if ($loadBorrowBoxCheckouts) {
+			require_once ROOT_DIR . '/Drivers/BorrowBoxDriver.php';
+			$borrowBoxDriver = new BorrowBoxDriver();
+			$borrowBoxCheckedOutItems = $borrowBoxDriver->getCheckouts($this);
+			$timer->logTime("Loaded transactions from BorrowBox. $this->id");
+			$checkoutsToReturn = array_merge($checkoutsToReturn, $borrowBoxCheckedOutItems);
+		}
+
 		if ($includeLinkedUsers) {
 			if ($this->getLinkedUsers() != null) {
 				foreach ($this->getLinkedUsers() as $linkedUser) {
@@ -2078,6 +2103,14 @@ class User extends DataObject {
 				$palaceProjectHolds = $driver->getHolds($this);
 				$holdsToReturn = array_merge_recursive($holdsToReturn, $palaceProjectHolds);
 			}
+		}
+
+		$loadBorrowBoxHolds = ($source == 'all' || $source == 'borrowbox') && $this->isValidForEContentSource('borrowbox');
+		if ($loadBorrowBoxHolds) {
+			require_once ROOT_DIR . '/Drivers/BorrowBoxDriver.php';
+			$driver = new BorrowBoxDriver();
+			$borrowBoxHolds = $driver->getHolds($this);
+			$holdsToReturn = array_merge_recursive($holdsToReturn, $borrowBoxHolds);
 		}
 
 		if ($source == 'all' || $source == 'hoopla') {
