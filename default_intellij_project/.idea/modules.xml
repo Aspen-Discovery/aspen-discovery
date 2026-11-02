@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/../code/axis_360_export/axis_360_export.iml" filepath="$PROJECT_DIR$/../code/axis_360_export/axis_360_export.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../code/borrowbox_extract/borrowbox_extract.iml" filepath="$PROJECT_DIR$/../code/borrowbox_extract/borrowbox_extract.iml" />
       <module fileurl="file://$PROJECT_DIR$/../code/carlx_export/carlx_export.iml" filepath="$PROJECT_DIR$/../code/carlx_export/carlx_export.iml" />
       <module fileurl="file://$PROJECT_DIR$/../code/cloud_library_export/cloud_library_export.iml" filepath="$PROJECT_DIR$/../code/cloud_library_export/cloud_library_export.iml" />
       <module fileurl="file://$PROJECT_DIR$/../code/course_reserves_indexer/course_reserves_indexer.iml" filepath="$PROJECT_DIR$/../code/course_reserves_indexer/course_reserves_indexer.iml" />
