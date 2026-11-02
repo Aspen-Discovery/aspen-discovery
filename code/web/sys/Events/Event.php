@@ -62,25 +62,35 @@ class Event extends DataObject {
 
 
 	static $_objectStructure = [];
+
+	private static function getAdministrableLocationList(): array {
+		$canAdministerAllLocations = UserAccount::userHasPermission('Administer Events for All Locations');
+		if ($canAdministerAllLocations) {
+			return Location::getLocationList(false);
+		}
+		$canAdministerHomeLibraryLocations = UserAccount::userHasPermission('Administer Events for Home Library Locations');
+		if ($canAdministerHomeLibraryLocations) {
+			return Location::getLocationList(true);
+		}
+		$user = UserAccount::getLoggedInUser();
+		if (empty($user)) {
+			return [];
+		}
+		$additionalAdministrationLocations = $user->getAdditionalAdministrationLocations();
+		$homeLocation = $user->getHomeLocation();
+		if (empty($homeLocation)) {
+			return $additionalAdministrationLocations;
+		}
+		return [$user->homeLocationId => $homeLocation->displayName] + $additionalAdministrationLocations;
+	}
+
 	static function getObjectStructure(string $context = ''): array {
 		if (isset(self::$_objectStructure[$context])) {
 			return self::$_objectStructure[$context];
 		}
 		global $configArray;
 		$coverPath = $configArray['Site']['coverPath'];
-		if ($context == 'addNew') {
-			if (UserAccount::userHasPermission('Administer Events for All Locations')) {
-				$locationList = Location::getLocationList(false);
-			} else if (UserAccount::userHasPermission('Administer Events for Home Library Locations')) {
-				$locationList = Location::getLocationList(true);
-			} else {
-				$user = UserAccount::getLoggedInUser();
-				$locationList[$user->homeLocationId] = $user->getHomeLocation()->displayName;
-				$locationList = $locationList + $user->getAdditionalAdministrationLocations();
-			}
-		} else {
-			$locationList = Location::getLocationList(false); // No need to restrict the location list if you aren't adding a new event since it's read only
-		}
+		$locationList = self::getAdministrableLocationList();
 		$structure = [
 			'id' => [
 				'property' => 'id',
