@@ -8155,7 +8155,10 @@ class Koha extends AbstractIlsDriver {
 					'isPublicFacing' => true,
 				]);
 			case 'onsite_checkout':
-				return $message . 'Item is an onsite checkout';
+				return $message . translate([
+					'text' => 'Item is an onsite checkout',
+					'isPublicFacing' => true,
+				]);
 			case 'has_fine':
 				return $message . 'Item has an outstanding fine';
 			case 'overdue':
