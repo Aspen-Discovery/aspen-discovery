@@ -1,0 +1,251 @@
+<?php
+
+require_once ROOT_DIR . '/Action.php';
+require_once ROOT_DIR . '/JSON_Action.php';
+
+class BorrowBox_AJAX extends JSON_Action {
+
+	function placeHold(): array {
+		$borrowboxId = $_REQUEST['borrowboxId'];
+		if (!UserAccount::isLoggedIn()) {
+			return [
+				'result' => false,
+				'message' => 'You must be logged in to place a hold.',
+			];
+		}
+		$user = UserAccount::getLoggedInUser();
+		$patronId = $_REQUEST['patronId'];
+		$patron = $user->getUserReferredTo($patronId);
+		if (!$patron) {
+			return [
+				'result' => false,
+				'message' => translate([
+					'text' => 'Sorry, it looks like you don\'t have permissions to place holds for that user.',
+					'isPublicFacing' => true,
+				]),
+			];
+		}
+		require_once ROOT_DIR . '/Drivers/BorrowBoxDriver.php';
+		$driver = new BorrowBoxDriver();
+		return $driver->placeHold($patron, $borrowboxId);
+	}
+
+	function checkOutTitle(): array {
+		$user = UserAccount::getLoggedInUser();
+		$borrowboxId = $_REQUEST['borrowboxId'];
+		if (!$user) {
+			return [
+				'result' => false,
+				'message' => 'You must be logged in to checkout an item.',
+			];
+		}
+		$patronId = $_REQUEST['patronId'];
+		$patron = $user->getUserReferredTo($patronId);
+		if (!$patron) {
+			return [
+				'result' => false,
+				'message' => 'Sorry, it looks like you don\'t have permissions to checkout titles for that user.',
+			];
+		}
+		require_once ROOT_DIR . '/Drivers/BorrowBoxDriver.php';
+		$driver = new BorrowBoxDriver();
+		$result = $driver->checkOutTitle($patron, $borrowboxId);
+		if ($result['success']) {
+			$result['buttons'] = '<a class="btn btn-primary" href="/MyAccount/CheckedOut" role="button">' . translate([
+					'text' => 'View My Check Outs',
+					'isPublicFacing' => true,
+				]) . '</a>';
+		}
+		return $result;
+	}
+
+	/** @noinspection PhpUnused */
+	function returnCheckout(): array {
+		$user = UserAccount::getLoggedInUser();
+		$borrowboxId = $_REQUEST['borrowboxId'];
+		if (!$user) {
+			return [
+				'result' => false,
+				'message' => 'You must be logged in to return an item.',
+			];
+		}
+		$patronId = $_REQUEST['patronId'];
+		$patron = $user->getUserReferredTo($patronId);
+		if (!$patron) {
+			return [
+				'result' => false,
+				'message' => 'Sorry, it looks like you don\'t have permissions to return titles for that user.',
+			];
+		}
+		require_once ROOT_DIR . '/Drivers/BorrowBoxDriver.php';
+		$driver = new BorrowBoxDriver();
+		return $driver->returnCheckout($patron, $borrowboxId);
+	}
+
+	function renewCheckout(): array {
+		$user = UserAccount::getLoggedInUser();
+		$borrowboxId = $_REQUEST['borrowboxId'];
+		if (!$user) {
+			return [
+				'result' => false,
+				'message' => 'You must be logged in to renew titles.',
+			];
+		}
+		$patronId = $_REQUEST['patronId'];
+		$patron = $user->getUserReferredTo($patronId);
+		if (!$patron) {
+			return [
+				'result' => false,
+				'message' => 'Sorry, it looks like you don\'t have permissions to modify checkouts for that user.',
+			];
+		}
+		require_once ROOT_DIR . '/Drivers/BorrowBoxDriver.php';
+		$driver = new BorrowBoxDriver();
+		return $driver->renewCheckout($patron, $borrowboxId);
+	}
+
+	function cancelHold(): array {
+		$user = UserAccount::getLoggedInUser();
+		$borrowboxId = $_REQUEST['borrowboxId'];
+		if (!$user) {
+			return [
+				'result' => false,
+				'message' => 'You must be logged in to cancel holds.',
+			];
+		}
+		$patronId = $_REQUEST['patronId'];
+		$patron = $user->getUserReferredTo($patronId);
+		if (!$patron) {
+			return [
+				'result' => false,
+				'message' => 'Sorry, it looks like you don\'t have permissions to cancel holds for that user.',
+			];
+		}
+		require_once ROOT_DIR . '/Drivers/BorrowBoxDriver.php';
+		$driver = new BorrowBoxDriver();
+		return $driver->cancelHold($patron, $borrowboxId);
+	}
+
+	/** @noinspection PhpUnused */
+	function getHoldPrompts(): array {
+		if (!UserAccount::isLoggedIn()) {
+			return [
+				'success' => false,
+				'message' => translate(['text' => 'You must be logged in to place holds, please login again.', 'isPublicFacing' => true]),
+			];
+		}
+		$user = UserAccount::getLoggedInUser();
+		global $interface;
+		$id = $_REQUEST['id'];
+
+		$interface->assign('borrowboxId', $id);
+
+		$borrowBoxUsers = $user->getRelatedEcontentUsers('borrowbox');
+		$interface->assign('borrowBoxUsers', $borrowBoxUsers);
+		if (count($borrowBoxUsers) == 1) {
+			$interface->assign('patronId', reset($borrowBoxUsers)->id);
+		}
+
+		if (count($borrowBoxUsers) == 0) {
+			return [
+				'success' => false,
+				'message' => translate([
+					'text' => 'Your account is not valid for BorrowBox, please contact your local library.',
+					'isPublicFacing' => true,
+				]),
+			];
+		} elseif (count($borrowBoxUsers) > 1) {
+			return [
+				'success' => true,
+				'promptNeeded' => true,
+				'promptTitle' => translate([
+					'text' => 'BorrowBox Hold Options',
+					'isPublicFacing' => true,
+				]),
+				'prompts' => $interface->fetch('BorrowBox/ajax-hold-prompt.tpl'),
+				'buttons' => '<button class="btn btn-primary" type="submit" name="submit" onclick="return AspenDiscovery.BorrowBox.processBorrowBoxHoldPrompts();">' . translate([
+						'text' => 'Place Hold',
+						'isPublicFacing' => true,
+					]) . '</button>',
+			];
+		} else {
+			return [
+				'success' => true,
+				'patronId' => reset($borrowBoxUsers)->id,
+				'promptNeeded' => false,
+			];
+		}
+	}
+
+	/** @noinspection PhpUnused */
+	function getCheckOutPrompts(): array {
+		if (!UserAccount::isLoggedIn()) {
+			return [
+				'promptNeeded' => true,
+				'promptTitle' => translate([
+					'text' => 'Error.',
+					'isPublicFacing' => true,
+				]),
+				'prompts' => translate([
+					'text' => 'Your session has expired. Please login again to checkout this title.',
+					'isPublicFacing' => true,
+				]),
+				'buttons' => '',
+			];
+		}
+		$user = UserAccount::getLoggedInUser();
+		global $interface;
+		$id = $_REQUEST['id'];
+		$interface->assign('borrowboxId', $id);
+
+		$borrowBoxUsers = $user->getRelatedEcontentUsers('borrowbox');
+		$interface->assign('borrowBoxUsers', $borrowBoxUsers);
+
+		if (count($borrowBoxUsers) > 1) {
+			return [
+				'promptNeeded' => true,
+				'promptTitle' => 'BorrowBox Checkout Options',
+				'prompts' => $interface->fetch('BorrowBox/ajax-checkout-prompt.tpl'),
+				'buttons' => '<input class="btn btn-primary" type="submit" name="submit" value="Checkout Title" onclick="return AspenDiscovery.BorrowBox.processBorrowBoxCheckoutPrompts();">',
+			];
+		} elseif (count($borrowBoxUsers) == 1) {
+			return [
+				'patronId' => reset($borrowBoxUsers)->id,
+				'promptNeeded' => false,
+			];
+		} else {
+			global $logger;
+			$logger->log('No valid BorrowBox account was found to check out a BorrowBox title.', Logger::LOG_ERROR);
+			return [
+				'promptNeeded' => true,
+				'promptTitle' => 'Error',
+				'prompts' => translate([
+					'text' => 'Your account is not valid for BorrowBox, please contact your local library.',
+					'isPublicFacing' => true,
+				]),
+				'buttons' => '',
+			];
+		}
+	}
+
+	function getStaffView(): array {
+		$result = [
+			'success' => false,
+			'message' => 'Unknown error loading staff view',
+		];
+		$id = $_REQUEST['id'];
+		require_once ROOT_DIR . '/RecordDrivers/BorrowBoxRecordDriver.php';
+		$recordDriver = new BorrowBoxRecordDriver($id);
+		if ($recordDriver->isValid()) {
+			global $interface;
+			$interface->assign('recordDriver', $recordDriver);
+			$result = [
+				'success' => true,
+				'staffView' => $interface->fetch($recordDriver->getStaffView()),
+			];
+		} else {
+			$result['message'] = 'Could not find that record';
+		}
+		return $result;
+	}
+}
