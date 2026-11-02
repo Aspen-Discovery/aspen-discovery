@@ -345,6 +345,17 @@ class UInterface extends Smarty {
 		return $this->appliedTheme;
 	}
 
+	private static function getThemeImageUrl(string $fileName) : string {
+		global $configArray;
+		$relativeUrl = '/files/original/' . $fileName;
+		$filePath = $configArray['Site']['local'] . $relativeUrl;
+		$fileExists = file_exists($filePath);
+		if (!$fileExists) {
+			return $relativeUrl;
+		}
+		return $relativeUrl . '?v=' . filemtime($filePath);
+	}
+
 	function loadDisplayOptions($fromBookCoverProcessing = false) {
 		global $library;
 		global $locationSingleton;
@@ -472,7 +483,7 @@ class UInterface extends Smarty {
 			//Get Logo
 			$logoName = Theme::getFirstThemeValue($allAppliedThemes, 'logoName');
 			if (!empty($logoName)) {
-				$this->assign('responsiveLogo', '/files/original/' . $logoName);
+				$this->assign('responsiveLogo', self::getThemeImageUrl($logoName));
 			} else {
 				if (isset($configArray['Site']['responsiveLogo'])) {
 					$this->assign('responsiveLogo', $configArray['Site']['responsiveLogo']);
@@ -482,7 +493,7 @@ class UInterface extends Smarty {
 			//Get Footer Logo
 			$footerLogo = Theme::getFirstThemeValue($allAppliedThemes, 'footerLogo');
 			if ($footerLogo) {
-				$this->assign('footerLogo', '/files/original/' . $footerLogo);
+				$this->assign('footerLogo', self::getThemeImageUrl($footerLogo));
 			}
 
 			$footerLogoLink = Theme::getFirstThemeValue($allAppliedThemes, 'footerLogoLink');
@@ -498,7 +509,7 @@ class UInterface extends Smarty {
 			//Get favicon
 			$favicon = Theme::getFirstThemeValue($allAppliedThemes, 'favicon');
 			if ($favicon) {
-				$this->assign('favicon', '/files/original/' . $favicon);
+				$this->assign('favicon', self::getThemeImageUrl($favicon));
 			}
 
 			if ($primaryTheme != null) {
@@ -1113,7 +1124,7 @@ class UInterface extends Smarty {
 			//Get Logo
 			$logoName = Theme::getFirstThemeValue($allAppliedThemes, 'logoName');
 			if (!empty($logoName)) {
-				$this->assign('responsiveLogo', '/files/original/' . $logoName);
+				$this->assign('responsiveLogo', self::getThemeImageUrl($logoName));
 			} else {
 				if (isset($configArray['Site']['responsiveLogo'])) {
 					$this->assign('responsiveLogo', $configArray['Site']['responsiveLogo']);
@@ -1123,7 +1134,7 @@ class UInterface extends Smarty {
 			//Get Footer Logo
 			$footerLogo = Theme::getFirstThemeValue($allAppliedThemes, 'footerLogo');
 			if ($footerLogo) {
-				$this->assign('footerLogo', '/files/original/' . $footerLogo);
+				$this->assign('footerLogo', self::getThemeImageUrl($footerLogo));
 			}
 
 			$footerLogoLink = Theme::getFirstThemeValue($allAppliedThemes, 'footerLogoLink');
@@ -1149,7 +1160,7 @@ class UInterface extends Smarty {
 			//Get favicon
 			$favicon = Theme::getFirstThemeValue($allAppliedThemes, 'favicon');
 			if ($favicon) {
-				$this->assign('favicon', '/files/original/' . $favicon);
+				$this->assign('favicon', self::getThemeImageUrl($favicon));
 			}
 
 			$themeCss = $primaryTheme->generatedCss;
