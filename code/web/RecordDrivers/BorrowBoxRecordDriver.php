@@ -314,7 +314,7 @@ class BorrowBoxRecordDriver extends GroupedWorkSubDriver {
 	public function getDescriptionFast() {
 		$metaData = $this->getBorrowBoxMetaData();
 		if ($metaData !== null) {
-			return $metaData->fullDescription;
+			return $metaData->summary;
 		}
 		return '';
 	}
@@ -322,7 +322,7 @@ class BorrowBoxRecordDriver extends GroupedWorkSubDriver {
 	public function getDescription() {
 		$metaData = $this->getBorrowBoxMetaData();
 		if ($metaData !== null) {
-			return $metaData->fullDescription;
+			return $metaData->summary;
 		}
 		return '';
 	}
@@ -591,8 +591,8 @@ class BorrowBoxRecordDriver extends GroupedWorkSubDriver {
 		$metaData = $this->getBorrowBoxMetaData();
 		if ($metaData !== null) {
 			$rawData = json_decode($metaData->rawData ?? '{}');
-			if (isset($rawData->publishDate)) {
-				$publishYear = substr($rawData->publishDate, 0, 4);
+			if (isset($rawData->releaseDate)) {
+				$publishYear = substr($rawData->releaseDate, 0, 4);
 				$publicationDates[] = $publishYear;
 			}
 		}

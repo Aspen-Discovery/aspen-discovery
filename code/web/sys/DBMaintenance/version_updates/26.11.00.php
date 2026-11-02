@@ -78,7 +78,7 @@ function getUpdates26_11_00(): array {
 					weight,
 					description
 				) VALUES (
-					'eContent - BorrowBox',
+					'Cataloging & eContent',
 					'Administer BorrowBox',
 					'BorrowBox',
 					10,
@@ -134,7 +134,9 @@ function getUpdates26_11_00(): array {
 				"CREATE TABLE IF NOT EXISTS library_borrowbox_scope (
 					id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
 					scopeId INT(11) NOT NULL,
-					libraryId INT(11) NOT NULL
+					libraryId INT(11) NOT NULL,
+					weight INT(11) NOT NULL DEFAULT 1,
+					UNIQUE KEY libraryId (libraryId, scopeId)
 				) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
 			]
 		], //library_borrowbox_scope
@@ -146,7 +148,8 @@ function getUpdates26_11_00(): array {
 					id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
 					scopeId INT(11) NOT NULL,
 					locationId INT(11) NOT NULL,
-					weight INT(11) DEFAULT 0
+					weight INT(11) NOT NULL DEFAULT 1,
+					UNIQUE KEY locationId (locationId, scopeId)
 				) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
 			]
 		], //location_borrowbox_scope
@@ -160,7 +163,8 @@ function getUpdates26_11_00(): array {
 					settingId INT(11) NOT NULL,
 					libraryId INT(11) NOT NULL,
 					siteId VARCHAR(50),
-					circulationEnabled TINYINT(1) DEFAULT 1
+					circulationEnabled TINYINT(1) DEFAULT 1,
+					UNIQUE KEY settingId (settingId, libraryId)
 				) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
 			]
 		], //library_borrowbox_settings
@@ -172,23 +176,25 @@ function getUpdates26_11_00(): array {
 					id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
 					borrowboxId VARCHAR(50) NOT NULL,
 					isbn13 VARCHAR(13),
-					format VARCHAR(20),
+					mediaType VARCHAR(50),
 					title VARCHAR(512),
-					subTitle VARCHAR(255),
+					subtitle VARCHAR(255),
 					series VARCHAR(255),
 					seriesNumber INT(11),
 					primaryCreatorName VARCHAR(215),
-					publisher VARCHAR(255),
 					cover VARCHAR(500),
 					dateAdded INT(11),
 					dateUpdated INT(11),
 					lastMetadataCheck INT(11),
-					lastAvailabilityCheck INT(11),
+					lastMetadataChange INT(11),
 					deleted TINYINT(1) DEFAULT 0,
 					dateDeleted INT(11),
 					lastSeen INT(11) DEFAULT 0,
-					rawResponse MEDIUMTEXT,
-					UNIQUE KEY borrowboxId (borrowboxId)
+					UNIQUE KEY borrowboxId (borrowboxId),
+					KEY dateUpdated (dateUpdated),
+					KEY lastMetadataCheck (lastMetadataCheck),
+					KEY deleted (deleted),
+					KEY lastSeen (lastSeen)
 				) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
 			]
 		], //borrowbox_api_products
@@ -200,14 +206,12 @@ function getUpdates26_11_00(): array {
 					id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
 					productId INT(11) NOT NULL,
 					checksum VARCHAR(40),
-					sortTitle VARCHAR(512),
 					publisher VARCHAR(255),
-					publishDate INT(11),
-					shortDescription TEXT,
-					fullDescription TEXT,
-					rawData MEDIUMTEXT,
-					thumbnail VARCHAR(500),
-					cover VARCHAR(500)
+					releaseDate BIGINT,
+					summary TEXT,
+					cover VARCHAR(500),
+					rawData MEDIUMBLOB,
+					UNIQUE KEY productId (productId)
 				) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
 			]
 		], //borrowbox_api_product_metadata
@@ -218,12 +222,12 @@ function getUpdates26_11_00(): array {
 				"CREATE TABLE IF NOT EXISTS borrowbox_api_product_availability (
 					id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
 					productId INT(11) NOT NULL,
-					borrowboxId VARCHAR(50) NOT NULL,
+					settingId INT(11) NOT NULL,
+					borrowboxId VARCHAR(50),
 					siteId VARCHAR(50) NOT NULL,
 					availabilityStatus VARCHAR(20),
 					nextAvailableDate INT(11),
-					lastChange INT(11),
-					settingId INT(11) NOT NULL
+					UNIQUE KEY productId (productId, settingId, siteId)
 				) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
 			]
 		], //borrowbox_api_product_availability
@@ -236,6 +240,7 @@ function getUpdates26_11_00(): array {
 					instance VARCHAR(100),
 					year INT(4),
 					month INT(2),
+					day INT(2),
 					numCheckouts INT(11) DEFAULT 0,
 					numFailedCheckouts INT(11) DEFAULT 0,
 					numRenewals INT(11) DEFAULT 0,
@@ -244,7 +249,8 @@ function getUpdates26_11_00(): array {
 					numFailedHolds INT(11) DEFAULT 0,
 					numHoldsCancelled INT(11) DEFAULT 0,
 					numApiErrors INT(11) DEFAULT 0,
-					numConnectionFailures INT(11) DEFAULT 0
+					numConnectionFailures INT(11) DEFAULT 0,
+					KEY instance (instance, year, month, day)
 				) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
 			]
 		], //borrowbox_stats
@@ -258,7 +264,10 @@ function getUpdates26_11_00(): array {
 					userId INT(11) NOT NULL,
 					year INT(4),
 					month INT(2),
-					usageCount INT(11) DEFAULT 0
+					day INT(2),
+					usageCount INT(11) DEFAULT 0,
+					UNIQUE KEY instance (instance, userId, year, month, day),
+					KEY year (year, month, day)
 				) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
 			]
 		], //user_borrowbox_usage
@@ -272,8 +281,11 @@ function getUpdates26_11_00(): array {
 					borrowboxId VARCHAR(50) NOT NULL,
 					year INT(4),
 					month INT(2),
+					day INT(2),
 					timesHeld INT(11) DEFAULT 0,
-					timesCheckedOut INT(11) DEFAULT 0
+					timesCheckedOut INT(11) DEFAULT 0,
+					UNIQUE KEY instance (instance, borrowboxId, year, month, day),
+					KEY year (year, month, day)
 				) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
 			]
 		], //borrowbox_record_usage
@@ -296,7 +308,8 @@ function getUpdates26_11_00(): array {
 					numSkipped INT(11) DEFAULT 0,
 					numAvailabilityChanges INT(11) DEFAULT 0,
 					numMetadataChanges INT(11) DEFAULT 0,
-					numInvalidRecords INT(11) DEFAULT 0
+					numInvalidRecords INT(11) DEFAULT 0,
+					KEY startTime (startTime)
 				) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
 			]
 		], //borrowbox_extract_log

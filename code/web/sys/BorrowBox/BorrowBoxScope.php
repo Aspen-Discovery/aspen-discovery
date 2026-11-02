@@ -32,12 +32,10 @@ class BorrowBoxScope extends DataObject {
 		require_once ROOT_DIR . '/sys/BorrowBox/LibraryBorrowBoxScope.php';
 		$libraryBorrowBoxScopeStructure = LibraryBorrowBoxScope::getObjectStructure($context);
 		unset($libraryBorrowBoxScopeStructure['scopeId']);
-		unset($libraryBorrowBoxScopeStructure['weight']);
 
 		require_once ROOT_DIR . '/sys/BorrowBox/LocationBorrowBoxScope.php';
 		$locationBorrowBoxScopeStructure = LocationBorrowBoxScope::getObjectStructure($context);
 		unset($locationBorrowBoxScopeStructure['scopeId']);
-		unset($locationBorrowBoxScopeStructure['weight']);
 
 		$structure = [
 			'id' => [
@@ -152,89 +150,92 @@ class BorrowBoxScope extends DataObject {
 	}
 
 	public function saveLibraries() : void {
-		if (isset ($this->_libraries) && is_array($this->_libraries)) {
-			$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Libraries'));
-			foreach ($libraryList as $libraryId => $displayName) {
-				$library = new Library();
-				$library->libraryId = $libraryId;
-				if ($library->find(true)) {
-					$libraryBorrowBoxScopes = $library->getLibraryBorrowBoxScopes();
-					if (in_array($libraryId, $this->_libraries)) {
-						$foundScope = false;
-						foreach ($libraryBorrowBoxScopes as $libraryBorrowBoxScope) {
-							if ($libraryBorrowBoxScope->scopeId == $this->id) {
-								$foundScope = true;
-								break;
-							}
-						}
-						//We want to apply the scope to this library
-						if (!$foundScope) {
-							$libraryBorrowBoxScope = new LibraryBorrowBoxScope();
-							$libraryBorrowBoxScope->scopeId = $this->id;
-							$libraryBorrowBoxScope->libraryId = $libraryId;
-							$libraryBorrowBoxScope->insert();
-						}
-					} else {
-						//It should not be applied to this scope. Only change if it was applied previously
-						foreach ($libraryBorrowBoxScopes as $libraryBorrowBoxScope) {
-							if ($libraryBorrowBoxScope->scopeId == $this->id) {
-								$libraryBorrowBoxScope->delete();
-							}
-						}
+		$librariesLoaded = isset($this->_libraries) && is_array($this->_libraries);
+		if (!$librariesLoaded) {
+			return;
+		}
+		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Libraries'));
+		foreach ($libraryList as $libraryId => $displayName) {
+			$library = new Library();
+			$library->libraryId = $libraryId;
+			if (!$library->find(true)) {
+				continue;
+			}
+			$libraryBorrowBoxScopes = $library->getLibraryBorrowBoxScopes();
+			if (in_array($libraryId, $this->_libraries)) {
+				$foundScope = false;
+				foreach ($libraryBorrowBoxScopes as $libraryBorrowBoxScope) {
+					if ($libraryBorrowBoxScope->scopeId == $this->id) {
+						$foundScope = true;
+						break;
+					}
+				}
+				if (!$foundScope) {
+					$libraryBorrowBoxScope = new LibraryBorrowBoxScope();
+					$libraryBorrowBoxScope->scopeId = $this->id;
+					$libraryBorrowBoxScope->libraryId = $libraryId;
+					$libraryBorrowBoxScope->insert();
+				}
+			} else {
+				foreach ($libraryBorrowBoxScopes as $libraryBorrowBoxScope) {
+					if ($libraryBorrowBoxScope->scopeId == $this->id) {
+						$libraryBorrowBoxScope->delete();
 					}
 				}
 			}
-			unset($this->_libraries);
 		}
+		unset($this->_libraries);
 	}
 
 	public function saveLocations() : void {
-		if (isset ($this->_locations) && is_array($this->_locations)) {
-			$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All Libraries') || UserAccount::userHasPermission('Administer Home Library Locations'));
-			foreach ($locationList as $locationId => $displayName) {
-				$location = new Location();
-				$location->locationId = $locationId;
-				if ($location->find(true)) {
-					$locationBorrowBoxScopes = $location->getLocationBorrowBoxScopes();
-					if (in_array($locationId, $this->_locations)) {
-						$foundScope = false;
-						foreach ($locationBorrowBoxScopes as $locationBorrowBoxScope) {
-							if ($locationBorrowBoxScope->scopeId == $this->id) {
-								$foundScope = true;
-								break;
-							}
-						}
-						//We want to apply the scope to this location
-						if (!$foundScope) {
-							$locationBorrowBoxScope = new LocationBorrowBoxScope();
-							$locationBorrowBoxScope->scopeId = $this->id;
-							$locationBorrowBoxScope->locationId = $locationId;
-							$locationBorrowBoxScope->insert();
-						}
-					} else {
-						//It should not be applied to this scope. Only change if it was applied previously
-						foreach ($locationBorrowBoxScopes as $locationBorrowBoxScope) {
-							if ($locationBorrowBoxScope->scopeId == $this->id) {
-								$locationBorrowBoxScope->delete();
-							}
-						}
+		$locationsLoaded = isset($this->_locations) && is_array($this->_locations);
+		if (!$locationsLoaded) {
+			return;
+		}
+		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All Libraries') || UserAccount::userHasPermission('Administer Home Library Locations'));
+		foreach ($locationList as $locationId => $displayName) {
+			$location = new Location();
+			$location->locationId = $locationId;
+			if (!$location->find(true)) {
+				continue;
+			}
+			$locationBorrowBoxScopes = $location->getLocationBorrowBoxScopes();
+			if (in_array($locationId, $this->_locations)) {
+				$foundScope = false;
+				foreach ($locationBorrowBoxScopes as $locationBorrowBoxScope) {
+					if ($locationBorrowBoxScope->scopeId == $this->id) {
+						$foundScope = true;
+						break;
+					}
+				}
+				if (!$foundScope) {
+					$locationBorrowBoxScope = new LocationBorrowBoxScope();
+					$locationBorrowBoxScope->scopeId = $this->id;
+					$locationBorrowBoxScope->locationId = $locationId;
+					$locationBorrowBoxScope->insert();
+				}
+			} else {
+				foreach ($locationBorrowBoxScopes as $locationBorrowBoxScope) {
+					if ($locationBorrowBoxScope->scopeId == $this->id) {
+						$locationBorrowBoxScope->delete();
 					}
 				}
 			}
-			unset($this->_locations);
 		}
+		unset($this->_locations);
 	}
 
 	/** @return LibraryBorrowBoxScope[] */
 	public function getLibraries() : array {
-		if (!isset($this->_libraries)) {
-			$this->_libraries = [];
-			if ($this->id > 0) {
-				require_once ROOT_DIR . '/sys/BorrowBox/LibraryBorrowBoxScope.php';
-				$libraryBorrowBoxScope = new LibraryBorrowBoxScope();
-				$libraryBorrowBoxScope->scopeId = $this->id;
-				$this->_libraries = $libraryBorrowBoxScope->fetchAll('libraryId');
-			}
+		if (isset($this->_libraries)) {
+			return $this->_libraries;
+		}
+		$this->_libraries = [];
+		if ($this->id > 0) {
+			require_once ROOT_DIR . '/sys/BorrowBox/LibraryBorrowBoxScope.php';
+			$libraryBorrowBoxScope = new LibraryBorrowBoxScope();
+			$libraryBorrowBoxScope->scopeId = $this->id;
+			$this->_libraries = $libraryBorrowBoxScope->fetchAll('libraryId');
 		}
 		return $this->_libraries;
 	}
@@ -243,14 +244,15 @@ class BorrowBoxScope extends DataObject {
 	 * @noinspection PhpUnused
 	 */
 	public function getLocations() : array {
-		if (!isset($this->_locations)) {
-			$this->_locations = [];
-			if ($this->id > 0) {
-				require_once ROOT_DIR . '/sys/BorrowBox/LocationBorrowBoxScope.php';
-				$locationBorrowBoxScope = new LocationBorrowBoxScope();
-				$locationBorrowBoxScope->scopeId = $this->id;
-				$this->_locations = $locationBorrowBoxScope->fetchAll('locationId');
-			}
+		if (isset($this->_locations)) {
+			return $this->_locations;
+		}
+		$this->_locations = [];
+		if ($this->id > 0) {
+			require_once ROOT_DIR . '/sys/BorrowBox/LocationBorrowBoxScope.php';
+			$locationBorrowBoxScope = new LocationBorrowBoxScope();
+			$locationBorrowBoxScope->scopeId = $this->id;
+			$this->_locations = $locationBorrowBoxScope->fetchAll('locationId');
 		}
 		return $this->_locations;
 	}
@@ -266,13 +268,13 @@ class BorrowBoxScope extends DataObject {
 	}
 
 	public function clearLibraries() : void {
-		$this->clearOneToManyOptions('Library', 'borrowBoxScopeId');
+		$this->clearOneToManyOptions('LibraryBorrowBoxScope', 'scopeId');
 		unset($this->_libraries);
 	}
 
 	/** @noinspection PhpUnused */
 	public function clearLocations() : void {
-		$this->clearOneToManyOptions('Location', 'borrowBoxScopeId');
+		$this->clearOneToManyOptions('LocationBorrowBoxScope', 'scopeId');
 		unset($this->_locations);
 	}
 }

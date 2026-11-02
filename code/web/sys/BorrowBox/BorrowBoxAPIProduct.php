@@ -1,33 +1,30 @@
 <?php /** @noinspection PhpMissingFieldTypeInspection */
 
 class BorrowBoxAPIProduct extends DataObject {
-	public $__table = 'borrowbox_api_products';   // table name
+	public $__table = 'borrowbox_api_products';
 
 	public $id;
 	public $borrowboxId;
 	public $isbn13;
-	public $format;
+	public $mediaType;
 	public $title;
-	public $subTitle;
+	public $subtitle;
 	public $series;
 	/** @noinspection PhpUnused */
 	public $seriesNumber;
 	public $primaryCreatorName;
-	public $publisher;
 	public $cover;
 	public $dateAdded;
 	public $dateUpdated;
 	/** @noinspection PhpUnused */
 	public $lastMetadataCheck;
 	/** @noinspection PhpUnused */
-	public $lastAvailabilityCheck;
+	public $lastMetadataChange;
 	public $deleted;
 	/** @noinspection PhpUnused */
 	public $dateDeleted;
 	/** @noinspection PhpUnused */
 	public $lastSeen;
-	/** @noinspection PhpUnused */
-	public $rawResponse;
 
 	private static $_preloadedProducts = [];
 
@@ -58,14 +55,12 @@ class BorrowBoxAPIProduct extends DataObject {
 	static function getBorrowBoxProductForId(string $borrowboxId) : ?BorrowBoxAPIProduct {
 		if (isset(self::$_preloadedProducts[$borrowboxId])) {
 			return self::$_preloadedProducts[$borrowboxId];
-		}else{
-			$borrowBoxProduct = new BorrowBoxAPIProduct();
-			$borrowBoxProduct->borrowboxId = $borrowboxId;
-			if ($borrowBoxProduct->find(true)) {
-				return $borrowBoxProduct;
-			}else{
-				return null;
-			}
 		}
+		$borrowBoxProduct = new BorrowBoxAPIProduct();
+		$borrowBoxProduct->borrowboxId = $borrowboxId;
+		if (!$borrowBoxProduct->find(true)) {
+			return null;
+		}
+		return $borrowBoxProduct;
 	}
 }

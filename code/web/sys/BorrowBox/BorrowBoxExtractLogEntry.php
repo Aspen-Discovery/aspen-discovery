@@ -3,7 +3,7 @@
 require_once ROOT_DIR . '/sys/BaseLogEntry.php';
 
 class BorrowBoxExtractLogEntry extends BaseLogEntry {
-	public $__table = 'borrowbox_extract_log';   // table name
+	public $__table = 'borrowbox_extract_log';
 	public $id;
 	public $settingId;
 	public $notes;

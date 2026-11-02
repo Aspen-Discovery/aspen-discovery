@@ -9,7 +9,7 @@ class UserBorrowBoxUsage extends DataObject {
 	public $year;
 	public $month;
 	public $day;
-	public $usageCount; //Number of holds/checkouts
+	public $usageCount;
 
 	public function getUniquenessFields(): array {
 		return [
@@ -36,10 +36,9 @@ class UserBorrowBoxUsage extends DataObject {
 			$okToExport = false;
 			$user = new User();
 			$user->id = $this->userId;
-			if ($user->find(true)) {
-				if ($user->homeLocationId == 0 || in_array($user->homeLocationId, $selectedFilters['locations'])) {
-					$okToExport = true;
-				}
+			$userMatchesLocationFilter = $user->find(true) && ($user->homeLocationId == 0 || in_array($user->homeLocationId, $selectedFilters['locations']));
+			if ($userMatchesLocationFilter) {
+				$okToExport = true;
 			}
 		}
 		return $okToExport;
@@ -57,13 +56,14 @@ class UserBorrowBoxUsage extends DataObject {
 
 	public function loadEmbeddedLinksFromJSON($jsonData, $mappings, string $overrideExisting = 'keepExisting') : void {
 		parent::loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting);
-		if (isset($jsonData['user'])) {
-			$username = $jsonData['user'];
-			$user = new User();
-			$user->ils_barcode = $username;
-			if ($user->find(true)) {
-				$this->userId = $user->id;
-			}
+		if (!isset($jsonData['user'])) {
+			return;
+		}
+		$username = $jsonData['user'];
+		$user = new User();
+		$user->ils_barcode = $username;
+		if ($user->find(true)) {
+			$this->userId = $user->id;
 		}
 	}
 }

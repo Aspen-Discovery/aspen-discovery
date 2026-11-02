@@ -3,7 +3,7 @@ require_once ROOT_DIR . '/sys/BorrowBox/BorrowBoxScope.php';
 require_once ROOT_DIR . '/sys/BorrowBox/LibraryBorrowBoxSettings.php';
 
 class BorrowBoxSetting extends DataObject {
-	public $__table = 'borrowbox_settings';    // table name
+	public $__table = 'borrowbox_settings';
 	public $id;
 	public $name;
 	public $apiUrl;
@@ -215,20 +215,21 @@ class BorrowBoxSetting extends DataObject {
 	public function insert(string $context = '') : int|bool {
 		$this->apiUrl = rtrim($this->apiUrl, '/');
 		$ret = parent::insert();
-		if ($ret !== FALSE) {
-			if (empty($this->_scopes)) {
-				$this->_scopes = [];
-				$allScope = new BorrowBoxScope();
-				$allScope->settingId = $this->id;
-				$allScope->name = "All Records";
-				$allScope->includeAdult = true;
-				$allScope->includeKids = true;
-				$allScope->includeTeen = true;
-				$this->_scopes[] = $allScope;
-			}
-			$this->saveScopes();
-			$this->saveLibrarySettings();
+		if ($ret === FALSE) {
+			return $ret;
 		}
+		if (empty($this->_scopes)) {
+			$this->_scopes = [];
+			$allScope = new BorrowBoxScope();
+			$allScope->settingId = $this->id;
+			$allScope->name = "All Records";
+			$allScope->includeAdult = true;
+			$allScope->includeKids = true;
+			$allScope->includeTeen = true;
+			$this->_scopes[] = $allScope;
+		}
+		$this->saveScopes();
+		$this->saveLibrarySettings();
 		return $ret;
 	}
 

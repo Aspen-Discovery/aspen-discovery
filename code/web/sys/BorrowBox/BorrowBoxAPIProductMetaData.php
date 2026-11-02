@@ -1,21 +1,17 @@
 <?php /** @noinspection PhpMissingFieldTypeInspection */
 
 class BorrowBoxAPIProductMetaData extends DataObject {
-	public $__table = 'borrowbox_api_product_metadata';   // table name
+	public $__table = 'borrowbox_api_product_metadata';
 
 	public $id;
 	public $productId;
 	/** @noinspection PhpUnused */
 	public $checksum;
-	public $sortTitle;
 	public $publisher;
-	public $publishDate;
-	/** @noinspection PhpUnused */
-	public $shortDescription;
-	public $fullDescription;
-	public $rawData;
-	public $thumbnail;
+	public $releaseDate;
+	public $summary;
 	public $cover;
+	public $rawData;
 
 	private $decodedRawData = null;
 

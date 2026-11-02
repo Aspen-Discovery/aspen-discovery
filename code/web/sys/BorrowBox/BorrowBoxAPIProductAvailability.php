@@ -1,16 +1,15 @@
 <?php /** @noinspection PhpMissingFieldTypeInspection */
 
 class BorrowBoxAPIProductAvailability extends DataObject {
-	public $__table = 'borrowbox_api_product_availability';   // table name
+	public $__table = 'borrowbox_api_product_availability';
 
 	public $id;
 	public $productId;
+	public $settingId;
 	public $borrowboxId;
 	public $siteId;
 	public $availabilityStatus;
 	public $nextAvailableDate;
-	public $lastChange;
-	public $settingId;
 
 	private $_settingName;
 
