@@ -435,7 +435,7 @@ abstract class AbstractAPI extends Action{
 			if ($userLanguage->find(true)) {
 				if ($userLanguage->code != $activeLanguage->code) {
 					$activeLanguage = $userLanguage;
-					$translator = new Translator('lang', $userLanguage->code);
+					$translator = new Translator(ROOT_DIR . '/lang', $userLanguage->code);
 				}
 			}
 		}

@@ -121,7 +121,7 @@ global $translator;
 $activeLanguage = $validLanguages[$language];
 $interface->assign('validLanguages', $validLanguages);
 if ($translator == null) {
-	$translator = new Translator('lang', $language);
+	$translator = new Translator(ROOT_DIR . '/lang', $language);
 }
 $timer->logTime('Translator setup');
 $interface->assign('translationModeActive', $translator->translationModeActive());
