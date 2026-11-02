@@ -494,6 +494,18 @@ class BorrowBoxRecordDriver extends GroupedWorkSubDriver {
 		return $bookCoverUrl;
 	}
 
+	public function getBorrowBoxBookcoverUrl(): ?string {
+		if (!empty($this->borrowBoxProduct->cover)) {
+			return $this->borrowBoxProduct->cover;
+		}
+		$metaData = $this->getBorrowBoxMetaData();
+		$metaDataHasCover = $metaData !== null && !empty($metaData->cover);
+		if ($metaDataHasCover) {
+			return $metaData->cover;
+		}
+		return null;
+	}
+
 	private function getBorrowBoxMetaData(): ?object {
 		$metaDataNeedsLoading = $this->borrowBoxMetaData == null && $this->borrowBoxProduct !== null;
 		if ($metaDataNeedsLoading) {
