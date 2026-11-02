@@ -10,6 +10,7 @@ class OmekaSetting extends DataObject {
 	public $siteSlug;
 	public $apiKeyIdentity;
 	public $apiKeyCredential;
+	public $groupItemsByTitle;
 	public $runFullUpdate;
 	/** @noinspection PhpUnused */
 	public $lastUpdateOfChangedRecords;
@@ -87,6 +88,14 @@ class OmekaSetting extends DataObject {
 				'description' => 'The key_credential value for the Omeka S API or the API key for Omeka Classic. Leave blank for anonymous access to public items.',
 				'maxLength' => 255,
 				'hideInLists' => true,
+			],
+			'groupItemsByTitle' => [
+				'property' => 'groupItemsByTitle',
+				'type' => 'checkbox',
+				'label' => 'Group items with matching title and author',
+				'description' => 'Group items that share a title, author, and format into one work. Leave unchecked to give each item its own work.',
+				'default' => 0,
+				'forcesReindex' => true,
 			],
 			'runFullUpdate' => [
 				'property' => 'runFullUpdate',

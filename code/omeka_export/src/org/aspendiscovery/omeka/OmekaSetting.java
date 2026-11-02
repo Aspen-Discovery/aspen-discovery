@@ -14,6 +14,7 @@ public class OmekaSetting {
 	private final String apiKeyIdentity;
 	private final String apiKeyCredential;
 	private final boolean doFullReload;
+	private final boolean groupItemsByTitle;
 	private final long lastUpdateOfChangedRecords;
 	private final long lastUpdateOfAllRecords;
 
@@ -25,6 +26,7 @@ public class OmekaSetting {
 		apiKeyIdentity = settingsRS.getString("apiKeyIdentity");
 		apiKeyCredential = decryptCredential(settingsRS.getString("apiKeyCredential"), serverName, logger);
 		doFullReload = settingsRS.getBoolean("runFullUpdate");
+		groupItemsByTitle = settingsRS.getBoolean("groupItemsByTitle");
 		lastUpdateOfChangedRecords = settingsRS.getLong("lastUpdateOfChangedRecords");
 		lastUpdateOfAllRecords = settingsRS.getLong("lastUpdateOfAllRecords");
 	}
@@ -66,6 +68,10 @@ public class OmekaSetting {
 
 	boolean doFullReload() {
 		return doFullReload;
+	}
+
+	boolean groupsItemsByTitle() {
+		return groupItemsByTitle;
 	}
 
 	long getLastUpdateOfChangedRecords() {

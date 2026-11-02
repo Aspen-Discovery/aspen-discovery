@@ -715,7 +715,7 @@ public class OmekaExtractor {
 		if (itemDetails == null) {
 			return;
 		}
-		String groupedWorkId = getRecordGroupingProcessor().groupOmekaRecord(itemDetails, titleId);
+		String groupedWorkId = getRecordGroupingProcessor().groupOmekaRecord(itemDetails, titleId, setting.groupsItemsByTitle());
 		if (groupedWorkId != null) {
 			getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
 		}
