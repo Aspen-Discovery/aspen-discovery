@@ -8092,42 +8092,44 @@ class Koha extends AbstractIlsDriver {
 		if($errorAlt) {
 			$code = $errorAlt;
 		}
-		if ($code == "too_many") {
-			$message .= 'Renewed the maximum number of times';
-		} elseif ($code == "no_item") {
-			$message .= 'No matching item could be found';
-		} elseif ($code == "too_soon") {
-			$message .= 'Cannot be renewed yet';
-		} elseif ($code == "no_checkout") {
-			$message .= 'Item is not checked out';
-		} elseif ($code == "auto_too_soon") {
-			$message .= 'Scheduled for automatic renewal and cannot be renewed yet';
-		} elseif ($code == "auto_too_late") {
-			$message .= 'Scheduled for automatic renewal and cannot be renewed any more';
-		} elseif ($code == "auto_account_expired") {
-			$message .= 'Scheduled for automatic renewal and cannot be renewed because the patron\'s account has expired';
-		} elseif ($code == "auto_renew") {
-			$message .= 'Scheduled for automatic renewal';
-		} elseif ($code == "auto_too_much_oweing") {
-			$message .= 'Scheduled for automatic renewal and cannot be renewed because the patron has too many outstanding charges';
-		} elseif ($code == "on_reserve") {
-			$message .= 'On hold for another patron';
-		} elseif ($code == "patron_restricted") {
-			$message .= 'Patron is currently restricted';
-		} elseif ($code == "item_denied_renewal") {
-			$message .= 'Item is not allowed renewal';
-		} elseif ($code == "onsite_checkout") {
-			$message .= 'Item is an onsite checkout';
-		} elseif ($code == "has_fine") {
-			$message .= 'Item has an outstanding fine';
-		} elseif ($code == "overdue") {
-			$message .= "Renewal is blocked by an overdue item";
-		} elseif (!empty($code)) {
-			$message = 'Unknown error:' . $code;
-		} else {
-			$message = 'Unknown error';
+		$codeIsMissing = empty($code);
+		if ($codeIsMissing) {
+			return 'Unknown error';
 		}
-		return $message;
+		switch ($code) {
+			case 'too_many':
+				return $message . 'Renewed the maximum number of times';
+			case 'no_item':
+				return $message . 'No matching item could be found';
+			case 'too_soon':
+				return $message . 'Cannot be renewed yet';
+			case 'no_checkout':
+				return $message . 'Item is not checked out';
+			case 'auto_too_soon':
+				return $message . 'Scheduled for automatic renewal and cannot be renewed yet';
+			case 'auto_too_late':
+				return $message . 'Scheduled for automatic renewal and cannot be renewed any more';
+			case 'auto_account_expired':
+				return $message . 'Scheduled for automatic renewal and cannot be renewed because the patron\'s account has expired';
+			case 'auto_renew':
+				return $message . 'Scheduled for automatic renewal';
+			case 'auto_too_much_oweing':
+				return $message . 'Scheduled for automatic renewal and cannot be renewed because the patron has too many outstanding charges';
+			case 'on_reserve':
+				return $message . 'On hold for another patron';
+			case 'patron_restricted':
+				return $message . 'Patron is currently restricted';
+			case 'item_denied_renewal':
+				return $message . 'Item is not allowed renewal';
+			case 'onsite_checkout':
+				return $message . 'Item is an onsite checkout';
+			case 'has_fine':
+				return $message . 'Item has an outstanding fine';
+			case 'overdue':
+				return $message . 'Renewal is blocked by an overdue item';
+			default:
+				return 'Unknown error:' . $code;
+		}
 	}
 
 	public function getCurbsidePickupSettings(string $locationCode): array {
