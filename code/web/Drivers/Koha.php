@@ -671,10 +671,7 @@ class Koha extends AbstractIlsDriver {
 						}
 					} else {
 						if($allowRenewals['message']) {
-							$curCheckout->renewError = translate([
-								'text' => $allowRenewals['message'],
-								'isPublicFacing' => true,
-							]);
+							$curCheckout->renewError = $allowRenewals['message'];
 						}
 					}
 				}
@@ -8116,7 +8113,10 @@ class Koha extends AbstractIlsDriver {
 			case 'auto_too_much_oweing':
 				return $message . 'Scheduled for automatic renewal and cannot be renewed because the patron has too many outstanding charges';
 			case 'on_reserve':
-				return $message . 'On hold for another patron';
+				return $message . translate([
+					'text' => 'On hold for another patron',
+					'isPublicFacing' => true,
+				]);
 			case 'patron_restricted':
 				return $message . 'Patron is currently restricted';
 			case 'item_denied_renewal':
