@@ -39,6 +39,7 @@ public class OmekaProcessor {
 		String baseUrl;
 		boolean isClassic;
 		String siteSlug;
+		boolean indexFileMetadata;
 
 		String getPublicUrl(long omekaId) {
 			if (isClassic) {
@@ -54,7 +55,7 @@ public class OmekaProcessor {
 
 		try {
 			getProductInfoStmt = dbConn.prepareStatement("SELECT id, settingId, omekaId, title, mediaType, thumbnailUrl, itemSetIds, dateFirstDetected, deleted, UNCOMPRESS(rawResponse) as rawResponse from omeka_title where id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			PreparedStatement getSettingsStmt = dbConn.prepareStatement("SELECT id, name, baseUrl, apiVersion, siteSlug from omeka_settings", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement getSettingsStmt = dbConn.prepareStatement("SELECT id, name, baseUrl, apiVersion, siteSlug, indexFileMetadata from omeka_settings", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			ResultSet settingsRS = getSettingsStmt.executeQuery();
 			while (settingsRS.next()) {
 				OmekaSettingInfo settingInfo = new OmekaSettingInfo();
@@ -63,6 +64,7 @@ public class OmekaProcessor {
 				settingInfo.baseUrl = settingsRS.getString("baseUrl");
 				settingInfo.isClassic = "classic".equals(settingsRS.getString("apiVersion"));
 				settingInfo.siteSlug = settingsRS.getString("siteSlug");
+				settingInfo.indexFileMetadata = settingsRS.getBoolean("indexFileMetadata");
 				if (settingInfo.baseUrl != null && settingInfo.baseUrl.endsWith("/")) {
 					settingInfo.baseUrl = settingInfo.baseUrl.substring(0, settingInfo.baseUrl.length() - 1);
 				}
@@ -161,6 +163,19 @@ public class OmekaProcessor {
 			}
 		}
 		return literalValues;
+	}
+
+	private static void indexMediaMetadata(AbstractGroupedWorkSolr groupedWork, JSONObject itemDetails) {
+		HashSet<String> mediaTexts = getAllMediaTexts(itemDetails);
+		if (!mediaTexts.isEmpty()) {
+			groupedWork.addKeywords(mediaTexts);
+		}
+		HashSet<String> mediaSubjects = getAllMediaLiteralValues(itemDetails, "dcterms:subject");
+		if (mediaSubjects.isEmpty()) {
+			return;
+		}
+		groupedWork.addTopic(mediaSubjects);
+		groupedWork.addTopicFacet(mediaSubjects);
 	}
 
 	private static HashSet<String> getAllMediaLiteralValues(JSONObject itemDetails, String property) {
@@ -455,14 +470,8 @@ public class OmekaProcessor {
 				groupedWork.addKeywords(subjects);
 			}
 
-			HashSet<String> mediaTexts = getAllMediaTexts(itemDetails);
-			if (!mediaTexts.isEmpty()) {
-				groupedWork.addKeywords(mediaTexts);
-			}
-			HashSet<String> mediaSubjects = getAllMediaLiteralValues(itemDetails, "dcterms:subject");
-			if (!mediaSubjects.isEmpty()) {
-				groupedWork.addTopic(mediaSubjects);
-				groupedWork.addTopicFacet(mediaSubjects);
+			if (settingInfo.indexFileMetadata) {
+				indexMediaMetadata(groupedWork, itemDetails);
 			}
 
 			groupedWork.addTargetAudience("Unknown", omekaRecord);

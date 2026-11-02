@@ -54,6 +54,7 @@ function getUpdates26_11_00(): array {
 					apiKeyIdentity VARCHAR(255) DEFAULT \'\',
 					apiKeyCredential VARCHAR(255) DEFAULT \'\',
 					groupItemsByTitle TINYINT(1) DEFAULT 0,
+					indexFileMetadata TINYINT(1) DEFAULT 1,
 					runFullUpdate TINYINT(1) DEFAULT 0,
 					lastUpdateOfChangedRecords INT(11) DEFAULT 0,
 					lastUpdateOfAllRecords INT(11) DEFAULT 0

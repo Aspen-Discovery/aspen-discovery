@@ -11,6 +11,7 @@ class OmekaSetting extends DataObject {
 	public $apiKeyIdentity;
 	public $apiKeyCredential;
 	public $groupItemsByTitle;
+	public $indexFileMetadata;
 	public $runFullUpdate;
 	/** @noinspection PhpUnused */
 	public $lastUpdateOfChangedRecords;
@@ -95,6 +96,14 @@ class OmekaSetting extends DataObject {
 				'label' => 'Group items with matching title and author',
 				'description' => 'Group items that share a title, author, and format into one work. Leave unchecked to give each item its own work.',
 				'default' => 0,
+				'forcesReindex' => true,
+			],
+			'indexFileMetadata' => [
+				'property' => 'indexFileMetadata',
+				'type' => 'checkbox',
+				'label' => 'Include file metadata in search',
+				'description' => 'Make the Dublin Core metadata of each file attached to an item, such as titles and descriptions, searchable along with the item\'s own. Files are always listed on the record page. Leave unchecked when file titles are only filenames or page numbers.',
+				'default' => 1,
 				'forcesReindex' => true,
 			],
 			'runFullUpdate' => [
