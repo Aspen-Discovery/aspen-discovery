@@ -586,6 +586,176 @@ class BorrowBoxDriver extends AbstractEContentDriver {
 	}
 
 	/**
+	 * Checkout a title from BorrowBox.
+	 *
+	 * POST /v1/sites/{siteId}/patrons/{patronId}/loans?intent=LOAN&productId={id}
+	 *
+	 * @param User $patron
+	 * @param string $titleId The BorrowBox product ID
+	 * @return array
+	 */
+	public function checkOutTitle(User $patron, string $titleId): array {
+		$result = [
+			'success' => false,
+			'message' => translate(['text' => 'Unknown error checking out BorrowBox title.', 'isPublicFacing' => true]),
+			'api' => [
+				'title' => translate(['text' => 'Unable to checkout title', 'isPublicFacing' => true]),
+				'message' => translate(['text' => 'Unknown error checking out BorrowBox title.', 'isPublicFacing' => true]),
+			],
+		];
+
+		$this->setSettingsForProduct($titleId);
+		$loansUrl = $this->getPatronLoansUrl($patron);
+		if ($loansUrl === null) {
+			$result['message'] = translate(['text' => 'Unable to determine your library\'s BorrowBox configuration.', 'isPublicFacing' => true]);
+			$result['api']['message'] = $result['message'];
+			return $result;
+		}
+
+		$url = $loansUrl . '?intent=LOAN&productId=' . urlencode($titleId);
+		$response = $this->_callPostUrl($url, 'checkOutTitle');
+
+		if ($response === null) {
+			$this->incrementStat('numFailedCheckouts');
+			return $result;
+		}
+
+		$responseCode = $response->responseCode;
+		$body = $response->body;
+
+		$checkoutSucceeded = $responseCode == '200' && $body !== null && isset($body->loanId);
+		if ($checkoutSucceeded) {
+			$result['success'] = true;
+			$result['message'] = translate([
+				'text' => 'Your title was checked out successfully. You may now access the title from your Account.',
+				'isPublicFacing' => true,
+			]);
+
+			$result['api']['title'] = translate(['text' => 'Checked out title', 'isPublicFacing' => true]);
+			$result['api']['message'] = translate([
+				'text' => 'Your title was checked out successfully. You may now access the title from your Account.',
+				'isPublicFacing' => true,
+			]);
+			$result['api']['action'] = translate(['text' => 'Go to Checkouts', 'isPublicFacing' => true]);
+
+			$this->trackUserUsageOfBorrowBox($patron);
+			$this->trackRecordCheckout($titleId);
+			$this->incrementStat('numCheckouts');
+
+			$patron->lastReadingHistoryUpdate = 0;
+			$patron->update();
+
+			$accountSummary = $patron->getCachedAccountSummary('borrowbox');
+			$accountSummary->incrementNumberOfCheckouts();
+			$accountSummary->markCheckoutsStale();
+		} else {
+			$this->incrementStat('numFailedCheckouts');
+
+			$errorMessage = $this->extractErrorMessage($body);
+			$result['message'] = translate([
+				'text' => 'Sorry, we could not checkout this BorrowBox title to you.',
+				'isPublicFacing' => true,
+			]);
+			if (!empty($errorMessage)) {
+				$result['message'] .= ' ' . $errorMessage;
+			}
+
+			$result['api']['message'] = $result['message'];
+
+			$errorCode = ($body !== null && isset($body->error)) ? $body->error : null;
+			$noCopiesAvailable = $errorCode === 'loanError.availableForReserve' || $errorCode === 'loanError.noCopyAvailable';
+			if ($noCopiesAvailable) {
+				$result['noCopies'] = true;
+				$result['message'] .= "\r\n\r\n" . translate([
+					'text' => 'Would you like to place a hold instead?',
+					'isPublicFacing' => true,
+				]);
+				$result['api']['action'] = translate(['text' => 'Place a Hold', 'isPublicFacing' => true]);
+			} elseif ($errorCode === 'loanError.alreadyOnLoan') {
+				$result['message'] = translate([
+					'text' => 'This title is already checked out to you.',
+					'isPublicFacing' => true,
+				]);
+				$result['api']['message'] = $result['message'];
+				$result['api']['action'] = translate(['text' => 'Go to Checkouts', 'isPublicFacing' => true]);
+			}
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Return a BorrowBox checkout early.
+	 *
+	 * DELETE /v1/sites/{siteId}/patrons/{patronId}/loans/{loanId}
+	 *
+	 * @param User $patron
+	 * @param string $borrowboxId The loanId (may include _settingId suffix)
+	 * @return array
+	 */
+	public function returnCheckout(User $patron, string $borrowboxId): array {
+		$result = [
+			'success' => false,
+			'message' => translate(['text' => 'Unknown error returning BorrowBox title.', 'isPublicFacing' => true]),
+			'api' => [
+				'title' => translate(['text' => 'Unable to return title', 'isPublicFacing' => true]),
+				'message' => translate(['text' => 'Unknown error returning BorrowBox title.', 'isPublicFacing' => true]),
+			],
+		];
+
+		$loanId = $borrowboxId;
+		if (str_contains($borrowboxId, '_')) {
+			list($loanId, $settingId) = explode('_', $borrowboxId, 2);
+			$availableSettings = $this->getAvailableSettings();
+			if (isset($availableSettings[$settingId])) {
+				$this->setSettings($availableSettings[$settingId]);
+			}
+		}
+
+		$loansUrl = $this->getPatronLoansUrl($patron);
+		if ($loansUrl === null) {
+			$result['message'] = translate(['text' => 'Unable to determine your library\'s BorrowBox configuration.', 'isPublicFacing' => true]);
+			$result['api']['message'] = $result['message'];
+			return $result;
+		}
+
+		$url = $loansUrl . '/' . urlencode($loanId);
+		$response = $this->_callDeleteUrl($url, 'returnCheckout');
+
+		if ($response === null) {
+			$this->incrementStat('numApiErrors');
+			return $result;
+		}
+
+		if ($response->responseCode == '204') {
+			$result['success'] = true;
+			$result['message'] = translate(['text' => 'Your title was returned successfully.', 'isPublicFacing' => true]);
+
+			$result['api']['title'] = translate(['text' => 'Title returned', 'isPublicFacing' => true]);
+			$result['api']['message'] = translate(['text' => 'Your title was returned successfully.', 'isPublicFacing' => true]);
+
+			$this->incrementStat('numEarlyReturns');
+
+			$accountSummary = $patron->getCachedAccountSummary('borrowbox');
+			$accountSummary->decrementNumberOfCheckouts();
+			$accountSummary->markCheckoutsStale();
+		} else {
+			$errorMessage = $this->extractErrorMessage($response->body);
+			$result['message'] = translate(['text' => 'There was an error returning this title.', 'isPublicFacing' => true]);
+			if (!empty($errorMessage)) {
+				$result['message'] .= ' ' . $errorMessage;
+			}
+
+			$result['api']['title'] = translate(['text' => 'Unable to return title', 'isPublicFacing' => true]);
+			$result['api']['message'] = $result['message'];
+
+			$this->incrementStat('numApiErrors');
+		}
+
+		return $result;
+	}
+
+	/**
 	 * Get all current holds/reserves for a patron from BorrowBox.
 	 *
 	 * Calls GET /v1/sites/{siteId}/patrons/{patronId}/loans and filters for
