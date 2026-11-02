@@ -1,5 +1,8 @@
 package org.aspendiscovery.omeka;
 
+import com.turning_leaf_technologies.encryption.EncryptionUtils;
+import org.apache.logging.log4j.Logger;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -14,16 +17,29 @@ public class OmekaSetting {
 	private final long lastUpdateOfChangedRecords;
 	private final long lastUpdateOfAllRecords;
 
-	OmekaSetting(ResultSet settingsRS) throws SQLException {
+	OmekaSetting(ResultSet settingsRS, String serverName, Logger logger) throws SQLException {
 		id = settingsRS.getLong("id");
 		name = settingsRS.getString("name");
 		baseUrl = trimTrailingSlash(settingsRS.getString("baseUrl"));
 		classic = "classic".equals(settingsRS.getString("apiVersion"));
 		apiKeyIdentity = settingsRS.getString("apiKeyIdentity");
-		apiKeyCredential = settingsRS.getString("apiKeyCredential");
+		apiKeyCredential = decryptCredential(settingsRS.getString("apiKeyCredential"), serverName, logger);
 		doFullReload = settingsRS.getBoolean("runFullUpdate");
 		lastUpdateOfChangedRecords = settingsRS.getLong("lastUpdateOfChangedRecords");
 		lastUpdateOfAllRecords = settingsRS.getLong("lastUpdateOfAllRecords");
+	}
+
+	private String decryptCredential(String storedCredential, String serverName, Logger logger) {
+		boolean noCredentialStored = storedCredential == null || storedCredential.isEmpty();
+		if (noCredentialStored) {
+			return null;
+		}
+		try {
+			return EncryptionUtils.decryptString(storedCredential, serverName, null);
+		} catch (Exception e) {
+			logger.error("Could not decrypt the API key credential for Omeka setting " + id + ", connecting without a key", e);
+			return null;
+		}
 	}
 
 	private static String trimTrailingSlash(String url) {
