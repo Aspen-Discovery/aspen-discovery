@@ -3459,6 +3459,16 @@ class Theme extends DataObject {
 		return $this->_allAppliedThemes;
 	}
 
+	public static function getFirstThemeValue(array $themes, string $property): ?string {
+		foreach ($themes as $theme) {
+			$themeHasValue = !empty($theme->$property);
+			if ($themeHasValue) {
+				return $theme->$property;
+			}
+		}
+		return null;
+	}
+
 	function generateRTLCss($saveChanges = false): string {
 		$base = $this->generatedCss;
 		$previousRTLCss = $this->generatedRTLCss;
