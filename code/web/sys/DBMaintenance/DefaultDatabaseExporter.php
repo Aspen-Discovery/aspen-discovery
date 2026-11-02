@@ -104,6 +104,20 @@ class DefaultDatabaseExporter {
 	}
 
 	/**
+	 * Writes only the seed table data so the result can be reviewed, checked in,
+	 * and passed back to exportToFile() as the known seed data.
+	 */
+	public function exportSeedDataToFile(string $seedDataFile): void {
+		$fhnd = fopen($seedDataFile, 'w');
+		$fileOpened = $fhnd !== false;
+		if (!$fileOpened) {
+			throw new RuntimeException("Could not open $seedDataFile for writing");
+		}
+		$this->writeSeedDataFromDatabase($fhnd);
+		fclose($fhnd);
+	}
+
+	/**
 	 * @param resource $fhnd Open file handle to write to
 	 */
 	private function writeSeedDataFromDatabase($fhnd): void {
