@@ -8160,7 +8160,10 @@ class Koha extends AbstractIlsDriver {
 					'isPublicFacing' => true,
 				]);
 			case 'has_fine':
-				return $message . 'Item has an outstanding fine';
+				return $message . translate([
+					'text' => 'Item has an outstanding fine',
+					'isPublicFacing' => true,
+				]);
 			case 'overdue':
 				return $message . 'Renewal is blocked by an overdue item';
 			default:
