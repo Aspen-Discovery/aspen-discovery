@@ -2978,15 +2978,23 @@ class Koha extends AbstractIlsDriver {
 				$renewsRemaining = ($maxRenewals - $renewCount);
 				//We renewed the hold
 				$success = true;
-				$message = 'Your item was successfully renewed.';
-				$message .= ' ' . $renewsRemaining . ' of ' . $maxRenewals . ' renewals remaining.';
+				$renewalsRemainingMessage = translate([
+					'text' => '%1% of %2% renewals remaining.',
+					1 => $renewsRemaining,
+					2 => $maxRenewals,
+					'isPublicFacing' => true,
+				]);
+				$message = translate([
+					'text' => 'Your item was successfully renewed.',
+					'isPublicFacing' => true,
+				]) . ' ' . $renewalsRemainingMessage;
 
 				// Result for API or app use
 				$result['api']['title'] = translate([
 					'text' => 'Title successfully renewed',
 					'isPublicFacing' => true,
 				]);
-				$result['api']['message'] = $renewsRemaining . ' of ' . $maxRenewals . ' renewals remaining.';
+				$result['api']['message'] = $renewalsRemainingMessage;
 			} else {
 				$error = $renewResponse->error;
 				$success = false;
