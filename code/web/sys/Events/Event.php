@@ -63,7 +63,7 @@ class Event extends DataObject {
 
 	static $_objectStructure = [];
 
-	private static function getAdministrableLocationList(): array {
+	public static function getAdministrableLocationList(): array {
 		$canAdministerAllLocations = UserAccount::userHasPermission('Administer Events for All Locations');
 		if ($canAdministerAllLocations) {
 			return Location::getLocationList(false);

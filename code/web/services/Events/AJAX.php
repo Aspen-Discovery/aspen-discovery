@@ -332,15 +332,7 @@ class Events_AJAX extends JSON_Action {
 			}
 
 			$locationsForType = EventType::getLocationIdsForEventType($event->eventTypeId);
-			if (UserAccount::userHasPermission('Administer Events for All Locations')) {
-				$locationList = Location::getLocationList(false);
-			} else if (UserAccount::userHasPermission('Administer Events for Home Library Locations')) {
-				$locationList = Location::getLocationList(true);
-			} else {
-				$user = UserAccount::getLoggedInUser();
-				$locationList[$user->homeLocationId] = $user->getHomeLocation()->displayName;
-				$locationList = $locationList + $user->getAdditionalAdministrationLocations();
-			}
+			$locationList = Event::getAdministrableLocationList();
 			$locationList = array_intersect(array_flip($locationList), $locationsForType);
 			if (count($locationList) == 0) {
 				$locationList[0] = translate(['text' => "No locations available for this event type", 'isAdminFacing' => true]);
