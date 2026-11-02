@@ -138,6 +138,7 @@ class Role extends DataObject {
 				'Administer All Locations',
 				'Administer All Placards',
 				'Administer All Themes',
+				'Administer BorrowBox',
 				'Administer Boundless',
 				'Administer Cloud Library',
 				'Administer CloudSource OA',
