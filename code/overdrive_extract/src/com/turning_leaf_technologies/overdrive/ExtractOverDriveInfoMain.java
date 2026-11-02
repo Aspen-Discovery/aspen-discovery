@@ -165,6 +165,7 @@ public class ExtractOverDriveInfoMain {
 			//Reconnect to the db after the main extract runs just for updating if nightly indexing is needed
 			try (Connection dbConn = DriverManager.getConnection(databaseConnectionInfo)) {
 				if (queueComplete.get()) {
+					// Failures are logged but not retried, so a failing record does not loop forever
 					markQueuedRecordsProcessed(dbConn, queuedRecords.keySet());
 				}
 				//Check to see if the jar has changes, and if so quit
