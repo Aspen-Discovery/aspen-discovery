@@ -402,12 +402,47 @@ class BorrowBoxDriver extends AbstractEContentDriver {
 		require_once ROOT_DIR . '/sys/User/Checkout.php';
 
 		$checkouts = [];
+		$this->fetchLoansForPatron($patron, 'ACTIVE', 'getCheckouts', true, function (object $loan, BorrowBoxSetting $setting, bool $hasMultipleSettings) use ($patron, &$checkouts) {
+			$checkout = new Checkout();
+			$checkout->type = 'borrowbox';
+			$checkout->source = 'borrowbox';
+			$checkout->userId = $patron->id;
+			$checkout->sourceId = $loan->loanId . '_' . $setting->id;
+			$checkout->recordId = $loan->productId;
+			$checkout->dueDate = $loan->endDate;
+			$checkout->checkoutDate = $loan->startDate;
+			$checkout->canReturnEarly = true;
+			$checkout->canRenew = true;
 
-		if (!empty($this->settings) && $this->settings !== false) {
+			if (!empty($loan->accessLink)) {
+				$checkout->accessOnlineUrl = $loan->accessLink;
+			}
+
+			if ($hasMultipleSettings) {
+				$checkout->collectionName = $setting->name;
+			}
+
+			require_once ROOT_DIR . '/RecordDrivers/BorrowBoxRecordDriver.php';
+			$recordDriver = new BorrowBoxRecordDriver($loan->productId);
+			if ($recordDriver->isValid()) {
+				$checkout->updateFromRecordDriver($recordDriver);
+			}
+
+			$key = $checkout->source . $checkout->sourceId . $checkout->userId;
+			$checkouts[$key] = $checkout;
+		});
+
+		return $this->updateCachedCheckoutsBasedOnActiveCheckouts($cachedCheckouts, $checkouts, $accountSummary);
+	}
+
+	private function fetchLoansForPatron(User $patron, string $loanStatus, string $methodName, bool $trackUsage, callable $buildLoanItem): void {
+		$hasActiveSetting = !empty($this->settings);
+		if ($hasActiveSetting) {
 			$settingsToCheck = [$this->settings->id => $this->settings];
 		} else {
 			$settingsToCheck = $this->getAvailableSettings();
 		}
+		$hasMultipleSettings = count($settingsToCheck) > 1;
 
 		foreach ($settingsToCheck as $setting) {
 			$originalSettings = $this->settings;
@@ -419,7 +454,7 @@ class BorrowBoxDriver extends AbstractEContentDriver {
 				continue;
 			}
 
-			$response = $this->_callUrl($loansUrl, 'getCheckouts');
+			$response = $this->_callUrl($loansUrl, $methodName);
 			$loansMissing = $response === null || !isset($response->items);
 			if ($loansMissing) {
 				$this->incrementStat('numApiErrors');
@@ -427,46 +462,20 @@ class BorrowBoxDriver extends AbstractEContentDriver {
 				continue;
 			}
 
-			$this->trackUserUsageOfBorrowBox($patron);
+			if ($trackUsage) {
+				$this->trackUserUsageOfBorrowBox($patron);
+			}
 
 			foreach ($response->items as $loan) {
-				if (!isset($loan->loanStatus) || $loan->loanStatus !== 'ACTIVE') {
+				$hasExpectedStatus = isset($loan->loanStatus) && $loan->loanStatus === $loanStatus;
+				if (!$hasExpectedStatus) {
 					continue;
 				}
-
-				$checkout = new Checkout();
-				$checkout->type = 'borrowbox';
-				$checkout->source = 'borrowbox';
-				$checkout->userId = $patron->id;
-				$checkout->sourceId = $loan->loanId . '_' . $setting->id;
-				$checkout->recordId = $loan->productId;
-				$checkout->dueDate = $loan->endDate;
-				$checkout->checkoutDate = $loan->startDate;
-				$checkout->canReturnEarly = true;
-				$checkout->canRenew = true;
-
-				if (!empty($loan->accessLink)) {
-					$checkout->accessOnlineUrl = $loan->accessLink;
-				}
-
-				if (count($settingsToCheck) > 1) {
-					$checkout->collectionName = $setting->name;
-				}
-
-				require_once ROOT_DIR . '/RecordDrivers/BorrowBoxRecordDriver.php';
-				$recordDriver = new BorrowBoxRecordDriver($loan->productId);
-				if ($recordDriver->isValid()) {
-					$checkout->updateFromRecordDriver($recordDriver);
-				}
-
-				$key = $checkout->source . $checkout->sourceId . $checkout->userId;
-				$checkouts[$key] = $checkout;
+				$buildLoanItem($loan, $setting, $hasMultipleSettings);
 			}
 
 			$this->restoreSettings($originalSettings);
 		}
-
-		return $this->updateCachedCheckoutsBasedOnActiveCheckouts($cachedCheckouts, $checkouts, $accountSummary);
 	}
 
 	/**
@@ -761,62 +770,32 @@ class BorrowBoxDriver extends AbstractEContentDriver {
 			'unavailable' => [],
 		];
 
-		if (!empty($this->settings) && $this->settings !== false) {
-			$settingsToCheck = [$this->settings->id => $this->settings];
-		} else {
-			$settingsToCheck = $this->getAvailableSettings();
-		}
+		$this->fetchLoansForPatron($patron, 'RESERVED', 'getHolds', false, function (object $loan, BorrowBoxSetting $setting, bool $hasMultipleSettings) use ($patron, &$holds) {
+			$hold = new Hold();
+			$hold->type = 'borrowbox';
+			$hold->source = 'borrowbox';
+			$hold->sourceId = $loan->loanId . '_' . $setting->id;
+			$hold->recordId = $loan->productId;
+			$hold->userId = $patron->id;
+			$hold->createDate = $loan->startDate;
+			$hold->expirationDate = $loan->endDate;
+			$hold->cancelable = true;
+			$hold->available = false;
+			$hold->canFreeze = false;
 
-		foreach ($settingsToCheck as $setting) {
-			$originalSettings = $this->settings;
-			$this->setSettings($setting);
-
-			$loansUrl = $this->getPatronLoansUrl($patron);
-			if ($loansUrl === null) {
-				$this->restoreSettings($originalSettings);
-				continue;
+			if ($hasMultipleSettings) {
+				$hold->collectionName = $setting->name;
 			}
 
-			$response = $this->_callUrl($loansUrl, 'getHolds');
-			if ($response === null || !isset($response->items)) {
-				$this->incrementStat('numApiErrors');
-				$this->restoreSettings($originalSettings);
-				continue;
+			require_once ROOT_DIR . '/RecordDrivers/BorrowBoxRecordDriver.php';
+			$recordDriver = new BorrowBoxRecordDriver($loan->productId);
+			if ($recordDriver->isValid()) {
+				$hold->updateFromRecordDriver($recordDriver);
 			}
 
-			foreach ($response->items as $loan) {
-				if (!isset($loan->loanStatus) || $loan->loanStatus !== 'RESERVED') {
-					continue;
-				}
-
-				$hold = new Hold();
-				$hold->type = 'borrowbox';
-				$hold->source = 'borrowbox';
-				$hold->sourceId = $loan->loanId . '_' . $setting->id;
-				$hold->recordId = $loan->productId;
-				$hold->userId = $patron->id;
-				$hold->createDate = $loan->startDate;
-				$hold->expirationDate = $loan->endDate;
-				$hold->cancelable = true;
-				$hold->available = false;
-				$hold->canFreeze = false;
-
-				if (count($settingsToCheck) > 1) {
-					$hold->collectionName = $setting->name;
-				}
-
-				require_once ROOT_DIR . '/RecordDrivers/BorrowBoxRecordDriver.php';
-				$recordDriver = new BorrowBoxRecordDriver($loan->productId);
-				if ($recordDriver->isValid()) {
-					$hold->updateFromRecordDriver($recordDriver);
-				}
-
-				$key = $hold->type . $hold->sourceId . $hold->userId;
-				$holds['unavailable'][$key] = $hold;
-			}
-
-			$this->restoreSettings($originalSettings);
-		}
+			$key = $hold->type . $hold->sourceId . $hold->userId;
+			$holds['unavailable'][$key] = $hold;
+		});
 
 		return $this->updateCachedHoldsBasedOnActiveHolds($cachedHolds, $holds, $accountSummary);
 	}
