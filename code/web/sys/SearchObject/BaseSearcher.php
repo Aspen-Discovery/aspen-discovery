@@ -1379,6 +1379,41 @@ abstract class SearchObject_BaseSearcher {
 	}
 
 	/**
+	 * Return a url for the current search with a new number of results per page
+	 *
+	 * @access  public
+	 * @param int $newPageSize The number of results to show per page
+	 * @return  string   URL of a new search
+	 */
+	public function renderLinkWithPageSize(int $newPageSize) : string {
+		$oldPageSizeRequested = $this->pageSizeRequested;
+		$isNonDefaultPageSize = $newPageSize != self::DEFAULT_PAGE_SIZE;
+		$this->pageSizeRequested = $this->pageSizeRequested || $isNonDefaultPageSize;
+		$url = $this->renderLinkWithLimit($newPageSize);
+		$this->pageSizeRequested = $oldPageSizeRequested;
+		return $url;
+	}
+
+	/**
+	 * Return a list of urls for the number of results per page, along with which
+	 *    option should be currently selected.
+	 *
+	 * @access  public
+	 * @return  array    Page size urls, descriptions and selected flags
+	 */
+	public function getPageSizeList() : array {
+		$list = [];
+		foreach (self::PAGE_SIZE_OPTIONS as $pageSize) {
+			$list[$pageSize] = [
+				'url' => $this->renderLinkWithPageSize($pageSize),
+				'desc' => $pageSize,
+				'selected' => ($pageSize == $this->limit),
+			];
+		}
+		return $list;
+	}
+
+	/**
 	 * Return a url for the current search with a new view
 	 *
 	 * @param string $newView The new view
@@ -1424,7 +1459,7 @@ abstract class SearchObject_BaseSearcher {
 	/**
 	 * Return a url for the current search with a new limit (number of results)
 	 *
-	 * @param string $newLimit The new limit
+	 * @param int|string $newLimit The new limit
 	 *
 	 * @return string         URL of a new search
 	 * @access public
