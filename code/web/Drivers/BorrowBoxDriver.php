@@ -230,188 +230,72 @@ class BorrowBoxDriver extends AbstractEContentDriver {
 		return true;
 	}
 
-	/**
-	 * Perform a GET request to the BorrowBox API with Bearer auth.
-	 * Automatically re-authenticates on 401.
-	 *
-	 * @param string $url       Full URL to call
-	 * @param string $methodName Method name for logging
-	 * @return object|null Decoded JSON response, or null on failure.
-	 */
-	private function _callUrl(string $url, string $methodName): ?object {
+	private function _callApi(string $method, string $url, string $methodName): ?object {
 		if (!$this->_connectToAPI()) {
 			return null;
 		}
 
+		$response = $this->_sendApiRequest($method, $url, $methodName);
+		$needsReauthentication = $this->apiCurlWrapper->getResponseCode() == '401';
+		$reauthenticated = $needsReauthentication && $this->_connectToAPI(true);
+		if ($reauthenticated) {
+			$response = $this->_sendApiRequest($method, $url, $methodName . '_retry');
+		}
+
+		$result = new stdClass();
+		$result->responseCode = $this->apiCurlWrapper->getResponseCode();
+		$result->body = null;
+
+		if (!empty($response)) {
+			$result->body = json_decode($response);
+		}
+
+		return $result;
+	}
+
+	private function _sendApiRequest(string $method, string $url, string $methodName): string|bool {
 		$this->initCurlWrapper();
-		$this->apiCurlWrapper->addCustomHeaders([
+		$headers = [
 			'Authorization: Bearer ' . $this->accessToken,
 			'Accept: application/json',
-		], true);
+		];
+		$sendsBody = $method === 'POST' || $method === 'PUT';
+		if ($sendsBody) {
+			$headers[] = 'Content-Type: application/json';
+		}
+		$this->apiCurlWrapper->addCustomHeaders($headers, true);
 
-		$response = $this->apiCurlWrapper->curlGetPage($url);
-		$responseCode = $this->apiCurlWrapper->getResponseCode();
-		ExternalRequestLogEntry::logRequest('borrowbox.' . $methodName, 'GET', $url, $this->apiCurlWrapper->getHeaders(), false, $responseCode, $response, []);
-
-		if ($responseCode == '401' && $this->_connectToAPI(true)) {
-			$this->initCurlWrapper();
-			$this->apiCurlWrapper->addCustomHeaders([
-				'Authorization: Bearer ' . $this->accessToken,
-				'Accept: application/json',
-			], true);
-
+		if ($method === 'GET') {
 			$response = $this->apiCurlWrapper->curlGetPage($url);
-			$responseCode = $this->apiCurlWrapper->getResponseCode();
-			ExternalRequestLogEntry::logRequest('borrowbox.' . $methodName . '_retry', 'GET', $url, $this->apiCurlWrapper->getHeaders(), false, $responseCode, $response, []);
-		}
-
-		if ($responseCode != '200') {
-			return null;
-		}
-
-		return json_decode($response);
-	}
-
-	/**
-	 * Perform a POST request to the BorrowBox API.
-	 *
-	 * BorrowBox POST endpoints for loans use query parameters, not a request body.
-	 * The $params string should be appended to the URL before calling.
-	 *
-	 * @param string $url       Full URL (with query params already appended)
-	 * @param string $methodName Method name for logging
-	 * @return object|array|null Decoded JSON response, or null on failure.
-	 */
-	private function _callPostUrl(string $url, string $methodName): object|array|null {
-		if (!$this->_connectToAPI()) {
-			return null;
-		}
-
-		$this->initCurlWrapper();
-		$this->apiCurlWrapper->addCustomHeaders([
-			'Authorization: Bearer ' . $this->accessToken,
-			'Content-Type: application/json',
-			'Accept: application/json',
-		], true);
-
-		$response = $this->apiCurlWrapper->curlPostPage($url, '');
-		$responseCode = $this->apiCurlWrapper->getResponseCode();
-		ExternalRequestLogEntry::logRequest('borrowbox.' . $methodName, 'POST', $url, $this->apiCurlWrapper->getHeaders(), '', $responseCode, $response, []);
-
-		if ($responseCode == '401' && $this->_connectToAPI(true)) {
-			$this->initCurlWrapper();
-			$this->apiCurlWrapper->addCustomHeaders([
-				'Authorization: Bearer ' . $this->accessToken,
-				'Content-Type: application/json',
-				'Accept: application/json',
-			], true);
-
+		} elseif ($method === 'POST') {
 			$response = $this->apiCurlWrapper->curlPostPage($url, '');
-			$responseCode = $this->apiCurlWrapper->getResponseCode();
-			ExternalRequestLogEntry::logRequest('borrowbox.' . $methodName . '_retry', 'POST', $url, $this->apiCurlWrapper->getHeaders(), '', $responseCode, $response, []);
+		} else {
+			$response = $this->apiCurlWrapper->curlSendPage($url, $method);
 		}
-
-		$result = new stdClass();
-		$result->responseCode = $responseCode;
-		$result->body = null;
-
-		if (!empty($response)) {
-			$result->body = json_decode($response);
-		}
-
-		return $result;
+		$loggedRequestData = $method === 'POST' ? '' : false;
+		ExternalRequestLogEntry::logRequest('borrowbox.' . $methodName, $method, $url, $this->apiCurlWrapper->getHeaders(), $loggedRequestData, $this->apiCurlWrapper->getResponseCode(), $response, []);
+		return $response;
 	}
 
-	/**
-	 * Perform a PUT request to the BorrowBox API (used for renewals).
-	 *
-	 * @param string $url       Full URL
-	 * @param string $methodName Method name for logging
-	 * @return object|null Result object with responseCode and body.
-	 */
+	private function _callUrl(string $url, string $methodName): ?object {
+		$result = $this->_callApi('GET', $url, $methodName);
+		$requestSucceeded = $result !== null && $result->responseCode == '200';
+		if (!$requestSucceeded) {
+			return null;
+		}
+		return $result->body;
+	}
+
+	private function _callPostUrl(string $url, string $methodName): ?object {
+		return $this->_callApi('POST', $url, $methodName);
+	}
+
 	private function _callPutUrl(string $url, string $methodName): ?object {
-		if (!$this->_connectToAPI()) {
-			return null;
-		}
-
-		$this->initCurlWrapper();
-		$this->apiCurlWrapper->addCustomHeaders([
-			'Authorization: Bearer ' . $this->accessToken,
-			'Content-Type: application/json',
-			'Accept: application/json',
-		], true);
-
-		$response = $this->apiCurlWrapper->curlSendPage($url, 'PUT');
-		$responseCode = $this->apiCurlWrapper->getResponseCode();
-		ExternalRequestLogEntry::logRequest('borrowbox.' . $methodName, 'PUT', $url, $this->apiCurlWrapper->getHeaders(), false, $responseCode, $response, []);
-
-		if ($responseCode == '401' && $this->_connectToAPI(true)) {
-			$this->initCurlWrapper();
-			$this->apiCurlWrapper->addCustomHeaders([
-				'Authorization: Bearer ' . $this->accessToken,
-				'Content-Type: application/json',
-				'Accept: application/json',
-			], true);
-
-			$response = $this->apiCurlWrapper->curlSendPage($url, 'PUT');
-			$responseCode = $this->apiCurlWrapper->getResponseCode();
-			ExternalRequestLogEntry::logRequest('borrowbox.' . $methodName . '_retry', 'PUT', $url, $this->apiCurlWrapper->getHeaders(), false, $responseCode, $response, []);
-		}
-
-		$result = new stdClass();
-		$result->responseCode = $responseCode;
-		$result->body = null;
-
-		if (!empty($response)) {
-			$result->body = json_decode($response);
-		}
-
-		return $result;
+		return $this->_callApi('PUT', $url, $methodName);
 	}
 
-	/**
-	 * Perform a DELETE request to the BorrowBox API (used for returns and cancellations).
-	 *
-	 * @param string $url       Full URL
-	 * @param string $methodName Method name for logging
-	 * @return object|null Result object with responseCode and body (body may be null for 204).
-	 */
 	private function _callDeleteUrl(string $url, string $methodName): ?object {
-		if (!$this->_connectToAPI()) {
-			return null;
-		}
-
-		$this->initCurlWrapper();
-		$this->apiCurlWrapper->addCustomHeaders([
-			'Authorization: Bearer ' . $this->accessToken,
-			'Accept: application/json',
-		], true);
-
-		$response = $this->apiCurlWrapper->curlSendPage($url, 'DELETE');
-		$responseCode = $this->apiCurlWrapper->getResponseCode();
-		ExternalRequestLogEntry::logRequest('borrowbox.' . $methodName, 'DELETE', $url, $this->apiCurlWrapper->getHeaders(), false, $responseCode, $response, []);
-
-		if ($responseCode == '401' && $this->_connectToAPI(true)) {
-			$this->initCurlWrapper();
-			$this->apiCurlWrapper->addCustomHeaders([
-				'Authorization: Bearer ' . $this->accessToken,
-				'Accept: application/json',
-			], true);
-
-			$response = $this->apiCurlWrapper->curlSendPage($url, 'DELETE');
-			$responseCode = $this->apiCurlWrapper->getResponseCode();
-			ExternalRequestLogEntry::logRequest('borrowbox.' . $methodName . '_retry', 'DELETE', $url, $this->apiCurlWrapper->getHeaders(), false, $responseCode, $response, []);
-		}
-
-		$result = new stdClass();
-		$result->responseCode = $responseCode;
-		$result->body = null;
-
-		if (!empty($response)) {
-			$result->body = json_decode($response);
-		}
-
-		return $result;
+		return $this->_callApi('DELETE', $url, $methodName);
 	}
 
 	/**
