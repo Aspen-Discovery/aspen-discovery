@@ -232,6 +232,46 @@ class BorrowBoxRecordDriver extends GroupedWorkSubDriver {
 	}
 
 	/**
+	 * Returns the template for the staff view.
+	 * @return string
+	 */
+	public function getStaffView(): string {
+		global $interface;
+
+		$interface->assign('bookcoverInfo', $this->getBookcoverInfo());
+
+		$groupedWorkDriver = $this->getGroupedWorkDriver();
+		if ($groupedWorkDriver != null) {
+			$groupedWorkDriver->assignGroupedWorkStaffView();
+			if ($groupedWorkDriver->isValid()) {
+				$interface->assign('hasValidGroupedWork', true);
+				$this->getGroupedWorkDriver()->assignGroupedWorkStaffView();
+
+				require_once ROOT_DIR . '/sys/Grouping/NonGroupedRecord.php';
+				$nonGroupedRecord = new NonGroupedRecord();
+				$nonGroupedRecord->source = $this->getRecordType();
+				$nonGroupedRecord->recordId = $this->id;
+				if ($nonGroupedRecord->find(true)) {
+					$interface->assign('isUngrouped', true);
+					$interface->assign('ungroupingId', $nonGroupedRecord->id);
+				} else {
+					$interface->assign('isUngrouped', false);
+				}
+			} else {
+				$interface->assign('hasValidGroupedWork', false);
+			}
+		} else {
+			$interface->assign('hasValidGroupedWork', false);
+		}
+
+		if ($this->borrowBoxProduct !== null) {
+			$interface->assign('borrowBoxProduct', $this->borrowBoxProduct);
+		}
+
+		return 'RecordDrivers/BorrowBox/staff.tpl';
+	}
+
+	/**
 	 * The Table of Contents extracted from the record.
 	 * Returns null if no Table of Contents is available.
 	 *
@@ -438,6 +478,19 @@ class BorrowBoxRecordDriver extends GroupedWorkSubDriver {
 		return $contributors;
 	}
 
+	public function getBookcoverUrl($size = 'small', $absolutePath = false): string {
+		global $configArray;
+		if ($absolutePath) {
+			$bookCoverUrl = $configArray['Site']['url'];
+		} else {
+			$bookCoverUrl = '';
+		}
+		$bookCoverUrl .= '/bookcover.php?size=' . $size;
+		$bookCoverUrl .= '&id=' . $this->id;
+		$bookCoverUrl .= '&type=borrowbox';
+		return $bookCoverUrl;
+	}
+
 	private function getBorrowBoxMetaData(): ?object {
 		$metaDataNeedsLoading = $this->borrowBoxMetaData == null && $this->borrowBoxProduct !== null;
 		if ($metaDataNeedsLoading) {
@@ -449,6 +502,73 @@ class BorrowBoxRecordDriver extends GroupedWorkSubDriver {
 			}
 		}
 		return $this->borrowBoxMetaData;
+	}
+
+	public function getRatingData(): ?array {
+		require_once ROOT_DIR . '/services/API/WorkAPI.php';
+		$workAPI = new WorkAPI();
+		$groupedWorkId = $this->getGroupedWorkId();
+		if ($groupedWorkId == null) {
+			return null;
+		} else {
+			return $workAPI->getRatingData($this->getGroupedWorkId());
+		}
+	}
+
+	public function getMoreDetailsOptions(): array {
+		global $interface;
+		global $library;
+
+		$isbn = $this->getCleanISBN();
+
+		$availabilityInfo = $this->getAvailabilityInformation();
+		$interface->assign('availability', $availabilityInfo);
+		$interface->assign('showAvailability', !empty($availabilityInfo));
+
+		//Load more details options
+		$moreDetailsOptions = $this->getBaseMoreDetailsOptions($isbn);
+
+		//Other editions if applicable (only if we aren't the only record!)
+		$relatedRecords = $this->getGroupedWorkDriver()->getRelatedRecords();
+		if (count($relatedRecords) > 1) {
+			$interface->assign('relatedManifestations', $this->getGroupedWorkDriver()->getRelatedManifestations());
+			$interface->assign('workId', $this->getGroupedWorkDriver()->getPermanentId());
+			$moreDetailsOptions['otherEditions'] = [
+				'label' => 'Other Editions and Formats',
+				'body' => $interface->fetch('GroupedWork/relatedManifestations.tpl'),
+				'hideByDefault' => false,
+			];
+		}
+
+		$moreDetailsOptions['moreDetails'] = [
+			'label' => 'More Details',
+			'body' => $interface->fetch('BorrowBox/view-more-details.tpl'),
+		];
+		$moreDetailsOptions['citations'] = [
+			'label' => 'Citations',
+			'body' => $interface->fetch('Record/cite.tpl'),
+		];
+		$moreDetailsOptions['copyDetails'] = [
+			'label' => 'Copy Details',
+			'body' => $interface->fetch('BorrowBox/view-copies.tpl'),
+		];
+		if ($interface->getVariable('showStaffView')) {
+			$moreDetailsOptions['staff'] = [
+				'label' => 'Staff View',
+				'onShow' => "AspenDiscovery.BorrowBox.getStaffView('$this->id');",
+				'body' => '<div id="staffViewPlaceHolder">' . translate([
+						'text' => 'Loading Staff View.',
+						'isPublicFacing' => true,
+					]) . '</div>',
+			];
+		}
+
+		return $this->filterAndSortMoreDetailsOptions($moreDetailsOptions);
+	}
+
+	public function getRecordUrl(): string {
+		$id = $this->getUniqueID();
+		return '/BorrowBox/' . $id . '/Home';
 	}
 
 	/**
@@ -582,6 +702,35 @@ class BorrowBoxRecordDriver extends GroupedWorkSubDriver {
 	function getNumHolds(): int {
 		// BorrowBox API does not expose hold queue counts
 		return 0;
+	}
+
+	public function getSemanticData(): ?array {
+		// Schema.org
+		require_once ROOT_DIR . '/RecordDrivers/LDRecordOffer.php';
+		$relatedRecord = $this->getRelatedRecord();
+		if ($relatedRecord != null) {
+			$linkedDataRecord = new LDRecordOffer($relatedRecord);
+			$semanticData[] = [
+				'@context' => 'https://schema.org',
+				'@type' => $linkedDataRecord->getWorkType(),
+				'name' => $this->getTitle(),
+				'creator' => $this->getAuthor(),
+				'bookEdition' => $this->getEditions(),
+				'isAccessibleForFree' => true,
+				'image' => $this->getBookcoverUrl('medium', true),
+				'offers' => $linkedDataRecord->getOffers(),
+			];
+
+			global $interface;
+			$interface->assign('og_title', $this->getTitle());
+			$interface->assign('og_description', $this->getDescriptionFast());
+			$interface->assign('og_type', $this->getGroupedWorkDriver()->getOGType());
+			$interface->assign('og_image', $this->getBookcoverUrl('medium', true));
+			$interface->assign('og_url', $this->getAbsoluteUrl());
+			return $semanticData;
+		} else {
+			return null;
+		}
 	}
 
 	function getRelatedRecord(): ?Grouping_Record {
