@@ -326,9 +326,7 @@ class GroupedWork_AJAX extends JSON_Action {
 		if (!empty($series)) {
 			global $library;
 			$groupedWorkDisplaySettings = $library->getGroupedWorkDisplaySettings();
-			foreach ($groupedWorkDisplaySettings->showInSearchResultsMainDetails as $detailOption) {
-				$interface->assign($detailOption, true);
-			}
+			$groupedWorkDisplaySettings->assignSearchResultsMainDetails($interface);
 			$interface->assign('series', $series);
 			$interface->assign('summId', $id);
 			$enrichmentResult['seriesSummary'] = $interface->fetch('GroupedWork/series-summary.tpl');
@@ -1247,9 +1245,7 @@ class GroupedWork_AJAX extends JSON_Action {
 		];
 		if (!empty($series)) {
 			global $library;
-			foreach ($library->getGroupedWorkDisplaySettings()->showInSearchResultsMainDetails as $detailOption) {
-				$interface->assign($detailOption, true);
-			}
+			$library->getGroupedWorkDisplaySettings()->assignSearchResultsMainDetails($interface);
 			$interface->assign('series', $series);
 			$result = [
 				'result' => true,
