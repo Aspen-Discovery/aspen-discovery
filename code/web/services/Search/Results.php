@@ -101,9 +101,7 @@ class Search_Results extends ResultsAction {
 		// (needs to be set before moreDetailsOptions)
 		global $library;
 		$groupedWorkDisplaySettings = $library->getGroupedWorkDisplaySettings();
-		foreach ($groupedWorkDisplaySettings->showInSearchResultsMainDetails as $detailOption) {
-			$interface->assign($detailOption, true);
-		}
+		$groupedWorkDisplaySettings->assignSearchResultsMainDetails($interface);
 		$interface->assign('formatDisplayStyle', $groupedWorkDisplaySettings->formatDisplayStyle);
 		$interface->assign('hideManifestationsInMobileView', $groupedWorkDisplaySettings->hideManifestationsInMobileView);
 
