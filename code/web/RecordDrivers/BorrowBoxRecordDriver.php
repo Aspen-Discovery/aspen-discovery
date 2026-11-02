@@ -100,69 +100,33 @@ class BorrowBoxRecordDriver extends GroupedWorkSubDriver {
 			}
 		}
 
-		$statusSummary = [];
-		$statusSummary['recordId'] = $this->id;
-		$statusSummary['totalCopies'] = count($availabilityInfo);
-		$statusSummary['accessType'] = 'borrowbox';
-		$statusSummary['alwaysAvailable'] = false;
-		$statusSummary['isBorrowBox'] = true;
-		$statusSummary['availableCopies'] = $hasAvailable ? 1 : 0;
+		$statusDisplays = [
+			'AVAILABLE' => ['Available from BorrowBox', true, 'available'],
+			'ON_LOAN' => ['Checked Out', false, 'checkedOut'],
+			'NEW' => ['Coming Soon', false, 'comingSoon'],
+			'UNAVAILABLE' => ['Unavailable', false, 'unavailable'],
+		];
+		$rawStatus = $this->borrowBoxProduct->rawStatus ?? null;
+		$fallbackStatus = $hasAvailable ? 'AVAILABLE' : 'ON_LOAN';
+		[$status, $available, $class] = $statusDisplays[$rawStatus] ?? $statusDisplays[$fallbackStatus];
 
-		if ($this->borrowBoxProduct !== null && isset($this->borrowBoxProduct->rawStatus)) {
-			$rawStatus = $this->borrowBoxProduct->rawStatus;
-			switch ($rawStatus) {
-				case 'AVAILABLE':
-					$statusSummary['status'] = 'Available from BorrowBox';
-					$statusSummary['available'] = true;
-					$statusSummary['class'] = 'available';
-					break;
-				case 'ON_LOAN':
-					$statusSummary['status'] = 'Checked Out';
-					$statusSummary['available'] = false;
-					$statusSummary['class'] = 'checkedOut';
-					break;
-				case 'NEW':
-					$statusSummary['status'] = 'Coming Soon';
-					$statusSummary['available'] = false;
-					$statusSummary['class'] = 'comingSoon';
-					break;
-				case 'UNAVAILABLE':
-					$statusSummary['status'] = 'Unavailable';
-					$statusSummary['available'] = false;
-					$statusSummary['class'] = 'unavailable';
-					break;
-				default:
-					if ($hasAvailable) {
-						$statusSummary['status'] = 'Available from BorrowBox';
-						$statusSummary['available'] = true;
-						$statusSummary['class'] = 'available';
-					} else {
-						$statusSummary['status'] = 'Checked Out';
-						$statusSummary['available'] = false;
-						$statusSummary['class'] = 'checkedOut';
-					}
-					break;
-			}
-		} else {
-			if ($hasAvailable) {
-				$statusSummary['status'] = 'Available from BorrowBox';
-				$statusSummary['available'] = true;
-				$statusSummary['class'] = 'available';
-			} else {
-				$statusSummary['status'] = 'Checked Out';
-				$statusSummary['available'] = false;
-				$statusSummary['class'] = 'checkedOut';
-			}
-		}
-
-		$statusSummary['holdQueueLength'] = 0;
-		$statusSummary['numHolds'] = 0;
-		$statusSummary['showPlaceHold'] = !($statusSummary['available'] ?? false);
-		$statusSummary['showCheckout'] = $statusSummary['available'] ?? false;
-		$statusSummary['showAddToWishlist'] = false;
-		$statusSummary['showAccessOnline'] = false;
-
-		return $statusSummary;
+		return [
+			'recordId' => $this->id,
+			'totalCopies' => count($availabilityInfo),
+			'accessType' => 'borrowbox',
+			'alwaysAvailable' => false,
+			'isBorrowBox' => true,
+			'availableCopies' => $hasAvailable ? 1 : 0,
+			'status' => $status,
+			'available' => $available,
+			'class' => $class,
+			'holdQueueLength' => 0,
+			'numHolds' => 0,
+			'showPlaceHold' => !$available,
+			'showCheckout' => $available,
+			'showAddToWishlist' => false,
+			'showAccessOnline' => false,
+		];
 	}
 
 	/** @var BorrowBoxAPIProductAvailability[]|null */
