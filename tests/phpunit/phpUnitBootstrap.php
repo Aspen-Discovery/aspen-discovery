@@ -62,4 +62,12 @@ require_once __DIR__ . '/../../code/web/bootstrap_aspen.php';
 global $interface;
 $interface = new UInterface();
 
+global $activeLanguage;
+global $translator;
+$validLanguages = Language::getValidLanguages();
+$defaultLanguageCode = Language::getDefaultLanguageCode();
+$activeLanguage = $validLanguages[$defaultLanguageCode];
+$translator = new Translator(ROOT_DIR . '/lang', $defaultLanguageCode);
+$interface->setLanguage($activeLanguage);
+
 echo "Aspen Discovery PHPUnit tests starting\n";
