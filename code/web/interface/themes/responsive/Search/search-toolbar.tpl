@@ -1,7 +1,7 @@
 {strip}
 	{* User's viewing mode toggle switch *}
 	<div class="row visible-md visible-lg">{* browse styling replicated here *}
-		<div class="col-md-4">
+		<div class="col-md-{if !empty($pageSizeList)}6{else}4{/if}">
 			{if !empty($recordCount)}
 				<label for="results-sort" style="margin-right: .5rem">{translate text='Sort by' isPublicFacing=true}</label>
 				<select id="results-sort" name="sort" onchange="document.location.href = this.options[this.selectedIndex].value;" class="input-medium">
@@ -9,9 +9,10 @@
 						<option value="{$sortData.sortUrl|escape}"{if !empty($sortData.selected)} selected="selected"{/if}>{translate text=$sortData.desc isPublicFacing=true inAttribute=true}</option>
 					{/foreach}
 				</select>
+				{include file="Search/results-page-size.tpl" selectClass="input-small"}
 			{/if}
 		</div>
-		<div class="col-md-8">
+		<div class="col-md-{if !empty($pageSizeList)}6{else}8{/if}">
 			<div id="selected-browse-label">
 				<div class="btn-toolbar" role="toolbar" aria-label="Search Tools" style="justify-content: flex-end">
 					<div class="btn-group form-check form-switch" id="hideSearchCoversSwitch" style="margin-right: 1rem; {if $displayMode != 'list'}display: none{/if}" onclick="AspenDiscovery.Account.toggleShowCovers(!$('#hideCovers').is(':checked'))">
