@@ -92,6 +92,126 @@ class BorrowBoxRecordDriver extends GroupedWorkSubDriver {
 		return $this->valid;
 	}
 
+	function getStatusSummary(): array {
+		$availabilityInfo = $this->getAvailabilityInformation();
+
+		// BorrowBox uses status-based availability rather than copy counts.
+		// Determine availability from the availabilityStatus field.
+		$hasAvailable = false;
+		foreach ($availabilityInfo as $availability) {
+			if (strtoupper($availability->availabilityStatus ?? '') === 'AVAILABLE') {
+				$hasAvailable = true;
+			}
+		}
+
+		//Load status summary
+		$statusSummary = [];
+		$statusSummary['recordId'] = $this->id;
+		$statusSummary['totalCopies'] = count($availabilityInfo);
+		$statusSummary['accessType'] = 'borrowbox';
+		$statusSummary['alwaysAvailable'] = false;
+		$statusSummary['isBorrowBox'] = true;
+		$statusSummary['availableCopies'] = $hasAvailable ? 1 : 0;
+
+		// Map BorrowBox availability statuses
+		if ($this->borrowBoxProduct !== null && isset($this->borrowBoxProduct->rawStatus)) {
+			$rawStatus = $this->borrowBoxProduct->rawStatus;
+			switch ($rawStatus) {
+				case 'AVAILABLE':
+					$statusSummary['status'] = 'Available from BorrowBox';
+					$statusSummary['available'] = true;
+					$statusSummary['class'] = 'available';
+					break;
+				case 'ON_LOAN':
+					$statusSummary['status'] = 'Checked Out';
+					$statusSummary['available'] = false;
+					$statusSummary['class'] = 'checkedOut';
+					break;
+				case 'NEW':
+					$statusSummary['status'] = 'Coming Soon';
+					$statusSummary['available'] = false;
+					$statusSummary['class'] = 'comingSoon';
+					break;
+				case 'UNAVAILABLE':
+					$statusSummary['status'] = 'Unavailable';
+					$statusSummary['available'] = false;
+					$statusSummary['class'] = 'unavailable';
+					break;
+				default:
+					if ($hasAvailable) {
+						$statusSummary['status'] = 'Available from BorrowBox';
+						$statusSummary['available'] = true;
+						$statusSummary['class'] = 'available';
+					} else {
+						$statusSummary['status'] = 'Checked Out';
+						$statusSummary['available'] = false;
+						$statusSummary['class'] = 'checkedOut';
+					}
+					break;
+			}
+		} else {
+			if ($hasAvailable) {
+				$statusSummary['status'] = 'Available from BorrowBox';
+				$statusSummary['available'] = true;
+				$statusSummary['class'] = 'available';
+			} else {
+				$statusSummary['status'] = 'Checked Out';
+				$statusSummary['available'] = false;
+				$statusSummary['class'] = 'checkedOut';
+			}
+		}
+
+		//Determine which buttons to show
+		$statusSummary['holdQueueLength'] = 0;
+		$statusSummary['numHolds'] = 0;
+		$statusSummary['showPlaceHold'] = !($statusSummary['available'] ?? false);
+		$statusSummary['showCheckout'] = $statusSummary['available'] ?? false;
+		$statusSummary['showAddToWishlist'] = false;
+		$statusSummary['showAccessOnline'] = false;
+
+		return $statusSummary;
+	}
+
+	/** @var BorrowBoxAPIProductAvailability[]|null */
+	private ?array $availability = null;
+
+	/**
+	 * @return BorrowBoxAPIProductAvailability[]
+	 */
+	function getAvailabilityInformation(): array {
+		if ($this->availability == null) {
+			require_once ROOT_DIR . '/sys/BorrowBox/BorrowBoxAPIProductAvailability.php';
+			$this->availability = [];
+			if ($this->borrowBoxProduct !== null) {
+				$availabilityObj = new BorrowBoxAPIProductAvailability();
+				$availabilityObj->productId = $this->borrowBoxProduct->id;
+				$availabilityObj->find();
+				while ($availabilityObj->fetch()) {
+					$this->availability[] = clone $availabilityObj;
+				}
+			}
+		}
+		return $this->availability;
+	}
+
+	/**
+	 * Get the items (formats) for this BorrowBox product.
+	 * BorrowBox products typically have a single format per product,
+	 * so this is simpler than OverDrive.
+	 *
+	 * @return array
+	 */
+	public function getItems(): array {
+		// BorrowBox products don't have multiple formats per product like OverDrive.
+		// The format is determined at the product level.
+		$items = [];
+		$hasProduct = $this->valid && $this->borrowBoxProduct !== null;
+		if ($hasProduct) {
+			$items[] = $this->borrowBoxProduct;
+		}
+		return $items;
+	}
+
 	/**
 	 * Return the unique identifier of this record within the Solr index;
 	 * useful for retrieving additional information (like tags and user
@@ -115,5 +235,61 @@ class BorrowBoxRecordDriver extends GroupedWorkSubDriver {
 			}
 			return $this->groupedWorkDriver;
 		}
+	}
+
+	protected ?array $_actions = null;
+
+	public function getRecordActions($relatedRecord, $variationId, $isAvailable, $isHoldable, $volumeData = null): array {
+		if ($this->_actions === null) {
+			if ($relatedRecord == null) {
+				$relatedRecord = $this->getRelatedRecord();
+			}
+			$this->_actions = [];
+
+			if (UserAccount::isLoggedIn()) {
+				$activeUser = UserAccount::getActiveUserObj();
+				if ($activeUser->isValidForEContentSource('borrowbox')) {
+					$this->_actions = array_merge($this->_actions, $activeUser->getCirculatedRecordActionsWithLazyLoading('borrowbox', $this->id));
+				}
+				$loadDefaultActions = count($this->_actions) == 0;
+			} else {
+				$activeUser = null;
+				$loadDefaultActions = true;
+			}
+
+			if ($loadDefaultActions) {
+				global $offlineMode;
+				global $loginAllowedWhileOffline;
+				if (!$offlineMode || $loginAllowedWhileOffline) {
+					if ($isAvailable) {
+						$this->_actions[] = [
+							'title' => translate([
+								'text' => 'Borrow with BorrowBox',
+								'isPublicFacing' => true,
+							]),
+							'onclick' => "return AspenDiscovery.BorrowBox.checkOutTitle('$this->id', this);",
+							'requireLogin' => false,
+							'type' => 'borrowbox_checkout',
+						];
+					} else {
+						$this->_actions[] = [
+							'title' => translate([
+								'text' => 'Place Hold with BorrowBox',
+								'isPublicFacing' => true,
+							]),
+							'onclick' => "return AspenDiscovery.BorrowBox.placeHold('$this->id', this);",
+							'requireLogin' => false,
+							'type' => 'borrowbox_hold',
+						];
+					}
+				}
+			}
+		}
+		return $this->_actions;
+	}
+
+	function getNumHolds(): int {
+		// BorrowBox API does not expose hold queue counts
+		return 0;
 	}
 }
