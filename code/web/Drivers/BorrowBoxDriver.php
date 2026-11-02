@@ -756,6 +756,104 @@ class BorrowBoxDriver extends AbstractEContentDriver {
 	}
 
 	/**
+	 * BorrowBox does not support fast renew-all.
+	 */
+	public function hasFastRenewAll(): bool {
+		return false;
+	}
+
+	/**
+	 * Renew-all is not supported for BorrowBox.
+	 */
+	public function renewAll(User $patron): array {
+		return [
+			'success' => false,
+			'message' => translate(['text' => 'Renew All is not supported for BorrowBox. Please renew titles individually.', 'isPublicFacing' => true]),
+		];
+	}
+
+	/**
+	 * Renew a single BorrowBox checkout.
+	 *
+	 * PUT /v1/sites/{siteId}/patrons/{patronId}/loans/{loanId}
+	 *
+	 * @param User $patron
+	 * @param string $recordId The sourceId (loanId_settingId)
+	 * @param string|null $itemId
+	 * @param string|null $itemIndex
+	 * @return array
+	 */
+	public function renewCheckout(User $patron, string $recordId, ?string $itemId = null, ?string $itemIndex = null): array {
+		$result = [
+			'success' => false,
+			'message' => translate(['text' => 'Unknown error renewing BorrowBox title.', 'isPublicFacing' => true]),
+			'api' => [
+				'title' => translate(['text' => 'Unable to renew title', 'isPublicFacing' => true]),
+				'message' => translate(['text' => 'Unknown error renewing BorrowBox title.', 'isPublicFacing' => true]),
+			],
+		];
+
+		$loanId = $recordId;
+		if (str_contains($recordId, '_')) {
+			list($loanId, $settingId) = explode('_', $recordId, 2);
+			$availableSettings = $this->getAvailableSettings();
+			if (isset($availableSettings[$settingId])) {
+				$this->setSettings($availableSettings[$settingId]);
+			}
+		}
+
+		$loansUrl = $this->getPatronLoansUrl($patron);
+		if ($loansUrl === null) {
+			$result['message'] = translate(['text' => 'Unable to determine your library\'s BorrowBox configuration.', 'isPublicFacing' => true]);
+			$result['api']['message'] = $result['message'];
+			return $result;
+		}
+
+		$url = $loansUrl . '/' . urlencode($loanId);
+		$response = $this->_callPutUrl($url, 'renewCheckout');
+
+		if ($response === null) {
+			$this->incrementStat('numApiErrors');
+			return $result;
+		}
+
+		$body = $response->body;
+		$renewalSucceeded = $response->responseCode == '200' && $body !== null && isset($body->loanId);
+		if ($renewalSucceeded) {
+			$result['success'] = true;
+			$result['message'] = translate([
+				'text' => 'Your title was renewed successfully.',
+				'isPublicFacing' => true,
+			]);
+
+			$result['api']['title'] = translate(['text' => 'Renewed title', 'isPublicFacing' => true]);
+			$result['api']['message'] = translate([
+				'text' => 'Your title was renewed successfully.',
+				'isPublicFacing' => true,
+			]);
+
+			$this->trackUserUsageOfBorrowBox($patron);
+			$this->incrementStat('numRenewals');
+
+			$accountSummary = $patron->getCachedAccountSummary('borrowbox');
+			$accountSummary->markCheckoutsStale();
+		} else {
+			$errorMessage = $this->extractErrorMessage($body);
+			$result['message'] = translate(['text' => 'Sorry, but we could not renew this title for you.', 'isPublicFacing' => true]);
+			if (!empty($errorMessage)) {
+				$result['message'] .= ' ' . $errorMessage;
+			}
+
+			$result['api']['title'] = translate(['text' => 'Unable to renew title', 'isPublicFacing' => true]);
+			$result['api']['message'] = $result['message'];
+
+			$this->incrementStat('numApiErrors');
+		}
+
+		return $result;
+	}
+
+	/**
 	 * Get all current holds/reserves for a patron from BorrowBox.
 	 *
 	 * Calls GET /v1/sites/{siteId}/patrons/{patronId}/loans and filters for
@@ -837,6 +935,186 @@ class BorrowBoxDriver extends AbstractEContentDriver {
 		}
 
 		return $this->updateCachedHoldsBasedOnActiveHolds($cachedHolds, $holds, $accountSummary);
+	}
+
+	/**
+	 * Place a hold (reserve) on a BorrowBox title.
+	 *
+	 * POST /v1/sites/{siteId}/patrons/{patronId}/loans?intent=RESERVE&productId={id}
+	 *
+	 * @param User $patron
+	 * @param string $recordId The BorrowBox product ID
+	 * @param string|null $pickupBranch Not used for BorrowBox
+	 * @param string|null $cancelDate Not used for BorrowBox
+	 * @return array
+	 */
+	public function placeHold(User $patron, $recordId, $pickupBranch = null, $cancelDate = null): array {
+		$result = [
+			'success' => false,
+			'message' => translate(['text' => 'Unknown error placing BorrowBox hold.', 'isPublicFacing' => true]),
+			'api' => [
+				'title' => translate(['text' => 'Unable to place hold', 'isPublicFacing' => true]),
+				'message' => translate(['text' => 'Unknown error placing BorrowBox hold.', 'isPublicFacing' => true]),
+			],
+		];
+
+		$this->setSettingsForProduct($recordId);
+		$loansUrl = $this->getPatronLoansUrl($patron);
+		if ($loansUrl === null) {
+			$result['message'] = translate(['text' => 'Unable to determine your library\'s BorrowBox configuration.', 'isPublicFacing' => true]);
+			$result['api']['message'] = $result['message'];
+			return $result;
+		}
+
+		$url = $loansUrl . '?intent=RESERVE&productId=' . urlencode($recordId);
+		$response = $this->_callPostUrl($url, 'placeHold');
+
+		if ($response === null) {
+			$this->incrementStat('numFailedHolds');
+			return $result;
+		}
+
+		$body = $response->body;
+		$holdSucceeded = $response->responseCode == '200' && $body !== null && isset($body->loanId);
+		if ($holdSucceeded) {
+			$this->trackUserUsageOfBorrowBox($patron);
+			$this->trackRecordHold($recordId);
+			$this->incrementStat('numHoldsPlaced');
+
+			$result['success'] = true;
+			$result['message'] = "<p class='alert alert-success'>" . translate([
+				'text' => 'Your hold was placed successfully.',
+				'isPublicFacing' => true,
+			]) . '</p>';
+			$result['hasWhileYouWait'] = false;
+
+			$result['api']['title'] = translate(['text' => 'Hold Placed Successfully', 'isPublicFacing' => true]);
+			$result['api']['message'] = translate(['text' => 'Your hold was placed successfully.', 'isPublicFacing' => true]);
+			$result['api']['action'] = translate(['text' => 'Go to Holds', 'isPublicFacing' => true]);
+
+			$this->appendWhileYouWait($result, $recordId);
+
+			$accountSummary = $patron->getCachedAccountSummary('borrowbox');
+			$accountSummary->incrementNumberOfUnavailableHolds();
+			$accountSummary->markHoldsStale();
+		} else {
+			$this->incrementStat('numFailedHolds');
+
+			$errorMessage = $this->extractErrorMessage($body);
+			$result['message'] = translate(['text' => 'Sorry, but we could not place a hold for you on this BorrowBox title.', 'isPublicFacing' => true]);
+			if (!empty($errorMessage)) {
+				$result['message'] .= ' ' . $errorMessage;
+			}
+
+			$result['api']['title'] = translate(['text' => 'Unable to place hold', 'isPublicFacing' => true]);
+			$result['api']['message'] = $result['message'];
+		}
+
+		return $result;
+	}
+
+	private function appendWhileYouWait(array &$result, $recordId): void {
+		global $library;
+		if (!$library->showWhileYouWait) {
+			return;
+		}
+		require_once ROOT_DIR . '/RecordDrivers/BorrowBoxRecordDriver.php';
+		$recordDriver = new BorrowBoxRecordDriver($recordId);
+		if (!$recordDriver->isValid()) {
+			return;
+		}
+		$groupedWorkId = $recordDriver->getPermanentId();
+		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+		$groupedWorkDriver = new GroupedWorkDriver($groupedWorkId);
+		$whileYouWaitTitles = $groupedWorkDriver->getWhileYouWait($recordDriver->getPrimaryFormat());
+		if (count($whileYouWaitTitles) == 0) {
+			return;
+		}
+		global $interface;
+		$interface->assign('whileYouWaitTitles', $whileYouWaitTitles);
+		$result['message'] .= '<h3>' . translate(['text' => 'While You Wait', 'isPublicFacing' => true]) . '</h3>';
+		$result['message'] .= $interface->fetch('GroupedWork/whileYouWait.tpl');
+		$result['hasWhileYouWait'] = true;
+	}
+
+	/**
+	 * Cancel a BorrowBox hold (reserve).
+	 *
+	 * DELETE /v1/sites/{siteId}/patrons/{patronId}/loans/{loanId}
+	 *
+	 * @param User $patron
+	 * @param string $recordId The sourceId (loanId_settingId)
+	 * @param string|null $cancelId
+	 * @param bool|null $isIll
+	 * @return array
+	 */
+	public function cancelHold(User $patron, string $recordId, ?string $cancelId = null, ?bool $isIll = false): array {
+		$result = [
+			'success' => false,
+			'message' => translate(['text' => 'Unknown error cancelling BorrowBox hold.', 'isPublicFacing' => true]),
+			'api' => [
+				'title' => translate(['text' => 'Unable to cancel hold', 'isPublicFacing' => true]),
+				'message' => translate(['text' => 'Unknown error cancelling BorrowBox hold.', 'isPublicFacing' => true]),
+			],
+		];
+
+		$loanId = $recordId;
+		if (str_contains($recordId, '_')) {
+			list($loanId, $settingId) = explode('_', $recordId, 2);
+			$availableSettings = $this->getAvailableSettings();
+			if (isset($availableSettings[$settingId])) {
+				$this->setSettings($availableSettings[$settingId]);
+			}
+		}
+
+		$holds = $this->getHolds($patron);
+		$holdToCancel = $this->getHoldBySourceId($holds, $recordId);
+
+		$loansUrl = $this->getPatronLoansUrl($patron);
+		if ($loansUrl === null) {
+			$result['message'] = translate(['text' => 'Unable to determine your library\'s BorrowBox configuration.', 'isPublicFacing' => true]);
+			$result['api']['message'] = $result['message'];
+			return $result;
+		}
+
+		$url = $loansUrl . '/' . urlencode($loanId);
+		$response = $this->_callDeleteUrl($url, 'cancelHold');
+
+		if ($response === null) {
+			$this->incrementStat('numApiErrors');
+			return $result;
+		}
+
+		if ($response->responseCode == '204') {
+			$result['success'] = true;
+			$result['message'] = translate(['text' => 'Your hold was cancelled successfully.', 'isPublicFacing' => true]);
+
+			$result['api']['title'] = translate(['text' => 'Hold cancelled', 'isPublicFacing' => true]);
+			$result['api']['message'] = translate(['text' => 'Your hold was cancelled successfully.', 'isPublicFacing' => true]);
+
+			$this->incrementStat('numHoldsCancelled');
+
+			if ($holdToCancel !== null) {
+				$this->updateCachesForCancelledHold($patron, $holdToCancel, 'borrowbox');
+			} else {
+				$accountSummary = $patron->getCachedAccountSummary('borrowbox');
+				$accountSummary->decrementUnavailableHolds();
+				$accountSummary->markHoldsStale();
+			}
+		} else {
+			$errorMessage = $this->extractErrorMessage($response->body);
+			$result['message'] = translate(['text' => 'There was an error cancelling your hold.', 'isPublicFacing' => true]);
+			if (!empty($errorMessage)) {
+				$result['message'] .= ' ' . $errorMessage;
+			}
+
+			$result['api']['title'] = translate(['text' => 'Unable to cancel hold', 'isPublicFacing' => true]);
+			$result['api']['message'] = $result['message'];
+
+			$this->incrementStat('numApiErrors');
+		}
+
+		return $result;
 	}
 
 	/**
