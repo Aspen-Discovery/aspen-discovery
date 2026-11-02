@@ -8110,7 +8110,10 @@ class Koha extends AbstractIlsDriver {
 					'isPublicFacing' => true,
 				]);
 			case 'no_checkout':
-				return $message . 'Item is not checked out';
+				return $message . translate([
+					'text' => 'Item is not checked out',
+					'isPublicFacing' => true,
+				]);
 			case 'auto_too_soon':
 				return $message . 'Scheduled for automatic renewal and cannot be renewed yet';
 			case 'auto_too_late':
