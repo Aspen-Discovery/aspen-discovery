@@ -473,6 +473,124 @@ class BorrowBoxDriver extends AbstractEContentDriver {
 	}
 
 	/**
+	 * BorrowBox does not provide native reading history.
+	 */
+	public function hasNativeReadingHistory(): bool {
+		return false;
+	}
+
+	/**
+	 * Track a patron's usage of BorrowBox.
+	 *
+	 * @param User $patron
+	 */
+	public function trackUserUsageOfBorrowBox(User $patron): void {
+		$userBorrowBoxTracking = $patron->userCookiePreferenceLocalAnalytics || !$patron->getHomeLibrary()->cookieStorageConsent;
+		if (!$userBorrowBoxTracking) {
+			return;
+		}
+
+		require_once ROOT_DIR . '/sys/BorrowBox/UserBorrowBoxUsage.php';
+		$userUsage = new UserBorrowBoxUsage();
+		global $aspenUsage;
+		$userUsage->instance = $aspenUsage->getInstance();
+		$userUsage->userId = $patron->id;
+		$userUsage->year = date('Y');
+		$userUsage->month = date('n');
+		$userUsage->day = date('d');
+
+		if ($userUsage->find(true)) {
+			$userUsage->usageCount++;
+			$userUsage->update();
+		} else {
+			$userUsage->usageCount = 1;
+			$userUsage->insert();
+		}
+	}
+
+	/**
+	 * Track a checkout event for a BorrowBox record.
+	 *
+	 * @param string $productId
+	 */
+	public function trackRecordCheckout(string $productId): void {
+		require_once ROOT_DIR . '/sys/BorrowBox/BorrowBoxRecordUsage.php';
+		require_once ROOT_DIR . '/sys/BorrowBox/BorrowBoxAPIProduct.php';
+		$recordUsage = new BorrowBoxRecordUsage();
+		$product = new BorrowBoxAPIProduct();
+		$product->borrowboxId = $productId;
+		if (!$product->find(true)) {
+			return;
+		}
+
+		global $aspenUsage;
+		$recordUsage->instance = $aspenUsage->getInstance();
+		$recordUsage->borrowboxId = $product->id;
+		$recordUsage->year = date('Y');
+		$recordUsage->month = date('n');
+		if ($recordUsage->find(true)) {
+			$recordUsage->timesCheckedOut++;
+			$recordUsage->update();
+		} else {
+			$recordUsage->timesCheckedOut = 1;
+			$recordUsage->timesHeld = 0;
+			$recordUsage->insert();
+		}
+	}
+
+	/**
+	 * Track a hold event for a BorrowBox record.
+	 *
+	 * @param string $productId
+	 */
+	public function trackRecordHold(string $productId): void {
+		require_once ROOT_DIR . '/sys/BorrowBox/BorrowBoxRecordUsage.php';
+		require_once ROOT_DIR . '/sys/BorrowBox/BorrowBoxAPIProduct.php';
+		$recordUsage = new BorrowBoxRecordUsage();
+		$product = new BorrowBoxAPIProduct();
+		$product->borrowboxId = $productId;
+		if (!$product->find(true)) {
+			return;
+		}
+
+		global $aspenUsage;
+		$recordUsage->instance = $aspenUsage->getInstance();
+		$recordUsage->borrowboxId = $product->id;
+		$recordUsage->year = date('Y');
+		$recordUsage->month = date('n');
+		if ($recordUsage->find(true)) {
+			$recordUsage->timesHeld++;
+			$recordUsage->update();
+		} else {
+			$recordUsage->timesCheckedOut = 0;
+			$recordUsage->timesHeld = 1;
+			$recordUsage->insert();
+		}
+	}
+
+	/**
+	 * Increment a statistics counter for BorrowBox operations.
+	 *
+	 * @param string $fieldName The stats field to increment.
+	 */
+	public function incrementStat(string $fieldName): void {
+		require_once ROOT_DIR . '/sys/BorrowBox/BorrowBoxStats.php';
+		$borrowboxStats = new BorrowBoxStats();
+		global $aspenUsage;
+		$borrowboxStats->instance = $aspenUsage->getInstance();
+		$borrowboxStats->year = date('Y');
+		$borrowboxStats->month = date('n');
+		$borrowboxStats->day = date('d');
+		if ($borrowboxStats->find(true)) {
+			$borrowboxStats->$fieldName++;
+			$borrowboxStats->update();
+		} else {
+			$borrowboxStats->$fieldName = 1;
+			$borrowboxStats->insert();
+		}
+	}
+
+	/**
 	 * Extract a user-facing error message from a BorrowBox API error response body.
 	 *
 	 * Per the BorrowBox API specification only patron_message may be shown to
