@@ -8088,7 +8088,10 @@ class Koha extends AbstractIlsDriver {
 		$code = (string)($errorAlt ?: $error);
 		$codeIsMissing = empty($code);
 		if ($codeIsMissing) {
-			return 'Unknown error';
+			return translate([
+				'text' => 'Unknown error',
+				'isPublicFacing' => true,
+			]);
 		}
 		switch ($code) {
 			case 'too_many':
