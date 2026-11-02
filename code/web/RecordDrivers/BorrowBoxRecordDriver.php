@@ -397,14 +397,17 @@ class BorrowBoxRecordDriver extends GroupedWorkSubDriver {
 	 * @return  string[]
 	 */
 	public function getFormats(): array {
+		$mediaType = $this->borrowBoxProduct->mediaType ?? null;
+		if (!empty($mediaType)) {
+			return [$mediaType => $mediaType];
+		}
+
 		$relatedRecord = $this->getRelatedRecord();
 		if ($relatedRecord == null) {
 			return [];
 		}
 
-		$formats = [];
-		$formats[$relatedRecord->getFormat()] = $relatedRecord->getFormat();
-		return $formats;
+		return [$relatedRecord->getFormat() => $relatedRecord->getFormat()];
 	}
 
 	/**
