@@ -356,13 +356,13 @@ public class OmekaExtractor {
 	private String getThumbnailUrl(JSONObject primaryMedia) {
 		JSONObject thumbnailUrls = primaryMedia.optJSONObject("o:thumbnail_urls");
 		if (thumbnailUrls != null) {
-			return thumbnailUrls.optString("large", null);
+			return AspenStringUtils.trimTo(750, thumbnailUrls.optString("large", null));
 		}
 		JSONObject fileUrls = primaryMedia.optJSONObject("file_urls");
 		if (fileUrls == null) {
 			return null;
 		}
-		return fileUrls.optString("fullsize", null);
+		return AspenStringUtils.trimTo(750, fileUrls.optString("fullsize", null));
 	}
 
 	private String getTitleForItem(JSONObject item) {
@@ -398,10 +398,16 @@ public class OmekaExtractor {
 			if (itemSet == null || !itemSet.has("o:id")) {
 				continue;
 			}
+			String itemSetId = Long.toString(itemSet.getLong("o:id"));
+			int separatorLength = itemSetIds.length() > 0 ? 1 : 0;
+			boolean wouldExceedColumn = itemSetIds.length() + separatorLength + itemSetId.length() > 500;
+			if (wouldExceedColumn) {
+				break;
+			}
 			if (itemSetIds.length() > 0) {
 				itemSetIds.append(",");
 			}
-			itemSetIds.append(itemSet.getLong("o:id"));
+			itemSetIds.append(itemSetId);
 		}
 		return itemSetIds.toString();
 	}
