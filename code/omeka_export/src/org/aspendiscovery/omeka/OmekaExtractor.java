@@ -259,24 +259,11 @@ public class OmekaExtractor {
 				return;
 			}
 
-			String mediaType = null;
-			String thumbnailUrl = null;
-			if (hasPrimaryMedia(item)) {
-				JSONObject primaryMedia = fetchPrimaryMedia(item);
-				boolean mediaFetchFailed = primaryMedia == null;
-				if (mediaFetchFailed) {
-					return;
-				}
-				item.put(PRIMARY_MEDIA_KEY, primaryMedia);
-				mediaType = OmekaProcessor.getPrimaryMediaType(primaryMedia);
-				thumbnailUrl = getThumbnailUrl(primaryMedia);
-			}
-
-			String rawResponse = item.toString();
+			String rawItem = item.toString();
 			checksumCalculator.reset();
-			checksumCalculator.update(rawResponse.getBytes(StandardCharsets.UTF_8));
+			checksumCalculator.update(rawItem.getBytes(StandardCharsets.UTF_8));
 			long rawChecksum = checksumCalculator.getValue();
-			long rawResponseLength = rawResponse.length();
+			long rawResponseLength = rawItem.length();
 
 			boolean titleWasDeleted = !isNewTitle && existingTitle.isDeleted();
 			boolean titleChanged = !isNewTitle && (existingTitle.getChecksum() != rawChecksum || existingTitle.getRawResponseLength() != rawResponseLength);
@@ -293,6 +280,15 @@ public class OmekaExtractor {
 				}
 				return;
 			}
+
+			boolean mediaAttached = attachPrimaryMedia(item);
+			if (!mediaAttached) {
+				return;
+			}
+			JSONObject primaryMedia = item.optJSONObject(PRIMARY_MEDIA_KEY);
+			String mediaType = OmekaProcessor.getPrimaryMediaType(primaryMedia);
+			String thumbnailUrl = getThumbnailUrl(primaryMedia);
+			String rawResponse = item.toString();
 
 			String title = getTitleForItem(item);
 			String itemSetIds = getItemSetIdsForItem(item);
@@ -356,6 +352,9 @@ public class OmekaExtractor {
 	}
 
 	private String getThumbnailUrl(JSONObject primaryMedia) {
+		if (primaryMedia == null) {
+			return null;
+		}
 		JSONObject thumbnailUrls = primaryMedia.optJSONObject("o:thumbnail_urls");
 		if (thumbnailUrls != null) {
 			return AspenStringUtils.trimTo(750, thumbnailUrls.optString("large", null));
@@ -412,6 +411,19 @@ public class OmekaExtractor {
 			itemSetIds.append(itemSetId);
 		}
 		return itemSetIds.toString();
+	}
+
+	private boolean attachPrimaryMedia(JSONObject item) {
+		if (!hasPrimaryMedia(item)) {
+			return true;
+		}
+		JSONObject primaryMedia = fetchPrimaryMedia(item);
+		boolean mediaFetchFailed = primaryMedia == null;
+		if (mediaFetchFailed) {
+			return false;
+		}
+		item.put(PRIMARY_MEDIA_KEY, primaryMedia);
+		return true;
 	}
 
 	private boolean hasPrimaryMedia(JSONObject item) {
