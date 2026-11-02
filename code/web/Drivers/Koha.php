@@ -8115,7 +8115,10 @@ class Koha extends AbstractIlsDriver {
 					'isPublicFacing' => true,
 				]);
 			case 'auto_too_soon':
-				return $message . 'Scheduled for automatic renewal and cannot be renewed yet';
+				return $message . translate([
+					'text' => 'Scheduled for automatic renewal and cannot be renewed yet',
+					'isPublicFacing' => true,
+				]);
 			case 'auto_too_late':
 				return $message . 'Scheduled for automatic renewal and cannot be renewed any more';
 			case 'auto_account_expired':
