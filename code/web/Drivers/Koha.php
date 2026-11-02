@@ -8165,7 +8165,10 @@ class Koha extends AbstractIlsDriver {
 					'isPublicFacing' => true,
 				]);
 			case 'overdue':
-				return $message . 'Renewal is blocked by an overdue item';
+				return $message . translate([
+					'text' => 'Renewal is blocked by an overdue item',
+					'isPublicFacing' => true,
+				]);
 			default:
 				return 'Unknown error:' . $code;
 		}
