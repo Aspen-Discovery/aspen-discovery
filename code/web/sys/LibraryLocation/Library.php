@@ -7053,7 +7053,7 @@ class Library extends DataObject {
 		$readerName = new OverDriveDriver();
 		$apiInfo['libbyReaderName'] = $readerName->getReaderName();
 
-		$apiInfo['showFines'] = $configArray['Catalog']['showFines'];
+		$apiInfo['showFines'] = $this->showFinesInMyAccount();
 
 		$generalSettings = $this->getLiDAGeneralSettings();
 		if (is_null($generalSettings)) {
