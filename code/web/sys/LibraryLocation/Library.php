@@ -128,6 +128,7 @@ class Library extends DataObject {
 	public $showUserCirculationModules;
 	public $showUserPreferences;
 	public $showUserContactInformation;
+	public $showFines;
 	public $inSystemPickupsOnly;
 	public $validPickupSystems;
 	/** @noinspection PhpUnused */
@@ -1749,6 +1750,15 @@ class Library extends DataObject {
 						'type' => 'checkbox',
 						'label' => 'Show Contact Information to Users in My Account',
 						'description' => 'Whether or not users can see their contact information (user profile) in My Account.',
+						'hideInLists' => true,
+						'default' => 1,
+						'permissions' => ['Library ILS Options'],
+					],
+					'showFines' => [
+						'property' => 'showFines',
+						'type' => 'checkbox',
+						'label' => 'Show Fines in My Account',
+						'description' => 'Whether or not the Fines link is shown in My Account. Turn this off for libraries that do not charge fines.',
 						'hideInLists' => true,
 						'default' => 1,
 						'permissions' => ['Library ILS Options'],
