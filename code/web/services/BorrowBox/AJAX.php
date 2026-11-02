@@ -197,4 +197,16 @@ class BorrowBox_AJAX extends JSON_Action {
 		}
 		return $result;
 	}
+
+	/** @noinspection PhpUnused */
+	public function exportUsageData(): void {
+		$this->requireLoggedInUser();
+		$this->checkRequiredPermission([
+			'View System Reports',
+			'View Dashboards',
+		]);
+		require_once ROOT_DIR . '/services/BorrowBox/UsageGraphs.php';
+		$borrowBoxUsageGraph = new BorrowBox_UsageGraphs();
+		$borrowBoxUsageGraph->buildCSV('BorrowBox');
+	}
 }
