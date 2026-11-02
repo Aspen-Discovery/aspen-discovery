@@ -2088,6 +2088,71 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		];
 	}
 
+	private function assignRelatedRecordSummary(array $relatedRecords, bool $alwaysShowMainDetails): void {
+		global $interface;
+		global $library;
+
+		$variesValue = $alwaysShowMainDetails ? translate([
+			'text' => 'Varies, see individual formats and editions',
+			'isPublicFacing' => true,
+		]) : null;
+		$summPublisher = null;
+		$summPubDate = null;
+		$summPlaceOfPublication = null;
+		$summPhysicalDesc = null;
+		$summEdition = null;
+		$summAudience = null;
+		$summLanguage = null;
+		$isFirst = true;
+		foreach ($relatedRecords as $relatedRecord) {
+			if ($isFirst) {
+				$summPublisher = $relatedRecord->publisher;
+				$summPubDate = $relatedRecord->publicationDate;
+				$summPlaceOfPublication = $relatedRecord->placeOfPublication;
+				$summPhysicalDesc = $relatedRecord->physical;
+				$summEdition = $relatedRecord->edition;
+				$summAudience = $relatedRecord->audience;
+				$summLanguage = $relatedRecord->language;
+				$isFirst = false;
+				continue;
+			}
+			if ($summPublisher != $relatedRecord->publisher) {
+				$summPublisher = $variesValue;
+			}
+			if ($summPubDate != $relatedRecord->publicationDate) {
+				$summPubDate = $variesValue;
+			}
+			if ($summPlaceOfPublication != $relatedRecord->placeOfPublication) {
+				$summPlaceOfPublication = $variesValue;
+			}
+			if ($summPhysicalDesc != $relatedRecord->physical) {
+				$summPhysicalDesc = $variesValue;
+			}
+			if ($summEdition != $relatedRecord->edition) {
+				$summEdition = $variesValue;
+			}
+			if ($summAudience != $relatedRecord->audience) {
+				$summAudience = $variesValue;
+			}
+			if ($summLanguage != $relatedRecord->language) {
+				$summLanguage = $variesValue;
+			}
+		}
+
+		$publicationDateIsMissing = $summPubDate == null;
+		$showEarliestPublicationDate = $library->getGroupedWorkDisplaySettings()->showEarliestPublicationDateSearchResults;
+		if ($publicationDateIsMissing && $showEarliestPublicationDate) {
+			$summPubDate = $this->getEarliestPublicationDate();
+		}
+		$interface->assign('summPublisher', rtrim($summPublisher, ','));
+		$interface->assign('summPubDate', $summPubDate);
+		$interface->assign('summPlaceOfPublication', $summPlaceOfPublication);
+		$interface->assign('summPhysicalDesc', $summPhysicalDesc);
+		$interface->assign('summEdition', $summEdition);
+		$interface->assign('summAudience', $summAudience);
+		$interface->assign('summLanguage', $summLanguage);
+	}
+
 	/**
 	 * Assign necessary Smarty variables and return a template name to
 	 * load in order to display a summary of the item suitable for use in
@@ -2176,82 +2241,8 @@ class GroupedWorkDriver extends IndexRecordDriver {
 
 		$this->loadReadingHistoryIndicator();
 
-		$summPublisher = null;
-		$summPubDate = null;
-		$summPlaceOfPublication = null;
-		$summPhysicalDesc = null;
-		$summEdition = null;
-		$summAudience = null;
-		$summLanguage = null;
-		$isFirst = true;
-		global $library;
-		$alwaysShowMainDetails = $library ? $library->alwaysShowSearchResultsMainDetails : false;
-		foreach ($relatedRecords as $relatedRecord) {
-			if ($isFirst) {
-				$summPublisher = $relatedRecord->publisher;
-				$summPubDate = $relatedRecord->publicationDate;
-				$summPlaceOfPublication = $relatedRecord->placeOfPublication;
-				$summPhysicalDesc = $relatedRecord->physical;
-				$summEdition = $relatedRecord->edition;
-				$summAudience = $relatedRecord->audience;
-				$summLanguage = $relatedRecord->language;
-			} else {
-				if ($summPublisher != $relatedRecord->publisher) {
-					$summPublisher = $alwaysShowMainDetails ? translate([
-						'text' => 'Varies, see individual formats and editions',
-						'isPublicFacing' => true,
-					]) : null;
-				}
-				if ($summPubDate != $relatedRecord->publicationDate) {
-					$summPubDate = $alwaysShowMainDetails ? translate([
-						'text' => 'Varies, see individual formats and editions',
-						'isPublicFacing' => true,
-					]) : null;
-				}
-				if ($summPlaceOfPublication != $relatedRecord->placeOfPublication) {
-					$summPlaceOfPublication = $alwaysShowMainDetails ? translate([
-						'text' => 'Varies, see individual formats and editions',
-						'isPublicFacing' => true,
-					]) : null;
-				}
-				if ($summPhysicalDesc != $relatedRecord->physical) {
-					$summPhysicalDesc = $alwaysShowMainDetails ? translate([
-						'text' => 'Varies, see individual formats and editions',
-						'isPublicFacing' => true,
-					]) : null;
-				}
-				if ($summEdition != $relatedRecord->edition) {
-					$summEdition = $alwaysShowMainDetails ? translate([
-						'text' => 'Varies, see individual formats and editions',
-						'isPublicFacing' => true,
-					]) : null;
-				}
-				if ($summAudience != $relatedRecord->audience) {
-					$summAudience = $alwaysShowMainDetails ? translate([
-						'text' => 'Varies, see individual formats and editions',
-						'isPublicFacing' => true,
-					]) : null;
-				}
-				if ($summLanguage != $relatedRecord->language) {
-					$summLanguage = $alwaysShowMainDetails ? translate([
-						'text' => 'Varies, see individual formats and editions',
-						'isPublicFacing' => true,
-					]) : null;
-				}
-			}
-			$isFirst = false;
-		}
-		$displaySettings = $library->getGroupedWorkDisplaySettings();
-		if ($summPubDate == null && $displaySettings->showEarliestPublicationDateSearchResults) {
-			$summPubDate = $this->getEarliestPublicationDate();
-		}
-		$interface->assign('summPublisher', rtrim($summPublisher, ','));
-		$interface->assign('summPubDate', $summPubDate);
-		$interface->assign('summPlaceOfPublication', $summPlaceOfPublication);
-		$interface->assign('summPhysicalDesc', $summPhysicalDesc);
-		$interface->assign('summEdition', $summEdition);
-		$interface->assign('summAudience', $summAudience);
-		$interface->assign('summLanguage', $summLanguage);
+		$alwaysShowMainDetails = $library && $library->alwaysShowSearchResultsMainDetails;
+		$this->assignRelatedRecordSummary($relatedRecords, $alwaysShowMainDetails);
 		$timer->logTime("Finished assignment of data based on related records");
 
 		if (IPAddress::showDebuggingInformation()) {
