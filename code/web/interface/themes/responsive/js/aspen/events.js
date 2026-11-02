@@ -93,7 +93,51 @@ AspenDiscovery.Events = (function(){
 			})
 		},
 
-		getEventTypesForLocation: function(locationId) {
+		populateSublocationsForLocation: function(sublocationsJson) {
+			$("#sublocationIdSelect").html("");
+			var sublocations = sublocationsJson ? JSON.parse(sublocationsJson) : {};
+			var hasSublocations = Object.keys(sublocations).length > 0;
+			if (!hasSublocations) {
+				$("#propertyRowsublocationId").hide();
+				return;
+			}
+			Object.keys(sublocations).forEach(function(key) {
+				$("<option/>", {
+					value: key,
+					text: sublocations[key]
+				}).appendTo("#sublocationIdSelect");
+			});
+			$("#propertyRowsublocationId").show();
+		},
+
+		populateEventTypesForLocation: function(eventTypesJson) {
+			$("#eventTypeIdSelect").html("");
+			$("#propertyRowtitle").hide();
+			$("#propertyRowinfoSection").hide();
+			$("#propertyRowscheduleSection").hide();
+			var eventTypes = eventTypesJson ? JSON.parse(eventTypesJson) : {};
+			var hasEventTypes = Object.keys(eventTypes).length > 0;
+			if (!hasEventTypes) {
+				$("<option/>", {
+					value: '',
+					text: __('No event types available at this location')
+				}).appendTo("#eventTypeIdSelect");
+				return;
+			}
+			$("<option/>", {
+				value: '',
+				text: __('Choose an event type')
+			}).appendTo("#eventTypeIdSelect");
+			Object.keys(eventTypes).forEach(function (key) {
+				$("<option/>", {
+					value: key,
+					text: eventTypes[key]
+				}).appendTo("#eventTypeIdSelect");
+			});
+			$("#propertyRoweventTypeId").show();
+		},
+
+		getEventTypesForLocation: function(locationId, isEditingExistingEvent) {
 			var url = Globals.path + '/Events/AJAX';
 			var params = {
 				method: 'getEventTypesAndSublocationsForLocation',
@@ -101,56 +145,15 @@ AspenDiscovery.Events = (function(){
 			};
 
 			$.getJSON(url, params, function (data) {
-				if (data.success) {
-					if(data.sublocations && data.sublocations.length > 0) {
-						var sublocations = JSON.parse(data.sublocations);
-						$("#sublocationIdSelect").html("");
-						Object.keys(sublocations).forEach(function(key) {
-							$("<option/>", {
-								value: key,
-								text: sublocations[key]
-							}).appendTo("#sublocationIdSelect");
-						});
-						if (sublocations.length === 0) {
-							$("#propertyRowsublocationId").hide();
-						} else {
-							$("#propertyRowsublocationId").show();
-						}
-
-					} else {
-						$("#sublocationIdSelect").html("");
-						$("#propertyRowsublocationId").hide();
-					}
-					if (data.eventTypes && data.eventTypes.length > 0) {
-						var eventTypes = JSON.parse(data.eventTypes);
-						$("#eventTypeIdSelect").html("");
-						$("<option/>", {
-							value: '',
-							text: "Choose an event type"
-						}).appendTo("#eventTypeIdSelect");
-						Object.keys(eventTypes).forEach(function (key) {
-							$("<option/>", {
-								value: key,
-								text: eventTypes[key]
-							}).appendTo("#eventTypeIdSelect");
-						});
-						$("#propertyRoweventTypeId").show();
-						$("#propertyRowtitle").hide();
-						$("#propertyRowinfoSection").hide();
-						$("#propertyRowscheduleSection").hide();
-					} else {
-						$("#eventTypeIdSelect").html("");
-						$("<option/>", {
-							value: '',
-							text: "No event types available at this location"
-						}).appendTo("#eventTypeIdSelect");
-						$("#propertyRowtitle").hide();
-						$("#propertyRowinfoSection").hide();
-						$("#propertyRowscheduleSection").hide();
-					}
-				} else {
+				if (!data.success) {
 					AspenDiscovery.showMessage(__('An error occurred '), data.message);
+					return;
 				}
+				AspenDiscovery.Events.populateSublocationsForLocation(data.sublocations);
+				if (isEditingExistingEvent) {
+					return;
+				}
+				AspenDiscovery.Events.populateEventTypesForLocation(data.eventTypes);
 			});
 		},
 

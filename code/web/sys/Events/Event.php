@@ -1207,6 +1207,7 @@ class Event extends DataObject {
 				}
 			}
 		}
+		$structure['locationId']['onchange'] = 'return AspenDiscovery.Events.getEventTypesForLocation(this.value, true);';
 		if ($this->locationId) {
 			$structure['sublocationId']['values'] = Location::getEventSublocations($this->locationId);
 			$structure['sublocationId']['hiddenByDefault'] = false;
