@@ -19,8 +19,12 @@ class WebBuilder_ResourcesList extends Action {
 		$resource->find();
 		$allResources = $resource->fetchAll();
 		$numLoaded = 0;
+		$openWebResourcesDirectly = $library->openWebResourcesDirectly == 1;
 		foreach ($allResources as $resource) {
 			$clonedResource = clone $resource;
+			if ($openWebResourcesDirectly) {
+				$clonedResource->_urlForLibrary = $clonedResource->getListUrlForLibrary($library->libraryId);
+			}
 			if ($clonedResource->featured) {
 				$featuredResources[] = $clonedResource;
 			}
@@ -37,6 +41,7 @@ class WebBuilder_ResourcesList extends Action {
 		$interface->assign('resourcesByCategory', $resourcesByCategory);
 		$interface->assign('featuredResources', $featuredResources);
 		$interface->assign('numLoaded', $numLoaded);
+		$interface->assign('openWebResourcesDirectly', $openWebResourcesDirectly);
 
 		$this->display('resourcesList.tpl', 'Research & Learn', '');
 	}

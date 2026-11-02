@@ -6,13 +6,8 @@
 			<div class="row">
 				{foreach from=$featuredResources item=resource}
 					<div class="col-xs-4 col-md-3 col-lg-2 featuredResource">
-						<a href="/WebBuilder/WebResource?id={$resource->id}">
-						{if !empty($resource->logo)}
-							<img src='/files/thumbnail/{$resource->logo}' alt="{$resource->name}" class="img-responsive img-thumbnail">
-						{else}
-							{$resource->name}
-						{/if}
-						</a>
+						{capture assign="featuredResourceContent"}{if !empty($resource->logo)}<img src='/files/thumbnail/{$resource->logo}' alt="{$resource->name|escape}" class="img-responsive img-thumbnail">{else}{$resource->name|escape}{/if}{/capture}
+						{include file='WebBuilder/webResourceListLink.tpl' resourceId=$resource->id resourceName=$resource->name resourceUrl=$resource->_urlForLibrary openInNewTab=$resource->openInNewTab linkContent=$featuredResourceContent openWebResourcesDirectly=$openWebResourcesDirectly}
 					</div>
 				{/foreach}
 			</div>
@@ -40,17 +35,15 @@
 							<div class="row webResourceRow">
 								{if !empty($resource->logo)}
 								<div class="coversColumn col-xs-3 col-sm-3 col-md-3 col-lg-2 text-center" aria-hidden="true" role="presentation">
-										<a href="/WebBuilder/WebResource?id={$resource->id}" tabindex="-1">
-											<img src='/files/thumbnail/{$resource->logo}' alt="{$resource->name}" class="img-responsive img-thumbnail">
-										</a>
+										{capture assign="resourceThumbnailContent"}<img src='/files/thumbnail/{$resource->logo}' alt="{$resource->name|escape}" class="img-responsive img-thumbnail">{/capture}
+										{include file='WebBuilder/webResourceListLink.tpl' resourceId=$resource->id resourceName=$resource->name resourceUrl=$resource->_urlForLibrary openInNewTab=$resource->openInNewTab linkTabIndex='-1' linkContent=$resourceThumbnailContent openWebResourcesDirectly=$openWebResourcesDirectly}
 
 								</div>
 								{/if}
 								<div class="{if !empty($resource->logo)}col-xs-9 col-sm-9 col-md-9 col-lg-10{else}col-xs-12 col-sm-12 col-md-12 col-lg-12{/if}">
 									<div>
-										<a href="/WebBuilder/WebResource?id={$resource->id}" class="result-title">
-											{$resource->name}
-										</a>
+										{capture assign="resourceTitleContent"}{$resource->name|escape}{/capture}
+										{include file='WebBuilder/webResourceListLink.tpl' resourceId=$resource->id resourceName=$resource->name resourceUrl=$resource->_urlForLibrary openInNewTab=$resource->openInNewTab linkClass='result-title' linkContent=$resourceTitleContent openWebResourcesDirectly=$openWebResourcesDirectly}
 									</div>
 									<div>
 										{$resource->teaser}
