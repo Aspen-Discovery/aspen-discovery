@@ -144,4 +144,351 @@ class BorrowBoxDriver extends AbstractEContentDriver {
 			}
 		}
 	}
+
+	/**
+	 * Initialise or re-initialise the cURL wrapper.
+	 */
+	public function initCurlWrapper(): void {
+		$this->apiCurlWrapper = new CurlWrapper();
+		$this->apiCurlWrapper->timeout = 20;
+		$this->apiCurlWrapper->connectTimeout = 5;
+	}
+
+	/**
+	 * Authenticate with the BorrowBox API and obtain / cache a JWT access token.
+	 *
+	 * Uses `POST /v1/token` with Basic auth (Base64 of username:password) and
+	 * `grant_type=client_credentials` as form data.
+	 *
+	 * @param bool $forceNew Force re-authentication even if a cached token exists.
+	 * @return bool True if we have a valid token, false on failure.
+	 */
+	private function _connectToAPI(bool $forceNew = false): bool {
+		$setting = $this->getSettings();
+		if ($setting === false) {
+			return false;
+		}
+
+		$currentTokenIsValid = !$forceNew && $this->accessToken !== null && $this->tokenExpiry !== null && time() < $this->tokenExpiry;
+		if ($currentTokenIsValid) {
+			return true;
+		}
+
+		global $memCache;
+		$cacheKey = 'borrowbox_token_' . $setting->id;
+		$cachedToken = $forceNew ? false : $memCache->get($cacheKey);
+		$cachedTokenFound = $cachedToken !== false && is_array($cachedToken);
+		if ($cachedTokenFound) {
+			$this->accessToken = $cachedToken['access_token'];
+			$this->tokenExpiry = $cachedToken['expiry'];
+		}
+		$cachedTokenIsValid = $cachedTokenFound && time() < $this->tokenExpiry;
+		if ($cachedTokenIsValid) {
+			return true;
+		}
+
+		$apiUrl = rtrim($setting->apiUrl, '/');
+		$url = $apiUrl . '/v1/token';
+
+		$this->initCurlWrapper();
+		$authString = base64_encode($setting->apiUsername . ':' . $setting->apiPassword);
+		$this->apiCurlWrapper->addCustomHeaders([
+			'Authorization: Basic ' . $authString,
+			'Content-Type: application/x-www-form-urlencoded',
+		], true);
+
+		$postFields = 'grant_type=client_credentials';
+		$response = $this->apiCurlWrapper->curlPostPage($url, $postFields);
+		ExternalRequestLogEntry::logRequest('borrowbox.connectToAPI', 'POST', $url, $this->apiCurlWrapper->getHeaders(), $postFields, $this->apiCurlWrapper->getResponseCode(), $response, ['Authorization' => 'Basic ***']);
+
+		$responseCode = $this->apiCurlWrapper->getResponseCode();
+		if ($responseCode != '200') {
+			global $logger;
+			$logger->log("BorrowBox authentication failed with HTTP $responseCode", Logger::LOG_ERROR);
+			$this->incrementStat('numConnectionFailures');
+			return false;
+		}
+
+		$tokenData = json_decode($response, true);
+		$accessTokenMissing = empty($tokenData) || empty($tokenData['access_token']);
+		if ($accessTokenMissing) {
+			global $logger;
+			$logger->log('BorrowBox authentication returned invalid token data', Logger::LOG_ERROR);
+			$this->incrementStat('numConnectionFailures');
+			return false;
+		}
+
+		$expiresIn = $tokenData['expires_in'] ?? 3600;
+		$this->accessToken = $tokenData['access_token'];
+		$this->tokenExpiry = time() + $expiresIn - 30;
+
+		$memCache->set($cacheKey, [
+			'access_token' => $this->accessToken,
+			'expiry' => $this->tokenExpiry,
+		], $expiresIn - 30);
+
+		return true;
+	}
+
+	/**
+	 * Perform a GET request to the BorrowBox API with Bearer auth.
+	 * Automatically re-authenticates on 401.
+	 *
+	 * @param string $url       Full URL to call
+	 * @param string $methodName Method name for logging
+	 * @return object|null Decoded JSON response, or null on failure.
+	 */
+	private function _callUrl(string $url, string $methodName): ?object {
+		if (!$this->_connectToAPI()) {
+			return null;
+		}
+
+		$this->initCurlWrapper();
+		$this->apiCurlWrapper->addCustomHeaders([
+			'Authorization: Bearer ' . $this->accessToken,
+			'Accept: application/json',
+		], true);
+
+		$response = $this->apiCurlWrapper->curlGetPage($url);
+		$responseCode = $this->apiCurlWrapper->getResponseCode();
+		ExternalRequestLogEntry::logRequest('borrowbox.' . $methodName, 'GET', $url, $this->apiCurlWrapper->getHeaders(), false, $responseCode, $response, []);
+
+		if ($responseCode == '401' && $this->_connectToAPI(true)) {
+			$this->initCurlWrapper();
+			$this->apiCurlWrapper->addCustomHeaders([
+				'Authorization: Bearer ' . $this->accessToken,
+				'Accept: application/json',
+			], true);
+
+			$response = $this->apiCurlWrapper->curlGetPage($url);
+			$responseCode = $this->apiCurlWrapper->getResponseCode();
+			ExternalRequestLogEntry::logRequest('borrowbox.' . $methodName . '_retry', 'GET', $url, $this->apiCurlWrapper->getHeaders(), false, $responseCode, $response, []);
+		}
+
+		if ($responseCode != '200') {
+			return null;
+		}
+
+		return json_decode($response);
+	}
+
+	/**
+	 * Perform a POST request to the BorrowBox API.
+	 *
+	 * BorrowBox POST endpoints for loans use query parameters, not a request body.
+	 * The $params string should be appended to the URL before calling.
+	 *
+	 * @param string $url       Full URL (with query params already appended)
+	 * @param string $methodName Method name for logging
+	 * @return object|array|null Decoded JSON response, or null on failure.
+	 */
+	private function _callPostUrl(string $url, string $methodName): object|array|null {
+		if (!$this->_connectToAPI()) {
+			return null;
+		}
+
+		$this->initCurlWrapper();
+		$this->apiCurlWrapper->addCustomHeaders([
+			'Authorization: Bearer ' . $this->accessToken,
+			'Content-Type: application/json',
+			'Accept: application/json',
+		], true);
+
+		$response = $this->apiCurlWrapper->curlPostPage($url, '');
+		$responseCode = $this->apiCurlWrapper->getResponseCode();
+		ExternalRequestLogEntry::logRequest('borrowbox.' . $methodName, 'POST', $url, $this->apiCurlWrapper->getHeaders(), '', $responseCode, $response, []);
+
+		if ($responseCode == '401' && $this->_connectToAPI(true)) {
+			$this->initCurlWrapper();
+			$this->apiCurlWrapper->addCustomHeaders([
+				'Authorization: Bearer ' . $this->accessToken,
+				'Content-Type: application/json',
+				'Accept: application/json',
+			], true);
+
+			$response = $this->apiCurlWrapper->curlPostPage($url, '');
+			$responseCode = $this->apiCurlWrapper->getResponseCode();
+			ExternalRequestLogEntry::logRequest('borrowbox.' . $methodName . '_retry', 'POST', $url, $this->apiCurlWrapper->getHeaders(), '', $responseCode, $response, []);
+		}
+
+		$result = new stdClass();
+		$result->responseCode = $responseCode;
+		$result->body = null;
+
+		if (!empty($response)) {
+			$result->body = json_decode($response);
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Perform a PUT request to the BorrowBox API (used for renewals).
+	 *
+	 * @param string $url       Full URL
+	 * @param string $methodName Method name for logging
+	 * @return object|null Result object with responseCode and body.
+	 */
+	private function _callPutUrl(string $url, string $methodName): ?object {
+		if (!$this->_connectToAPI()) {
+			return null;
+		}
+
+		$this->initCurlWrapper();
+		$this->apiCurlWrapper->addCustomHeaders([
+			'Authorization: Bearer ' . $this->accessToken,
+			'Content-Type: application/json',
+			'Accept: application/json',
+		], true);
+
+		$response = $this->apiCurlWrapper->curlSendPage($url, 'PUT');
+		$responseCode = $this->apiCurlWrapper->getResponseCode();
+		ExternalRequestLogEntry::logRequest('borrowbox.' . $methodName, 'PUT', $url, $this->apiCurlWrapper->getHeaders(), false, $responseCode, $response, []);
+
+		if ($responseCode == '401' && $this->_connectToAPI(true)) {
+			$this->initCurlWrapper();
+			$this->apiCurlWrapper->addCustomHeaders([
+				'Authorization: Bearer ' . $this->accessToken,
+				'Content-Type: application/json',
+				'Accept: application/json',
+			], true);
+
+			$response = $this->apiCurlWrapper->curlSendPage($url, 'PUT');
+			$responseCode = $this->apiCurlWrapper->getResponseCode();
+			ExternalRequestLogEntry::logRequest('borrowbox.' . $methodName . '_retry', 'PUT', $url, $this->apiCurlWrapper->getHeaders(), false, $responseCode, $response, []);
+		}
+
+		$result = new stdClass();
+		$result->responseCode = $responseCode;
+		$result->body = null;
+
+		if (!empty($response)) {
+			$result->body = json_decode($response);
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Perform a DELETE request to the BorrowBox API (used for returns and cancellations).
+	 *
+	 * @param string $url       Full URL
+	 * @param string $methodName Method name for logging
+	 * @return object|null Result object with responseCode and body (body may be null for 204).
+	 */
+	private function _callDeleteUrl(string $url, string $methodName): ?object {
+		if (!$this->_connectToAPI()) {
+			return null;
+		}
+
+		$this->initCurlWrapper();
+		$this->apiCurlWrapper->addCustomHeaders([
+			'Authorization: Bearer ' . $this->accessToken,
+			'Accept: application/json',
+		], true);
+
+		$response = $this->apiCurlWrapper->curlSendPage($url, 'DELETE');
+		$responseCode = $this->apiCurlWrapper->getResponseCode();
+		ExternalRequestLogEntry::logRequest('borrowbox.' . $methodName, 'DELETE', $url, $this->apiCurlWrapper->getHeaders(), false, $responseCode, $response, []);
+
+		if ($responseCode == '401' && $this->_connectToAPI(true)) {
+			$this->initCurlWrapper();
+			$this->apiCurlWrapper->addCustomHeaders([
+				'Authorization: Bearer ' . $this->accessToken,
+				'Accept: application/json',
+			], true);
+
+			$response = $this->apiCurlWrapper->curlSendPage($url, 'DELETE');
+			$responseCode = $this->apiCurlWrapper->getResponseCode();
+			ExternalRequestLogEntry::logRequest('borrowbox.' . $methodName . '_retry', 'DELETE', $url, $this->apiCurlWrapper->getHeaders(), false, $responseCode, $response, []);
+		}
+
+		$result = new stdClass();
+		$result->responseCode = $responseCode;
+		$result->body = null;
+
+		if (!empty($response)) {
+			$result->body = json_decode($response);
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Get the BorrowBox siteId for a patron's home library.
+	 *
+	 * @param User $patron
+	 * @return string|null
+	 */
+	private function getSiteId(User $patron): ?string {
+		require_once ROOT_DIR . '/sys/BorrowBox/LibraryBorrowBoxSettings.php';
+		$homeLibrary = $patron->getHomeLibrary();
+		if ($homeLibrary === null) {
+			return null;
+		}
+
+		$setting = $this->getSettings();
+		if ($setting === false) {
+			return null;
+		}
+
+		$librarySettings = new LibraryBorrowBoxSettings();
+		$librarySettings->libraryId = $homeLibrary->libraryId;
+		$librarySettings->settingId = $setting->id;
+		if ($librarySettings->find(true)) {
+			return $librarySettings->siteId;
+		}
+
+		return null;
+	}
+
+	/**
+	 * Get the URL-encoded patron barcode for BorrowBox API paths.
+	 *
+	 * @param User $patron
+	 * @return string
+	 */
+	private function getPatronId(User $patron): string {
+		return urlencode($patron->getBarcode());
+	}
+
+	/**
+	 * Build the base loans URL for a patron.
+	 *
+	 * @param User $patron
+	 * @return string|null The loans URL, or null if siteId cannot be determined.
+	 */
+	private function getPatronLoansUrl(User $patron): ?string {
+		$setting = $this->getSettings();
+		if ($setting === false) {
+			return null;
+		}
+		$siteId = $this->getSiteId($patron);
+		if ($siteId === null) {
+			return null;
+		}
+		$patronId = $this->getPatronId($patron);
+		$apiUrl = rtrim($setting->apiUrl, '/');
+		return "$apiUrl/v1/sites/$siteId/patrons/$patronId/loans";
+	}
+
+	/**
+	 * Extract a user-facing error message from a BorrowBox API error response body.
+	 *
+	 * Per the BorrowBox API specification only patron_message may be shown to
+	 * patrons; error_description and error codes are technical and must not be
+	 * displayed.
+	 *
+	 * @param object|null $body Decoded JSON response body
+	 * @return string
+	 */
+	private function extractErrorMessage(?object $body): string {
+		if ($body === null) {
+			return '';
+		}
+		if (!empty($body->patron_message)) {
+			return (string)$body->patron_message;
+		}
+		return '';
+	}
 }
