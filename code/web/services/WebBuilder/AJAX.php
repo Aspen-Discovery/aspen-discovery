@@ -1051,6 +1051,7 @@ class WebBuilder_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function getHoursAndLocations() : string {
+		require_once ROOT_DIR . '/sys/Utils/DateUtils.php';
 		//Get a list of locations for the current library
 		global $library;
 		global $configArray;

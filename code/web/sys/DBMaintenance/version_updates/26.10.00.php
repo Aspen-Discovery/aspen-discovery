@@ -34,6 +34,14 @@ function getUpdates26_10_00(): array {
 		//mark j
 
 		//lucas
+		'reload_generated_covers' => [
+			'title' => 'Reload generated covers',
+			'description' => 'Regenerate generated placeholder covers cached with the previous layout, which could clip title and author text',
+			'continueOnError' => true,
+			'sql' => [
+				"UPDATE bookcover_info SET thumbnailLoaded = 0, mediumLoaded = 0, largeLoaded = 0 WHERE imageSource IN ('default', 'default_cloudsource', 'default_ebscohost')",
+			],
+		], //reload_generated_covers
 
 		//tomas
 
