@@ -106,6 +106,7 @@ class Event extends DataObject {
 				'required' => true,
 				'values' => $locationList,
 				'onchange' => 'return AspenDiscovery.Events.getEventTypesForLocation(this.value);',
+				'serverValidation' => 'validateLocation',
 			],
 			'sublocationId' => [
 				'property' => 'sublocationId',
@@ -529,6 +530,23 @@ class Event extends DataObject {
 
 		self::$_objectStructure[$context] = $structure;
 		return self::$_objectStructure[$context];
+	}
+
+	public function validateLocation(): array {
+		$validationResults = [
+			'validatedOk' => true,
+			'errors' => [],
+		];
+		$administrableLocations = self::getAdministrableLocationList();
+		$canAdministerLocation = array_key_exists($this->locationId, $administrableLocations);
+		if (!$canAdministerLocation) {
+			$validationResults['validatedOk'] = false;
+			$validationResults['errors'][] = translate([
+				'text' => 'You do not have permission to administer events at the selected location.',
+				'isAdminFacing' => true,
+			]);
+		}
+		return $validationResults;
 	}
 
 	public function update(string $context = '') : int|bool {
@@ -1143,6 +1161,11 @@ class Event extends DataObject {
 		if ($this->locationId) {
 			$structure['sublocationId']['values'] = Location::getEventSublocations($this->locationId);
 			$structure['sublocationId']['hiddenByDefault'] = false;
+		}
+		$currentLocationIsNotListed = !empty($this->locationId) && !array_key_exists($this->locationId, $structure['locationId']['values']);
+		if ($currentLocationIsNotListed) {
+			$allLocations = Location::getLocationList(false);
+			$structure['locationId']['values'][$this->locationId] = $allLocations[$this->locationId] ?? $this->locationId;
 		}
 		$this->dateUpdated = time();
 		return $structure;
