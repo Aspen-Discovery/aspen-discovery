@@ -1099,7 +1099,7 @@ function loadModuleActionId() {
 	$requestPath = parse_url($requestURI, PHP_URL_PATH) ?: '/';
 	/** IndexingProfile[] $indexingProfiles */ global $indexingProfiles;
 	/** SideLoad[] $sideLoadSettings */ global $sideLoadSettings;
-	$allRecordModules = "OverDrive|GroupedWork|Record|ExternalEContent|Person|Library|Hoopla|CloudLibrary|Files|Axis360|WebBuilder|ProPay|CourseReserves|Springshare|LibraryMarket|Communico|PalaceProject|Assabet|AspenEvents|Series|LocalHop";
+	$allRecordModules = "OverDrive|GroupedWork|Record|ExternalEContent|Person|Library|Hoopla|CloudLibrary|Files|Axis360|WebBuilder|ProPay|CourseReserves|Springshare|LibraryMarket|Communico|PalaceProject|Omeka|Assabet|AspenEvents|Series|LocalHop";
 	foreach ($indexingProfiles as $profile) {
 		$allRecordModules .= '|' . $profile->recordUrlComponent;
 	}
@@ -1723,6 +1723,7 @@ function matchEndpointWeight(string $module, string $action): int {
 		case $module === 'Hoopla':
 		case $module === 'OverDrive':
 		case $module === 'PalaceProject':
+		case $module === 'Omeka':
 		case $module === 'Axis360':
 		case $module === 'CloudLibrary':
 			return 10;
