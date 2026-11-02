@@ -521,7 +521,6 @@ class Event extends DataObject {
 			$eventTypes = EventType::getEventTypeList();
 			$structure['eventTypeId']['values'] = $eventTypes;
 			$structure['eventTypeId']['readOnly'] = true;
-			$structure['locationId']['readOnly'] = true;
 			$structure['infoSection']['expandByDefault'] = false;
 			$structure['scheduleSection']['hiddenByDefault'] = false;
 			$sublocations = Location::getEventSublocations(null);
