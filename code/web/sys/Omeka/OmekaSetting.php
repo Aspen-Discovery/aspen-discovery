@@ -6,6 +6,7 @@ class OmekaSetting extends DataObject {
 	public $id;
 	public $name;
 	public $baseUrl;
+	public $apiVersion;
 	public $siteSlug;
 	public $apiKeyIdentity;
 	public $apiKeyCredential;
@@ -45,30 +46,40 @@ class OmekaSetting extends DataObject {
 				'property' => 'baseUrl',
 				'type' => 'url',
 				'label' => 'Base URL',
-				'description' => 'The URL of the Omeka S server, without the /api suffix',
+				'description' => 'The URL of the Omeka server, without the /api suffix',
 				'maxLength' => 255,
 				'required' => true,
+			],
+			'apiVersion' => [
+				'property' => 'apiVersion',
+				'type' => 'enum',
+				'label' => 'Omeka Version',
+				'values' => [
+					's' => 'Omeka S',
+					'classic' => 'Omeka Classic',
+				],
+				'description' => 'The version of Omeka running on the server',
+				'default' => 's',
 			],
 			'siteSlug' => [
 				'property' => 'siteSlug',
 				'type' => 'text',
 				'label' => 'Site Slug',
-				'description' => 'The slug of the Omeka S site used to build public links to items',
+				'description' => 'The slug of the Omeka S site used to build public links to items. Not used for Omeka Classic.',
 				'maxLength' => 100,
-				'required' => true,
 			],
 			'apiKeyIdentity' => [
 				'property' => 'apiKeyIdentity',
 				'type' => 'text',
 				'label' => 'API Key Identity',
-				'description' => 'The key_identity value for the Omeka S API. Leave blank for anonymous access to public items.',
+				'description' => 'The key_identity value for the Omeka S API. Not used for Omeka Classic. Leave blank for anonymous access to public items.',
 				'maxLength' => 255,
 			],
 			'apiKeyCredential' => [
 				'property' => 'apiKeyCredential',
 				'type' => 'storedPassword',
 				'label' => 'API Key Credential',
-				'description' => 'The key_credential value for the Omeka S API. Leave blank for anonymous access to public items.',
+				'description' => 'The key_credential value for the Omeka S API or the API key for Omeka Classic. Leave blank for anonymous access to public items.',
 				'maxLength' => 255,
 				'hideInLists' => true,
 			],
