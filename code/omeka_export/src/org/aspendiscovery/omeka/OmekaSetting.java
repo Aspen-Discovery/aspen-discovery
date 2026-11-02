@@ -7,6 +7,7 @@ public class OmekaSetting {
 	private final long id;
 	private final String name;
 	private final String baseUrl;
+	private final boolean classic;
 	private final String apiKeyIdentity;
 	private final String apiKeyCredential;
 	private final boolean doFullReload;
@@ -17,6 +18,7 @@ public class OmekaSetting {
 		id = settingsRS.getLong("id");
 		name = settingsRS.getString("name");
 		baseUrl = trimTrailingSlash(settingsRS.getString("baseUrl"));
+		classic = "classic".equals(settingsRS.getString("apiVersion"));
 		apiKeyIdentity = settingsRS.getString("apiKeyIdentity");
 		apiKeyCredential = settingsRS.getString("apiKeyCredential");
 		doFullReload = settingsRS.getBoolean("runFullUpdate");
@@ -58,8 +60,16 @@ public class OmekaSetting {
 		return lastUpdateOfAllRecords;
 	}
 
+	boolean isClassic() {
+		return classic;
+	}
+
 	boolean hasApiKey() {
-		return apiKeyIdentity != null && !apiKeyIdentity.isEmpty() && apiKeyCredential != null && !apiKeyCredential.isEmpty();
+		boolean hasCredential = apiKeyCredential != null && !apiKeyCredential.isEmpty();
+		if (classic) {
+			return hasCredential;
+		}
+		return apiKeyIdentity != null && !apiKeyIdentity.isEmpty() && hasCredential;
 	}
 
 	String getApiKeyIdentity() {
