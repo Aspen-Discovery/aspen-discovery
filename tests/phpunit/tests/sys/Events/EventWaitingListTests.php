@@ -1,7 +1,9 @@
 <?php
 
 use PHPUnit\Framework\TestCase;
-define('PATH_TO_ROOT', __DIR__ . '/../../../../../');
+if (!defined('PATH_TO_ROOT')) {
+	define('PATH_TO_ROOT', __DIR__ . '/../../../../../');
+}
 
 /**
  * Tests for the waiting list model on UserAspenEventInstanceRegistration and
