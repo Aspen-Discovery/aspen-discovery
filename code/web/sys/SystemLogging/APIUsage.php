@@ -1,5 +1,6 @@
 <?php /** @noinspection PhpMissingFieldTypeInspection */
 require_once ROOT_DIR . '/sys/AbstractUsage.php';
+require_once ROOT_DIR . '/sys/SystemLogging/APIClientResolver.php';
 
 class APIUsage extends AbstractUsage {
 	public $__table = 'api_usage';
@@ -35,6 +36,7 @@ class APIUsage extends AbstractUsage {
 			$apiUsage->instance = $aspenUsage->getInstance();
 			$apiUsage->module = $module;
 			$apiUsage->method = $method;
+			$apiUsage->apiClient = APIClientResolver::getClientName();
 			if ($apiUsage->find(true)) {
 				$apiUsage->numCalls++;
 				$apiUsage->update();
