@@ -46,6 +46,7 @@ aspen/collection-spotlights.js
 aspen/materials-request.js
 aspen/overdrive.js
 aspen/open-archives.js
+aspen/omeka.js
 aspen/hoopla.js
 aspen/interlibraryLoan.js
 aspen/ratings.js
