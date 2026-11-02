@@ -55,7 +55,7 @@ systemctl daemon-reload
 systemctl start rngd
 
 yum -y install epel-release
-yum -y install certbot python3-certbot-apache
+yum -y install certbot python2-certbot-apache
 
 echo "Generate new root password for mariadb at: https://passwordsgenerator.net/ and store in passbolt"
 mysql_secure_installation
