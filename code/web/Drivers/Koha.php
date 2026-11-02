@@ -8079,16 +8079,13 @@ class Koha extends AbstractIlsDriver {
 	}
 
 	/**
-	 * @param SimpleXMLElement $error
+	 * @param ?SimpleXMLElement $error
 	 * @param string $message
 	 * @param string $errorAlt
 	 * @return string
 	 */
 	protected function getRenewErrorMessage(?SimpleXMLElement $error, string $message, ?string $errorAlt): string {
-		$code = $error;
-		if($errorAlt) {
-			$code = $errorAlt;
-		}
+		$code = (string)($errorAlt ?: $error);
 		$codeIsMissing = empty($code);
 		if ($codeIsMissing) {
 			return 'Unknown error';
@@ -8170,7 +8167,11 @@ class Koha extends AbstractIlsDriver {
 					'isPublicFacing' => true,
 				]);
 			default:
-				return 'Unknown error:' . $code;
+				return translate([
+					'text' => 'Unknown error: %1%',
+					1 => $code,
+					'isPublicFacing' => true,
+				]);
 		}
 	}
 
