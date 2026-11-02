@@ -112,9 +112,4 @@ class BorrowBoxExtractLogEntry extends BaseIndexingLogEntry {
 	void setNumProducts(int size) {
 		numProducts = size;
 	}
-
-	@SuppressWarnings("unused")
-	void incNumProducts(int size) {
-		numProducts += size;
-	}
 }
