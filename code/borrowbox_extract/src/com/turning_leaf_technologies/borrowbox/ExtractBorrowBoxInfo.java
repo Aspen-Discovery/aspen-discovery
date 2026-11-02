@@ -317,6 +317,337 @@ class ExtractBorrowBoxInfo {
 		}
 	}
 
+	/**
+	 * Parse a product JSON object from the /v2/products response and save to the database.
+	 */
+	private void saveProductMetadataToDatabase(JSONObject product) {
+		try {
+			String productId = product.getString("productId");
+			String isbn13 = product.optString("isbn13", "");
+			String format = product.getString("format");
+			String title = product.getString("title");
+			String subTitle = product.optString("subTitle", null);
+			String seriesName = product.optString("seriesName", null);
+			int seriesNumber = product.optInt("seriesNumber", 0);
+			String publisher = product.optString("publisher", "");
+			String coverUrl = product.optString("coverUrl", "");
+			String summary = product.optString("summary", "");
+			long releaseDate = product.optLong("releaseDate", 0);
+
+			String primaryCreatorName = "";
+			JSONArray authors = product.optJSONArray("authors");
+			boolean hasAuthors = authors != null && authors.length() > 0;
+			if (hasAuthors) {
+				primaryCreatorName = authors.getJSONObject(0).optString("fullName", "");
+			}
+
+			BorrowBoxRecordInfo recordInfo = allProductsInBorrowBox.get(productId);
+			if (recordInfo == null) {
+				recordInfo = new BorrowBoxRecordInfo();
+				recordInfo.setBorrowboxId(productId);
+				recordInfo.isNew = true;
+				allProductsInBorrowBox.put(productId, recordInfo);
+			}
+			recordInfo.setIsbn13(isbn13);
+			recordInfo.setFormat(format);
+			recordInfo.setTitle(title);
+			recordInfo.setSubTitle(subTitle);
+			recordInfo.setSeries(seriesName);
+			recordInfo.setSeriesNumber(seriesNumber);
+			recordInfo.setPrimaryCreatorName(primaryCreatorName);
+			recordInfo.setPublisher(publisher);
+			recordInfo.setCover(coverUrl);
+
+			long curTime = new Date().getTime() / 1000;
+
+			String mediaType = mapBorrowBoxFormat(format);
+
+			if (recordInfo.getDatabaseId() == -1) {
+				getProductIdByBorrowBoxIdStmt.setString(1, productId);
+				ResultSet existingRS = getProductIdByBorrowBoxIdStmt.executeQuery();
+				if (existingRS.next()) {
+					recordInfo.setDatabaseId(existingRS.getLong("id"));
+				}
+				existingRS.close();
+			}
+
+			if (recordInfo.getDatabaseId() == -1) {
+				int curCol = 0;
+				addProductStmt.setString(++curCol, productId);
+				addProductStmt.setString(++curCol, isbn13);
+				addProductStmt.setString(++curCol, mediaType);
+				addProductStmt.setString(++curCol, title);
+				addProductStmt.setString(++curCol, subTitle != null ? subTitle : "");
+				addProductStmt.setString(++curCol, seriesName != null ? seriesName : "");
+				addProductStmt.setInt(++curCol, seriesNumber);
+				addProductStmt.setString(++curCol, primaryCreatorName);
+				addProductStmt.setString(++curCol, coverUrl);
+				addProductStmt.setLong(++curCol, curTime);
+				addProductStmt.setLong(++curCol, curTime);
+				addProductStmt.setLong(++curCol, curTime);
+				addProductStmt.executeUpdate();
+
+				ResultSet newIdRS = addProductStmt.getGeneratedKeys();
+				if (newIdRS.next()) {
+					recordInfo.setDatabaseId(newIdRS.getLong(1));
+				} else {
+					getProductIdByBorrowBoxIdStmt.setString(1, productId);
+					ResultSet existingIdRS = getProductIdByBorrowBoxIdStmt.executeQuery();
+					if (existingIdRS.next()) {
+						recordInfo.setDatabaseId(existingIdRS.getLong("id"));
+					}
+					existingIdRS.close();
+				}
+			} else {
+				int curCol = 0;
+				updateProductStmt.setString(++curCol, isbn13);
+				updateProductStmt.setString(++curCol, mediaType);
+				updateProductStmt.setString(++curCol, title);
+				updateProductStmt.setString(++curCol, subTitle != null ? subTitle : "");
+				updateProductStmt.setString(++curCol, seriesName != null ? seriesName : "");
+				updateProductStmt.setInt(++curCol, seriesNumber);
+				updateProductStmt.setString(++curCol, primaryCreatorName);
+				updateProductStmt.setString(++curCol, coverUrl);
+				updateProductStmt.setLong(++curCol, recordInfo.getDatabaseId());
+				int numChanges = updateProductStmt.executeUpdate();
+				if (numChanges > 0) {
+					updateProductChangeTimeStmt.setLong(1, curTime);
+					updateProductChangeTimeStmt.setString(2, productId);
+					updateProductChangeTimeStmt.executeUpdate();
+				}
+			}
+
+			if (recordInfo.getDatabaseId() != -1) {
+				checksumCalculator.reset();
+				checksumCalculator.update(product.toString().getBytes());
+				long metadataChecksum = checksumCalculator.getValue();
+
+				boolean metadataChanged = true;
+				getExistingMetadataIdStmt.setLong(1, recordInfo.getDatabaseId());
+				ResultSet existingMetadataRS = getExistingMetadataIdStmt.executeQuery();
+				if (existingMetadataRS.next()) {
+					long metadataId = existingMetadataRS.getLong("id");
+					metadataChanged = existingMetadataRS.getLong("checksum") != metadataChecksum;
+					if (metadataChanged) {
+						int curCol = 0;
+						updateMetaDataStmt.setLong(++curCol, metadataChecksum);
+						updateMetaDataStmt.setString(++curCol, publisher);
+						updateMetaDataStmt.setLong(++curCol, releaseDate);
+						updateMetaDataStmt.setString(++curCol, summary);
+						updateMetaDataStmt.setString(++curCol, coverUrl);
+						updateMetaDataStmt.setString(++curCol, product.toString());
+						updateMetaDataStmt.setLong(++curCol, metadataId);
+						updateMetaDataStmt.executeUpdate();
+					}
+				} else {
+					int curCol = 0;
+					addMetadataStmt.setLong(++curCol, recordInfo.getDatabaseId());
+					addMetadataStmt.setLong(++curCol, metadataChecksum);
+					addMetadataStmt.setString(++curCol, publisher);
+					addMetadataStmt.setLong(++curCol, releaseDate);
+					addMetadataStmt.setString(++curCol, summary);
+					addMetadataStmt.setString(++curCol, coverUrl);
+					addMetadataStmt.setString(++curCol, product.toString());
+					try {
+						addMetadataStmt.executeUpdate();
+					} catch (SQLIntegrityConstraintViolationException e) {
+					}
+				}
+				existingMetadataRS.close();
+
+				if (metadataChanged) {
+					updateProductMetadataStmt.setLong(1, curTime);
+					updateProductMetadataStmt.setLong(2, curTime);
+					updateProductMetadataStmt.setLong(3, recordInfo.getDatabaseId());
+					updateProductMetadataStmt.executeUpdate();
+					logEntry.incMetadataChanges();
+				} else {
+					updateProductLastMetadataCheckStmt.setLong(1, curTime);
+					updateProductLastMetadataCheckStmt.setLong(2, recordInfo.getDatabaseId());
+					updateProductLastMetadataCheckStmt.executeUpdate();
+					logEntry.incSkipped();
+				}
+
+				for (BorrowBoxRecordInfo.PendingAvailability pending : recordInfo.getPendingAvailabilities()) {
+					storeAvailability(recordInfo, pending.siteId, pending.availabilityStatus, pending.nextAvailableDate);
+				}
+				boolean hasPendingAvailabilities = !recordInfo.getPendingAvailabilities().isEmpty();
+				boolean replaceStaleAvailabilities = doFullUpdate && hasPendingAvailabilities;
+				if (replaceStaleAvailabilities) {
+					removeStaleAvailabilities(recordInfo);
+				}
+				boolean noRemainingAvailability = hasPendingAvailabilities && !hasRemainingAvailability(recordInfo);
+				if (noRemainingAvailability) {
+					deleteProduct(recordInfo.getBorrowboxId(), recordInfo.getDatabaseId());
+					recordInfo.removedFromCollection = true;
+				}
+			}
+		} catch (Exception e) {
+			logEntry.incErrors("Error saving product metadata to database", e);
+		}
+	}
+
+	/**
+	 * Store availability information for a product.
+	 *
+	 * Products with status UNAVAILABLE have left the site's collection per the
+	 * BorrowBox API specification and their availability is removed instead.
+	 */
+	private void storeAvailability(BorrowBoxRecordInfo recordInfo, String siteId, String availabilityStatus, Long nextAvailableDate) {
+		if (recordInfo.getDatabaseId() == -1) {
+			return;
+		}
+
+		if ("UNAVAILABLE".equals(availabilityStatus)) {
+			removeAvailability(recordInfo, siteId);
+			return;
+		}
+
+		try {
+			getExistingAvailabilityForProductStmt.setLong(1, recordInfo.getDatabaseId());
+			getExistingAvailabilityForProductStmt.setLong(2, settings.getId());
+			getExistingAvailabilityForProductStmt.setString(3, siteId);
+			ResultSet existingRS = getExistingAvailabilityForProductStmt.executeQuery();
+
+			if (existingRS.next()) {
+				long existingId = existingRS.getLong("id");
+				String existingStatus = existingRS.getString("availabilityStatus");
+				if (!availabilityStatus.equals(existingStatus)) {
+					updateAvailabilityStmt.setString(1, availabilityStatus);
+					if (nextAvailableDate != null) {
+						updateAvailabilityStmt.setLong(2, nextAvailableDate);
+					} else {
+						updateAvailabilityStmt.setNull(2, Types.BIGINT);
+					}
+					updateAvailabilityStmt.setLong(3, existingId);
+					updateAvailabilityStmt.executeUpdate();
+					logEntry.incAvailabilityChanges();
+				}
+			} else {
+				int curCol = 0;
+				addAvailabilityStmt.setLong(++curCol, recordInfo.getDatabaseId());
+				addAvailabilityStmt.setLong(++curCol, settings.getId());
+				addAvailabilityStmt.setString(++curCol, recordInfo.getBorrowboxId());
+				addAvailabilityStmt.setString(++curCol, siteId);
+				addAvailabilityStmt.setString(++curCol, availabilityStatus);
+				if (nextAvailableDate != null) {
+					addAvailabilityStmt.setLong(++curCol, nextAvailableDate);
+				} else {
+					addAvailabilityStmt.setNull(++curCol, Types.BIGINT);
+				}
+				addAvailabilityStmt.executeUpdate();
+				logEntry.incAvailabilityChanges();
+			}
+			existingRS.close();
+		} catch (SQLException e) {
+			logEntry.incErrors("Error storing availability for " + recordInfo.getBorrowboxId() + " site " + siteId, e);
+		}
+	}
+
+	private void removeAvailability(BorrowBoxRecordInfo recordInfo, String siteId) {
+		try {
+			getExistingAvailabilityForProductStmt.setLong(1, recordInfo.getDatabaseId());
+			getExistingAvailabilityForProductStmt.setLong(2, settings.getId());
+			getExistingAvailabilityForProductStmt.setString(3, siteId);
+			ResultSet existingRS = getExistingAvailabilityForProductStmt.executeQuery();
+			if (existingRS.next()) {
+				deleteAvailabilityStmt.setLong(1, existingRS.getLong("id"));
+				deleteAvailabilityStmt.executeUpdate();
+				logEntry.incAvailabilityChanges();
+			}
+			existingRS.close();
+		} catch (SQLException e) {
+			logEntry.incErrors("Error removing availability for " + recordInfo.getBorrowboxId() + " site " + siteId, e);
+		}
+	}
+
+	private boolean hasRemainingAvailability(BorrowBoxRecordInfo recordInfo) {
+		try {
+			countAvailabilityForProductStmt.setLong(1, recordInfo.getDatabaseId());
+			ResultSet countRS = countAvailabilityForProductStmt.executeQuery();
+			boolean hasRows = countRS.next() && countRS.getInt(1) > 0;
+			countRS.close();
+			return hasRows;
+		} catch (SQLException e) {
+			logEntry.incErrors("Error counting availability for " + recordInfo.getBorrowboxId(), e);
+			return true;
+		}
+	}
+
+	/**
+	 * Remove availability rows for sites that no longer report this product.
+	 * Only safe during a full update when the availability feed is authoritative.
+	 */
+	private void removeStaleAvailabilities(BorrowBoxRecordInfo recordInfo) {
+		HashSet<String> seenSiteIds = new HashSet<>();
+		for (BorrowBoxRecordInfo.PendingAvailability pending : recordInfo.getPendingAvailabilities()) {
+			seenSiteIds.add(pending.siteId);
+		}
+
+		try {
+			getExistingAvailabilitiesForProductStmt.setLong(1, recordInfo.getDatabaseId());
+			getExistingAvailabilitiesForProductStmt.setLong(2, settings.getId());
+			ResultSet existingRS = getExistingAvailabilitiesForProductStmt.executeQuery();
+			ArrayList<Long> availabilityIdsToDelete = new ArrayList<>();
+			while (existingRS.next()) {
+				if (!seenSiteIds.contains(existingRS.getString("siteId"))) {
+					availabilityIdsToDelete.add(existingRS.getLong("id"));
+				}
+			}
+			existingRS.close();
+
+			for (Long availabilityId : availabilityIdsToDelete) {
+				deleteAvailabilityStmt.setLong(1, availabilityId);
+				deleteAvailabilityStmt.executeUpdate();
+				logEntry.incAvailabilityChanges();
+			}
+		} catch (SQLException e) {
+			logEntry.incErrors("Error removing stale availability for " + recordInfo.getBorrowboxId(), e);
+		}
+	}
+
+	/**
+	 * Refresh availability for a single product by querying each site that has
+	 * availability data for this setting.
+	 */
+	private void updateAvailabilityForSingleProduct(BorrowBoxRecordInfo recordInfo) {
+		if (recordInfo.getDatabaseId() == -1) {
+			return;
+		}
+		try {
+			PreparedStatement getSiteIdsStmt = dbConn.prepareStatement("SELECT DISTINCT siteId from borrowbox_api_product_availability where settingId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getSiteIdsStmt.setLong(1, settings.getId());
+			ResultSet siteIdsRS = getSiteIdsStmt.executeQuery();
+			ArrayList<String> siteIds = new ArrayList<>();
+			while (siteIdsRS.next()) {
+				siteIds.add(siteIdsRS.getString("siteId"));
+			}
+			siteIdsRS.close();
+			getSiteIdsStmt.close();
+
+			for (String siteId : siteIds) {
+				String url = settings.getApiUrl() + "/v1/sites/" + siteId + "/availabilities?productIds=" + recordInfo.getBorrowboxId();
+				WebServiceResponse response = callBorrowBoxURL("borrowboxExtract.getProductAvailability", url);
+				boolean invalidResponse = response.getResponseCode() != 200 || response.getMessage() == null;
+				if (invalidResponse) {
+					continue;
+				}
+				JSONObject responseObj = response.getJSONResponse();
+				JSONArray items = responseObj == null ? null : responseObj.optJSONArray("items");
+				if (items == null) {
+					continue;
+				}
+				for (int i = 0; i < items.length(); i++) {
+					JSONObject item = items.getJSONObject(i);
+					String availabilityStatus = item.optString("status", "UNKNOWN");
+					storeAvailability(recordInfo, siteId, availabilityStatus, item.isNull("nextAvailableDate") ? null : item.getLong("nextAvailableDate"));
+				}
+			}
+		} catch (Exception e) {
+			logEntry.incErrors("Error updating availability for " + recordInfo.getBorrowboxId(), e);
+		}
+	}
+
 
 	private boolean hasIncompleteApiConfiguration() {
 		boolean missingUrl = settings.getApiUrl() == null || settings.getApiUrl().isEmpty();
@@ -368,6 +699,16 @@ class ExtractBorrowBoxInfo {
 				return "eMagazine";
 			default:
 				return borrowBoxFormat;
+		}
+	}
+
+	private synchronized void setLastSeenForProduct(long startTime, BorrowBoxRecordInfo curRecord) {
+		try {
+			updateLastSeenStmt.setLong(1, startTime / 1000);
+			updateLastSeenStmt.setString(2, curRecord.getBorrowboxId());
+			updateLastSeenStmt.executeUpdate();
+		} catch (SQLException e) {
+			logEntry.incErrors("Error updating last seen for " + curRecord.getBorrowboxId());
 		}
 	}
 
