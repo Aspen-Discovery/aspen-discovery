@@ -123,7 +123,8 @@ function getUpdates26_11_00(): array {
 					name VARCHAR(50) NOT NULL,
 					includeAdult TINYINT(1) DEFAULT 1,
 					includeTeen TINYINT(1) DEFAULT 1,
-					includeKids TINYINT(1) DEFAULT 1
+					includeKids TINYINT(1) DEFAULT 1,
+					CONSTRAINT fk_borrowbox_scopes_setting FOREIGN KEY (settingId) REFERENCES borrowbox_settings(id) ON DELETE CASCADE
 				) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
 			]
 		], //borrowbox_scopes
@@ -136,7 +137,9 @@ function getUpdates26_11_00(): array {
 					scopeId INT(11) NOT NULL,
 					libraryId INT(11) NOT NULL,
 					weight INT(11) NOT NULL DEFAULT 1,
-					UNIQUE KEY libraryId (libraryId, scopeId)
+					UNIQUE KEY libraryId (libraryId, scopeId),
+					CONSTRAINT fk_library_borrowbox_scope_scope FOREIGN KEY (scopeId) REFERENCES borrowbox_scopes(id) ON DELETE CASCADE,
+					CONSTRAINT fk_library_borrowbox_scope_library FOREIGN KEY (libraryId) REFERENCES library(libraryId) ON DELETE CASCADE
 				) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
 			]
 		], //library_borrowbox_scope
@@ -149,7 +152,9 @@ function getUpdates26_11_00(): array {
 					scopeId INT(11) NOT NULL,
 					locationId INT(11) NOT NULL,
 					weight INT(11) NOT NULL DEFAULT 1,
-					UNIQUE KEY locationId (locationId, scopeId)
+					UNIQUE KEY locationId (locationId, scopeId),
+					CONSTRAINT fk_location_borrowbox_scope_scope FOREIGN KEY (scopeId) REFERENCES borrowbox_scopes(id) ON DELETE CASCADE,
+					CONSTRAINT fk_location_borrowbox_scope_location FOREIGN KEY (locationId) REFERENCES location(locationId) ON DELETE CASCADE
 				) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
 			]
 		], //location_borrowbox_scope
@@ -164,7 +169,9 @@ function getUpdates26_11_00(): array {
 					libraryId INT(11) NOT NULL,
 					siteId VARCHAR(50),
 					circulationEnabled TINYINT(1) DEFAULT 1,
-					UNIQUE KEY settingId (settingId, libraryId)
+					UNIQUE KEY settingId (settingId, libraryId),
+					CONSTRAINT fk_library_borrowbox_settings_setting FOREIGN KEY (settingId) REFERENCES borrowbox_settings(id) ON DELETE CASCADE,
+					CONSTRAINT fk_library_borrowbox_settings_library FOREIGN KEY (libraryId) REFERENCES library(libraryId) ON DELETE CASCADE
 				) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
 			]
 		], //library_borrowbox_settings
@@ -211,7 +218,8 @@ function getUpdates26_11_00(): array {
 					summary TEXT,
 					cover VARCHAR(500),
 					rawData MEDIUMBLOB,
-					UNIQUE KEY productId (productId)
+					UNIQUE KEY productId (productId),
+					CONSTRAINT fk_borrowbox_metadata_product FOREIGN KEY (productId) REFERENCES borrowbox_api_products(id) ON DELETE CASCADE
 				) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
 			]
 		], //borrowbox_api_product_metadata
@@ -227,7 +235,9 @@ function getUpdates26_11_00(): array {
 					siteId VARCHAR(50) NOT NULL,
 					availabilityStatus VARCHAR(20),
 					nextAvailableDate INT(11),
-					UNIQUE KEY productId (productId, settingId, siteId)
+					UNIQUE KEY productId (productId, settingId, siteId),
+					CONSTRAINT fk_borrowbox_availability_product FOREIGN KEY (productId) REFERENCES borrowbox_api_products(id) ON DELETE CASCADE,
+					CONSTRAINT fk_borrowbox_availability_setting FOREIGN KEY (settingId) REFERENCES borrowbox_settings(id) ON DELETE CASCADE
 				) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
 			]
 		], //borrowbox_api_product_availability
@@ -267,7 +277,8 @@ function getUpdates26_11_00(): array {
 					day INT(2),
 					usageCount INT(11) DEFAULT 0,
 					UNIQUE KEY instance (instance, userId, year, month, day),
-					KEY year (year, month, day)
+					KEY year (year, month, day),
+					CONSTRAINT fk_user_borrowbox_usage_user FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE
 				) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
 			]
 		], //user_borrowbox_usage
@@ -313,8 +324,6 @@ function getUpdates26_11_00(): array {
 				) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
 			]
 		], //borrowbox_extract_log
-
-
 
 	];
 }
