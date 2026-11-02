@@ -256,7 +256,8 @@ class Search_Results extends ResultsAction {
 			exit;
 		}
 		$displayMode = $searchObject->getView();
-		if ($displayMode == 'covers') {
+		$shouldFillCoverDisplay = $displayMode == 'covers' && !$searchObject->hasRequestedPageSize();
+		if ($shouldFillCoverDisplay) {
 			$searchObject->setLimit(24); // a set of 24 covers looks better in display
 		}
 
@@ -295,6 +296,14 @@ class Search_Results extends ResultsAction {
 		$this->setShowCovers();
 
 		$interface->assign('sortList', $searchObject->getSortList());
+		$shouldOfferPageSizes = !$shouldFillCoverDisplay;
+		if ($shouldOfferPageSizes) {
+			$interface->assign('pageSizeList', $searchObject->getPageSizeList());
+		}
+		$hasRequestedPageSize = $searchObject->hasRequestedPageSize();
+		if ($hasRequestedPageSize) {
+			$interface->assign('requestedPageSize', $searchObject->getLimit());
+		}
 		$interface->assign('rssLink', $searchObject->getRSSUrl());
 		$interface->assign('excelLink', $searchObject->getExcelUrl());
 		$interface->assign('risLink', $searchObject->getRisUrl());
