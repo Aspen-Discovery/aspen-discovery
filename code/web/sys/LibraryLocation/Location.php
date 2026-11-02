@@ -1754,23 +1754,38 @@ class Location extends DataObject {
 	}
 
 	/**
-	 * Get a list of sublocations where a user can pick up from
+	 * Load the sublocations that can host events, ordered by weight
 	 * @param ?int $locationId The location to get sublocations for - don't limit by location if null
 	 * @return Sublocation[]
 	 */
-	static function getEventSublocations(?int $locationId): array {
+	private static function fetchEventSublocations(?int $locationId): array {
 		require_once ROOT_DIR . '/sys/LibraryLocation/Sublocation.php';
-		$sublocations = [];
-		$object = new Sublocation();
-		if ($locationId != null) {
-			$object->locationId = $locationId;
+		$sublocation = new Sublocation();
+		$isScopedToOneLocation = $locationId !== null;
+		if ($isScopedToOneLocation) {
+			$sublocation->locationId = $locationId;
 		}
-		$object->isValidEventLocation = 1;
-		$object->orderBy('weight');
-		$object->find();
+		$sublocation->isValidEventLocation = 1;
+		$sublocation->orderBy('weight');
+		$sublocation->find();
 
-		while ($object->fetch()) {
-			$sublocations[$object->id] = $object->name;
+		$sublocations = [];
+		while ($sublocation->fetch()) {
+			$sublocations[] = clone $sublocation;
+		}
+
+		return $sublocations;
+	}
+
+	/**
+	 * Get the names of the sublocations that can host events
+	 * @param ?int $locationId The location to get sublocations for - don't limit by location if null
+	 * @return string[] The sublocation name for each sublocation id
+	 */
+	static function getEventSublocations(?int $locationId): array {
+		$sublocations = [];
+		foreach (self::fetchEventSublocations($locationId) as $sublocation) {
+			$sublocations[$sublocation->id] = $sublocation->name;
 		}
 
 		return $sublocations;
