@@ -55,6 +55,9 @@
 			{if array_key_exists('Axis 360', $enabledModules)}
 				Globals.hasAxis360Connection = true;
 			{/if}
+			{if array_key_exists('BorrowBox', $enabledModules)}
+				Globals.hasBorrowBoxConnection = true;
+			{/if}
 			{if array_key_exists('Cloud Library', $enabledModules)}
 				Globals.hasCloudLibraryConnection = true;
 			{/if}

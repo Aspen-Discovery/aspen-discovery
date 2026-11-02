@@ -3007,6 +3007,19 @@ AspenDiscovery.Account = (function () {
 					}
 				});
 			}
+			if (Globals.hasBorrowBoxConnection) {
+				var borrowboxUrl = Globals.path + "/MyAccount/AJAX?method=getMenuDataBorrowBox&activeModule=" + Globals.activeModule + '&activeAction=' + Globals.activeAction;
+				$.getJSON(borrowboxUrl, function (data) {
+					if (data.success) {
+						$(".borrowbox-checkouts-placeholder").html(data.summary.numCheckedOut);
+						totalCheckouts += parseInt(data.summary.numCheckedOut);
+						$(".checkouts-placeholder").html(totalCheckouts);
+						$(".borrowbox-holds-placeholder").html(data.summary.numHolds);
+						totalHolds += parseInt(data.summary.numHolds);
+						$(".holds-placeholder").html(totalHolds);
+					}
+				});
+			}
 			if (Globals.hasHooplaConnection) {
 				var hooplaUrl = Globals.path + "/MyAccount/AJAX?method=getMenuDataHoopla&activeModule=" + Globals.activeModule + '&activeAction=' + Globals.activeAction;
 				$.getJSON(hooplaUrl, function (data) {
@@ -10876,25 +10889,26 @@ AspenDiscovery.BorrowBox = (function () {
 		},
 
 		returnCheckout: function (patronId, recordId, encodedId) {
-			if (confirm('Are you sure you want to return this title?')) {
-				var url = Globals.path + "/BorrowBox/AJAX?method=returnCheckout&patronId=" + patronId + "&borrowboxId=" + recordId;
-				$.ajax({
-					url: url,
-					cache: false,
-					success: function (data) {
-						AspenDiscovery.showMessage(data.success ? 'Title Returned' : 'Unable to Return Title', data.message, data.success);
-						if (data.success) {
-							$(".borrowbox_checkout_" + encodedId + "_" + patronId).hide();
-							AspenDiscovery.Account.loadMenuData();
-						}
-					},
-					dataType: 'json',
-					async: false,
-					error: function () {
-						AspenDiscovery.showMessage("Error Returning Checkout", "An error occurred processing your request in BorrowBox.  Please try again in a few minutes.", false);
-					}
-				});
+			if (!confirm('Are you sure you want to return this title?')) {
+				return false;
 			}
+			var url = Globals.path + "/BorrowBox/AJAX?method=returnCheckout&patronId=" + patronId + "&borrowboxId=" + recordId;
+			$.ajax({
+				url: url,
+				cache: false,
+				success: function (data) {
+					AspenDiscovery.showMessage(data.success ? 'Title Returned' : 'Unable to Return Title', data.message, data.success);
+					if (data.success) {
+						$(".borrowbox_checkout_" + encodedId + "_" + patronId).hide();
+						AspenDiscovery.Account.loadMenuData();
+					}
+				},
+				dataType: 'json',
+				async: false,
+				error: function () {
+					AspenDiscovery.showMessage("Error Returning Checkout", "An error occurred processing your request in BorrowBox.  Please try again in a few minutes.", false);
+				}
+			});
 			return false;
 		},
 

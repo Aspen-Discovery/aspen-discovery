@@ -542,6 +542,19 @@ AspenDiscovery.Account = (function () {
 					}
 				});
 			}
+			if (Globals.hasBorrowBoxConnection) {
+				var borrowboxUrl = Globals.path + "/MyAccount/AJAX?method=getMenuDataBorrowBox&activeModule=" + Globals.activeModule + '&activeAction=' + Globals.activeAction;
+				$.getJSON(borrowboxUrl, function (data) {
+					if (data.success) {
+						$(".borrowbox-checkouts-placeholder").html(data.summary.numCheckedOut);
+						totalCheckouts += parseInt(data.summary.numCheckedOut);
+						$(".checkouts-placeholder").html(totalCheckouts);
+						$(".borrowbox-holds-placeholder").html(data.summary.numHolds);
+						totalHolds += parseInt(data.summary.numHolds);
+						$(".holds-placeholder").html(totalHolds);
+					}
+				});
+			}
 			if (Globals.hasHooplaConnection) {
 				var hooplaUrl = Globals.path + "/MyAccount/AJAX?method=getMenuDataHoopla&activeModule=" + Globals.activeModule + '&activeAction=' + Globals.activeAction;
 				$.getJSON(hooplaUrl, function (data) {
