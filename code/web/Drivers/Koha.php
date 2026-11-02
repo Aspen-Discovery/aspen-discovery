@@ -8145,7 +8145,10 @@ class Koha extends AbstractIlsDriver {
 					'isPublicFacing' => true,
 				]);
 			case 'patron_restricted':
-				return $message . 'Patron is currently restricted';
+				return $message . translate([
+					'text' => 'Patron is currently restricted',
+					'isPublicFacing' => true,
+				]);
 			case 'item_denied_renewal':
 				return $message . 'Item is not allowed renewal';
 			case 'onsite_checkout':
