@@ -383,7 +383,10 @@ class AJAX extends JSON_Action {
 		$searchObject = SearchObjectFactory::initSearchObject();
 		$searchObject->init($searchSource);
 
-		$searchObject->setLimit(24); // a set of 24 covers looks better in display
+		$shouldFillCoverDisplay = !$searchObject->hasRequestedPageSize();
+		if ($shouldFillCoverDisplay) {
+			$searchObject->setLimit(24); // a set of 24 covers looks better in display
+		}
 
 		// Process Search
 		$result = $searchObject->processSearch(true, true);
