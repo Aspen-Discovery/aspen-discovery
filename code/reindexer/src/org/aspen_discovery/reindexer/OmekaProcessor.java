@@ -3,6 +3,7 @@ package org.aspen_discovery.reindexer;
 import com.turning_leaf_technologies.indexing.Scope;
 import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -14,6 +15,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
@@ -23,6 +25,7 @@ import java.util.regex.Pattern;
 
 public class OmekaProcessor {
 	private static final Pattern YEAR_PATTERN = Pattern.compile("(\\d{4})");
+	private static final Pattern HTML_TAG_PATTERN = Pattern.compile("<[^>]+>");
 
 	private final GroupedWorkIndexer indexer;
 	private final Logger logger;
@@ -158,6 +161,84 @@ public class OmekaProcessor {
 			}
 		}
 		return literalValues;
+	}
+
+	private static HashSet<String> getAllMediaLiteralValues(JSONObject itemDetails, String property) {
+		HashSet<String> values = new HashSet<>();
+		for (JSONObject media : getMediaList(itemDetails)) {
+			values.addAll(getAllLiteralValues(media, property));
+		}
+		return values;
+	}
+
+	private static HashSet<String> getAllMediaTexts(JSONObject itemDetails) {
+		HashSet<String> texts = new HashSet<>();
+		for (JSONObject media : getMediaList(itemDetails)) {
+			texts.addAll(getAllTexts(media));
+		}
+		return texts;
+	}
+
+	private static ArrayList<JSONObject> getMediaList(JSONObject itemDetails) {
+		ArrayList<JSONObject> mediaList = new ArrayList<>();
+		JSONArray mediaArray = itemDetails.optJSONArray("aspen:media");
+		if (mediaArray == null) {
+			return mediaList;
+		}
+		for (int i = 0; i < mediaArray.length(); i++) {
+			JSONObject media = mediaArray.optJSONObject(i);
+			if (media != null) {
+				mediaList.add(media);
+			}
+		}
+		return mediaList;
+	}
+
+	private static HashSet<String> getAllTexts(JSONObject resource) {
+		HashSet<String> texts = new HashSet<>();
+		if (isClassicItem(resource)) {
+			JSONArray elementTexts = resource.optJSONArray("element_texts");
+			if (elementTexts == null) {
+				return texts;
+			}
+			for (int i = 0; i < elementTexts.length(); i++) {
+				String text = getPlainText(elementTexts.optJSONObject(i));
+				if (text != null) {
+					texts.add(text);
+				}
+			}
+			return texts;
+		}
+		for (String key : resource.keySet()) {
+			if (!key.startsWith("dcterms:")) {
+				continue;
+			}
+			for (String value : getAllLiteralValues(resource, key)) {
+				texts.add(stripHtml(value));
+			}
+		}
+		return texts;
+	}
+
+	private static String getPlainText(JSONObject elementText) {
+		if (elementText == null) {
+			return null;
+		}
+		JSONObject elementSet = elementText.optJSONObject("element_set");
+		boolean isDublinCore = elementSet != null && "Dublin Core".equals(elementSet.optString("name"));
+		if (!isDublinCore) {
+			return null;
+		}
+		String text = stripHtml(elementText.optString("text", ""));
+		if (text.isEmpty()) {
+			return null;
+		}
+		return text;
+	}
+
+	static String stripHtml(String value) {
+		String withoutTags = HTML_TAG_PATTERN.matcher(value).replaceAll(" ");
+		return StringEscapeUtils.unescapeHtml4(withoutTags).replaceAll("\\s+", " ").trim();
 	}
 
 	private static String getClassicElementName(String property) {
@@ -372,6 +453,16 @@ public class OmekaProcessor {
 				groupedWork.addTopic(subjects);
 				groupedWork.addTopicFacet(subjects);
 				groupedWork.addKeywords(subjects);
+			}
+
+			HashSet<String> mediaTexts = getAllMediaTexts(itemDetails);
+			if (!mediaTexts.isEmpty()) {
+				groupedWork.addKeywords(mediaTexts);
+			}
+			HashSet<String> mediaSubjects = getAllMediaLiteralValues(itemDetails, "dcterms:subject");
+			if (!mediaSubjects.isEmpty()) {
+				groupedWork.addTopic(mediaSubjects);
+				groupedWork.addTopicFacet(mediaSubjects);
 			}
 
 			groupedWork.addTargetAudience("Unknown", omekaRecord);
