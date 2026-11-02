@@ -875,7 +875,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		}
 		$interface->assign('summPublisher', rtrim($summPublisher, ','));
 		$interface->assign('summPubDate', $summPubDate);
-		$interface->assign('summPlaceOfPublication', $summPlaceOfPublication, ',');
+		$interface->assign('summPlaceOfPublication', $summPlaceOfPublication);
 		$interface->assign('summPhysicalDesc', $summPhysicalDesc);
 		$interface->assign('summEdition', $summEdition);
 		$interface->assign('summLanguage', $summLanguage);
