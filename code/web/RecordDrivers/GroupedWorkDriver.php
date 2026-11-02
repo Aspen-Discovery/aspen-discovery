@@ -811,74 +811,14 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		$timer->logTime("Finished assignment of main data");
 		$memoryWatcher->logMemory("Finished assignment of main data");
 
-		$summPublisher = null;
-		$summPubDate = null;
-		$summPlaceOfPublication = null;
-		$summPhysicalDesc = null;
-		$summEdition = null;
-		$summLanguage = null;
-		$isFirst = true;
 		global $library;
 		$groupedWorkDisplaySettings = $library->getGroupedWorkDisplaySettings();
-		$alwaysShowMainDetails = $groupedWorkDisplaySettings->alwaysShowSearchResultsMainDetails;
+		$alwaysShowMainDetails = !empty($groupedWorkDisplaySettings->alwaysShowSearchResultsMainDetails);
 		$groupedWorkDisplaySettings->assignSearchResultsMainDetails($interface);
 		$interface->assign('formatDisplayStyle', $groupedWorkDisplaySettings->formatDisplayStyle);
 		$interface->assign('hideManifestationsInMobileView', $groupedWorkDisplaySettings->hideManifestationsInMobileView);
 
-		foreach ($relatedRecords as $relatedRecord) {
-			if ($isFirst) {
-				$summPublisher = $relatedRecord->publisher;
-				$summPubDate = $relatedRecord->publicationDate;
-				$summPlaceOfPublication = $relatedRecord->placeOfPublication;
-				$summPhysicalDesc = $relatedRecord->physical;
-				$summEdition = $relatedRecord->edition;
-				$summLanguage = $relatedRecord->language;
-			} else {
-				if ($summPublisher != $relatedRecord->publisher) {
-					$summPublisher = $alwaysShowMainDetails ? translate([
-						'text' => 'Varies, see individual formats and editions',
-						'isPublicFacing' => true,
-					]) : null;
-				}
-				if ($summPubDate != $relatedRecord->publicationDate) {
-					$summPubDate = $alwaysShowMainDetails ? translate([
-						'text' => 'Varies, see individual formats and editions',
-						'isPublicFacing' => true,
-					]) : null;
-				}
-				if ($summPlaceOfPublication != $relatedRecord->placeOfPublication) {
-					$summPlaceOfPublication = $alwaysShowMainDetails ? translate([
-						'text' => 'Varies, see individual formats and editions',
-						'isPublicFacing' => true,
-					]) : null;
-				}
-				if ($summPhysicalDesc != $relatedRecord->physical) {
-					$summPhysicalDesc = $alwaysShowMainDetails ? translate([
-						'text' => 'Varies, see individual formats and editions',
-						'isPublicFacing' => true,
-					]) : null;
-				}
-				if ($summEdition != $relatedRecord->edition) {
-					$summEdition = $alwaysShowMainDetails ? translate([
-						'text' => 'Varies, see individual formats and editions',
-						'isPublicFacing' => true,
-					]) : null;
-				}
-				if ($summLanguage != $relatedRecord->language) {
-					$summLanguage = $alwaysShowMainDetails ? translate([
-						'text' => 'Varies, see individual formats and editions',
-						'isPublicFacing' => true,
-					]) : null;
-				}
-			}
-			$isFirst = false;
-		}
-		$interface->assign('summPublisher', rtrim($summPublisher, ','));
-		$interface->assign('summPubDate', $summPubDate);
-		$interface->assign('summPlaceOfPublication', $summPlaceOfPublication);
-		$interface->assign('summPhysicalDesc', $summPhysicalDesc);
-		$interface->assign('summEdition', $summEdition);
-		$interface->assign('summLanguage', $summLanguage);
+		$this->assignRelatedRecordSummary($relatedRecords, $alwaysShowMainDetails);
 		$timer->logTime("Finished assignment of data based on related records");
 
 		if (IPAddress::showDebuggingInformation()) {
