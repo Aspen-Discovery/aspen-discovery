@@ -72,8 +72,8 @@ class OmekaRecordDriver extends GroupedWorkSubDriver {
 		return $baseUrl . '/s/' . $setting->siteSlug . '/item/' . $this->omekaTitle->omekaId;
 	}
 
-	private function isClassicMetadata(): bool {
-		return !isset($this->omekaRawMetadata->{'o:id'});
+	private static function isClassicResource(object $resource): bool {
+		return !isset($resource->{'o:id'});
 	}
 
 	private function getFirstLiteralValue(string $property): ?string {
@@ -85,11 +85,15 @@ class OmekaRecordDriver extends GroupedWorkSubDriver {
 		if ($this->omekaRawMetadata == null) {
 			return [];
 		}
-		if ($this->isClassicMetadata()) {
-			return $this->getClassicElementTexts($property);
+		return self::getAllLiteralValuesFrom($this->omekaRawMetadata, $property);
+	}
+
+	private static function getAllLiteralValuesFrom(object $resource, string $property): array {
+		if (self::isClassicResource($resource)) {
+			return self::getClassicElementTexts($resource, $property);
 		}
 		$literalValues = [];
-		$values = $this->omekaRawMetadata->{$property} ?? null;
+		$values = $resource->{$property} ?? null;
 		if (empty($values) || !is_array($values)) {
 			return $literalValues;
 		}
@@ -101,9 +105,9 @@ class OmekaRecordDriver extends GroupedWorkSubDriver {
 		return $literalValues;
 	}
 
-	private function getClassicElementTexts(string $property): array {
+	private static function getClassicElementTexts(object $resource, string $property): array {
 		$elementName = ucfirst(substr($property, strpos($property, ':') + 1));
-		$elementTexts = $this->omekaRawMetadata->element_texts ?? null;
+		$elementTexts = $resource->element_texts ?? null;
 		if (empty($elementTexts) || !is_array($elementTexts)) {
 			return [];
 		}
@@ -140,7 +144,7 @@ class OmekaRecordDriver extends GroupedWorkSubDriver {
 		}
 
 		$interface->assign('bookcoverInfo', $this->getBookcoverInfo());
-		$interface->assign('omekaExtract', $this->omekaRawMetadata);
+		$interface->assign('omekaExtract', $this->getStaffViewExtract());
 
 		return 'RecordDrivers/Omeka/staff-view.tpl';
 	}
@@ -204,6 +208,14 @@ class OmekaRecordDriver extends GroupedWorkSubDriver {
 			'label' => 'More Details',
 			'body' => $interface->fetch('Omeka/view-more-details.tpl'),
 		];
+		$mediaFiles = $this->getMediaFiles();
+		if (!empty($mediaFiles)) {
+			$interface->assign('mediaFiles', $mediaFiles);
+			$moreDetailsOptions['omekaFiles'] = [
+				'label' => 'Files',
+				'body' => $interface->fetch('Omeka/view-files.tpl'),
+			];
+		}
 		$this->loadSubjects();
 		$moreDetailsOptions['subjects'] = [
 			'label' => 'Subjects',
@@ -432,5 +444,66 @@ class OmekaRecordDriver extends GroupedWorkSubDriver {
 			return $this->omekaTitle->thumbnailUrl;
 		}
 		return null;
+	}
+
+	private function getStaffViewExtract(): ?object {
+		if ($this->omekaRawMetadata == null) {
+			return null;
+		}
+		$extract = json_decode(json_encode($this->omekaRawMetadata));
+		$mediaList = $extract->{'aspen:media'} ?? null;
+		if (empty($mediaList) || !is_array($mediaList)) {
+			return $extract;
+		}
+		foreach ($mediaList as $media) {
+			unset($media->element_texts);
+			foreach (array_keys(get_object_vars($media)) as $key) {
+				if (str_starts_with($key, 'dcterms:')) {
+					unset($media->{$key});
+				}
+			}
+		}
+		$extract->{'aspen:media'} = $mediaList;
+		return $extract;
+	}
+
+	public function getMediaFiles(): array {
+		$mediaList = $this->omekaRawMetadata->{'aspen:media'} ?? null;
+		if (empty($mediaList) || !is_array($mediaList)) {
+			return [];
+		}
+		$mediaFiles = [];
+		foreach ($mediaList as $media) {
+			$mediaFile = self::describeMediaFile($media);
+			if ($mediaFile != null) {
+				$mediaFiles[] = $mediaFile;
+			}
+		}
+		return $mediaFiles;
+	}
+
+	public static function describeMediaFile(object $media): ?array {
+		if (self::isClassicResource($media)) {
+			$fileUrls = $media->file_urls ?? null;
+			$url = $fileUrls->original ?? $fileUrls->fullsize ?? null;
+			$thumbnailUrl = $fileUrls->square_thumbnail ?? $fileUrls->thumbnail ?? null;
+			$mimeType = $media->mime_type ?? '';
+		} else {
+			$thumbnailUrls = $media->{'o:thumbnail_urls'} ?? null;
+			$url = $media->{'o:original_url'} ?? null;
+			$thumbnailUrl = $thumbnailUrls->square ?? $thumbnailUrls->medium ?? null;
+			$mimeType = $media->{'o:media_type'} ?? '';
+		}
+		$hasNoUrl = empty($url) && empty($thumbnailUrl);
+		if ($hasNoUrl) {
+			return null;
+		}
+		return [
+			'url' => $url ?? $thumbnailUrl,
+			'thumbnailUrl' => $thumbnailUrl,
+			'title' => self::getAllLiteralValuesFrom($media, 'dcterms:title')[0] ?? '',
+			'description' => self::getAllLiteralValuesFrom($media, 'dcterms:description')[0] ?? '',
+			'format' => self::getFormatForMediaType($mimeType),
+		];
 	}
 }

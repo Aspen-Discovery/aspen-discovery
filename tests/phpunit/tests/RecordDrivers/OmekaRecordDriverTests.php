@@ -76,4 +76,29 @@ class OmekaRecordDriverTests extends TestCase {
 	public function testFormatPublicationDetail(?string $publisher, ?string $date, string $expected): void {
 		$this->assertEquals($expected, OmekaRecordDriver::formatPublicationDetail($publisher, $date));
 	}
+
+	public function testDescribeClassicMediaFile(): void {
+		$media = json_decode('{"id": 6957, "order": 1, "mime_type": "image/jpeg", "file_urls": {"original": "https://example.org/files/original/a.jpg", "fullsize": "https://example.org/files/fullsize/a.jpg", "square_thumbnail": "https://example.org/files/square_thumbnails/a.jpg"}, "element_texts": [{"element_set": {"name": "Dublin Core"}, "element": {"name": "Title"}, "text": "Zaenger family portrait"}, {"element_set": {"name": "Dublin Core"}, "element": {"name": "Description"}, "text": "Studio photograph"}]}');
+		$mediaFile = OmekaRecordDriver::describeMediaFile($media);
+		$this->assertEquals('https://example.org/files/original/a.jpg', $mediaFile['url']);
+		$this->assertEquals('https://example.org/files/square_thumbnails/a.jpg', $mediaFile['thumbnailUrl']);
+		$this->assertEquals('Zaenger family portrait', $mediaFile['title']);
+		$this->assertEquals('Studio photograph', $mediaFile['description']);
+		$this->assertEquals('Photo', $mediaFile['format']);
+	}
+
+	public function testDescribeOmekaSMediaFile(): void {
+		$media = json_decode('{"o:id": 12, "o:media_type": "application/pdf", "o:original_url": "https://example.org/files/original/b.pdf", "o:thumbnail_urls": {"medium": "https://example.org/files/medium/b.jpg", "square": "https://example.org/files/square/b.jpg"}, "dcterms:title": [{"@value": "Minutes, page 2"}]}');
+		$mediaFile = OmekaRecordDriver::describeMediaFile($media);
+		$this->assertEquals('https://example.org/files/original/b.pdf', $mediaFile['url']);
+		$this->assertEquals('https://example.org/files/square/b.jpg', $mediaFile['thumbnailUrl']);
+		$this->assertEquals('Minutes, page 2', $mediaFile['title']);
+		$this->assertEquals('', $mediaFile['description']);
+		$this->assertEquals('PDF', $mediaFile['format']);
+	}
+
+	public function testDescribeMediaFileWithoutUrls(): void {
+		$media = json_decode('{"id": 1, "mime_type": "image/jpeg", "element_texts": []}');
+		$this->assertNull(OmekaRecordDriver::describeMediaFile($media));
+	}
 }

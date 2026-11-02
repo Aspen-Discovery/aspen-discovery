@@ -361,6 +361,7 @@ abstract class RecordInterface {
 			'goodreadsReviews' => 'GoodReads Reviews',
 			'citations' => 'Citations',
 			'copyDetails' => 'Copy Details (OverDrive)',
+			'omekaFiles' => 'Files (Omeka)',
 			'staff' => 'Staff View',
 			'accessibilityStatements' => 'Accessibility Statements (OverDrive)',
 			'loralAllInOne' => 'Loral (All in One)'
@@ -398,6 +399,7 @@ abstract class RecordInterface {
 			'goodreadsReviews' => 'closed',
 			'citations' => 'closed',
 			'copyDetails' => 'closed',
+			'omekaFiles' => 'open',
 			'staff' => 'closed',
 			'accessibilityStatements' => 'closed',
 		];
