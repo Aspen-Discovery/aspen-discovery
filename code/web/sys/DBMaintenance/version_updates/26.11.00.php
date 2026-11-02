@@ -164,6 +164,69 @@ function getUpdates26_11_00(): array {
 				) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
 			]
 		], //library_borrowbox_settings
+		'borrowbox_api_products' => [
+			'title' => 'BorrowBox API Products',
+			'description' => 'Create table for BorrowBox product catalog',
+			'sql' => [
+				"CREATE TABLE IF NOT EXISTS borrowbox_api_products (
+					id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					borrowboxId VARCHAR(50) NOT NULL,
+					isbn13 VARCHAR(13),
+					format VARCHAR(20),
+					title VARCHAR(512),
+					subTitle VARCHAR(255),
+					series VARCHAR(255),
+					seriesNumber INT(11),
+					primaryCreatorName VARCHAR(215),
+					publisher VARCHAR(255),
+					cover VARCHAR(500),
+					dateAdded INT(11),
+					dateUpdated INT(11),
+					lastMetadataCheck INT(11),
+					lastAvailabilityCheck INT(11),
+					deleted TINYINT(1) DEFAULT 0,
+					dateDeleted INT(11),
+					lastSeen INT(11) DEFAULT 0,
+					rawResponse MEDIUMTEXT,
+					UNIQUE KEY borrowboxId (borrowboxId)
+				) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
+			]
+		], //borrowbox_api_products
+		'borrowbox_api_product_metadata' => [
+			'title' => 'BorrowBox API Product Metadata',
+			'description' => 'Create table for BorrowBox product metadata',
+			'sql' => [
+				"CREATE TABLE IF NOT EXISTS borrowbox_api_product_metadata (
+					id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					productId INT(11) NOT NULL,
+					checksum VARCHAR(40),
+					sortTitle VARCHAR(512),
+					publisher VARCHAR(255),
+					publishDate INT(11),
+					shortDescription TEXT,
+					fullDescription TEXT,
+					rawData MEDIUMTEXT,
+					thumbnail VARCHAR(500),
+					cover VARCHAR(500)
+				) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
+			]
+		], //borrowbox_api_product_metadata
+		'borrowbox_api_product_availability' => [
+			'title' => 'BorrowBox API Product Availability',
+			'description' => 'Create table for BorrowBox product availability by site',
+			'sql' => [
+				"CREATE TABLE IF NOT EXISTS borrowbox_api_product_availability (
+					id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					productId INT(11) NOT NULL,
+					borrowboxId VARCHAR(50) NOT NULL,
+					siteId VARCHAR(50) NOT NULL,
+					availabilityStatus VARCHAR(20),
+					nextAvailableDate INT(11),
+					lastChange INT(11),
+					settingId INT(11) NOT NULL
+				) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
+			]
+		], //borrowbox_api_product_availability
 
 
 
