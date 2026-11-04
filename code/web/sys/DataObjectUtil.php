@@ -288,7 +288,13 @@ class DataObjectUtil {
 			} else {
 				$object->setProperty($propertyName, 0, $property);
 			}
-		} elseif ($property['type'] == 'color' || $property['type'] == 'font') {
+		} elseif ($property['type'] == 'font') {
+			if (empty($property['readOnly'])) {
+				$fontSource = $_REQUEST[$propertyName . '-source'] ?? '1';
+				$object->setProperty($propertyName . 'Default', in_array($fontSource, ['0', '1', '2'], true) ? (int)$fontSource : 1, $property);
+				$object->setProperty($propertyName, trim($_REQUEST[$propertyName] ?? ''), $property);
+			}
+		} elseif ($property['type'] == 'color') {
 			if (empty($property['readOnly'])) {
 				$defaultProperty = $propertyName . 'Default';
 				if (isset($_REQUEST[$propertyName . '-default']) && ($_REQUEST[$propertyName . '-default'] == 'on')) {

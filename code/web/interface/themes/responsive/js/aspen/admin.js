@@ -21,12 +21,63 @@ AspenDiscovery.Admin = (function () {
 			AspenDiscovery.Account.ajaxLightbox("/Admin/AJAX?method=getExtractNotes&id=" + id + "&source=" + source, true);
 			return false;
 		},
-		loadGoogleFontPreview: function (fontSelector) {
+		updateFontSource: function (fontProperty, uploadProperty) {
+			var source = $("input[name='" + fontProperty + "-source']:checked").val();
+			$("#" + fontProperty + "-default-note").toggle(source === '1');
+			$("#" + fontProperty + "-google").toggle(source === '0');
+			if (uploadProperty) {
+				$("#propertyRow" + uploadProperty).toggle(source === '2');
+			}
+			if (source === '0') {
+				AspenDiscovery.Admin.loadGoogleFontPreview(fontProperty);
+			}
+		},
+		initFontSuggestions: function (fontProperty) {
+			var fontElement = $("#" + fontProperty);
+			if (fontElement.prop('readonly')) {
+				return;
+			}
+			fontElement.autocomplete({
+				source: fontElement.data('suggestions'),
+				minLength: 0,
+				delay: 0,
+				open: function () {
+					fontElement.autocomplete('widget').css({'max-height': '300px', 'overflow-y': 'auto', 'overflow-x': 'hidden'});
+				},
+				select: function (event, ui) {
+					fontElement.val(ui.item.value);
+					AspenDiscovery.Admin.loadGoogleFontPreview(fontProperty);
+					return false;
+				}
+			}).on('focus click', function () {
+				if (!fontElement.autocomplete('widget').is(':visible')) {
+					fontElement.autocomplete('search', '');
+				}
+			});
+		},
+		loadGoogleFontPreview: function (fontSelector, fromFieldChange) {
 			var fontElement = $("#" + fontSelector);
-			var fontName = fontElement.val();
+			var fontName = $.trim(fontElement.val());
+			var source = $("input[name='" + fontSelector + "-source']:checked").val();
+			var warning = $('#' + fontSelector + '-warning');
+			warning.hide();
+			if (source !== undefined && source !== '0') {
+				return;
+			}
+			if (fontName === '') {
+				if (fromFieldChange) {
+					warning.text(fontElement.attr('data-empty-message')).show();
+				}
+				return;
+			}
 
-			$('head').append('<link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=' + fontName + '">');
-			$('#' + fontSelector + '-sample-text').css('font-family', fontName);
+			// Google Fonts answers 400 for an unknown family; answers for an older name are ignored.
+			$('<link rel="stylesheet" type="text/css">').on('error', function () {
+				if ($.trim(fontElement.val()) === fontName) {
+					warning.text(fontElement.attr('data-not-found-message').replace('%fontName%', fontName)).show();
+				}
+			}).attr('href', 'https://fonts.googleapis.com/css?family=' + encodeURIComponent(fontName)).appendTo('head');
+			$('#' + fontSelector + '-sample-text').css('font-family', '"' + fontName + '"');
 		},
 		getDefaultColor: function (property, extendedThemeDefault) {
 			if (property === 'pageBackgroundColor') {
