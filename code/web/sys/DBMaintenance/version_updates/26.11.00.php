@@ -56,6 +56,13 @@ function getUpdates26_11_00(): array {
 				'keepAncestorUploadedThemeFonts',
 			],
 		], //theme_font_sources
+		'repair_theme_font_files' => [
+			'title' => 'Repair Theme Font Files',
+			'description' => 'Restore uploaded theme fonts that were saved to the data directory instead of being served, and list fonts whose file is missing.',
+			'sql' => [
+				'repairThemeFontFiles',
+			],
+		], //repair_theme_font_files
 
 		//tomas
 
@@ -111,4 +118,72 @@ function keepAncestorUploadedThemeFonts(&$update): void {
 	if (!empty($switched)) {
 		$update['status'] .= '<br/>' . htmlspecialchars(implode('; ', $switched));
 	}
+}
+
+/**
+ * Copies uploaded fonts left in the data directory, where they are not served, to the served fonts
+ * directory. Themes whose file cannot be found are listed in the status.
+ */
+function repairThemeFontFiles(&$update): void {
+	global $aspen_db;
+	require_once ROOT_DIR . '/sys/Storage/StorageDriverFactory.php';
+	$storage = StorageDriverFactory::get();
+	$legacyFontsDir = StorageDriverFactory::resolveDataRoot() . '/fonts/';
+
+	$themesByFont = [];
+	$themes = $aspen_db->query("SELECT themeName, customHeadingFont, customBodyFont FROM themes");
+	while ($theme = $themes->fetch(PDO::FETCH_ASSOC)) {
+		foreach (['customHeadingFont' => 'heading', 'customBodyFont' => 'body'] as $column => $role) {
+			if (!empty($theme[$column])) {
+				$themesByFont[$theme[$column]][] = "{$theme['themeName']} ($role)";
+			}
+		}
+	}
+
+	$restored = [];
+	$missing = [];
+	$failed = [];
+	foreach ($themesByFont as $fontFile => $usedBy) {
+		$description = $fontFile . ': ' . implode(', ', $usedBy);
+		if (basename($fontFile) !== $fontFile || $fontFile === '.' || $fontFile === '..') {
+			$missing[] = $description;
+		} elseif ($storage->exists('fonts/' . $fontFile)) {
+			continue;
+		} elseif (is_file($legacyFontsDir . $fontFile)) {
+			if ($storage->write('fonts/' . $fontFile, $legacyFontsDir . $fontFile)) {
+				$restored[] = $description;
+			} else {
+				$failed[] = $description;
+			}
+		} else {
+			$missing[] = $description;
+		}
+	}
+
+	$status = translate([
+		'text' => 'Checked %1% uploaded theme fonts: %2% restored from the data directory, %3% missing, %4% could not be copied.',
+		1 => count($themesByFont),
+		2 => count($restored),
+		3 => count($missing),
+		4 => count($failed),
+		'isAdminFacing' => true,
+	]);
+	$copyManually = translate([
+		'text' => 'Could not be copied, copy them from %1% to %2%',
+		1 => $legacyFontsDir,
+		2 => StorageDriverFactory::resolvePublicRoot() . '/fonts/',
+		'isAdminFacing' => true,
+	]);
+	foreach (['Restored' => $restored, 'Missing, upload again' => $missing, $copyManually => $failed] as $label => $fonts) {
+		if (!empty($fonts)) {
+			$labelText = $label == $copyManually ? $label : translate(['text' => $label, 'isAdminFacing' => true]);
+			$status .= '<br/>' . htmlspecialchars($labelText) . ': ' . htmlspecialchars(implode('; ', $fonts));
+		}
+	}
+	if (!empty($missing) || !empty($failed)) {
+		// Not translated: DB Maintenance highlights statuses containing "Warning".
+		$status = 'Warning: ' . $status;
+	}
+	$update['success'] = empty($failed);
+	$update['status'] = $status;
 }
