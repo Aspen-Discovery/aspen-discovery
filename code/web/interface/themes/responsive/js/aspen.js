@@ -934,7 +934,8 @@ var Globals = (function () {
 		timeUntilSessionExpiration: 0,
 		modalCloseDestination: '',
 		language: 'en',
-		jsTranslations: {}
+		// Populated by an inline script that runs before aspen.js so __() works at load time
+		jsTranslations: (typeof AspenJsTranslations !== 'undefined') ? AspenJsTranslations : {}
 	}
 })(Globals || {});
 
