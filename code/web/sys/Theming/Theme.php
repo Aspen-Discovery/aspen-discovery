@@ -561,6 +561,11 @@ class Theme extends DataObject {
 	public $customBodyFont;
 	public $fontSize;
 
+	// Font sources, stored in headingFontDefault and bodyFontDefault.
+	const FONT_SOURCE_GOOGLE = 0;
+	const FONT_SOURCE_DEFAULT = 1;
+	const FONT_SOURCE_UPLOADED = 2;
+
 	public static $fontSizes = [
 		'small' => '14px',
 		'medium' => '16px',
@@ -652,7 +657,6 @@ class Theme extends DataObject {
 			'Arimo',
 			'Catamaran',
 			'Gothic A1',
-			'Gothic A1-Black',
 			'Helvetica',
 			'Helvetica Neue',
 			'Josefin Sans',
@@ -672,7 +676,6 @@ class Theme extends DataObject {
 			'Arimo',
 			'Droid Serif',
 			'Gothic A1',
-			'Gothic A1-Black',
 			'Helvetica',
 			'Helvetica Neue',
 			'Josefin Sans',
@@ -680,7 +683,6 @@ class Theme extends DataObject {
 			'Montserrat',
 			'Noto Sans',
 			'Open Sans',
-			'Open Sans Condensed',
 			'Playfair Display',
 			'PT Sans',
 			'Raleway',
@@ -1150,8 +1152,13 @@ class Theme extends DataObject {
 				'property' => 'headingFont',
 				'type' => 'font',
 				'label' => 'Heading Font',
-				'description' => 'Heading Font',
+				'description' => 'Use the default font, a Google Fonts family (pick a suggestion or type any name, for example Figtree), or an uploaded file',
 				'validFonts' => $validHeadingFonts,
+				'uploadProperty' => 'customHeadingFont',
+				'serverValidation' => 'validateHeadingFont',
+				// The editor replaces %fontName% with the name being typed.
+				'emptyNameMessage' => self::getGoogleFontMessage('empty', 'Heading', '', true),
+				'notFoundMessage' => self::getGoogleFontMessage('notFound', 'Heading', '%fontName%', true),
 				'previewFontSize' => 'calc(var(--aspen-base-font-size) * 1.42857)', //20px if base font is 14px
 				'required' => false,
 				'hideInLists' => true,
@@ -1162,6 +1169,7 @@ class Theme extends DataObject {
 				'type' => 'uploaded_font',
 				'label' => 'Custom Heading Font',
 				'description' => 'Upload a custom font to use for headings',
+				'previewFontSize' => 'calc(var(--aspen-base-font-size) * 1.42857)',
 				'required' => false,
 				'hideInLists' => true,
 			],
@@ -1169,8 +1177,12 @@ class Theme extends DataObject {
 				'property' => 'bodyFont',
 				'type' => 'font',
 				'label' => 'Body Font',
-				'description' => 'Body Font',
+				'description' => 'Use the default font, a Google Fonts family (pick a suggestion or type any name, for example Figtree), or an uploaded file',
 				'validFonts' => $validBodyFonts,
+				'uploadProperty' => 'customBodyFont',
+				'serverValidation' => 'validateBodyFont',
+				'emptyNameMessage' => self::getGoogleFontMessage('empty', 'Body', '', true),
+				'notFoundMessage' => self::getGoogleFontMessage('notFound', 'Body', '%fontName%', true),
 				'previewFontSize' => 'var(--aspen-base-font-size)',
 				'required' => false,
 				'hideInLists' => true,
@@ -3293,50 +3305,13 @@ class Theme extends DataObject {
 		$interface->assign('cookieConsentButtonTextColor', $this->cookieConsentButtonTextColor);
 		$interface->assign('cookieConsentButtonHoverTextColor', $this->cookieConsentButtonHoverTextColor);
 		$interface->assign('cookieConsentButtonBorderColor', $this->cookieConsentButtonBorderColor);
-		$interface->assign('customHeadingFont', $this->customHeadingFont);
-		$interface->assign('customHeadingFontName', '');
-		$interface->assign('headingFont', '');
-		$interface->assign('customBodyFont', $this->customBodyFont);
-		$interface->assign('customBodyFontName', '');
-		$interface->assign('bodyFont', '');
 		$interface->assign('placardImageMaxHeight', $this->placardImageMaxHeight);
 		$interface->assign('showButtonShimmer', $this->showButtonShimmer);
 		$interface->assign('fontSize', '');
-		if ($this->customHeadingFont != null) {
-			$customHeadingFontName = substr($this->customHeadingFont, 0, strrpos($this->customHeadingFont, '.'));
-			$interface->assign('customHeadingFontName', $customHeadingFontName);
-
-			$interface->assign('headingFont', $customHeadingFontName);
-		}
-		if ($this->customBodyFont != null) {
-			$customBodyFontName = substr($this->customBodyFont, 0, strrpos($this->customBodyFont, '.'));
-			$interface->assign('customBodyFontName', $customBodyFontName);
-
-			$interface->assign('bodyFont', $customBodyFontName);
-		}
+		$this->assignFont($interface, $allAppliedThemes, 'heading');
+		$this->assignFont($interface, $allAppliedThemes, 'body');
 
 		foreach ($allAppliedThemes as $theme) {
-			if ($interface->getVariable('headingFont') == null && !$theme->headingFontDefault) {
-				$interface->assign('headingFont', $theme->headingFont);
-			}
-			if ($interface->getVariable('bodyFont') == null && !$theme->bodyFontDefault) {
-				$interface->assign('bodyFont', $theme->bodyFont);
-			}
-			if ($interface->getVariable('customHeadingFont') == null && ($theme->customHeadingFont != null)) {
-				$interface->assign('customHeadingFont', $theme->customHeadingFont);
-				//Strip off the extension to get the name of the font
-				$customHeadingFontName = substr($theme->customHeadingFont, 0, strrpos($theme->customHeadingFont, '.'));
-				$interface->assign('customHeadingFontName', $customHeadingFontName);
-
-				$interface->assign('headingFont', $customHeadingFontName);
-			}
-			if ($interface->getVariable('customBodyFont') == null && ($theme->customBodyFont != null)) {
-				$interface->assign('customBodyFont', $theme->customBodyFont);
-				$customBodyFontName = substr($theme->customBodyFont, 0, strrpos($theme->customBodyFont, '.'));
-				$interface->assign('customBodyFontName', $customBodyFontName);
-
-				$interface->assign('bodyFont', $customBodyFontName);
-			}
 			if ($interface->getVariable('capitalizeBrowseCategories') == null && $theme->capitalizeBrowseCategories != -1) {
 				$interface->assign('capitalizeBrowseCategories', $theme->capitalizeBrowseCategories);
 			}
@@ -3422,6 +3397,185 @@ class Theme extends DataObject {
 		}
 
 		return $this->generatedCss;
+	}
+
+	/**
+	 * Names of the properties holding the font's source, Google Fonts family and uploaded file.
+	 *
+	 * @param string $role heading or body
+	 * @return array{source: string, google: string, uploaded: string}
+	 */
+	private static function getFontProperties(string $role): array {
+		return [
+			'source' => $role . 'FontDefault',
+			'google' => $role . 'Font',
+			'uploaded' => 'custom' . ucfirst($role) . 'Font',
+		];
+	}
+
+	/** @param string $role heading or body */
+	public function getFontSource(string $role): int {
+		$source = $this->{self::getFontProperties($role)['source']};
+		if ($source !== null && $source !== '' && in_array((int)$source, [self::FONT_SOURCE_GOOGLE, self::FONT_SOURCE_UPLOADED])) {
+			return (int)$source;
+		}
+		return self::FONT_SOURCE_DEFAULT;
+	}
+
+	/** @noinspection PhpUnused */
+	public function validateHeadingFont(): array {
+		return $this->validateFont('heading');
+	}
+
+	/** @noinspection PhpUnused */
+	public function validateBodyFont(): array {
+		return $this->validateFont('body');
+	}
+
+	private function validateFont(string $role): array {
+		$errors = [];
+		$label = ucfirst($role);
+		$fontProperties = self::getFontProperties($role);
+		$fontProperty = $fontProperties['google'];
+		$fontName = (string)$this->$fontProperty;
+		// The name is used in a URL, CSS and pages, so only characters of family names are allowed.
+		$validFontName = (bool)preg_match('/^[A-Za-z0-9][A-Za-z0-9 \-]{0,99}$/', $fontName);
+		$source = $this->getFontSource($role);
+		if ($source == self::FONT_SOURCE_GOOGLE) {
+			if ($fontName === '') {
+				$errors[] = self::getGoogleFontMessage('empty', $label, '');
+			} elseif (!$validFontName) {
+				$errors[] = translate([
+					'text' => '%1% Font must be a Google Fonts family name, for example Figtree.',
+					1 => $label,
+					'isAdminFacing' => true,
+				]);
+			} elseif ((in_array($fontProperty, $this->_changedFields) || in_array($fontProperties['source'], $this->_changedFields)) && !self::googleFontExists($fontName)) {
+				$errors[] = self::getGoogleFontMessage('notFound', $label, $fontName);
+			}
+		} else {
+			// The field is hidden for other sources, so an invalid name could not be corrected there.
+			if ($fontName !== '' && !$validFontName) {
+				$this->setProperty($fontProperty, '', null);
+			}
+			if ($source == self::FONT_SOURCE_UPLOADED && empty($this->{$fontProperties['uploaded']})) {
+				$errors[] = translate([
+					'text' => 'Upload a file for the Custom %1% Font or choose another font source.',
+					1 => $label,
+					'isAdminFacing' => true,
+				]);
+			}
+		}
+		return [
+			'validatedOk' => count($errors) == 0,
+			'errors' => $errors,
+		];
+	}
+
+	/**
+	 * Shared by the save validation and the theme editor.
+	 *
+	 * @param string $type empty or notFound
+	 * @param string $label Heading or Body
+	 */
+	private static function getGoogleFontMessage(string $type, string $label, string $fontName, bool $inAttribute = false): string {
+		$texts = [
+			'empty' => 'Enter a Google Fonts family name for the %1% Font or choose another font source.',
+			'notFound' => '%1% Font "%2%" was not found in Google Fonts. Check the spelling and capitalization, for example Open Sans.',
+		];
+		return translate([
+			'text' => $texts[$type],
+			1 => $label,
+			2 => $fontName,
+			'isAdminFacing' => true,
+			'inAttribute' => $inAttribute,
+		]);
+	}
+
+	/**
+	 * Only a 400 from Google Fonts rejects a name, so themes can be saved when Google is unreachable.
+	 */
+	private static function googleFontExists(string $fontName): bool {
+		require_once ROOT_DIR . '/sys/CurlWrapper.php';
+		$curlWrapper = new CurlWrapper();
+		$curlWrapper->setConnectTimeout(3);
+		$curlWrapper->setTimeout(5);
+		$curlWrapper->curlGetPage('https://fonts.googleapis.com/css?family=' . urlencode($fontName));
+		return $curlWrapper->getResponseCode() != 400;
+	}
+
+	/**
+	 * The closest theme in the hierarchy whose font source is not Default decides the font.
+	 *
+	 * @param Theme[] $themes the theme to resolve for first, then each theme it extends
+	 * @return array{source: int, family: string, file: string, themeName: string}
+	 */
+	private static function resolveFont(array $themes, string $role): array {
+		$fontProperties = self::getFontProperties($role);
+		foreach ($themes as $theme) {
+			$source = $theme->getFontSource($role);
+			$uploadedFont = (string)$theme->{$fontProperties['uploaded']};
+			$googleFont = (string)$theme->{$fontProperties['google']};
+			if ($source == self::FONT_SOURCE_UPLOADED && $uploadedFont != '') {
+				//Strip off the extension to get the name of the font
+				$extensionStart = strrpos($uploadedFont, '.');
+				$family = $extensionStart === false ? $uploadedFont : substr($uploadedFont, 0, $extensionStart);
+				return ['source' => $source, 'family' => $family, 'file' => $uploadedFont, 'themeName' => $theme->themeName];
+			} elseif ($source == self::FONT_SOURCE_GOOGLE && $googleFont != '') {
+				return ['source' => $source, 'family' => $googleFont, 'file' => '', 'themeName' => $theme->themeName];
+			}
+		}
+		return ['source' => self::FONT_SOURCE_DEFAULT, 'family' => '', 'file' => '', 'themeName' => ''];
+	}
+
+	/**
+	 * Separate template variables keep uploaded file names out of Google Fonts requests.
+	 *
+	 * @param Theme[] $allAppliedThemes this theme first, then each theme it extends
+	 */
+	private function assignFont(UInterface $interface, array $allAppliedThemes, string $role): void {
+		$font = self::resolveFont($allAppliedThemes, $role);
+		$uploadedVariable = self::getFontProperties($role)['uploaded'];
+		$interface->assign($uploadedVariable, $font['file']);
+		$interface->assign($uploadedVariable . 'Name', $font['file'] == '' ? '' : $font['family']);
+		$interface->assign('google' . ucfirst($role) . 'Font', $font['source'] == self::FONT_SOURCE_GOOGLE ? $font['family'] : '');
+		$interface->assign($role . 'Font', $font['family']);
+	}
+
+	/**
+	 * The font inherited from extended themes, for the Use default option.
+	 *
+	 * @return array{label: string, note: string}
+	 */
+	private function getInheritedFont(string $role): array {
+		$parentThemes = array_slice($this->getAllAppliedThemes(), 1);
+		$font = self::resolveFont($parentThemes, $role);
+		if ($font['source'] == self::FONT_SOURCE_DEFAULT) {
+			return [
+				// Matches @font-family-sans-serif-resp in css/variables.less.
+				'label' => translate([
+					'text' => 'Helvetica Neue, Helvetica or Arial',
+					'isAdminFacing' => true,
+				]),
+				'note' => translate([
+					'text' => 'No extended theme sets this font, so visitors see Helvetica Neue on Apple devices and usually Arial elsewhere.',
+					'isAdminFacing' => true,
+				]),
+			];
+		}
+		return [
+			'label' => translate([
+				'text' => '%1% from %2%',
+				1 => $font['family'],
+				2 => $font['themeName'],
+				'isAdminFacing' => true,
+			]),
+			'note' => translate([
+				'text' => $font['source'] == self::FONT_SOURCE_UPLOADED ? 'Uses the font file uploaded in theme "%1%". Changing it there changes it here.' : 'Uses the Google Fonts font set in theme "%1%". Changing it there changes it here.',
+				1 => $font['themeName'],
+				'isAdminFacing' => true,
+			]),
+		];
 	}
 
 	private $_allAppliedThemes = null;
@@ -3981,6 +4135,13 @@ class Theme extends DataObject {
 		// Remove the current theme from the list of available themes to extend.
 		if (!empty($this->themeName) && isset($structure['extendsTheme']['values'][$this->themeName])) {
 			unset($structure['extendsTheme']['values'][$this->themeName]);
+		}
+		foreach (['heading', 'body'] as $role) {
+			if (isset($structure[$role . 'Font'])) {
+				$inheritedFont = $this->getInheritedFont($role);
+				$structure[$role . 'Font']['inheritedFont'] = $inheritedFont['label'];
+				$structure[$role . 'Font']['inheritedFontNote'] = $inheritedFont['note'];
+			}
 		}
 		return $structure;
 	}

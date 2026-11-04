@@ -422,38 +422,7 @@
 				{/literal}
 			{/if}
 		{elseif $property.type == 'font'}
-			<div class="row">
-				<div class="col-sm-4">
-					<select name='{$propName}' id='{$propName}' class='form-control font {if !empty($property.required)}required{/if}' {if !empty($property.readOnly)}readonly{/if} onchange="$('#{$propName}-default').prop('checked',false);AspenDiscovery.Admin.loadGoogleFontPreview('{$propName}')">
-						{foreach from=$property.validFonts item=fontName}
-							<option value="{$fontName}"{if $propValue == $fontName} selected='selected'{/if}>{$fontName}</option>
-						{/foreach}
-					</select>
-				</div>
-				<div class="col-sm-3">
-					{assign var=defaultVariableName value="`$propName`Default"}
-					{if is_null($object->$defaultVariableName)}
-						{assign var=useDefault value=true}
-					{else}
-						{assign var=useDefault value=$object->$defaultVariableName}
-					{/if}
-					<div class="checkbox" style="margin: 0">
-						<label for='{$propName}-default'>{translate text="Use Default" isAdminFacing=true}
-							<input type="checkbox" name='{$propName}-default' id='{$propName}-default' {if $useDefault == '1'}checked="checked"{/if} {if !empty($property.readOnly)}readonly{/if}/>
-						</label>
-					</div>
-				</div>
-				<div class="col-sm-5">
-					<div id="{$propName}-sample-text" style="font-family: {$propValue},arial; font-size: {if !empty($property.previewFontSize)}{$property.previewFontSize}{else}var(--aspen-base-font-size){/if}">
-						English, Español, 中文(简体), עברית
-					</div>
-				</div>
-				<script type="text/javascript">
-					$().ready(function () {ldelim}
-						AspenDiscovery.Admin.loadGoogleFontPreview('{$propName}');
-					{rdelim});
-				</script>
-			</div>
+			{include file="DataObjectUtil/font.tpl"}
 		{elseif $property.type == 'uploaded_font'}
 			<div class="row">
 				<div class="col-sm-7">
@@ -483,7 +452,12 @@
 					</script>
 				</div>
 				<div class="col-sm-5">
-					<div id="{$propName}-sample-text" style="font-family: {$propValue},arial; font-size: {if !empty($property.previewFontSize)}{$property.previewFontSize}{else}var(--aspen-base-font-size){/if}">
+					{if !empty($propValue)}
+						<style>
+							@font-face {ldelim} font-family: 'uploaded-{$propName}'; src: url('/fonts/{$propValue|escape:'url'}'); {rdelim}
+						</style>
+					{/if}
+					<div id="{$propName}-sample-text" style="font-family: 'uploaded-{$propName}',arial; font-size: {if !empty($property.previewFontSize)}{$property.previewFontSize}{else}var(--aspen-base-font-size){/if}">
 						English, Español, 中文(简体), עברית
 					</div>
 				</div>
