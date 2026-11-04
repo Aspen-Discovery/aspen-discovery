@@ -163,6 +163,21 @@ class UserList extends DataObject {
 		if (!empty($selectedResourceTypes)) {
 			$listEntry->whereAddIn('source', $selectedResourceTypes, true);
 		}
+		// Ignore inaccessible nested lists toward the count
+		if (!UserAccount::userHasPermission('Edit All Lists')) {
+			$userId = UserAccount::getActiveUserId();
+			$listEntry->whereAdd(
+				"(source != 'Lists'
+					OR NOT EXISTS (
+						SELECT 1
+						FROM user_list
+						WHERE user_list.id = user_list_entry.sourceId
+						AND user_list.public = 0
+						AND user_list.user_id != " . (int)$userId . "
+					) 
+				)"
+			);
+    	}
 
 		return $listEntry->count();
 	}
@@ -789,7 +804,7 @@ class UserList extends DataObject {
 					$userList->id = $id;
 					
 					if ($userList->find(true)) {
-						if ($userList->public) {
+						if ($userList->isVisibleToUser()) {
 							$records[] = new ListsRecordDriver([
 								'id' => $userList->id,
 								'title_display' => $userList->title,
@@ -2056,6 +2071,10 @@ class UserList extends DataObject {
 		$listEntry->listId = $this->id;
 		$listEntry->source = $listSource;
 		return $listEntry->count();
+	}
+
+	public function isVisibleToUser() {
+		return $this->public || $this->user_id === UserAccount::getActiveUserId() || UserAccount::userHasPermission('Edit All Lists');
 	}
 
 	private function getSolrSort(string $sort) : string {
