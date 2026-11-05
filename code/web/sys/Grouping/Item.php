@@ -215,74 +215,88 @@ class Grouping_Item {
 		return $key;
 	}
 
+	private ?array $_summary = null;
 	public function getSummary(): array {
-		global $library;
+		if ($this->_summary === null) {
+			global $library;
 
-		if (!empty($this->volume)) {
-			$description = $this->volume . " ";
-		} else {
-			$description = '';
-		}
-		$description .= $this->shelfLocation . ": " . $this->callNumber;
+			if (!empty($this->volume)) {
+				$description = $this->volume . " ";
+			} else {
+				$description = '';
+			}
+			$description .= $this->shelfLocation . ": " . $this->callNumber;
 
-		$description .= ' - ' . $this->status;
-		if ($this->locallyOwned) {
-			$sectionId = 1;
-			$section = 'In this library';
-		} elseif ($this->libraryOwned) {
-			$sectionId = 5;
-			$section = $library->displayName;
-		} elseif ($this->isOrderItem) {
-			$sectionId = 7;
-			$section = 'On Order';
-		} else {
-			$sectionId = 6;
-			$section = 'Other Locations';
-		}
+			$description .= ' - ' . $this->status;
+			if ($this->locallyOwned) {
+				$sectionId = 1;
+				$section = 'In this library';
+			} elseif ($this->libraryOwned) {
+				$sectionId = 5;
+				$section = $library->displayName;
+			} elseif ($this->isOrderItem) {
+				$sectionId = 7;
+				$section = 'On Order';
+			} else {
+				$sectionId = 6;
+				$section = 'Other Locations';
+			}
 
-		$lastCheckInDate = '';
-		if (!empty($this->lastCheckInDate)) {
-			$date = new DateTime();
-			$date->setTimestamp($this->lastCheckInDate);
-			$lastCheckInDate = $date->format('M j, Y');
+			$lastCheckInDate = '';
+			if (!empty($this->lastCheckInDate)) {
+				$date = new DateTime();
+				$date->setTimestamp($this->lastCheckInDate);
+				$lastCheckInDate = $date->format('M j, Y');
+			}
+			//Translate note if needed
+			if (!empty($this->note)) {
+				$relatedRecordDriver = $this->_record->getDriver();
+				if ($relatedRecordDriver instanceof MarcRecordDriver) {
+					$noteTranslationMap = $relatedRecordDriver->getIndexingProfile()->getTranslationMap('note');
+					if ($noteTranslationMap !== null) {
+						$this->note = $noteTranslationMap->translate($this->note);
+					}
+				}
+			}
+
+			/** @noinspection PhpUnnecessaryLocalVariableInspection */
+			$this->_summary = [
+				'description' => $description,
+				'shelfLocation' => $this->shelfLocation,
+				'callNumber' => $this->callNumber,
+				'totalCopies' => $this->numCopies,
+				'availableCopies' => ($this->available && !$this->isOrderItem) ? $this->numCopies : 0,
+				'isLocalItem' => $this->locallyOwned,
+				'isLibraryItem' => $this->libraryOwned,
+				'inLibraryUseOnly' => $this->inLibraryUseOnly,
+				'allLibraryUseOnly' => $this->inLibraryUseOnly,
+				'displayByDefault' => $this->isDisplayByDefault(),
+				'onOrderCopies' => $this->isOrderItem ? $this->numCopies : 0,
+				'status' => $this->groupedStatus,
+				'statusFull' => $this->status,
+				'available' => $this->available,
+				'holdable' => $this->holdable,
+				'numHolds' => $this->numHolds,
+				'sectionId' => $sectionId,
+				'section' => $section,
+				'locationKey' => $this->getLocationKey(),
+				'relatedUrls' => $this->getRelatedUrls(),
+				'lastCheckinDate' => $lastCheckInDate,
+				'volume' => $this->volume,
+				'volumeId' => $this->volumeId,
+				'isEContent' => $this->isEContent,
+				'locationCode' => $this->locationCode,
+				'locationName' => $this->getLocationName(),
+				'subLocation' => $this->subLocation,
+				'barcode' => $this->barcode,
+				'note' => $this->note,
+				'dueDate' => $this->dueDate,
+				'itemId' => $this->itemId,
+				'variationId' => $this->variationId,
+				'actions' => $this->getActions(),
+			];
 		}
-		/** @noinspection PhpUnnecessaryLocalVariableInspection */
-		$itemSummaryInfo = [
-			'description' => $description,
-			'shelfLocation' => $this->shelfLocation,
-			'callNumber' => $this->callNumber,
-			'totalCopies' => $this->numCopies,
-			'availableCopies' => ($this->available && !$this->isOrderItem) ? $this->numCopies : 0,
-			'isLocalItem' => $this->locallyOwned,
-			'isLibraryItem' => $this->libraryOwned,
-			'inLibraryUseOnly' => $this->inLibraryUseOnly,
-			'allLibraryUseOnly' => $this->inLibraryUseOnly,
-			'displayByDefault' => $this->isDisplayByDefault(),
-			'onOrderCopies' => $this->isOrderItem ? $this->numCopies : 0,
-			'status' => $this->groupedStatus,
-			'statusFull' => $this->status,
-			'available' => $this->available,
-			'holdable' => $this->holdable,
-			'numHolds' => $this->numHolds,
-			'sectionId' => $sectionId,
-			'section' => $section,
-			'locationKey' => $this->getLocationKey(),
-			'relatedUrls' => $this->getRelatedUrls(),
-			'lastCheckinDate' => $lastCheckInDate,
-			'volume' => $this->volume,
-			'volumeId' => $this->volumeId,
-			'isEContent' => $this->isEContent,
-			'locationCode' => $this->locationCode,
-			'locationName' => $this->getLocationName(),
-			'subLocation' => $this->subLocation,
-			'barcode' => $this->barcode,
-			'note' => $this->note,
-			'dueDate' => $this->dueDate,
-			'itemId' => $this->itemId,
-			'variationId' => $this->variationId,
-			'actions' => $this->getActions(),
-		];
-		return $itemSummaryInfo;
+		return $this->_summary;
 	}
 
 	public function setRecord(Grouping_Record $record) : void {
