@@ -105,6 +105,16 @@ class ExtractOverDriveInfo implements AutoCloseable {
 		this.settings = settings;
 	}
 
+	private Set<String> queuedOverDriveIds = Set.of();
+	void setQueuedOverDriveIds(Set<String> queuedOverDriveIds) {
+		this.queuedOverDriveIds = queuedOverDriveIds;
+	}
+
+	private boolean queuedRecordsProcessed = false;
+	boolean isQueuedRecordsProcessed() {
+		return queuedRecordsProcessed;
+	}
+
 	int extractOverDriveInfo(Ini configIni, String serverName, Connection dbConn, OverDriveExtractLogEntry logEntry) {
 		AtomicInteger numProcessed = new AtomicInteger(0);
 		this.configIni = configIni;
@@ -132,6 +142,7 @@ class ExtractOverDriveInfo implements AutoCloseable {
 			try {
 				if (settings.getClientSecret() == null || settings.getClientKey() == null || settings.getAccountId() == null || settings.getClientSecret().isEmpty() || settings.getClientKey().isEmpty() || settings.getAccountId().isEmpty()) {
 					logEntry.addNote("Did not find correct configuration in settings, not loading Libby titles");
+					queuedRecordsProcessed = true;
 				} else {
 					if (checkForDeletedRecords) {
 						//Load all products from API to figure out what is actually new, what is deleted, and what needs an update
@@ -183,14 +194,13 @@ class ExtractOverDriveInfo implements AutoCloseable {
 					logEntry.addNote("There are " + numProductsToUpdate + " products that need to be checked for updates");
 					logEntry.saveResults();
 
+					addQueuedRecords();
+
 					//Do some counts of the records that will be updated for logging purposes
 					int numRecordsToUpdate = 0;
 					int numNewRecords = 0;
 					int totalRecordsWithChanges = 0;
 					for (OverDriveRecordInfo curRecord : allProductsInOverDrive.values()) {
-						if (settings.getProductsToUpdate().contains(curRecord.getId().toLowerCase())){
-							curRecord.hasChanges = true;
-						}
 						//Extract data from Libby and update the database
 						if (curRecord.isNew){
 							numNewRecords++;
@@ -219,7 +229,6 @@ class ExtractOverDriveInfo implements AutoCloseable {
 									try {
 										updateOverDriveMetaData(curRecord);
 									} catch (SocketTimeoutException e) {
-										settings.addProductToUpdateNextTime(curRecord.getId());
 										logEntry.addNote("Error loading metadata for " + curRecord.getId() + " " + e.getMessage());
 										errorsEncountered[0] = true;
 									}
@@ -266,6 +275,7 @@ class ExtractOverDriveInfo implements AutoCloseable {
 							logEntry.saveResults();
 						}
 					}
+					queuedRecordsProcessed = true;
 
 					if (checkForDeletedRecords) {
 						//Remove any records that no longer exist.
@@ -312,15 +322,6 @@ class ExtractOverDriveInfo implements AutoCloseable {
 							logger.info("Did not delete " + totalRecordsToDelete + " records that no longer exist because we received errors from Libby.");
 						}
 					}
-
-					try (PreparedStatement saveProductsToUpdateStmt = dbConn.prepareStatement("UPDATE overdrive_settings set productsToUpdate = ? WHERE id = ?")) {
-						saveProductsToUpdateStmt.setString(1, settings.getProductsToUpdateNextTimeAsString());
-						saveProductsToUpdateStmt.setLong(2, settings.getId());
-						saveProductsToUpdateStmt.executeUpdate();
-					}
-
-					//For any records that have been marked to reload, regroup and reindex the records
-					processRecordsToReload(logEntry);
 
 					//Finally, process any records that seem to be unlinked
 					//MDN 3/6/24 - This is no longer needed.
@@ -453,31 +454,26 @@ class ExtractOverDriveInfo implements AutoCloseable {
 		return numChanges;
 	}
 
-	private void processRecordsToReload(OverDriveExtractLogEntry logEntry) {
-		try (PreparedStatement getRecordsToReloadStmt = dbConn.prepareStatement("SELECT * from record_identifiers_to_reload WHERE processed = 0 and type='overdrive'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)) {
-			try (PreparedStatement markRecordToReloadAsProcessedStmt = dbConn.prepareStatement("UPDATE record_identifiers_to_reload SET processed = 1 where id = ?")) {
-				try (ResultSet getRecordsToReloadRS = getRecordsToReloadStmt.executeQuery()) {
-					int numRecordsToReloadProcessed = 0;
-					while (getRecordsToReloadRS.next()) {
-						long recordToReloadId = getRecordsToReloadRS.getLong("id");
-						String overDriveId = getRecordsToReloadRS.getString("identifier");
-						//Regroup the record
-						String groupedWorkId = getRecordGroupingProcessor().processOverDriveRecord(overDriveId);
-						//Reindex the record
-						getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
-
-						markRecordToReloadAsProcessedStmt.setLong(1, recordToReloadId);
-						markRecordToReloadAsProcessedStmt.executeUpdate();
-						numRecordsToReloadProcessed++;
-					}
-					if (numRecordsToReloadProcessed > 0) {
-						logEntry.addNote("Regrouped " + numRecordsToReloadProcessed + " records marked for reprocessing");
-					}
-				}
-			}
-		}catch (Exception e){
-			logEntry.incErrors("Error processing records to reload ", e);
+	private void addQueuedRecords() {
+		if (queuedOverDriveIds.isEmpty()) {
+			return;
 		}
+		int numAdded = 0;
+		for (String overDriveId : queuedOverDriveIds) {
+			OverDriveRecordInfo recordInfo = allProductsInOverDrive.get(overDriveId);
+
+			if (recordInfo == null) {
+				recordInfo = new OverDriveRecordInfo();
+				recordInfo.setId(overDriveId);
+				getExistingRecordInformationForProduct(recordInfo);
+				allProductsInOverDrive.put(recordInfo.getId(), recordInfo);
+				numAdded++;
+			}
+
+			recordInfo.hasChanges = true;
+		}
+		logEntry.addNote("Processing " + queuedOverDriveIds.size() + " queued records, " + numAdded + " were not already being updated");
+		logEntry.saveResults();
 	}
 
 	private void initOverDriveExtract(Connection dbConn, OverDriveExtractLogEntry logEntry) throws SQLException {
@@ -1167,7 +1163,6 @@ class ExtractOverDriveInfo implements AutoCloseable {
 		String url = "https://api.overdrive.com/v1/collections/" + apiKey + "/products/" + overDriveInfo.getId() + "/metadata";
 		WebServiceResponse metaDataResponse = callOverDriveURL("overdriveExtract.getProductMetadata", url);
 		if (metaDataResponse.getResponseCode() != 200){
-			settings.addProductToUpdateNextTime(overDriveInfo.getId());
 			logEntry.addNote("Could not load metadata (code " + metaDataResponse.getResponseCode() + ") from " + url );
 			logger.info(metaDataResponse.getResponseCode() + ":" + metaDataResponse.getMessage());
 		}else{
@@ -1543,7 +1538,6 @@ class ExtractOverDriveInfo implements AutoCloseable {
 		try {
 			availabilityResponse = callOverDriveURL("overdriveExtract.getProductAvailability", url, false);
 		} catch (SocketTimeoutException e) {
-			settings.addProductToUpdateNextTime(overDriveInfo.getId());
 			logEntry.addNote("Error loading availability for " + overDriveInfo.getId() + " " + e.getMessage());
 			result.hadErrors = true;
 			return result;
@@ -1555,7 +1549,6 @@ class ExtractOverDriveInfo implements AutoCloseable {
 			if (singleWork) {
 				logEntry.addNote("Found availability for api key " + apiKey);
 			}
-			settings.addProductToUpdateNextTime(overDriveInfo.getId());
 			logEntry.addNote("Error availability API for product " + overDriveInfo.getId() + " collection " + collectionInfo.getName() + " response code " + availabilityResponse.getResponseCode());
 			logger.info(availabilityResponse.getResponseCode() + ":" + availabilityResponse.getMessage());
 			result.hadErrors = true;
