@@ -237,8 +237,6 @@ $interface->assign('scopeType', $scopeType);
 $interface->assign('solrScope', "$solrScope - $scopeType");
 $interface->assign('isGlobalScope', $isGlobalScope);
 
-$interface->assign('showFines', $configArray['Catalog']['showFines']);
-
 $interface->assign('activeIp', IPAddress::getActiveIp());
 
 // Check system availability

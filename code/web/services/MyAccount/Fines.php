@@ -11,6 +11,13 @@ class MyAccount_Fines extends MyAccount {
 	function launch() : void {
 		global $interface;
 		global $configArray;
+		global $library;
+
+		$finesAreHidden = !$library->showFinesInMyAccount();
+		if ($finesAreHidden) {
+			header('Location: /MyAccount/Home');
+			exit();
+		}
 
 		$showSystem = false;
 
@@ -37,7 +44,6 @@ class MyAccount_Fines extends MyAccount {
 
 				$systemVariables = SystemVariables::getSystemVariables();
 				if ($systemVariables->libraryToUseForPayments == 1) {
-					global $library;
 					$paymentLibrary = $library;
 				}
 

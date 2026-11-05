@@ -250,7 +250,7 @@
 									{translate text="Sorry, this title cannot be renewed" isPublicFacing=true}
 								{/if}
 							{/if}
-							{if isset($record->showFineButton) && $record->showFineButton == true}
+							{if !empty($showFines) && isset($record->showFineButton) && $record->showFineButton == true}
 								<a href="/MyAccount/Fines" class="btn btn-sm btn-primary">{translate text='Pay Fine Online' isPublicFacing=true}</a>
 							{/if}
 						{/if}

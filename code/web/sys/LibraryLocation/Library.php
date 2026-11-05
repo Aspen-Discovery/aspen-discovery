@@ -128,6 +128,7 @@ class Library extends DataObject {
 	public $showUserCirculationModules;
 	public $showUserPreferences;
 	public $showUserContactInformation;
+	public $showFines;
 	public $inSystemPickupsOnly;
 	public $validPickupSystems;
 	/** @noinspection PhpUnused */
@@ -1749,6 +1750,15 @@ class Library extends DataObject {
 						'type' => 'checkbox',
 						'label' => 'Show Contact Information to Users in My Account',
 						'description' => 'Whether or not users can see their contact information (user profile) in My Account.',
+						'hideInLists' => true,
+						'default' => 1,
+						'permissions' => ['Library ILS Options'],
+					],
+					'showFines' => [
+						'property' => 'showFines',
+						'type' => 'checkbox',
+						'label' => 'Show Fines in My Account',
+						'description' => 'Whether or not the Fines link is shown in My Account. Turn this off for libraries that do not charge fines.',
 						'hideInLists' => true,
 						'default' => 1,
 						'permissions' => ['Library ILS Options'],
@@ -5348,6 +5358,13 @@ class Library extends DataObject {
 		return 0;
 	}
 
+	public function showFinesInMyAccount(): bool {
+		global $configArray;
+		$finesEnabledGlobally = !empty($configArray['Catalog']['showFines']);
+		$finesEnabledForLibrary = !empty($this->showFines);
+		return $finesEnabledGlobally && $finesEnabledForLibrary;
+	}
+
 	static function getSearchLibrary($searchSource = null) {
 		if ($searchSource == null) {
 			global $searchSource;
@@ -7036,7 +7053,7 @@ class Library extends DataObject {
 		$readerName = new OverDriveDriver();
 		$apiInfo['libbyReaderName'] = $readerName->getReaderName();
 
-		$apiInfo['showFines'] = $configArray['Catalog']['showFines'];
+		$apiInfo['showFines'] = $this->showFinesInMyAccount();
 
 		$generalSettings = $this->getLiDAGeneralSettings();
 		if (is_null($generalSettings)) {

@@ -41,6 +41,14 @@ function getUpdates26_11_00(): array {
 
 		//jacob - OpenFifth
 
+		'library_show_fines' => [
+			'title' => 'Library Show Fines',
+			'description' => 'Add a setting to hide the Fines link in My Account for fine-free libraries',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE library ADD COLUMN showFines TINYINT(1) NOT NULL DEFAULT 1",
+			],
+		], //library_show_fines
 
 	];
 }
