@@ -79,7 +79,7 @@
 						<div class="col-tn-4">
 							<div class="shelf-location-value"><strong>{$curItemSummary.shelfLocation}</strong></div>
 							<div class="call-number-value">{$curItemSummary.callNumber}</div>
-							<div class="available-copies-value">{$curItemSummary.availableCopies} of {$curItemSummary.totalCopies} available</div>
+							<div class="available-copies-value">{translate text="%1% of %2% available" 1=$curItemSummary.availableCopies 2=$curItemSummary.totalCopies isPublicFacing=true}</div>
 						</div>
 					{/if}
 				{/foreach}
