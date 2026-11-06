@@ -6074,6 +6074,9 @@ class UserAPI extends AbstractAPI {
 						$_POST['password'] = $guidingUser->password;
 					}
 					try {
+						//This bypasses 2FA for the guiding user when ending masquerade
+						// the user has already authenticated with 2FA prior to masquerading and redoing 2FA is not needed.
+						UserAccount::$isAuthenticated = true;
 						$user = UserAccount::login();
 					} catch (UnknownAuthenticationMethodException $e) {
 						$logger->log("Unknown Authentication" . $e, Logger::LOG_ERROR);
