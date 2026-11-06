@@ -30,20 +30,9 @@
 					</div>
 				</div>
 
-				{if !empty($summAuthor)}
-					<div class="result-author row">
-						<div class="result-label col-tn-3">{translate text="Author" isPublicFacing=true}</div>
-						<div class="result-value col-tn-8 notranslate">
-							{if is_array($summAuthor)}
-								{foreach from=$summAuthor item=author}
-									<a href='/Author/Home?author="{$author|escape:"url"}"'>{$author|highlight}</a>
-								{/foreach}
-							{else}
-								<a href='/Author/Home?author="{$summAuthor|escape:"url"}"'>{$summAuthor|highlight}</a>
-							{/if}
-						</div>
-					</div>
-				{/if}
+				<div class="row">
+					{include file="GroupedWork/metadataBlocks.tpl"}
+				</div>
 
 				{* Short Mobile Entry for Formats when there aren't hidden formats *}
 				<div class="result-related-manifestations row">
@@ -55,10 +44,10 @@
 					{/if}
 					{/foreach}
 
-					<div class="result-label col-tn-3">
+					<div class="result-label col-sm-4 col-xs-12">
 						{if count($relatedManifestations) > 1}{translate text="Formats" isPublicFacing=true}{else}{translate text="Format" isPublicFacing=true}{/if}:
 					</div>
-					<div class="result-value col-tn-8">
+					<div class="result-value col-sm-8 col-xs-12">
 						{implode subject=$relatedManifestations|@array_keys glue=", " translate=true isPublicFacing=true}
 					</div>
 

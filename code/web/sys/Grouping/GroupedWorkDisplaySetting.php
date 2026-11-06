@@ -987,6 +987,12 @@ class GroupedWorkDisplaySetting extends DataObject {
 		return $ret;
 	}
 
+	public function assignSearchResultsMainDetails(UInterface $interface) : void {
+		foreach ($this->showInSearchResultsMainDetails as $detailOption) {
+			$interface->assign($detailOption, true);
+		}
+	}
+
 	private GroupedWorkFacetGroup|false|null $_facetGroup = false;
 
 	/** @return GroupedWorkFacet[] */

@@ -764,9 +764,7 @@ class UserList extends DataObject {
 		global $library;
 		global $interface;
 		$groupedWorkDisplaySettings = $library->getGroupedWorkDisplaySettings();
-		foreach ($groupedWorkDisplaySettings->showInSearchResultsMainDetails as $detailOption) {
-			$interface->assign($detailOption, true);
-		}
+		$groupedWorkDisplaySettings->assignSearchResultsMainDetails($interface);
 
 		$filteredIdsBySource = [];
 		foreach ($filteredListEntries as $listItemEntry) {
@@ -910,9 +908,7 @@ class UserList extends DataObject {
 		global $library;
 		global $interface;
 		$groupedWorkDisplaySettings = $library->getGroupedWorkDisplaySettings();
-		foreach ($groupedWorkDisplaySettings->showInSearchResultsMainDetails as $detailOption) {
-			$interface->assign($detailOption, true);
-		}
+		$groupedWorkDisplaySettings->assignSearchResultsMainDetails($interface);
 
 		$filteredIdsBySource = [];
 		foreach ($filteredListEntries as $listItemEntry) {
