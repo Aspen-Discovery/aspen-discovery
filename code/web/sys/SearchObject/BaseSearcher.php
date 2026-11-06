@@ -12,6 +12,9 @@ require_once ROOT_DIR . '/sys/SearchObject/minSO.php';
  * modules (Grouped Works, Lists, OAI, Archives, etc)
  */
 abstract class SearchObject_BaseSearcher {
+	const DEFAULT_PAGE_SIZE = 20;
+	const PAGE_SIZE_OPTIONS = [20, 50, 100];
+
 	// Parsed query
 	protected $query = null;
 
@@ -35,7 +38,8 @@ abstract class SearchObject_BaseSearcher {
 	// Page number
 	protected $page = 1;
 	// Result limit
-	protected $limit = 20;
+	protected $limit = self::DEFAULT_PAGE_SIZE;
+	protected $pageSizeRequested = false;
 
 	// Used to pass hidden filter queries to Solr
 	protected $hiddenFilters = [];
@@ -1099,6 +1103,47 @@ abstract class SearchObject_BaseSearcher {
 	}
 
 	/**
+	 * Add the number of results per page to the object based on the $_REQUEST super global.
+	 *
+	 * @access  protected
+	 */
+	protected function initPageSize() {
+		$hasPageSizeParameter = isset($_REQUEST['pageSize']);
+		if (!$hasPageSizeParameter) {
+			return;
+		}
+		$pageSize = $_REQUEST['pageSize'];
+		if (is_array($pageSize)) {
+			$pageSize = array_pop($pageSize);
+		}
+		$this->setRequestedPageSize(intval($pageSize));
+	}
+
+	/**
+	 * Apply a number of results per page chosen by the reader. Sizes that are not
+	 *    offered are ignored.
+	 *
+	 * @access  public
+	 * @param int $pageSize The number of results to show per page
+	 */
+	public function setRequestedPageSize(int $pageSize) : void {
+		$isSelectablePageSize = $this->isSelectablePageSize($pageSize);
+		if (!$isSelectablePageSize) {
+			return;
+		}
+		$this->pageSizeRequested = true;
+		$this->setLimit($pageSize);
+	}
+
+	public function hasRequestedPageSize() : bool {
+		return $this->pageSizeRequested;
+	}
+
+	protected function isSelectablePageSize(int $pageSize) : bool {
+		return in_array($pageSize, self::PAGE_SIZE_OPTIONS, true);
+	}
+
+	/**
 	 * Add sort value to the object based on the $_REQUEST super global.
 	 *
 	 * @access  protected
@@ -1248,6 +1293,11 @@ abstract class SearchObject_BaseSearcher {
 			}
 		}
 
+		$shouldIncludePageSize = $this->pageSizeRequested && $includePaginationAndSortParameters;
+		if ($shouldIncludePageSize) {
+			$params[] = "pageSize=" . urlencode($this->limit);
+		}
+
 		// View
 		if ($this->view != null && $includePaginationAndSortParameters) {
 			$params[] = "view=" . urlencode($this->view);
@@ -1329,6 +1379,41 @@ abstract class SearchObject_BaseSearcher {
 	}
 
 	/**
+	 * Return a url for the current search with a new number of results per page
+	 *
+	 * @access  public
+	 * @param int $newPageSize The number of results to show per page
+	 * @return  string   URL of a new search
+	 */
+	public function renderLinkWithPageSize(int $newPageSize) : string {
+		$oldPageSizeRequested = $this->pageSizeRequested;
+		$isNonDefaultPageSize = $newPageSize != self::DEFAULT_PAGE_SIZE;
+		$this->pageSizeRequested = $this->pageSizeRequested || $isNonDefaultPageSize;
+		$url = $this->renderLinkWithLimit($newPageSize);
+		$this->pageSizeRequested = $oldPageSizeRequested;
+		return $url;
+	}
+
+	/**
+	 * Return a list of urls for the number of results per page, along with which
+	 *    option should be currently selected.
+	 *
+	 * @access  public
+	 * @return  array    Page size urls, descriptions and selected flags
+	 */
+	public function getPageSizeList() : array {
+		$list = [];
+		foreach (self::PAGE_SIZE_OPTIONS as $pageSize) {
+			$list[$pageSize] = [
+				'url' => $this->renderLinkWithPageSize($pageSize),
+				'desc' => $pageSize,
+				'selected' => ($pageSize == $this->limit),
+			];
+		}
+		return $list;
+	}
+
+	/**
 	 * Return a url for the current search with a new view
 	 *
 	 * @param string $newView The new view
@@ -1374,7 +1459,7 @@ abstract class SearchObject_BaseSearcher {
 	/**
 	 * Return a url for the current search with a new limit (number of results)
 	 *
-	 * @param string $newLimit The new limit
+	 * @param int|string $newLimit The new limit
 	 *
 	 * @return string         URL of a new search
 	 * @access public
@@ -2692,15 +2777,18 @@ abstract class SearchObject_BaseSearcher {
 		// Stash our old data for a minute
 		$oldView = $this->view;
 		$oldPage = $this->page;
+		$oldPageSizeRequested = $this->pageSizeRequested;
 		// Add the new view
 		$this->view = 'rss';
 		// Remove page number
 		$this->page = 1;
+		$this->pageSizeRequested = false;
 		// Get the new url
 		$url = $this->renderSearchUrl();
 		// Restore the old data
 		$this->view = $oldView;
 		$this->page = $oldPage;
+		$this->pageSizeRequested = $oldPageSizeRequested;
 		// Return the URL
 		return $url;
 	}
