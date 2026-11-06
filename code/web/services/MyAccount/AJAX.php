@@ -3930,12 +3930,11 @@ class MyAccount_AJAX extends JSON_Action {
 	private function isInvalidHold(Hold|array $hold, string $field, array $filterInformation) : bool {
 		$filterValue = $this->getHoldFilterValue($hold, $field);
 		$selectedValues = array_map('strval', $filterInformation['selected']);
-		$absentFromArray = !in_array($hold->$field, $filterInformation['selected']);
+		$absentFromArray = !in_array($filterValue['value'], $selectedValues, true);
 		$isSourceField = $field === "source";
 
 		return $absentFromArray && (!$isSourceField || !in_array("all", $filterInformation['selected']))
-			|| $filterValue === null
-			|| !in_array($filterValue['value'], $selectedValues, true);
+			|| $filterValue === null;
 	}
 
 	private function filterCheckoutsByUser(array $allCheckedOut, string $selectedUser): array {
