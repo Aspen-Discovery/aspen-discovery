@@ -11,20 +11,9 @@ class AspenPWASetting extends DataObject {
 	public $startURL;
 	public $slug;
 	public $sha256CertFingerprint;
-	public $firebaseAPIKey;
-	public $firebaseAuthDomain;
-	public $firebaseProjectID;
-	public $firebaseStorageBucket;
-	public $firebaseMessagingSenderID;
-	public $firebaseAppID;
-	public $serviceAccount;
-	public $vapidKey;
+	public $icon;
 
 	private $_libraries;
-
-	function getEncryptedFieldNames(): array {
-		return ['serviceAccount'];
-	}
 
 	static function getSettingsForCurrentLibrary(): AspenPWASetting | null {
 		$settings = new AspenPWASetting();
@@ -126,73 +115,17 @@ class AspenPWASetting extends DataObject {
 				'default' => " ",
 				'required' => false,
 			],
-			'firebaseAPIKey' => [
-				'property' => 'firebaseAPIKey',
-				'type' => 'text',
-				'label' => 'Firebase API Key',
-				'note' => 'API key generated from within Firebase. (withing your firebase project on google cloud > APIs & Services > Credentials',
-				'maxLength' => 50,
-				'required' => true,
-			],
-			'firebaseAuthDomain' => [
-				'property' => 'firebaseAuthDomain',
-				'type' => 'text',
-				'label' => 'Firebase Authorization Domain',
-				'note' => 'This value also comes from your firebase config (https://support.google.com/firebase/answer/7015592#zippy=%2Cin-this-article)',
-				'maxLength' => 50,
-				'required' => true,
-			],
-			'firebaseProjectID' => [
-				'property' => 'firebaseProjectID',
-				'type' => 'text',
-				'label' => 'Firebase project ID',
-				'note' => 'This value also comes from your firebase config (https://support.google.com/firebase/answer/7015592#zippy=%2Cin-this-article)',
-				'maxLength' => 50,
-				'required' => true,
-
-			],
-			'firebaseStorageBucket' => [
-				'property' => 'firebaseStorageBucket',
-				'type' => 'text',
-				'label' => 'Firebase Storage Bucket',
-				'note' => 'This value also comes from your firebase config (https://support.google.com/firebase/answer/7015592#zippy=%2Cin-this-article)',
-				'maxLength' => 50,
-				'required' => true,
-
-			],
-			'firebaseMessagingSenderID' => [
-				'property' => 'firebaseMessagingSenderID',
-				'type' => 'text',
-				'label' => 'Firebase Messaging Sender ID',
-				'note' => 'This value also comes from your firebase config (https://support.google.com/firebase/answer/7015592#zippy=%2Cin-this-article)',
-				'maxLength' => 50,
-				'required' => true,
-
-			],
-			'firebaseAppID' => [
-				'property' => 'firebaseAppID',
-				'type' => 'text',
-				'label' => 'Firebase application ID',
-				'note' => 'This value also comes from your firebase config (https://support.google.com/firebase/answer/7015592#zippy=%2Cin-this-article)',
-				'maxLength' => 50,
-				'required' => true,
-
-			],
-			'vapidKey' => [
-				'property' => 'vapidKey',
-				'type' => 'text',
-				'label' => 'Web Push Certificate (VapidKey)',
-				'note' => 'This value is the public key of the key pair in the web configuration section of the cloud messaging tab in your firebase project. You may need to generate a new key pair if you do not already have one. (https://firebase.google.com/docs/cloud-messaging/web/get-started#configure_web_credentials_with_fcm)',
-				'maxLength' => 100,
-				'required' => true,
-			],
-			'serviceAccount' => [
-				'property' => 'serviceAccount',
-				'type' => 'storedPassword',
-				'label' => 'Service Account',
-				'note' => 'Contents of your Service Account json file from firebase. Service Accounts > Generate new private key > copy contents of the downloaded file into this field.',
-				'maxLength' => 5000,
+			'icon' => [
+				'property' => 'icon',
+				'type' => 'image',
+				'label' => 'Icon (512x512 pixels)',
+				'description' => 'The PNG icon to use for the application. If none provided, Aspen will use the Aspen LiDA & PWA logo from the theme if it exists.',
+				'validTypes' => ['image/png'],
 				'required' => false,
+				'thumbWidth' => 180,
+				'maxWidth' => 512,
+				'maxHeight' => 512,
+				'hideInLists' => true,
 			],
 			'libraries' => [
 				'property' => 'libraries',
@@ -272,23 +205,6 @@ class AspenPWASetting extends DataObject {
 			}
 			unset($this->_libraries);
 		}
-	}
-
-	function getFirebaseSettings(){
-		//apikey, projectId, messagingSenderId, appId
-		return [
-			'apiKey' => $this->firebaseAPIKey,
-			'authDomain' =>$this->firebaseAuthDomain,
-			'projectId' => $this->firebaseProjectID,
-			'storageBucket' => $this->firebaseStorageBucket,
-			'messagingSenderId' => $this->firebaseMessagingSenderID,
-			'appId' => $this->firebaseAppID,
-			'vapidKey' => $this->vapidKey
-		];
-	}
-
-	function getServiceAccount() {
-		return json_decode($this->serviceAccount, true);
 	}
 }
 ?>

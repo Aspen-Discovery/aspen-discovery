@@ -5147,6 +5147,7 @@ class User extends DataObject {
 				'Send Aspen PWA Notifications to Home Library Locations',
 			]);
 			$sections['AspenPWA']->addAction(new AdminAction('Settings', 'Aspen Progressive Web Application(PWA) settings', '/AspenPWA/Settings'), 'Administer Aspen Progressive Web Application(PWA) Settings');
+			$sections['AspenPWA']->addAction(new AdminAction('Firebase Settings', 'Firebase settings used to send Aspen Progressive Web Application(PWA) notifications', '/AspenPWA/FirebaseSettings'), 'Administer Firebase Settings');
 		}
 
 		global $plugins;
@@ -6046,6 +6047,12 @@ class User extends DataObject {
 		if ($pushToken->find(true)) {
 			return true;
 		} else {
+			if (strcasecmp($tokenType, "firebase") == 0) {
+				//Tokens only work with the Firebase project that issued them
+				require_once ROOT_DIR . '/sys/AspenPWA/FirebaseSetting.php';
+				$firebaseSetting = FirebaseSetting::getSettingsForCurrentLibrary();
+				$pushToken->firebaseSettingId = $firebaseSetting == null ? -1 : $firebaseSetting->id;
+			}
 			if ($pushToken->insert()) {
 				return true;
 			}
@@ -6951,7 +6958,7 @@ class User extends DataObject {
 			{
 				require_once ROOT_DIR . '/sys/Notifications/FirebaseNotification.php';
 				$firebaseNotification = new FirebaseNotification();
-				$firebaseNotification->sendPushNotification($body, $notificationToken->pushToken, $this->id, $notificationType);
+				$firebaseNotification->sendPushNotification($body, $notificationToken, $this->id, $notificationType);
 				$firebaseNotification = null;
 				$count++;
 			} else 

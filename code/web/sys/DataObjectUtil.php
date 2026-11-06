@@ -385,6 +385,36 @@ class DataObjectUtil {
 				self::processUploadedImageProperty($object, $propertyName, $property, $fileForProperty);
 			}
 
+		} elseif ($property['type'] == 'file' && !empty($property['readContents'])) {
+			//Store the contents of the uploaded file in the property rather than saving the file to disk
+			if (isset($_REQUEST["remove$propertyName"])) {
+				$object->setProperty($propertyName, '', $property);
+			} elseif (isset($_FILES[$propertyName])) {
+				$fileForProperty = $_FILES[$propertyName];
+				if ($fileForProperty["error"] == 4) {
+					//No file uploaded, keep the existing value
+				} elseif ($fileForProperty["error"] > 0) {
+					require_once ROOT_DIR . '/sys/Utils/SystemUtils.php';
+					AspenError::raiseError(SystemUtils::getUploadErrorMessage($fileForProperty["error"]));
+				} else {
+					$extension = strtolower(pathinfo($fileForProperty["name"], PATHINFO_EXTENSION));
+					if (!empty($property['validExtensions']) && !in_array($extension, $property['validExtensions'])) {
+						AspenError::raiseError(translate([
+							'text' => 'Invalid file type: %1%. Allowed types: %2%.',
+							1 => $extension,
+							2 => implode(', ', $property['validExtensions']),
+							'isAdminFacing' => true
+						]));
+					} else {
+						$contents = file_get_contents($fileForProperty["tmp_name"]);
+						if ($contents === false) {
+							$logger->log("Could not read uploaded file for $propertyName", Logger::LOG_ERROR);
+						} else {
+							$object->setProperty($propertyName, trim($contents), $property);
+						}
+					}
+				}
+			}
 		} elseif ($property['type'] == 'file') {
 			//Make sure that the type is correct (jpg, png, or gif)
 			if (isset($_REQUEST["remove$propertyName"])) {

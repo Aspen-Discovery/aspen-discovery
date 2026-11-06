@@ -563,6 +563,7 @@ class Library extends DataObject {
 
 	// Aspen Progressive Web Application(PWA) Settings
 	public $AspenPWASettingId;
+	public $firebaseSettingId;
 
 	/** @var Holiday[] */
 	private $_holidays;
@@ -1115,6 +1116,16 @@ class Library extends DataObject {
 		$AspenPWASettings[-1] = 'none';
 		while ($AspenPWASetting->fetch()) {
 			$AspenPWASettings[$AspenPWASetting->id] = $AspenPWASetting->name;
+		}
+
+		require_once ROOT_DIR . '/sys/AspenPWA/FirebaseSetting.php';
+		$firebaseSetting = new FirebaseSetting();
+		$firebaseSetting->orderBy('name');
+		$firebaseSettings = [];
+		$firebaseSetting->find();
+		$firebaseSettings[-1] = 'none';
+		while ($firebaseSetting->fetch()) {
+			$firebaseSettings[$firebaseSetting->id] = $firebaseSetting->name;
 		}
 
 		$barcodeTypes = [
@@ -5160,6 +5171,16 @@ class Library extends DataObject {
 						'description' => 'The General Settings to use for Aspen Progressive Web Application(PWA)',
 						'hideInLists' => true,
 						'default' => -1,
+					],
+					'firebaseSettingId' => [
+						'property' => 'firebaseSettingId',
+						'type' => 'enum',
+						'values' => $firebaseSettings,
+						'label' => 'Firebase Settings',
+						'description' => 'The Firebase Settings to use for Aspen Progressive Web Application(PWA) notifications',
+						'hideInLists' => true,
+						'default' => -1,
+						'permissions' => ['Administer Firebase Settings'],
 					],
 				],
 			],
