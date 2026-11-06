@@ -2413,14 +2413,13 @@ AspenDiscovery.Admin = (function () {
 			var searchForm = $("#searchCommunityContentForm");
 			var objectType = searchForm.find("#objectType").val();
 			var communitySearchTerm = searchForm.find("#communitySearchTerm").val();
-			var url = Globals.path + '/API/CommunityAPI';
+			var url = Globals.path + '/Admin/AJAX';
 			var params = {
-				'method': 'searchSharedContent',
+				'method': 'searchCommunityContent',
 				'objectType': objectType,
 				'toolModule': toolModule,
 				'toolName': toolName,
-				'communitySearchTerm': communitySearchTerm,
-				'includeHtml': true
+				'communitySearchTerm': communitySearchTerm
 			}
 			$.getJSON(url, params, function (data) {
 				$("#communitySearchResultsLoading").hide();
