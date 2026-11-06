@@ -36,6 +36,7 @@ class WebResource extends DB_LibraryLinkedObject {
 	protected $_audiences;
 	protected $_categories;
 	protected $_libraries;
+	public $_urlForLibrary;
 
 	public function getNumericColumnNames(): array {
 		return [
@@ -600,5 +601,13 @@ class WebResource extends DB_LibraryLinkedObject {
 		}
 
 		return $url;
+	}
+
+	public function getListUrlForLibrary(int $libraryId): string {
+		$viewerMayOpenResource = $this->canView();
+		if (!$viewerMayOpenResource) {
+			return '/WebBuilder/WebResource?id=' . $this->id;
+		}
+		return $this->getUrlForLibrary($libraryId);
 	}
 }

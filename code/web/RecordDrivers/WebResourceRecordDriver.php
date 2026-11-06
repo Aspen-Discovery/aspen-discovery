@@ -46,12 +46,7 @@ class WebResourceRecordDriver extends IndexRecordDriver {
 		$interface->assign('pageUrl', $this->getLinkUrl());
 		$interface->assign('website_name', $this->fields['website_name']);
 		$interface->assign('title', $this->getTitle());
-		$webResource = $this->getWebResource();
-		$openInNewTab = false;
-		if ($webResource && $webResource->openInNewTab) {
-			$openInNewTab = true;
-		}
-		$interface->assign('openInNewTab', $openInNewTab);
+		$interface->assign('openInNewTab', $this->isOpenInNewTab());
 		if (isset($this->fields['description'])) {
 			$interface->assign('description', strip_tags($this->getDescription()));
 		} else {
@@ -73,6 +68,14 @@ class WebResourceRecordDriver extends IndexRecordDriver {
 			}
 		}
 		return $this->webResource;
+	}
+
+	public function isOpenInNewTab(): bool {
+		$webResource = $this->getWebResource();
+		if (!$webResource) {
+			return false;
+		}
+		return $webResource->openInNewTab == 1;
 	}
 
 	public function getBookcoverUrl($size = 'small', $absolutePath = false) {
@@ -139,5 +142,13 @@ class WebResourceRecordDriver extends IndexRecordDriver {
 		}
 
 		return $this->fields['source_url'];
+	}
+
+	public function getResourceUrlForLibrary(int $libraryId): string {
+		$webResource = $this->getWebResource();
+		if (!$webResource) {
+			return $this->getLinkUrl();
+		}
+		return $webResource->getListUrlForLibrary($libraryId);
 	}
 }
