@@ -905,7 +905,8 @@ public class EvolveExportMain {
 			logEntry.addNote("Processing file " + curBibFile.getAbsolutePath());
 
 			String lastRecordProcessed = "";
-			if (hasFullExportFile && curBibFile.equals(fullExportFile) && indexingProfile.getLastChangeProcessed() > 0){
+			boolean isFullExportFile = hasFullExportFile && curBibFile.equals(fullExportFile);
+			if (isFullExportFile && indexingProfile.getLastChangeProcessed() > 0){
 				logEntry.addNote("Skipping the first " + indexingProfile.getLastChangeProcessed() + " records because they were processed previously see (Last Record ID Processed for the Indexing Profile).");
 			}
 			int numRecordsRead = 0;
@@ -927,7 +928,7 @@ public class EvolveExportMain {
 						}
 						numRecordsRead++;
 						RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, indexingProfile);
-						if (hasFullExportFile && curBibFile.equals(fullExportFile) && (numRecordsRead < indexingProfile.getLastChangeProcessed())) {
+						if (isFullExportFile && (numRecordsRead < indexingProfile.getLastChangeProcessed())) {
 							if (recordIdentifier != null) {
 								recordGroupingProcessor.removeExistingRecord(recordIdentifier.getIdentifier());
 							}
@@ -965,7 +966,9 @@ public class EvolveExportMain {
 								//Delete the record since it is suppressed
 								deleteRecord = true;
 							}
-							indexingProfile.setLastChangeProcessed(numRecordsRead);
+							if (isFullExportFile){
+								indexingProfile.setLastChangeProcessed(numRecordsRead);
+							}
 							if (deleteRecord && recordIdentifier != null) {
 								RemoveRecordFromWorkResult result = recordGroupingProcessor.removeRecordFromGroupedWork(indexingProfile.getName(), recordIdentifier.getIdentifier());
 								if (result.reindexWork) {
@@ -981,14 +984,14 @@ public class EvolveExportMain {
 					}catch (MarcException me){
 						logEntry.incRecordsWithInvalidMarc("Error processing record index " + numRecordsRead + " of " + curBibFile.getAbsolutePath() + " the last record processed was " + lastRecordProcessed + " trying to continue" + me);
 					}
-					if (numRecordsRead % 250 == 0) {
+					if (isFullExportFile && numRecordsRead % 250 == 0) {
 						logEntry.saveResults();
 						indexingProfile.updateLastChangeProcessed(dbConn, logEntry);
 					}
 				}
 				marcFileStream.close();
 
-				if (hasFullExportFile){
+				if (isFullExportFile){
 					indexingProfile.setLastChangeProcessed(0);
 					indexingProfile.updateLastChangeProcessed(dbConn, logEntry);
 					logEntry.addNote("Updated " + numRecordsRead + " records");
