@@ -6096,7 +6096,7 @@ class UserAPI extends AbstractAPI {
 						$_SESSION['loggedInViaSSO'] = true;
 					}
 
-					if ($user->is2FARequired()) {
+					if ($user->get2FAStatus()) {
 						//Don't force the user to go through 2-factor authentication again if we are ending masquerade
 						$authCodeForSession = new TwoFactorAuthCode();
 						$authCodeForSession->sessionId = $newSessionId;
