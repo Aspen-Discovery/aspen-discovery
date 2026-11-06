@@ -8,7 +8,7 @@
 		<input type="hidden" name="patronId" value={$profile->id|escape}>
 		<div class="form-group">
 			<div class="col-xs-4 patronFullName"><strong>{translate text='Full Name' isPublicFacing=true}</strong></div>
-			{if isEvergreen}
+			{if $isEvergreen}
 				<div class="col-xs-8">{$profile->_preferredName|escape}</div>
 			{else}
 				<div class="col-xs-8">{$profile->_fullname|escape}</div>
@@ -31,7 +31,7 @@
 					<div class="col-xs-4"><label for="preferredName">{translate text='Preferred Name' isPublicFacing=true}</label></div>
 					<div class="col-xs-8">
 						{if !empty($edit) && $canUpdateContactInfo && $allowUpdatesOfPreferredName}
-							{if isEvergreen}
+							{if $isEvergreen}
 								<div>{$profile->_preferredName|escape}</div>
 								<div class="row">
 									<div class="col-xs-4"><label for="pref_prefix">{translate text='Prefix' isPublicFacing=true}</label></div>
