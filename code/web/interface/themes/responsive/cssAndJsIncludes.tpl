@@ -18,6 +18,9 @@
 		<script src="/interface/themes/responsive/js/lib/respond.min.js?v={$aspenVersion|urlencode}.{$cssJsCacheCounter}"></script>
 	{/if}
 
+	{* Translations must be defined before aspen.js loads because some __() calls run while the script is parsed *}
+	<script type="text/javascript">var AspenJsTranslations = {jsTranslationsJson};</script>
+
 	{* This is all merged using the merge_javascript.php file called automatically with a File Watcher*}
 	{* Code is minified using uglify.js *}
 	<script src="/interface/themes/responsive/js/aspen.js?v={$aspenVersion|urlencode}.{$cssJsCacheCounter}"></script>
@@ -84,7 +87,6 @@
 				Globals.timeUntilSessionExpiration = {$timeUntilSessionExpiration};
 			{/if}
 			Globals.language = '{$userLang->code}';
-			Globals.jsTranslations = {jsTranslationsJson};
 		{literal}
 			});
 		{/literal}

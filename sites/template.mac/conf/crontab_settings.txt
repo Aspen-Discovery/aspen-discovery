@@ -136,6 +136,11 @@
 */59 8-19` * * * root php /usr/local/aspen-discovery/code/web/cron/sendILSMessages.php {sitename}
 
 #######################################################
+# Purge patron records that were deleted from the ILS #
+#######################################################
+30 23 * * * aspen php /usr/local/aspen-discovery/code/web/cron/purgeDeletedILSPatrons.php {sitename}
+
+#######################################################
 # Update holds and checkouts for Community Engagement #
 #######################################################
 59 23 * * * aspen php /usr/local/aspen-discovery/code/web/cron/updateCommunityEngagementMilestones.php {sitename}
