@@ -21,6 +21,7 @@
 		<directory suffix="Tests.php">./tests/sys/Util</directory>
 		<directory suffix="Tests.php">./tests/sys/Events</directory>
 		<directory suffix="Tests.php">./tests/sys/ECommerce</directory>
+		<directory suffix="Tests.php">./tests/RecordDrivers</directory>
 		<directory suffix="FinalizationTests.php">./tests</directory>
 	</testsuite>
 </phpunit>

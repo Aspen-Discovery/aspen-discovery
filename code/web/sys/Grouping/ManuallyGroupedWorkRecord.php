@@ -49,6 +49,7 @@ class ManuallyGroupedWorkRecord extends DataObject {
 		}
 		if (array_key_exists('Palace Project', $enabledModules)) {
 			$availableSources['palace_project'] = 'Palace Project';
+			$availableSources['omeka'] = 'Omeka';
 		}
 
 		$structure = [
