@@ -373,7 +373,7 @@ public class GroupedWorkIndexer implements AutoCloseable {
 			getV2SeriesStmt = dbConn.prepareStatement("SELECT * from series where seriesPermanentId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 
 			checkIfSeriesMemberExistsStmt = dbConn.prepareStatement("SELECT * from series_member where seriesId = ? AND groupedWorkPermanentId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			getSeriesMemberStmt = dbConn.prepareStatement("SELECT sm.id as seriesMemberId, sm.seriesId, s.seriesPermanentId, s.version, s.groupedWorkSeriesTitle, s.author, s.seriesLanguage, s.isIndexed, sm.volume, sm.priorityScore, sm.deleted, sm.userAdded FROM series_member AS sm LEFT JOIN series AS s ON sm.seriesId = s.id WHERE groupedWorkPermanentId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getSeriesMemberStmt = dbConn.prepareStatement("SELECT sm.id as seriesMemberId, sm.seriesId, s.seriesPermanentId, s.version, s.groupedWorkSeriesTitle, s.author, s.seriesLanguage, s.isIndexed, sm.volume, sm.priorityScore, sm.deleted, sm.userAdded, sm.groupedWorkPermanentId, sm.userDefinedVolume FROM series_member AS sm LEFT JOIN series AS s ON sm.seriesId = s.id WHERE groupedWorkPermanentId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			addSeriesStmt = dbConn.prepareStatement("INSERT INTO series (displayName, audience, created, dateUpdated, author, groupedWorkSeriesTitle, version) VALUES (?, ?, ?, ?, ?, ?, 1)", PreparedStatement.RETURN_GENERATED_KEYS);
 			addSeriesV2Stmt = dbConn.prepareStatement("INSERT INTO series (displayName, audience, created, dateUpdated, author, groupedWorkSeriesTitle, seriesPermanentId, seriesLanguage, version) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 2)", PreparedStatement.RETURN_GENERATED_KEYS);
 			addSeriesMemberStmt = dbConn.prepareStatement("INSERT INTO series_member (seriesId, isPlaceholder, groupedWorkPermanentId, volume, pubDate, displayName, author, description, weight, priorityScore) VALUES (?, 0, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)", PreparedStatement.RETURN_GENERATED_KEYS);
@@ -1638,7 +1638,7 @@ public class GroupedWorkIndexer implements AutoCloseable {
 						key = seriesMember.getSeriesPermanentId();
 					}
 					if (seriesMembersInDb.containsKey(key)) {
-						seriesMembersInDb.get(key).addVolume(seriesMemberRS.getString("volume"), seriesMemberRS.getBoolean("deleted"), seriesMemberRS.getBoolean("userAdded"));
+						seriesMembersInDb.get(key).addVolume(seriesMemberRS.getString("volume"), seriesMemberRS.getBoolean("deleted"), seriesMemberRS.getBoolean("userAdded"), seriesMemberRS.getBoolean("userDefinedVolume"));
 					}else{
 						seriesMembersInDb.put(key,  seriesMember);
 					}
@@ -1946,10 +1946,14 @@ public class GroupedWorkIndexer implements AutoCloseable {
 	private void updateSeriesMembers(long seriesId, SeriesInfo seriesInfo, SeriesMember seriesMember, AbstractGroupedWorkSolr groupedWork, long timeNow) {
 		for (String volume : seriesInfo.getVolumes()) {
 			Set<String> existingVolumes = seriesMember.getVolumes();
-			if (!existingVolumes.contains(volume)) {
+			boolean isSameWorkWithUserDefinedVolume = seriesMember.getMemberGroupedWorkPermanentId().equals(groupedWork.id) && seriesMember.hasUserDefinedVolume();
+			if (!existingVolumes.contains(volume) && !isSameWorkWithUserDefinedVolume) {
 				addSeriesMemberWithVolume(seriesId, seriesInfo, volume, groupedWork, timeNow, 0);
 			}else{
 				seriesMember.setVolumeFoundInIndex(volume);
+				if (existingVolumes.contains(volume)){ //if volume info matches, remove user-defined volume tag
+					seriesMember.setUserDefinedVolume(false);
+				}
 				//Update priority score as needed
 				if (!Objects.equals(seriesInfo.getPriorityScore(), seriesMember.getPriorityScore())) {
 					try {
@@ -1975,7 +1979,7 @@ public class GroupedWorkIndexer implements AutoCloseable {
 		//Delete any series members that no longer exist (with the volume)
 		boolean valuesWereDeleted = false;
 		for (SeriesMemberVolume volume : seriesMember.getSeriesVolumes()) {
-			if (!volume.isFoundInIndex() && !volume.isUserAdded()) {
+			if (!volume.isFoundInIndex() && !volume.isUserAdded() && !volume.isUserDefinedVolume()) {
 				deleteSeriesMember(seriesMember.getSeriesId(), groupedWork.getId(), volume.getVolume());
 				valuesWereDeleted = true;
 			}
