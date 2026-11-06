@@ -156,7 +156,7 @@ class SideLoadedRecord extends BaseEContentDriver {
 					'url' => $action,
 					'redirectUrl' => $fileOrUrl,
 					'title' => $title,
-					'requireLogin' => false,
+					'requireLogin' => $this->urlRequiresLogin($fileOrUrl),
 					'target' => '_blank',
 					'itemId' => $itemInfo->itemId,
 					'index' => $i
