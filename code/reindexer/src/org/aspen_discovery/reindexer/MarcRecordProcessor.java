@@ -1561,16 +1561,18 @@ abstract class MarcRecordProcessor {
 			}
 		}
 		if (translatedLanguages.isEmpty()){
-			translatedLanguages.add(settings.getTreatUnknownLanguageAs());
+			String unknownLanguage = settings != null ? settings.getTreatUnknownLanguageAs() : indexer.getTreatUnknownLanguageAs();
+			unknownLanguage = StringUtils.defaultIfBlank(unknownLanguage, "Unknown");
+			translatedLanguages.add(unknownLanguage);
 			for (RecordInfo ilsRecord : ilsRecords){
-				ilsRecord.setPrimaryLanguage(settings.getTreatUnknownLanguageAs());
+				ilsRecord.setPrimaryLanguage(unknownLanguage);
 			}
-			String languageBoost = indexer.translateSystemValue("language_boost", settings.getTreatUnknownLanguageAs(), identifier);
+			String languageBoost = indexer.translateSystemValue("language_boost", unknownLanguage, identifier);
 			if (languageBoost != null){
 				Long languageBoostVal = Long.parseLong(languageBoost);
 				groupedWork.setLanguageBoost(languageBoostVal, ilsRecords);
 			}
-			String languageBoostEs = indexer.translateSystemValue("language_boost_es", settings.getTreatUnknownLanguageAs(), identifier);
+			String languageBoostEs = indexer.translateSystemValue("language_boost_es", unknownLanguage, identifier);
 			if (languageBoostEs != null){
 				Long languageBoostVal = Long.parseLong(languageBoostEs);
 				groupedWork.setLanguageBoostSpanish(languageBoostVal, ilsRecords);
