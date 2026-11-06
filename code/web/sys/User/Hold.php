@@ -100,7 +100,7 @@ class Hold extends CircEntry {
 		$hold['id'] = $hold['sourceId'];
 		$hold['available'] = $hold['available'] == 1;
 		$hold['ratingData'] = $this->getRatingData();
-		$hold['coverUrl'] = $this->getCoverUrl();
+		$hold['coverUrl'] = html_entity_decode($this->getCoverUrl());
 		$hold['link'] = $this->getLinkUrl();
 		$hold['linkUrl'] = $this->getLinkUrl();
 		$hold['transactionId'] = $hold['sourceId'];
