@@ -376,12 +376,14 @@ class DataObjectUtil {
 			$object->setProperty($yearField, $_REQUEST[$yearField], null);
 
 		} elseif ($property['type'] == 'image') {
-			//Make sure that the type is correct (jpg, png, or gif)
-			if (isset($_REQUEST["remove$propertyName"])) {
+			$fileForProperty = $_FILES[$propertyName] ?? [];
+			$hasUploadedFile = isset($_FILES[$propertyName]);
+			$imageUploadSucceeded = ($fileForProperty['error'] ?? UPLOAD_ERR_NO_FILE) == UPLOAD_ERR_OK;
+			$removeRequested = isset($_REQUEST["remove$propertyName"]);
+			$removeWins = $removeRequested && !$imageUploadSucceeded;
+			if ($removeWins) {
 				$object->setProperty($propertyName, '', $property);
-
-			} elseif (isset($_FILES[$propertyName])) {
-				$fileForProperty = $_FILES[$propertyName];
+			} elseif ($hasUploadedFile) {
 				self::processUploadedImageProperty($object, $propertyName, $property, $fileForProperty);
 			}
 
