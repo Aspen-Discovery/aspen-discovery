@@ -514,7 +514,7 @@ class Event extends DataObject {
 			$structure['locationId']['readOnly'] = true;
 			$structure['infoSection']['expandByDefault'] = false;
 			$structure['scheduleSection']['hiddenByDefault'] = false;
-			$sublocations = Location::getEventSublocations(null);
+			$sublocations = Location::getEventSublocationsWithLocationNames();
 			$structure['sublocationId']['values'] = $sublocations;
 		}
 
