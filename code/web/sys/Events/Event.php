@@ -62,25 +62,35 @@ class Event extends DataObject {
 
 
 	static $_objectStructure = [];
+
+	public static function getAdministrableLocationList(): array {
+		$canAdministerAllLocations = UserAccount::userHasPermission('Administer Events for All Locations');
+		if ($canAdministerAllLocations) {
+			return Location::getLocationList(false);
+		}
+		$canAdministerHomeLibraryLocations = UserAccount::userHasPermission('Administer Events for Home Library Locations');
+		if ($canAdministerHomeLibraryLocations) {
+			return Location::getLocationList(true);
+		}
+		$user = UserAccount::getLoggedInUser();
+		if (empty($user)) {
+			return [];
+		}
+		$additionalAdministrationLocations = $user->getAdditionalAdministrationLocations();
+		$homeLocation = $user->getHomeLocation();
+		if (empty($homeLocation)) {
+			return $additionalAdministrationLocations;
+		}
+		return [$user->homeLocationId => $homeLocation->displayName] + $additionalAdministrationLocations;
+	}
+
 	static function getObjectStructure(string $context = ''): array {
 		if (isset(self::$_objectStructure[$context])) {
 			return self::$_objectStructure[$context];
 		}
 		global $configArray;
 		$coverPath = $configArray['Site']['coverPath'];
-		if ($context == 'addNew') {
-			if (UserAccount::userHasPermission('Administer Events for All Locations')) {
-				$locationList = Location::getLocationList(false);
-			} else if (UserAccount::userHasPermission('Administer Events for Home Library Locations')) {
-				$locationList = Location::getLocationList(true);
-			} else {
-				$user = UserAccount::getLoggedInUser();
-				$locationList[$user->homeLocationId] = $user->getHomeLocation()->displayName;
-				$locationList = $locationList + $user->getAdditionalAdministrationLocations();
-			}
-		} else {
-			$locationList = Location::getLocationList(false); // No need to restrict the location list if you aren't adding a new event since it's read only
-		}
+		$locationList = self::getAdministrableLocationList();
 		$structure = [
 			'id' => [
 				'property' => 'id',
@@ -96,6 +106,7 @@ class Event extends DataObject {
 				'required' => true,
 				'values' => $locationList,
 				'onchange' => 'return AspenDiscovery.Events.getEventTypesForLocation(this.value);',
+				'serverValidation' => 'validateLocation',
 			],
 			'sublocationId' => [
 				'property' => 'sublocationId',
@@ -511,7 +522,6 @@ class Event extends DataObject {
 			$eventTypes = EventType::getEventTypeList();
 			$structure['eventTypeId']['values'] = $eventTypes;
 			$structure['eventTypeId']['readOnly'] = true;
-			$structure['locationId']['readOnly'] = true;
 			$structure['infoSection']['expandByDefault'] = false;
 			$structure['scheduleSection']['hiddenByDefault'] = false;
 			$sublocations = Location::getEventSublocations(null);
@@ -522,12 +532,64 @@ class Event extends DataObject {
 		return self::$_objectStructure[$context];
 	}
 
+	public function validateLocation(): array {
+		$validationResults = [
+			'validatedOk' => true,
+			'errors' => [],
+		];
+		$administrableLocations = self::getAdministrableLocationList();
+		$canAdministerLocation = array_key_exists($this->locationId, $administrableLocations);
+		if (!$canAdministerLocation) {
+			$validationResults['validatedOk'] = false;
+			$validationResults['errors'][] = translate([
+				'text' => 'You do not have permission to administer events at the selected location.',
+				'isAdminFacing' => true,
+			]);
+			return $validationResults;
+		}
+		$locationChanged = $this->locationDiffersFromStoredEvent();
+		if (!$locationChanged) {
+			return $validationResults;
+		}
+		if (empty($this->eventTypeId)) {
+			return $validationResults;
+		}
+		$eventTypeIdsAtLocation = EventType::getEventTypeIdsForLocation($this->locationId);
+		$eventTypeOfferedAtLocation = in_array($this->eventTypeId, $eventTypeIdsAtLocation);
+		if (!$eventTypeOfferedAtLocation) {
+			$validationResults['validatedOk'] = false;
+			$validationResults['errors'][] = translate([
+				'text' => 'The selected location does not offer this event type.',
+				'isAdminFacing' => true,
+			]);
+		}
+		return $validationResults;
+	}
+
+	private function locationDiffersFromStoredEvent(): bool {
+		$isNewEvent = empty($this->id);
+		if ($isNewEvent) {
+			return true;
+		}
+		$storedEvent = new Event();
+		$storedEvent->id = $this->id;
+		$storedEventFound = $storedEvent->find(true);
+		if (!$storedEventFound) {
+			return true;
+		}
+		return $storedEvent->locationId != $this->locationId;
+	}
+
 	public function update(string $context = '') : int|bool {
 		$this->dateUpdated = time();
 		$this->setStartDate();
 		if (isset($this->weekDays) && is_array($this->weekDays)) {
 			// convert the array to string before storing in the database
 			$this->weekDays = implode(",", $this->weekDays);
+		}
+		$locationChanged = $this->locationDiffersFromStoredEvent();
+		if ($locationChanged) {
+			$this->clearSublocationsNotAtCurrentLocation();
 		}
 		// Save changed fields before parent::update() clears them.
 		$changedFields = $this->_changedFields;
@@ -540,6 +602,20 @@ class Event extends DataObject {
 			$this->generateInstances();
 		}
 		return $ret;
+	}
+
+	private function clearSublocationsNotAtCurrentLocation() : void {
+		$sublocationIdsAtLocation = array_keys(Location::getEventSublocations($this->locationId));
+		$sublocationIdsToKeep = empty($sublocationIdsAtLocation) ? '0' : implode(', ', $sublocationIdsAtLocation);
+		$eventId = (int)$this->id;
+		$eventInstance = new EventInstance();
+		$eventInstance->query("UPDATE event_instance SET sublocationId = null WHERE eventId = $eventId AND sublocationId NOT IN ($sublocationIdsToKeep)");
+		$eventSublocationIsValid = in_array($this->sublocationId, $sublocationIdsAtLocation);
+		if ($eventSublocationIsValid) {
+			return;
+		}
+		$this->sublocationId = '';
+		$this->_changedFields[] = 'sublocationId';
 	}
 
 	public function insert(string $context = '') : int|bool {
@@ -1131,9 +1207,15 @@ class Event extends DataObject {
 				}
 			}
 		}
+		$structure['locationId']['onchange'] = 'return AspenDiscovery.Events.getEventTypesForLocation(this.value, true);';
 		if ($this->locationId) {
 			$structure['sublocationId']['values'] = Location::getEventSublocations($this->locationId);
 			$structure['sublocationId']['hiddenByDefault'] = false;
+		}
+		$currentLocationIsNotListed = !empty($this->locationId) && !array_key_exists($this->locationId, $structure['locationId']['values']);
+		if ($currentLocationIsNotListed) {
+			$allLocations = Location::getLocationList(false);
+			$structure['locationId']['values'][$this->locationId] = $allLocations[$this->locationId] ?? $this->locationId;
 		}
 		$this->dateUpdated = time();
 		return $structure;

@@ -26,17 +26,9 @@ class Events_Events extends ObjectEditor {
 		$object->deleted = 0;
 		$object->orderBy($this->getSort());
 		$user = UserAccount::getLoggedInUser();
-		if (!UserAccount::userHasPermission('Administer Events for All Locations')) {
-			$includedLocations = [];
-			$additionalAdministrationLocations = $user->getAdditionalAdministrationLocations();
-			$includedLocations = $includedLocations + $additionalAdministrationLocations;
-			if (!UserAccount::userHasPermission('Administer Events for Home Library Locations')) {
-				$includedLocations[$user->homeLocationId] = $user->homeLocationId;
-			} else {
-				//Scope to just locations for the user based on their home library
-				$locationsInLibrary = Location::getLocationList(true);
-				$includedLocations = $locationsInLibrary + $includedLocations;
-			}
+		$canAdministerAllLocations = UserAccount::userHasPermission('Administer Events for All Locations');
+		if (!$canAdministerAllLocations) {
+			$includedLocations = Event::getAdministrableLocationList();
 			$object->whereAddIn("locationId", array_keys($includedLocations), false);
 		}
 		if (!UserAccount::userHasPermission('View Private Events for All Locations')) {
