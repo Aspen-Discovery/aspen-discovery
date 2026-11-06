@@ -321,7 +321,6 @@ class Sierra extends AbstractIlsDriver {
 				} else {
 					// inn-reach status
 					$isInnReach = true;
-					$curHold->source = $library->interLibraryLoanName;
 					$recordStatus = $recordItemStatus;
 				}
 			}
@@ -436,14 +435,13 @@ class Sierra extends AbstractIlsDriver {
 				if ($titleAuthor !== false) {
 					$curHold->title = $titleAuthor['title'];
 					$curHold->author = $titleAuthor['author'];
-					$curHold->format = 'Unknown';
 				} else {
 					$curHold->title = 'Unknown';
 					$curHold->author = 'Unknown';
 				}
+				$curHold->format = 'Unknown';
 				$curHold->sourceId = '';
 				$curHold->recordId = '';
-				$curHold->source = $library->interLibraryLoanName;
 			} else {
 				///////////////
 				// ILS HOLD
@@ -833,7 +831,6 @@ class Sierra extends AbstractIlsDriver {
 					$curCheckout->barcode = $entry->barcode;
 				}
 				if (str_contains($entry->item, "@")) {
-					$curCheckout->source = $library->interLibraryLoanName;
 					$curCheckout->sourceId = '';
 					$curCheckout->recordId = '';
 					$titleAuthor = $this->getTitleAndAuthorForInnReachCheckout($checkoutId);
