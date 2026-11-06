@@ -8,7 +8,7 @@ class InitializationTests extends TestCase {
 	}
 
 	public function test_rootDir() {
-		$this->assertEquals('C:\web\aspen-discovery\code\web', ROOT_DIR);
+		$this->assertEquals(realpath(__DIR__ . '/../../../code/web'), realpath(ROOT_DIR));
 	}
 
 	public function test_getAspenVersion() {
@@ -18,9 +18,13 @@ class InitializationTests extends TestCase {
 	}
 
 	public function test_solrRunning() {
+		global $configArray;
 		require_once __DIR__ . '/../../../code/web/sys/SolrUtils.php';
-		SolrUtils::startSolr();
-		sleep(45);
+		$solrIsLocal = in_array($configArray['Index']['solrHost'] ?? 'localhost', ['localhost', '127.0.0.1']);
+		if ($solrIsLocal) {
+			SolrUtils::startSolr();
+			sleep(45);
+		}
 
 		$solrSearcher = SearchObjectFactory::initSearchObject('GroupedWork');
 		$pingResult = $solrSearcher->ping(true);
