@@ -495,9 +495,9 @@ AspenDiscovery.WebBuilder = function () {
 				};
 
 				if (requireLogin) {
-					if (Globals.loggedIn && canView) {
+					if (canView) {
 						trackUsage(Globals.loggedIn ? "user" : "library");
-					} else if (Globals.loggedIn && !canView) {
+					} else if (Globals.loggedIn) {
 						AspenDiscovery.showMessage(userNoAccessTitle, userNoAccessMessage);
 					} else {
 						if (openInNewTab) {
