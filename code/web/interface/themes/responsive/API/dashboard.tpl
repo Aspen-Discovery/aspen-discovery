@@ -17,24 +17,31 @@
 								</h3>
 							</div>
 						</div>
-						<div class="row">
-							<div class="col-tn-6">
-								<div class="dashboardLabel">{translate text="This Month" isAdminFacing=true}</div>
-								<div class="dashboardValue">{$methodStats.usageThisMonth|number_format}</div>
+						{foreach from=$methodStats key=apiClient item=clientStats}
+							<div class="row">
+								<div class="col-sm-10 col-sm-offset-1">
+									<div class="dashboardCategoryLabel">{if $apiClient == ''}{translate text="Not recorded" isAdminFacing=true}{else}{$apiClient|escape}{/if}</div>
+								</div>
 							</div>
-							<div class="col-tn-6">
-								<div class="dashboardLabel">{translate text="Last Month" isAdminFacing=true}</div>
-								<div class="dashboardValue">{$methodStats.usageLastMonth|number_format}</div>
+							<div class="row">
+								<div class="col-tn-6">
+									<div class="dashboardLabel">{translate text="This Month" isAdminFacing=true}</div>
+									<div class="dashboardValue">{$clientStats.usageThisMonth|number_format}</div>
+								</div>
+								<div class="col-tn-6">
+									<div class="dashboardLabel">{translate text="Last Month" isAdminFacing=true}</div>
+									<div class="dashboardValue">{$clientStats.usageLastMonth|number_format}</div>
+								</div>
+								<div class="col-tn-6">
+									<div class="dashboardLabel">{translate text="This Year" isAdminFacing=true}</div>
+									<div class="dashboardValue">{$clientStats.usageThisYear|number_format}</div>
+								</div>
+								<div class="col-tn-6">
+									<div class="dashboardLabel">{translate text="All Time" isAdminFacing=true}</div>
+									<div class="dashboardValue">{$clientStats.usageAllTime|number_format}</div>
+								</div>
 							</div>
-							<div class="col-tn-6">
-								<div class="dashboardLabel">{translate text="This Year" isAdminFacing=true}</div>
-								<div class="dashboardValue">{$methodStats.usageThisYear|number_format}</div>
-							</div>
-							<div class="col-tn-6">
-								<div class="dashboardLabel">{translate text="All Time" isAdminFacing=true}</div>
-								<div class="dashboardValue">{$methodStats.usageAllTime|number_format}</div>
-							</div>
-						</div>
+						{/foreach}
 					</div>
 				{/foreach}
 			</div>

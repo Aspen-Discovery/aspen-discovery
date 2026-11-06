@@ -9,13 +9,6 @@ class API_UsageDashboard extends Admin_Dashboard {
 		$instanceName = $this->loadInstanceInformation('APIUsage');
 		$this->loadDates();
 
-		//Load stats by module.
-		//moduleName => [
-		//		method => [
-		//			usageThisMonth = number
-		//			usageLastMonth = number
-		//			usageThisYear = number
-		//			usageAllTime = number
 		$statsByModule = [];
 		$this->getStats($instanceName, $this->thisMonth, $this->thisYear, $statsByModule, 'usageThisMonth');
 		$this->getStats($instanceName, $this->lastMonth, $this->lastMonthYear, $statsByModule, 'usageLastMonth');
@@ -49,9 +42,10 @@ class API_UsageDashboard extends Admin_Dashboard {
 		$usage->selectAdd();
 		$usage->selectAdd('module');
 		$usage->selectAdd('method');
+		$usage->selectAdd('apiClient');
 		$usage->selectAdd('SUM(numCalls) as numCalls');
-		$usage->orderBy('module, method');
-		$usage->groupBy('module, method');
+		$usage->orderBy('module, method, apiClient');
+		$usage->groupBy('module, method, apiClient');
 
 		$usage->find();
 
@@ -60,14 +54,18 @@ class API_UsageDashboard extends Admin_Dashboard {
 				$statsByModule[$usage->module] = [];
 			}
 			if (!array_key_exists($usage->method, $statsByModule[$usage->module])) {
-				$statsByModule[$usage->module][$usage->method] = [
+				$statsByModule[$usage->module][$usage->method] = [];
+			}
+			$clientIsNew = !array_key_exists($usage->apiClient, $statsByModule[$usage->module][$usage->method]);
+			if ($clientIsNew) {
+				$statsByModule[$usage->module][$usage->method][$usage->apiClient] = [
 					'usageThisMonth' => 0,
 					'usageLastMonth' => 0,
 					'usageThisYear' => 0,
 					'usageAllTime' => 0,
 				];
 			}
-			$statsByModule[$usage->module][$usage->method][$statsPeriodName] = $usage->numCalls;
+			$statsByModule[$usage->module][$usage->method][$usage->apiClient][$statsPeriodName] = $usage->numCalls;
 		}
 	}
 
