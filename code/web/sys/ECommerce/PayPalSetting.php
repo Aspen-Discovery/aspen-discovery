@@ -67,7 +67,7 @@ class PayPalSetting extends DataObject {
 				'description' => 'The Client ID to use when paying fines.',
 				'hideInLists' => true,
 				'default' => '',
-				'size' => 80,
+				'size' => 100,
 			],
 			'clientSecret' => [
 				'property' => 'clientSecret',
@@ -76,7 +76,7 @@ class PayPalSetting extends DataObject {
 				'description' => 'The Client Secret to use when paying fines.',
 				'hideInLists' => true,
 				'default' => '',
-				'size' => 80,
+				'size' => 100,
 			],
 			'errorEmail' => [
 				'property' => 'errorEmail',

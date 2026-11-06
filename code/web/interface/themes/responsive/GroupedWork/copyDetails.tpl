@@ -75,7 +75,7 @@
 							{if !empty($item.note)}{$item.note}{/if}
 						</td>
 					{/if}
-					<td class="notranslate">{$item.status}</td>
+					<td>{translate text=$item.status isPublicFacing=true}</td>
 					{if !empty($infoToShow.dueDate) && $showItemDueDates}
 						<td>
 							{if !empty($item.dueDate)}{$item.dueDate|date_format:"%B %e, %Y"}{/if}
