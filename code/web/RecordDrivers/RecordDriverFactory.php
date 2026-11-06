@@ -58,9 +58,9 @@ class RecordDriverFactory {
 	/**
 	 * @param $id
 	 * @param null $groupedWork ;
-	 * @return PalaceProjectRecordDriver|CourseReservesRecordDriver|OpenArchivesRecordDriver|TalpaRecordDriver|HooplaRecordDriver|ExternalEContentDriver|OverDriveRecordDriver|MarcRecordDriver|CloudLibraryRecordDriver|Axis360RecordDriver|AspenError|SideLoadedRecord|null
+	 * @return BorrowBoxRecordDriver|PalaceProjectRecordDriver|CourseReservesRecordDriver|OpenArchivesRecordDriver|TalpaRecordDriver|HooplaRecordDriver|ExternalEContentDriver|OverDriveRecordDriver|MarcRecordDriver|CloudLibraryRecordDriver|Axis360RecordDriver|AspenError|SideLoadedRecord|null
 	 */
-	static function initRecordDriverById($id, $groupedWork = null): PalaceProjectRecordDriver|CourseReservesRecordDriver|OpenArchivesRecordDriver|TalpaRecordDriver|HooplaRecordDriver|ExternalEContentDriver|OverDriveRecordDriver|MarcRecordDriver|CloudLibraryRecordDriver|Axis360RecordDriver|AspenError|SideLoadedRecord|null
+	static function initRecordDriverById($id, $groupedWork = null): BorrowBoxRecordDriver|PalaceProjectRecordDriver|CourseReservesRecordDriver|OpenArchivesRecordDriver|TalpaRecordDriver|HooplaRecordDriver|ExternalEContentDriver|OverDriveRecordDriver|MarcRecordDriver|CloudLibraryRecordDriver|Axis360RecordDriver|AspenError|SideLoadedRecord|null
 	{
 		global $configArray;
 		if (isset(RecordDriverFactory::$recordDrivers[$id])) {
@@ -109,6 +109,9 @@ class RecordDriverFactory {
 		} elseif ($recordType == 'talpa') {
 			require_once ROOT_DIR . '/RecordDrivers/TalpaRecordDriver.php';
 			$recordDriver = new TalpaRecordDriver($recordId);
+		} elseif ($recordType == 'borrowbox') {
+			require_once ROOT_DIR . '/RecordDrivers/BorrowBoxRecordDriver.php';
+			$recordDriver = new BorrowBoxRecordDriver($recordId, $groupedWork);
 		} else {
 			global $indexingProfiles;
 			global $sideLoadSettings;

@@ -52,11 +52,13 @@ public class GroupedWorkIndexer implements AutoCloseable {
 	private final HashMap<String, SideLoadedRecordGrouper> sideLoadRecordGroupers = new HashMap<>();
 	private OverDriveProcessor overDriveProcessor;
 	private OverDriveRecordGrouper overDriveRecordGrouper;
+	private BorrowBoxRecordGrouper borrowBoxRecordGrouper;
 	private CloudLibraryProcessor cloudLibraryProcessor;
 	private Axis360Processor axis360Processor;
 	private HooplaProcessor hooplaProcessor;
 	private HooplaProcessor2 hooplaProcessor2;
 	private PalaceProjectProcessor palaceProjectProcessor;
+	private BorrowBoxProcessor borrowBoxProcessor;
 	private final HashMap<String, HashMap<String, String>> translationMaps = new HashMap<>();
 	private final HashMap<String, String> locationLabelsByCode = new HashMap<>();
 	private final HashMap<String, LexileTitle> lexileInformation = new HashMap<>();
@@ -575,6 +577,8 @@ public class GroupedWorkIndexer implements AutoCloseable {
 		axis360Processor = new Axis360Processor(this, dbConn, logger);
 
 		palaceProjectProcessor = new PalaceProjectProcessor(this, dbConn, logger);
+		borrowBoxProcessor = new BorrowBoxProcessor(this, dbConn, logger);
+		borrowBoxRecordGrouper = new BorrowBoxRecordGrouper(dbConn, serverName, logEntry, logger);
 
 		//Check to see if we want to display Unknown and Not Coded Literary Forms.  This is done by looking
 		//at the indexing profiles since that is the least confusing place to put the settings.
@@ -643,6 +647,7 @@ public class GroupedWorkIndexer implements AutoCloseable {
 		hooplaProcessor = null;
 		hooplaProcessor2 = null;
 		palaceProjectProcessor = null;
+		borrowBoxProcessor = null;
 		translationMaps.clear();
 		lexileInformation.clear();
 		hideSubjects.clear();
@@ -694,6 +699,7 @@ public class GroupedWorkIndexer implements AutoCloseable {
 	}
 
 	TreeSet<String> overDriveRecordsSkipped = new TreeSet<>();
+	TreeSet<String> borrowBoxRecordsSkipped = new TreeSet<>();
 
 	private void loadLexileData(String lexileExportPath) {
 		String[] lexileFields = new String[0];
@@ -1300,6 +1306,8 @@ public class GroupedWorkIndexer implements AutoCloseable {
 					newId = getRecordGroupingProcessor().groupHooplaRecord(identifier);
 				} else if (type.equals("palace_project")) {
 					newId = getRecordGroupingProcessor().groupPalaceProjectRecord(identifier);
+				} else if (type.equals("borrowbox")) {
+					newId = borrowBoxRecordGrouper.processBorrowBoxRecord(identifier);
 				}
 				if (newId == null) {
 					//The record is not valid, skip it.
@@ -2162,6 +2170,9 @@ public class GroupedWorkIndexer implements AutoCloseable {
 				break;
 			case "palace_project":
 				palaceProjectProcessor.processRecord(groupedWork, identifier, logEntry);
+				break;
+			case "borrowbox":
+				borrowBoxProcessor.processRecord(groupedWork, identifier, logEntry);
 				break;
 			default:
 				if (ilsRecordProcessors.containsKey(type)) {

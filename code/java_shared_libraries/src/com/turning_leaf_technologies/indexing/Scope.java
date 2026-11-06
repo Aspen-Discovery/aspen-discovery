@@ -50,6 +50,7 @@ public class Scope implements Comparable<Scope>{
 	private final HashMap<Long, CloudLibraryScope> cloudLibraryScopes = new HashMap<>();
 	private Axis360Scope axis360Scope;
 	private PalaceProjectScope palaceProjectScope;
+	private final HashMap<Long, BorrowBoxScope> borrowBoxScopes = new HashMap<>();
 
 	private final HashMap<Long, SideLoadScope> sideLoadScopes = new HashMap<>();
 
@@ -266,6 +267,21 @@ public class Scope implements Comparable<Scope>{
 
 	public boolean isIncludeOverDriveCollection(long settingId) {
 		return overDriveScopes.containsKey(settingId);
+	}
+	void addBorrowBoxScope(BorrowBoxScope borrowBoxScope) {
+		this.borrowBoxScopes.put(borrowBoxScope.getSettingId(), borrowBoxScope);
+	}
+
+	public HashMap<Long, BorrowBoxScope> getBorrowBoxScopes() {
+		return borrowBoxScopes;
+	}
+
+	public BorrowBoxScope getBorrowBoxScope(long settingId) {
+		return borrowBoxScopes.get(settingId);
+	}
+
+	public boolean isIncludeBorrowBoxCollection(long settingId) {
+		return borrowBoxScopes.containsKey(settingId);
 	}
 
 	public HooplaScope getHooplaScope() {

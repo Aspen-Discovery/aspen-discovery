@@ -677,6 +677,7 @@ class AJAX_JSON extends Action {
 	public function removeLocalAnalyticsTrackingForUser($userId) {
 		require_once ROOT_DIR . '/sys/Summon/UserSummonUsage.php';
 		require_once ROOT_DIR . '/sys/Axis360/UserAxis360Usage.php';
+		require_once ROOT_DIR . '/sys/BorrowBox/UserBorrowBoxUsage.php';
 		require_once ROOT_DIR . '/sys/CloudLibrary/UserCloudLibraryUsage.php';
 		require_once ROOT_DIR . '/sys/Ebsco/UserEbscoEdsUsage.php';
 		require_once ROOT_DIR . '/sys/Ebsco/UserEbscohostUsage.php';
@@ -723,6 +724,10 @@ class AJAX_JSON extends Action {
 			$userOverDriveUsage = new UserOverDriveUsage();
 			$userOverDriveUsage->userId = $userId;
 			$userOverDriveUsage->delete(true);
+
+			$userBorrowBoxUsage = new UserBorrowBoxUsage();
+			$userBorrowBoxUsage->userId = $userId;
+			$userBorrowBoxUsage->delete(true);
 
 			$userPalaceProjectUsage = new UserPalaceProjectUsage();
 			$userPalaceProjectUsage->userId = $userId;

@@ -79,6 +79,14 @@
 											</a>
 										</li>
 									{/if}
+									{if $user->isValidForEContentSource('borrowbox')}
+										<li class="myAccountLink">
+										&nbsp;&nbsp;&raquo;&nbsp;
+											<a href="/MyAccount/CheckedOut?tab=borrowbox" id="checkedOutBorrowBox" title="View checkouts from BorrowBox">
+												{translate text="BorrowBox" isPublicFacing=true} {if empty($offline)}<span class="badge"><span class="borrowbox-checkouts-placeholder">??</span></span>{/if}
+											</a>
+										</li>
+									{/if}
 								</ul>
 
 								<div class="myAccountLink">
@@ -132,6 +140,14 @@
 											&nbsp;&nbsp;&raquo;&nbsp;
 											<a href="/MyAccount/Holds?tab=axis360" id="holdsAxis360" title="View holds from Boundless">
 												{translate text="Boundless" isPublicFacing=true} {if empty($offline)}<span class="badge"><span class="axis360-holds-placeholder">??</span></span> <span class="axis360-available-holds" style="display: none"> <span class="label label-success"><span class="axis360-available-holds-placeholder"></span> {translate text="Available Now" isPublicFacing=true}</span></span>{/if}
+											</a>
+										</li>
+									{/if}
+									{if $user->isValidForEContentSource('borrowbox')}
+										<li class="myAccountLink">
+											&nbsp;&nbsp;&raquo;&nbsp;
+											<a href="/MyAccount/Holds?tab=borrowbox" id="holdsBorrowBox" title="View holds from BorrowBox">
+												{translate text="BorrowBox" isPublicFacing=true} {if empty($offline)}<span class="badge"><span class="borrowbox-holds-placeholder">??</span></span>{/if}
 											</a>
 										</li>
 									{/if}

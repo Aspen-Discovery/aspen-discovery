@@ -2325,6 +2325,11 @@ class GroupedWorkDriver extends IndexRecordDriver {
 				} else if ($source == 'hoopla') {
 					require_once ROOT_DIR . '/sys/Hoopla/HooplaExtract.php';
 					HooplaExtract::preloadTitles($recordIds);
+				} else if ($source == 'borrowbox') {
+					require_once ROOT_DIR . '/sys/BorrowBox/BorrowBoxAPIProduct.php';
+					BorrowBoxAPIProduct::preloadProducts($recordIds);
+					require_once ROOT_DIR . '/sys/BorrowBox/BorrowBoxAPIProductAvailability.php';
+					BorrowBoxAPIProductAvailability::preloadAvailability($recordIds);
 				} else {
 					require_once ROOT_DIR . '/sys/ILS/RecordFile.php';
 					require_once ROOT_DIR . '/sys/ILS/IlsHoldSummary.php';
