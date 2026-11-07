@@ -895,10 +895,8 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		$timer->logTime('Finished Loading Description');
 		$memoryWatcher->logMemory("Finished Loading Description");
 		if ($this->hasCachedSeries()) {
-			$interface->assign('ajaxSeries', false);
 			$interface->assign('summSeries', $this->getSeries(false));
 		} else {
-			$interface->assign('ajaxSeries', true);
 			$interface->assign('summSeries', null);
 		}
 		$timer->logTime('Finished Loading Series');
@@ -1353,10 +1351,8 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		$interface->assign('summDescription', $this->getDescriptionFast());
 		$timer->logTime('Finished Loading Description');
 		if ($this->hasCachedSeries()) {
-			$interface->assign('ajaxSeries', false);
 			$interface->assign('summSeries', $this->getSeries(false));
 		} else {
-			$interface->assign('ajaxSeries', true);
 			$interface->assign('summSeries', '');
 		}
 
@@ -1433,10 +1429,8 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		$interface->assign('summDescription', $this->getDescriptionFast());
 		$timer->logTime('Finished Loading Description');
 		if ($this->hasCachedSeries()) {
-			$interface->assign('ajaxSeries', false);
 			$interface->assign('summSeries', $this->getSeries(false));
 		} else {
-			$interface->assign('ajaxSeries', true);
 			$interface->assign('summSeries', '');
 		}
 
@@ -2280,10 +2274,8 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		$timer->logTime('Finished Loading Description');
 		$memoryWatcher->logMemory("Finished Loading Description");
 		if ($this->hasCachedSeries()) {
-			$interface->assign('ajaxSeries', false);
 			$interface->assign('summSeries', $this->getSeries(false));
 		} else {
-			$interface->assign('ajaxSeries', true);
 			$interface->assign('summSeries', null);
 		}
 		$timer->logTime('Finished Loading Series');
@@ -2416,9 +2408,6 @@ class GroupedWorkDriver extends IndexRecordDriver {
 			require_once ROOT_DIR . '/sys/Series/SeriesMember.php';
 			$seriesMember = new SeriesMember();
 			$seriesMember->groupedWorkPermanentId = $this->getPermanentId();
-			if (!empty($seriesId)) {
-				$seriesMember->seriesId = $seriesId;
-			}
 			$seriesMember->excluded = 0;
 			$seriesMember->orderBy('priorityScore DESC');
 			$this->_seriesMembers = $seriesMember->fetchAll();
