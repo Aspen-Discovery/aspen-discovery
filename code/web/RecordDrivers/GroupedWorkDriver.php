@@ -3101,6 +3101,10 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		if ($displayInfo != null && !empty($displayInfo->seriesName)) {
 			return true;
 		}
+		//Series indexed from the bib records are always available locally
+		if (!$searchSeries && !empty($this->fields['series_with_volume'])) {
+			return true;
+		}
 		//Get a list of isbns from the record
 		$novelist = NovelistFactory::getNovelist();
 		return $novelist->doesGroupedWorkHaveCachedSeries($this->getPermanentId());
