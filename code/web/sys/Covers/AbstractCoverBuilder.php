@@ -20,14 +20,9 @@ abstract class AbstractCoverBuilder {
 
 		$appliedTheme = $interface->getAppliedTheme();
 		if ($appliedTheme != null) {
+			$this->titleFont = $appliedTheme->getCoverFontFiles()['title'];
 			$appliedThemes = $appliedTheme->getAllAppliedThemes();
 			foreach ($appliedThemes as $theme) {
-				if (empty($this->titleFont) && $theme->headingFontDefault == 0 && !empty($theme->headingFont)) {
-					$fontFile = ROOT_DIR . '/fonts/' . str_replace(' ', '', $theme->headingFont) . '-Bold.ttf';
-					if (file_exists($fontFile)) {
-						$this->titleFont = $fontFile;
-					}
-				}
 				if ($invertColors) {
 					if (empty($this->backgroundColor) && !$theme->secondaryBackgroundColorDefault) {
 						$colors = sscanf($theme->secondaryBackgroundColor, "#%02x%02x%02x");
