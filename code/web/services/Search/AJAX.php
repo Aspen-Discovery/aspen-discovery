@@ -383,7 +383,10 @@ class AJAX extends JSON_Action {
 		$searchObject = SearchObjectFactory::initSearchObject();
 		$searchObject->init($searchSource);
 
-		$searchObject->setLimit(24); // a set of 24 covers looks better in display
+		$shouldFillCoverDisplay = !$searchObject->hasRequestedPageSize();
+		if ($shouldFillCoverDisplay) {
+			$searchObject->setLimit(24); // a set of 24 covers looks better in display
+		}
 
 		// Process Search
 		$result = $searchObject->processSearch(true, true);
@@ -655,13 +658,16 @@ class AJAX extends JSON_Action {
 	/** @noinspection PhpUnused */
 	function showSearchToolbar() : array {
 		global $interface;
-		$interface->assign('displayMode', $_REQUEST['displayMode']);
+		$displayMode = $_REQUEST['displayMode'];
+		$searchId = $_REQUEST['searchId'];
+		$interface->assign('displayMode', $displayMode);
 		$interface->assign('showCovers', $_REQUEST['showCovers']);
 		$interface->assign('excelLink', $_REQUEST['excelLink']);
 		$interface->assign('risLink', $_REQUEST['risLink']);
 		$interface->assign('rssLink', $_REQUEST['rssLink']);
-		$interface->assign('searchId', $_REQUEST['searchId']);
+		$interface->assign('searchId', $searchId);
 		$interface->assign('sortList', $_REQUEST['sortList']);
+		$interface->assign('pageSizeList', $this->getPageSizeListForSearch(!empty($_REQUEST['offerPageSize']), $searchId, $displayMode, intval($_REQUEST['pageSize'] ?? 0)));
 		return [
 			'title' => translate([
 				'text' => 'Search Tools',
@@ -669,6 +675,37 @@ class AJAX extends JSON_Action {
 			]),
 			'modalBody' => $interface->fetch('Search/search-toolbar-popup.tpl'),
 		];
+	}
+
+	/**
+	 * Rebuild the results per page links for a stored search rather than trusting the request.
+	 *
+	 * @param bool $pageSizeIsOffered Whether the page that opened the popup offers results per page
+	 * @param mixed $searchId The id of the search to rebuild the links from
+	 * @param mixed $displayMode The view the reader is looking at
+	 * @param int $requestedPageSize The number of results per page the reader chose, or 0
+	 * @return array Page size urls, descriptions and selected flags
+	 */
+	private function getPageSizeListForSearch(bool $pageSizeIsOffered, $searchId, $displayMode, int $requestedPageSize) : array {
+		if (!$pageSizeIsOffered) {
+			return [];
+		}
+		$isStoredSearch = is_numeric($searchId);
+		if (!$isStoredSearch) {
+			return [];
+		}
+		require_once ROOT_DIR . '/services/API/SearchAPI.php';
+		$searchAPI = new SearchAPI();
+		$restoredSearch = $searchAPI->restoreSearch($searchId, false);
+		if (empty($restoredSearch)) {
+			return [];
+		}
+		$restoredSearch->setRequestedPageSize($requestedPageSize);
+		$shouldFillCoverDisplay = $displayMode == 'covers' && !$restoredSearch->hasRequestedPageSize();
+		if ($shouldFillCoverDisplay) {
+			return [];
+		}
+		return $restoredSearch->getPageSizeList();
 	}
 
 	/** @noinspection PhpUnused */

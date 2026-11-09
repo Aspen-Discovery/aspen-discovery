@@ -1,7 +1,7 @@
 {strip}
 	{* User's viewing mode toggle switch *}
 	<div class="row">{* browse styling replicated here *}
-		<div class="col-xs-6">
+		<div class="col-xs-{if !empty($pageSizeList)}8{else}6{/if}">
 			{if !empty($recordCount)}
 				{* <span class="sidebar-label">
 					   <label for="results-sort">{translate text='Sort'}</label></span> *}
@@ -11,9 +11,10 @@
 						<option value="{$sortData.sortUrl|escape}"{if !empty($sortData.selected)} selected="selected"{/if}>{translate text=$sortData.desc isPublicFacing=true inAttribute=true}</option>
 					{/foreach}
 				</select>
+				{include file="Search/results-page-size.tpl"}
 			{/if}
 		</div>
-		<div class="col-xs-6">
+		<div class="col-xs-{if !empty($pageSizeList)}4{else}6{/if}">
 			<div id="selected-browse-label">
 				<div class="btn-group btn-group-sm" data-toggle="buttons">
 					<label for="covers" title="Covers" class="btn btn-sm btn-default" tabindex="0"><input onchange="AspenDiscovery.Searches.toggleDisplayMode(this.id)" type="radio" id="covers">

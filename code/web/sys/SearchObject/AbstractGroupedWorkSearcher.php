@@ -101,6 +101,7 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 		// Initialize standard search parameters
 		$this->initView();
 		$this->initPage();
+		$this->initPageSize();
 		$this->initSort();
 		$this->initFilters();
 
