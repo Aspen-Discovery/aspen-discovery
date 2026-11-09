@@ -304,7 +304,11 @@ class SierraRegistration extends DataObject {
 			}
 		} else if ($name == 'initialSierraPType') {
 			$metadataOptions = self::getMetadataOptions('patronType');
-			return $metadataOptions['patronType'][$this->sierraPType];
+			if (!empty($this->sierraPType)) {
+				return $metadataOptions['patronType'][$this->sierraPType];
+			}else{
+				return null;
+			}
 		} else {
 			return parent::__get($name);
 		}
@@ -316,7 +320,7 @@ class SierraRegistration extends DataObject {
 		}
 		if (!empty($this->_sierraData)) {
 			if ($name == "name") {
-				return $this->_sierraData->names[0];
+				return isset($this->_sierraData->names) ? $this->_sierraData->names[0] : '';
 			} else if ($name == "address" && !empty($this->_sierraData->addresses[0])) {
 				if (is_array($this->_sierraData->addresses[0]->lines)) {
 					return implode(", ", $this->_sierraData->addresses[0]->lines);
