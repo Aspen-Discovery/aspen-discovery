@@ -48,6 +48,9 @@
 				{if $user->isValidForEContentSource('axis360')}
 					<li role="presentation"{if $tab=='axis360'} class="active"{/if}><a href="#axis360" aria-controls="axis360" role="tab" data-toggle="tab">{translate text="Boundless" isPublicFacing=true} <span class="badge"><span class="axis360-checkouts-placeholder">&nbsp;</span></span></a></li>
 				{/if}
+				{if $user->isValidForEContentSource('borrowbox')}
+					<li role="presentation"{if $tab=='borrowbox'} class="active"{/if}><a href="#borrowbox" aria-controls="borrowbox" role="tab" data-toggle="tab">{translate text="BorrowBox" isPublicFacing=true} <span class="badge"><span class="borrowbox-checkouts-placeholder">&nbsp;</span></span></a></li>
+				{/if}
 			</ul>
 			<div class="refresh-indicator small pull-right">
 				{* {translate text="Last Loaded <span id='accountLoadTime'>%1%</span>" 1=$profile->getFormattedCheckoutInfoLastLoaded() isPublicFacing=true} *}
@@ -75,6 +78,9 @@
 				{if $user->isValidForEContentSource('axis360')}
 					<div role="tabpanel" class="tab-pane{if $tab=='axis360'} active{/if}" id="axis360" aria-label="Boundless Checkouts List"><div id="axis360CheckoutsPlaceholder">{translate text="Loading checkouts from Boundless" isPublicFacing=true}</div></div>
 				{/if}
+				{if $user->isValidForEContentSource('borrowbox')}
+					<div role="tabpanel" class="tab-pane{if $tab=='borrowbox'} active{/if}" id="borrowbox" aria-label="BorrowBox Checkouts List"><div id="borrowboxCheckoutsPlaceholder">{translate text="Loading checkouts from BorrowBox" isPublicFacing=true}</div></div>
+				{/if}
 			</div>
 			<script type="text/javascript">
 				{literal}
@@ -99,6 +105,9 @@
 					});
 					$("a[href='#palace_project']").on('show.bs.tab', function () {
 						AspenDiscovery.Account.loadCheckouts('palace_project');
+					});
+					$("a[href='#borrowbox']").on('show.bs.tab', function () {
+						AspenDiscovery.Account.loadCheckouts('borrowbox');
 					});
 					{/literal}
 					AspenDiscovery.Account.loadCheckouts('{$tab}');

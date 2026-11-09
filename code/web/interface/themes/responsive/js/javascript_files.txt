@@ -32,6 +32,7 @@ aspen/admin.js
 aspen/authors.js
 aspen/axis360.js
 aspen/browse.js
+aspen/borrowbox.js
 aspen/cloud-library.js
 aspen/course-reserves.js
 aspen/dpla.js

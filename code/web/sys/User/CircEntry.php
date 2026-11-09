@@ -62,6 +62,12 @@ abstract class CircEntry extends DataObject {
 				if (!$this->_recordDriver->isValid()) {
 					$this->_recordDriver = false;
 				}
+			} elseif ($this->type == 'borrowbox') {
+				require_once ROOT_DIR . '/RecordDrivers/BorrowBoxRecordDriver.php';
+				$this->_recordDriver = new BorrowBoxRecordDriver($this->recordId);
+				if (!$this->_recordDriver->isValid()) {
+					$this->_recordDriver = false;
+				}
 			} else {
 				$this->_recordDriver = false;
 			}

@@ -136,6 +136,10 @@ class BookCoverProcessor {
 				if ($this->getCloudLibraryCover($this->id, true)) {
 					return true;
 				}
+			} elseif ($this->type == 'borrowbox') {
+				if ($this->getBorrowBoxCover($this->id, true)) {
+					return true;
+				}
 			} elseif ($this->type == 'palace_project') {
 				//Will exit if we find a cover
 				if ($this->getPalaceProjectCover($this->id, true)) {
@@ -425,6 +429,28 @@ class BookCoverProcessor {
 					return false;
 				}
 			}
+		}
+		return false;
+	}
+
+	private function getBorrowBoxCover($id, $createDefaultIfNotFound = false) : bool {
+		if (str_contains($id, ':')) {
+			[
+				,
+				$id,
+			] = explode(":", $id);
+		}
+		require_once ROOT_DIR . '/RecordDrivers/BorrowBoxRecordDriver.php';
+		$driver = new BorrowBoxRecordDriver($id);
+		if (!$driver->isValid()) {
+			return false;
+		}
+		$coverUrl = $driver->getBorrowBoxBookcoverUrl();
+		if ($coverUrl != null) {
+			return $this->processImageURL('borrowbox', $coverUrl);
+		}
+		if ($createDefaultIfNotFound) {
+			return $this->getDefaultCover($driver);
 		}
 		return false;
 	}
@@ -1536,6 +1562,10 @@ class BookCoverProcessor {
 					}
 				} elseif (strcasecmp($relatedRecord->source, 'cloud_library') == 0) {
 					if ($this->getCloudLibraryCover($relatedRecord->id)) {
+						return true;
+					}
+				} elseif (strcasecmp($relatedRecord->source, 'borrowbox') == 0) {
+					if ($this->getBorrowBoxCover($relatedRecord->id)) {
 						return true;
 					}
 				} elseif (strcasecmp($relatedRecord->source, 'palace_project') == 0) {

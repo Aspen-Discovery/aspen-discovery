@@ -1006,7 +1006,23 @@ class User extends DataObject {
 					return array_key_exists('Axis 360', $enabledModules) && ($userHomeLibrary->axis360ScopeId > 0);
 				} elseif ($source == 'palace_project') {
 					return array_key_exists('Palace Project', $enabledModules) && ($userHomeLibrary->palaceProjectLibraryId > 0 || $userHomeLibrary->palaceProjectScopeId > 0);
+				} elseif ($source == 'borrowbox') {
+					return $this->isValidForBorrowBox($userHomeLibrary, $enabledModules);
 				}
+			}
+		}
+		return false;
+	}
+
+	private function isValidForBorrowBox(Library $userHomeLibrary, array $enabledModules): bool {
+		$borrowBoxUsable = !empty($this->getBarcode()) && array_key_exists('BorrowBox', $enabledModules);
+		if (!$borrowBoxUsable) {
+			return false;
+		}
+		$borrowBoxSettings = $userHomeLibrary->getLibraryBorrowBoxSettings();
+		foreach ($borrowBoxSettings as $libraryBorrowBoxSetting) {
+			if ($libraryBorrowBoxSetting->circulationEnabled) {
+				return true;
 			}
 		}
 		return false;
@@ -2001,6 +2017,15 @@ class User extends DataObject {
 			}
 		}
 
+		$loadBorrowBoxCheckouts = ($source == 'all' || $source == 'borrowbox') && $this->isValidForEContentSource('borrowbox');
+		if ($loadBorrowBoxCheckouts) {
+			require_once ROOT_DIR . '/Drivers/BorrowBoxDriver.php';
+			$borrowBoxDriver = new BorrowBoxDriver();
+			$borrowBoxCheckedOutItems = $borrowBoxDriver->getCheckouts($this);
+			$timer->logTime("Loaded transactions from BorrowBox. $this->id");
+			$checkoutsToReturn = array_merge($checkoutsToReturn, $borrowBoxCheckedOutItems);
+		}
+
 		if ($includeLinkedUsers) {
 			if ($this->getLinkedUsers() != null) {
 				foreach ($this->getLinkedUsers() as $linkedUser) {
@@ -2078,6 +2103,14 @@ class User extends DataObject {
 				$palaceProjectHolds = $driver->getHolds($this);
 				$holdsToReturn = array_merge_recursive($holdsToReturn, $palaceProjectHolds);
 			}
+		}
+
+		$loadBorrowBoxHolds = ($source == 'all' || $source == 'borrowbox') && $this->isValidForEContentSource('borrowbox');
+		if ($loadBorrowBoxHolds) {
+			require_once ROOT_DIR . '/Drivers/BorrowBoxDriver.php';
+			$driver = new BorrowBoxDriver();
+			$borrowBoxHolds = $driver->getHolds($this);
+			$holdsToReturn = array_merge_recursive($holdsToReturn, $borrowBoxHolds);
 		}
 
 		if ($source == 'all' || $source == 'hoopla') {
@@ -4923,6 +4956,25 @@ class User extends DataObject {
 			]);
 			$sections['overdrive']->addAction(new AdminAction('API Information', 'View API information for OverDrive integration to test connections.', '/OverDrive/APIData'), 'View OverDrive Test Interface');
 			$sections['overdrive']->addAction(new AdminAction('Aspen Information', 'View information stored within Aspen about an OverDrive product.', '/OverDrive/AspenData'), 'View OverDrive Test Interface');
+		}
+
+		if (array_key_exists('BorrowBox', $enabledModules)) {
+			$sections['borrowbox'] = new AdminSection('BorrowBox');
+			$borrowBoxSettingsAction = new AdminAction('Settings', 'Define connection information between BorrowBox and Aspen Discovery.', '/BorrowBox/Settings');
+			$borrowBoxScopesAction = new AdminAction('Scopes', 'Define which records are loaded for each library and location.', '/BorrowBox/Scopes');
+			if ($sections['borrowbox']->addAction($borrowBoxSettingsAction, 'Administer BorrowBox')) {
+				$borrowBoxSettingsAction->addSubAction($borrowBoxScopesAction, 'Administer BorrowBox');
+			} else {
+				$sections['borrowbox']->addAction($borrowBoxScopesAction, 'Administer BorrowBox');
+			}
+			$sections['borrowbox']->addAction(new AdminAction('Indexing Log', 'View the indexing log for BorrowBox.', '/BorrowBox/IndexingLog'), [
+				'View System Reports',
+				'View Indexing Logs',
+			]);
+			$sections['borrowbox']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for BorrowBox integration.', '/BorrowBox/Dashboard'), [
+				'View Dashboards',
+				'View System Reports',
+			]);
 		}
 
 		if (array_key_exists('Palace Project', $enabledModules)) {

@@ -27,12 +27,13 @@ public class IndexingUtils {
 			HashMap<Long, Axis360Scope> axis360Scopes = loadAxis360Scopes(dbConn, logger);
 			HashMap<Long, CloudLibraryScope> cloudLibraryScopes = loadCloudLibraryScopes(dbConn, logger);
 			HashMap<Long, PalaceProjectScope> palaceProjectScopes = loadPalaceProjectScopes(dbConn, logger);
+			HashMap<Long, BorrowBoxScope> borrowBoxScopes = loadBorrowBoxScopes(dbConn, logger);
 			HashMap<Long, SideLoadScope> sideLoadScopes = loadSideLoadScopes(dbConn, logger);
 			HashMap<Long, GroupedWorkDisplaySettings> groupedWorkDisplaySettings = loadGroupedWorkDisplaySettings(dbConn, logger);
 
-			loadLibraryScopes(scopes, groupedWorkDisplaySettings, overDriveScopes, hooplaScopes, cloudLibraryScopes, axis360Scopes, palaceProjectScopes, sideLoadScopes, dbConn, logger);
+			loadLibraryScopes(scopes, groupedWorkDisplaySettings, overDriveScopes, hooplaScopes, cloudLibraryScopes, axis360Scopes, palaceProjectScopes, borrowBoxScopes, sideLoadScopes, dbConn, logger);
 
-			loadLocationScopes(scopes, groupedWorkDisplaySettings, overDriveScopes, hooplaScopes, cloudLibraryScopes, axis360Scopes, palaceProjectScopes, sideLoadScopes, dbConn, logger);
+			loadLocationScopes(scopes, groupedWorkDisplaySettings, overDriveScopes, hooplaScopes, cloudLibraryScopes, axis360Scopes, palaceProjectScopes, borrowBoxScopes, sideLoadScopes, dbConn, logger);
 		} catch (SQLException e) {
 			logger.error("Error setting up scopes", e);
 			return null;
@@ -163,6 +164,31 @@ public class IndexingUtils {
 		return palaceProjectScopes;
 	}
 
+	private static HashMap<Long, BorrowBoxScope> loadBorrowBoxScopes(Connection dbConn, Logger logger) {
+		HashMap<Long, BorrowBoxScope> borrowBoxScopes = new HashMap<>();
+		try {
+			PreparedStatement borrowBoxScopeStmt = dbConn.prepareStatement("SELECT borrowbox_scopes.*, borrowbox_settings.name as settingName from borrowbox_scopes inner join borrowbox_settings on settingId = borrowbox_settings.id", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			ResultSet borrowBoxScopesRS = borrowBoxScopeStmt.executeQuery();
+
+			while (borrowBoxScopesRS.next()) {
+				BorrowBoxScope borrowBoxScope = new BorrowBoxScope();
+				borrowBoxScope.setId(borrowBoxScopesRS.getLong("id"));
+				borrowBoxScope.setSettingId(borrowBoxScopesRS.getLong("settingId"));
+				borrowBoxScope.setSettingName(borrowBoxScopesRS.getString("settingName"));
+				borrowBoxScope.setScopeName(borrowBoxScopesRS.getString("name"));
+				borrowBoxScope.setIncludeAdult(borrowBoxScopesRS.getBoolean("includeAdult"));
+				borrowBoxScope.setIncludeTeen(borrowBoxScopesRS.getBoolean("includeTeen"));
+				borrowBoxScope.setIncludeKids(borrowBoxScopesRS.getBoolean("includeKids"));
+
+				borrowBoxScopes.put(borrowBoxScope.getId(), borrowBoxScope);
+			}
+
+		} catch (SQLException e) {
+			logger.error("Error loading BorrowBox scopes", e);
+		}
+		return borrowBoxScopes;
+	}
+
 	private static HashMap<Long, OverDriveScope> loadOverDriveScopes(Connection dbConn, Logger logger) {
 		HashMap<Long, OverDriveScope> overDriveScopes = new HashMap<>();
 		try {
@@ -245,7 +271,7 @@ public class IndexingUtils {
 		return sideLoadScopes;
 	}
 
-	private static void loadLocationScopes(HashMap<String, Scope> scopes, HashMap<Long, GroupedWorkDisplaySettings> groupedWorkDisplaySettings, HashMap<Long, OverDriveScope> overDriveScopes, HashMap<Long, HooplaScope> hooplaScopes, HashMap<Long, CloudLibraryScope> cloudLibraryScopes, HashMap<Long, Axis360Scope> axis360Scopes, HashMap<Long, PalaceProjectScope> palaceProjectScopes, HashMap<Long, SideLoadScope> sideLoadScopes, Connection dbConn, Logger logger) throws SQLException {
+	private static void loadLocationScopes(HashMap<String, Scope> scopes, HashMap<Long, GroupedWorkDisplaySettings> groupedWorkDisplaySettings, HashMap<Long, OverDriveScope> overDriveScopes, HashMap<Long, HooplaScope> hooplaScopes, HashMap<Long, CloudLibraryScope> cloudLibraryScopes, HashMap<Long, Axis360Scope> axis360Scopes, HashMap<Long, PalaceProjectScope> palaceProjectScopes, HashMap<Long, BorrowBoxScope> borrowBoxScopes, HashMap<Long, SideLoadScope> sideLoadScopes, Connection dbConn, Logger logger) throws SQLException {
 		// To minimize the amount of data in the index, only load locations that have more than one location within the library.
 		PreparedStatement librariesWithMoreThanOneLocationStmt = dbConn.prepareStatement("SELECT libraryId, COUNT(*) AS numLocations FROM location WHERE createSearchInterface = 1 GROUP BY libraryId HAVING numLocations > 1", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		ResultSet librariesWithMoreThanOneLocation = librariesWithMoreThanOneLocationStmt.executeQuery();
@@ -280,6 +306,8 @@ public class IndexingUtils {
 		PreparedStatement locationOverDriveScopesStmt = dbConn.prepareStatement("SELECT * from location_overdrive_scope WHERE locationId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		PreparedStatement librarySideLoadScopesStmt = dbConn.prepareStatement("SELECT * from library_sideload_scopes WHERE libraryId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		PreparedStatement locationSideLoadScopesStmt = dbConn.prepareStatement("SELECT * from location_sideload_scopes WHERE locationId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+		PreparedStatement libraryBorrowBoxScopesStmt = dbConn.prepareStatement("SELECT * from library_borrowbox_scope WHERE libraryId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+		PreparedStatement locationBorrowBoxScopesStmt = dbConn.prepareStatement("SELECT * from location_borrowbox_scope WHERE locationId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		PreparedStatement libraryRecordInclusionRulesStmt = dbConn.prepareStatement("SELECT library_records_to_include.*, indexing_profiles.name from library_records_to_include INNER JOIN indexing_profiles ON indexingProfileId = indexing_profiles.id WHERE libraryId = ? and markRecordsAsOwned = 0", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 
 		ResultSet locationInformationRS = locationInformationStmt.executeQuery();
@@ -417,6 +445,34 @@ public class IndexingUtils {
 				}
 			} else if (palaceProjectScopeLocation != -2) {
 				locationScopeInfo.setPalaceProjectScope(palaceProjectScopes.get(palaceProjectScopeLocation));
+			}
+
+			locationBorrowBoxScopesStmt.setLong(1, locationId);
+			ResultSet locationBorrowBoxScopesRS = locationBorrowBoxScopesStmt.executeQuery();
+			while (locationBorrowBoxScopesRS.next()) {
+				long scopeId = locationBorrowBoxScopesRS.getLong("scopeId");
+				if (scopeId == -1) {
+					libraryBorrowBoxScopesStmt.setLong(1, libraryId);
+					ResultSet libraryBorrowBoxScopesRS = libraryBorrowBoxScopesStmt.executeQuery();
+					while (libraryBorrowBoxScopesRS.next()) {
+						long borrowBoxScopeId = libraryBorrowBoxScopesRS.getLong("scopeId");
+						if (borrowBoxScopes.containsKey(borrowBoxScopeId)) {
+							locationScopeInfo.addBorrowBoxScope(borrowBoxScopes.get(borrowBoxScopeId));
+						}
+					}
+				} else if (borrowBoxScopes.containsKey(scopeId)) {
+					locationScopeInfo.addBorrowBoxScope(borrowBoxScopes.get(scopeId));
+				}
+			}
+			if (includeLibraryRecordsToInclude){
+				libraryBorrowBoxScopesStmt.setLong(1, libraryId);
+				ResultSet libraryBorrowBoxScopesRS = libraryBorrowBoxScopesStmt.executeQuery();
+				while (libraryBorrowBoxScopesRS.next()) {
+					long borrowBoxScopeId = libraryBorrowBoxScopesRS.getLong("scopeId");
+					if (borrowBoxScopes.containsKey(borrowBoxScopeId)) {
+						locationScopeInfo.addBorrowBoxScope(borrowBoxScopes.get(borrowBoxScopeId));
+					}
+				}
 			}
 
 			locationSideLoadScopesStmt.setLong(1, locationId);
@@ -594,7 +650,7 @@ public class IndexingUtils {
 		}
 	}
 
-	private static void loadLibraryScopes(HashMap<String, Scope> scopes, HashMap<Long, GroupedWorkDisplaySettings> groupedWorkDisplaySettings, HashMap<Long, OverDriveScope> overDriveScopes, HashMap<Long, HooplaScope> hooplaScopes, HashMap<Long, CloudLibraryScope> cloudLibraryScopes, HashMap<Long, Axis360Scope> axis360Scopes, HashMap<Long, PalaceProjectScope> palaceProjectScopes, HashMap<Long, SideLoadScope> sideLoadScopes, Connection dbConn, Logger logger) throws SQLException {
+	private static void loadLibraryScopes(HashMap<String, Scope> scopes, HashMap<Long, GroupedWorkDisplaySettings> groupedWorkDisplaySettings, HashMap<Long, OverDriveScope> overDriveScopes, HashMap<Long, HooplaScope> hooplaScopes, HashMap<Long, CloudLibraryScope> cloudLibraryScopes, HashMap<Long, Axis360Scope> axis360Scopes, HashMap<Long, PalaceProjectScope> palaceProjectScopes, HashMap<Long, BorrowBoxScope> borrowBoxScopes, HashMap<Long, SideLoadScope> sideLoadScopes, Connection dbConn, Logger logger) throws SQLException {
 		PreparedStatement libraryInformationStmt = dbConn.prepareStatement("SELECT libraryId, ilsCode, subdomain, " +
 						"displayName, facetLabel, restrictOwningBranchesAndSystems, publicListsToInclude, isConsortialCatalog, " +
 						"additionalLocationsToShowAvailabilityFor, locationsToExcludeAvailabilityFor, courseReserveLibrariesToInclude, " +
@@ -607,6 +663,7 @@ public class IndexingUtils {
 		PreparedStatement librarySideLoadScopesStmt = dbConn.prepareStatement("SELECT * from library_sideload_scopes WHERE libraryId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		PreparedStatement libraryCloudLibraryScopesStmt = dbConn.prepareStatement("SELECT * from library_cloud_library_scope WHERE libraryId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		PreparedStatement libraryOverDriveScopesStmt = dbConn.prepareStatement("SELECT * from library_overdrive_scope WHERE libraryId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+		PreparedStatement libraryBorrowBoxScopesStmt = dbConn.prepareStatement("SELECT * from library_borrowbox_scope WHERE libraryId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 
 		while (libraryInformationRS.next()) {
 			String facetLabel = libraryInformationRS.getString("facetLabel");
@@ -697,6 +754,15 @@ public class IndexingUtils {
 			long palaceProjectScopeLibrary = libraryInformationRS.getLong("palaceProjectScopeId");
 			if (palaceProjectScopeLibrary != -1) {
 				newScope.setPalaceProjectScope(palaceProjectScopes.get(palaceProjectScopeLibrary));
+			}
+
+			libraryBorrowBoxScopesStmt.setLong(1, libraryId);
+			ResultSet libraryBorrowBoxScopesRS = libraryBorrowBoxScopesStmt.executeQuery();
+			while (libraryBorrowBoxScopesRS.next()) {
+				long borrowBoxScopeId = libraryBorrowBoxScopesRS.getLong("scopeId");
+				if (borrowBoxScopes.containsKey(borrowBoxScopeId)) {
+					newScope.addBorrowBoxScope(borrowBoxScopes.get(borrowBoxScopeId));
+				}
 			}
 
 			librarySideLoadScopesStmt.setLong(1, libraryId);

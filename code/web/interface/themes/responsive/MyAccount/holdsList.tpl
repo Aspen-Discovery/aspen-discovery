@@ -72,6 +72,8 @@
 					{include file="MyAccount/hooplaHold.tpl" record=$record section=$sectionKey resultIndex=$smarty.foreach.recordLoop.iteration}
 				{elseif $record->type == 'palace_project'}
 					{include file="MyAccount/palaceProjectHold.tpl" record=$record section=$sectionKey resultIndex=$smarty.foreach.recordLoop.iteration}
+				{elseif $record->type == 'borrowbox'}
+					{include file="MyAccount/borrowboxHold.tpl" record=$record section=$sectionKey resultIndex=$smarty.foreach.recordLoop.iteration}
 				{else}
 					<div class="row">
 						Unknown record type {$record->type}

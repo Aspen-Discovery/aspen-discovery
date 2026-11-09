@@ -53,7 +53,7 @@ class Grouping_Record {
 	private ?array $_unsuppressedVolumeData = null;
 	private ?array $_unsuppressedLocalVolumeData = null;
 
-	//Is the record an OverDrive record?
+	//Is the record from a source where availability is API-driven (OverDrive, BorrowBox)?
 	//If so, the number of owned and available copies are already set.
 	private bool $_isOverDrive = false;
 
@@ -115,7 +115,8 @@ class Grouping_Record {
 		$this->source = $source;
 		$this->_statusInformation = new Grouping_StatusInformation();
 		$this->_statusInformation->setNumHolds($recordDriver->getNumHolds());
-		if ($recordDriver instanceof OverDriveRecordDriver) {
+		$hasApiDrivenAvailability = $recordDriver instanceof OverDriveRecordDriver || $recordDriver instanceof BorrowBoxRecordDriver;
+		if ($hasApiDrivenAvailability) {
 //			$statusSummary = $recordDriver->getStatusSummary();
 //			$this->_statusInformation->addCopies($statusSummary['totalCopies']);
 //			$this->_statusInformation->addAvailableCopies($statusSummary['availableCopies']);
