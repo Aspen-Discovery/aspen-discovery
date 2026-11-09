@@ -3930,12 +3930,9 @@ class MyAccount_AJAX extends JSON_Action {
 	private function isInvalidHold(Hold|array $hold, string $field, array $filterInformation) : bool {
 		$filterValue = $this->getHoldFilterValue($hold, $field);
 		$selectedValues = array_map('strval', $filterInformation['selected']);
-		$absentFromArray = !in_array($hold->$field, $filterInformation['selected']);
 		$isSourceField = $field === "source";
 
-		return $absentFromArray && (!$isSourceField || !in_array("all", $filterInformation['selected']))
-			|| $filterValue === null
-			|| !in_array($filterValue['value'], $selectedValues, true);
+		return !($isSourceField && in_array('all', $selectedValues, true)) && !in_array((string)$filterValue['value'], $selectedValues, true);
 	}
 
 	private function filterCheckoutsByUser(array $allCheckedOut, string $selectedUser): array {
@@ -4188,6 +4185,7 @@ class MyAccount_AJAX extends JSON_Action {
 				foreach ($filters as $filter) {
 					if (count($filter['options']) > 1) {
 						$showFilterOptions = true;
+						break;
 					}
 				}
 				if ($showFilterOptions) {
@@ -4324,6 +4322,7 @@ class MyAccount_AJAX extends JSON_Action {
 			'cloud_library' => 'Cloud Library',
 			'hoopla' => 'Hoopla',
 			'axis360' => 'Boundless',
+			'palace_project' => 'Palace Project',
 			default => 'Unknown'
 		};
 
@@ -8676,9 +8675,21 @@ class MyAccount_AJAX extends JSON_Action {
 		$registration->eventInstanceId = $eventInstanceId;
 
 		if ($registration->isUserRegisteredForEvent()) {
-			$registration->delete();
+			require_once ROOT_DIR . '/sys/DB/DatabaseTransaction.php';
+			try {
+				DatabaseTransaction::runInTransaction(fn(): bool => $registration->delete() !== false);
+			} catch (\Throwable $e) {
+				global $logger;
+				$logger->log("toggleUserRegistrationToEvent cancellation rolled back (userId=$userId, eventInstanceId=$eventInstanceId): " . $e->getMessage(), Logger::LOG_ERROR);
+				$result['message'] = translate([
+					'text' => 'Failed to cancel registration.',
+					'isPublicFacing' => true
+				]);
+				return $result;
+			}
+
 			EventRegistrationService::inviteNextOnWaitingList($eventInstance);
-			
+
 			$result['success'] = true;
 			$result['title'] = translate([
 				'text' => 'Registration Information',
@@ -8723,17 +8734,19 @@ class MyAccount_AJAX extends JSON_Action {
 		$registration = new UserAspenEventInstanceRegistration();
 		$registration->userId = $userId;
 		$registration->eventInstanceId = $eventInstanceId;
-		$registration->registerUser();
 
-		if (!empty($validatedCounts)) {
-			UserAspenEventInstanceRegistrationAttendee::saveForRegistration((int)$registration->id, $validatedCounts);
-		}
-
-		// save the user inputed registration information
-		foreach ($_REQUEST as $key => $value) {
-		    if (is_numeric($key)) {
-				$registration->saveEventFieldValue($key, $value); 
-		    }
+		require_once ROOT_DIR . '/sys/DB/DatabaseTransaction.php';
+		try {
+			$eventFieldValues = array_filter($_REQUEST, 'is_numeric', ARRAY_FILTER_USE_KEY);
+			DatabaseTransaction::runInTransaction(fn() => EventRegistrationService::writeRegistration($registration, $validatedCounts, $eventInstance, $userId, null, $eventFieldValues));
+		} catch (\Throwable $e) {
+			global $logger;
+			$logger->log("toggleUserRegistrationToEvent rolled back (userId=$userId, eventInstanceId=$eventInstanceId): " . $e->getMessage(), Logger::LOG_ERROR);
+			$result['message'] = translate([
+				'text' => 'Failed to create registration.',
+				'isPublicFacing' => true
+			]);
+			return $result;
 		}
 
 
@@ -12368,7 +12381,7 @@ class MyAccount_AJAX extends JSON_Action {
 		$registration->eventInstanceId = $eventInstanceId;
 		$registration->userId = $userId;
 
-		if (!$registration->addUserToWaitingList()) {
+		if ($registration->find(true)) {
 			$result['success'] = true;
 			$result['title'] = translate([
 				'text' => 'Already on Waiting List',
@@ -12378,8 +12391,27 @@ class MyAccount_AJAX extends JSON_Action {
 				'text' => 'You are already on the waiting list for this event.',
 				'isPublicFacing' => true,
 			]);
-			$registration->find(true);
 			$result['position'] = UserAspenEventInstanceRegistration::getWaitingListPosition($registration->eventInstanceId, $registration->createdAt);
+			return $result;
+		}
+
+		require_once ROOT_DIR . '/sys/DB/DatabaseTransaction.php';
+		try {
+			DatabaseTransaction::runInTransaction(function() use ($registration, $eventInstance, $userId, $activeUserId): bool {
+				if (!$registration->addUserToWaitingList()) {
+					global $logger;
+					$logger->log("Failed to add user to waiting list (userId=$userId, eventInstanceId=$registration->eventInstanceId): " . $registration->getLastError(), Logger::LOG_ERROR);
+					return false;
+				}
+				return EventRegistrationService::saveRegistrationToUserEvents($eventInstance, $userId, null, $activeUserId);
+			});
+		} catch (\Throwable $e) {
+			global $logger;
+			$logger->log("joinEventWaitingList rolled back (userId=$userId, eventInstanceId=$eventInstanceId): " . $e->getMessage(), Logger::LOG_ERROR);
+			$result['message'] = translate([
+				'text' => 'Failed to join the waiting list.',
+				'isPublicFacing' => true,
+			]);
 			return $result;
 		}
 
@@ -12428,8 +12460,6 @@ class MyAccount_AJAX extends JSON_Action {
 			$result['message'] .= ' ' . str_replace('%1%', $subject, $fallbackNote);
 		}
 		$result['position'] = $position;
-
-		EventRegistrationService::saveRegistrationToUserEvents($eventInstance, $userId, null, $activeUserId);
 
 		return $result;
 	}
