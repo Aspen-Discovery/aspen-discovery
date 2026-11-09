@@ -41,6 +41,18 @@ class Admin_CollectionReports extends Admin_Admin {
 				}
 			}
 		}
+		if (array_key_exists('BorrowBox', $enabledModules)) {
+			require_once ROOT_DIR . '/sys/BorrowBox/BorrowBoxAPIProduct.php';
+			$borrowBoxData = new BorrowBoxAPIProduct();
+			$borrowBoxData->selectAdd();
+			$borrowBoxData->selectAdd('SUM(deleted = 0) AS activeCount');
+			$borrowBoxData->selectAdd('SUM(deleted) AS deletedCount');
+			if ($borrowBoxData->find(true)) {
+				$tableData['borrowBoxData']['rowName'] = "BorrowBox";
+				$tableData['borrowBoxData']['activeCount'] = $borrowBoxData->__get('activeCount');
+				$tableData['borrowBoxData']['deletedCount'] = $borrowBoxData->__get('deletedCount');
+			}
+		}
 		if (array_key_exists('CloudLibrary', $enabledModules)) {
 			require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibraryProduct.php';
 			$cloudLibraryData = new CloudLibraryProduct();
