@@ -9,7 +9,6 @@ class AspenPWASetting extends DataObject {
 	public $themeId;
 	public $manifestID;
 	public $startURL;
-	public $slug;
 	public $sha256CertFingerprint;
 	public $icon;
 
@@ -97,14 +96,6 @@ class AspenPWASetting extends DataObject {
 				'maxLength' => 50,
 				'required' => true,
 				'default' => '/',
-			],
-			'slug' => [
-				'property' => 'slug',
-				'type' => 'text',
-				'label' => 'Slug',
-				'note' => 'slug to identify the application',
-				'maxLength' => 50,
-				'required' => true,
 			],
 			'sha256CertFingerprint' => [
 				'property' => 'sha256CertFingerprint',

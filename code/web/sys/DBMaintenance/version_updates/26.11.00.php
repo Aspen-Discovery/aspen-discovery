@@ -69,6 +69,14 @@ function getUpdates26_11_00(): array {
 				"ALTER TABLE aspen_pwa_settings ADD COLUMN icon varchar(100) DEFAULT ''",
 			],
 		], //aspen_pwa_settings_icon
+		'aspen_pwa_settings_remove_slug' => [
+			'title' => 'Remove slug from Aspen PWA Settings',
+			'description' => 'Remove the unused slug from Aspen Progressive Web Application(PWA) settings',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE aspen_pwa_settings DROP COLUMN IF EXISTS slug",
+			],
+		], //aspen_pwa_settings_remove_slug
 
 		//galen
 
