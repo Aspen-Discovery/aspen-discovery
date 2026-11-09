@@ -488,26 +488,18 @@ class WebResource extends DB_LibraryLinkedObject {
 	public function canView(): bool {
 		global $locationSingleton;
 		$requireLoginUnlessInLibrary = $this->requireLoginUnlessInLibrary;
-		$librariesWithAccess = $this->getAllowableLibraries();
-		if($requireLoginUnlessInLibrary) {
-			$activeLibrary = $locationSingleton->getActiveLocation();
+		$librariesWithAccess = $this->getAllowableLibraries() ?? [];
+		if ($requireLoginUnlessInLibrary) {
+			$ipLocation = $locationSingleton->getIPLocation();
+			if ($ipLocation != null && in_array($ipLocation->libraryId, $librariesWithAccess)) {
+				return true;
+			}
 			$user = UserAccount::getLoggedInUser();
-			if($user) {
-				if($activeLibrary != null) {
-					$activeLibraryId = $activeLibrary->libraryId;
-					if (in_array($activeLibraryId, $librariesWithAccess)) {
-						return true;
-					}
-				}
+			if ($user) {
 				$userHomeLibrary = $user->getHomeLibrary();
-				if($userHomeLibrary) {
-					$userHomeLibraryId = $userHomeLibrary->libraryId;
-					if (in_array($userHomeLibraryId, $librariesWithAccess)) {
-						return true;
-					}
+				if ($userHomeLibrary && in_array($userHomeLibrary->libraryId, $librariesWithAccess)) {
+					return true;
 				}
-			} else {
-				return false;
 			}
 		} else {
 			return true;
