@@ -18,7 +18,7 @@
 				<input type="checkbox" name="cookieAnalytics" id="cookieAnalytics" {if $profile->userCookiePreferenceAnalytics==1}checked="checked"{/if} data-switch="">&nbsp;{translate text="Google Analytics Cookies" isPublicFacing=true}
 			</label>
 		</div>
-		{if array_key_exists('Axis 360', $enabledModules) || array_key_exists('EBSCO EDS', $enabledModules) || array_key_exists('EBSCOhost', $enabledModules) || array_key_exists('Summon', $enabledModules) || array_key_exists('OverDrive', $enabledModules)
+		{if array_key_exists('Axis 360', $enabledModules) || array_key_exists('BorrowBox', $enabledModules) || array_key_exists('EBSCO EDS', $enabledModules) || array_key_exists('EBSCOhost', $enabledModules) || array_key_exists('Summon', $enabledModules) || array_key_exists('OverDrive', $enabledModules)
 		 || array_key_exists('Palace Project', $enabledModules) || array_key_exists('Hoopla', $enabledModules) || array_key_exists('Side Loads', $enabledModules) || array_key_exists('Cloud Library', $enabledModules) || array_key_exists('Web Indexer', $enabledModules) || array_key_exists('Events', $enabledModules) || array_key_exists('Open Archives', $enabledModules)
 		 || array_key_exists('Web Indexer', $enabledModules) || array_key_exists('Gale', $enabledModules)}
 		<div>
@@ -32,6 +32,9 @@
 			<ul>
 				{if array_key_exists('Axis 360', $enabledModules)}
 				<li>{translate text="Boundless" isPublicFacing=true}</li>
+				{/if}
+				{if array_key_exists('BorrowBox', $enabledModules)}
+					<li>{translate text="BorrowBox" isPublicFacing=true}</li>
 				{/if}
 				{if array_key_exists('Cloud Library', $enabledModules)}
 					<li>{translate text="cloudLibrary" isPublicFacing=true}</li>

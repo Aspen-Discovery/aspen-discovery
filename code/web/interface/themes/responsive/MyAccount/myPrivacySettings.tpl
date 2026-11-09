@@ -69,6 +69,9 @@
 								{if array_key_exists('Axis 360', $enabledModules)}
 								<li>{translate text="Boundless" isPublicFacing=true}</li>
 								{/if}
+								{if array_key_exists('BorrowBox', $enabledModules)}
+									<li>{translate text="BorrowBox" isPublicFacing=true}</li>
+								{/if}
 								{if array_key_exists('Cloud Library', $enabledModules)}
 									<li>{translate text="cloudLibrary" isPublicFacing=true}</li>
 								{/if}
