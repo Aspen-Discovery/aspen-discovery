@@ -1784,7 +1784,7 @@ public class SierraExportAPIMain {
 					if (existingItems == null){
 						itemsForVolume.put(volumeId, ".i" + itemRecordNum + getCheckDigit(itemRecordNum));
 					}else{
-						itemsForVolume.put(volumeId, existingItems + "|" + itemRecordNum + getCheckDigit(itemRecordNum));
+						itemsForVolume.put(volumeId, existingItems + "|.i" + itemRecordNum + getCheckDigit(itemRecordNum));
 					}
 				}
 				getItemsForVolumeRS.close();
