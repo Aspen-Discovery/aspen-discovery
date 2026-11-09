@@ -1238,7 +1238,7 @@ function translate($params) {
 		} else {
 			$code = $activeLanguage->code;
 		}
-		$translator = new Translator('lang', $code);
+		$translator = new Translator(ROOT_DIR . '/lang', $code);
 	}
 	if (is_array($params)) {
 		$defaultText = $params['defaultText'] ?? '';
