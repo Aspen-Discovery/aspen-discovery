@@ -6174,10 +6174,13 @@ class MyAccount_AJAX extends JSON_Action {
 
 		$payment = new UserPayment();
 		$payment->squareToken = $paymentToken;
-		$payment->userId = $patronId;
+		
 
 		if ($transactionType == 'donation') {
 			$payment->transactionType = 'donation';
+		}
+		if (!empty($patronId)) {
+			$payment->userId = $patronId;
 		}
 
 		if (!$payment->find(true)) {
