@@ -4386,6 +4386,7 @@ class MyAccount_AJAX extends JSON_Action {
 			'cloud_library' => 'Cloud Library',
 			'hoopla' => 'Hoopla',
 			'axis360' => 'Boundless',
+			'borrowbox' => 'BorrowBox',
 			default => 'Unknown'
 		};
 
