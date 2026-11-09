@@ -3422,6 +3422,15 @@ class Theme extends DataObject {
 		return self::FONT_SOURCE_DEFAULT;
 	}
 
+	/**
+	 * The family shown for the font, empty when the base font is used.
+	 *
+	 * @param string $role heading or body
+	 */
+	public function getResolvedFontFamily(string $role): string {
+		return self::resolveFont($this->getAllAppliedThemes(), $role)['family'];
+	}
+
 	/** @noinspection PhpUnused */
 	public function validateHeadingFont(): array {
 		return $this->validateFont('heading');
