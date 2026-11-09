@@ -35,6 +35,8 @@ class DatabaseTransaction {
 			}
 			return $result;
 		} catch (\Throwable $e) {
+			// Re-check live state: beginTransaction() opened a transaction, but a rollback could've closed it.
+			// @phpstan-ignore booleanAnd.rightAlwaysFalse
 			if ($transactionOwnedByCurrentCall && $aspen_db->inTransaction()) {
 				$aspen_db->rollBack();
 			}
