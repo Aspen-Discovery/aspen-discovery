@@ -38,6 +38,9 @@ class ManuallyGroupedWorkRecord extends DataObject {
 		if (array_key_exists('Axis 360', $enabledModules)) {
 			$availableSources['axis360'] = 'Boundless';
 		}
+		if (array_key_exists('BorrowBox', $enabledModules)) {
+			$availableSources['borrowbox'] = 'BorrowBox';
+		}
 		if (array_key_exists('Cloud Library', $enabledModules)) {
 			$availableSources['cloud_library'] = 'Cloud Library';
 		}

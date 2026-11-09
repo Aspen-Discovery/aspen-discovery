@@ -23,6 +23,7 @@ class NonGroupedRecord extends DataObject {
 			$availableSources[$profile->name] = $profile->name;
 		}
 		$availableSources['axis360'] = 'Boundless';
+		$availableSources['borrowbox'] = 'BorrowBox';
 		$availableSources['cloud_library'] = 'cloudLibrary';
 		$availableSources['hoopla'] = 'Hoopla';
 		$availableSources['overdrive'] = 'Overdrive';
