@@ -3431,6 +3431,30 @@ class Theme extends DataObject {
 		return self::resolveFont($this->getAllAppliedThemes(), $role)['family'];
 	}
 
+	/**
+	 * Bundled files of the heading font for generated covers, empty when the heading font is not a Google
+	 * font bundled in /fonts.
+	 *
+	 * @return array{title: string, author: string}
+	 */
+	public function getCoverFontFiles(): array {
+		$font = self::resolveFont($this->getAllAppliedThemes(), 'heading');
+		if ($font['source'] != self::FONT_SOURCE_GOOGLE) {
+			return ['title' => '', 'author' => ''];
+		}
+		$fontPath = ROOT_DIR . '/fonts/' . str_replace(' ', '', $font['family']);
+		if (!file_exists($fontPath . '-Bold.ttf')) {
+			return ['title' => '', 'author' => ''];
+		}
+		$authorFont = $fontPath . '-Bold.ttf';
+		if (file_exists($fontPath . '-BoldItalic.ttf')) {
+			$authorFont = $fontPath . '-BoldItalic.ttf';
+		} elseif (file_exists($fontPath . '-Regular.ttf')) {
+			$authorFont = $fontPath . '-Regular.ttf';
+		}
+		return ['title' => $fontPath . '-Bold.ttf', 'author' => $authorFont];
+	}
+
 	/** @noinspection PhpUnused */
 	public function validateHeadingFont(): array {
 		return $this->validateFont('heading');
