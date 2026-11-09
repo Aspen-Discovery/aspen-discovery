@@ -13,9 +13,7 @@ class Talpa_Results extends ResultsAction {
 
 		//Retrieve the Grouped Work Display settings to use in result.tpl
 		$groupedWorkDisplaySettings = $library->getGroupedWorkDisplaySettings();
-		foreach ($groupedWorkDisplaySettings->showInSearchResultsMainDetails as $detailOption) {
-			$interface->assign($detailOption, true);
-		}
+		$groupedWorkDisplaySettings->assignSearchResultsMainDetails($interface);
 		$interface->assign('formatDisplayStyle', $groupedWorkDisplaySettings->formatDisplayStyle);
 		$interface->assign('hideManifestationsInMobileView', $groupedWorkDisplaySettings->hideManifestationsInMobileView);
 
