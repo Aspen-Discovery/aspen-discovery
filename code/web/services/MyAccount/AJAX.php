@@ -6179,9 +6179,9 @@ class MyAccount_AJAX extends JSON_Action {
 		if ($transactionType == 'donation') {
 			$payment->transactionType = 'donation';
 		}
-               else {
-                       $payment->userId = $patronId;
-                }
+		if (!empty($patronId)) {
+			$payment->userId = $patronId;
+		}
 
 		if (!$payment->find(true)) {
 			if ($transactionType == 'donation') {
