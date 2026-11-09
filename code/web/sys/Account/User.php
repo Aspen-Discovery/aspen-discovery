@@ -5567,6 +5567,14 @@ class User extends DataObject {
 				'success' => $result['success'],
 				'message' => $result['api']['message'],
 			];
+		} elseif ($source == 'borrowbox') {
+			require_once ROOT_DIR . '/Drivers/BorrowBoxDriver.php';
+			$driver = new BorrowBoxDriver();
+			$result = $driver->placeHold($this, $selectedRequestCandidate->sourceId);
+			return [
+				'success' => $result['success'],
+				'message' => $result['api']['message'],
+			];
 		} elseif ($source == 'palace_project') {
 			require_once ROOT_DIR . '/Drivers/PalaceProjectDriver.php';
 			$driver = new PalaceProjectDriver();
