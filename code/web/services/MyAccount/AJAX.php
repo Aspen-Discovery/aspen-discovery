@@ -4185,6 +4185,7 @@ class MyAccount_AJAX extends JSON_Action {
 				foreach ($filters as $filter) {
 					if (count($filter['options']) > 1) {
 						$showFilterOptions = true;
+						break;
 					}
 				}
 				if ($showFilterOptions) {
@@ -4321,6 +4322,7 @@ class MyAccount_AJAX extends JSON_Action {
 			'cloud_library' => 'Cloud Library',
 			'hoopla' => 'Hoopla',
 			'axis360' => 'Boundless',
+			'palace_project' => 'Palace Project',
 			default => 'Unknown'
 		};
 
