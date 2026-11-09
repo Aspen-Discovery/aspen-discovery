@@ -4324,7 +4324,8 @@ class MyAccount_AJAX extends JSON_Action {
 			'cloud_library' => 'Cloud Library',
 			'hoopla' => 'Hoopla',
 			'axis360' => 'Boundless',
-			default => 'Unknown'
+			'palace_project' => 'Palace Project',
+			default => $fv
 		};
 
 		$label = match($field) {
