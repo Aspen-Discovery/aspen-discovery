@@ -146,6 +146,7 @@ class GroupedWork_AJAX extends JSON_Action {
 				'cloudLibraryRecord'  => 'CloudLibraryRecordDriver',
 				'axis360Record'       => 'Axis360RecordDriver',
 				'palaceProjectRecord' => 'PalaceProjectRecordDriver',
+				'borrowboxRecord'     => 'BorrowBoxRecordDriver',
 			];
 			$recordType = $_REQUEST['recordType'];
 
