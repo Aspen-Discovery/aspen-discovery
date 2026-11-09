@@ -4951,6 +4951,21 @@ class User extends DataObject {
 			]);
 		}
 
+		if (array_key_exists('Omeka', $enabledModules)) {
+			$sections['omeka'] = new AdminSection('Omeka');
+			$omekaSettingsAction = new AdminAction('Settings', 'Define connection information between Omeka and Aspen Discovery.', '/Omeka/Settings');
+			$omekaScopesAction = new AdminAction('Scopes', 'Define which records are loaded for each library and location.', '/Omeka/Scopes');
+			if ($sections['omeka']->addAction($omekaSettingsAction, 'Administer Omeka')) {
+				$omekaSettingsAction->addSubAction($omekaScopesAction, 'Administer Omeka');
+			} else {
+				$sections['omeka']->addAction($omekaScopesAction, 'Administer Omeka');
+			}
+			$sections['omeka']->addAction(new AdminAction('Indexing Log', 'View the indexing log for Omeka.', '/Omeka/IndexingLog'), [
+				'View System Reports',
+				'View Indexing Logs',
+			]);
+		}
+
 		if (array_key_exists('Side Loads', $enabledModules)) {
 			$sections['side_loads'] = new AdminSection('Side Loads');
 			$sideLoadsSettingsAction = new AdminAction('Settings', 'Define connection information between Side Loads and Aspen Discovery.', '/SideLoads/SideLoads');

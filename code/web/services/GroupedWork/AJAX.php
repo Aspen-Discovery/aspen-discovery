@@ -146,6 +146,7 @@ class GroupedWork_AJAX extends JSON_Action {
 				'cloudLibraryRecord'  => 'CloudLibraryRecordDriver',
 				'axis360Record'       => 'Axis360RecordDriver',
 				'palaceProjectRecord' => 'PalaceProjectRecordDriver',
+				'omekaRecord'         => 'OmekaRecordDriver',
 			];
 			$recordType = $_REQUEST['recordType'];
 
@@ -193,7 +194,7 @@ class GroupedWork_AJAX extends JSON_Action {
 				'success' => false,
 			];
 		} else {
-			$description = strip_tags($description, '<a><b><p><i><em><strong><ul><li><ol>');
+			$description = strip_tags($description, '<a><b><p><br><i><em><strong><ul><li><ol>');
 			$result['success'] = true;
 		}
 		$result['description'] = $description;
