@@ -7,13 +7,12 @@ class Security extends MyAccount {
 	function launch() : void {
 		global $interface;
 
-		$twoFactor = UserAccount::has2FAEnabledForPType();
-		$interface->assign('twoFactorEnabled', $twoFactor);
 		if (UserAccount::isLoggedIn()) {
 			$user = UserAccount::getActiveUserObj();
 
 			$twoFactorAuthSetting = $user->getTwoFactorAuthenticationSetting();
 			if ($twoFactorAuthSetting != null) {
+				$interface->assign('twoFactorEnabled', true);
 				$isEnabled = $twoFactorAuthSetting->isEnabled;
 				if ($isEnabled != 'notAvailable') {
 					$interface->assign('twoFactorStatus', (int)$user->twoFactorStatus);
