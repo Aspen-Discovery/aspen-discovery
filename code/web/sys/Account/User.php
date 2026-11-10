@@ -117,6 +117,13 @@ class User extends DataObject {
 	//Data that we load, but don't store in the User table
 	public $_fullname;
 	public $_preferredName;
+	// and preferred name broken down for editing purposes
+	// for ILSs such as Evergreen that support it
+	public $_pref_prefix;
+	public $_pref_first_given_name;
+	public $_pref_second_given_name;
+	public $_pref_family_name;
+	public $_pref_suffix;
 	public $_address1;
 	public $_address2;
 	public $_city;
@@ -4997,8 +5004,8 @@ class User extends DataObject {
 			)) {
 				$aspenEventsAction->addSubAction(new AdminAction('Configure Event Fields', 'Define event fields for Aspen Events.', '/Events/EventFields'), 'Administer Field Sets');
 				$aspenEventsAction->addSubAction(new AdminAction('Configure Event Field Sets', 'Define sets of event fields to use for Aspen Events.', '/Events/EventFieldSets'), 'Administer Field Sets');
-				$aspenEventsAction->addSubAction(new AdminAction('Configure Event Types', 'Define event types to use for Aspen Events.', '/Events/EventTypes'), 'Administer Event Types');
 				$aspenEventsAction->addSubAction(new AdminAction('Configure Attendee Categories', 'Define attendee categories for Aspen Events.', '/Events/AttendeeCategories'), 'Administer Event Types');
+				$aspenEventsAction->addSubAction(new AdminAction('Configure Event Types', 'Define event types to use for Aspen Events.', '/Events/EventTypes'), 'Administer Event Types');
 				$aspenEventsAction->addSubAction(new AdminAction('Indexing Settings', 'Aspen Event Indexing Settings including indexing and library scope.', '/Events/IndexingSettings'), 'Administer Events for All Locations');
 				$aspenEventsAction->addSubAction(new AdminAction('Event Reports', 'Aspen Events Reporting.', '/Events/EventGraphs'), [
 					'View Event Reports for All Libraries',

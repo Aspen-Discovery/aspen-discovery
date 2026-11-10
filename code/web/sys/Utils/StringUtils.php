@@ -24,7 +24,20 @@ class StringUtils {
 			$currencyCode = $variables->currencyCode;
 		}
 
-		return new NumberFormatter($activeLanguage->locale . '@currency=' . $currencyCode, NumberFormatter::CURRENCY);
+		if ($activeLanguage == null) {
+			require_once ROOT_DIR . '/sys/Translation/Language.php';
+			$activeLanguage = new Language();
+			$activeLanguage->isDefault = 1;
+			if ($activeLanguage->find(true)) {
+				$locale = $activeLanguage->locale;
+			}else{
+				$locale = 'en_US';
+			}
+		}else{
+			$locale = $activeLanguage->locale;
+		}
+
+		return new NumberFormatter($locale . '@currency=' . $currencyCode, NumberFormatter::CURRENCY);
 	}
 
 	static function formatCurrency(float $number) : string {
