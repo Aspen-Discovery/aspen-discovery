@@ -3,6 +3,7 @@
 require_once ROOT_DIR . '/sys/Utils/DateUtils.php';
 require_once ROOT_DIR . '/sys/Events/EventInstance.php';
 require_once ROOT_DIR . '/sys/Events/UserAspenEventInstanceRegistration.php';
+require_once ROOT_DIR . '/sys/DB/DatabaseTransaction.php';
 
 /**
  * Service class for handling event registration logic
@@ -50,17 +51,19 @@ class EventRegistrationService {
 
 		$registration->registeredByStaffId = $staffUserId;
 
-		if ($registration->registerUser()) {
-			UserAspenEventInstanceRegistrationAttendee::saveForRegistration((int)$registration->id, $validatedCounts);
-			self::saveRegistrationToUserEvents($eventInstance, $userId, $staffUserId);
-			return [
-				'success' => true,
-				'title' => translate(['text' => 'Registration Successful', 'isPublicFacing' => true]),
-				'message' => translate(['text' => 'User has been registered for this event.', 'isPublicFacing' => true]),
-			];
+		try {
+			DatabaseTransaction::runInTransaction(fn() => self::writeRegistration($registration, $validatedCounts, $eventInstance, $userId, $staffUserId));
+		} catch (\Throwable $e) {
+			global $logger;
+			$logger->log("registerUserForEvent rolled back (userId=$userId, eventInstanceId=$eventInstanceId): " . $e->getMessage(), Logger::LOG_ERROR);
+			return self::publicErrorResult(translate(['text' => 'Failed to create registration.', 'isPublicFacing' => true]));
 		}
 
-		return self::publicErrorResult(translate(['text' => 'Failed to create registration.', 'isPublicFacing' => true]));
+		return [
+			'success' => true,
+			'title' => translate(['text' => 'Registration Successful', 'isPublicFacing' => true]),
+			'message' => translate(['text' => 'User has been registered for this event.', 'isPublicFacing' => true]),
+		];
 	}
 
 	/**
@@ -75,15 +78,23 @@ class EventRegistrationService {
 			return self::publicErrorResult(translate(['text' => 'Registration not found.', 'isPublicFacing' => true]));
 		}
 
-		if ($registration->delete()) {
-			return [
-				'success' => true,
-				'title' => translate(['text' => 'Registration Cancelled', 'isPublicFacing' => true]),
-				'message' => translate(['text' => 'Registration has been cancelled successfully.', 'isPublicFacing' => true]),
-			];
+		try {
+			$deleted = DatabaseTransaction::runInTransaction(fn() => $registration->delete());
+		} catch (\Throwable $e) {
+			global $logger;
+			$logger->log("unregisterUserFromEvent rolled back (userId=$userId, eventInstanceId=$eventInstanceId): " . $e->getMessage(), Logger::LOG_ERROR);
+			return self::publicErrorResult(translate(['text' => 'Failed to cancel registration.', 'isPublicFacing' => true]));
 		}
 
-		return self::publicErrorResult(translate(['text' => 'Failed to cancel registration.', 'isPublicFacing' => true]));
+		if (!$deleted) {
+			return self::publicErrorResult(translate(['text' => 'Failed to cancel registration.', 'isPublicFacing' => true]));
+		}
+
+		return [
+			'success' => true,
+			'title' => translate(['text' => 'Registration Cancelled', 'isPublicFacing' => true]),
+			'message' => translate(['text' => 'Registration has been cancelled successfully.', 'isPublicFacing' => true]),
+		];
 	}
 
 	public static function getAttendeeCategoryBreakdownForRegistration(int $eventInstanceId, int $eventRegistrationId): array {
@@ -381,11 +392,11 @@ class EventRegistrationService {
 		return true;
 	}
 
-	public static function saveToUserEvents(EventInstance $instance, int $userId, int|null $savedByStaffId = null): void {
+	public static function saveToUserEvents(EventInstance $instance, int $userId, int|null $savedByStaffId = null): bool {
 		require_once ROOT_DIR . '/sys/Events/EventsIndexingSetting.php';
 		$indexingSetting = new EventsIndexingSetting();
 		if (!$indexingSetting->find(true)) {
-			return;
+			return true;
 		}
 
 		$sourceId = 'aspenEvent_' . $indexingSetting->id . '_' . $instance->id;
@@ -395,7 +406,7 @@ class EventRegistrationService {
 		$entry->sourceId = $sourceId;
 		$entry->userId = $userId;
 		if ($entry->find(true)) {
-			return;
+			return true;
 		}
 
 		$event = $instance->getParentEvent();
@@ -411,15 +422,22 @@ class EventRegistrationService {
 		$entry->location = $location->find(true) ? $location->displayName : '';
 
 		$entry->dateAdded = time();
-		$entry->insert();
+		if ($entry->insert() === false) {
+			global $logger;
+			$logger->log("Failed to mirror registration to user_events_entry (sourceId=$sourceId, userId=$userId): " . $entry->getLastError(), Logger::LOG_ERROR);
+			return false;
+		}
+		return true;
 	}
 
-	public static function saveRegistrationToUserEvents(EventInstance $instance, int $userId, int|null $savedByStaffId = null, int|null $actingUserId = null): void {
-		self::saveToUserEvents($instance, $userId, $savedByStaffId);
+	public static function saveRegistrationToUserEvents(EventInstance $instance, int $userId, int|null $savedByStaffId = null, int|null $actingUserId = null): bool {
+		if (!self::saveToUserEvents($instance, $userId, $savedByStaffId)) {
+			return false;
+		}
 
 		// so the registered may manage their registration, also save the event for the acting user when registering on behalf of a linked user
-		if ($actingUserId !== null && $actingUserId !== $userId) {
-			self::saveToUserEvents($instance, $actingUserId);
+		if ($actingUserId !== null && $actingUserId !== $userId && !self::saveToUserEvents($instance, $actingUserId)) {
+			return false;
 		}
 
 		// so linked accounts display all events their linked user is registered to, save the event for everyone who can view the registered user
@@ -427,12 +445,15 @@ class EventRegistrationService {
 		$user = new User();
 		$user->id = $userId;
 		if (!$user->find(true)) {
-			return;
+			return false;
 		}
 
 		foreach ($user->getViewerIds() as $viewerId) {
-			self::saveToUserEvents($instance, (int)$viewerId);
+			if (!self::saveToUserEvents($instance, (int)$viewerId)) {
+				return false;
+			}
 		}
+		return true;
 	}
 
 	public static function sendCancellationNotificationEmails(array $upcomingInstances, array $affectedUsersByStatus): void {
@@ -545,6 +566,24 @@ class EventRegistrationService {
 			'title' => translate(['text' => 'Error', 'isAdminFacing' => true]),
 			'message' => $message,
 		];
+	}
+
+	public static function writeRegistration(UserAspenEventInstanceRegistration $registration, array $validatedCounts, EventInstance $eventInstance, int $userId, ?int $staffUserId, array $eventFieldValues = []): bool {
+		if (!$registration->registerUser()) {
+			global $logger;
+			$logger->log("Failed to create registration row (userId=$userId, eventInstanceId=$registration->eventInstanceId): " . $registration->getLastError(), Logger::LOG_ERROR);
+			return false;
+		}
+		if (!UserAspenEventInstanceRegistrationAttendee::saveForRegistration((int)$registration->id, $validatedCounts)) {
+			return false;
+		}
+
+		foreach ($eventFieldValues as $eventFieldId => $value) {
+			if (!$registration->saveEventFieldValue((int)$eventFieldId, $value)) {
+				return false;
+			}
+		}
+		return self::saveRegistrationToUserEvents($eventInstance, $userId, $staffUserId);
 	}
 
 	private static function getRegistrationFor(int $userId, int $eventInstanceId): UserAspenEventInstanceRegistration|false {
