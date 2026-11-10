@@ -2295,6 +2295,18 @@ AspenDiscovery.Admin = (function () {
 			}
 		},
 
+		getActiveIlsForPropertySearch: function () {
+			var activeIlsInput = $("#activeIls");
+			if (activeIlsInput.length > 0) {
+				return activeIlsInput.val();
+			}
+			var ilsSelect = $("#ilsSelect");
+			if (ilsSelect.length > 0) {
+				return ilsSelect.val();
+			}
+			return null;
+		},
+
 		searchProperties: function () {
 			var searchValue = $("#propertySearch").val();
 			var searchRegex = new RegExp(searchValue, 'i');
@@ -2305,19 +2317,23 @@ AspenDiscovery.Admin = (function () {
 				$(".propertySection").show();
 				if ($("#activeIls").length > 0) {
 					AspenDiscovery.Admin.toggleIlsSpecificFields();
+				} else if ($("#ilsSelect").length > 0) {
+					AspenDiscovery.Admin.toggleAccountProfileIlsFields();
 				}
 				//Collapse all panels
 				$(".editor .panel-title a").removeClass('expanded').addClass('collapsed').attr("aria-expanded", "false");
 				$(".editor .panel").removeClass('active').attr("aria-expanded", "false");
 				$(".editor .accordion_body").removeClass('in').hide();
 			} else {
-				var activeIls = $("#activeIls").val();
+				var activeIls = AspenDiscovery.Admin.getActiveIlsForPropertySearch();
 				propertyRows.hide();
 				propertyRows.filter(function () {
 					var row = $(this);
 					var isSection = row.find(".propertyRow").length > 0;
 					var relatedIls = row.closest("[data-related-ils]").data("related-ils");
-					var appliesToIls = relatedIls === undefined || relatedIls.includes("~" + activeIls + "~");
+					var appliesToIls = activeIls === null
+						|| relatedIls === undefined
+						|| String(relatedIls).indexOf("~" + activeIls + "~") !== -1;
 
 					return !isSection && appliesToIls && searchRegex.test(row.text());
 				}).each(function () {
