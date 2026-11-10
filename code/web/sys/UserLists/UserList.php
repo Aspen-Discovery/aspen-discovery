@@ -177,7 +177,7 @@ class UserList extends DataObject {
 					) 
 				)"
 			);
-    	}
+		}
 
 		return $listEntry->count();
 	}
