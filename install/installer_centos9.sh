@@ -1,7 +1,6 @@
 #!/bin/sh
 
 #This will need to be copied to the server manually to do the setup.
-#Expects to be installed on CentOS7
 #Run as sudo ./installer_centos9.sh
 yum check-update
 yum -y install wget
@@ -17,6 +16,7 @@ yum -y install php-pecl-ssh2
 yum -y install php-pgsql
 yum -y install php-imagick
 yum -y install php-ldap
+./install_composer.sh
 service httpd start
 chkconfig httpd on
 # New PHP ini file
