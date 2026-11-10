@@ -302,7 +302,7 @@ class Grouping_Record {
 	 * @param string $variationId The variation to get the item summary for
 	 * @return array
 	 */
-	public function getItemSummary(string $variationId = '') : array {
+	public function getItemSummary(?string $variationId = '') : array {
 		if ($variationId == '') {
 			$variationId = 'any';
 		}

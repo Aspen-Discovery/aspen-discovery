@@ -125,6 +125,8 @@ class Admin_Administrators extends ObjectEditor {
 									]);
 								} elseif ($numResults == 1) {
 									$newAdmin->fetch();
+									$errors = [];
+									break;
 								} elseif ($numResults > 1) {
 									$newAdmin = false;
 									$errors[$login] = translate([
