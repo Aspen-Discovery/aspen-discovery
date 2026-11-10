@@ -962,9 +962,9 @@ class UserAccount {
 			if (isset($_SESSION['lastCASCheck'])) {
 				unset($_SESSION['lastCASCheck']);
 			}
-			unset($_SESSION['has2FA]']);
-			unset($_SESSION['enroll2FA]']);
-			unset($_SESSION['codeSent]']);
+			unset($_SESSION['has2FA']);
+			unset($_SESSION['enroll2FA']);
+			unset($_SESSION['codeSent']);
 
 			UserAccount::$isLoggedIn = false;
 			UserAccount::$primaryUserData = null;
