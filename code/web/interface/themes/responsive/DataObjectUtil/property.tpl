@@ -609,12 +609,17 @@
 							</script>
 							{/literal}
 						{else}
-							{translate text="Select a file" isAdminFacing=true}&hellip; <input type="file" style="display: none;" name="{$propName}" id="{$propName}" {if !empty($property.required)}required="required"{/if} {if !empty($property.readOnly)}readonly disabled{/if}>
+							{translate text="Select a file" isAdminFacing=true}&hellip; <input type="file" style="display: none;" name="{$propName}" id="{$propName}" {if !empty($property.accept)}accept="{$property.accept}"{/if} {if !empty($property.required) && (empty($property.readContents) || empty($propValue))}required="required"{/if} {if !empty($property.readOnly)}readonly disabled{/if}>
 						{/if}
 					</span>
 				</label>
-				<input type="text" class="form-control" id="importFile-label-{$propName}" readonly value="{$propValue}">
-				<input type='hidden' name='{$propName}_existing' id='{$propName}_existing' value='{$propValue|escape}'>
+				{if !empty($property.readContents)}
+					{* The contents may be sensitive so never write them to the page *}
+					<input type="text" class="form-control" id="importFile-label-{$propName}" readonly value="{if !empty($propValue)}{translate text="Use previously uploaded file" inAttribute=true isAdminFacing=true}{/if}">
+				{else}
+					<input type="text" class="form-control" id="importFile-label-{$propName}" readonly value="{$propValue}">
+					<input type='hidden' name='{$propName}_existing' id='{$propName}_existing' value='{$propValue|escape}'>
+				{/if}
 			</div>
 			{if !empty($propValue)}
 				<div class="checkbox" style="margin-top: 0">

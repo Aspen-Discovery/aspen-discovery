@@ -821,6 +821,7 @@ class UInterface extends Smarty {
 		$pwaEnabled = array_key_exists('Aspen Progressive Web Application(PWA)', $enabledModules);
 		$pwaEnabled = $pwaEnabled && $library->AspenPWASettingId != -1;
 		$this->assign('AspenPWAEnabled', $pwaEnabled);
+		$this->assign('AspenPWANotificationsEnabled', $pwaEnabled && !empty($library->firebaseSettingId) && $library->firebaseSettingId != -1);
 
 		$this->assign('showLibraryHoursAndLocationsLink', $library->getLayoutSettings()->showLibraryHoursAndLocationsLink);
 		//Check to see if we should just call it library location

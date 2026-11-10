@@ -25,6 +25,20 @@ class AspenPWA_Icon extends Action {
 			return;
 		}
 
+		//Use the icon uploaded to the PWA settings and fall back to the theme logo
+		if (!empty($settings->icon)) {
+			global $configArray;
+			$fullPath = $configArray['Site']['local'] . '/files/original/' . basename($settings->icon);
+			if (is_readable($fullPath)) {
+				header('Content-Type: image/png');
+				header('Content-Length: ' . filesize($fullPath));
+				readfile($fullPath);
+				die();
+			}
+			global $logger;
+			$logger->log("PWA icon $fullPath could not be read, using the theme logo", Logger::LOG_ERROR);
+		}
+
 		$api = new SystemAPI('internal');
 		$_REQUEST['type'] = "logoApp";
 		$api->getLogoFile();
