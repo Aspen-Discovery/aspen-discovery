@@ -7,22 +7,22 @@
 {assign var=uploadProperty value=$property.uploadProperty|default:''}
 <div id="{$propName}-sources">
 	<label class="radio-inline">
-		<input type="radio" name="{$propName}-source" value="1" {if $fontSource == 1}checked="checked"{/if} {if !empty($property.readOnly)}disabled{/if} onchange="AspenDiscovery.Admin.updateFontSource('{$propName}', '{$uploadProperty}')">
+		<input type="radio" name="{$propName}-source" value="1" {if $fontSource == 1}checked="checked"{/if} {if !empty($property.readOnly)}disabled{/if} onchange="AspenDiscovery.Admin.updateFontSource('{$propName}')">
 		{translate text="Use default" isAdminFacing=true}{if !empty($property.inheritedFont)} ({$property.inheritedFont|escape}){/if}
 	</label>
 	<label class="radio-inline">
-		<input type="radio" name="{$propName}-source" value="0" {if $fontSource == 0}checked="checked"{/if} {if !empty($property.readOnly)}disabled{/if} onchange="AspenDiscovery.Admin.updateFontSource('{$propName}', '{$uploadProperty}')">
+		<input type="radio" name="{$propName}-source" value="0" {if $fontSource == 0}checked="checked"{/if} {if !empty($property.readOnly)}disabled{/if} onchange="AspenDiscovery.Admin.updateFontSource('{$propName}')">
 		{translate text="Google Fonts" isAdminFacing=true}
 	</label>
 	{if !empty($uploadProperty)}
 		<label class="radio-inline">
-			<input type="radio" name="{$propName}-source" value="2" {if $fontSource == 2}checked="checked"{/if} {if !empty($property.readOnly)}disabled{/if} onchange="AspenDiscovery.Admin.updateFontSource('{$propName}', '{$uploadProperty}')">
+			<input type="radio" name="{$propName}-source" value="2" {if $fontSource == 2}checked="checked"{/if} {if !empty($property.readOnly)}disabled{/if} onchange="AspenDiscovery.Admin.updateFontSource('{$propName}')">
 			{translate text="Uploaded file" isAdminFacing=true}
 		</label>
 	{/if}
 </div>
-{if !empty($property.inheritedFontNote)}<span id="{$propName}-default-note" class="help-block" style="margin-top:0"><small><i class="fas fa-info-circle"></i> {$property.inheritedFontNote|escape}</small></span>{/if}
-<div class="row" id="{$propName}-google" style="margin-top: .5em;">
+{if !empty($property.inheritedFontNote)}<span id="{$propName}-default-note" class="help-block" style="margin-top:0;{if $fontSource != 1} display: none;{/if}"><small><i class="fas fa-info-circle"></i> {$property.inheritedFontNote|escape}</small></span>{/if}
+<div class="row" id="{$propName}-google" style="margin-top: .5em;{if $fontSource != 0} display: none;{/if}">
 	<div class="col-sm-7">
 		<div class="input-group">
 			<input type="text" name='{$propName}' id='{$propName}' value="{$propValue|escape}" data-suggestions='{json_encode($property.suggestedFonts)|escape:"html"}' data-families-url="/js/googleFontFamilies.json?v={$aspenVersion|urlencode}.{$cssJsCacheCounter}" data-empty-message="{$property.emptyNameMessage|escape}" data-not-found-message="{$property.notFoundMessage|escape}" maxlength="100" autocomplete="off" class='form-control font {if !empty($property.required)}required{/if}' {if !empty($property.readOnly)}readonly{/if} onchange="AspenDiscovery.Admin.loadGoogleFontPreview('{$propName}', true)">
@@ -36,9 +36,14 @@
 		</div>
 	</div>
 </div>
+{if !empty($uploadProperty)}
+	<div id="{$propName}-upload" style="margin-top: .5em;{if $fontSource != 2} display: none;{/if}">
+		{include file="DataObjectUtil/uploadedFont.tpl" propName=$uploadProperty propValue=$object->$uploadProperty}
+	</div>
+{/if}
 <script type="text/javascript">
 	$().ready(function () {ldelim}
 		AspenDiscovery.Admin.initFontSuggestions('{$propName}');
-		AspenDiscovery.Admin.updateFontSource('{$propName}', '{$uploadProperty}');
+		AspenDiscovery.Admin.loadGoogleFontPreview('{$propName}');
 	{rdelim});
 </script>
