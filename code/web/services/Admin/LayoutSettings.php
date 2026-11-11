@@ -73,7 +73,7 @@ class Admin_LayoutSettings extends ObjectEditor {
 	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
-		$breadcrumbs[] = new Breadcrumb('/Admin/Home#theme_and_layout', 'Configuration Templates');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#theme_and_layout', 'Theme & Layout');
 		$breadcrumbs[] = new Breadcrumb('/Admin/LayoutSettings', 'Layout Settings');
 		return $breadcrumbs;
 	}
