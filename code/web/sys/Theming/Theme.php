@@ -652,34 +652,14 @@ class Theme extends DataObject {
 //		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Themes'));
 //		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All Themes'));
 
-		//Load Valid Fonts
-		$validHeadingFonts = [
+		// Shown before anything is typed; typing searches every Google Fonts family.
+		$suggestedFonts = [
 			'Arimo',
 			'Catamaran',
 			'Gothic A1',
-			'Helvetica',
-			'Helvetica Neue',
 			'Josefin Sans',
 			'Lato',
 			'Merriweather',
-			'Montserrat',
-			'Noto Sans',
-			'Open Sans',
-			'PT Sans',
-			'Raleway',
-			'Roboto',
-			'Rubik',
-			'Source Sans Pro',
-			'Ubuntu',
-		];
-		$validBodyFonts = [
-			'Arimo',
-			'Droid Serif',
-			'Gothic A1',
-			'Helvetica',
-			'Helvetica Neue',
-			'Josefin Sans',
-			'Lato',
 			'Montserrat',
 			'Noto Sans',
 			'Open Sans',
@@ -690,7 +670,7 @@ class Theme extends DataObject {
 			'Roboto Condensed',
 			'Roboto Slab',
 			'Rubik',
-			'Source Sans Pro',
+			'Source Sans 3',
 			'Ubuntu',
 		];
 
@@ -1152,8 +1132,8 @@ class Theme extends DataObject {
 				'property' => 'headingFont',
 				'type' => 'font',
 				'label' => 'Heading Font',
-				'description' => 'Use the default font, a Google Fonts family (pick a suggestion or type any name, for example Figtree), or an uploaded file',
-				'validFonts' => $validHeadingFonts,
+				'description' => 'Use the default font, a Google Fonts family (type to search every Google Fonts family, for example Figtree), or an uploaded file',
+				'suggestedFonts' => $suggestedFonts,
 				'uploadProperty' => 'customHeadingFont',
 				'serverValidation' => 'validateHeadingFont',
 				// The editor replaces %fontName% with the name being typed.
@@ -1177,8 +1157,8 @@ class Theme extends DataObject {
 				'property' => 'bodyFont',
 				'type' => 'font',
 				'label' => 'Body Font',
-				'description' => 'Use the default font, a Google Fonts family (pick a suggestion or type any name, for example Figtree), or an uploaded file',
-				'validFonts' => $validBodyFonts,
+				'description' => 'Use the default font, a Google Fonts family (type to search every Google Fonts family, for example Figtree), or an uploaded file',
+				'suggestedFonts' => $suggestedFonts,
 				'uploadProperty' => 'customBodyFont',
 				'serverValidation' => 'validateBodyFont',
 				'emptyNameMessage' => self::getGoogleFontMessage('empty', 'Body', '', true),
@@ -3483,7 +3463,7 @@ class Theme extends DataObject {
 					1 => $label,
 					'isAdminFacing' => true,
 				]);
-			} elseif ((in_array($fontProperty, $this->_changedFields) || in_array($fontProperties['source'], $this->_changedFields)) && !self::googleFontExists($fontName)) {
+			} elseif ((in_array($fontProperty, $this->_changedFields) || in_array($fontProperties['source'], $this->_changedFields)) && !in_array($fontName, self::getGoogleFontFamilies(), true)) {
 				$errors[] = self::getGoogleFontMessage('notFound', $label, $fontName);
 			}
 		} else {
@@ -3526,15 +3506,17 @@ class Theme extends DataObject {
 	}
 
 	/**
-	 * Only a 400 from Google Fonts rejects a name, so themes can be saved when Google is unreachable.
+	 * Every Google Fonts family, taken from the familyMetadataList of https://fonts.google.com/metadata/fonts.
+	 * The theme editor loads the same file from /js to suggest and check names.
+	 *
+	 * @return string[]
 	 */
-	private static function googleFontExists(string $fontName): bool {
-		require_once ROOT_DIR . '/sys/CurlWrapper.php';
-		$curlWrapper = new CurlWrapper();
-		$curlWrapper->setConnectTimeout(3);
-		$curlWrapper->setTimeout(5);
-		$curlWrapper->curlGetPage('https://fonts.googleapis.com/css?family=' . urlencode($fontName));
-		return $curlWrapper->getResponseCode() != 400;
+	public static function getGoogleFontFamilies(): array {
+		static $families = null;
+		if ($families === null) {
+			$families = json_decode((string)file_get_contents(ROOT_DIR . '/js/googleFontFamilies.json'), true) ?: [];
+		}
+		return $families;
 	}
 
 	/**

@@ -24,7 +24,10 @@
 {if !empty($property.inheritedFontNote)}<span id="{$propName}-default-note" class="help-block" style="margin-top:0"><small><i class="fas fa-info-circle"></i> {$property.inheritedFontNote|escape}</small></span>{/if}
 <div class="row" id="{$propName}-google" style="margin-top: .5em;">
 	<div class="col-sm-7">
-		<input type="text" name='{$propName}' id='{$propName}' value="{$propValue|escape}" data-suggestions='{json_encode($property.validFonts)|escape:"html"}' data-empty-message="{$property.emptyNameMessage|escape}" data-not-found-message="{$property.notFoundMessage|escape}" maxlength="100" autocomplete="off" class='form-control font {if !empty($property.required)}required{/if}' {if !empty($property.readOnly)}readonly{/if} onchange="AspenDiscovery.Admin.loadGoogleFontPreview('{$propName}', true)">
+		<div class="input-group">
+			<input type="text" name='{$propName}' id='{$propName}' value="{$propValue|escape}" data-suggestions='{json_encode($property.suggestedFonts)|escape:"html"}' data-families-url="/js/googleFontFamilies.json?v={$aspenVersion|urlencode}.{$cssJsCacheCounter}" data-empty-message="{$property.emptyNameMessage|escape}" data-not-found-message="{$property.notFoundMessage|escape}" maxlength="100" autocomplete="off" class='form-control font {if !empty($property.required)}required{/if}' {if !empty($property.readOnly)}readonly{/if} onchange="AspenDiscovery.Admin.loadGoogleFontPreview('{$propName}', true)">
+			<span class="input-group-btn"><button class="btn btn-default" type="button" onclick="return AspenDiscovery.Admin.clearGoogleFont('{$propName}');" title="{translate text="Clear" inAttribute=true isAdminFacing=true}" {if !empty($property.readOnly)}disabled{/if}><i class="fas fa-times-circle" role="presentation"></i></button></span>
+		</div>
 		<div id="{$propName}-warning" class="text-danger" style="display: none; margin-top: .25em;"></div>
 	</div>
 	<div class="col-sm-5">
