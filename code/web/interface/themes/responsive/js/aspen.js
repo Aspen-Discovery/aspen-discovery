@@ -6160,16 +6160,12 @@ AspenDiscovery.Admin = (function () {
 			AspenDiscovery.Account.ajaxLightbox("/Admin/AJAX?method=getExtractNotes&id=" + id + "&source=" + source, true);
 			return false;
 		},
-		updateFontSource: function (fontProperty, uploadProperty) {
+		updateFontSource: function (fontProperty) {
 			var source = $("input[name='" + fontProperty + "-source']:checked").val();
 			$("#" + fontProperty + "-default-note").toggle(source === '1');
 			$("#" + fontProperty + "-google").toggle(source === '0');
-			if (uploadProperty) {
-				$("#propertyRow" + uploadProperty).toggle(source === '2');
-			}
-			if (source === '0') {
-				AspenDiscovery.Admin.loadGoogleFontPreview(fontProperty);
-			}
+			$("#" + fontProperty + "-upload").toggle(source === '2');
+			AspenDiscovery.Admin.loadGoogleFontPreview(fontProperty);
 		},
 		initFontSuggestions: function (fontProperty) {
 			var fontElement = $("#" + fontProperty);

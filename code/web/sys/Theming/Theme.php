@@ -1147,9 +1147,10 @@ class Theme extends DataObject {
 			'customHeadingFont' => [
 				'property' => 'customHeadingFont',
 				'type' => 'uploaded_font',
+				// Shown inside the headingFont field, under its Uploaded file option.
+				'renderedByProperty' => 'headingFont',
 				'label' => 'Custom Heading Font',
 				'description' => 'Upload a custom font to use for headings',
-				'previewFontSize' => 'calc(var(--aspen-base-font-size) * 1.42857)',
 				'required' => false,
 				'hideInLists' => true,
 			],
@@ -1171,6 +1172,8 @@ class Theme extends DataObject {
 			'customBodyFont' => [
 				'property' => 'customBodyFont',
 				'type' => 'uploaded_font',
+				// Shown inside the bodyFont field, under its Uploaded file option.
+				'renderedByProperty' => 'bodyFont',
 				'label' => 'Custom Body Font',
 				'description' => 'Upload a custom font to use for the body',
 				'required' => false,
