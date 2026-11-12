@@ -2,11 +2,11 @@
 {if false}
 <!--suppress CssUnusedSymbol -->
 {/if}
-{if !empty($headingFont)}
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family={$headingFont}">
+{if !empty($googleHeadingFont)}
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family={$googleHeadingFont|escape:'url'}">
 {/if}
-{if !empty($bodyFont)}
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family={$bodyFont}">
+{if !empty($googleBodyFont)}
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family={$googleBodyFont|escape:'url'}">
 {/if}
 
 <style>

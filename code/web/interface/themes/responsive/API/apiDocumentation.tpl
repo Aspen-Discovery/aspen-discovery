@@ -17,7 +17,7 @@
 		default-api-server="{$url}{$apiBasePath}"
 		bg-color="{$bodyBackgroundColor}"
 		header-color="{$bodyBackgroundColor}"
-		regular-font="{$bodyFont}"
+		regular-font="{$bodyFont|escape}"
 		mono-font="'Consolas', monospace"
 		text-color="{$bodyTextColor}"
 		primary-color="{$linkColor}"
