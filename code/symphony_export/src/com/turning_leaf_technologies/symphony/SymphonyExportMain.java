@@ -788,7 +788,7 @@ public class SymphonyExportMain {
 						logEntry.saveResults();
 					}
 				}else{
-					if (exportedMarcFile.lastModified() / 1000 > latestMarcFile){
+					if (exportedMarcFile.lastModified() > latestMarcFile){
 						latestMarcFile = exportedMarcFile.lastModified();
 						latestFile = exportedMarcFile;
 					}
