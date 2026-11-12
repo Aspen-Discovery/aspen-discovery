@@ -20,6 +20,15 @@ function getUpdates26_10_00(): array {
 		//kirstien
 
 		//kodi
+		'series_member_user_defined_volume' => [
+			'title' => 'User Defined Volumes for Series Members (V2 Series)',
+			'description' => 'Add column for storing if a series member has a user-defined volume value.',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE series_member ADD COLUMN userDefinedVolume TINYINT(1) NOT NULL DEFAULT 0",
+			],
+		],
+		//series_member_user_defined_volume
 
 		//yanjun
 
