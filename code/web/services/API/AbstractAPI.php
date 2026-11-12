@@ -5,6 +5,7 @@ if ($composerActive) {
 	require_once ROOT_DIR . '/sys/Authentication/OAuth2/OAuth2Middleware.php';
 }
 require_once ROOT_DIR . '/sys/API/APIMethodConfiguration.php';
+require_once ROOT_DIR . '/sys/SystemLogging/APIClientResolver.php';
 
 abstract class AbstractAPI extends Action{
 	use APIMethodConfiguration;
@@ -19,29 +20,15 @@ abstract class AbstractAPI extends Action{
 	}
 
 	protected function getHeaders() : array {
-		if (function_exists('getallheaders')) {
-			return getallheaders();
-		} else {
-			return [];
-		}
+		return APIClientResolver::getRequestHeaders();
 	}
 
 	protected function getHeader(string $headerToRetrieve) : ?string {
-		$headers = $this->getHeaders();
-		foreach ($headers as $name => $value) {
-			if (strcasecmp($name, $headerToRetrieve) === 0) {
-				return $value;
-			}
-		}
-		return null;
+		return APIClientResolver::getRequestHeader($headerToRetrieve);
 	}
 
 	protected function checkIfLiDA(): bool {
-		$userAgent = $this->getHeader('User-Agent');
-		if (!is_null($userAgent) && str_contains($userAgent, "Aspen LiDA")) {
-			return true;
-		}
-		return false;
+		return APIClientResolver::isLiDARequest();
 	}
 
 	protected function getLiDAVersion() : float {
