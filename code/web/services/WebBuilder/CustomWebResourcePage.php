@@ -119,14 +119,16 @@ class WebBuilder_CustomWebResourcePage extends Action {
 			$searchObject = SearchObjectFactory::initSearchObject('Websites');
 			$resourcesToShow = $searchObject->getRecords(array_keys($webResourceIds));
 
+			$openWebResourcesDirectly = $library->openWebResourcesDirectly == 1;
 			foreach ($resourcesToShow as $curResource) {
 				$webResourceRecordDriver = new WebResourceRecordDriver($curResource->getFields());
 				$webResources[$webResourceRecordDriver->getId()] = [
-					'id' => $webResourceRecordDriver->getId(),
+					'id' => $webResourceRecordDriver->getNumericId(),
 					'title' => $webResourceRecordDriver->getTitle(),
 					'description' => $webResourceRecordDriver->getDescription(),
-					'link' => $webResourceRecordDriver->getLinkUrl(),
+					'link' => $openWebResourcesDirectly ? $webResourceRecordDriver->getResourceUrlForLibrary($library->libraryId) : $webResourceRecordDriver->getLinkUrl(),
 					'bookCoverUrl' => $webResourceRecordDriver->getBookCoverUrl('medium'),
+					'openInNewTab' => $webResourceRecordDriver->isOpenInNewTab(),
 				];
 			}
 
@@ -135,6 +137,7 @@ class WebBuilder_CustomWebResourcePage extends Action {
 			$interface->assign('title', $title);
 			$interface->assign('description', $this->customWebResourcePage->getTextBlockTranslation('customWebResourceDescription', $activeLanguage->code));
 			$interface->assign('webResources', $webResources);
+			$interface->assign('openWebResourcesDirectly', $openWebResourcesDirectly);
 
 
 			$this->display('resourcesFiltered.tpl', $title, '', false);
