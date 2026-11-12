@@ -1231,35 +1231,6 @@ class GroupedWork_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function getSeriesSummary() : array {
-		global $interface;
-		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-		$id = $_REQUEST['id'];
-		$recordDriver = new GroupedWorkDriver($id);
-		$interface->assign('recordDriver', $recordDriver);
-		$series = $recordDriver->getSeries();
-		$result = [
-			'result' => false,
-			'message' => translate([
-				'text' => 'No series exist for this record',
-				'isPublicFacing' => 'true',
-			]),
-		];
-		if (!empty($series)) {
-			global $library;
-			foreach ($library->getGroupedWorkDisplaySettings()->showInSearchResultsMainDetails as $detailOption) {
-				$interface->assign($detailOption, true);
-			}
-			$interface->assign('series', $series);
-			$result = [
-				'result' => true,
-				'seriesSummary' => $interface->fetch('GroupedWork/series-summary.tpl'),
-			];
-		}
-		return $result;
-	}
-
-	/** @noinspection PhpUnused */
 	function reloadCover() : array {
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 		$id = $_REQUEST['id'];
