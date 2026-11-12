@@ -700,6 +700,18 @@ class SearchAPI extends AbstractAPI {
 			}
 		}
 
+		require_once ROOT_DIR . '/sys/Storage/StorageDriverFactory.php';
+		$activeStorageSetting = StorageDriverFactory::getActiveSetting();
+		if ($activeStorageSetting !== null && $activeStorageSetting->driver === 's3' && !empty($activeStorageSetting->baseUrl)) {
+			// Live re-check; nothing else refreshes verifiedStatus between admin saves.
+			$activeStorageSetting->checkAndPersistPublicUrlStatus();
+			if ($activeStorageSetting->verifiedStatus === 'verified') {
+				$this->addCheck($checks, 'CDN Storage');
+			} else {
+				$this->addCheck($checks, 'CDN Storage', self::STATUS_CRITICAL, $activeStorageSetting->verifiedMessage);
+			}
+		}
+
 		$hasCriticalErrors = false;
 		$hasWarnings = false;
 		foreach ($checks as $check) {

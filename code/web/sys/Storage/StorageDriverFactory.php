@@ -54,12 +54,29 @@ class StorageDriverFactory {
 		global $configArray;
 		return $configArray['Site']['local'];
 	}
+	
+	// The storage_settings.id a new write should be recorded against,
+	// including the Local Storage row's id. Never null while a setting is
+	// active: DataObject::update() skips null values, so a replacement
+	// written locally could not clear an S3 id left from a previous upload.
+	public static function getActiveSettingId(): ?int {
+		return self::getActiveSetting()?->id;
+	}
 
 	private static function create(): StorageDriver {
-		return self::getLocalDriver();
+		return self::buildDriver(self::getActiveSetting());
 	}
 
 	private static function createFromId(int $id): StorageDriver {
+		return self::buildDriver(self::loadSettingById($id));
+	}
+
+	private static function buildDriver(?StorageSetting $setting): StorageDriver {
+		if ($setting !== null && $setting->driver === 's3' && !empty($setting->bucket)) {
+			require_once ROOT_DIR . '/sys/Storage/S3StorageDriver.php';
+			return new S3StorageDriver($setting->buildS3Client(), $setting->bucket, $setting->baseUrl);
+		}
+
 		return self::getLocalDriver();
 	}
 
@@ -68,5 +85,19 @@ class StorageDriverFactory {
 			self::$localInstance = new LocalStorageDriver(self::resolveDataRoot(), self::resolvePublicRoot());
 		}
 		return self::$localInstance;
+	}
+
+	public static function getActiveSetting(): ?StorageSetting {
+		require_once ROOT_DIR . '/sys/Storage/StorageSetting.php';
+		$setting = new StorageSetting();
+		$setting->isActive = 1;
+		return $setting->find(true) ? $setting : null;
+	}
+
+	private static function loadSettingById(int $id): ?StorageSetting {
+		require_once ROOT_DIR . '/sys/Storage/StorageSetting.php';
+		$setting = new StorageSetting();
+		$setting->id = $id;
+		return $setting->find(true) ? $setting : null;
 	}
 }
