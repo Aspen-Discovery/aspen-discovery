@@ -17,6 +17,17 @@
 	}
 }
 
+// Embedded hero slider iframe (Web Builder portal cells, admin preview).
+// The aspect ratio is set inline from the hero slider location so the frame
+// scales with its width instead of using a fixed height.
+iframe.hero-slider-embed {
+	display: block;
+	width: 100%;
+	height: auto;
+	max-height: 100vh;
+	border: 0;
+}
+
 // Website display styles
 body.hero-slider-website, html.hero-slider-website {
 	margin: 0;
@@ -58,41 +69,48 @@ body.hero-slider-website, html.hero-slider-website {
 	}
 }
 
-// Navigation arrows with adaptive contrast
+// Navigation arrows: full-height panels down each side of the slider, so the
+// whole edge is a tap target. The chevron is always visible; the panel is
+// shaded on hover and keyboard focus.
 .hero-slider {
 	.swiper-button-next,
 	.swiper-button-prev {
 		color: #fff;
-		background: rgba(0, 0, 0, 0.5);
-		width: 50px;
-		height: 50px;
-		border-radius: 50%;
-		backdrop-filter: blur(4px);
-		transition: all 0.3s ease;
-		opacity: 0;
-		visibility: hidden;
-		transform: scale(1) translateY(-50%);
-		transform-origin: center;
+		background: transparent;
+		top: 0;
+		width: 15%;
+		height: 100%;
+		margin: 0;
+		transition: background-color 0.2s ease;
 
 		&:after {
             font-size: calc(var(--aspen-base-font-size) * 1.4286);
 			font-weight: bold;
+			text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
 		}
 
-		&:hover {
-			background: rgba(0, 0, 0, 0.7);
-			transform: scale(1.1) translateY(-50%);
+		@media (hover: hover) {
+			&:hover {
+				background: rgba(0, 0, 0, 0.35);
+			}
 		}
+
+		&:focus-visible {
+			background: rgba(0, 0, 0, 0.35);
+		}
+	}
+
+	.swiper-button-prev {
+		left: 0;
+	}
+
+	.swiper-button-next {
+		right: 0;
 	}
 
 	&:hover,
 	&.nav-visible,
 	&:focus-within {
-		.swiper-button-next,
-		.swiper-button-prev {
-			opacity: 1;
-			visibility: visible;
-		}
 		.swiper-button-pause {
 			opacity: 1;
 			visibility: visible;
@@ -124,7 +142,7 @@ body.hero-slider-website, html.hero-slider-website {
 		position: absolute;
 		bottom: 20px;
 		right: 20px;
-		z-index: 10;
+		z-index: 11; // Above the full-height next panel.
 		color: #fff;
 		background: rgba(0, 0, 0, 0.5);
 		width: 40px;
@@ -144,14 +162,50 @@ body.hero-slider-website, html.hero-slider-website {
           font-size: calc(var(--aspen-base-font-size) * 1.1429);
 		}
 
-		&:hover {
-			background: rgba(0, 0, 0, 0.7);
-			transform: scale(1.1);
+		@media (hover: hover) {
+			&:hover {
+				background: rgba(0, 0, 0, 0.7);
+				transform: scale(1.1);
+			}
 		}
 
 		&:focus {
 			outline: 2px solid rgba(255, 255, 255, 0.8);
 			outline-offset: 2px;
+		}
+	}
+
+	// Touch screens have no hover to reveal the pause button, so keep it visible.
+	@media (hover: none) {
+		.swiper-button-pause {
+			opacity: 1;
+			visibility: visible;
+		}
+	}
+
+	// Smaller controls on narrow screens so they don't cover the slide.
+	@media (max-width: 767px) {
+		.swiper-button-next,
+		.swiper-button-prev {
+			&:after {
+				font-size: var(--aspen-base-font-size);
+			}
+		}
+
+		.swiper-pagination-bullet {
+			width: 10px;
+			height: 10px;
+		}
+
+		.swiper-button-pause {
+			width: 32px;
+			height: 32px;
+			bottom: 8px;
+			right: 8px;
+
+			i {
+				font-size: var(--aspen-base-font-size);
+			}
 		}
 	}
 }
