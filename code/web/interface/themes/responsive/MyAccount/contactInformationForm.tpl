@@ -58,9 +58,9 @@
 									</div>
 								</div>
 								<div class="row">
-									<div class="col-xs-4"><label for="pref_suffix_name">{translate text='Suffix' isPublicFacing=true}</label></div>
+									<div class="col-xs-4"><label for="pref_suffix">{translate text='Suffix' isPublicFacing=true}</label></div>
 									<div class="col-xs-8">
-										<input form="evergreenPreferredNameUpdateForm" name="pref_suffix_name" id="pref_suffix_name" value="{$profile->_pref_suffix_name|escape}" size="50" maxlength="100" class="form-control">
+										<input form="evergreenPreferredNameUpdateForm" name="pref_suffix" id="pref_suffix" value="{$profile->_pref_suffix|escape}" size="50" maxlength="100" class="form-control">
 									</div>
 								</div>
 								<div class="row">
