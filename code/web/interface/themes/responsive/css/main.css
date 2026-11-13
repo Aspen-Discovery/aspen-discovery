@@ -12375,6 +12375,13 @@ input[type="radio"][name="colorScheme"]:checked + label::after {
 .hero-slider-config dd {
   margin-bottom: 10px;
 }
+iframe.hero-slider-embed {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 100vh;
+  border: 0;
+}
 body.hero-slider-website,
 html.hero-slider-website {
   margin: 0;
@@ -12429,10 +12436,12 @@ html.hero-slider-website {
   font-size: calc(var(--aspen-base-font-size) * 1.4286);
   font-weight: bold;
 }
-.hero-slider .swiper-button-next:hover,
-.hero-slider .swiper-button-prev:hover {
-  background: rgba(0, 0, 0, 0.7);
-  transform: scale(1.1) translateY(-50%);
+@media (hover: hover) {
+  .hero-slider .swiper-button-next:hover,
+  .hero-slider .swiper-button-prev:hover {
+    background: rgba(0, 0, 0, 0.7);
+    transform: scale(1.1) translateY(-50%);
+  }
 }
 .hero-slider:hover .swiper-button-next,
 .hero-slider.nav-visible .swiper-button-next,
@@ -12488,13 +12497,53 @@ html.hero-slider-website {
 .hero-slider .swiper-button-pause i {
   font-size: calc(var(--aspen-base-font-size) * 1.1429);
 }
-.hero-slider .swiper-button-pause:hover {
-  background: rgba(0, 0, 0, 0.7);
-  transform: scale(1.1);
+@media (hover: hover) {
+  .hero-slider .swiper-button-pause:hover {
+    background: rgba(0, 0, 0, 0.7);
+    transform: scale(1.1);
+  }
 }
 .hero-slider .swiper-button-pause:focus {
   outline: 2px solid rgba(255, 255, 255, 0.8);
   outline-offset: 2px;
+}
+@media (hover: none) {
+  .hero-slider .swiper-button-next,
+  .hero-slider .swiper-button-prev,
+  .hero-slider .swiper-button-pause {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+@media (max-width: 767px) {
+  .hero-slider .swiper-button-next,
+  .hero-slider .swiper-button-prev {
+    width: 36px;
+    height: 36px;
+  }
+  .hero-slider .swiper-button-next:after,
+  .hero-slider .swiper-button-prev:after {
+    font-size: var(--aspen-base-font-size);
+  }
+  .hero-slider .swiper-button-prev {
+    left: 6px;
+  }
+  .hero-slider .swiper-button-next {
+    right: 6px;
+  }
+  .hero-slider .swiper-pagination-bullet {
+    width: 10px;
+    height: 10px;
+  }
+  .hero-slider .swiper-button-pause {
+    width: 32px;
+    height: 32px;
+    bottom: 8px;
+    right: 8px;
+  }
+  .hero-slider .swiper-button-pause i {
+    font-size: var(--aspen-base-font-size);
+  }
 }
 body.hero-slider-signage,
 html.hero-slider-signage {

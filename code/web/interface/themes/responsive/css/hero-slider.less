@@ -17,6 +17,17 @@
 	}
 }
 
+// Embedded hero slider iframe (Web Builder portal cells, admin preview).
+// The aspect ratio is set inline from the hero slider location so the frame
+// scales with its width instead of using a fixed height.
+iframe.hero-slider-embed {
+	display: block;
+	width: 100%;
+	height: auto;
+	max-height: 100vh;
+	border: 0;
+}
+
 // Website display styles
 body.hero-slider-website, html.hero-slider-website {
 	margin: 0;
@@ -79,9 +90,11 @@ body.hero-slider-website, html.hero-slider-website {
 			font-weight: bold;
 		}
 
-		&:hover {
-			background: rgba(0, 0, 0, 0.7);
-			transform: scale(1.1) translateY(-50%);
+		@media (hover: hover) {
+			&:hover {
+				background: rgba(0, 0, 0, 0.7);
+				transform: scale(1.1) translateY(-50%);
+			}
 		}
 	}
 
@@ -144,14 +157,63 @@ body.hero-slider-website, html.hero-slider-website {
           font-size: calc(var(--aspen-base-font-size) * 1.1429);
 		}
 
-		&:hover {
-			background: rgba(0, 0, 0, 0.7);
-			transform: scale(1.1);
+		@media (hover: hover) {
+			&:hover {
+				background: rgba(0, 0, 0, 0.7);
+				transform: scale(1.1);
+			}
 		}
 
 		&:focus {
 			outline: 2px solid rgba(255, 255, 255, 0.8);
 			outline-offset: 2px;
+		}
+	}
+
+	// Touch screens have no hover to reveal the controls, so keep them visible.
+	@media (hover: none) {
+		.swiper-button-next,
+		.swiper-button-prev,
+		.swiper-button-pause {
+			opacity: 1;
+			visibility: visible;
+		}
+	}
+
+	// Smaller controls on narrow screens so they don't cover the slide.
+	@media (max-width: 767px) {
+		.swiper-button-next,
+		.swiper-button-prev {
+			width: 36px;
+			height: 36px;
+
+			&:after {
+				font-size: var(--aspen-base-font-size);
+			}
+		}
+
+		.swiper-button-prev {
+			left: 6px;
+		}
+
+		.swiper-button-next {
+			right: 6px;
+		}
+
+		.swiper-pagination-bullet {
+			width: 10px;
+			height: 10px;
+		}
+
+		.swiper-button-pause {
+			width: 32px;
+			height: 32px;
+			bottom: 8px;
+			right: 8px;
+
+			i {
+				font-size: var(--aspen-base-font-size);
+			}
 		}
 	}
 }

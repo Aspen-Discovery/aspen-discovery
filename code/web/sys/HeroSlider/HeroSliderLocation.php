@@ -215,6 +215,20 @@ class HeroSliderLocation extends DataObject {
 		return $configArray['Site']['url'] . '/API/HeroSliderAPI?method=getHeroSlider&id=' . $this->id;
 	}
 
+	/**
+	 * Returns the slider's aspect ratio as a CSS aspect-ratio value (e.g. "16 / 9")
+	 * so embedded iframes can scale with their width instead of using a fixed height.
+	 */
+	public function getEmbedAspectRatio(): string {
+		$width = (int)$this->aspectRatioWidth;
+		$height = (int)$this->aspectRatioHeight;
+		if ($width <= 0 || $height <= 0) {
+			$width = 16;
+			$height = 9;
+		}
+		return "$width / $height";
+	}
+
 	public function getAdditionalListActions(): array {
 		$actions = parent::getAdditionalListActions();
 		$actions[] = [

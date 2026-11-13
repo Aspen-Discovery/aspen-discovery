@@ -34,12 +34,11 @@
 			<blockquote class="alert-info">{$embedUrl}</blockquote>
 			<p>
 				<code style="white-space: normal">&lt;iframe src=&quot;{$embedUrl}&quot;
-					width=&quot;100%&quot; height=&quot;600&quot;
-					frameborder=&quot;0&quot; title=&quot;{$object->name|escape}&quot;&gt;&lt;/iframe&gt;
+					style=&quot;display: block; width: 100%; aspect-ratio: {$object->getEmbedAspectRatio()}; max-height: 100vh; border: 0;&quot;
+					title=&quot;{$object->name|escape}&quot;&gt;&lt;/iframe&gt;
 				</code>
 			</p>
-			<p>{translate text="Width and height can be adjusted as needed to fit within your site." isAdminFacing=true}</p>
-			<blockquote class="alert-warning">{translate text="Note: Percentage-based values for iframe width and height are not consistently honored on iPads and other iOS devices or browsers. It is recommended to use fixed pixel values instead." isAdminFacing=true}</blockquote>
+			<p>{translate text="The aspect ratio matches this hero slider's images, so the slider scales to fit the width of the page on any screen size, including phones." isAdminFacing=true}</p>
 		</div>
 
 		<h4>{translate text="For Digital Signage (XOGO)" isAdminFacing=true}</h4>
@@ -60,7 +59,7 @@
 	</div>
 
 	<h4>{translate text="Live Preview" isAdminFacing=true}</h4>
-	<iframe src="{$embedUrl}&reload=true" width="100%" height="600" title="{$object->name|escape}">
+	<iframe src="{$embedUrl}&reload=true" class="hero-slider-embed" style="aspect-ratio: {$object->getEmbedAspectRatio()};" title="{$object->name|escape}">
 		<p>{translate text="Your browser does not support iframes." isAdminFacing=true}</p>
 	</iframe>
 </div>
