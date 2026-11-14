@@ -13801,22 +13801,7 @@ AspenDiscovery.GroupedWork = (function(){
 					$('#editionSelectionSlider').hide();
 					$('#editionSelectionOptionRemember').hide();
 				}
-			}
-		},
-		selectEditionOption: function (btn, value) {
-			var group = btn.closest('.edition-option-toggle');
-			var buttons = group.querySelectorAll('.edition-option-btn');
-
-			buttons.forEach(function (b) {
-				b.classList.remove('active');
-				b.setAttribute('aria-pressed', 'false');
-			});
-			btn.classList.add('active');
-			btn.setAttribute('aria-pressed', 'true');
-
-			document.getElementById('selectedEditionOption').value = value;
-
-			AspenDiscovery.GroupedWork.showEditionSwiper();
+9			}
 		},
 		showEditionSwiper: function () {
 			var option = $('#selectedEditionOption').val();

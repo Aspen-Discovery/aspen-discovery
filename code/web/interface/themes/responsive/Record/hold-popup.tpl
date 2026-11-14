@@ -276,20 +276,29 @@
 							<div class="alert alert-info">{translate text=$holdEditionPromptMessage isPublicFacing=true}</div>
 						{/if}
 						<div id="editionSelectionOptions" class="form-group">
-							<label class="control-label">{translate text="Do you want to place a hold on the suggested edition or a specific edition?" isPublicFacing=true}</label>
-							<div class="btn-group btn-group-toggle edition-option-toggle" role="group" aria-label="{translate text="Edition hold option" isPublicFacing=true}">
-								<button type="button" class="btn btn-primary edition-option-btn{if $holdPromptForEditions == 1} active{/if}"
-								        aria-pressed="{if $holdPromptForEditions == 1}true{else}false{/if}"
-								        onclick="AspenDiscovery.GroupedWork.selectEditionOption(this, 1)">
-									{translate text="Place hold on suggested edition" isPublicFacing=true}
-								</button>
-								<button type="button" class="btn btn-primary edition-option-btn{if $holdPromptForEditions == 2} active{/if}"
-										aria-pressed="{if $holdPromptForEditions == 2}true{else}false{/if}"
-										onclick="AspenDiscovery.GroupedWork.selectEditionOption(this, 2)">
-									{translate text="Place hold on specific edition" isPublicFacing=true}
-								</button>
+							<div>{translate text="Do you want to place a hold on the suggested edition or a specific edition?" isPublicFacing=true}</div>
+							<div class="edition-option-toggle"
+								role="radiogroup"
+								aria-label="{translate text="Edition hold option" isPublicFacing=true}"
+								onchange="
+								const c = this.querySelector(`[value='2']`).checked;
+								$('#editionSelectionSlider').toggle(c);
+								$('#editionSelectionOptionRemember').toggle(!c);
+								"
+								>
+								<div class="radio">
+									<label>
+										<input type="radio" name="selectedEditionOption" value="1"{if $holdPromptForEditions == 1} checked{/if}>
+										{translate text="Place hold on suggested edition" isPublicFacing=true}
+									</label>
+								</div>
+								<div class="radio">
+									<label>
+										<input type="radio" name="selectedEditionOption" value="2"{if $holdPromptForEditions == 2} checked{/if}>
+										{translate text="Place hold on specific edition" isPublicFacing=true}
+									</label>
+								</div>
 							</div>
-							<input type="hidden" name="selectedEditionOption" id="selectedEditionOption" value="{$holdPromptForEditions|default:1}">
 						</div>
 						<div id="editionSelectionSlider" class="horizontalSliders" {if $holdPromptForEditions == 1}style="display: none"{/if}>
 							<div class="row horizontalEditionSelector">

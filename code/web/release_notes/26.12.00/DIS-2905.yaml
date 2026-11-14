@@ -1,0 +1,12 @@
+Jira: DIS-2905
+Type: Enhancement
+Developer: Stephen Wicks (SW)
+Contributing Org: Grove For Libraries
+Sponsor: 
+GroveRelease: 26.12.00
+CommunityRelease: 27.05.00
+Component: Holds
+Description:
+  - Change "place hold on edition" buttons to radio buttons
+New Settings:
+New Permissions:
