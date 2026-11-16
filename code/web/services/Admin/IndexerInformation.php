@@ -1,5 +1,6 @@
 <?php
 require_once ROOT_DIR . '/services/Admin/Admin.php';
+require_once ROOT_DIR . '/sys/Utils/JavaProcessUtils.php';
 
 class IndexerInformation extends Admin_Admin{
 	function launch() {
@@ -69,14 +70,14 @@ class IndexerInformation extends Admin_Admin{
 		if ($configArray['System']['operatingSystem'] == 'windows') {
 			/** @noinspection SpellCheckingInspection */
 			exec("WMIC PROCESS get Processid,Commandline", $processes);
-			$processRegEx = '/.*?java(?:.exe\")?\s+-jar\s(.*?)\.jar.*?\s+(\d+)/ix';
+			$processRegEx = '/.*?' . JavaProcessUtils::JAVA_COMMAND_PATTERN . '(.*?)\.jar.*?\s+(\d+)/ix';
 			$processIdIndex = 2;
 			$processNameIndex = 1;
 			$processStartIndex = -1;
 			$solrRegex = "/$serverName\\\\solr7/ix";
 		} else {
 			exec("ps -ef | grep java", $processes);
-			$processRegEx = '/(\d+)\s+.*?([a-zA-Z0-9:]{5}).*?(\d{2}:\d{2}:\d{2})\sjava\s-jar\s(.*?)\.jar\s' . $serverName . '/ix';
+			$processRegEx = '/(\d+)\s+.*?([a-zA-Z0-9:]{5}).*?(\d{2}:\d{2}:\d{2})\s' . JavaProcessUtils::JAVA_COMMAND_PATTERN . '(.*?)\.jar\s' . $serverName . '/ix';
 			$processIdIndex = 1;
 			$processNameIndex = 4;
 			$processStartIndex = 2;

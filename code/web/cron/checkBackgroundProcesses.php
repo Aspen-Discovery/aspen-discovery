@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../bootstrap.php';
+require_once ROOT_DIR . '/sys/Utils/JavaProcessUtils.php';
 
 global $configArray;
 global $serverName;
@@ -18,18 +19,18 @@ $runningProcesses = [];
 if ($configArray['System']['operatingSystem'] == 'windows') {
 	/** @noinspection SpellCheckingInspection */
 	exec("WMIC PROCESS get Processid,Commandline", $processes);
-	$processRegEx = '/.*?java(?:.exe\")?\s+-jar\s(.*?)\.jar.*?\s+(\d+)/ix';
+	$processRegEx = '/.*?' . JavaProcessUtils::JAVA_COMMAND_PATTERN . '(.*?)\.jar.*?\s+(\d+)/ix';
 	$processIdIndex = 2;
 	$processNameIndex = 1;
 	$solrRegex = "/$serverName\\\\solr7/ix";
-	$nightlyReindexRegex = "/.*?java(?:.exe\")?\s+-jar\sreindexer\.jar\s+$serverName\s+nightly/ix";
+	$nightlyReindexRegex = '/.*?' . JavaProcessUtils::JAVA_COMMAND_PATTERN . 'reindexer\.jar\s+' . $serverName . '\s+nightly/ix';
 } else {
 	exec("ps -ef | grep java", $processes);
-	$processRegEx = '/(\d+)\s+.*?\d{2}:\d{2}:\d{2}\sjava\s-jar\s(.*?)\.jar\s' . $serverName . '/ix';
+	$processRegEx = '/(\d+)\s+.*?\d{2}:\d{2}:\d{2}\s' . JavaProcessUtils::JAVA_COMMAND_PATTERN . '(.*?)\.jar\s' . $serverName . '/ix';
 	$processIdIndex = 1;
 	$processNameIndex = 2;
 	$solrRegex = "/$serverName\/solr7/ix";
-	$nightlyReindexRegex = '/(\d+)\s+.*?\d{2}:\d{2}:\d{2}\sjava\s-jar\sreindexer\.jar\s' . $serverName . '\snightly/ix';
+	$nightlyReindexRegex = '/(\d+)\s+.*?\d{2}:\d{2}:\d{2}\s' . JavaProcessUtils::JAVA_COMMAND_PATTERN . 'reindexer\.jar\s' . $serverName . '\snightly/ix';
 }
 
 $results = "";
@@ -117,7 +118,11 @@ if (!$nightlyReindexRunning && $solrRunning) {
 			$processPath = $local . '/' . $backgroundProcess;
 			if (file_exists($processPath)) {
 				if (file_exists($processPath . "/$backgroundProcess.jar")) {
-					execInBackground("cd $processPath; java -jar $backgroundProcess.jar $serverName");
+					$jvmOptions = JavaProcessUtils::getJvmOptions($configArray, $backgroundProcess, $ignoredOptions);
+					if (!empty($ignoredOptions)) {
+						$results .= "Ignoring invalid JVM options for $backgroundProcess: " . implode(' ', $ignoredOptions) . "\r\n";
+					}
+					execInBackground(JavaProcessUtils::buildCommand($processPath, $backgroundProcess, $serverName, [], $jvmOptions, $configArray['System']['operatingSystem'] == 'windows'));
 					//Don't send an error message when successfully starting a process.
 				} else {
 					$results .= "Could not automatically restart $backgroundProcess, the jar $processPath/$backgroundProcess.jar did not exist\r\n";
