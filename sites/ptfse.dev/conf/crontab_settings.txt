@@ -31,8 +31,8 @@
 ########################################################
 # Regular extracts that don't need to run continuously #
 ########################################################
-0 2 * * *     aspen   cd /usr/local/aspen-discovery/code/oai_indexer; java -jar oai_indexer.jar ptfse.dev
-0 2 * * *     aspen   cd /usr/local/aspen-discovery/code/reindexer; java -jar reindexer.jar ptfse.dev nightly
+0 2 * * *     aspen   php /usr/local/aspen-discovery/code/web/cron/runJavaProcess.php ptfse.dev oai_indexer
+0 2 * * *     aspen   php /usr/local/aspen-discovery/code/web/cron/runJavaProcess.php ptfse.dev reindexer nightly
 
 ######################
 # MySQL Nightly Dump #
@@ -54,7 +54,7 @@
 26 0 * * *    root    cd /tmp; rm -rf CURLCOOKIE*
 
 # CRON for Aspen (book cover cache cleanup etc.)
-00 22 * * *   aspen   cd /usr/local/aspen-discovery/code/cron; java -jar cron.jar ptfse.dev
+00 22 * * *   aspen   php /usr/local/aspen-discovery/code/web/cron/runJavaProcess.php ptfse.dev cron
 
 00 01 * * *   root    certbot renew
 
