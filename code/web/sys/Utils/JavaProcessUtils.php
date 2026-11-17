@@ -34,6 +34,10 @@ class JavaProcessUtils {
 		if (!is_array($settings)) {
 			return [];
 		}
+		//enabled = false turns the options off and starts the processes with a plain java -jar, as before 26.12
+		if (array_key_exists('enabled', $settings) && !filter_var($settings['enabled'], FILTER_VALIDATE_BOOLEAN)) {
+			return [];
+		}
 
 		$rawOptions = [];
 		foreach (['defaultOptions', $processName] as $key) {

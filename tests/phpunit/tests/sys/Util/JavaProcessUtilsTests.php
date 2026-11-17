@@ -112,6 +112,25 @@ class JavaProcessUtilsTests extends TestCase {
 		$this->assertSame('4321', $matches[2]);
 	}
 
+	public static function enabledProvider(): array {
+		return [
+			'not set' => [null, true],
+			'true' => ['1', true],
+			'false as parsed by parse_ini_file' => ['', false],
+			'off' => ['off', false],
+			'0' => ['0', false],
+		];
+	}
+
+	#[DataProvider('enabledProvider')]
+	public function testEnabled(?string $enabled, bool $expectOptions): void {
+		$settings = ['defaultOptions' => '-Xmx1g'];
+		if ($enabled !== null) {
+			$settings['enabled'] = $enabled;
+		}
+		$this->assertSame($expectOptions ? ['-Xmx1g'] : [], JavaProcessUtils::getJvmOptions(['JavaProcesses' => $settings], 'cron'));
+	}
+
 	public function testShippedDefaults(): void {
 		$sitesDirectory = sys_get_temp_dir() . '/javaProcessUtilsTests_' . uniqid();
 		mkdir("$sitesDirectory/default/conf", 0777, true);
@@ -128,6 +147,12 @@ class JavaProcessUtilsTests extends TestCase {
 			$this->assertSame(['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=12', '-Xmx2g'], JavaProcessUtils::getJvmOptions($config, 'koha_export', $ignored));
 			$this->assertSame([], $ignored);
 			$this->assertNull(JavaProcessUtils::loadConfig($sitesDirectory, 'missing.localhost'));
+
+			//enabled = false in the site's config.ini turns the options off
+			file_put_contents("$sitesDirectory/test.localhost/conf/config.ini", "[JavaProcesses]\nenabled = false\n");
+			$config = JavaProcessUtils::loadConfig($sitesDirectory, 'test.localhost');
+			$this->assertSame([], JavaProcessUtils::getJvmOptions($config, 'reindexer'));
+			$this->assertSame([], JavaProcessUtils::getJvmOptions($config, 'overdrive_extract'));
 		} finally {
 			unlink("$sitesDirectory/default/conf/config.ini");
 			unlink("$sitesDirectory/test.localhost/conf/config.ini");
