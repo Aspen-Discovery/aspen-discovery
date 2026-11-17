@@ -101,53 +101,53 @@ public class HooplaExporter2 {
 			logger.error("Error preparing Hoopla exporter2 statements", e);
 		}
 
-		processRecordsToReload(logEntry);
 	}
 
-	private void processRecordsToReload(HooplaExtractLogEntry2 logEntry) {
-		try {
-			PreparedStatement getRecordsToReloadStmt = aspenConn.prepareStatement("SELECT * from record_identifiers_to_reload WHERE processed = 0 and type='hoopla'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			PreparedStatement markRecordToReloadAsProcessedStmt = aspenConn.prepareStatement("UPDATE record_identifiers_to_reload SET processed = 1 where id = ?");
-			PreparedStatement getItemDetailsForRecordStmt = aspenConn.prepareStatement("SELECT UNCOMPRESS(rawResponse) as rawResponse FROM hoopla_export where hooplaId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			ResultSet getRecordsToReloadRS = getRecordsToReloadStmt.executeQuery();
-			int numRecordsToReloadProcessed = 0;
+	private boolean processRecordsToReload() {
+		HashMap<Long, String> recordsToReload = new HashMap<>();
+		try (PreparedStatement getRecordsToReloadStmt = aspenConn.prepareStatement("SELECT id, identifier from record_identifiers_to_reload WHERE processed = 0 and type='hoopla'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			ResultSet getRecordsToReloadRS = getRecordsToReloadStmt.executeQuery()) {
 			while (getRecordsToReloadRS.next()){
-				long recordToReloadId = getRecordsToReloadRS.getLong("id");
-				String recordId = getRecordsToReloadRS.getString("identifier");
-				long hooplaId = Long.parseLong(StringUtils.replace(recordId,"MWT", ""));
-				//Regroup the record
-				getItemDetailsForRecordStmt.setLong(1, hooplaId);
-				ResultSet getItemDetailsForRecordRS = getItemDetailsForRecordStmt.executeQuery();
-				if (getItemDetailsForRecordRS.next()){
-					String rawResponse = getItemDetailsForRecordRS.getString("rawResponse");
-					try {
-						JSONObject itemDetails = new JSONObject(rawResponse);
-						String groupedWorkId =  getRecordGroupingProcessor().groupHooplaRecord(itemDetails, hooplaId);
-						//Reindex the record
-						getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
-
-						markRecordToReloadAsProcessedStmt.setLong(1, recordToReloadId);
-						markRecordToReloadAsProcessedStmt.executeUpdate();
-						numRecordsToReloadProcessed++;
-					}catch (JSONException e){
-						logEntry.incErrors("Could not parse item details for record to reload " + hooplaId, e);
-					}
-				}else{
-					//The record has likely been deleted
-					logEntry.addNote("Could not get details for Hoopla record to reload " + hooplaId + " it has been deleted");
-					markRecordToReloadAsProcessedStmt.setLong(1, recordToReloadId);
-					markRecordToReloadAsProcessedStmt.executeUpdate();
-					numRecordsToReloadProcessed++;
-				}
-				getItemDetailsForRecordRS.close();
+				recordsToReload.put(getRecordsToReloadRS.getLong("id"), StringUtils.replace(getRecordsToReloadRS.getString("identifier"), "MWT", ""));
 			}
-			if (numRecordsToReloadProcessed > 0){
-				logEntry.addNote("Regrouped " + numRecordsToReloadProcessed + " records marked for reprocessing");
-			}
-			getRecordsToReloadRS.close();
-		}catch (Exception e){
-			logEntry.incErrors("Error processing records to reload ", e);
+		} catch (SQLException e) {
+			logEntry.incErrors("Error loading Hoopla records to reload", e);
+			return false;
 		}
+		if (recordsToReload.isEmpty()) {
+			return false;
+		}
+
+		int numRefreshed = 0;
+		int numSkipped = 0;
+		for (String hooplaId : new HashSet<>(recordsToReload.values())) {
+			try {
+				Long.parseLong(hooplaId);
+				if (exportSingleHooplaTitle(hooplaId, false)) {
+					numRefreshed++;
+				} else {
+					logEntry.addNote("Failed to retrieve Hoopla record " + hooplaId);
+					numSkipped++;
+				}
+			} catch (NumberFormatException e) {
+				logEntry.addNote("Skipped invalid Hoopla record ID " + hooplaId);
+				numSkipped++;
+			}
+		}
+		flushRecordsToReindex();
+		// Failures are logged but not retried, so a failing record does not loop forever
+		try (PreparedStatement markRecordToReloadAsProcessedStmt = aspenConn.prepareStatement("UPDATE record_identifiers_to_reload SET processed = 1 WHERE id = ?")) {
+			for (Map.Entry<Long, String> recordToReload : recordsToReload.entrySet()) {
+				markRecordToReloadAsProcessedStmt.setLong(1, recordToReload.getKey());
+				markRecordToReloadAsProcessedStmt.executeUpdate();
+			}
+		} catch (SQLException e) {
+			logEntry.incErrors("Error marking Hoopla records to reload as processed", e);
+		}
+
+		logEntry.addNote("Refreshed " + numRefreshed + " Hoopla records to reload, skipped " + numSkipped);
+		logEntry.saveResults();
+		return true;
 	}
 
 	private boolean cleanOrphanRecords() {
@@ -419,6 +419,9 @@ public class HooplaExporter2 {
 				}
 
 			}
+			// Process Records to Reindex
+			updatesRun |= processRecordsToReload();
+
 			if (numSettings == 0){
 				logger.error("Unable to find settings for Hoopla, please add settings to the database");
 			}
@@ -1178,7 +1181,7 @@ public class HooplaExporter2 {
 		return Collections.emptySet();
 	}
 
-	public boolean exportSingleHooplaTitle(String singleWorkId) {
+	public boolean exportSingleHooplaTitle(String singleWorkId, boolean flushAfterRetrieve) {
 		boolean updatesRun = false;
 		try{
 			logEntry.addNote("Doing extract of single work " + singleWorkId);
@@ -1216,9 +1219,13 @@ public class HooplaExporter2 {
 					if (responseJSON.has("contents")) {
 						JSONArray responseTitles = responseJSON.getJSONArray("contents");
 						if (responseTitles != null && !responseTitles.isEmpty()) {
-							updateTitlesInDB(responseTitles, true, false);
-							updatesRun = true;
-							logger.warn("Updated global content for " + numericSingleWorkId);
+							if (responseTitles.getJSONObject(0).getLong("id") != numericSingleWorkId) {
+								logEntry.addNote("Hoopla record " + numericSingleWorkId + " was not found in Hoopla");
+							} else {
+								updateTitlesInDB(responseTitles, true, false);
+								updatesRun = true;
+								logger.warn("Updated global content for " + numericSingleWorkId);
+							}
 						}
 					}
 				}
@@ -1282,6 +1289,7 @@ public class HooplaExporter2 {
 										if (entitlement.has("active")) {
 											boolean activeStatus = entitlement.getBoolean("active");
 											updateEntitlementsInDB(responseEntitlements, null, false, HOOPLA_TYPE_FLEX, librarySetting.getLibraryId());
+											updatesRun = true;
 											logger.warn("Updated entitlement for Hoopla Library ID " + librarySetting.getHooplaLibraryId() + " for Flex. Entitlement active = " + activeStatus);
 											if (activeStatus) {
 												// This is an active flex entitlement, so we need to update the availability
@@ -1296,7 +1304,6 @@ public class HooplaExporter2 {
 													logger.warn("Updated availability for Hoopla Library ID " + librarySetting.getHooplaLibraryId() + " for Flex.");
 													continue;
 												}
-											updatesRun = true;
 											}
 										} else {
 											logger.warn("Error returning enttlement status for Hoopla Library ID " + librarySetting.getHooplaLibraryId() + " for Flex.");
@@ -1313,7 +1320,9 @@ public class HooplaExporter2 {
 				if (updatesRun) {
 					// Add the title to the list regardless
 					titlesNeedingReindex.add(numericSingleWorkId);
-					flushRecordsToReindex();
+					if (flushAfterRetrieve) {
+						flushRecordsToReindex();
+					}
 				}
 				logEntry.addNote("Completed extract of single work " + singleWorkId + " for setting " + settings.getSettingsId());
 				logEntry.saveResults();
