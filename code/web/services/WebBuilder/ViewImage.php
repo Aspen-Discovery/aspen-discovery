@@ -38,7 +38,23 @@ class WebBuilder_ViewImage extends Action {
 		} else {
 			$size = 'full';
 		}
-		$storageKey = 'uploads/web_builder_image/' . $size . '/' . $this->uploadedImage->fullSizePath;
+
+		// Each size has its own filename column; a manual derivative upload
+		// can differ in extension, so resolve from that size's own column.
+		$filenameBySize = [
+			'x-large' => $this->uploadedImage->xLargeSizePath,
+			'large'   => $this->uploadedImage->largeSizePath,
+			'medium'  => $this->uploadedImage->mediumSizePath,
+			'small'   => $this->uploadedImage->smallSizePath,
+		];
+		$filename = $filenameBySize[$size] ?? $this->uploadedImage->fullSizePath;
+		if (empty($filename)) {
+			$filename = $this->uploadedImage->fullSizePath;
+		}
+		$extension = pathinfo($filename, PATHINFO_EXTENSION);
+		$contentType = $mimeTypesByExtension[strtolower($extension)] ?? 'application/octet-stream';
+
+		$storageKey = 'uploads/web_builder_image/' . $size . '/' . $filename;
 
 		require_once ROOT_DIR . '/sys/Storage/StorageDriverFactory.php';
 		$storage = StorageDriverFactory::getById($this->uploadedImage->storageSettingId);
