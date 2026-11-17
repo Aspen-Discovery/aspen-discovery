@@ -20,7 +20,7 @@
 </div>
 <script type="text/javascript">
 	$(document).ready(function(){ldelim}
-		AspenDiscovery.CollectionSpotlights.loadCarousel('{$list->id}', '/Search/AJAX?method=getSpotlightTitles&id={$list->id}&scrollerName={$listName}&coverSize={$collectionSpotlight->coverSize}&showRatings={$collectionSpotlight->showRatings}&numTitlesToShow={$collectionSpotlight->numTitlesToShow}{if !empty($reload)}&reload=true{/if}');
+		AspenDiscovery.CollectionSpotlights.loadCarouselFromData('{$list->id}', window.collectionSpotlightTitleData['{$list->id}']);
 	{rdelim});
 </script>
 </div>
