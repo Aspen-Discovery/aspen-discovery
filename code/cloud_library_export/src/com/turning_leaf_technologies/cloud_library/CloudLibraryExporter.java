@@ -26,6 +26,7 @@ import java.text.SimpleDateFormat;
 import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Set;
 import java.util.TimeZone;
 
 public class CloudLibraryExporter {
@@ -51,6 +52,10 @@ public class CloudLibraryExporter {
 
 	//Existing records
 	private static HashMap<String, CloudLibraryTitle> existingRecords = new HashMap<>();
+	private Set<String> recordsToReload = Set.of();
+	void setRecordsToReload(Set<String> recordsToReload) {
+		this.recordsToReload = recordsToReload;
+	}
 
 	public CloudLibraryExporter(String serverName, Ini configIni, CloudLibrarySettings settings, Logger logger, Connection aspenConn) throws SQLException {
 		this.serverName = serverName;
@@ -231,8 +236,8 @@ public class CloudLibraryExporter {
 
 		logger.info("Updated or added " + numChanges + " records");
 
-		//For any records that have been marked to reload, regroup and reindex the records
-		processRecordsToReload(logEntry);
+		//For any records that have been marked to reload, refresh from API, regroup and reindex the records
+		processRecordsToReload();
 
 		if (recordGroupingProcessorSingleton != null) {
 			recordGroupingProcessorSingleton.close();
@@ -274,6 +279,30 @@ public class CloudLibraryExporter {
 		logEntry.addNote("Extracting single CloudLibrary record: " + singleRecordId + ".");
 		logEntry.saveResults();
 
+		if (reloadRecordFromApi(singleRecordId)) {
+			numChanges++;
+		}
+
+		if (recordGroupingProcessorSingleton != null) {
+			recordGroupingProcessorSingleton.close();
+			recordGroupingProcessorSingleton = null;
+		}
+
+		if (groupedWorkIndexer != null) {
+			groupedWorkIndexer.finishIndexingFromExtract(logEntry);
+			groupedWorkIndexer.close();
+			groupedWorkIndexer = null;
+			existingRecords = null;
+		}
+
+		logger.info("Finished extracting single record: {} change(s).", numChanges);
+		logEntry.setFinished();
+
+		return numChanges;
+	}
+
+	private boolean reloadRecordFromApi(String singleRecordId) {
+		boolean reloaded = false;
 		CloudLibraryMarcHandler handler = new CloudLibraryMarcHandler(this, settings.getSettingsId(), existingRecords, true, startTimeForLogging, aspenConn, getRecordGroupingProcessor(), getGroupedWorkIndexer(), logEntry, logger, settings.shouldRunSundayReindex());
 		String apiPath = "/cirrus/library/" + settings.getLibraryId() + "/data/marc/" + singleRecordId;
 
@@ -304,7 +333,7 @@ public class CloudLibraryExporter {
 					SAXParser saxParser = saxParserFactory.newSAXParser();
 					saxParser.parse(new ByteArrayInputStream(response.getMessage().getBytes(StandardCharsets.UTF_8)), handler);
 
-					numChanges += handler.getNumDocuments();
+					reloaded = true;
 					logEntry.saveResults();
 				} catch (SAXException | ParserConfigurationException | IOException e) {
 					logger.error("Error parsing response:", e);
@@ -313,30 +342,7 @@ public class CloudLibraryExporter {
 				break;
 			}
 		}
-
-		CloudLibraryAvailability availability = loadAvailabilityForRecord(singleRecordId);
-		if (availability != null) {
-			numChanges++;
-		}
-
-		processRecordsToReload(logEntry);
-
-		if (recordGroupingProcessorSingleton != null) {
-			recordGroupingProcessorSingleton.close();
-			recordGroupingProcessorSingleton = null;
-		}
-
-		if (groupedWorkIndexer != null) {
-			groupedWorkIndexer.finishIndexingFromExtract(logEntry);
-			groupedWorkIndexer.close();
-			groupedWorkIndexer = null;
-			existingRecords = null;
-		}
-
-		logger.info("Finished extracting single record: {} change(s).", numChanges);
-		logEntry.setFinished();
-
-		return numChanges;
+		return reloaded;
 	}
 
 	private void createDbLogEntry(Date startTime, Connection aspenConn) {
@@ -445,44 +451,27 @@ public class CloudLibraryExporter {
 		}
 	}
 
-	private void processRecordsToReload(CloudLibraryExtractLogEntry logEntry) {
-		try {
-			PreparedStatement getRecordsToReloadStmt = aspenConn.prepareStatement("SELECT * FROM record_identifiers_to_reload WHERE processed = 0 AND type='cloud_library'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			PreparedStatement markRecordToReloadAsProcessedStmt = aspenConn.prepareStatement("UPDATE record_identifiers_to_reload SET processed = 1 WHERE id = ?");
-
-			ResultSet getRecordsToReloadRS = getRecordsToReloadStmt.executeQuery();
-			int numRecordsToReloadProcessed = 0;
-			while (getRecordsToReloadRS.next()){
-				long recordToReloadId = getRecordsToReloadRS.getLong("id");
-				String cloudLibraryId = getRecordsToReloadRS.getString("identifier");
-				// Regroup the record.
-				String groupedWorkId = getRecordGroupingProcessor().groupCloudLibraryRecord(cloudLibraryId);
-				if (groupedWorkId != null) {
-					logEntry.incRecordsRegrouped();
-					getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
-				} else {
-					logEntry.incErrors("Could not get details for record to reload " + cloudLibraryId + ", as it has likely been deleted.");
-					RemoveRecordFromWorkResult result = getRecordGroupingProcessor().removeRecordFromGroupedWork("cloud_library", cloudLibraryId);
-					if (result.reindexWork) {
-						getGroupedWorkIndexer().processGroupedWork(result.permanentId);
-					} else if (result.deleteWork) {
-						// Delete the work from Solr and the database.
-						logEntry.incDeleted();
-						getGroupedWorkIndexer().deleteRecord(result.permanentId, result.groupedWorkId);
-					}
-
-				}
-				markRecordToReloadAsProcessedStmt.setLong(1, recordToReloadId);
-				markRecordToReloadAsProcessedStmt.executeUpdate();
-				numRecordsToReloadProcessed++;
-			}
-			if (numRecordsToReloadProcessed > 0){
-				logEntry.addNote("Regrouped " + numRecordsToReloadProcessed + " records marked for reprocessing.");
-			}
-			getRecordsToReloadRS.close();
-		} catch (Exception e){
-			logEntry.incErrors("Error processing records to reload ", e);
+	private void processRecordsToReload() {
+		if (recordsToReload.isEmpty()) {
+			return;
 		}
+		int numReloaded = 0;
+		int numFailed = 0;
+		for (String cloudLibraryId : recordsToReload) {
+			try {
+				if (reloadRecordFromApi(cloudLibraryId)) {
+					numReloaded++;
+				} else {
+					numFailed++;
+					logEntry.addNote("Failed to reload cloudLibrary record " + cloudLibraryId + ".");
+				}
+			} catch (Exception e) {
+				numFailed++;
+				logEntry.incErrors("Error reloading cloudLibrary record " + cloudLibraryId, e);
+			}
+		}
+		logEntry.addNote("Records to reload: reloaded " + numReloaded + ", failed " + numFailed + ".");
+		logEntry.saveResults();
 	}
 
 	private GroupedWorkIndexer getGroupedWorkIndexer() {
