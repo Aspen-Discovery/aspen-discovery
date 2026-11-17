@@ -131,6 +131,57 @@ class JavaProcessUtilsTests extends TestCase {
 		$this->assertSame($expectOptions ? ['-Xmx1g'] : [], JavaProcessUtils::getJvmOptions(['JavaProcesses' => $settings], 'cron'));
 	}
 
+	public static function cronLineProvider(): array {
+		return [
+			'linux template' => [
+				"0 2 * * *     aspen   cd /usr/local/aspen-discovery/code/reindexer; java -jar reindexer.jar {sitename} nightly\n",
+				"0 2 * * *     aspen   php /usr/local/aspen-discovery/code/web/cron/runJavaProcess.php {sitename} reindexer nightly\n",
+			],
+			'docker with redirection' => [
+				"*/5 * * * * sudo -u www-data    cd /usr/local/aspen-discovery/code/oai_indexer && java -jar oai_indexer.jar {sitename} >/proc/1/fd/1 2>/proc/1/fd/2\n",
+				"*/5 * * * * sudo -u www-data    php /usr/local/aspen-discovery/code/web/cron/runJavaProcess.php {sitename} oai_indexer >/proc/1/fd/1 2>/proc/1/fd/2\n",
+			],
+			'commented out' => [
+				"#00 22 * * *   aspen   cd /usr/local/aspen-discovery/code/cron; java -jar cron.jar my.site\n",
+				"#00 22 * * *   aspen   php /usr/local/aspen-discovery/code/web/cron/runJavaProcess.php my.site cron\n",
+			],
+			'already updated' => [
+				"0 2 * * * aspen php /usr/local/aspen-discovery/code/web/cron/runJavaProcess.php my.site reindexer nightly\n",
+				"0 2 * * * aspen php /usr/local/aspen-discovery/code/web/cron/runJavaProcess.php my.site reindexer nightly\n",
+			],
+			'custom options are left alone' => [
+				"0 3 * * * aspen cd /usr/local/aspen-discovery/code/reindexer; java -Xmx4g -jar reindexer.jar my.site nightly\n",
+				"0 3 * * * aspen cd /usr/local/aspen-discovery/code/reindexer; java -Xmx4g -jar reindexer.jar my.site nightly\n",
+			],
+			'other job' => [
+				"*/5 * * * * aspen php /usr/local/aspen-discovery/code/web/cron/checkBackgroundProcesses.php my.site\n",
+				"*/5 * * * * aspen php /usr/local/aspen-discovery/code/web/cron/checkBackgroundProcesses.php my.site\n",
+			],
+		];
+	}
+
+	#[DataProvider('cronLineProvider')]
+	public function testRewriteCronLine(string $line, string $expected): void {
+		$this->assertSame($expected, JavaProcessUtils::rewriteCronLine($line));
+		//Rewriting again changes nothing
+		$this->assertSame($expected, JavaProcessUtils::rewriteCronLine($expected));
+	}
+
+	public function testRewriteCronLineDoesNotJoinLines(): void {
+		$crontab = "0 2 * * * aspen cd /a/code/oai_indexer; java -jar oai_indexer.jar my.site\n0 2 * * * aspen cd /a/code/reindexer; java -jar reindexer.jar my.site nightly\n";
+		$this->assertSame(
+			"0 2 * * * aspen php /a/code/web/cron/runJavaProcess.php my.site oai_indexer\n0 2 * * * aspen php /a/code/web/cron/runJavaProcess.php my.site reindexer nightly\n",
+			JavaProcessUtils::rewriteCronLine($crontab)
+		);
+	}
+
+	public function testIsCustomJavaCronLine(): void {
+		$this->assertTrue(JavaProcessUtils::isCustomJavaCronLine("0 3 * * * aspen cd /a/code/reindexer; java -Xmx4g -jar reindexer.jar my.site nightly\n"));
+		$this->assertFalse(JavaProcessUtils::isCustomJavaCronLine("#0 3 * * * aspen cd /a/code/reindexer; java -Xmx4g -jar reindexer.jar my.site nightly\n"));
+		$this->assertFalse(JavaProcessUtils::isCustomJavaCronLine("0 2 * * * aspen cd /a/code/reindexer; java -jar reindexer.jar my.site nightly\n"));
+		$this->assertFalse(JavaProcessUtils::isCustomJavaCronLine("0 2 * * * aspen php /a/code/web/cron/runJavaProcess.php my.site reindexer nightly\n"));
+	}
+
 	public function testGetOutputFile(): void {
 		$baseLogPath = sys_get_temp_dir() . '/javaProcessUtilsLogs_' . uniqid();
 		$config = ['Site' => ['baseLogPath' => $baseLogPath]];

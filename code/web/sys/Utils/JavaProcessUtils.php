@@ -154,6 +154,28 @@ class JavaProcessUtils {
 	}
 
 	/**
+	 * Matches a crontab entry that starts an Aspen Java process with a plain java -jar from its directory:
+	 * cd <aspen>/code/<process>; java -jar <process>.jar <site> [arguments]
+	 */
+	const JAVA_CRON_PATTERN = '~cd[ \t]+(/\S+)/code/(\w+)[ \t]*(?:;|&&)[ \t]*java[ \t]+-jar[ \t]+\2\.jar[ \t]+(\S+)((?:[ \t]+[^\s<>|&;]+)*)~';
+
+	/**
+	 * Rewrites a crontab entry that starts a Java process with a plain java -jar to go through runJavaProcess.php,
+	 * keeping the schedule, user, arguments and any output redirection. Other lines are returned unchanged, including
+	 * java command lines that already have options.
+	 */
+	public static function rewriteCronLine(string $line): string {
+		return preg_replace(self::JAVA_CRON_PATTERN, 'php $1/code/web/cron/runJavaProcess.php $3 $2$4', $line);
+	}
+
+	/**
+	 * Whether a crontab entry starts java with options of its own, which rewriteCronLine() leaves alone.
+	 */
+	public static function isCustomJavaCronLine(string $line): bool {
+		return preg_match('/^\s*#/', $line) !== 1 && preg_match('/java[ \t]+-\S+.*-jar\s/', $line) === 1;
+	}
+
+	/**
 	 * Loads the default config.ini and overrides it with the site's config.ini the same way readConfig() does,
 	 * without the rest of the bootstrap.
 	 *

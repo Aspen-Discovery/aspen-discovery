@@ -12,11 +12,7 @@
  * are left alone so local customizations are not lost; those are reported instead.
  */
 
-const JAVA_CRON_PATTERN = '~cd[ \t]+(/\S+)/code/(\w+)[ \t]*(?:;|&&)[ \t]*java[ \t]+-jar[ \t]+\2\.jar[ \t]+(\S+)((?:[ \t]+[^\s<>|&;]+)*)~';
-
-function updateJavaCronLine(string $line): string {
-	return preg_replace(JAVA_CRON_PATTERN, 'php $1/code/web/cron/runJavaProcess.php $3 $2$4', $line);
-}
+require_once __DIR__ . '/../code/web/sys/Utils/JavaProcessUtils.php';
 
 if (count($_SERVER['argv']) > 1) {
 	$serverName = $_SERVER['argv'][1];
@@ -27,11 +23,11 @@ if (count($_SERVER['argv']) > 1) {
 		$lines = [];
 		$changed = false;
 		while (($line = fgets($fhnd)) !== false) {
-			$newLine = updateJavaCronLine($line);
+			$newLine = JavaProcessUtils::rewriteCronLine($line);
 			if ($newLine !== $line) {
 				echo "- Updated cron entry:\n    $line    $newLine";
 				$changed = true;
-			} elseif (preg_match('/java[ \t]+-\S+.*-jar\s/', $line) && !preg_match('/^\s*#/', $line)) {
+			} elseif (JavaProcessUtils::isCustomJavaCronLine($line)) {
 				echo "- Not updated, the java command line has custom options; move them to [JavaProcesses] in config.ini:\n    $line";
 			}
 			$lines[] = $newLine;
