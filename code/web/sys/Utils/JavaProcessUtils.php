@@ -99,6 +99,61 @@ class JavaProcessUtils {
 	}
 
 	/**
+	 * The file a background process's console output (stdout and stderr) goes to:
+	 * <baseLogPath>/<site>/logs/<process>_output.log, next to the log4j logs. The JVM reports an OutOfMemoryError
+	 * exit there, which would otherwise be lost.
+	 *
+	 * @return string|null null when the log directory does not exist or is not writable
+	 */
+	public static function getOutputFile(array $configArray, string $serverName, string $processName): ?string {
+		$baseLogPath = $configArray['Site']['baseLogPath'] ?? '/var/log/aspen-discovery';
+		$logDirectory = "$baseLogPath/$serverName/logs";
+		if (!is_dir($logDirectory) || !is_writable($logDirectory)) {
+			return null;
+		}
+		return "$logDirectory/{$processName}_output.log";
+	}
+
+	/**
+	 * Starts a process in the background with its configured JVM options, as checkBackgroundProcesses.php does.
+	 *
+	 * The previous output file is kept as <file>.1, so the output of a process that died (for example, of an
+	 * OutOfMemoryError) is still there after it has been restarted.
+	 *
+	 * @return string[] Problems to report, if any
+	 */
+	public static function startInBackground(array $configArray, string $processDirectory, string $processName, string $serverName): array {
+		$messages = [];
+		$jvmOptions = self::getJvmOptions($configArray, $processName, $ignoredOptions);
+		if (!empty($ignoredOptions)) {
+			$messages[] = "Ignoring invalid JVM options for $processName: " . implode(' ', $ignoredOptions);
+		}
+		$isWindows = strtolower($configArray['System']['operatingSystem'] ?? '') == 'windows';
+		$command = self::buildCommand($processDirectory, $processName, $serverName, [], $jvmOptions, $isWindows);
+
+		if ($isWindows) {
+			pclose(popen("start /B " . $command, "r"));
+			return $messages;
+		}
+
+		$outputFile = self::getOutputFile($configArray, $serverName, $processName);
+		if ($outputFile === null) {
+			$outputFile = '/dev/null';
+		} else {
+			if (file_exists($outputFile)) {
+				@rename($outputFile, "$outputFile.1");
+			}
+			$header = date('Y-m-d H:i:s') . " Starting $processName with JVM options: " . (empty($jvmOptions) ? '(none)' : implode(' ', $jvmOptions)) . "\n";
+			foreach ($messages as $message) {
+				$header .= date('Y-m-d H:i:s') . " $message\n";
+			}
+			@file_put_contents($outputFile, $header);
+		}
+		exec($command . ' >> ' . escapeshellarg($outputFile) . ' 2>&1 &');
+		return $messages;
+	}
+
+	/**
 	 * Loads the default config.ini and overrides it with the site's config.ini the same way readConfig() does,
 	 * without the rest of the bootstrap.
 	 *

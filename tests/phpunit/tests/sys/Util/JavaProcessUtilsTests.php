@@ -131,6 +131,20 @@ class JavaProcessUtilsTests extends TestCase {
 		$this->assertSame($expectOptions ? ['-Xmx1g'] : [], JavaProcessUtils::getJvmOptions(['JavaProcesses' => $settings], 'cron'));
 	}
 
+	public function testGetOutputFile(): void {
+		$baseLogPath = sys_get_temp_dir() . '/javaProcessUtilsLogs_' . uniqid();
+		$config = ['Site' => ['baseLogPath' => $baseLogPath]];
+		$this->assertNull(JavaProcessUtils::getOutputFile($config, 'my.site', 'koha_export'));
+		mkdir("$baseLogPath/my.site/logs", 0777, true);
+		try {
+			$this->assertSame("$baseLogPath/my.site/logs/koha_export_output.log", JavaProcessUtils::getOutputFile($config, 'my.site', 'koha_export'));
+		} finally {
+			rmdir("$baseLogPath/my.site/logs");
+			rmdir("$baseLogPath/my.site");
+			rmdir($baseLogPath);
+		}
+	}
+
 	public function testShippedDefaults(): void {
 		$sitesDirectory = sys_get_temp_dir() . '/javaProcessUtilsTests_' . uniqid();
 		mkdir("$sitesDirectory/default/conf", 0777, true);

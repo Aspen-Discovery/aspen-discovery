@@ -118,11 +118,9 @@ if (!$nightlyReindexRunning && $solrRunning) {
 			$processPath = $local . '/' . $backgroundProcess;
 			if (file_exists($processPath)) {
 				if (file_exists($processPath . "/$backgroundProcess.jar")) {
-					$jvmOptions = JavaProcessUtils::getJvmOptions($configArray, $backgroundProcess, $ignoredOptions);
-					if (!empty($ignoredOptions)) {
-						$results .= "Ignoring invalid JVM options for $backgroundProcess: " . implode(' ', $ignoredOptions) . "\r\n";
+					foreach (JavaProcessUtils::startInBackground($configArray, $processPath, $backgroundProcess, $serverName) as $message) {
+						$results .= "$message\r\n";
 					}
-					execInBackground(JavaProcessUtils::buildCommand($processPath, $backgroundProcess, $serverName, [], $jvmOptions, $configArray['System']['operatingSystem'] == 'windows'));
 					//Don't send an error message when successfully starting a process.
 				} else {
 					$results .= "Could not automatically restart $backgroundProcess, the jar $processPath/$backgroundProcess.jar did not exist\r\n";
@@ -167,11 +165,3 @@ die();
 
 /////// END OF PROCESS ///////
 
-function execInBackground($cmd) {
-	/** @noinspection PhpStrFunctionsInspection */
-	if (substr(php_uname(), 0, 7) == "Windows") {
-		pclose(popen("start /B " . $cmd, "r"));
-	} else {
-		exec($cmd . " > /dev/null &");
-	}
-}
