@@ -549,6 +549,9 @@ abstract class ObjectEditor extends Admin_Admin {
 					$curl = new CurlWrapper();
 					$response = $curl->curlGetPage($systemVariables->communityContentUrl . '/API/CommunityAPI?method=getSharedContent&objectType=' . $objectType . '&objectId=' . $sourceId);
 					$jsonResponse = json_decode($response);
+					if (isset($jsonResponse->result) && is_object($jsonResponse->result)) {
+						$jsonResponse = $jsonResponse->result;
+					}
 					if ($jsonResponse->success) {
 						$rawData = json_decode($jsonResponse->rawData, true);
 
