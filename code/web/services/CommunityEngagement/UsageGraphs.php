@@ -14,6 +14,7 @@ class CommunityEngagement_UsageGraphs extends Admin_Admin {
 		$interface->assign('graphTitle', $title);
 		$interface->assign('section', 'Community Engagement');
 		$interface->assign('showCSVExportButton', false);
+		$interface->assign('translateDataSeries', true);
 		$this->assignGraphSpecificTitle($campaignId);
 		$this->getAndSetInterfaceDataSeries($stat, $campaignId);
 

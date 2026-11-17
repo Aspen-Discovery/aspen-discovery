@@ -25,8 +25,6 @@ class API_UsageGraphs extends Admin_AbstractUsageGraphs {
 	protected function getAndSetInterfaceDataSeries($stat, $instanceName, $timeframes = ['year', 'month'], $custom = false): void {
 		global $interface;
 
-		$dataSeries = [];
-		$columnLabels = [];
 		$usage = new APIUsage();
 		$usage->selectAdd();
 		if (!empty($instanceName)) {
@@ -39,22 +37,41 @@ class API_UsageGraphs extends Admin_AbstractUsageGraphs {
 		} else {
 			$usage->buildTimeframeQuery($timeframes);
 		}
-		
-		$dataSeries[$stat] = GraphingUtils::getDataSeriesArray(count($dataSeries));
+
+		$usage->selectAdd('apiClient');
+		$usage->groupBy('apiClient');
 		$usage->selectAdd('SUM(numCalls) as numCalls');
 
 		//Collect results
 		$usage->find();
 
+		$columnLabels = [];
+		$callsByClientAndPeriod = [];
 		while ($usage->fetch()) {
 			$curPeriod = $custom ? $usage->getCustomPeriod() : $usage->getCurPeriod($timeframes);
-			$columnLabels[] = $curPeriod;
+			$columnLabels[$curPeriod] = $curPeriod;
+			$clientNotRecorded = empty($usage->apiClient);
+			$clientLabel = $clientNotRecorded ? translate(['text' => 'Not recorded', 'isAdminFacing' => true]) : $usage->apiClient;
 			/** @noinspection PhpUndefinedFieldInspection */
-			$dataSeries[$stat]['data'][$curPeriod] = $usage->numCalls;
+			$callsByClientAndPeriod[$clientLabel][$curPeriod] = $usage->numCalls;
 		}
-		$interface->assign('columnLabels', $columnLabels);
+
+		$dataSeries = [];
+		foreach ($callsByClientAndPeriod as $clientLabel => $callsByPeriod) {
+			$dataSeries[$clientLabel] = GraphingUtils::getDataSeriesArray(count($dataSeries));
+			foreach ($columnLabels as $columnLabel) {
+				$dataSeries[$clientLabel]['data'][$columnLabel] = $callsByPeriod[$columnLabel] ?? 0;
+			}
+		}
+
+		$noUsageFound = empty($dataSeries);
+		if ($noUsageFound) {
+			$dataSeries[$stat] = GraphingUtils::getDataSeriesArray(0);
+		}
+
+		$interface->assign('columnLabels', array_values($columnLabels));
 		$interface->assign('dataSeries', $dataSeries);
-		$interface->assign('translateDataSeries', true);
+		$interface->assign('translateDataSeries', false);
 		$interface->assign('translateColumnLabels', false);
 	}
 
