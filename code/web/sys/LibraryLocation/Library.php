@@ -6354,6 +6354,28 @@ class Library extends DataObject {
 		return $this->_eventFacetSettings;
 	}
 
+	protected $_seriesFacetSettings = null;
+
+	public function getSeriesFacetSettings() : ?LibrarySeriesFacetSetting {
+		$settingsAreLoaded = $this->_seriesFacetSettings !== null;
+		if ($settingsAreLoaded) {
+			return $this->_seriesFacetSettings;
+		}
+		try {
+			require_once ROOT_DIR . '/sys/Series/LibrarySeriesFacetSetting.php';
+			$seriesFacetSetting = new LibrarySeriesFacetSetting();
+			$seriesFacetSetting->libraryId = $this->libraryId;
+			$hasSeriesFacetSetting = $seriesFacetSetting->find(true);
+			if ($hasSeriesFacetSetting) {
+				$this->_seriesFacetSettings = $seriesFacetSetting;
+			}
+		} catch (Exception $e) {
+			global $logger;
+			$logger->log('Error loading series facet settings ' . $e, Logger::LOG_ERROR);
+		}
+		return $this->_seriesFacetSettings;
+	}
+
 	protected $_openArchivesFacetSettings = null;
 
 	public function getOpenArchivesFacetSettings() : ?OpenArchivesFacetGroup {

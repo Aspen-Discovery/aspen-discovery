@@ -5125,6 +5125,7 @@ class User extends DataObject {
 			$sections['series'] = new AdminSection("Series Search");
 			$sections['series']->addAction(new AdminAction('Administer Series', 'Edit series data for series search', '/Series/AdministerSeries'), 'Administer Series');
 			$sections['series']->addAction(new AdminAction('Indexing Settings', 'Administer Series Indexing Settings', '/Series/Settings'), 'Administer Series');
+			$sections['series']->addAction(new AdminAction('Series Facet Settings', 'Define facets for series searches.', '/Series/SeriesFacets'), 'Administer Series Facet Settings');
 			$sections['series']->addAction(new AdminAction('Indexing Log', 'View Series Indexing Log', '/Series/IndexingLog'), [
 				'View System Reports',
 				'View Indexing Logs',

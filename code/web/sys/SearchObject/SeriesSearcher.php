@@ -236,125 +236,22 @@ class SearchObject_SeriesSearcher extends SearchObject_SolrSearcher {
 		return $this->processSearchSuggestions($searchTerm, $suggestionHandler);
 	}
 
-	//TODO: Convert this to use definitions so they can be customized in admin
 	public function getFacetConfig() : array {
-		if ($this->facetConfig == null) {
-			require_once ROOT_DIR . '/sys/LibraryLocation/LibraryFacetSetting.php';
-			$facetConfig = [];
-			global $solrScope;
-
-			$author = new LibraryFacetSetting();
-			$author->id = 1;
-			$author->multiSelect = false;
-			$author->facetName = "author_display";
-			$author->displayName = "Author";
-			$author->numEntriesToShowByDefault = 5;
-			$author->translate = true;
-			$author->collapseByDefault = true;
-			$author->useMoreFacetPopup = true;
-			$facetConfig["author_display"] = $author;
-
-			$audience = new LibraryFacetSetting();
-			$audience->id = 2;
-			$audience->multiSelect = true;
-			$audience->facetName = "audience_facet";
-			$audience->displayName = "Reading Level";
-			$audience->numEntriesToShowByDefault = 10;
-			$audience->translate = true;
-			$audience->collapseByDefault = true;
-			$audience->useMoreFacetPopup = false;
-			$facetConfig["audience_facet"] = $audience;
-
-			$language = new LibraryFacetSetting();
-			$language->id = 3;
-			$language->multiSelect = true;
-			$language->facetName = "language";
-			$language->displayName = "Language";
-			$language->numEntriesToShowByDefault = 10;
-			$language->translate = false;
-			$language->collapseByDefault = true;
-			$language->useMoreFacetPopup = false;
-			$facetConfig["language"] = $language;
-
-			$literaryForm = new LibraryFacetSetting();
-			$literaryForm->id = 4;
-			$literaryForm->multiSelect = false;
-			$literaryForm->facetName = "literary_form";
-			$literaryForm->displayName = "Literary Form";
-			$literaryForm->numEntriesToShowByDefault = 10;
-			$literaryForm->translate = true;
-			$literaryForm->collapseByDefault = true;
-			$literaryForm->useMoreFacetPopup = false;
-			$facetConfig["literary_form"] = $literaryForm;
-
-			$subject = new LibraryFacetSetting();
-			$subject->id = 5;
-			$subject->multiSelect = true;
-			$subject->facetName = "subject";
-			$subject->displayName = "Subject";
-			$subject->numEntriesToShowByDefault = 10;
-			$subject->translate = true;
-			$subject->collapseByDefault = true;
-			$subject->useMoreFacetPopup = true;
-			$facetConfig["subject"] = $subject;
-
-			$eContentSource = new LibraryFacetSetting();
-			$eContentSource->id = 6;
-			$eContentSource->multiSelect = true;
-			$eContentSource->facetName = "econtent_source_$solrScope";
-			$eContentSource->displayName = "eContent Source";
-			$eContentSource->numEntriesToShowByDefault = 10;
-			$eContentSource->translate = true;
-			$eContentSource->collapseByDefault = true;
-			$eContentSource->useMoreFacetPopup = false;
-			$facetConfig["econtent_source_$solrScope"] = $eContentSource;
-
-			$format = new LibraryFacetSetting();
-			$format->id = 7;
-			$format->multiSelect = true;
-			$format->facetName = "format_$solrScope";
-			$format->displayName = "Format";
-			$format->numEntriesToShowByDefault = 10;
-			$format->translate = true;
-			$format->collapseByDefault = true;
-			$format->useMoreFacetPopup = false;
-			$facetConfig["format_$solrScope"] = $format;
-
-			$formatCategory = new LibraryFacetSetting();
-			$formatCategory->id = 8;
-			$formatCategory->multiSelect = true;
-			$formatCategory->facetName = "format_category_$solrScope";
-			$formatCategory->displayName = "Format Category";
-			$formatCategory->numEntriesToShowByDefault = 10;
-			$formatCategory->translate = true;
-			$formatCategory->collapseByDefault = true;
-			$formatCategory->useMoreFacetPopup = false;
-			$facetConfig["format_category_$solrScope"] = $formatCategory;
-
-			$daysSinceAdded = new LibraryFacetSetting();
-			$daysSinceAdded->id = 9;
-			$daysSinceAdded->multiSelect = false;
-			$daysSinceAdded->facetName = "local_time_since_added_$solrScope";
-			$daysSinceAdded->displayName = "Added In the Last";
-			$daysSinceAdded->numEntriesToShowByDefault = 10;
-			$daysSinceAdded->translate = true;
-			$daysSinceAdded->collapseByDefault = true;
-			$daysSinceAdded->useMoreFacetPopup = false;
-			$facetConfig["local_time_since_added_$solrScope"] = $daysSinceAdded;
-
-			$daysSinceUpdated = new LibraryFacetSetting();
-			$daysSinceUpdated->id = 10;
-			$daysSinceUpdated->multiSelect = false;
-			$daysSinceUpdated->facetName = "local_time_since_updated_$solrScope";
-			$daysSinceUpdated->displayName = "Updated In the Last";
-			$daysSinceUpdated->numEntriesToShowByDefault = 10;
-			$daysSinceUpdated->translate = true;
-			$daysSinceUpdated->collapseByDefault = true;
-			$daysSinceUpdated->useMoreFacetPopup = false;
-			$facetConfig["local_time_since_updated_$solrScope"] = $daysSinceUpdated;
-
-			$this->facetConfig = $facetConfig;
+		if ($this->facetConfig !== null) {
+			return $this->facetConfig;
 		}
+		require_once ROOT_DIR . '/sys/Series/SeriesFacet.php';
+		$searchLibrary = Library::getActiveLibrary();
+		$seriesFacetSettings = $searchLibrary == null ? null : $searchLibrary->getSeriesFacetSettings();
+		$facets = $seriesFacetSettings == null ? SeriesFacet::getDefaultFacets() : $seriesFacetSettings->getFacets();
+
+		$facetConfig = [];
+		foreach ($facets as $facet) {
+			$scopedFacet = clone $facet;
+			$scopedFacet->facetName = $this->getScopedFieldName($scopedFacet->facetName);
+			$facetConfig[$scopedFacet->facetName] = $scopedFacet;
+		}
+		$this->facetConfig = $facetConfig;
 		return $this->facetConfig;
 	}
 
