@@ -176,6 +176,14 @@ class JavaProcessUtils {
 	}
 
 	/**
+	 * The environment variable that sets a process's JVM options in containers (see syncEnvToConfig.php), e.g.
+	 * KOHA_EXPORT_OPTS for koha_export. This follows the <APP>_OPTS convention of Gradle start scripts.
+	 */
+	public static function getOptionsEnvironmentVariable(string $processName): string {
+		return strtoupper($processName) . '_OPTS';
+	}
+
+	/**
 	 * Loads the default config.ini and overrides it with the site's config.ini the same way readConfig() does,
 	 * without the rest of the bootstrap.
 	 *

@@ -182,6 +182,11 @@ class JavaProcessUtilsTests extends TestCase {
 		$this->assertFalse(JavaProcessUtils::isCustomJavaCronLine("0 2 * * * aspen php /a/code/web/cron/runJavaProcess.php my.site reindexer nightly\n"));
 	}
 
+	public function testGetOptionsEnvironmentVariable(): void {
+		$this->assertSame('KOHA_EXPORT_OPTS', JavaProcessUtils::getOptionsEnvironmentVariable('koha_export'));
+		$this->assertSame('REINDEXER_OPTS', JavaProcessUtils::getOptionsEnvironmentVariable('reindexer'));
+	}
+
 	public function testGetOutputFile(): void {
 		$baseLogPath = sys_get_temp_dir() . '/javaProcessUtilsLogs_' . uniqid();
 		$config = ['Site' => ['baseLogPath' => $baseLogPath]];
@@ -212,6 +217,11 @@ class JavaProcessUtilsTests extends TestCase {
 			$this->assertSame(['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=12', '-Xmx2g'], JavaProcessUtils::getJvmOptions($config, 'koha_export', $ignored));
 			$this->assertSame([], $ignored);
 			$this->assertNull(JavaProcessUtils::loadConfig($sitesDirectory, 'missing.localhost'));
+
+			//An unquoted single option, as syncEnvToConfig.php writes it, is read back as is
+			file_put_contents("$sitesDirectory/test.localhost/conf/config.ini", "[JavaProcesses]\nkoha_export = -XX:+UseSerialGC\n");
+			$config = JavaProcessUtils::loadConfig($sitesDirectory, 'test.localhost');
+			$this->assertSame(['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=12', '-XX:+UseSerialGC'], JavaProcessUtils::getJvmOptions($config, 'koha_export'));
 
 			//enabled = false in the site's config.ini turns the options off
 			file_put_contents("$sitesDirectory/test.localhost/conf/config.ini", "[JavaProcesses]\nenabled = false\n");
