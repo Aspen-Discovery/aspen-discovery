@@ -468,6 +468,7 @@ class Library extends DataObject {
 	//Web Builder
 	public $enableWebBuilder;
 	public $webResourcesSettingId;
+	public $openWebResourcesDirectly;
 
 	//WebsiteIndexing
 	public $websiteIndexingFacetSettingId;
@@ -4846,6 +4847,15 @@ class Library extends DataObject {
 						'label' => 'Index Local Web Builder Content',
 						'description' => 'Include content created with the local Web Builder in the catalog search results. This setting must be enabled for Web Builder pages (e.g., Basic Pages, Custom Pages, etc.) to be indexed and appear in &quot;Library Website&quot; search results.',
 						'note' => 'When disabled, this library will show as "(Indexing Disabled)" in Web Builder library selection lists, and its locations will show as "(Library Indexing Disabled)" in location selection lists.',
+						'hideInLists' => true,
+						'default' => 0,
+					],
+					'openWebResourcesDirectly' => [
+						'property' => 'openWebResourcesDirectly',
+						'type' => 'checkbox',
+						'label' => 'Open Web Resources Directly From Lists',
+						'description' => 'Link resource titles in the Web Resources lists straight to the resource instead of the web resource page.',
+						'note' => 'A resource that the viewer cannot open yet, for example one that requires login, keeps the link to the web resource page.',
 						'hideInLists' => true,
 						'default' => 0,
 					],

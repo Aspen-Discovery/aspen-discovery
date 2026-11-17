@@ -34,14 +34,16 @@ class WebBuilder_ResourceAudience extends Action
 			$searchObject = SearchObjectFactory::initSearchObject('Websites');
 			$resourcesToShow = $searchObject->getRecords(array_keys($webResourceIds));
 
+			$openWebResourcesDirectly = $library->openWebResourcesDirectly == 1;
 			foreach ($resourcesToShow as $curResource) {
 				$webResourceRecordDriver = new WebResourceRecordDriver($curResource->getFields());
 				$webResources[$webResourceRecordDriver->getId()] = [
-					'id' => $webResourceRecordDriver->getId(),
+					'id' => $webResourceRecordDriver->getNumericId(),
 					'title' => $webResourceRecordDriver->getTitle(),
 					'description' => $webResourceRecordDriver->getDescription(),
-					'link' => $webResourceRecordDriver->getLinkUrl(),
+					'link' => $openWebResourcesDirectly ? $webResourceRecordDriver->getResourceUrlForLibrary($library->libraryId) : $webResourceRecordDriver->getLinkUrl(),
 					'bookCoverUrl' => $webResourceRecordDriver->getBookCoverUrl('medium'),
+					'openInNewTab' => $webResourceRecordDriver->isOpenInNewTab(),
 				];
 			}
 
@@ -50,6 +52,7 @@ class WebBuilder_ResourceAudience extends Action
 			});
 
 			$interface->assign('webResources', $webResources);
+			$interface->assign('openWebResourcesDirectly', $openWebResourcesDirectly);
 			$interface->assign('title', $audience->name);
 			$interface->assign('description', $audience->getTextBlockTranslation('customWebBuilderAudienceDescription', $activeLanguage->code));
 

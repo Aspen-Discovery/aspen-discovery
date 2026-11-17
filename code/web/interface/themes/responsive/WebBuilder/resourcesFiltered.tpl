@@ -8,18 +8,20 @@
 		</div>
 	</div>
 	{foreach from=$webResources item=curResource}
+		{assign var="curResourceTitle" value=$curResource.title|removeTrailingPunctuation}
+		{if empty($curResourceTitle)}
+			{capture assign="curResourceTitle"}{translate text='Title not available' isPublicFacing=true}{/capture}
+		{/if}
 		<div id="webPageResult" class="resultsList row">
 			<div class="coversColumn col-xs-3 col-sm-3 col-md-3 col-lg-2 text-center" aria-hidden="true" role="presentation">
-				<a href="{$curResource.link}" class="alignleft listResultImage">
-					<img src="{$curResource.bookCoverUrl}" class="listResultImage img-thumbnail {$coverStyle}" alt="{$curResource.title|removeTrailingPunctuation|highlight|truncate:180:"..."}">
-				</a>
+				{capture assign="curResourceThumbnailContent"}<img src="{$curResource.bookCoverUrl}" class="listResultImage img-thumbnail {$coverStyle}" alt="{$curResourceTitle|highlight|truncate:180:"..."}">{/capture}
+				{include file='WebBuilder/webResourceListLink.tpl' resourceId=$curResource.id resourceName=$curResourceTitle resourceUrl=$curResource.link openInNewTab=$curResource.openInNewTab linkClass='alignleft listResultImage' linkTabIndex='-1' linkContent=$curResourceThumbnailContent openWebResourcesDirectly=$openWebResourcesDirectly}
 			</div>
 			<div class="col-xs-9 col-sm-9 col-md-9 col-lg-10">
 				<div class="col-xs-12">
 					<span class="result-index"></span>&nbsp;
-					<a href="{$curResource.link}" class="result-title notranslate" onclick="AspenDiscovery.Websites.trackUsage('{$curResource.id}')">
-						{if !$curResource.title|removeTrailingPunctuation} {translate text='Title not available' isPublicFacing=true}{else}{$curResource.title|removeTrailingPunctuation|highlight|truncate:180:"..."}{/if}
-					</a>
+					{capture assign="curResourceTitleContent"}{$curResourceTitle|highlight|truncate:180:"..."}{/capture}
+					{include file='WebBuilder/webResourceListLink.tpl' resourceId=$curResource.id resourceName=$curResourceTitle resourceUrl=$curResource.link openInNewTab=$curResource.openInNewTab linkClass='result-title notranslate' linkContent=$curResourceTitleContent openWebResourcesDirectly=$openWebResourcesDirectly}
 				</div>
 			</div>
 

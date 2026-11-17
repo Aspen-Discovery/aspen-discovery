@@ -68,6 +68,7 @@ class WebBuilder_ResourcesAtoZ extends Action
 			}
 		}
 
+		$openWebResourcesDirectly = $library->openWebResourcesDirectly == 1;
 		foreach ($webResourceIds as $curResource) {
 			$webResourceRecordDriver = new WebResourceRecordDriver($curResource);
 
@@ -83,7 +84,7 @@ class WebBuilder_ResourcesAtoZ extends Action
 					'id' => $webResourceRecordDriver->getNumericId(),
 					'title' => $webResourceRecordDriver->getTitle(),
 					'description' => $webResourceRecordDriver->getDescription(),
-					'url' => $webResourceRecordDriver->getLinkUrl(),
+					'url' => $openWebResourcesDirectly ? $webResourceRecordDriver->getResourceUrlForLibrary($library->libraryId) : $webResourceRecordDriver->getLinkUrl(),
 					'bookCoverUrl' => $webResourceRecordDriver->getBookCoverUrl('medium'),
 					'openInNewTab' => $openInNewTab,
 				];
@@ -97,6 +98,7 @@ class WebBuilder_ResourcesAtoZ extends Action
 		$interface->assign('filterArray', $filterArray);
 		$interface->assign('webResources', $webResources);
 		$interface->assign('description', $webResourceSetting->getTextBlockTranslation('descriptionAtoZ', $activeLanguage->code));
+		$interface->assign('openWebResourcesDirectly', $openWebResourcesDirectly);
 		$this->display('resourcesAtoZ.tpl', 'Resources A-Z', '', false);
 	}
 
