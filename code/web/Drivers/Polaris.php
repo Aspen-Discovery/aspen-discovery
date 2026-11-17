@@ -152,6 +152,30 @@ class Polaris extends AbstractIlsDriver {
 		return true;
 	}
 
+	public function bypassReadingHistoryUpdate($patron, $isNightlyUpdate): bool {
+		// Only check this during nightly update cron
+		if (!$isNightlyUpdate) {
+			return false;
+		}
+
+		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/basicdata";
+		$response = $this->getWebServiceResponse($polarisUrl, 'GET', '', false, true);
+		if (!$response || $this->lastResponseCode != 200) {
+			return true;
+		}
+		$jsonResponse = json_decode($response);
+		$patronBasicData = $jsonResponse->PatronBasicData ?? null;
+		if (!$patronBasicData || empty($patronBasicData->LastActivityDate)) {
+			return true;
+		}
+
+		$lastActivityDate = (int)$this->parsePolarisDate($patronBasicData->LastActivityDate);
+		$lastReadingHistoryUpdate = (int)$patron->lastReadingHistoryUpdate;
+
+		// Skip if the patron has no new activity in Polaris
+		return $lastActivityDate <= $lastReadingHistoryUpdate;
+	}
+
 	public function getReadingHistory(User $patron): array {
 		$readingHistoryEnabled = false;
 		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/preferences";
