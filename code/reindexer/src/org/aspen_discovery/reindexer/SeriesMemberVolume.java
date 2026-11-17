@@ -5,15 +5,17 @@ public class SeriesMemberVolume {
 	private boolean deleted;
 	private boolean userAdded;
 	private boolean foundInIndex;
+	private boolean userDefinedVolume;
 
 	public SeriesMemberVolume() {
 
 	}
 
-	public SeriesMemberVolume(String volume, boolean deleted, boolean userAdded) {
+	public SeriesMemberVolume(String volume, boolean deleted, boolean userAdded, boolean userDefinedVolume) {
 		this.volume = volume;
 		this.deleted = deleted;
 		this.userAdded = userAdded;
+		this.userDefinedVolume = userDefinedVolume;
 	}
 
 	public String getVolume() {
@@ -34,6 +36,10 @@ public class SeriesMemberVolume {
 
 	public boolean isUserAdded() {
 		return userAdded;
+	}
+
+	public boolean isUserDefinedVolume() {
+		return userDefinedVolume;
 	}
 
 	public void setUserAdded(boolean userAdded) {
