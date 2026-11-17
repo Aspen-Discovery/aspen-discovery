@@ -8,7 +8,11 @@
 			</label>
 			<select name="selected856Link" id="selected856Link" class="form-control">
 				{foreach from=$validUrls item=urlInfo key=id}
-					<option value="{$id}">{$urlInfo.label}</option>
+					{if !empty($urlInfo.requiresLogin)}
+						<option value="{$id}" disabled>{$urlInfo.label} &ndash; {translate text="Please log in to view this resource" isPublicFacing=true}</option>
+					{else}
+						<option value="{$id}">{$urlInfo.label}</option>
+					{/if}
 				{/foreach}
 			</select>
 		</div>
