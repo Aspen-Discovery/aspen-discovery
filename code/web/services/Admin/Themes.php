@@ -96,7 +96,7 @@ class Admin_Themes extends ObjectEditor {
 	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
-		$breadcrumbs[] = new Breadcrumb('/Admin/Home#theme_and_layout', 'Configuration Templates');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#theme_and_layout', 'Theme & Layout');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Themes', 'Themes');
 		if (!empty($this->activeObject) && $this->activeObject instanceof Theme) {
 			$themes = $this->activeObject->getAllAppliedThemes();
