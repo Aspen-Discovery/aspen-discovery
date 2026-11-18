@@ -2,11 +2,12 @@
 require_once ROOT_DIR . '/sys/Account/UserNotification.php';
 require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
 require_once ROOT_DIR . '/sys/CurlWrapper.php';
-require_once ROOT_DIR . '/sys/AspenPWA/Setting.php';
+require_once ROOT_DIR . '/sys/AspenPWA/FirebaseSetting.php';
 class FirebaseNotification extends DataObject {
 
-	public function sendPushNotification($message, $deviceToken, $userId, $notificationType) : void {
-		$response = $this->sendFCMessage($message['title'], $message['body'], $deviceToken);
+	public function sendPushNotification($message, UserNotificationToken $notificationToken, $userId, $notificationType) : void {
+		$settings = FirebaseSetting::getSettingsForToken($notificationToken);
+		$response = $this->sendFCMessage($message['title'], $message['body'], $notificationToken->pushToken, $settings);
 		// $notification = new UserNotification();
 		// $notification->userId = $userId;
 		// $notification->pushToken = $pushToken;
@@ -18,7 +19,14 @@ class FirebaseNotification extends DataObject {
 	}
 	public function sendTestPushNotification($title, $body, $deviceToken) : array
 	{
-		return $this->sendFCMessage($title, $body, $deviceToken);
+		$notificationToken = new UserNotificationToken();
+		$notificationToken->pushToken = $deviceToken;
+		if ($notificationToken->find(true)) {
+			$settings = FirebaseSetting::getSettingsForToken($notificationToken);
+		} else {
+			$settings = FirebaseSetting::getSettingsForCurrentLibrary();
+		}
+		return $this->sendFCMessage($title, $body, $deviceToken, $settings);
 	}
 
 	public function getNotificationReceipt($reciept) : void
@@ -93,9 +101,8 @@ class FirebaseNotification extends DataObject {
 		return $data['access_token'];
 	}
 
-	function sendFCMessage($title, $body, $deviceToken)
+	function sendFCMessage($title, $body, $deviceToken, ?FirebaseSetting $settings)
 	{
-		$settings = AspenPWASetting::getSettingsForCurrentLibrary();
 		if($settings)
 		{
 			$serviceAccount = $settings->getServiceAccount();
@@ -135,7 +142,7 @@ class FirebaseNotification extends DataObject {
 			return json_decode($response, true);
 		} else {
 			// If we don't have settings that logging is handled inside
-			// getSettingsForCurrentLibrary
+			// FirebaseSetting
 			return [];
 		}
 	}
