@@ -17,8 +17,8 @@
 */5 * * * * sudo -u www-data    php /usr/local/aspen-discovery/docker/files/cron/checkBackgroundProcessesDocker.php {sitename} >/proc/1/fd/1 2>/proc/1/fd/2
 
 #   Regular extracts that don't need to run continuously 
-*/5 * * * * sudo -u www-data    cd /usr/local/aspen-discovery/code/oai_indexer && java -jar oai_indexer.jar {sitename} >/proc/1/fd/1 2>/proc/1/fd/2
-*/5 * * * * sudo -u www-data    cd /usr/local/aspen-discovery/code/reindexer && java -jar reindexer.jar {sitename} nightly >/proc/1/fd/1 2>/proc/1/fd/2
+*/5 * * * * sudo -u www-data    php /usr/local/aspen-discovery/code/web/cron/runJavaProcess.php {sitename} oai_indexer >/proc/1/fd/1 2>/proc/1/fd/2
+*/5 * * * * sudo -u www-data    php /usr/local/aspen-discovery/code/web/cron/runJavaProcess.php {sitename} reindexer nightly >/proc/1/fd/1 2>/proc/1/fd/2
 
 #   New York Times Best seller Lists Updating 
 15 7 * * 5  sudo -u www-data    php /usr/local/aspen-discovery/code/web/cron/updateNYTLists.php {sitename} >/proc/1/fd/1 2>/proc/1/fd/2
@@ -28,7 +28,7 @@
 
 
 #   CRON for Aspen (book cover cache cleanup etc.)
-00 22 * * * sudo -u www-data    cd /usr/local/aspen-discovery/code/cron; java -jar cron.jar {sitename} >/proc/1/fd/1 2>/proc/1/fd/2
+00 22 * * * sudo -u www-data    php /usr/local/aspen-discovery/code/web/cron/runJavaProcess.php {sitename} cron >/proc/1/fd/1 2>/proc/1/fd/2
 
 #   Fetch Notification Receipts 
 0 11 * * 1-5    sudo -u www-data    php /usr/local/aspen-discovery/code/web/cron/fetchNotificationReceipts.php {sitename} >/proc/1/fd/1 2>/proc/1/fd/2

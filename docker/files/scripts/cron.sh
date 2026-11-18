@@ -45,6 +45,9 @@ while [ ! -f "$confSiteFile" ]; do
 
 done
 
+# Start the Java processes in sites created before 26.12 through runJavaProcess.php (DIS-3191)
+php /usr/local/aspen-discovery/docker/files/scripts/updateJavaCron.php "$CONFIG_DIRECTORY/conf/crontab"
+
 # Set crontab to be executed
 log_info "Setting crontab to be executed"
 crontab -u root "$CONFIG_DIRECTORY/conf/crontab" >/proc/1/fd/1 2>/proc/1/fd/2

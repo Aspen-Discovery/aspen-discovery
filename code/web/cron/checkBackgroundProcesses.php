@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../bootstrap.php';
+require_once ROOT_DIR . '/sys/Utils/JavaProcessUtils.php';
 
 global $configArray;
 global $serverName;
@@ -18,18 +19,18 @@ $runningProcesses = [];
 if ($configArray['System']['operatingSystem'] == 'windows') {
 	/** @noinspection SpellCheckingInspection */
 	exec("WMIC PROCESS get Processid,Commandline", $processes);
-	$processRegEx = '/.*?java(?:.exe\")?\s+-jar\s(.*?)\.jar.*?\s+(\d+)/ix';
+	$processRegEx = '/.*?' . JavaProcessUtils::JAVA_COMMAND_PATTERN . '(.*?)\.jar.*?\s+(\d+)/ix';
 	$processIdIndex = 2;
 	$processNameIndex = 1;
 	$solrRegex = "/$serverName\\\\solr7/ix";
-	$nightlyReindexRegex = "/.*?java(?:.exe\")?\s+-jar\sreindexer\.jar\s+$serverName\s+nightly/ix";
+	$nightlyReindexRegex = '/.*?' . JavaProcessUtils::JAVA_COMMAND_PATTERN . 'reindexer\.jar\s+' . $serverName . '\s+nightly/ix';
 } else {
 	exec("ps -ef | grep java", $processes);
-	$processRegEx = '/(\d+)\s+.*?\d{2}:\d{2}:\d{2}\sjava\s-jar\s(.*?)\.jar\s' . $serverName . '/ix';
+	$processRegEx = '/(\d+)\s+.*?\d{2}:\d{2}:\d{2}\s' . JavaProcessUtils::JAVA_COMMAND_PATTERN . '(.*?)\.jar\s' . $serverName . '/ix';
 	$processIdIndex = 1;
 	$processNameIndex = 2;
 	$solrRegex = "/$serverName\/solr7/ix";
-	$nightlyReindexRegex = '/(\d+)\s+.*?\d{2}:\d{2}:\d{2}\sjava\s-jar\sreindexer\.jar\s' . $serverName . '\snightly/ix';
+	$nightlyReindexRegex = '/(\d+)\s+.*?\d{2}:\d{2}:\d{2}\s' . JavaProcessUtils::JAVA_COMMAND_PATTERN . 'reindexer\.jar\s' . $serverName . '\snightly/ix';
 }
 
 $results = "";
@@ -117,7 +118,9 @@ if (!$nightlyReindexRunning && $solrRunning) {
 			$processPath = $local . '/' . $backgroundProcess;
 			if (file_exists($processPath)) {
 				if (file_exists($processPath . "/$backgroundProcess.jar")) {
-					execInBackground("cd $processPath; java -jar $backgroundProcess.jar $serverName");
+					foreach (JavaProcessUtils::startInBackground($configArray, $processPath, $backgroundProcess, $serverName) as $message) {
+						$results .= "$message\r\n";
+					}
 					//Don't send an error message when successfully starting a process.
 				} else {
 					$results .= "Could not automatically restart $backgroundProcess, the jar $processPath/$backgroundProcess.jar did not exist\r\n";
@@ -162,11 +165,3 @@ die();
 
 /////// END OF PROCESS ///////
 
-function execInBackground($cmd) {
-	/** @noinspection PhpStrFunctionsInspection */
-	if (substr(php_uname(), 0, 7) == "Windows") {
-		pclose(popen("start /B " . $cmd, "r"));
-	} else {
-		exec($cmd . " > /dev/null &");
-	}
-}

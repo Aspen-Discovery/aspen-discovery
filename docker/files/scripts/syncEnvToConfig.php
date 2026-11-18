@@ -8,6 +8,7 @@
  */
 
 require_once __DIR__ . '/../logger/DockerLogger.php';
+require_once __DIR__ . '/../../../code/web/sys/Utils/JavaProcessUtils.php';
 DockerLogger::init('BACKEND');
 
 $siteName = getenv('SITE_NAME');
@@ -58,6 +59,29 @@ foreach ($envMapping as $envVar => [$file, $section, $key]) {
 	}
 }
 
+// JVM options for the Java processes (DIS-3191). ASPEN_JAVA_OPTS replaces [JavaProcesses] defaultOptions and
+// <PROCESS>_OPTS (e.g. KOHA_EXPORT_OPTS, REINDEXER_OPTS) replaces the options for that process. The keys are added to
+// the site's config.ini when it does not have them yet.
+$javaOptionKeys = ['ASPEN_JAVA_OPTS' => 'defaultOptions'];
+foreach (glob('/usr/local/aspen-discovery/code/*/*.jar') as $jar) {
+	$processName = basename($jar, '.jar');
+	if (basename(dirname($jar)) === $processName && JavaProcessUtils::isValidProcessName($processName)) {
+		$javaOptionKeys[JavaProcessUtils::getOptionsEnvironmentVariable($processName)] = $processName;
+	}
+}
+foreach ($javaOptionKeys as $envVar => $key) {
+	$value = getenv($envVar);
+	if ($value === false || $value === '') {
+		continue;
+	}
+	if (strpbrk($value, "\"\n\r;") !== false) {
+		DockerLogger::warn("Ignoring {$envVar}: JVM options cannot contain quotes, semicolons or line breaks");
+		continue;
+	}
+	$fileChanges['config.ini']['JavaProcesses'][$key] = trim($value);
+	$changedEnvVars[] = $envVar;
+}
+
 if (empty($fileChanges)) {
 	DockerLogger::info("No environment variables to sync");
 	exit(0);
@@ -73,7 +97,7 @@ foreach ($fileChanges as $file => $sections) {
 		continue;
 	}
 
-	$updated = updateIniFile($filePath, $sections);
+	$updated = updateIniFile($filePath, $sections, $file === 'config.ini' ? ['JavaProcesses'] : []);
 	if ($updated) {
 		DockerLogger::info("Updated {$file}");
 	}
@@ -96,9 +120,10 @@ DockerLogger::info("Environment sync complete");
  *
  * @param string $filePath Path to the INI file
  * @param array $changes Array of [section => [key => value]] to update
+ * @param array $addMissingSections Sections whose keys (and the section itself) are added when missing
  * @return bool True if file was modified
  */
-function updateIniFile(string $filePath, array $changes): bool {
+function updateIniFile(string $filePath, array $changes, array $addMissingSections = []): bool {
 	$lines = file($filePath, FILE_IGNORE_NEW_LINES);
 	$currentSection = null;
 	$modified = false;
@@ -122,9 +147,7 @@ function updateIniFile(string $filePath, array $changes): bool {
 			foreach ($changes[$currentSection] as $key => $newValue) {
 				// Match key at start of line (handles various spacing)
 				if (preg_match('/^' . preg_quote($key, '/') . '\s*=/', $trimmed)) {
-					// Determine if value needs quotes
-					$needsQuotes = strpos($newValue, ' ') !== false || strpos($newValue, '{') !== false || strpos($newValue, '}') !== false || strpos($newValue, ';') !== false;
-					$formatted = $needsQuotes ? "\"{$newValue}\"" : $newValue;
+					$formatted = formatIniValue($newValue);
 
 					// Preserve original indentation
 					$indent = '';
@@ -140,11 +163,43 @@ function updateIniFile(string $filePath, array $changes): bool {
 		}
 	}
 
+	// Add the keys that were not found, in the sections that allow it
+	foreach ($addMissingSections as $section) {
+		if (empty($changes[$section])) {
+			continue;
+		}
+		$newLines = [];
+		foreach ($changes[$section] as $key => $newValue) {
+			$newLines[] = "{$key} = " . formatIniValue($newValue);
+		}
+		$headerIndex = null;
+		foreach ($lines as $i => $line) {
+			if (trim($line) === "[{$section}]") {
+				$headerIndex = $i;
+				break;
+			}
+		}
+		if ($headerIndex === null) {
+			$lines = array_merge($lines, ['', "[{$section}]"], $newLines);
+		} else {
+			array_splice($lines, $headerIndex + 1, 0, $newLines);
+		}
+		$modified = true;
+	}
+
 	if ($modified) {
 		file_put_contents($filePath, implode("\n", $lines) . "\n");
 	}
 
 	return $modified;
+}
+
+/**
+ * Quote a value when parse_ini_file would not read it back as is.
+ */
+function formatIniValue(string $value): string {
+	$needsQuotes = strpbrk($value, ' {};=') !== false;
+	return $needsQuotes ? "\"{$value}\"" : $value;
 }
 
 /**
