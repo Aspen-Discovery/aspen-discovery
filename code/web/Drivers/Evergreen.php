@@ -923,29 +923,61 @@ class Evergreen extends AbstractIlsDriver {
 
 		$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
 		ExternalRequestLogEntry::logRequest('evergreen.updatePreferredname', 'POST', $evergreenUrl, $this->apiCurlWrapper->getHeaders(), $request, $this->apiCurlWrapper->getResponseCode(), $apiResponse, []);
+		if ($this->apiCurlWrapper->getResponseCode() == 200) {
+			$apiResponse = json_decode($apiResponse);
+			if (isset($apiResponse->payload[0]) && isset($apiResponse->payload[0]->textcode)) {
+				return false;
+			}
+		} else {
+			return false;
+		}
 
 		// and now ensure that the patron summary reflects any changes
 		$apiResponse = $this->getPreferredNameFromApi($patron, $authToken);
 		if ($this->apiCurlWrapper->getResponseCode() == 200) {
 			$apiResponse = json_decode($apiResponse);
+			$firstName = $patron->firstname;
+			$lastName = $patron->lastname;
 			if ($apiResponse->status !== '404' && isset($apiResponse->payload[0])) {
+				// have new prefered name fetching method
 				$nameParts = $apiResponse->payload[0];
 				$firstName = $nameParts->first_given_name;
 				$lastName = $nameParts->family_name;
-				$patron->_fullname = $lastName . ',' . $firstName;
-				$forceDisplayNameUpdate = false;
-				if ($patron->firstname != $firstName) {
-					$patron->firstname = $firstName;
-					$forceDisplayNameUpdate = true;
+			} else {
+				// legacy method: fetch entire patron record
+				$request = 'service=open-ils.actor&method=open-ils.actor.user.fleshed.retrieve';
+				$request .= '&param=' . json_encode($authToken);
+				$request .= '&param=' . json_encode($patron->unique_ils_id);
+
+				$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
+
+				ExternalRequestLogEntry::logRequest('evergreen.getPatronInfoAfterPrefNameChange', 'POST', $evergreenUrl, $this->apiCurlWrapper->getHeaders(), $request, $this->apiCurlWrapper->getResponseCode(), $apiResponse, []);
+
+				if ($this->apiCurlWrapper->getResponseCode() == 200) {
+					$apiResponse = json_decode($apiResponse);
+					if (isset($apiResponse->payload[0]->__p)) {
+						if ($apiResponse->payload[0]->__c == 'au') {
+							$mappedPatronData = $this->mapEvergreenFields($apiResponse->payload[0]->__p, $this->fetchIdl('au'));
+							$firstName = $_REQUEST['pref_first_given_name'] ?: $mappedPatronData['first_given_name'];
+							$lastName = $_REQUEST['pref_family_name'] ?: $mappedPatronData['family_name'];
+						}
+					}
 				}
-				if ($patron->lastname != $lastName) {
-					$patron->lastname = $lastName ?? '';
-					$forceDisplayNameUpdate = true;
-				}
-				if ($forceDisplayNameUpdate) {
-					$patron->displayName = '';
-					$patron->update();
-				}
+			}
+
+			$patron->_fullname = $lastName . ',' . $firstName;
+			$forceDisplayNameUpdate = false;
+			if ($patron->firstname != $firstName) {
+				$patron->firstname = $firstName;
+				$forceDisplayNameUpdate = true;
+			}
+			if ($patron->lastname != $lastName) {
+				$patron->lastname = $lastName ?? '';
+				$forceDisplayNameUpdate = true;
+			}
+			if ($forceDisplayNameUpdate) {
+				$patron->displayName = '';
+				$patron->update();
 			}
 		}
 
