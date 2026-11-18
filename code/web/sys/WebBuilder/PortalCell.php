@@ -367,7 +367,8 @@ class PortalCell extends DataObject {
 			$heroSliderLocation->id = $this->sourceId;
 			if ($heroSliderLocation->find(true)) {
 				$embedUrl = $heroSliderLocation->getEmbedUrl();
-				$contents .= "<iframe src='$embedUrl' style='width:100%; height:600px; border:none;' title='" . htmlspecialchars($heroSliderLocation->name) . "'></iframe>";
+				$aspectRatio = $heroSliderLocation->getEmbedAspectRatio();
+				$contents .= "<iframe src='$embedUrl' class='hero-slider-embed' style='aspect-ratio: $aspectRatio;' title='" . htmlspecialchars($heroSliderLocation->name) . "'></iframe>";
 			}
 		} elseif ($this->sourceType == 'basic_page') {
 			require_once ROOT_DIR . '/sys/WebBuilder/BasicPage.php';
