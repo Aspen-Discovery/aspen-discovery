@@ -123,7 +123,8 @@ class GrapesPage extends DB_LibraryLinkedObject {
 			],
 		];
 		
-		if ($context != 'addNew') {
+		if ($context != 'save' && $context != 'addNew') {
+			unset($structure['templatesSelect']);
 			unset($structure['templateContent']);
 		}
 
