@@ -6129,6 +6129,15 @@ AspenDiscovery.Account = (function () {
 	};
 }(AspenDiscovery.Account || {}));
 AspenDiscovery.Admin = (function () {
+	// Loaded once per page and shared by the heading and body font fields.
+	var googleFontFamilies = null;
+	function getGoogleFontFamilies(fontElement) {
+		if (googleFontFamilies === null) {
+			googleFontFamilies = $.ajax({url: fontElement.data('families-url'), dataType: 'json', cache: true});
+		}
+		return googleFontFamilies;
+	}
+
 	return {
 		showReindexNotes: function (id) {
 			AspenDiscovery.Account.ajaxLightbox("/Admin/AJAX?method=getReindexNotes&id=" + id, true);
@@ -6151,12 +6160,91 @@ AspenDiscovery.Admin = (function () {
 			AspenDiscovery.Account.ajaxLightbox("/Admin/AJAX?method=getExtractNotes&id=" + id + "&source=" + source, true);
 			return false;
 		},
-		loadGoogleFontPreview: function (fontSelector) {
+		updateFontSource: function (fontProperty) {
+			var source = $("input[name='" + fontProperty + "-source']:checked").val();
+			$("#" + fontProperty + "-default-note").toggle(source === '1');
+			$("#" + fontProperty + "-google").toggle(source === '0');
+			$("#" + fontProperty + "-upload").toggle(source === '2');
+			AspenDiscovery.Admin.loadGoogleFontPreview(fontProperty);
+		},
+		initFontSuggestions: function (fontProperty) {
+			var fontElement = $("#" + fontProperty);
+			if (fontElement.prop('readonly')) {
+				return;
+			}
+			var suggestedFonts = fontElement.data('suggestions');
+			fontElement.autocomplete({
+				source: function (request, response) {
+					var term = $.trim(request.term).toLowerCase();
+					if (term === '') {
+						response(suggestedFonts);
+						return;
+					}
+					getGoogleFontFamilies(fontElement).done(function (families) {
+						// Names starting with the text first, then names with a word starting with it.
+						var startsWithTerm = [];
+						var wordStartsWithTerm = [];
+						$.each(families, function (index, family) {
+							var name = family.toLowerCase();
+							if (name.indexOf(term) === 0) {
+								startsWithTerm.push(family);
+							} else if (name.indexOf(' ' + term) > 0) {
+								wordStartsWithTerm.push(family);
+							}
+						});
+						response(startsWithTerm.concat(wordStartsWithTerm).slice(0, 50));
+					}).fail(function () {
+						response([]);
+					});
+				},
+				minLength: 0,
+				delay: 0,
+				open: function () {
+					fontElement.autocomplete('widget').css({'max-height': '300px', 'overflow-y': 'auto', 'overflow-x': 'hidden'});
+				},
+				select: function (event, ui) {
+					fontElement.val(ui.item.value);
+					AspenDiscovery.Admin.loadGoogleFontPreview(fontProperty);
+					return false;
+				}
+			}).on('focus click', function () {
+				if (!fontElement.autocomplete('widget').is(':visible')) {
+					fontElement.autocomplete('search', fontElement.val());
+				}
+			});
+		},
+		clearGoogleFont: function (fontProperty) {
+			$("#" + fontProperty).val('').trigger('focus');
+			$('#' + fontProperty + '-warning').hide();
+			return false;
+		},
+		loadGoogleFontPreview: function (fontSelector, fromFieldChange) {
 			var fontElement = $("#" + fontSelector);
-			var fontName = fontElement.val();
-
-			$('head').append('<link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=' + fontName + '">');
-			$('#' + fontSelector + '-sample-text').css('font-family', fontName);
+			var fontName = $.trim(fontElement.val());
+			var source = $("input[name='" + fontSelector + "-source']:checked").val();
+			var warning = $('#' + fontSelector + '-warning');
+			warning.hide();
+			if (source !== '0') {
+				return;
+			}
+			if (fontName === '') {
+				if (fromFieldChange) {
+					warning.text(fontElement.attr('data-empty-message')).show();
+				}
+				return;
+			}
+			getGoogleFontFamilies(fontElement).always(function (families) {
+				// The name may have changed while the list loaded. If the list fails to load, only the save checks the name.
+				if ($.trim(fontElement.val()) !== fontName) {
+					return;
+				}
+				if (Array.isArray(families) && $.inArray(fontName, families) === -1) {
+					warning.text(fontElement.attr('data-not-found-message').replace('%fontName%', fontName)).show();
+					return;
+				}
+				$('<link rel="stylesheet" type="text/css">').attr('href', 'https://fonts.googleapis.com/css?family=' + encodeURIComponent(fontName)).appendTo('head');
+				$('#' + fontSelector + '-sample-text').css('font-family', '"' + fontName + '"');
+			});
 		},
 		getDefaultColor: function (property, extendedThemeDefault) {
 			if (property === 'pageBackgroundColor') {

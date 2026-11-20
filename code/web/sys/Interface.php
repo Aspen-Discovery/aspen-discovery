@@ -546,7 +546,7 @@ class UInterface extends Smarty {
 				$this->assign('tertiaryBackgroundColor', $primaryTheme->tertiaryBackgroundColor);
 				$this->assign('tertiaryForegroundColor', $primaryTheme->tertiaryForegroundColor);
 				$this->assign('linkColor', $primaryTheme->linkColor);
-				$this->assign('bodyFont', $primaryTheme->bodyFont);
+				$this->assign('bodyFont', $primaryTheme->getResolvedFontFamily('body'));
 				//Expose the resolved size (in px) rather than the raw enum value so templates can use it directly
 				$this->assign('fontSize', Theme::$fontSizes[$primaryTheme->fontSize ?? ''] ?? Theme::$fontSizes['small']);
 				$this->assign('isDarkColorScheme', $primaryTheme->isDarkColorScheme);
@@ -1220,7 +1220,7 @@ class UInterface extends Smarty {
 			$this->assign('tertiaryBackgroundColor', $primaryTheme->tertiaryBackgroundColor);
 			$this->assign('tertiaryForegroundColor', $primaryTheme->tertiaryForegroundColor);
 			$this->assign('linkColor', $primaryTheme->linkColor);
-			$this->assign('bodyFont', $primaryTheme->bodyFont);
+			$this->assign('bodyFont', $primaryTheme->getResolvedFontFamily('body'));
 			$this->assign('isDarkColorScheme', $primaryTheme->isDarkColorScheme);
 		}
 	}

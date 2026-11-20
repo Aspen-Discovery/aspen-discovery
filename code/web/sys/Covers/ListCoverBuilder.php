@@ -23,23 +23,11 @@ class ListCoverBuilder {
 
 		$appliedTheme = $interface->getAppliedTheme();
 		if ($appliedTheme != null) {
+			$coverFonts = $appliedTheme->getCoverFontFiles();
+			$this->titleFont = $coverFonts['title'];
+			$this->authorFont = $coverFonts['author'];
 			$appliedThemes = $appliedTheme->getAllAppliedThemes();
 			foreach ($appliedThemes as $theme) {
-				if (empty($this->titleFont) && $theme->headingFontDefault == 0 && !empty($theme->headingFont)) {
-					$fontFile = ROOT_DIR . '/fonts/' . str_replace(' ', '', $theme->headingFont) . '-Bold.ttf';
-					if (file_exists($fontFile)) {
-						$this->titleFont = $fontFile;
-					}
-					$fontFile = ROOT_DIR . '/fonts/' . str_replace(' ', '', $theme->headingFont) . '-BoldItalic.ttf';
-					if (file_exists($fontFile)) {
-						$this->authorFont = $fontFile;
-					} else {
-						$fontFile = ROOT_DIR . '/fonts/' . str_replace(' ', '', $theme->headingFont) . '-Regular.ttf';
-						if (file_exists($fontFile)) {
-							$this->authorFont = $fontFile;
-						}
-					}
-				}
 				if (empty($this->backgroundColor) && !$theme->primaryBackgroundColorDefault) {
 					$colors = sscanf($theme->primaryBackgroundColor, "#%02x%02x%02x");
 					$this->backgroundColor = [

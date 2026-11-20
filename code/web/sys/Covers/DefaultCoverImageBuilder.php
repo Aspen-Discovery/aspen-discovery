@@ -15,6 +15,7 @@ class DefaultCoverImageBuilder {
 	private $backgroundColor;
 	private $foregroundColor;
 	private $defaultCoverImage;
+	private bool $usesThemeFont = false;
 
 	public function __construct($invertColors = false, int $imageWidth = 280, int $imageHeight = 400) {
 		$this->imageWidth = $imageWidth;
@@ -29,23 +30,12 @@ class DefaultCoverImageBuilder {
 
 		$appliedTheme = $interface->getAppliedTheme();
 		if ($appliedTheme != null) {
+			$coverFonts = $appliedTheme->getCoverFontFiles();
+			$this->titleFont = $coverFonts['title'];
+			$this->authorFont = $coverFonts['author'];
+			$this->usesThemeFont = !empty($coverFonts['title']);
 			$appliedThemes = $appliedTheme->getAllAppliedThemes();
 			foreach ($appliedThemes as $theme) {
-				if (empty($this->titleFont) && $theme->headingFontDefault == 0 && !empty($theme->headingFont)) {
-					$fontFile = ROOT_DIR . '/fonts/' . str_replace(' ', '', $theme->headingFont) . '-Bold.ttf';
-					if (file_exists($fontFile)) {
-						$this->titleFont = $fontFile;
-					}
-					$fontFile = ROOT_DIR . '/fonts/' . str_replace(' ', '', $theme->headingFont) . '-BoldItalic.ttf';
-					if (file_exists($fontFile)) {
-						$this->authorFont = $fontFile;
-					} else {
-						$fontFile = ROOT_DIR . '/fonts/' . str_replace(' ', '', $theme->headingFont) . '-Regular.ttf';
-						if (file_exists($fontFile)) {
-							$this->authorFont = $fontFile;
-						}
-					}
-				}
 				if (empty($this->backgroundColor) && !$theme->primaryBackgroundColorDefault) {
 					$colors = sscanf($theme->primaryBackgroundColor, "#%02x%02x%02x");
 					$this->backgroundColor = [
@@ -105,7 +95,10 @@ class DefaultCoverImageBuilder {
 
 	public function getCover($title, ?string $author, $filename, $image = null): void {
 		$script = $this->detectScript($title . ($author ?? ''));
-		$this->selectFontForScript($script);
+		// The theme font is kept for Latin text, other scripts need a font that has their glyphs
+		if ($script !== 'latin' || !$this->usesThemeFont) {
+			$this->selectFontForScript($script);
+		}
 
 		$this->setForegroundAndBackgroundColors($title, $author);
 		//Create the background image

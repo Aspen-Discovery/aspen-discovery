@@ -15,7 +15,7 @@
 	{assign var=propValue value=""}
 {/if}
 {strip}
-{if ((!isset($property.storeDb) || $property.storeDb == true) && !($property.type == 'oneToManyAssociation' || $property.type == 'hidden' || $property.type == 'method'))}
+{if ((!isset($property.storeDb) || $property.storeDb == true) && empty($property.renderedByProperty) && !($property.type == 'oneToManyAssociation' || $property.type == 'hidden' || $property.type == 'method'))}
 	<div {if !isset($addFormGroupToProperty) || $addFormGroupToProperty !== false}class="form-group propertyRow"{/if} id="propertyRow{$propName}" {if !empty($property.hiddenByDefault) && $property.hiddenByDefault}style="display:none" {/if} {if !empty($property.relatedIls)}data-related-ils="~{implode subject=$property.relatedIls glue='~'}~"{/if}>
 		{* Output the label *}
 		{if $property.type == 'enum'}
@@ -422,72 +422,9 @@
 				{/literal}
 			{/if}
 		{elseif $property.type == 'font'}
-			<div class="row">
-				<div class="col-sm-4">
-					<select name='{$propName}' id='{$propName}' class='form-control font {if !empty($property.required)}required{/if}' {if !empty($property.readOnly)}readonly{/if} onchange="$('#{$propName}-default').prop('checked',false);AspenDiscovery.Admin.loadGoogleFontPreview('{$propName}')">
-						{foreach from=$property.validFonts item=fontName}
-							<option value="{$fontName}"{if $propValue == $fontName} selected='selected'{/if}>{$fontName}</option>
-						{/foreach}
-					</select>
-				</div>
-				<div class="col-sm-3">
-					{assign var=defaultVariableName value="`$propName`Default"}
-					{if is_null($object->$defaultVariableName)}
-						{assign var=useDefault value=true}
-					{else}
-						{assign var=useDefault value=$object->$defaultVariableName}
-					{/if}
-					<div class="checkbox" style="margin: 0">
-						<label for='{$propName}-default'>{translate text="Use Default" isAdminFacing=true}
-							<input type="checkbox" name='{$propName}-default' id='{$propName}-default' {if $useDefault == '1'}checked="checked"{/if} {if !empty($property.readOnly)}readonly{/if}/>
-						</label>
-					</div>
-				</div>
-				<div class="col-sm-5">
-					<div id="{$propName}-sample-text" style="font-family: {$propValue},arial; font-size: {if !empty($property.previewFontSize)}{$property.previewFontSize}{else}var(--aspen-base-font-size){/if}">
-						English, Español, 中文(简体), עברית
-					</div>
-				</div>
-				<script type="text/javascript">
-					$().ready(function () {ldelim}
-						AspenDiscovery.Admin.loadGoogleFontPreview('{$propName}');
-					{rdelim});
-				</script>
-			</div>
+			{include file="DataObjectUtil/font.tpl"}
 		{elseif $property.type == 'uploaded_font'}
-			<div class="row">
-				<div class="col-sm-7">
-					<div class="input-group">
-						<label class="input-group-btn">
-							<span class="btn btn-primary">
-								{translate text="Select a font" isAdminFacing=true}&hellip; <input type="file" style="display: none;" name="{$propName}" id="{$propName}">
-							</span>
-						</label>
-						<input type="text" class="form-control" id="importFile-label-{$propName}" readonly value="{$propValue}">
-					</div>
-					{if !empty($propValue)}
-						<div class="checkbox" style="margin-top: 0;">
-							<label for="remove{$propName}"><small class="text-danger"><i class="fas fa-trash"></i> {translate text="Remove" isAdminFacing=true}</small>
-							<input type='checkbox' name='remove{$propName}' id='remove{$propName}'>
-							</label>
-						</div>
-					{/if}
-					<script type="application/javascript">
-						{literal}
-						$(document).on('change', '#{/literal}{$propName}{literal}:file', function() {
-							var input = $(this);
-							var label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
-							$("#importFile-label-{/literal}{$propName}{literal}").val(label);
-						});
-						{/literal}
-					</script>
-				</div>
-				<div class="col-sm-5">
-					<div id="{$propName}-sample-text" style="font-family: {$propValue},arial; font-size: {if !empty($property.previewFontSize)}{$property.previewFontSize}{else}var(--aspen-base-font-size){/if}">
-						English, Español, 中文(简体), עברית
-					</div>
-				</div>
-			</div>
+			{include file="DataObjectUtil/uploadedFont.tpl"}
 		{elseif $property.type == 'multiemail'}
 			<input type='text' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if !empty($property.accessibleLabel)}aria-label="{$property.accessibleLabel}"{/if} {if !empty($property.maxLength)}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control multiemail {if !empty($property.required)}required{/if}' {if !empty($property.readOnly)}readonly{/if}>
 		{elseif $property.type == 'date'}
