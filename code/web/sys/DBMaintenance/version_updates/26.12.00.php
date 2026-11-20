@@ -41,6 +41,16 @@ function getUpdates26_12_00(): array {
 
 		//jacob - OpenFifth
 
+		//bryan - Nashville Public Library
+		'add_simplified_search_box' => [
+			'title' => 'Add Simplified Search Box setting',
+			'description' => 'Add a library setting to enable the simplified search box',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN simplifiedSearchBox TINYINT(1) NOT NULL DEFAULT 0',
+			],
+		], //add_simplified_search_box
+
 
 	];
 }
