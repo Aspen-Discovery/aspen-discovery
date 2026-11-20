@@ -15,6 +15,7 @@ class DefaultCoverImageBuilder {
 	private $backgroundColor;
 	private $foregroundColor;
 	private $defaultCoverImage;
+	private bool $usesThemeFont = false;
 
 	public function __construct($invertColors = false, int $imageWidth = 280, int $imageHeight = 400) {
 		$this->imageWidth = $imageWidth;
@@ -32,6 +33,7 @@ class DefaultCoverImageBuilder {
 			$coverFonts = $appliedTheme->getCoverFontFiles();
 			$this->titleFont = $coverFonts['title'];
 			$this->authorFont = $coverFonts['author'];
+			$this->usesThemeFont = !empty($coverFonts['title']);
 			$appliedThemes = $appliedTheme->getAllAppliedThemes();
 			foreach ($appliedThemes as $theme) {
 				if (empty($this->backgroundColor) && !$theme->primaryBackgroundColorDefault) {
@@ -93,7 +95,10 @@ class DefaultCoverImageBuilder {
 
 	public function getCover($title, ?string $author, $filename, $image = null): void {
 		$script = $this->detectScript($title . ($author ?? ''));
-		$this->selectFontForScript($script);
+		// The theme font is kept for Latin text, other scripts need a font that has their glyphs
+		if ($script !== 'latin' || !$this->usesThemeFont) {
+			$this->selectFontForScript($script);
+		}
 
 		$this->setForegroundAndBackgroundColors($title, $author);
 		//Create the background image

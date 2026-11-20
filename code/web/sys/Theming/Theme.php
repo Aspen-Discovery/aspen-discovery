@@ -1135,6 +1135,8 @@ class Theme extends DataObject {
 				'description' => 'Use the default font, a Google Fonts family (type to search every Google Fonts family, for example Figtree), or an uploaded file',
 				'suggestedFonts' => $suggestedFonts,
 				'uploadProperty' => 'customHeadingFont',
+				// Shown under the upload control, since the uploaded property's own description is not rendered.
+				'uploadNote' => 'Generated covers use the uploaded font only if it is a TTF or OTF file.',
 				'serverValidation' => 'validateHeadingFont',
 				// The editor replaces %fontName% with the name being typed.
 				'emptyNameMessage' => self::getGoogleFontMessage('empty', 'Heading', '', true),
@@ -3415,13 +3417,22 @@ class Theme extends DataObject {
 	}
 
 	/**
-	 * Bundled files of the heading font for generated covers, empty when the heading font is not a Google
-	 * font bundled in /fonts.
+	 * Files of the heading font for generated covers: the uploaded file when it is TrueType or OpenType, or the
+	 * bundled files of a Google font. Empty when neither applies.
 	 *
 	 * @return array{title: string, author: string}
 	 */
 	public function getCoverFontFiles(): array {
 		$font = self::resolveFont($this->getAllAppliedThemes(), 'heading');
+		if ($font['source'] == self::FONT_SOURCE_UPLOADED) {
+			// GD draws text with FreeType, which cannot read WOFF or WOFF2, and an upload is a single file
+			$uploadedFile = ROOT_DIR . '/fonts/' . basename($font['file']);
+			$extension = strtolower(pathinfo($uploadedFile, PATHINFO_EXTENSION));
+			if (!in_array($extension, ['ttf', 'otf']) || !file_exists($uploadedFile)) {
+				return ['title' => '', 'author' => ''];
+			}
+			return ['title' => $uploadedFile, 'author' => $uploadedFile];
+		}
 		if ($font['source'] != self::FONT_SOURCE_GOOGLE) {
 			return ['title' => '', 'author' => ''];
 		}

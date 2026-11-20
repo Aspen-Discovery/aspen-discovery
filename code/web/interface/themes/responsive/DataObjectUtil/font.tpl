@@ -39,6 +39,7 @@
 {if !empty($uploadProperty)}
 	<div id="{$propName}-upload" style="margin-top: .5em;{if $fontSource != 2} display: none;{/if}">
 		{include file="DataObjectUtil/uploadedFont.tpl" propName=$uploadProperty propValue=$object->$uploadProperty}
+		{if !empty($property.uploadNote)}<span class="help-block"><small><i class="fas fa-info-circle"></i> {translate text=$property.uploadNote isAdminFacing=true}</small></span>{/if}
 	</div>
 {/if}
 <script type="text/javascript">
