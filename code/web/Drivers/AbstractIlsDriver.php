@@ -535,16 +535,15 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 	}
 
 	/**
-	 * Retrieves valid pickup locations for this patron for this record.
+	 * Filters the supplied pickup locations to those the ILS reports as valid for this patron and record.
+	 * ILSs that do not support this return the locations unchanged.
 	 * @param string $recordId
 	 * @param User $patron
-	 * @return array An array containing success status and a message.
+	 * @param array $locations
+	 * @return array The filtered locations
 	 */
 	public function getValidPickupLocationsForRecordFromILS($recordId, $patron, $locations): array {
-		return [
-			'success' => false,
-			'message' => 'This functionality has not been implemented for this ILS.',
-		];
+		return $locations;
 	}
 	/**
 	 * Checks whether this ILS restricts pickup locations for specific records.

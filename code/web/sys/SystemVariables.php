@@ -69,7 +69,7 @@ class SystemVariables extends DataObject {
 	public $logFrequentCrons;
 	public $hooplaVersion;
 	public $readingHistoryBaseUrl;
-	public $exactLocationMatching
+	public $exactLocationMatching;
 
 	static $_objectStructure = [];
 	static function getObjectStructure(string $context = ''): array {
@@ -568,7 +568,7 @@ class SystemVariables extends DataObject {
 				'property' => 'exactLocationMatching',
 				'type' => 'checkbox',
 				'label' => 'Use Exact Holds Pickup Location Matching (Sierra only)',
-				'description' => 'Determine whether the hold pickup locations from Sierra should use "starts with" or "exact" matchign, the default of "starts with" is used when unchecked',
+				'description' => 'Determine whether the hold pickup locations from Sierra should use "starts with" or "exact" matching, the default of "starts with" is used when unchecked',
 				'default' => false,
 			]
 		];

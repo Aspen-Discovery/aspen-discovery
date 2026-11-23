@@ -2099,7 +2099,7 @@ class MyAccount_AJAX extends JSON_Action {
 
 			$catalogDriver = $user->getCatalogDriver();
 			if (!empty($catalogDriver) && $catalogDriver->restrictValidPickupLocationsForRecordByILS()) {
-			    $pickupBranches = $catalogDriver->getValidPickupLocationsForRecordFromILS($marcRecord->getUniqueID(), $user, $pickupBranches);
+				$pickupBranches = $catalogDriver->getValidPickupLocationsForRecordFromILS($marcRecord->getUniqueID(), $user, $pickupBranches);
 			}
 		}
 

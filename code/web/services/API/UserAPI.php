@@ -2246,7 +2246,7 @@ class UserAPI extends AbstractAPI {
 						$recordId = $_REQUEST['recordId'];
 					}
 					if (!empty($recordId)) {
-						$pickupLocations = $catalogDriver->getValidPickupLocationsForRecordFromILS($recordId, $patron, $pickupLocations);
+						$pickupLocations = array_values($catalogDriver->getValidPickupLocationsForRecordFromILS($recordId, $patron, $pickupLocations));
 					}
 				}
 				$preferredPickupLocationIsValid = false;
@@ -2271,7 +2271,6 @@ class UserAPI extends AbstractAPI {
 				return [
 					'success' => true,
 					'pickupLocations' => $pickupLocations,
-					'pickupLocationsFromILS' => $validLocationCodesFromILS ?? [],
 					'preferredPickupLocationIsValid' => $preferredPickupLocationIsValid,
 					'preferredPickupLocationWarning' => $preferredPickupLocationWarning
 				];

@@ -1892,7 +1892,11 @@ class Record_AJAX extends JSON_Action {
 
 		$catalogDriver = $user->getCatalogDriver();
 		if (!empty($catalogDriver) && $catalogDriver->restrictValidPickupLocationsForRecordByILS()) {
+			$numLocationsBeforeIlsFiltering = count($locations);
 			$locations = $catalogDriver->getValidPickupLocationsForRecordFromILS($marcRecord->getUniqueID(), $user, $locations);
+			if (count($locations) < $numLocationsBeforeIlsFiltering) {
+				$hasItemBasedPickupRestrictions = true;
+			}
 		}
 
 		//Check to see if the patron's preferred pickup location and sublocation (if applicable) are valid.
