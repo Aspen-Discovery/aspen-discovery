@@ -499,18 +499,17 @@ class Sierra extends AbstractIlsDriver {
 	}
 
 	/**
-	 * Retrieves valid pickup locations for this patron for this record.
+	 * Filters the supplied Aspen pickup locations down to those Sierra reports as valid for this patron and record.
+	 * If Sierra cannot be reached or returns no hold shelf data, the locations are returned unchanged.
+	 *
 	 * @param string $recordId
 	 * @param User $patron
-	 * @return array An array containing valid pickup locations
+	 * @param array $locations Location objects (or arrays with a 'code' key); keys are preserved
+	 * @return array The filtered locations
 	 */
-	public function getValidPickupLocationsForRecordFromILS($recordId, $patron): array {
+	public function getValidPickupLocationsForRecordFromILS($recordId, $patron, $locations): array {
 		if ($recordId == null) {
-			return [
-				'success' => false,
-				'message' => 'Missing record; unable to retrieve valid pickup locations',
-				'useDefaultLocationFiltering' => true,
-			];
+			return $locations;
 		}
 		$patronId = $patron->unique_ils_id;
 		$recordId = substr(str_replace('.b', '', $recordId), 0, -1);
@@ -521,28 +520,66 @@ class Sierra extends AbstractIlsDriver {
 		$pickupLocationsResponse = $this->_callUrl('sierra.getPickupLocationsForRecord', $sierraUrl);
 
 		if (!empty($pickupLocationsResponse) && !empty($pickupLocationsResponse->holdshelf)) {
-			$locationCodes = [];
+			$locationCodesFromILS = [];
 			if (!empty($pickupLocationsResponse->holdshelf->selected)) {
-				$locationCodes[] = $pickupLocationsResponse->holdshelf->selected->code;
+				$locationCodesFromILS[] = trim($pickupLocationsResponse->holdshelf->selected->code);
 			}
-			foreach ($pickupLocationsResponse->holdshelf->locations as $location) {
-				$locationCodes[] = trim($location->code);
+			foreach ($pickupLocationsResponse->holdshelf->locations ?? [] as $location) {
+				$locationCodesFromILS[] = trim($location->code);
 			}
-			return [
-				'success' => true,
-				'message' => 'Pickup locations found',
-				'locationCodes' => $locationCodes,
-			];
+			return self::filterPickupLocationsByIlsCodes($locations, $locationCodesFromILS, $this->useExactLocationMatching());
 		} else {
-			$message = 'Unable to retrieve valid pickup locations from Sierra. ';
-			$message .= $pickupLocationsResponse->name ?? '';
-			$message .= !empty($pickupLocationsResponse->description) ? ': ' . $pickupLocationsResponse->description : '';
-			return [
-				'success' => false,
-				'message' => $message,
-				'useDefaultLocationFiltering' => true,
-			];
+			// If we didn't get a valid response we return the locations unaltered
+			return $locations;
 		}
+	}
+
+	/**
+	 * Whether pickup locations returned by Sierra must match Aspen location codes exactly.
+	 * @return bool
+	 */
+	protected function useExactLocationMatching(): bool {
+		require_once ROOT_DIR . '/sys/SystemVariables.php';
+		$systemVariables = SystemVariables::getSystemVariables();
+		return !empty($systemVariables) && !empty($systemVariables->exactLocationMatching);
+	}
+
+	/**
+	 * Filters Aspen pickup locations against the location codes returned by Sierra.
+	 *
+	 * By default a location is kept when an ILS code starts with the Aspen code, since some Sierra
+	 * systems return codes with extra trailing characters (e.g. ILS 'abcz' for Aspen 'abc').
+	 * When $exactMatch is true, the ILS code must equal the Aspen code (case-insensitive), so ILS '3'
+	 * matches only Aspen location '3' (not '30'), and ILS '30' no longer matches Aspen '3'.
+	 *
+	 * Entries that are neither location objects nor arrays with a code are always kept.
+	 *
+	 * @param array $locations Location objects (->code) or arrays (['code']); keys are preserved
+	 * @param string[] $locationCodesFromILS
+	 * @param bool $exactMatch
+	 * @return array
+	 */
+	public static function filterPickupLocationsByIlsCodes(array $locations, array $locationCodesFromILS, bool $exactMatch): array {
+		return array_filter($locations, function ($location) use ($locationCodesFromILS, $exactMatch) {
+			if (is_object($location)) {
+				$aspenCode = $location->code;
+			} elseif (is_array($location) && isset($location['code'])) {
+				$aspenCode = $location['code'];
+			} else {
+				return true;
+			}
+			$aspenCode = (string)$aspenCode;
+			if ($aspenCode === '') {
+				return false;
+			}
+			foreach ($locationCodesFromILS as $validCode) {
+				$validCode = (string)$validCode;
+				if ($exactMatch ? strcasecmp($validCode, $aspenCode) === 0 : str_starts_with($validCode, $aspenCode)) {
+					return true;
+				}
+			}
+			return false;
+		});
 	}
 	/**
 	 * Checks whether this ILS restricts pickup locations for specific records.

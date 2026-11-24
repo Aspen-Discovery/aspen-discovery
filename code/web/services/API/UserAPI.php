@@ -2246,21 +2246,7 @@ class UserAPI extends AbstractAPI {
 						$recordId = $_REQUEST['recordId'];
 					}
 					if (!empty($recordId)) {
-						$getPickupLocationsFromILS = $catalogDriver->getValidPickupLocationsForRecordFromILS($recordId, $patron);
-						if (!empty($getPickupLocationsFromILS['locationCodes']) && $getPickupLocationsFromILS['success']) {
-							$validLocationCodesFromILS = $getPickupLocationsFromILS['locationCodes'];
-							$pickupLocations = array_filter($pickupLocations, function ($location) use ($validLocationCodesFromILS) {
-								foreach ($validLocationCodesFromILS as $validCode) {
-									if (str_starts_with($validCode, $location['locationCode'])) {
-										return true;
-									}
-								}
-								return false;
-							});
-							$pickupLocations = array_values($pickupLocations);
-						} elseif (empty($getPickupLocationsFromILS['useDefaultLocationFiltering'])) {
-							$pickupLocations = [];
-						}
+						$pickupLocations = array_values($catalogDriver->getValidPickupLocationsForRecordFromILS($recordId, $patron, $pickupLocations));
 					}
 				}
 				$preferredPickupLocationIsValid = false;
@@ -2271,7 +2257,7 @@ class UserAPI extends AbstractAPI {
 					}
 				}
 				$preferredPickupLocationWarning = '';
-				if (!$preferredPickupLocationIsValid && $pickupLocations == 1) {
+				if (!$preferredPickupLocationIsValid && count($pickupLocations) == 1) {
 					$preferredPickupLocationWarning = translate([
 						'text' => 'Your preferred pickup location is not available for this item, as it is restricted by item location rules. The item must be picked up at the following location.',
 						'isPublicFacing' => true,
@@ -2285,7 +2271,6 @@ class UserAPI extends AbstractAPI {
 				return [
 					'success' => true,
 					'pickupLocations' => $pickupLocations,
-					'pickupLocationsFromILS' => $validLocationCodesFromILS ?? [],
 					'preferredPickupLocationIsValid' => $preferredPickupLocationIsValid,
 					'preferredPickupLocationWarning' => $preferredPickupLocationWarning
 				];

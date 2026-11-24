@@ -1892,23 +1892,10 @@ class Record_AJAX extends JSON_Action {
 
 		$catalogDriver = $user->getCatalogDriver();
 		if (!empty($catalogDriver) && $catalogDriver->restrictValidPickupLocationsForRecordByILS()) {
-			$getPickupLocationsFromILS = $catalogDriver->getValidPickupLocationsForRecordFromILS($marcRecord->getUniqueID(), $user);
-			if (!empty($getPickupLocationsFromILS['locationCodes']) && $getPickupLocationsFromILS['success']) {
-				$validLocationCodesFromILS = $getPickupLocationsFromILS['locationCodes'];
-				$locations = array_filter($locations, function($location) use ($validLocationCodesFromILS, &$hasItemBasedPickupRestrictions) {
-					if (!is_object($location)) {
-						return true;
-					}
-					foreach ($validLocationCodesFromILS as $validCode) {
-						if (str_starts_with($validCode, $location->code)) {
-							return true;
-						}
-					}
-					$hasItemBasedPickupRestrictions = true;
-					return false;
-				});
-			} elseif (empty($getPickupLocationsFromILS['useDefaultLocationFiltering'])) {
-				$locations = [];
+			$numLocationsBeforeIlsFiltering = count($locations);
+			$locations = $catalogDriver->getValidPickupLocationsForRecordFromILS($marcRecord->getUniqueID(), $user, $locations);
+			if (count($locations) < $numLocationsBeforeIlsFiltering) {
+				$hasItemBasedPickupRestrictions = true;
 			}
 		}
 
