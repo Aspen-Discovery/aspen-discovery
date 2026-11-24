@@ -4807,12 +4807,6 @@ parameters:
 			path: code/web/services/API/UserAPI.php
 
 		-
-			message: '#^Comparison operation "\=\=" between list\<array\{locationId\: string, libraryId\: string, locationCode\: string, code\: string, historicCode\: string, displayName\: string\}\> and 1 results in an error\.$#'
-			identifier: equal.invalid
-			count: 1
-			path: code/web/services/API/UserAPI.php
-
-		-
 			message: '#^Comparison operation "\>" between list\<BrowseCategoryDismissal\> and 0 results in an error\.$#'
 			identifier: greater.invalid
 			count: 1
@@ -4856,12 +4850,6 @@ parameters:
 
 		-
 			message: '#^Loose comparison using \=\= between \*NEVER\* and mixed will always evaluate to false\.$#'
-			identifier: equal.alwaysFalse
-			count: 1
-			path: code/web/services/API/UserAPI.php
-
-		-
-			message: '#^Loose comparison using \=\= between list\<array\{locationId\: string, libraryId\: string, locationCode\: string, code\: string, historicCode\: string, displayName\: string\}\> and 1 will always evaluate to false\.$#'
 			identifier: equal.alwaysFalse
 			count: 1
 			path: code/web/services/API/UserAPI.php

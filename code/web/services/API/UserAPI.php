@@ -2257,7 +2257,7 @@ class UserAPI extends AbstractAPI {
 					}
 				}
 				$preferredPickupLocationWarning = '';
-				if (!$preferredPickupLocationIsValid && $pickupLocations == 1) {
+				if (!$preferredPickupLocationIsValid && count($pickupLocations) == 1) {
 					$preferredPickupLocationWarning = translate([
 						'text' => 'Your preferred pickup location is not available for this item, as it is restricted by item location rules. The item must be picked up at the following location.',
 						'isPublicFacing' => true,
