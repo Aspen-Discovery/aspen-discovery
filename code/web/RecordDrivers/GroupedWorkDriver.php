@@ -1152,6 +1152,10 @@ class GroupedWorkDriver extends IndexRecordDriver {
 
 	protected array|null|false $_indexedSeries = false;
 	protected ?array $_eContentSeriesTitles = null;
+	/** @var array<string,bool> Comparison keys of series supplied by the MARC (non-OverDrive/Hoopla) related records checked so far. */
+	protected array $_marcSeriesKeys = [];
+	/** @var Grouping_Record[]|null MARC related records whose series have not been checked yet (null until first needed). */
+	protected ?array $_marcSeriesRecordsToCheck = null;
 
 	public function getIndexedSeries(): ?array {
 		global $logger;
@@ -1198,7 +1202,8 @@ class GroupedWorkDriver extends IndexRecordDriver {
 					$isEContentSeries = false;
 					foreach ($this->_eContentSeriesTitles as $eContentTitle) {
 						if (strcasecmp($indexedSeries['seriesTitle'], $eContentTitle) === 0) {
-							$isEContentSeries = true;
+							// Keep the series if a MARC record in this grouped work also supplies it
+							$isEContentSeries = !$this->isSeriesSuppliedByMarcRecord($indexedSeries['seriesTitle']);
 							break;
 						}
 					}
@@ -3148,6 +3153,210 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		}
 
 		return array_unique($eContentSeries);
+	}
+
+	/**
+	 * Check whether a MARC (non-OverDrive/Hoopla) related record in this grouped work supplies the given series.
+	 * MARC records are loaded lazily, one at a time, and loading stops as soon as the series is found.
+	 * Keys and the position in the record list are cached on the driver so later calls continue where this one stopped.
+	 *
+	 * @param string $seriesTitle The indexed series title.
+	 * @return bool
+	 */
+	private function isSeriesSuppliedByMarcRecord(string $seriesTitle): bool {
+		$key = self::getSeriesComparisonKey($seriesTitle);
+		if ($key === '') {
+			return false;
+		}
+		global $enabledModules;
+		// Without the series module, the indexer merges series whose names contain one another and keeps the longer
+		// name, so a MARC series can be stored under the longer e-content name. Mirror that by matching partial names (on word boundaries).
+		$matchPartialNames = !is_array($enabledModules) || !array_key_exists('Series', $enabledModules);
+		// A MARC series that is still indexed under its own name was not merged into this one.
+		$otherIndexedKeys = [];
+		if ($matchPartialNames && is_array($this->_indexedSeries)) {
+			foreach ($this->_indexedSeries as $indexedSeries) {
+				$otherIndexedKeys[self::getSeriesComparisonKey($indexedSeries['seriesTitle'])] = true;
+			}
+		}
+
+		if ($this->_marcSeriesRecordsToCheck === null) {
+			$this->_marcSeriesRecordsToCheck = [];
+			foreach ($this->getRelatedRecords() as $relatedRecord) {
+				if ($relatedRecord->source !== 'overdrive' && $relatedRecord->source !== 'hoopla') {
+					$this->_marcSeriesRecordsToCheck[] = $relatedRecord;
+				}
+			}
+		}
+
+		while (true) {
+			if (isset($this->_marcSeriesKeys[$key])) {
+				return true;
+			}
+			if ($matchPartialNames) {
+				foreach ($this->_marcSeriesKeys as $marcKey => $unused) {
+					if (isset($otherIndexedKeys[$marcKey])) {
+						continue;
+					}
+					if (str_contains(" $key ", " $marcKey ") || str_contains(" $marcKey ", " $key ")) {
+						return true;
+					}
+				}
+			}
+			$relatedRecord = array_shift($this->_marcSeriesRecordsToCheck);
+			if ($relatedRecord === null) {
+				return false;
+			}
+			$this->addMarcSeriesKeysForRecord($relatedRecord);
+		}
+	}
+
+	/**
+	 * Add the comparison keys for the series supplied by one MARC related record to $this->_marcSeriesKeys.
+	 *
+	 * @param Grouping_Record $relatedRecord
+	 * @return void
+	 */
+	private function addMarcSeriesKeysForRecord($relatedRecord): void {
+		global $logger;
+		try {
+			$driver = $relatedRecord->getDriver();
+			if (!($driver instanceof MarcRecordDriver)) {
+				return;
+			}
+			$marcRecord = $driver->getMarcRecord();
+			if (empty($marcRecord)) {
+				return;
+			}
+			foreach ($this->getSeriesNamesFromMarcRecord($marcRecord, $driver->getIndexingProfile()) as $seriesName) {
+				$marcKey = self::getSeriesComparisonKey($seriesName);
+				if ($marcKey !== '') {
+					$this->_marcSeriesKeys[$marcKey] = true;
+				}
+			}
+		} catch (Throwable $e) {
+			$logger->log("Error loading MARC series for {$relatedRecord->id}: " . $e->getMessage(), Logger::LOG_WARNING);
+		}
+	}
+
+	/**
+	 * Get the series names the indexer would build from a MARC record.
+	 * Mirrors MarcRecordProcessor.java (series fields) and IlsRecordProcessor.java (896-899 fields).
+	 *
+	 * @param File_MARC_Record $marcRecord
+	 * @param IndexingProfile|SideLoad|null $indexingProfile
+	 * @return string[]
+	 */
+	private function getSeriesNamesFromMarcRecord(File_MARC_Record $marcRecord, $indexingProfile): array {
+		// tag => [subfields for the series name, append $l in parentheses]
+		$seriesFields = [
+			'830' => ['anp', true],
+			'800' => ['npt', true],
+			'810' => ['abcdfnpt', true],
+			'811' => ['abcdfnpt', true],
+			'490' => ['a', false],
+		];
+		if ($indexingProfile != null) {
+			if (!empty($indexingProfile->index896asSeries)) {
+				$seriesFields['896'] = ['anpt', true];
+			}
+			if (!empty($indexingProfile->index897asSeries)) {
+				$seriesFields['897'] = ['abcdfnpt', true];
+			}
+			if (!empty($indexingProfile->index898asSeries)) {
+				$seriesFields['898'] = ['abcdfnpt', true];
+			}
+			if (!empty($indexingProfile->index899asSeries)) {
+				$seriesFields['899'] = ['anp', true];
+			}
+		}
+
+		$seriesNames = [];
+		foreach ($seriesFields as $tag => $fieldSpec) {
+			// PHP converts numeric string keys to integers, so cast the tag back to a string
+			$tag = (string)$tag;
+			[$subfieldCodes, $appendLanguage] = $fieldSpec;
+			foreach ($marcRecord->getFields($tag) as $field) {
+				if (!($field instanceof File_MARC_Data_Field)) {
+					continue;
+				}
+				if ($tag == '490' && !in_array($field->getIndicator(1), ['0', ' ', ''], true)) {
+					// Only untraced series are indexed from the 490
+					continue;
+				}
+				$nameParts = [];
+				$languageParts = [];
+				foreach ($field->getSubfields() as $subfield) {
+					$code = $subfield->getCode();
+					$data = trim($subfield->getData());
+					if ($data === '') {
+						continue;
+					}
+					if (str_contains($subfieldCodes, $code)) {
+						$nameParts[] = $data;
+					}
+					if ($appendLanguage && $code === 'l') {
+						$languageParts[] = $data;
+					}
+				}
+				$base = self::trimSeriesPunctuation(implode(' ', $nameParts));
+				if ($base === '') {
+					continue;
+				}
+				$language = self::trimSeriesPunctuation(implode('', $languageParts));
+				if ($language === '') {
+					$seriesNames[] = $base;
+				} else {
+					$seriesNames[] = "$base ($language)";
+					if (preg_match('/\s+series$/i', $base)) {
+						// The 830 path removes the word "series" before appending $l
+						$seriesNames[] = preg_replace('/\s+series$/i', '', $base) . " ($language)";
+					}
+				}
+			}
+		}
+		return $seriesNames;
+	}
+
+	/**
+	 * Port of AspenStringUtils.trimTrailingPunctuation from the indexer.
+	 *
+	 * @param string $value
+	 * @return string
+	 */
+	private static function trimSeriesPunctuation(string $value): string {
+		return preg_match('/^(.*?)[\s\/,.;:|]+$/us', $value, $matches) ? $matches[1] : $value;
+	}
+
+	/**
+	 * Build a key used to compare an indexed series title with a series name from a MARC record.
+	 * The same function is applied to both sides so case, punctuation, diacritics, leading/trailing articles
+	 * and a trailing "series" do not prevent a match. An empty string means the title cannot be matched.
+	 *
+	 * @param string $series
+	 * @return string
+	 */
+	private static function getSeriesComparisonKey(string $series): string {
+		$key = trim($series);
+		if ($key === '' || !mb_check_encoding($key, 'UTF-8')) {
+			return '';
+		}
+		if (class_exists('Normalizer')) {
+			$normalized = Normalizer::normalize($key, Normalizer::FORM_KD);
+			if ($normalized !== false) {
+				$key = preg_replace('/\p{M}+/u', '', $normalized);
+			}
+		}
+		$key = mb_strtolower($key);
+		$key = preg_replace('/[\s\/,.;:|]+$/u', '', $key);
+		$key = preg_replace('/\s*[#|]\s*\d+$/u', '', $key);
+		$key = str_replace('&', ' and ', $key);
+		$key = preg_replace('/,\s*(the|an)$/u', '', $key);
+		$key = preg_replace('/[^\p{L}\p{N}]+/u', ' ', $key);
+		$key = trim($key);
+		$key = preg_replace('/^(the|an|a) /u', '', $key);
+		$key = preg_replace('/ series$/u', '', $key);
+		return $key ?? '';
 	}
 
 	public function isValid() {
