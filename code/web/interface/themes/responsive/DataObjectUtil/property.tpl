@@ -228,7 +228,7 @@
 				</script>
 				<script type="text/javascript">
 					{literal}
-					$("#panelStatus_{/literal}{$property.label|escapeCSS}{literal} .panel-heading").on('click', function(e) {
+					$("#panelStatus_{/literal}{$property.label|escapeCSS}{literal} > .panel-heading").on('click', function(e) {
 						if ($(e.target).closest('.col-xs-1, a, button, img').length === 0) {
 							$("#panelToggle_{/literal}{$property.property}{literal}").trigger('click');
 						}

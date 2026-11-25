@@ -40,7 +40,8 @@ class UserAspenEventInstanceRegistrationAttendee extends DataObject {
 	 * Save attendee category counts for a registration.
 	 * $attendeeCounts: [attendeeCategoryId => count, ...]
 	 */
-	public static function saveForRegistration(int $registrationId, array $attendeeCounts): void {
+	public static function saveForRegistration(int $registrationId, array $attendeeCounts): bool {
+		global $logger;
 		foreach ($attendeeCounts as $categoryId => $count) {
 			$count = (int)$count;
 			if ($count <= 0) {
@@ -51,12 +52,19 @@ class UserAspenEventInstanceRegistrationAttendee extends DataObject {
 			$attendee->attendeeCategoryId = (int)$categoryId;
 			if ($attendee->find(true)) {
 				$attendee->count = $count;
-				$attendee->update();
+				if ($attendee->update() === false) {
+					$logger->log("Failed to update attendee row (registrationId=$registrationId, categoryId=$categoryId): " . $attendee->getLastError(), Logger::LOG_ERROR);
+					return false;
+				}
 				continue;
 			}
 			$attendee->count = $count;
-			$attendee->insert();
+			if ($attendee->insert() === false) {
+				$logger->log("Failed to insert attendee row (registrationId=$registrationId, categoryId=$categoryId): " . $attendee->getLastError(), Logger::LOG_ERROR);
+				return false;
+			}
 		}
+		return true;
 	}
 
 	public static function getCountsForRegistration(int $registrationId): array {

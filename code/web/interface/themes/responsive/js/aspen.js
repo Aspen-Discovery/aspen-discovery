@@ -934,7 +934,8 @@ var Globals = (function () {
 		timeUntilSessionExpiration: 0,
 		modalCloseDestination: '',
 		language: 'en',
-		jsTranslations: {}
+		// Populated by an inline script that runs before aspen.js so __() works at load time
+		jsTranslations: (typeof AspenJsTranslations !== 'undefined') ? AspenJsTranslations : {}
 	}
 })(Globals || {});
 
@@ -8424,6 +8425,18 @@ AspenDiscovery.Admin = (function () {
 			}
 		},
 
+		getActiveIlsForPropertySearch: function () {
+			var activeIlsInput = $("#activeIls");
+			if (activeIlsInput.length > 0) {
+				return activeIlsInput.val();
+			}
+			var ilsSelect = $("#ilsSelect");
+			if (ilsSelect.length > 0) {
+				return ilsSelect.val();
+			}
+			return null;
+		},
+
 		searchProperties: function () {
 			var searchValue = $("#propertySearch").val();
 			var searchRegex = new RegExp(searchValue, 'i');
@@ -8434,19 +8447,23 @@ AspenDiscovery.Admin = (function () {
 				$(".propertySection").show();
 				if ($("#activeIls").length > 0) {
 					AspenDiscovery.Admin.toggleIlsSpecificFields();
+				} else if ($("#ilsSelect").length > 0) {
+					AspenDiscovery.Admin.toggleAccountProfileIlsFields();
 				}
 				//Collapse all panels
 				$(".editor .panel-title a").removeClass('expanded').addClass('collapsed').attr("aria-expanded", "false");
 				$(".editor .panel").removeClass('active').attr("aria-expanded", "false");
 				$(".editor .accordion_body").removeClass('in').hide();
 			} else {
-				var activeIls = $("#activeIls").val();
+				var activeIls = AspenDiscovery.Admin.getActiveIlsForPropertySearch();
 				propertyRows.hide();
 				propertyRows.filter(function () {
 					var row = $(this);
 					var isSection = row.find(".propertyRow").length > 0;
 					var relatedIls = row.closest("[data-related-ils]").data("related-ils");
-					var appliesToIls = relatedIls === undefined || relatedIls.includes("~" + activeIls + "~");
+					var appliesToIls = activeIls === null
+						|| relatedIls === undefined
+						|| String(relatedIls).indexOf("~" + activeIls + "~") !== -1;
 
 					return !isSection && appliesToIls && searchRegex.test(row.text());
 				}).each(function () {
@@ -13683,8 +13700,11 @@ AspenDiscovery.GroupedWork = (function(){
 				$.each(activeManifestationInfo.variations, function () {
 					var activeClass = (i === 0) ? ' active' : '';
 					var variationButton = '<div role="option" tabindex="0" class="slider-slide horizontal-format-button slider-sm' + activeClass + '" data-workId="' + workId + '" data-variationid="' + this.databaseId + '" data-format="' + format + '" data-cleanedWorkId="' + cleanedWorkId + '">\n' +
-						'<div>' +
-						this.label + '<br/>' + this.groupedStatus +
+						'<div class="horizontal-format-button-format">' +
+						this.label +
+						'</div>' +
+						'<div class="related-manifestation-shelf-status ' + this.cssClass + '">' +
+						this.groupedStatus +
 						'</div>' +
 						'</div>';
 					variationSlider.append(variationButton);
@@ -18917,9 +18937,9 @@ AspenDiscovery.WebBuilder = function () {
 				};
 
 				if (requireLogin) {
-					if (Globals.loggedIn && canView) {
+					if (canView) {
 						trackUsage(Globals.loggedIn ? "user" : "library");
-					} else if (Globals.loggedIn && !canView) {
+					} else if (Globals.loggedIn) {
 						AspenDiscovery.showMessage(userNoAccessTitle, userNoAccessMessage);
 					} else {
 						if (openInNewTab) {

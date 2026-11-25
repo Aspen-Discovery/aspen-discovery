@@ -30,6 +30,11 @@ class DateUtilsTests extends TestCase {
 		$activeLanguage = $this->originalActiveLanguage;
 	}
 
+	// CLDR 42 separates the time from the day period with U+202F, so compare on format rather than on the separator byte
+	private static function normaliseSpaces(string $value): string {
+		return preg_replace('/\p{Z}/u', ' ', $value);
+	}
+
 	public static function emptyDateProvider(): array {
 		return [
 			'empty string'        => [''],
@@ -85,75 +90,92 @@ class DateUtilsTests extends TestCase {
 
 	public static function timeRangeProvider(): array {
 		return [
-			'both am, 12h'             => ['2025-01-01 09:00:00', '2025-01-01 10:30:00', '12', '9:00 - 10:30 AM'],
-			'both pm, 12h'             => ['2025-01-01 13:00:00', '2025-01-01 14:30:00', '12', '1:00 - 2:30 PM'],
-			'across noon, 12h'         => ['2025-01-01 09:00:00', '2025-01-01 13:00:00', '12', '9:00 AM - 1:00 PM'],
-			'noon boundary differs'    => ['2025-01-01 11:00:00', '2025-01-01 12:00:00', '12', '11:00 AM - 12:00 PM'],
-			'noon and after same half' => ['2025-01-01 12:00:00', '2025-01-01 13:00:00', '12', '12:00 - 1:00 PM'],
-			'24 hour format'           => ['2025-01-01 09:00:00', '2025-01-01 10:30:00', '24', '09:00 - 10:30'],
+			'both am, 12h'             => ['2025-01-01 09:00:00', '2025-01-01 10:30:00', 2, '9:00 - 10:30 AM'],
+			'both pm, 12h'             => ['2025-01-01 13:00:00', '2025-01-01 14:30:00', 2, '1:00 - 2:30 PM'],
+			'across noon, 12h'         => ['2025-01-01 09:00:00', '2025-01-01 13:00:00', 2, '9:00 AM - 1:00 PM'],
+			'noon boundary differs'    => ['2025-01-01 11:00:00', '2025-01-01 12:00:00', 2, '11:00 AM - 12:00 PM'],
+			'noon and after same half' => ['2025-01-01 12:00:00', '2025-01-01 13:00:00', 2, '12:00 - 1:00 PM'],
+			'24 hour format'           => ['2025-01-01 09:00:00', '2025-01-01 10:30:00', 3, '09:00 - 10:30'],
 		];
 	}
 
 	#[DataProvider('timeRangeProvider')]
 	public function testFormatTimeRange($start, $end, $format, $expected): void {
-		$this->assertSame($expected, \DateUtils::formatTimeRange($start, $end, $format));
+		$this->assertSame($expected, self::normaliseSpaces(\DateUtils::formatTimeRange($start, $end, $format)));
 	}
 
 	public function testFormatTimeRangeAcceptsDateTimeObjects(): void {
 		$start = new \DateTime('2025-01-01 09:00:00', new \DateTimeZone('UTC'));
 		$end = new \DateTime('2025-01-01 10:30:00', new \DateTimeZone('UTC'));
-		$this->assertSame('9:00 - 10:30 AM', \DateUtils::formatTimeRange($start, $end, '12'));
+		$this->assertSame('9:00 - 10:30 AM', self::normaliseSpaces(\DateUtils::formatTimeRange($start, $end, 2)));
 	}
 
 	public function testFormatTimeRangePartsCollapseExposesStartMeridiem(): void {
-		$parts = \DateUtils::formatTimeRangeParts('2025-01-01 09:00:00', '2025-01-01 10:30:00', '12');
+		$parts = \DateUtils::formatTimeRangeParts('2025-01-01 09:00:00', '2025-01-01 10:30:00', 2);
 		$this->assertSame('9:00', $parts['start']);
 		$this->assertSame('AM', $parts['startMeridiem']);
-		$this->assertSame('10:30 AM', $parts['end']);
+		$this->assertSame('10:30 AM', self::normaliseSpaces($parts['end']));
 	}
 
 	public function testFormatTimeRangePartsAcrossNoonKeepStartMeridiemInline(): void {
-		$parts = \DateUtils::formatTimeRangeParts('2025-01-01 09:00:00', '2025-01-01 13:00:00', '12');
-		$this->assertSame('9:00 AM', $parts['start']);
+		$parts = \DateUtils::formatTimeRangeParts('2025-01-01 09:00:00', '2025-01-01 13:00:00', 2);
+		$this->assertSame('9:00 AM', self::normaliseSpaces($parts['start']));
 		$this->assertSame('', $parts['startMeridiem']);
-		$this->assertSame('1:00 PM', $parts['end']);
+		$this->assertSame('1:00 PM', self::normaliseSpaces($parts['end']));
 	}
 
 	public function testFormatTimeRangePartsAreEmptyForInvalidInput(): void {
 		$this->assertSame(['start' => '', 'startMeridiem' => '', 'end' => ''], \DateUtils::formatTimeRangeParts('', ''));
 	}
 
-	public function testFormatTimeRangeDefaultsTo12Hour(): void {
-		$this->assertSame('9:00 - 10:30 AM', \DateUtils::formatTimeRange('2025-01-01 09:00:00', '2025-01-01 10:30:00'));
+	public function testFormatTimeRangeDefaultsToA12HourLocale(): void {
+		$this->assertSame('9:00 - 10:30 AM', self::normaliseSpaces(\DateUtils::formatTimeRange('2025-01-01 09:00:00', '2025-01-01 10:30:00', 1)));
 	}
 
-	public function testFormatTimeRangeForces12HourEvenInA24HourLocale(): void {
+	public function testFormatTimeRangeDefaultsToA24HourLocale(): void {
 		global $activeLanguage;
 		$activeLanguage = (object)['locale' => 'en_GB'];
-		$default = \DateUtils::formatTimeRange('2025-01-01 11:00:00', '2025-01-01 16:00:00');
-		$this->assertMatchesRegularExpression('/\d{1,2}:\d{2}\s*[ap]m/i', $default);
-		$this->assertStringNotContainsString('16:00', $default);
-		$this->assertSame(\DateUtils::formatTimeRange('2025-01-01 11:00:00', '2025-01-01 16:00:00', '12'), $default);
+		$this->assertSame('11:00 - 16:00', self::normaliseSpaces(\DateUtils::formatTimeRange('2025-01-01 11:00:00', '2025-01-01 16:00:00', 1)));
+	}
+
+	public function testFormatTimeRangeFallsBackToTheSystemVariableWhenNoOverrideIsGiven(): void {
+		$systemVariables = \SystemVariables::getSystemVariables();
+		$expected = \DateUtils::formatTimeRange('2025-01-01 09:00:00', '2025-01-01 10:30:00', (int)($systemVariables->timeFormat ?? 0));
+		$this->assertSame($expected, \DateUtils::formatTimeRange('2025-01-01 09:00:00', '2025-01-01 10:30:00'));
+	}
+
+	public function testFormatTimeRangeForces12HourOnRequest(): void {
+		global $activeLanguage;
+		$activeLanguage = (object)['locale' => 'en_GB'];
+		$this->assertMatchesRegularExpression('/^11:00 am - 4:00 pm$/i', self::normaliseSpaces(\DateUtils::formatTimeRange('2025-01-01 11:00:00', '2025-01-01 16:00:00', 2)));
 	}
 
 	public function testFormatTimeRangeForces24HourOnRequest(): void {
 		global $activeLanguage;
 		$activeLanguage = (object)['locale' => 'en_US'];
-		$this->assertSame('09:00 - 16:00', \DateUtils::formatTimeRange('2025-01-01 09:00:00', '2025-01-01 16:00:00', '24'));
+		$this->assertSame('09:00 - 16:00', \DateUtils::formatTimeRange('2025-01-01 09:00:00', '2025-01-01 16:00:00', 3));
 	}
 
-	public function testFormatDateTimeLocaleCombinesLocaleDateAnd12HourTime(): void {
-		$result = \DateUtils::formatDateTimeLocale('2025-07-07 09:00:00', 'long');
+	public function testFormatDateTimeLocaleCombinesLocaleDateAndTime(): void {
+		$result = self::normaliseSpaces(\DateUtils::formatDateTimeLocale('2025-07-07 09:00:00', 'long', 1));
 		$this->assertStringContainsString('July 7, 2025', $result);
 		$this->assertStringContainsString('9:00 AM', $result);
 	}
 
-	public function testFormatDateTimeLocaleForces12HourInA24HourLocale(): void {
+	public function testFormatDateTimeLocaleFollowsA24HourLocale(): void {
 		global $activeLanguage;
 		$activeLanguage = (object)['locale' => 'en_GB'];
-		$result = \DateUtils::formatDateTimeLocale('2025-07-07 16:00:00', 'long');
+		$result = self::normaliseSpaces(\DateUtils::formatDateTimeLocale('2025-07-07 16:00:00', 'long', 1));
 		$this->assertStringContainsString('7 July 2025', $result);
-		$this->assertMatchesRegularExpression('/4:00\s*pm/i', $result);
+		$this->assertStringContainsString('16:00', $result);
+	}
+
+	public function testFormatDateTimeLocaleForces12HourOnRequest(): void {
+		global $activeLanguage;
+		$activeLanguage = (object)['locale' => 'en_GB'];
+		$result = self::normaliseSpaces(\DateUtils::formatDateTimeLocale('2025-07-07 16:00:00', 'long', 2));
+		$this->assertStringContainsString('7 July 2025', $result);
+		$this->assertMatchesRegularExpression('/4:00 pm/i', $result);
 		$this->assertStringNotContainsString('16:00', $result);
 	}
 
@@ -188,19 +210,49 @@ class DateUtilsTests extends TestCase {
 		$this->assertSame('Mar 2025', \DateUtils::formatDateLocale('2025-03-15', 'medium', 'none', 'yyyy-MM-dd', 'yMMM'));
 	}
 
+	// Test noon / midnight conversation
+
 	public static function hourProvider(): array {
 		return [
-			'12:00' => ['12:00', 'Noon'],
-			'00:00' => ['00:00', 'Midnight'],
-			'24:00' => ['24:00', 'Midnight'],
-			'09:37' => ['09:37', '9:37 AM'],
-			'16:01' => ['16:01', '4:01 PM'],
-			'00:05' => ['00:05', '12:05 AM'],
+			'12:00 with noon and midnight conversion on'  => ['12:00', true, 'Noon'],
+			'00:00 with noon and midnight conversion on'  => ['00:00', true, 'Midnight'],
+			'24:00 with noon and midnight conversion on'  => ['24:00', true, 'Midnight'],
+			'09:37 with noon and midnight conversion on'  => ['09:37', true, '9:37 AM'],
+			'16:01 with noon and midnight conversion on'  => ['16:01', true, '4:01 PM'],
+			'00:05 with noon and midnight conversion on'  => ['00:05', true, '12:05 AM'],
+			'12:00 with noon and midnight conversion off' => ['12:00', false, '12:00 PM'],
+			'00:00 with noon and midnight conversion off' => ['00:00', false, '12:00 AM'],
+			'24:00 with noon and midnight conversion off' => ['24:00', false, '12:00 AM'],
+			'09:37 with noon and midnight conversion off' => ['09:37', false, '9:37 AM'],
+			'16:01 with noon and midnight conversion off' => ['16:01', false, '4:01 PM'],
+			'00:05 with noon and midnight conversion off' => ['00:05', false, '12:05 AM'],
 		];
 	}
 
 	#[DataProvider('hourProvider')]
-	public function testFormatHour(string $input, string $expected): void {
-		$this->assertSame($expected, \DateUtils::formatHour($input));
+	public function testFormatHour(string $input, bool $noonAndMidnightToggle, string $expected): void {
+		$this->assertSame($expected, self::normaliseSpaces(\DateUtils::formatHour($input, $noonAndMidnightToggle, 2)));
+	}
+
+	// Test locale-based time formatting
+
+	public function testFormatHourFollowsA12HourLocale(): void {
+		global $activeLanguage;
+		$activeLanguage = (object)['locale' => 'en_US'];
+		$this->assertSame('9:30 AM', self::normaliseSpaces(\DateUtils::formatHour('09:30', false, 1)));
+	}
+
+	public function testFormatHourFollowsA12HourOnRequest(): void {
+		$this->assertSame('9:30 AM', self::normaliseSpaces(\DateUtils::formatHour('09:30', false, 2)));
+	}
+
+	public function testFormatHourFollowsA24HourLocale(): void {
+		global $activeLanguage;
+		$activeLanguage = (object)['locale' => 'en_GB'];
+		$this->assertSame('16:30', self::normaliseSpaces(\DateUtils::formatHour('16:30', false, 1)));
+	}
+
+	public function testFormatHourForces24HourOnRequest(): void {
+		$this->assertSame('16:30', self::normaliseSpaces(\DateUtils::formatHour('16:30', false, 3)));
 	}
 }

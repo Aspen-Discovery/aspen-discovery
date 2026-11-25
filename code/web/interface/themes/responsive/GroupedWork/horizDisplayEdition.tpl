@@ -1,26 +1,26 @@
 {strip}
 	<div class="row">
 		<div class="col-tn-8">
-			<div class="row">
+			<div class="first-record-status row">
 				{capture assign=statusIndicator}{include file='GroupedWork/statusIndicator.tpl' statusInformation=$firstRecord->getStatusInformation() viewingIndividualRecord=0 applyColors=false hideCopiesLine=false}{/capture}
 				{capture assign=formatWithLink}<a href="{$firstRecord->getUrl()}">{translate text=$firstRecord->getFormat() isPublicFacing=true inAttribute=true}</a>{/capture}
 				<div class="result-label col-tn-12">{translate text="This %1% is currently %2%" 1=$formatWithLink 2=$statusIndicator isPublicFacing=true}</div>
 			</div>
-			<div style="margin-bottom: 3px; font-size: smaller">
+			<div class="first-record-description" style="margin-bottom: 3px; font-size: smaller">
 				{if !empty($firstRecord->publicationDate) || !empty($firstRecord->publisher)}
-					{$firstRecord->publicationDate} {$firstRecord->publisher} <br>
+					<div class="publication-value">{$firstRecord->publicationDate} {$firstRecord->publisher}</div>
 				{/if}
 				{if !empty($duration)}
 					{if $multipleDurations == false}
 						{math equation="floor(x/60)" x=$duration assign="hours"}
 						{math equation="x%60" x=$duration assign="minutes"}
 						{if $hours != 0 && $minutes != 0}
-							{translate text='Duration is %1% hours %2% minutes' 1=$hours 2=$minutes isPublicFacing=true}<br/>
+							<div class="duration-value">{translate text='Duration is %1% hours %2% minutes' 1=$hours 2=$minutes isPublicFacing=true}</div>
 						{else}
 							{if $hours == 0}
-								{translate text='Duration is %2% minutes' 2=$minutes isPublicFacing=true}<br/>
+								<div class="duration-value">{translate text='Duration is %2% minutes' 2=$minutes isPublicFacing=true}</div>
 								{else}
-								{translate text='Duration is %1% hours' 1=$hours isPublicFacing=true}<br/>
+								<div class="duration-value">{translate text='Duration is %1% hours' 1=$hours isPublicFacing=true}</div>
 							{/if}
 						{/if}
 
@@ -29,23 +29,23 @@
 							{math equation="floor(x/60)" x=$duration assign="hours"}
 							{math equation="x%60" x=$duration assign="minutes"}
 							{if $hours != 0 && $minutes != 0}
-								{translate text='Duration is approximately %1% hours %2% minutes' 1=$hours 2=$minutes isPublicFacing=true}. <a href="javascript:void(0)" onclick="AspenDiscovery.GroupedWork.showAllEditionsForVariation('{$workId}', '{$format}', '{$variationId}')">{translate text='See editions' isPublicFacing=true}</a> <br>
+								<div class="duration-value">{translate text='Duration is approximately %1% hours %2% minutes' 1=$hours 2=$minutes isPublicFacing=true}. <a href="javascript:void(0)" onclick="AspenDiscovery.GroupedWork.showAllEditionsForVariation('{$workId}', '{$format}', '{$variationId}')">{translate text='See editions' isPublicFacing=true}</a></div>
 							{else}
 								{if $hours == 0}
-									{translate text='Duration is approximately %2% minutes' 1=$hours 2=$minutes isPublicFacing=true}. <a href="javascript:void(0)" onclick="AspenDiscovery.GroupedWork.showAllEditionsForVariation('{$workId}', '{$format}', '{$variationId}')">{translate text='See editions' isPublicFacing=true}</a> <br>
+									<div class="duration-value">{translate text='Duration is approximately %2% minutes' 1=$hours 2=$minutes isPublicFacing=true}. <a href="javascript:void(0)" onclick="AspenDiscovery.GroupedWork.showAllEditionsForVariation('{$workId}', '{$format}', '{$variationId}')">{translate text='See editions' isPublicFacing=true}</a></div>
 								{else}
-									{translate text='Duration is approximately %1% hours' 1=$hours 2=$minutes isPublicFacing=true}. <a href="javascript:void(0)" onclick="AspenDiscovery.GroupedWork.showAllEditionsForVariation('{$workId}', '{$format}', '{$variationId}')">{translate text='See editions' isPublicFacing=true}</a> <br>
+									<div class="duration-value">{translate text='Duration is approximately %1% hours' 1=$hours 2=$minutes isPublicFacing=true}. <a href="javascript:void(0)" onclick="AspenDiscovery.GroupedWork.showAllEditionsForVariation('{$workId}', '{$format}', '{$variationId}')">{translate text='See editions' isPublicFacing=true}</a></div>
 								{/if}
 							{/if}
 						{else}
-							<a href="javascript:void(0)" onclick="AspenDiscovery.GroupedWork.showAllEditionsForVariation('{$workId}', '{$format}', '{$variationId}')">{translate text='Duration varies, see editions' isPublicFacing=true}</a> <br>
+							<div class="duration-value"><a href="javascript:void(0)" onclick="AspenDiscovery.GroupedWork.showAllEditionsForVariation('{$workId}', '{$format}', '{$variationId}')">{translate text='Duration varies, see editions' isPublicFacing=true}</a></div>
 						{/if}
 					{/if}
 				{/if}
-				{if !empty($firstRecord->edition)} {$firstRecord->edition}{/if}
+				{if !empty($firstRecord->edition)}<div class="edition-value">{$firstRecord->edition}</div>{/if}
 				{* {if !empty($firstRecord->getEContentSource())} {translate text=$firstRecord->getEContentSource() isPublicFacing=true}{/if} *}
-				{if !empty($firstRecord->physical)} {$firstRecord->physical} {if $firstRecord->closedCaptioned}<i class="fas fa-closed-captioning"></i> {/if}{/if}
-				{if !empty($firstRecord->languageNote)} {$firstRecord->languageNote}{/if}
+				{if !empty($firstRecord->physical)}<div class="physical-description-value">{$firstRecord->physical} {if $firstRecord->closedCaptioned}<i class="fas fa-closed-captioning"></i> {/if}</div>{/if}
+				{if !empty($firstRecord->languageNote)}<div class="language-note-value">{$firstRecord->languageNote}</div>{/if}
 			</div>
 		</div>
 		<div class="col-tn-4">
@@ -79,7 +79,7 @@
 						<div class="col-tn-4">
 							<div class="shelf-location-value"><strong>{$curItemSummary.shelfLocation}</strong></div>
 							<div class="call-number-value">{$curItemSummary.callNumber}</div>
-							<div class="available-copies-value">{$curItemSummary.availableCopies} of {$curItemSummary.totalCopies} available</div>
+							<div class="available-copies-value">{translate text="%1% of %2% available" 1=$curItemSummary.availableCopies 2=$curItemSummary.totalCopies isPublicFacing=true}</div>
 						</div>
 					{/if}
 				{/foreach}

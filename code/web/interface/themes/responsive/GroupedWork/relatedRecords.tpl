@@ -10,41 +10,41 @@
 			<div class="col-tn-12 {if !empty($showEditionCovers) && $showEditionCovers == 1}col-md-2 col-lg-4{else}col-md-4 col-lg-4{/if}">
 				{if !empty($showRelatedRecordLabels)}
 					{if !empty($relatedRecord->publicationDate) || !empty($relatedRecord->publisher)}
-						<div class="row"><div class="result-label col-lg-5 col-tn-12">{translate text="Published" isPublicFacing=true}</div><div class="result-value col-lg-7 col-tn-12"><a href="{$relatedRecord->getUrl()}">{$relatedRecord->publicationDate} {$relatedRecord->publisher}</a></div></div>
+						<div class="related-record-publication-details row"><div class="result-label col-lg-5 col-tn-12">{translate text="Published" isPublicFacing=true}</div><div class="result-value col-lg-7 col-tn-12"><a href="{$relatedRecord->getUrl()}">{$relatedRecord->publicationDate} {$relatedRecord->publisher}</a></div></div>
 					{/if}
 					{if !empty($relatedRecord->getEContentSource())}
-						<div class="row"><div class="result-label col-lg-5 col-tn-12">{translate text="Source" isPublicFacing=true}</div><div class="result-value col-lg-7 col-tn-12"> <a href="{$relatedRecord->getUrl()}">{translate text=$relatedRecord->getEContentSource() isPublicFacing=true}</a></div></div>
+						<div class="related-record-source row"><div class="result-label col-lg-5 col-tn-12">{translate text="Source" isPublicFacing=true}</div><div class="result-value col-lg-7 col-tn-12"> <a href="{$relatedRecord->getUrl()}">{translate text=$relatedRecord->getEContentSource() isPublicFacing=true}</a></div></div>
 					{/if}
 					{if !empty($relatedRecord->edition)}
-						<div class="row"><div class="result-label col-lg-5 col-tn-12">{translate text="Edition" isPublicFacing=true}</div><div class="result-value col-lg-7 col-tn-12"> {$relatedRecord->edition}</div></div>
+						<div class="related-record-edition row"><div class="result-label col-lg-5 col-tn-12">{translate text="Edition" isPublicFacing=true}</div><div class="result-value col-lg-7 col-tn-12"> {$relatedRecord->edition}</div></div>
 					{/if}
 					{if !empty($relatedRecord->physical)}
-						<div class="row"><div class="result-label col-lg-5 col-tn-12">{translate text="Physical Description" isPublicFacing=true}</div><div class="result-value col-lg-7 col-tn-12"> <a href="{$relatedRecord->getUrl()}">{$relatedRecord->physical} {if $relatedRecord->closedCaptioned}<i class="fas fa-closed-captioning"></i> {/if}</a></div></div>
+						<div class="related-record-physical-description row"><div class="result-label col-lg-5 col-tn-12">{translate text="Physical Description" isPublicFacing=true}</div><div class="result-value col-lg-7 col-tn-12"> <a href="{$relatedRecord->getUrl()}">{$relatedRecord->physical} {if $relatedRecord->closedCaptioned}<i class="fas fa-closed-captioning"></i> {/if}</a></div></div>
 					{/if}
 					{if !empty($relatedRecord->duration)}
 						{math equation="floor(x/60)" x=$relatedRecord->duration assign="hours"}
 						{math equation="x%60" x=$relatedRecord->duration assign="minutes"}
 
-						<div class="row"><div class="result-label col-lg-5 col-tn-12">{translate text="Duration" isPublicFacing=true}</div><div class="result-value col-lg-7 col-tn-12"> <a href="{$relatedRecord->getUrl()}">{if $hours != 0}{$hours} hours{/if} {if $minutes !=0}{$minutes} minutes{/if}</a></div></div>
+						<div class="related-record-duration row"><div class="result-label col-lg-5 col-tn-12">{translate text="Duration" isPublicFacing=true}</div><div class="result-value col-lg-7 col-tn-12"> <a href="{$relatedRecord->getUrl()}">{if $hours != 0}{$hours} hours{/if} {if $minutes !=0}{$minutes} minutes{/if}</a></div></div>
 					{/if}
 					{if !empty($relatedRecord->languageNote)}
-						<div class="row"><div class="result-label col-lg-5 col-tn-12">{translate text="Language" isPublicFacing=true}</div><div class="result-value col-lg-7 col-tn-12"> <a href="{$relatedRecord->getUrl()}">{$relatedRecord->physical}</a></div></div>
+						<div class="related-record-language row"><div class="result-label col-lg-5 col-tn-12">{translate text="Language" isPublicFacing=true}</div><div class="result-value col-lg-7 col-tn-12"> <a href="{$relatedRecord->getUrl()}">{$relatedRecord->physical}</a></div></div>
 					{/if}
 				{else}
 					{if !empty($relatedRecord->publicationDate) || !empty($relatedRecord->publisher)}
-						<div style="margin-bottom: 3px"><strong>{$relatedRecord->publicationDate}</strong> {$relatedRecord->publisher}</div>
+						<div class="related-record-publication-details" style="margin-bottom: 3px"><strong>{$relatedRecord->publicationDate}</strong> {$relatedRecord->publisher}</div>
 					{/if}
 					{if !empty($relatedRecord->edition)}
-						<div style="margin-bottom: 3px">{$relatedRecord->edition}</div>
+						<div class="related-record-edition" style="margin-bottom: 3px">{$relatedRecord->edition}</div>
 					{/if}
 					{if !empty($relatedRecord->getEContentSource())}
-						<div style="margin-bottom: 3px">{translate text=$relatedRecord->getEContentSource() isPublicFacing=true}</div>
+						<div class="related-record-source" style="margin-bottom: 3px">{translate text=$relatedRecord->getEContentSource() isPublicFacing=true}</div>
 					{/if}
 					{if !empty($relatedRecord->physical)}
-						<div style="margin-bottom: 3px">{$relatedRecord->physical} {if $relatedRecord->closedCaptioned}<i class="fas fa-closed-captioning"></i> {/if}</div>
+						<div class="related-record-physical-description" style="margin-bottom: 3px">{$relatedRecord->physical} {if $relatedRecord->closedCaptioned}<i class="fas fa-closed-captioning"></i> {/if}</div>
 					{/if}
 					{if !empty($relatedRecord->languageNote)}
-						<div style="margin-bottom: 3px">{$relatedRecord->languageNote}</div>
+						<div class="related-record-language" style="margin-bottom: 3px">{$relatedRecord->languageNote}</div>
 					{/if}
 				{/if}
 			</div>

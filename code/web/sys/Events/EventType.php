@@ -389,17 +389,16 @@ class EventType extends DataObject {
 	}
 
 	public function getEventTypeAttendeeCategories(): array {
-		if (isset($this->_eventTypeAttendeeCategories)) {
-			return $this->_eventTypeAttendeeCategories ?? [];
+		if (!isset($this->_eventTypeAttendeeCategories) && $this->id) {
+			$this->_eventTypeAttendeeCategories = [];
+			$eventTypeAttendeeCategory = new EventTypeAttendeeCategory();
+			$eventTypeAttendeeCategory->eventTypeId = $this->id;
+			$eventTypeAttendeeCategory->find();
+			while ($eventTypeAttendeeCategory->fetch()) {
+				$this->_eventTypeAttendeeCategories[$eventTypeAttendeeCategory->id] = clone($eventTypeAttendeeCategory);
+			}
 		}
-		$this->_eventTypeAttendeeCategories = [];
-		$eventTypeAttendeeCategory = new EventTypeAttendeeCategory();
-		$eventTypeAttendeeCategory->eventTypeId = $this->id;
-		$eventTypeAttendeeCategory->find();
-		while ($eventTypeAttendeeCategory->fetch()) {
-			$this->_eventTypeAttendeeCategories[$eventTypeAttendeeCategory->id] = clone($eventTypeAttendeeCategory);
-		}
-		return $this->_eventTypeAttendeeCategories;
+		return $this->_eventTypeAttendeeCategories ?? [];
 	}
 
 	public function saveAttendeeCategories(): void {

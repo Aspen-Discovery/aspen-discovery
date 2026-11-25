@@ -159,7 +159,7 @@ class Checkout extends CircEntry {
 		}
 		$checkout['id'] = $checkout['sourceId'];
 		$checkout['ratingData'] = $this->getRatingData();
-		$checkout['coverUrl'] = $this->getCoverUrl();
+		$checkout['coverUrl'] = html_entity_decode($this->getCoverUrl());
 		$checkout['link'] = $this->getLinkUrl();
 		$checkout['linkUrl'] = $this->getLinkUrl();
 		$checkout['title_sort'] = $this->getSortTitle();

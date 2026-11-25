@@ -319,6 +319,7 @@ class Event extends DataObject {
 				'type' => 'enum',
 				'label' => 'Repeat Options',
 				'description' => 'How this event repeats',
+				'note' => 'Changes to the schedule, start time, or length only apply to upcoming dates. Past dates are not changed.',
 				'values' => [
 					'1' => 'Does not repeat',
 					'2' => 'Daily',
@@ -556,7 +557,8 @@ class Event extends DataObject {
 			$this->saveLibraries();
 			$this->saveLocations();
 			$this->saveFields();
-			$this->generateInstances();
+			$this->generateInstances(true);
+			$this->_changedFields = [];
 		}
 		return $ret;
 	}
@@ -794,60 +796,80 @@ class Event extends DataObject {
 		}
 	}
 
-	public function generateInstances() : void {
-		// If event doesn't repeat and there is a start date, time and event length
-		if (isset($this->startDate) && isset($this->startTime) && isset($this->eventLength)) {
-			if ($this->recurrenceOption == '1') {
-				// Can generate dates in the past
-				$instance = new EventInstance();
-				$instance->eventId = $this->id;
-				$instance->find(true); // Update event if it already exists
-				$instance->date = $this->startDate;
+	public function generateInstances(bool $isNewEvent = false) : void {
+		if (!isset($this->startDate) || !isset($this->startTime) || !isset($this->eventLength)) {
+			return;
+		}
+
+		if ($this->recurrenceOption == '1') {
+			$instance = new EventInstance();
+			$instance->eventId = $this->id;
+			$instance->find(true);
+			$instance->date = $this->startDate;
+			$instance->time = $this->startTime;
+			$instance->length = $this->eventLength;
+			$instance->update();
+			return;
+		}
+
+		if (!$this->_dates || !is_array($this->_dates)) {
+			return;
+		}
+
+		if ($isNewEvent) {
+			foreach ($this->_dates as $date) {
+				$this->createInstance($date);
+			}
+			return;
+		}
+
+		if (in_array('dates', $this->_changedFields)) {
+			$this->updateUpcomingInstances();
+			return;
+		}
+
+		if (array_intersect(['startTime', 'eventLength'], $this->_changedFields)) {
+			// Only update upcoming instances, keep past as history
+			foreach ($this->getUpcomingInstances() as $instance) {
 				$instance->time = $this->startTime;
 				$instance->length = $this->eventLength;
 				$instance->update();
-			} else { // If event does repeat and there are preview dates
-				if ($this->_dates && is_array($this->_dates)) {
-					if (in_array('dates', $this->_changedFields)) {
-						// Should add more user options about which events to change
-						$this->clearFutureInstances();
-						foreach ($this->_dates as $date) {
-							// Can create instances in the past
-							$instance = new EventInstance();
-							$instance->eventId = $this->id;
-							$instance->date = $date;
-							$instance->time = $this->startTime;
-							$instance->length = $this->eventLength;
-							$instance->update();
-						}
-					} else if (in_array('startTime', $this->_changedFields) || in_array('eventLength', $this->_changedFields)) { // If only the time or length has changed, we can just update existing events
-						foreach ($this->_dates as $date) {
-							// Can create instances in the past
-							$instance = new EventInstance();
-							$instance->eventId = $this->id;
-							$instance->date = $date;
-							$instance->find();
-							if ($instance->fetch()) {
-								$instance->time = $this->startTime;
-								$instance->length = $this->eventLength;
-								$instance->update();
-							}
-						}
-					}
-				}
 			}
 		}
 	}
 
-	private function clearFutureInstances() : void {
+	private function createInstance(string $date) : void {
 		$instance = new EventInstance();
 		$instance->eventId = $this->id;
-		$todayDate = date('Y-m-d');
-		$todayTime = date('H:i:s');
-		$instance->whereAdd("date > '$todayDate' OR (date = '$todayDate' and time > '$todayTime')");
-		$instance->find();
-		while ($instance->fetch()) {
-			$instance->delete();
+		$instance->date = $date;
+		$instance->time = $this->startTime;
+		$instance->length = $this->eventLength;
+		$instance->insert();
+	}
+
+	/**
+	 * keep dates that are still scheduled, delete unneeded dates, create new dates.
+	 */
+	private function updateUpcomingInstances() : void {
+		$now = time();
+		$upcomingInstances = $this->getUpcomingInstances();
+		$futureDates = array_filter($this->_dates, fn($date) => strtotime("$date {$this->startTime}") > $now);
+		$wantedDates = array_flip($futureDates);
+
+		foreach ($upcomingInstances as $instance) {
+			if (!isset($wantedDates[$instance->date])) {
+				$instance->delete();
+				continue;
+			}
+			// Keep this instance, apply the current time and length
+			$instance->time = $this->startTime;
+			$instance->length = $this->eventLength;
+			$instance->update();
+			unset($wantedDates[$instance->date]);
+		}
+
+		foreach (array_keys($wantedDates) as $date) {
+			$this->createInstance($date);
 		}
 	}
 
