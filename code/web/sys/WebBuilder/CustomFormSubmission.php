@@ -35,12 +35,14 @@ class CustomFormSubmission extends DataObject {
 				'type' => 'label',
 				'label' => 'Library',
 				'description' => 'The name of the library for the submission',
+				'canSort' => false,
 			],
 			'userName' => [
 				'property' => 'userName',
 				'type' => 'label',
 				'label' => 'User Name',
 				'description' => 'The name of the user who made the submission',
+				'canSort' => false,
 			],
 			'dateSubmitted' => [
 				'property' => 'dateSubmitted',
@@ -74,6 +76,7 @@ class CustomFormSubmission extends DataObject {
 						'label' => $field->label,
 						'description' => $field->description,
 						'readOnly' => true,
+						'canSort' => false,
 					];
 				}
 			}

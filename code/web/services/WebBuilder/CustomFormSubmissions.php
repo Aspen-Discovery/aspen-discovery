@@ -64,6 +64,23 @@ class WebBuilder_CustomFormSubmissions extends ObjectEditor {
 		return 'dateSubmitted desc';
 	}
 
+	/**
+	 * Library, user, and form field columns are computed and cannot be used in ORDER BY.
+	 * Fall back to the default sort if the requested or previously saved sort is not a
+	 * sortable database column, otherwise the query fails and the list renders empty.
+	 */
+	function getSort(): string {
+		$sort = trim(parent::getSort());
+		$sortParts = preg_split('/\s+/', $sort);
+		$sortField = $sortParts[0] ?? '';
+		$sortDirection = strtolower($sortParts[1] ?? 'asc');
+		$sortableProperties = array_column($this->getSortableFields($this->getObjectStructure()), 'property');
+		if (count($sortParts) > 2 || !in_array($sortField, $sortableProperties) || !in_array($sortDirection, ['asc', 'desc'])) {
+			return $this->getDefaultSort();
+		}
+		return $sort;
+	}
+
 	function showReturnToList(): bool {
 		return true;
 	}
